@@ -68,11 +68,6 @@
     color: #dc3545;
 }
 
-.table-responsive a:visited:hover,
-.table-responsive a:hover {
-    color: #ffffff;
-}
-
 /**
  * Fix for multiselect module
  */

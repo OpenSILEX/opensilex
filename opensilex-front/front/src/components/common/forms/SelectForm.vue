@@ -465,6 +465,10 @@ export default class SelectForm extends Vue {
   width: calc(100% - 38px);
 }
 
+.multiselect-popup ~ .input-group-append > button {
+  height: 100%;
+}
+
 ::v-deep .multiselect-action .vue-treeselect__control,
 ::v-deep .multiselect-popup .vue-treeselect__control {
   border-bottom-right-radius: 0;

@@ -272,28 +272,23 @@ table.b-table-selectable tbody tr td span {
   vertical-align: top;
 }
 
+table.b-table-selectable tbody tr td span.checkbox,
+.custom-control.custom-checkbox {
+  top: -4px;
+}
+
 .modal .custom-control-label:after, 
 .modal .custom-control-label:before {
   left: 0rem;
 }
 
-.modal table.b-table-selectable tbody tr td span.checkbox:after,
-.modal table.b-table-selectable tbody tr td span.checkbox:before {
-  position: absolute;
-  top: .75rem;
-  left: .75rem;
-  display: block;
-  width: 1rem;
-  height: 1rem;
-  content: "";
+.custom-checkbox {
+  padding-left: 12px;
 }
 
 .modal table.b-table-selectable tbody tr td span.checkbox:after,
 .modal table.b-table-selectable tbody tr td span.checkbox:before {
-  position: absolute;
-  top: .75rem;
   left: .75rem;
-  display: block;
   width: 1rem;
   height: 1rem;
   content: "";

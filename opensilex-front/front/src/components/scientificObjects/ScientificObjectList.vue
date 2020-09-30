@@ -82,7 +82,7 @@
                             label="ScientificObjectsList.filter.factors"
                             placeholder="ScientificObjectsList.placeholder.factors"
                             :selected.sync="filter.factors"
-                            :conversionMethod="germplasmGetDTOToSelectNode"
+                            :conversionMethod="factorGetDTOToSelectNode"
                             modalComponent="opensilex-FactorModalList"
                             :isModalSearch="true"
                         ></opensilex-SelectForm>
@@ -112,7 +112,7 @@
                     :searchMethod="searchScientificObject"
                     :fields="fields"
                     defaultSortBy="label"
-                    isSelectable="true"
+                    :isSelectable="true"
                     labelNumberOfSelectedRow="ScientificObjectsList.selected"
                     iconNumberOfSelectedRow="ik#ik-target"
                 >
@@ -282,10 +282,8 @@
                 options.currentPage,
                 uri,
                 experiment, 
-                undefined,
                 undefined, 
                 germplasm_URI, 
-                true,
                 true
             ).then(http => {
                 let result = {

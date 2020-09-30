@@ -128,8 +128,6 @@ import TranslatedNameInputForm from './common/forms/TranslatedNameInputForm.vue'
 components["opensilex-TranslatedNameInputForm"] = TranslatedNameInputForm;
 import CSVInputFile from './common/forms/CSVInputFile.vue'
 components["opensilex-CSVInputFile"] = CSVInputFile;
-import SearchForm from './common/forms/SearchForm.vue'
-components["opensilex-SearchForm"] = SearchForm;
 import FileInputForm from './common/forms/FileInputForm.vue'
 components["opensilex-FileInputForm"] = FileInputForm;
 import TagInputForm from './common/forms/TagInputForm.vue'

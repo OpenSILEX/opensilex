@@ -44,6 +44,8 @@
       :searchMethod="loadData"
       :fields="fields"
       defaultSortBy="startDate"
+      :isSelectable="isSelectable"
+      labelNumberOfSelectedRow="component.project.selectedLabel"
     >
       <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
@@ -97,7 +99,7 @@
 
 <script lang="ts">
 import moment from "moment";
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
@@ -113,6 +115,16 @@ export default class ProjectList extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
+
+  @Prop({
+    default: false
+  })
+  isSelectable;
+
+  @Prop({
+    default: false
+  })
+  noActions;
 
   private yearFilter: any = "";
   updateYearFilter() {
@@ -163,41 +175,51 @@ export default class ProjectList extends Vue {
     }
   }
 
-  fields = [
-    {
-      key: "name",
-      label: "component.common.name",
-      sortable: true
-    },
-    {
-      key: "shortname",
-      label: "component.project.shortname",
-      sortable: true
-    },
-    {
-      key: "startDate",
-      label: "component.common.startDate",
-      sortable: true
-    },
-    {
-      key: "endDate",
-      label: "component.common.endDate",
-      sortable: true
-    },
-    {
-      key: "financialFunding",
-      label: "component.project.financialFunding",
-      sortable: true
-    },
-    {
-      key: "state",
-      label: "component.common.state"
-    },
-    {
-      label: "component.common.actions",
-      key: "actions"
+  get fields() {
+    let tableFields: any = [
+      {
+        key: "uri",
+        label: "component.common.uri",
+        sortable: true
+      },
+      {
+        key: "label",
+        label: "component.common.name",
+        sortable: true
+      },
+      {
+        key: "shortname",
+        label: "component.project.shortname",
+        sortable: true
+      },
+      {
+        key: "startDate",
+        label: "component.common.startDate",
+        sortable: true
+      },
+      {
+        key: "endDate",
+        label: "component.common.endDate",
+        sortable: true
+      },
+      {
+        key: "hasFinancialFunding",
+        label: "component.project.financialFunding",
+        sortable: true
+      }
+    ];
+    if (!this.noActions) {
+      tableFields.push({
+        key: "actions",
+        label: "component.common.actions"
+      });
     }
-  ];
+    return tableFields;
+  }
+
+  getSelected() {
+    return this.tableRef.getSelected();
+  }
 
   @Ref("tableRef") readonly tableRef!: any;
   refresh() {

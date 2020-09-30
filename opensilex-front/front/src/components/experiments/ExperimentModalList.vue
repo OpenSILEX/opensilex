@@ -111,7 +111,7 @@
             ref="tableRef" 
             :searchMethod="searchExperiments" 
             :fields="fields"
-            isSelectable="true"
+            :isSelectable="true"
             defaultSortBy="label"
             labelNumberOfSelectedRow="component.experiment.search.selectedLabel"
             iconNumberOfSelectedRow="ik#ik-layers"

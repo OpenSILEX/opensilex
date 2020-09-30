@@ -50,6 +50,9 @@
       :searchMethod="searchFactors"
       :fields="fields"
       defaultSortBy="name"
+      :isSelectable="isSelectable"
+      labelNumberOfSelectedRow="FactorList.selected"
+      iconNumberOfSelectedRow="ik#ik-feather"
     >
       <template v-slot:head(name)="{data}">{{$t(data.label)}}</template>
       <template v-slot:head(comment)="{data}">{{$t(data.label)}}</template>
@@ -98,10 +101,10 @@ import VueRouter from "vue-router";
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO,
+  FactorSearchDTO
 } from "opensilex-core/index";
 import HttpResponse, {
-  OpenSilexResponse,
+  OpenSilexResponse
 } from "opensilex-security/HttpResponse";
 import { FactorCategory } from "./FactorCategory";
 
@@ -111,6 +114,16 @@ export default class FactorList extends Vue {
   service: FactorsService;
   $store: any;
   $route: any;
+
+  @Prop({
+    default: false
+  })
+  isSelectable;
+
+  @Prop({
+    default: false
+  })
+  noActions;
 
   get user() {
     return this.$store.state.user;
@@ -129,7 +142,7 @@ export default class FactorList extends Vue {
     name: "",
     comment: "",
     experiment: null,
-    category: "",
+    category: ""
   };
 
   resetSearch() {
@@ -143,7 +156,7 @@ export default class FactorList extends Vue {
       name: "",
       comment: "",
       experiment: null,
-      category: "",
+      category: ""
     };
     // Only if search and reset button are use in list
   }
@@ -171,31 +184,41 @@ export default class FactorList extends Vue {
     this.refresh();
   }
 
-  fields = [
-    {
-      key: "name",
-      label: "component.factor.list.name",
-      sortable: true,
-    },
-    {
-      key: "category",
-      label: "component.factor.list.category",
-      sortable: true,
-    },
-    {
-      key: "comment",
-      label: "component.factor.list.comment",
-      sortable: false,
-    },
-    {
-      key: "actions",
-      label: "component.common.actions",
-    },
-  ];
+  get fields() {
+    let tableFields: any = [
+      {
+        key: "name",
+        label: "component.factor.list.name",
+        sortable: true
+      },
+      {
+        key: "category",
+        label: "component.factor.list.category",
+        sortable: true
+      },
+      {
+        key: "comment",
+        label: "component.factor.list.comment",
+        sortable: false
+      }
+    ];
+    if (!this.noActions) {
+      tableFields.push({
+        key: "actions",
+        label: "component.common.actions"
+      });
+    }
+    return tableFields;
+  }
+
   @Ref("tableRef") readonly tableRef!: any;
 
   refresh() {
     this.tableRef.refresh();
+  }
+
+  getSelected() {
+    return this.tableRef.getSelected();
   }
 
   searchFactors(options) {
@@ -226,6 +249,9 @@ a {
 <i18n>
 
 en:
+  FactorList:
+    selected: Selected factor
+    selectLabel: Select factor
   component: 
     factor: 
       list:
@@ -241,6 +267,9 @@ en:
           experiment-placeholder: Select experiment
             
 fr:
+  FactorList:
+    selected: Facteur(s) séléectionné(s)
+    selectLabel: Sélection de facteurs
   component: 
     factor: 
       list:
@@ -251,7 +280,7 @@ fr:
           label: Filtrer les facteurs
           name: Nom
           category: Catégorie
-          experiment: Expérimentationn
+          experiment: Expérimentation
           name-placeholder: Irrigation, Ombrage, ...
           experiment-placeholder: Sélectionner experimentation
 

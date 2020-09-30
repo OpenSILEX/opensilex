@@ -28,6 +28,8 @@ export default class FormInputLabelHelper extends Vue {
 
 <style scoped lang="scss">
 .form-label {
+  display: inline-block;
+  width: 100%;
   margin-bottom: 5px;
 }
 </style>

@@ -202,6 +202,7 @@ import validationMessagesEN from 'vee-validate/dist/locale/en.json';
 import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
 import * as rules from 'vee-validate/dist/rules';
 import { email } from 'vee-validate/dist/rules';
+import moment from "moment";
 
 for (let [rule, validation] of Object.entries(rules)) {
   extend(rule, {
@@ -244,7 +245,23 @@ extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
   return {
     valid: regex.test(value),
   };
-})
+});
+
+extend("dateDiff", {
+  params: ["startDate"],
+  validate: (value, { startDate }:any) => {
+
+    console.log("value");
+    console.log(value);
+    console.log(startDate);
+    if(startDate === null) {
+      return true;
+    }
+    return moment(value, "YYYY-MM-DD").diff(moment(startDate,"YYYY-MM-DD"))> 0;
+  },
+  message:
+    "The difference between date"
+});
 
 
 let validationTranslations = {

@@ -14,18 +14,12 @@
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
+    import QualityCreate from "./QualityCreate.vue";
 
     @Component
     export default class QualityExternalReferencesForm extends Vue {
 
-        selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
+        selectedOntologies: string[] = QualityCreate.selectedOntologies;
 
         @PropSync("form")
         dto: QualityCreationDTO;

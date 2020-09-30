@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.EntityModel;
@@ -30,7 +31,9 @@ public class EntityCreationDTO extends SKOSReferencesDTO {
     public EntityModel newModel() {
         EntityModel model = new EntityModel();
         model.setName(name);
-        model.setComment(comment);
+        if(!StringUtils.isEmpty(comment)){
+            model.setComment(comment);
+        }
         if(type != null){
             model.setType(type);
         }

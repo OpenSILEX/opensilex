@@ -12,6 +12,7 @@ import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.expr.E_Str;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;

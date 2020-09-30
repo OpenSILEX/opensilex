@@ -34,6 +34,7 @@ public class VariableGetDTO {
 
     private NamedResourceDTO<UnitModel> unit;
 
+    private URI dataType;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -77,6 +78,11 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    public URI getDataType() { return dataType; }
+
+    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    public void setDataType(URI dataType) { this.dataType = dataType; }
+
 
     public static VariableGetDTO fromModel(VariableModel model) {
 
@@ -96,18 +102,23 @@ public class VariableGetDTO {
         qualityDto.setName(quality.getName());
         dto.setQuality(qualityDto);
 
-        NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
         MethodModel method = model.getMethod();
-        methodDto.setUri(method.getUri());
-        methodDto.setName(method.getName());
-        dto.setMethod(methodDto);
+        if(method != null){
+            NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
+            methodDto.setUri(method.getUri());
+            methodDto.setName(method.getName());
+            dto.setMethod(methodDto);
+        }
 
-        NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
         UnitModel unit = model.getUnit();
-        unitDto.setUri(unit.getUri());
-        unitDto.setName(unit.getName());
-        dto.setUnit(unitDto);
+        if(unit != null){
+            NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
+            unitDto.setUri(unit.getUri());
+            unitDto.setName(unit.getName());
+            dto.setUnit(unitDto);
+        }
 
+        dto.setDataType(model.getDataType());
         return dto;
     }
 }

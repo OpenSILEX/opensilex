@@ -1,53 +1,73 @@
 <template>
-    <ValidationObserver ref="qualityValidatorRef">
-        <opensilex-UriForm
-                :uri.sync="form.uri"
-                label="component.common.uri"
-                :editMode="editMode"
-                :generated.sync="uriGenerated"
-                :required="true"
-        ></opensilex-UriForm>
-        <!-- Name -->
-        <div class="row">
-            <div class="col-lg-6">
-                <opensilex-InputForm
-                        :value.sync="form.name"
-                        label="component.common.name"
-                        type="text"
-                        :required="true"
-                        placeholder="QualityForm.name-placeholder"
-                ></opensilex-InputForm>
-            </div>
+    <ValidationObserver ref="validatorRef">
 
-            <div class="col-lg-6">
-                <!-- Class -->
-                <opensilex-SelectForm
-                        label="component.common.type"
-                        :selected.sync="form.type"
-                        :multiple="false"
-                        :options="classList"
-                        placeholder="VariableForm.class-placeholder"
-                ></opensilex-SelectForm>
+        <div class="row">
+
+            <div class="col">
+                <opensilex-UriForm
+                    :uri.sync="form.uri"
+                    label="component.common.uri"
+                    :editMode="editMode"
+                    :generated.sync="uriGenerated"
+                    :required="true"
+                ></opensilex-UriForm>
             </div>
         </div>
 
-        <opensilex-TextAreaForm
-                :value.sync="form.comment"
-                label="component.common.description">
-        </opensilex-TextAreaForm>
+        <div class="row">
+            <div class="col">
+                <b-form-group
+                    label="component.skos.ontologies-references-label"
+                    label-size="lg"
+                    label-class="font-weight-bold pt-0"
+                    class="mb-0"
+                >
+                    <template v-slot:label>{{ $t('component.skos.ontologies-references-label') }}</template>
+                </b-form-group>
+                <b-card-text>
+                    <ul>
+                        <li
+                            v-for="externalOntologyRef in externalOntologiesRefs"
+                            :key="externalOntologyRef.label"
+                        >
+                            <a
+                                target="_blank"
+                                v-bind:title="externalOntologyRef.label"
+                                v-bind:href="externalOntologyRef.link"
+                                v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
+                            >{{ externalOntologyRef.label }}</a>
+                        </li>
+                    </ul>
+                </b-card-text>
+            </div>
+
+            <div class="col">
+
+                <!-- Name -->
+                <opensilex-InputForm
+                    :value.sync="form.name"
+                    label="component.common.name"
+                    type="text"
+                    :required="true"
+                    placeholder="QualityForm.name-placeholder"
+                ></opensilex-InputForm>
+
+                <!-- Comment -->
+                <opensilex-TextAreaForm
+                    :value.sync="form.comment"
+                    label="component.common.description">
+                </opensilex-TextAreaForm>
+            </div>
+        </div>
     </ValidationObserver>
 </template>
 
 <script lang="ts">
     import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
-    import {OntologyService} from "opensilex-core/api/ontology.service";
-    import HttpResponse, {
-        OpenSilexResponse
-    } from "opensilex-security/HttpResponse";
     import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
-    import {VariablesService} from "opensilex-core/api/variables.service";
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import QualityCreate from "./QualityCreate.vue";
 
     @Component
     export default class QualityForm extends Vue {
@@ -62,41 +82,22 @@
         @PropSync("form")
         qualityDto: QualityCreationDTO;
 
-        classList: Array<any> = [];
-        service: OntologyService;
-
-        created() {
-            this.service = this.$opensilex.getService("opensilex.OntologyService");
-            this.loadClasses();
-        }
-
-        loadClasses() {
-            return this.service
-                .getSubClassesOf("http://www.opensilex.org/vocabulary/oeso#Quality",true)
-                .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-                    this.classList = this.$opensilex.buildTreeListOptions(http.response.result);
-                    this.$opensilex.setOntologyClasses(http.response.result);
-                })
-                .catch(this.$opensilex.errorHandler);
-        }
+        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(QualityCreate.selectedOntologies);
 
         handleErrorMessage(errorMsg: string) {
             this.errorMsg = errorMsg;
         }
 
         @Ref("modalRef") readonly modalRef!: any;
-        @Ref("qualityValidatorRef") readonly qualityValidatorRef!: any;
+        @Ref("validatorRef") readonly validatorRef!: any;
 
         reset() {
             this.uriGenerated = true;
-            return this.qualityValidatorRef.reset();
+            return this.validatorRef.reset();
         }
 
         validate() {
-            return this.qualityValidatorRef.validate();
+            return this.validatorRef.validate();
         }
     }
 </script>
-
-<style scoped lang="scss">
-</style>

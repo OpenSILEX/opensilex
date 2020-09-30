@@ -37,6 +37,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -173,7 +174,7 @@ public class UnitAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Unit list", response = NamedResourcePaginatedListResponse.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return Unit list", response = NamedResourceDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

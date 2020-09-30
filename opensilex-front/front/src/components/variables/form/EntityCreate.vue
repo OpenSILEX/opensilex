@@ -23,6 +23,8 @@
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
     import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+    import {EntityGetDTO} from "opensilex-core/model/entityGetDTO";
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
     @Component
     export default class EntityCreate extends Vue {
@@ -30,6 +32,15 @@
         steps = [
             {component: "opensilex-EntityForm"}
             ,{component : "opensilex-EntityExternalReferencesForm"}
+        ];
+
+        static selectedOntologies: string[] = [
+            ExternalOntologies.AGROVOC,
+            ExternalOntologies.AGROPORTAL,
+            ExternalOntologies.BIOPORTAL,
+            ExternalOntologies.CROP_ONTOLOGY,
+            ExternalOntologies.PLANTEOME,
+            ExternalOntologies.PLANT_ONTOLOGY
         ];
 
         title = "";
@@ -52,8 +63,8 @@
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm() {
-            this.wizardRef.showEditForm();
+        showEditForm(form : EntityGetDTO) {
+            this.wizardRef.showEditForm(form);
         }
 
         $opensilex: any;
@@ -75,9 +86,6 @@
         }
 
         create(form){
-            if(form.type){
-                form.type = form.type.uri;
-            }
             return this.service
                 .createEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
@@ -99,7 +107,17 @@
         }
 
         update(form){
-
+            return this.service
+                .updateEntity(form)
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                    form.uri = http.response.result;
+                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                    this.$emit("onUpdate", form);
+                })
+                .catch(error => {
+                    this.$opensilex.errorHandler(error);
+                });
         }
 
         loadingWizard: boolean = false;
@@ -119,13 +137,13 @@
 en:
     EntityForm:
         name: The entity
-        add: Add an entity
-        edit: Edit an entity
+        add: Add entity
+        edit: Edit entity
         name-placeholder: Plant
 fr:
     EntityForm:
         name: L'entité
-        add: Créer une entité
+        add: Ajouter une entité
         edit: Éditer une entité
         name-placeholder: Plante
 </i18n>

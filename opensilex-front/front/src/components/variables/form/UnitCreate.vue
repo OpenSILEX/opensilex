@@ -23,6 +23,10 @@
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
     import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+    import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
+    import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
+    import {UnitUpdateDTO} from "opensilex-core/model/unitUpdateDTO";
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
     @Component
     export default class UnitCreate extends Vue {
@@ -30,6 +34,15 @@
         steps = [
             {component: "opensilex-UnitForm"}
             ,{component : "opensilex-UnitExternalReferencesForm"}
+        ];
+
+        static selectedOntologies: string[] = [
+            ExternalOntologies.AGROVOC,
+            ExternalOntologies.AGROPORTAL,
+            ExternalOntologies.BIOPORTAL,
+            ExternalOntologies.QUDT,
+            ExternalOntologies.UNIT_OF_MEASURE,
+            ExternalOntologies.UNIT_OF_MEASUREMENT,
         ];
 
         title = "";
@@ -52,8 +65,8 @@
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm() {
-            this.wizardRef.showEditForm();
+        showEditForm(form : UnitGetDTO){
+            this.wizardRef.showEditForm(form);
         }
 
         $opensilex: any;
@@ -76,9 +89,6 @@
         }
 
         create(form){
-            if(form.type){
-                form.type = form.type.uri;
-            }
             return this.service
                 .createUnit(form)
                 .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
@@ -89,11 +99,7 @@
                 })
                 .catch(error => {
                     if (error.status == 409) {
-                        console.error("Unit already exists", error);
-                        this.$opensilex.errorHandler(
-                            error,
-                            this.$i18n.t("component.project.errors.project-already-exists")
-                        );
+                        this.$opensilex.errorHandler(error, this.$i18n.t("component.project.errors.project-already-exists"));
                     } else {
                         this.$opensilex.errorHandler(error);
                     }
@@ -101,7 +107,17 @@
         }
 
         update(form){
-
+            return this.service
+                .updateUnit(form)
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                    form.uri = http.response.result;
+                    let message = this.$i18n.t("UnitForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                    this.$emit("onUpdate", form);
+                })
+                .catch(error => {
+                    this.$opensilex.errorHandler(error);
+                });
         }
 
         loadingWizard: boolean = false;
@@ -122,8 +138,8 @@
 en:
     UnitForm:
         name: The unit
-        add: Add a unit
-        edit: Edit a unit
+        add: Add an unit
+        edit: Edit an unit
         symbol: Symbol
         alternative-symbol: Alternative symbol
         name-placeholder: Kilogramm per hectare
@@ -132,7 +148,7 @@ en:
 fr:
     UnitForm:
         name: L'unité
-        add: Créer une unité
+        add: Ajouter une unité
         edit: Éditer une unité
         symbol: Symbole
         alternative-symbol: Symbole alternatif

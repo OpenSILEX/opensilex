@@ -22,6 +22,7 @@
                     placeholder="VariableForm.entity-placeholder"
                     :conversionMethod="objectToSelectNode"
                     noResultsText="VariableForm1.no-entity"
+                    helpMessage="VariableForm.entity-help"
                     @select="updateName(variable)"
                     :actionHandler="showEntityCreateForm"
                 ></opensilex-SelectForm>
@@ -36,7 +37,7 @@
                 <opensilex-SelectForm
                     ref="qualitySelectForm"
                     label="Variables.quality"
-                    :selected.sync="form.quality"
+                    :selected.sync="variable.quality"
                     :multiple="false"
                     :required="true"
                     :searchMethod="searchQualities"
@@ -44,7 +45,8 @@
                     placeholder="VariableForm.quality-placeholder"
                     :conversionMethod="objectToSelectNode"
                     noResultsText="VariableForm1.no-quality"
-                    @select="updateName(form)"
+                    helpMessage="VariableForm.quality-help"
+                    @select="updateName(variable)"
                     :actionHandler="showQualityCreateForm"
                 ></opensilex-SelectForm>
                 <opensilex-QualityCreate
@@ -56,15 +58,32 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <!-- Name -->
-                <opensilex-InputForm
-                    :value.sync="form.name"
-                    label="component.common.name"
-                    type="text"
-                    :required="true"
-                ></opensilex-InputForm>
+                <opensilex-Button
+                    :label="$t('VariableForm1.trait-button')"
+                    :title="$t('VariableForm1.trait-button-placeholder')"
+                    @click="showTraitForm()"
+                    :small="false"
+                    icon="fa#globe-americas"
+                    variant="outline-primary"
+                ></opensilex-Button>
             </div>
+
+            <opensilex-WizardForm
+                ref="traitForm"
+                :steps="traitSteps"
+                createTitle="Declare variable trait"
+                editTitle="Edit variable trait"
+                icon="fa#vials"
+                modalSize="full"
+                :static="false"
+                :initForm="getEmptyTraitForm"
+                :createAction="updateVariableTrait"
+                :updateAction="updateVariableTrait"
+            >
+            </opensilex-WizardForm>
         </div>
+
+        <hr/>
 
         <div class="row">
             <div class="col-lg-6">
@@ -72,14 +91,15 @@
                 <opensilex-SelectForm
                     ref="methodSelectForm"
                     label="Variables.method"
-                    :selected.sync="form.method"
+                    :selected.sync="variable.method"
                     :multiple="false"
-                    :required="true"
+                    :required="false"
                     :searchMethod="searchMethods"
                     :itemLoadingMethod="loadMethod"
                     placeholder="VariableForm.method-placeholder"
                     :conversionMethod="objectToSelectNode"
-                    @select="updateName(form)"
+                    helpMessage="VariableForm.method-help"
+                    @select="updateName(variable)"
                     :actionHandler="showMethodCreateForm"
                     noResultsText="VariableForm1.no-method"
                 ></opensilex-SelectForm>
@@ -94,14 +114,14 @@
                 <opensilex-SelectForm
                     ref="unitSelectForm"
                     label="Variables.unit"
-                    :selected.sync="form.unit"
+                    :selected.sync="variable.unit"
                     :multiple="false"
                     :required="true"
                     :searchMethod="searchUnits"
                     :itemLoadingMethod="loadUnit"
                     :conversionMethod="objectToSelectNode"
                     placeholder="VariableForm.unit-placeholder"
-                    @select="updateName(form)"
+                    @select="updateName(variable)"
                     :actionHandler="showUnitCreateForm"
                     noResultsText="VariableForm1.no-unit"
                 ></opensilex-SelectForm>
@@ -112,11 +132,22 @@
             </div>
         </div>
 
+        <hr/>
+
         <div class="row">
+            <div class="col-lg-6">
+                <!-- Name -->
+                <opensilex-InputForm
+                    :value.sync="variable.name"
+                    label="component.common.name"
+                    type="text"
+                    :required="true"
+                ></opensilex-InputForm>
+            </div>
             <div class="col-lg-6">
                 <!-- longname -->
                 <opensilex-InputForm
-                    :value.sync="form.longName"
+                    :value.sync="variable.longName"
                     label="VariableForm.longName"
                     type="text"
                 ></opensilex-InputForm>
@@ -125,18 +156,54 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <!-- synonym -->
-                <opensilex-InputForm
-                    :value.sync="form.synonym"
-                    label="VariableForm.synonym"
-                    type="text"
-                ></opensilex-InputForm>
+                <opensilex-SelectForm
+                    label="OntologyPropertyForm.data-type"
+                    :required="false"
+                    :selected.sync="variable.dataType"
+                    :options="datatypes"
+                    :itemLoadingMethod="loadDataType"
+                    helpMessage="VariableForm1.datatype-help"
+                    placeholder="VariableForm1.datatype-placeholder"
+                ></opensilex-SelectForm>
             </div>
         </div>
 
-        <!-- description -->
-        <opensilex-TextAreaForm :value.sync="form.comment"
-                                label="component.common.description"></opensilex-TextAreaForm>
+        <div class="row">
+            <div class="col-lg-6">
+                <!-- time-interval -->
+                <opensilex-SelectForm
+                    label="VariableForm.time-interval"
+                    :selected.sync="form.timeInterval"
+                    :multiple="false"
+                    :options="periodList"
+                    placeholder="VariableForm.time-interval-placeholder"
+                    helpMessage="VariableForm.time-interval-help"
+                ></opensilex-SelectForm>
+            </div>
+
+            <div class="col-lg-6">
+                <!-- sample/distance-interval -->
+                <opensilex-SelectForm
+                    label="VariableForm.sampling-interval"
+                    :selected.sync="form.samplingInterval"
+                    :multiple="false"
+                    :options="sampleList"
+                    placeholder="VariableForm.sampling-interval-placeholder"
+                    helpMessage="VariableForm.sampling-interval-help"
+                ></opensilex-SelectForm>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <!-- description -->
+                <opensilex-TextAreaForm :value.sync="variable.comment" label="component.common.description"></opensilex-TextAreaForm>
+            </div>
+        </div>
+
+
+
+
     </ValidationObserver>
 </template>
 
@@ -151,6 +218,7 @@ import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
 import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
 import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
 import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
+import ModalForm from "../../common/forms/ModalForm.vue";
 
 @Component
 export default class VariableForm1 extends Vue {
@@ -164,6 +232,65 @@ export default class VariableForm1 extends Vue {
 
     @PropSync("form")
     variable;
+
+    service: VariablesService;
+
+    @Ref("entitySelectForm") entitySelectForm!: any;
+    @Ref("qualitySelectForm") qualitySelectForm!: any;
+    @Ref("methodSelectForm") methodSelectForm!: any;
+    @Ref("unitSelectForm") unitSelectForm!: any;
+
+    @Ref("entityForm") readonly entityForm!: any;
+    @Ref("qualityForm") readonly qualityForm!: any;
+    @Ref("methodForm") readonly methodForm!: any;
+    @Ref("unitForm") readonly unitForm!: any;
+
+    @Ref("traitForm") readonly traitForm!: ModalForm;
+
+    loadedEntities: Array<NamedResourceDTO> = [];
+    loadedUnits: Array<NamedResourceDTO> = [];
+    loadedMethods: Array<NamedResourceDTO> = [];
+    loadedQualities: Array<NamedResourceDTO> = [];
+
+    traitSteps = [
+        {component: "opensilex-TraitForm"}
+    ]
+
+    periodList: Array<any> = [];
+    sampleList: Array<any> = [];
+
+    @Ref("validatorRef") readonly validatorRef!: any;
+
+    created() {
+        this.service = this.$opensilex.getService("opensilex.VariablesService");
+
+        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
+            this.periodList.push({
+                id: this.$i18n.t("VariableForm.dimension-values." +period),
+                label: this.$i18n.t("VariableForm.dimension-values." + period)
+            })
+        }
+
+        for(let sample of ["mm","cm","m","km","day","field","region"]){
+            this.sampleList.push({
+                id: this.$i18n.t("VariableForm.dimension-values." +sample),
+                label: this.$i18n.t("VariableForm.dimension-values." + sample)
+            })
+        }
+    }
+
+    reset() {
+        this.loadedEntities = [];
+        this.loadedQualities = [];
+        this.loadedMethods = [];
+        this.loadedUnits = [];
+        this.uriGenerated = true;
+        this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
+    }
 
     getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string {
         if (!dto) {
@@ -180,50 +307,23 @@ export default class VariableForm1 extends Vue {
     }
 
     updateName(form) {
-
         let nameParts: string[] = [];
 
         nameParts.push(this.getLabel(form.entity, this.loadedEntities));
         nameParts.push(this.getLabel(form.quality, this.loadedQualities));
         form.name = nameParts.join("_");
 
-        nameParts.push(this.getLabel(form.method, this.loadedMethods));
-        nameParts.push(this.getLabel(form.unit, this.loadedUnits));
+        let buildLabel = this.getLabel(form.method, this.loadedMethods);
+        if(buildLabel.length > 0 ){
+            nameParts.push(buildLabel);
+        }
+        buildLabel = this.getLabel(form.unit, this.loadedUnits);
+        if(buildLabel.length > 0 ){
+            nameParts.push(buildLabel);
+        }
+
         form.longName = nameParts.join("_");
     }
-
-
-    @Ref("validatorRef") readonly validatorRef!: any;
-
-    reset() {
-        this.loadedEntities = [];
-        this.loadedQualities = [];
-        this.loadedMethods = [];
-        this.loadedUnits = [];
-        this.uriGenerated = true;
-        this.validatorRef.reset();
-    }
-
-    validate() {
-        return this.validatorRef.validate();
-    }
-
-    service: VariablesService;
-
-    @Ref("entitySelectForm") entitySelectForm!: any;
-    @Ref("qualitySelectForm") qualitySelectForm!: any;
-    @Ref("methodSelectForm") methodSelectForm!: any;
-    @Ref("unitSelectForm") unitSelectForm!: any;
-
-    @Ref("entityForm") readonly entityForm!: any;
-    @Ref("qualityForm") readonly qualityForm!: any;
-    @Ref("methodForm") readonly methodForm!: any;
-    @Ref("unitForm") readonly unitForm!: any;
-
-    loadedEntities: Array<NamedResourceDTO> = [];
-    loadedUnits: Array<NamedResourceDTO> = [];
-    loadedMethods: Array<NamedResourceDTO> = [];
-    loadedQualities: Array<NamedResourceDTO> = [];
 
     showEntityCreateForm() {
         this.entityForm.showCreateForm();
@@ -241,8 +341,12 @@ export default class VariableForm1 extends Vue {
         this.unitForm.showCreateForm();
     }
 
-    created() {
-        this.service = this.$opensilex.getService("opensilex.VariablesService");
+    showTraitForm(){
+        if(this.editMode){
+            this.traitForm.showEditForm(this.getEmptyTraitForm());
+        }else{
+            this.traitForm.showCreateForm();
+        }
     }
 
     searchEntities(name: string): Promise<Array<NamedResourceDTO>> {
@@ -350,6 +454,58 @@ export default class VariableForm1 extends Vue {
         }
         return null;
     }
+
+    loadDataType(dataTypeUri: string){
+        if(! dataTypeUri){
+            return undefined;
+        }
+        let dataType =  this.$opensilex.getDatatype(dataTypeUri);
+        return [{
+            id: dataType.uri,
+            label: dataType.labelKey.charAt(0).toUpperCase() + dataType.labelKey.slice(1)
+        }];
+    }
+
+    getEmptyTraitForm(){
+        return {
+            traitUri: this.variable.traitUri,
+            traitName: this.variable.traitName
+        };
+    }
+
+    updateVariableTrait(form){
+        let uriFilled = (form.traitUri && form.traitUri.length > 0);
+        let nameFilled = (form.traitName && form.traitName.length > 0);
+
+        // is both name and uri are filled or empty, then update current variable
+        if(uriFilled == nameFilled){
+            this.variable.traitUri = form.traitUri;
+            this.variable.traitName = form.traitName;
+        }
+    }
+
+    get datatypes() {
+        let datatypeOptions = [];
+        for (let i in this.$opensilex.datatypes) {
+            let label: any = this.$t(this.$opensilex.datatypes[i].labelKey);
+            datatypeOptions.push({
+                id: this.$opensilex.datatypes[i].uri,
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+        datatypeOptions.sort((a, b) => {
+            if(a.label < b.label){
+                return -1;
+            }
+            if(a.label > b.label){
+                return 1;
+            }
+            return 0;
+        });
+
+        return datatypeOptions;
+    }
+
 }
 </script>
 <style scoped lang="scss">
@@ -362,10 +518,18 @@ fr:
         no-quality: Aucune qualité correspondante
         no-method: Aucune méthode correspondante
         no-unit: Aucune unité correspondante
+        trait-button: Trait
+        trait-button-placeholder: Ajouter un trait existant pour cette variable
+        datatype-help: Format des données enregistrées pour cette variable
+        datatype-placeholder: Selectionnez un type de donnée
 en:
     VariableForm1:
         no-entity: No entity found
         no-quality: No quality found
         no-method: No method found
         no-unit: No unit found
+        trait-button: Trait
+        trait-button-placeholder: Add an existing variable trait
+        datatype-help: Format of data recorded for this variable
+        datatype-placeholder: Select a datatype
 </i18n>

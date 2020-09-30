@@ -1,27 +1,52 @@
 <template>
-    <div class="container-fluid">
-        <opensilex-PageHeader
-                icon="fa#sun"
-                title="component.menu.variables"
-                description="VariableDetails.title"
-        ></opensilex-PageHeader>
-        <opensilex-NavBar returnTo="/variables">
-            <template v-slot:linksLeft>
-                <li class="active">
-                    <b-button
-                            class="mb-2 mr-2"
-                            variant="outline-primary"
-                    >{{$t('VariableDetails.title')}}
-                    </b-button>
-                </li>
-            </template>
-        </opensilex-NavBar>
+    <div>
+
+        <div class="container-fluid">
+            <opensilex-PageHeader
+                    icon="fa#sun"
+                    title="component.menu.variables"
+                    :description="variable.name"
+            ></opensilex-PageHeader>
+
+            <opensilex-PageActions :returnButton="true">
+                <template v-slot>
+
+                    <opensilex-Button
+                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                        label="VariableDetails.edit" variant="primary" :small="false" icon="fa#edit"
+                        @click="showEditForm"
+                    ></opensilex-Button>
+
+                    <opensilex-VariableForm
+                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                        ref="variableForm"
+                        @onUpdate="afterUpdate"
+                    ></opensilex-VariableForm>
+
+
+                    <opensilex-Button
+                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                        label="VariableDetails.edit-references" :small="false" icon="fa#globe-americas"
+                        @click="showSkosReferences"
+                    ></opensilex-Button>
+
+                    <opensilex-ExternalReferencesModalForm
+                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                        ref="skosReferences"
+                        :references.sync="variable"
+                        @onUpdate="afterUpdate(variable)"
+                    ></opensilex-ExternalReferencesModalForm>
+                </template>
+            </opensilex-PageActions>
+        </div>
+
+
         <div class="container-fluid">
             <b-row>
                 <b-col>
                     <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
                         <template v-slot:body>
-                            <opensilex-UriView :uri="variable.uri" :url="variable.uri"></opensilex-UriView>
+                            <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri" :url="variable.uri"></opensilex-UriView>
                             <opensilex-StringView label="component.common.name" :value="variable.name"></opensilex-StringView>
                             <opensilex-StringView label="VariableForm.longName" :value="variable.longName"></opensilex-StringView>
                             <opensilex-TextView label="component.common.description" :value="variable.comment"></opensilex-TextView>
@@ -32,13 +57,13 @@
                     <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
                         <template v-slot:body>
                             <opensilex-UriView title="Variables.entity"  v-if="variable.entity"
-                                               :value="variable.entity.name" :uri="variable.entity.uri" :url="variable.entity.uri"></opensilex-UriView>
+                                               :value="variable.entity.name" :uri="getEntityPageUrl()" :url="getEntityPageUrl()"></opensilex-UriView>
                             <opensilex-UriView title="Variables.quality"  v-if="variable.quality"
-                                               :value="variable.quality.name" :uri="variable.quality.uri" :url="variable.quality.uri"></opensilex-UriView>
+                                               :value="variable.quality.name" :uri="getQualityPageUrl()" :url="getQualityPageUrl()"></opensilex-UriView>
                             <opensilex-UriView title="Variables.method"  v-if="variable.method"
-                                               :value="variable.method.name" :uri="variable.method.uri" :url="variable.method.uri"></opensilex-UriView>
+                                               :value="variable.method.name" :uri="getMethodPageUrl()" :url="getMethodPageUrl()"></opensilex-UriView>
                             <opensilex-UriView title="Variables.unit"  v-if="variable.unit"
-                                               :value="variable.unit.name" :uri="variable.unit.uri" :url="variable.unit.uri"></opensilex-UriView>
+                                               :value="variable.unit.name" :uri="getUnitPageUrl()" :url="getUnitPageUrl()"></opensilex-UriView>
                         </template>
                     </opensilex-Card>
                 </b-col>
@@ -47,19 +72,21 @@
                 <b-col>
                     <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                         <template v-slot:body>
-                            <opensilex-StringView label="VariableForm.dimension" :value="variable.dimension"></opensilex-StringView>
-                            <opensilex-StringView label="VariableForm.synonym" :value="variable.synonym"></opensilex-StringView>
-                            <opensilex-UriView title="VariableForm.trait-uri"
+                            <opensilex-StringView label="OntologyPropertyForm.data-type" :value="getDataTypeLabel(variable.dataType)"></opensilex-StringView>
+                            <opensilex-StringView label="VariableForm.time-interval" :value="variable.timeInterval"></opensilex-StringView>
+                            <opensilex-StringView label="VariableForm.sampling-interval" :value="variable.samplingInterval"></opensilex-StringView>
+
+                            <opensilex-UriView  v-if="variable && variable.traitUri" title="VariableForm.trait-uri"
                                                :uri="variable.traitUri" :url="variable.traitUri"></opensilex-UriView>
-                            <opensilex-StringView label="VariableForm.trait-name" :value="variable.traitName"></opensilex-StringView>
+                            <opensilex-StringView v-if="variable && variable.traitUri"
+                                                  label="VariableForm.trait-name" :value="variable.traitName"></opensilex-StringView>
                         </template>
                     </opensilex-Card>
                 </b-col>
                 <b-col>
                     <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
                         <template v-slot:body>
-                            <opensilex-ExternalReferencesDetails
-                                    :skosReferences="variable"></opensilex-ExternalReferencesDetails>
+                            <opensilex-ExternalReferencesDetails :skosReferences="variable"></opensilex-ExternalReferencesDetails>
                         </template>
                     </opensilex-Card>
                 </b-col>
@@ -69,11 +96,13 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
+import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
+import VariableView from "./VariableView.vue";
 
     @Component
     export default class VariableDetails extends Vue {
@@ -83,17 +112,29 @@
         $t: any;
         $i18n: any;
         service: VariablesService;
+        $router: any;
+
 
         get user() {
             return this.$store.state.user;
         }
 
-        variable: VariableDetailsDTO = {
+        get credentials() {
+            return this.$store.state.credentials;
+        }
+
+        variable : VariableDetailsDTO = {
+            uri : undefined,
+            name: undefined,
             exactMatch: [],
             closeMatch: [],
             broader: [],
             narrower: []
         };
+
+        @Ref("variableForm") readonly variableForm!: any;
+
+        @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
         created() {
             this.service = this.$opensilex.getService("opensilex.VariablesService");
@@ -107,6 +148,52 @@
                 })
                 .catch(this.$opensilex.errorHandler);
         }
+
+        showEditForm(){
+            // make a deep copy of the variable in order to not change the current dto
+            // In case a field has been updated into the form without confirmation (by sending update to the server)
+            let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
+            this.variableForm.showEditForm(variableDtoCopy);
+        }
+
+        showSkosReferences() {
+            this.skosReferences.show();
+        }
+
+        afterUpdate(uri){
+            this.skosReferences.hide();
+            this.loadVariable(uri);
+        }
+
+        getDataTypeLabel(dataTypeUri: string): string{
+            if(! dataTypeUri){
+                return undefined;
+            }
+            let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).labelKey);
+            return label.charAt(0).toUpperCase() + label.slice(1)
+        }
+
+        getEncodedUrlPage(elementType: string , uri : string) : string{
+            return "/app/variables/?elementType="+elementType +"&selected="+encodeURIComponent(uri);
+        }
+
+
+        getEntityPageUrl(): string{
+            return this.getEncodedUrlPage(VariableView.ENTITY_TYPE,this.variable.entity.uri);
+        }
+
+        getQualityPageUrl(): string{
+            return this.getEncodedUrlPage(VariableView.QUALITY_TYPE,this.variable.quality.uri);
+        }
+
+        getMethodPageUrl(): string{
+            return this.getEncodedUrlPage(VariableView.METHOD_TYPE,this.variable.method.uri);
+        }
+
+        getUnitPageUrl(): string{
+            return this.getEncodedUrlPage(VariableView.UNIT_TYPE,this.variable.unit.uri);
+        }
+
     }
 </script>
 
@@ -123,6 +210,8 @@ en:
         unit-name: Unit name
         structure: Structure
         advanced: Advanced informations
+        edit: Edit variable
+        edit-references: Edit references
 fr:
     VariableDetails:
         title: Vue détaillée de la variable
@@ -132,4 +221,6 @@ fr:
         unit-name: Nom d'unité
         structure: Structure
         advanced: Informations avancées
+        edit: Editer la variable
+        edit-references: Editer les références
 </i18n>

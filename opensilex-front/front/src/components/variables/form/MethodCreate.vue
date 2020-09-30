@@ -23,6 +23,9 @@
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
     import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
+    import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
+    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
     @Component
     export default class MethodCreate extends Vue {
@@ -30,6 +33,15 @@
         steps = [
             {component: "opensilex-MethodForm"}
             ,{component : "opensilex-MethodExternalReferencesForm"}
+        ];
+
+        static selectedOntologies: string[] = [
+            ExternalOntologies.AGROVOC,
+            ExternalOntologies.AGROPORTAL,
+            ExternalOntologies.BIOPORTAL,
+            ExternalOntologies.CROP_ONTOLOGY,
+            ExternalOntologies.PLANTEOME,
+            ExternalOntologies.PLANT_ONTOLOGY
         ];
 
         title = "";
@@ -52,8 +64,8 @@
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm() {
-            this.wizardRef.showEditForm();
+        showEditForm(form : MethodGetDTO) {
+            this.wizardRef.showEditForm(form);
         }
 
         $opensilex: any;
@@ -99,7 +111,17 @@
         }
 
         update(form){
-
+            return this.service
+                .updateMethod(form)
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                    form.uri = http.response.result;
+                    let message = this.$i18n.t("MethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                    this.$emit("onUpdate", form);
+                })
+                .catch(error => {
+                    this.$opensilex.errorHandler(error);
+                });
         }
 
         loadingWizard: boolean = false;
@@ -125,7 +147,7 @@ en:
 fr:
     MethodForm:
         name: La méthode
-        add: Créer une méthode
+        add: Ajouter une méthode
         edit: Éditer une méthode
         name-placeholder: Analyse d'image
 </i18n>

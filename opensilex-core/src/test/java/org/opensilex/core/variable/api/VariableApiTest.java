@@ -74,7 +74,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         variableDto.setSynonym("a synonym");
         variableDto.setTraitUri(new URI("http://purl.obolibrary.org/obo/TO_0002644"));
         variableDto.setTraitName("dry matter digestibility");
-        variableDto.setDimension("minutes");
+        variableDto.setTimeInterval("minutes");
 
         return variableDto;
     }
@@ -95,10 +95,10 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();
-        dto.setMethod(null);
+//        dto.setMethod(null);
         dto.setUnit(null);
-
-        postResult = getJsonPostResponse(target(createPath),dto);
+//
+//        postResult = getJsonPostResponse(target(createPath),dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();

@@ -1,6 +1,6 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{$t("component.common.type")}}:</span>
+    <span class="field-view-title">{{$t("component.common.type")}}</span>
     <span class="static-field-line">
       <opensilex-Icon :icon="$opensilex.getRDFIcon(type)" />&nbsp;
       <span class="capitalize-first-letter">{{typeLabel}}</span>

@@ -14,18 +14,12 @@
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
+    import MethodCreate from "./MethodCreate.vue";
 
     @Component
     export default class MethodExternalReferencesForm extends Vue {
 
-        selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
+        selectedOntologies: string[] = MethodCreate.selectedOntologies;
 
         @PropSync("form")
         dto: MethodCreationDTO;

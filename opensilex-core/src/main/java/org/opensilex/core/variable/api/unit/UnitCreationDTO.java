@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.UnitModel;
@@ -38,7 +39,9 @@ public class UnitCreationDTO extends SKOSReferencesDTO {
     public UnitModel newModel() {
         UnitModel model = new UnitModel();
         model.setName(name);
-        model.setComment(comment);
+        if(!StringUtils.isEmpty(comment)){
+            model.setComment(comment);
+        }
         if(type != null){
             model.setType(type);
         }

@@ -1,14 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.core.variable.api;
 
 import java.net.URI;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.EntityModel;
@@ -56,7 +57,12 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     private String synonym;
 
-    private String dimension;
+    private String timeInterval;
+
+    private String samplingInterval;
+
+
+    private URI dataType;
 
     private List<OntologyReference> relations;
 
@@ -108,7 +114,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.quality = quality;
     }
 
-    @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/Estimation")
     public URI getMethod() {
         return method;
@@ -154,42 +159,62 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.traitName = traitName;
     }
 
-    public void setSynonym(String synonym) {
-        this.synonym = synonym;
-    }
-
-    public void setDimension(String dimension) {
-        this.dimension = dimension;
-    }
-
-    public VariableModel newModel() {
-        VariableModel model = new VariableModel();
-        model.setUri(uri);
-        model.setName(getName());
-        model.setLongName(getLongName());
-        model.setComment(getComment());
-
-        model.setEntity(new EntityModel(getEntity()));
-        model.setQuality(new QualityModel(getQuality()));
-        model.setMethod(new MethodModel(method));
-        model.setUnit(new UnitModel(unit));
-
-        model.setTraitUri(traitUri);
-        model.setTraitName(traitName);
-
-        model.setSynonym(getSynonym());
-        model.setDimension(getDimension());
-        setSkosReferencesToModel(model);
-        return model;
-    }
-
     @ApiModelProperty(example = "Plant_Length")
     public String getSynonym() {
         return synonym;
     }
 
-    @ApiModelProperty(notes = "Describe the dimension on which variables values are integrated", example = "minutes")
-    public String getDimension() {
-        return dimension;
+    public void setSynonym(String synonym) {
+        this.synonym = synonym;
     }
+
+    @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
+    public String getTimeInterval() { return timeInterval; }
+
+    public void setTimeInterval(String timeInterval) { this.timeInterval = timeInterval; }
+
+    @ApiModelProperty(notes = "Define the distance between two data recording", example = "minutes")
+    public String getSamplingInterval() { return samplingInterval; }
+
+    public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
+
+    public URI getDataType() { return dataType; }
+
+    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    public void setDataType(URI dataType) { this.dataType = dataType; }
+
+    public VariableModel newModel() {
+        VariableModel model = new VariableModel();
+        model.setUri(uri);
+        model.setName(name);
+
+        if(!StringUtils.isEmpty(longName)){
+            model.setLongName(longName);
+        }
+        if(!StringUtils.isEmpty(comment)){
+            model.setComment(comment);
+        }
+        model.setDataType(dataType);
+
+        model.setEntity(new EntityModel(entity));
+        model.setQuality(new QualityModel(quality));
+        if(method != null){
+            model.setMethod(new MethodModel(method));
+        }
+        model.setUnit(new UnitModel(unit));
+
+        if(traitUri != null){
+            model.setTraitUri(traitUri);
+            model.setTraitName(traitName);
+        }
+        if(!StringUtils.isEmpty(timeInterval)){
+            model.setTimeInterval(timeInterval);
+        }
+        if(!StringUtils.isEmpty(samplingInterval)){
+            model.setSamplingInterval(samplingInterval);
+        }
+        setSkosReferencesToModel(model);
+        return model;
+    }
+
 }

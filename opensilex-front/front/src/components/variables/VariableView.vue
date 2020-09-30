@@ -1,179 +1,299 @@
 <template>
     <div class="container-fluid">
         <opensilex-PageHeader
-                icon="ik#ik-layers"
-                title="component.menu.variables"
-                description="Variables.description"
+            icon="ik#ik-globe"
+            title="VariableView.title"
+            description="VariableView.description"
         ></opensilex-PageHeader>
-        <opensilex-PageActions
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-        >
-            <template v-slot>
-                <opensilex-CreateButton
-                        @click="variableForm.showCreateForm()"
-                        label="Variables.add"></opensilex-CreateButton>
-            </template>
-        </opensilex-PageActions>
 
-        <opensilex-PageContent>
-            <template v-slot>
-                <opensilex-VariableList
-                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_READ_ID)"
+        <div>
+            <div class="row">
+                <div class="col-lg-5">
+                    <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
+                        <b-tab :title="$t('component.menu.variables')"></b-tab>
+                        <b-tab :title="$t('VariableView.entity')" ></b-tab>
+                        <b-tab :title="$t('VariableView.quality')"></b-tab>
+                        <b-tab :title="$t('VariableView.method')" ></b-tab>
+                        <b-tab :title="$t('VariableView.unit')" ></b-tab>
+                    </b-tabs>
+                </div>
+                <div class="col-lg-5">
+                    <opensilex-CreateButton
+                        v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                        @click="showCreateForm"
+                        label="EntityList.add-button-title"
+                    ></opensilex-CreateButton>
+                </div>
+            </div>
+
+            <opensilex-PageContent
+                v-show="loadVariableList() && user.hasCredential(credentials.CREDENTIAL_VARIABLE_READ_ID)" >
+                <template v-slot>
+                    <opensilex-VariableList
                         ref="variableList"
-                        @onEdit="showEditForm"
-                        @onDetails="showDetails"
-                        @onInteroperability="showSkosReferences"
-                        @onDelete="callDeleteService"
-                ></opensilex-VariableList>
-            </template>
-        </opensilex-PageContent>
+                        @onEdit="showVariableEditForm"
+                        @onInteroperability="showVariableReferences"
+                        @onDelete="deleteVariable"
+                    ></opensilex-VariableList>
+                </template>
+            </opensilex-PageContent>
 
-        <opensilex-VariableForm
+            <opensilex-VariableForm
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                ref="variableForm"
-                @onCreate="callCreateService"
-                @onUpdate="callUpdateService"
-        ></opensilex-VariableForm>
+                ref="variableCreate"
+                @onCreate="showVariableDetails"
+                @onUpdate="showVariableDetails"
+            ></opensilex-VariableForm>
 
-        <opensilex-ExternalReferencesModalForm
+            <!-- Create form -->
+            <opensilex-EntityCreate
+                ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-EntityCreate>
+
+            <opensilex-QualityCreate
+                ref="qualityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-QualityCreate>
+
+            <opensilex-MethodCreate
+                ref="methodForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-MethodCreate>
+
+            <opensilex-UnitCreate
+                ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-UnitCreate>
+
+
+            <opensilex-ExternalReferencesModalForm
                 ref="skosReferences"
-                :references.sync="selectedVariable"
-                @onUpdate="callUpdateService"
-        ></opensilex-ExternalReferencesModalForm>
+                :references.sync="selected"
+                @onUpdate="updateReferences"
+            ></opensilex-ExternalReferencesModalForm>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Element list -->
+                    <opensilex-EntityList
+                        v-show="! loadVariableList()  && user.hasCredential(credentials.CREDENTIAL_VARIABLE_READ_ID)"
+                        ref="entityTree"
+                        @onSelect="updateSelected"
+                        @onEdit="showEditForm"
+                        :_type.sync="this.elementType"
+                    ></opensilex-EntityList>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Element details page -->
+                    <opensilex-EntityDetails v-show="! loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-EntityDetails>
+                    <!-- Unit specialized details page -->
+                    <opensilex-UnitDetails v-show="! loadVariableList() && ! useGenericDetailsPage()" :selected="selected"></opensilex-UnitDetails>
+
+                    <opensilex-Card
+                        v-show="! loadVariableList()" label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
+                        <template v-slot:body>
+                            <opensilex-ExternalReferencesDetails :skosReferences="selected"></opensilex-ExternalReferencesDetails>
+                        </template>
+                    </opensilex-Card>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
 <script lang="ts">
-    import {Component, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {VariablesService} from "opensilex-core/api/variables.service";
-    import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
-    import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-    import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-    import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
+import {Component, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import EntityList from "./views/EntityList.vue";
+import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import EntityCreate from "./form/EntityCreate.vue";
+import UnitCreate from "./form/UnitCreate.vue";
+import VariableCreate from "./form/VariableForm.vue";
+import QualityCreate from "./form/QualityCreate.vue";
+import MethodCreate from "./form/MethodCreate.vue";
+import VariableList from "./VariableList.vue";
+import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 
-    @Component
-    export default class VariableView extends Vue {
-        $opensilex: any;
-        $store: any;
-        service: VariablesService;
-        $t: any;
-        $i18n: any;
-        $router: any;
+@Component
+export default class VariableView extends Vue {
 
-        get user() {
-            return this.$store.state.user;
+    $opensilex: any;
+    $store: any;
+    $router: any;
+    service: VariablesService;
+
+    elementIndex: number = 0;
+    elementType: string = VariableView.VARIABLE_TYPE;
+
+    static VARIABLE_TYPE: string = "Variable";
+    static ENTITY_TYPE: string = "Entity";
+    static QUALITY_TYPE: string = "Quality";
+    static METHOD_TYPE: string = "Method";
+    static UNIT_TYPE:  string = "Unit";
+
+    static elementTypes = [
+        VariableView.VARIABLE_TYPE,
+        VariableView.ENTITY_TYPE,
+        VariableView.QUALITY_TYPE,
+        VariableView.METHOD_TYPE,
+        VariableView.UNIT_TYPE
+    ]
+
+    @Ref("variableCreate") readonly variableCreate!: VariableCreate;
+
+    @Ref("entityForm") readonly entityForm!: EntityCreate;
+    @Ref("qualityForm") readonly qualityForm!: any;
+    @Ref("methodForm") readonly methodForm!: any;
+    @Ref("unitForm") readonly unitForm!: UnitCreate;
+
+    @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
+
+    @Ref("variableList") readonly variableList!: VariableList;
+    @Ref("entityTree") readonly entityTree!: EntityList;
+
+    created(){
+        this.service = this.$opensilex.getService("opensilex-core.VariablesService");
+
+        // load variable list by default
+
+        let query: any = this.$route.query;
+        if(query && query.elementType){
+            let requestedTypeIdx = VariableView.elementTypes.findIndex(elem => elem == decodeURI(query.elementType));
+            this.updateType(requestedTypeIdx);
+        }else{
+            let variableIdx = VariableView.elementTypes.findIndex(elem => elem == VariableView.VARIABLE_TYPE);
+            this.updateType(variableIdx);
         }
+    }
 
-        get credentials() {
-            return this.$store.state.credentials;
-        }
+    private updateType(tabIndex) {
 
-        @Ref("modalRef") readonly modalRef!: any;
+        if(tabIndex >= 0 && tabIndex < VariableView.elementTypes.length){
 
-        @Ref("variableForm") readonly variableForm!: any;
+            this.elementIndex = tabIndex;
+            this.elementType = VariableView.elementTypes[this.elementIndex];
+            this.$opensilex.updateURLParameter("elementType",this.elementType);
 
-        @Ref("variableList") readonly variableList!: any;
-
-        @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
-
-        created() {
-            this.service = this.$opensilex.getService("opensilex.VariablesService");
-        }
-
-        selectedVariable: VariableDetailsDTO = {
-            uri: undefined,
-            exactMatch: [],
-            closeMatch: [],
-            broader: [],
-            narrower: []
-        };
-
-        callCreateService(form: VariableCreationDTO) {
-            this.service.createVariable(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-                    let uri = http.response.result;
-                    this.variableList.refresh();
-                    let message = this.$i18n.t("Variables.name") + " " + uri + " " + this.$i18n.t("component.common.success.creation-success-message");
-                    this.$opensilex.showSuccessToast(message);
-                })
-                .catch(this.$opensilex.errorHandler);
-        }
-
-        callUpdateService(form) {
-
-            if (form.entity.uri) {
-                form.entity = form.entity.uri;
+            if(this.entityTree){
+                // update entity list with the new elementType value
+                this.$nextTick(() => {
+                    this.$opensilex.updateURLParameter("name", "");
+                    this.entityTree.refresh();
+                });
             }
-            if (form.quality.uri) {
-                form.quality = form.quality.uri;
-            }
-            if (form.method.uri) {
-                form.method = form.method.uri;
-            }
-            if (form.unit.uri) {
-                form.unit = form.unit.uri;
-            }
-
-            this.service.updateVariable(form)
-                .then(() => {
-                    this.variableList.refresh();
-                    let message = this.$i18n.t("Variables.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
-                    this.$opensilex.showSuccessToast(message);
-                })
-                .catch(this.$opensilex.errorHandler);
-
-        }
-
-        callDeleteService(uri: string) {
-            this.service.deleteVariable(uri)
-                .then(() => {
-                    this.variableList.refresh();
-                    let message = this.$i18n.t("Variables.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
-                    this.$opensilex.showSuccessToast(message);
-                })
-                .catch(this.$opensilex.errorHandler);
-        }
-
-        showCreateForm() {
-            this.variableForm.showCreateForm();
-        }
-
-        showSkosReferences(uri: string) {
-            this.service
-                .getVariable(uri)
-                .then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-                    let result = http.response.result;
-                    if (result instanceof Promise) {
-                        result.then(resolve => {
-                            this.selectedVariable = result;
-                            this.skosReferences.show();
-                        });
-                    } else {
-                        this.selectedVariable = result;
-                        this.skosReferences.show();
-                    }
-                })
-                .catch(this.$opensilex.errorHandler);
-        }
-
-        showEditForm(uri: string) {
-            this.service
-                .getVariable(uri)
-                .then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-                    this.variableForm.showEditForm(http.response.result);
-                })
-                .catch(this.$opensilex.errorHandler);
-        }
-
-        showDetails(uriResult: any) {
-            uriResult.then(uri => {
-                this.$router.push({path: "/variable/" + encodeURIComponent(uri)});
-            });
         }
 
     }
+
+    private loadVariableList() : boolean {
+        return this.elementType === VariableView.VARIABLE_TYPE;
+    }
+
+    private useGenericDetailsPage() : boolean{
+        return this.elementType != VariableView.UNIT_TYPE;
+    }
+
+    selected = {
+        uri: undefined,
+        name: undefined,
+        comment : undefined,
+        type : undefined,
+        typeLabel : undefined,
+        exactMatch: [],
+        closeMatch: [],
+        broader: [],
+        narrower: []
+    }
+
+    get user() {
+        return this.$store.state.user;
+    }
+
+    get credentials() {
+        return this.$store.state.credentials;
+    }
+
+    updateSelected(newSelection) {
+        this.selected = newSelection;
+    }
+
+    refresh(uri? : string) {
+        this.entityTree.refresh(uri);
+    }
+
+    private getForm() {
+        switch (this.elementType) {
+            case VariableView.VARIABLE_TYPE : {
+                return this.variableCreate;
+            }
+            case VariableView.ENTITY_TYPE : {
+                return this.entityForm;
+            }
+            case VariableView.QUALITY_TYPE : {
+                return this.qualityForm;
+            }
+            case VariableView.METHOD_TYPE: {
+                return this.methodForm;
+            }
+            case VariableView.UNIT_TYPE: {
+                return this.unitForm;
+            }
+            default : {
+                return this.variableCreate;
+            }
+        }
+    }
+
+    showCreateForm(){
+        this.getForm().showCreateForm();
+    }
+
+    showEditForm(dto : any){
+        this.getForm().showEditForm(dto);
+    }
+
+    showVariableEditForm(uri : string){
+        this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse>) => {
+            this.variableCreate.showEditForm(http.response.result);
+        });
+    }
+
+    updateReferences(variable){
+        if(variable.dataType && variable.dataType.uri){
+            variable.dataType = variable.dataType.uri
+        }
+        variable.entity = variable.entity.uri ? variable.entity.uri : variable.entity;
+        variable.quality = variable.quality.uri ? variable.quality.uri : variable.quality;
+        variable.method = variable.method.uri ? variable.method.uri : variable.method;
+        variable.unit = variable.unit.uri ? variable.unit.uri : variable.unit;
+
+        this.service.updateVariable(variable).then(() => {
+            let message = this.$i18n.t("VariableView.name") + " " + variable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+            this.$opensilex.showSuccessToast(message);
+            this.showVariableDetails(variable.uri);
+        }).catch(this.$opensilex.errorHandler);
+    }
+
+    deleteVariable(uri: string) {
+        this.service.deleteVariable(uri).then(() => {
+            this.variableList.refresh();
+            let message = this.$i18n.t("VariableView.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+        }).catch(this.$opensilex.errorHandler);
+    }
+
+    showVariableDetails(uri: any) {
+        this.$router.push({path: "/variable/" + encodeURIComponent(uri)});
+    }
+
+    showVariableReferences(uri: string){
+        this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse>) => {
+            this.selected = http.response.result;
+            this.skosReferences.show();
+        }).catch(this.$opensilex.errorHandler);
+    }
+
+}
 </script>
 
 <style scoped lang="scss">
@@ -181,30 +301,27 @@
 
 <i18n>
 en:
-    Variables:
+    VariableView:
         name: The variable
-        description: Manage and configure variables
-        add: Create a variable
-        edit: Edit a variable
-        delete : Delete a variable
-        label-filter: Search by name
-        label-filter-placeholder: Enter a name
+        title: Variables
+        description : Manage and configure variables, entity, quality, method and units
+        add: Add
+        edit: Edit variable
         entity: Entity
-        quality: Quality
+        quality: Characteristic
         method: Method
-        unit: Unit
+        unit: "Unit/Level"
+
 fr:
-    Variables:
+    VariableView:
         name: La variable
-        description: Gérer et configurer les variables
-        add: Créer une variable
+        title: Variables
+        description : Gérer et configurer les variables, entités, qualités, méthodes et unités
+        add: Ajouter
         edit: Éditer une variable
-        delete : Supprimer une variable
-        label-filter: Rechercher par nom
-        label-filter-placeholder: Entrez un nom
         entity: Entité
-        quality: Qualité
+        quality: Caractéristique
         method: Méthode
-        unit: Unité
+        unit: "Unité/Niveau"
 </i18n>
 

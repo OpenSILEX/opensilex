@@ -22,6 +22,9 @@
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
     import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
+    import {QualityGetDTO} from "opensilex-core/model/qualityGetDTO";
+    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+    import {ExternalOntologies} from "../../../models/ExternalOntologies";
 
     @Component
     export default class QualityCreate extends Vue {
@@ -29,6 +32,15 @@
         steps = [
             {component: "opensilex-QualityForm"}
             ,{component: "opensilex-QualityExternalReferencesForm"}
+        ];
+
+        static selectedOntologies: string[] = [
+            ExternalOntologies.AGROVOC,
+            ExternalOntologies.AGROPORTAL,
+            ExternalOntologies.BIOPORTAL,
+            ExternalOntologies.CROP_ONTOLOGY,
+            ExternalOntologies.PLANTEOME,
+            ExternalOntologies.PLANT_ONTOLOGY
         ];
 
         title = "";
@@ -51,8 +63,8 @@
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm() {
-            this.wizardRef.showEditForm();
+        showEditForm(form : QualityGetDTO) {
+            this.wizardRef.showEditForm(form);
         }
 
         $opensilex: any;
@@ -98,7 +110,17 @@
         }
 
         update(form){
-
+            return this.service
+                .updateQuality(form)
+                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                    form.uri = http.response.result;
+                    let message = this.$i18n.t("QualityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    this.$opensilex.showSuccessToast(message);
+                    this.$emit("onUpdate", form);
+                })
+                .catch(error => {
+                    this.$opensilex.errorHandler(error);
+                });
         }
 
         loadingWizard: boolean = false;
@@ -117,13 +139,13 @@
 en:
     QualityForm:
         name: The quality
-        add: Add a quality
+        add: Add a characteristic
         edit: Edit a quality
         name-placeholder: Height
 fr:
     QualityForm:
         name: La qualité
-        add: Créer une qualité
+        add: Ajouter une charactéristique
         edit: Éditer une qualité
         name-placeholder: Hauteur
 </i18n>

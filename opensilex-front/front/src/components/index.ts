@@ -342,13 +342,12 @@ import VariableView from './variables/VariableView.vue';
 components["opensilex-VariableView"] = VariableView;
 import VariableDetails from './variables/VariableDetails.vue';
 components["opensilex-VariableDetails"] = VariableDetails;
-
 import VariableForm from './variables/form/VariableForm.vue';
 components["opensilex-VariableForm"] = VariableForm;
 import VariableForm1 from './variables/form/VariableForm1.vue';
 components["opensilex-VariableForm1"] = VariableForm1;
-import VariableForm2 from './variables/form/VariableForm2.vue';
-components["opensilex-VariableForm2"] = VariableForm2;
+import TraitForm from './variables/form/TraitForm.vue';
+components["opensilex-TraitForm"] = TraitForm;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -357,6 +356,11 @@ import EntityCreate from './variables/form/EntityCreate.vue';
 components["opensilex-EntityCreate"] = EntityCreate;
 import EntityExternalReferencesForm from './variables/form/EntityExternalReferencesForm.vue';
 components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
+import EntityList from './variables/views/EntityList.vue';
+components["opensilex-EntityList"] = EntityList;
+import EntityDetails from './variables/views/EntityDetails.vue';
+components["opensilex-EntityDetails"] = EntityDetails;
+
 
 // Method
 import MethodCreate from './variables/form/MethodCreate.vue';
@@ -381,6 +385,9 @@ import UnitCreate from './variables/form/UnitCreate.vue';
 components["opensilex-UnitCreate"] = UnitCreate;
 import UnitExternalReferencesForm from './variables/form/UnitExternalReferencesForm.vue';
 components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
+import UnitDetails from './variables/views/UnitDetails.vue';
+components["opensilex-UnitDetails"] = UnitDetails;
+
 
 // PHIS
 import ImageList from './phis/images/ImageList.vue';

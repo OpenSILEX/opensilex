@@ -26,6 +26,8 @@ public class QualityGetDTO extends SKOSReferencesDTO {
 
     private URI type;
 
+    private String typeLabel;
+
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/quality/Height")
     public URI getUri() {
         return uri;
@@ -58,13 +60,24 @@ public class QualityGetDTO extends SKOSReferencesDTO {
 
     public void setType(URI type) { this.type = type; }
 
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    @ApiModelProperty(example = "Quality")
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
     public static QualityGetDTO fromModel(QualityModel model) {
         QualityGetDTO dto = new QualityGetDTO();
 
-        dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setType(model.getType());
-        dto.setComment(model.getComment());
+        dto.uri = model.getUri();
+        dto.name = model.getName();
+        dto.typeLabel = model.getTypeLabel().getDefaultValue();
+        dto.type = model.getType();
+        dto.comment = model.getComment();
+
         dto.setSkosReferencesFromModel(model);
         return dto;
     }

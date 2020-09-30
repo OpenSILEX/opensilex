@@ -26,6 +26,8 @@ public class MethodGetDTO extends SKOSReferencesDTO {
 
     private URI type;
 
+    private String typeLabel;
+
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
     public URI getUri() {
         return uri;
@@ -58,6 +60,15 @@ public class MethodGetDTO extends SKOSReferencesDTO {
 
     public void setType(URI type) { this.type = type; }
 
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    @ApiModelProperty(example = "Method")
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
     public static MethodGetDTO fromModel(MethodModel model) {
         MethodGetDTO dto = new MethodGetDTO();
 
@@ -65,6 +76,7 @@ public class MethodGetDTO extends SKOSReferencesDTO {
         dto.name = model.getName();
         dto.comment = model.getComment();
         dto.type = model.getType();
+        dto.typeLabel = model.getTypeLabel().getDefaultValue();
 
         dto.setSkosReferencesFromModel(model);
         return dto;

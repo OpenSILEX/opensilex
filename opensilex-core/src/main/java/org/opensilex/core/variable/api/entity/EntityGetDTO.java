@@ -26,6 +26,8 @@ public class EntityGetDTO extends SKOSReferencesDTO {
 
     private URI type;
 
+    private String typeLabel;
+
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
@@ -58,14 +60,23 @@ public class EntityGetDTO extends SKOSReferencesDTO {
 
     public void setType(URI type) { this.type = type; }
 
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    @ApiModelProperty(example = "Entity")
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
     public static EntityGetDTO fromModel(EntityModel model) {
 
         EntityGetDTO dto = new EntityGetDTO();
-
-        dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setType(model.getType());
-        dto.setComment(model.getComment());
+        dto.uri = model.getUri();
+        dto.name = model.getName();
+        dto.typeLabel = model.getTypeLabel().getDefaultValue();
+        dto.type = model.getType();
+        dto.comment = model.getComment();
         dto.setSkosReferencesFromModel(model);
 
         return dto;

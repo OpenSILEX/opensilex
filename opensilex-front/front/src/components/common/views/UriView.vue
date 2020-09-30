@@ -1,6 +1,6 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{$t(title)}}:</span>
+    <span class="field-view-title">{{$t(title)}}</span>
     <span class="static-field-line">
       <opensilex-UriLink :uri="uri" :value="value" :url="url"></opensilex-UriLink>
     </span>

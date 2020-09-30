@@ -14,18 +14,12 @@
     import Vue from "vue";
     import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import EntityCreate from "./EntityCreate.vue";
 
     @Component
     export default class EntityFormExternalReferences extends Vue {
 
-        selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
+        selectedOntologies: string[] = EntityCreate.selectedOntologies;
 
         @PropSync("form")
         entityDto: EntityCreationDTO;

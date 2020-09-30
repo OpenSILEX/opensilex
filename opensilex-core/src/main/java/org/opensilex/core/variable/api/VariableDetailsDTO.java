@@ -46,7 +46,12 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
 
     private String synonym;
 
-    private String dimension;
+    private String timeInterval;
+
+    private String samplingInterval;
+
+
+    private URI dataType;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -125,10 +130,20 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
         this.synonym = synonym;
     }
 
-    @ApiModelProperty(notes = "Describe the dimension on which variables values are integrated", example = "minutes")
-    public String getDimension() { return dimension; }
+    @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
+    public String getTimeInterval() { return timeInterval; }
 
-    public void setDimension(String dimension) { this.dimension = dimension; }
+    public void setTimeInterval(String timeInterval) { this.timeInterval = timeInterval; }
+
+    @ApiModelProperty(notes = "Define the distance between two data recording", example = "minutes")
+    public String getSamplingInterval() { return samplingInterval; }
+
+    public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
+
+    public URI getDataType() { return dataType; }
+
+    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    public void setDataType(URI dataType) { this.dataType = dataType; }
 
     public static VariableDetailsDTO fromModel(VariableModel model) {
         VariableDetailsDTO dto = new VariableDetailsDTO();
@@ -137,8 +152,9 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
         dto.setName(model.getName());
         dto.setComment(model.getComment());
         dto.setLongName(model.getLongName());
-        dto.setSynonym(model.getSynonym());
-        dto.setDimension(model.getDimension());
+        dto.setTimeInterval(model.getTimeInterval());
+        dto.setSamplingInterval(model.getSamplingInterval());
+        dto.setDataType(model.getDataType());
 
         dto.setTraitUri(model.getTraitUri());
         dto.setTraitName(model.getTraitName());
@@ -155,18 +171,21 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
         qualityDto.setName(quality.getName());
         dto.setQuality(qualityDto);
 
-        NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
         MethodModel method = model.getMethod();
-        methodDto.setUri(method.getUri());
-        methodDto.setName(method.getName());
-        dto.setMethod(methodDto);
+        if(method != null){
+            NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
+            methodDto.setUri(method.getUri());
+            methodDto.setName(method.getName());
+            dto.setMethod(methodDto);
+        }
 
-        NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
         UnitModel unit = model.getUnit();
-        unitDto.setUri(unit.getUri());
-        unitDto.setName(unit.getName());
-        dto.setUnit(unitDto);
-
+        if(unit != null){
+            NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
+            unitDto.setUri(unit.getUri());
+            unitDto.setName(unit.getName());
+            dto.setUnit(unitDto);
+        }
         dto.setSkosReferencesFromModel(model);
         return dto;
     }

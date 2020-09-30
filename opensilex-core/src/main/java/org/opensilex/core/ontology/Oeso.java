@@ -62,9 +62,11 @@ public class Oeso {
 
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
+    public static final Property hasDataType = Ontology.property(NS, "hasDataType");
 
     // ---- VARIABLES UNIT ----
-    public static final Property hasDimension = Ontology.property(NS, "hasDimension");
+    public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");
+    public static final Property hasSamplingInterval = Ontology.property(NS, "hasSamplingInterval");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");
     public static final Property hasAlternativeSymbol = Ontology.property(NS, "hasAlternativeSymbol");
 

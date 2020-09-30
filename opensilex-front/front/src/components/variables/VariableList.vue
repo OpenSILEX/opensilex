@@ -1,35 +1,10 @@
 <template>
     <div>
-
-        <opensilex-SearchFilterField
-            @clear="resetSearch()"
-            @search="updateFilters()"
-            label="Variables.label-filter"
-        >
-            <template v-slot:filters>
-                <opensilex-FilterField>
-
-                    <!-- Name filter -->
-                    <b-form-group>
-                        <label>{{ $t('Variables.label-filter') }}</label>
-                        <b-input-group>
-                            <b-form-input
-                                v-model="nameFilter"
-                                type="text"
-                                default="null"
-                                :placeholder="$t('Variables.label-filter-placeholder')"
-                            ></b-form-input>
-                            <template v-slot:append>
-                                <b-btn variant="primary" @click="updateFilters(nameFilter = '')">
-                                    <font-awesome-icon icon="times" size="sm"/>
-                                </b-btn>
-                            </template>
-                        </b-input-group>
-                    </b-form-group>
-                </opensilex-FilterField>
-
-            </template>
-        </opensilex-SearchFilterField>
+        <opensilex-StringFilter
+            :filter.sync="nameFilter"
+            @update="updateFilters()"
+            placeholder="VariableList.label-filter-placeholder"
+        ></opensilex-StringFilter>
 
         <opensilex-PageContent>
             <template v-slot>
@@ -45,27 +20,27 @@
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
                     <template v-slot:cell(_quality_name)="{data}">{{ data.item.quality.name }}</template>
-                    <template v-slot:cell(_method_name)="{data}">{{ data.item.method.name }}</template>
-                    <template v-slot:cell(_unit_name)="{data}">{{ data.item.unit.name }}</template>
+                    <template v-slot:cell(_method_name)="{data}">{{ data.item.method ? data.item.method.name : ""  }}</template>
+                    <template v-slot:cell(_unit_name)="{data}">{{ data.item.unit ? data.item.unit.name : "" }}</template>
 
                     <template v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
                             <opensilex-EditButton
                                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                                 @click="$emit('onEdit', data.item.uri)"
-                                label="Variables.edit"
+                                label="component.common.list.buttons.update"
                                 :small="true"
                             ></opensilex-EditButton>
                             <opensilex-InteroperabilityButton
                                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                                 :small="true"
-                                label="component.skos.manage"
+                                label="component.common.list.buttons.interoperability"
                                 @click="$emit('onInteroperability', data.item.uri)"
                             ></opensilex-InteroperabilityButton>
                             <opensilex-DeleteButton
                                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
                                 @click="$emit('onDelete', data.item.uri)"
-                                label="Variables.delete"
+                                label="component.common.list.buttons.delete"
                                 :small="true"
                             ></opensilex-DeleteButton>
                         </b-button-group>
@@ -106,6 +81,7 @@ export default class VariableList extends Vue {
 
     resetSearch() {
         this.nameFilter = "";
+        this.$opensilex.updateURLParameter("name",undefined,undefined);
         this.refresh();
     }
 
@@ -143,22 +119,22 @@ export default class VariableList extends Vue {
         },
         {
             key: "_entity_name",
-            label: "Variables.entity",
+            label: "VariableView.entity",
             sortable: true
         },
         {
             key: "_quality_name",
-            label: "Variables.quality",
+            label: "VariableView.quality",
             sortable: true
         },
         {
             key: "_method_name",
-            label: "Variables.method",
+            label: "VariableView.method",
             sortable: true
         },
         {
             key: "_unit_name",
-            label: "Variables.unit",
+            label: "VariableView.unit",
             sortable: true
         },
         {
@@ -173,3 +149,17 @@ export default class VariableList extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+
+<i18n>
+
+en:
+    VariableList:
+        label-filter: Search variables
+        label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc."
+fr:
+    VariableList:
+        label-filter: Chercher une variable
+        label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc."
+
+</i18n>

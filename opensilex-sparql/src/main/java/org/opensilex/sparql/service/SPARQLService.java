@@ -14,6 +14,7 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
@@ -715,6 +716,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         if (filterHandler != null) {
             filterHandler.accept(selectCount);
+
+            // ensure that there are no ORDER BY clause provided by the handler, into the COUNT query, else the query will be incorrect
+            Query countQuery = selectCount.getHandlerBlock().getAggregationHandler().getQuery();
+            if(countQuery.getOrderBy() != null){
+                countQuery.getOrderBy().clear();
+            }
         }
 
         List<SPARQLResult> resultSet = executeSelectQuery(selectCount);

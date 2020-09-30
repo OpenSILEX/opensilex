@@ -24,6 +24,8 @@ public class UnitGetDTO extends SKOSReferencesDTO {
 
     private URI type;
 
+    private String typeLabel;
+
     private String comment;
 
     private String symbol;
@@ -82,15 +84,26 @@ public class UnitGetDTO extends SKOSReferencesDTO {
         this.type = type;
     }
 
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    @ApiModelProperty(example = "Unit")
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
+    }
+
     public static UnitGetDTO fromModel(UnitModel model) {
         UnitGetDTO dto = new UnitGetDTO();
 
-        dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setComment(model.getComment());
-        dto.setSymbol(model.getSymbol());
-        dto.setType(model.getType());
-        dto.setAlternativeSymbol(model.getAlternativeSymbol());
+        dto.uri = model.getUri();
+        dto.name = model.getName();
+        dto.typeLabel = model.getTypeLabel().getDefaultValue();
+        dto.type = model.getType();
+        dto.comment = model.getComment();
+
+        dto.symbol = model.getSymbol();
+        dto.alternativeSymbol = model.getAlternativeSymbol();
         dto.setSkosReferencesFromModel(model);
 
         return dto;

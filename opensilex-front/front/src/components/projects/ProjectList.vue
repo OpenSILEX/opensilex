@@ -5,10 +5,10 @@
 
 
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('component.common.term')}}</label>
+          <label>{{$t('component.common.keyword')}}</label>
           <opensilex-StringFilter
             :filter.sync="termFilter"
-            placeholder="component.project.filter-term-placeholder"
+            placeholder="component.project.filter-keywords-placeholder"
           ></opensilex-StringFilter>
         </div>
         
@@ -185,7 +185,7 @@ export default class ProjectList extends Vue {
       sortable: true
     },
     {
-      key: "hasFinancialFunding",
+      key: "financialFunding",
       label: "component.project.financialFunding",
       sortable: true
     },

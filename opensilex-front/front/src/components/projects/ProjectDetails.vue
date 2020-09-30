@@ -25,9 +25,9 @@
       </template>
     </opensilex-PageActions>
 
-    <b-row>
-      <b-col cols="5">
-        <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+    <div v-if="project" class="row">
+      <div class="col col-xl-5" style="min-width: 400px">
+        <opensilex-Card icon="ik#ik-clipboard">
           <template v-slot:rightHeader>
             <opensilex-Icon icon="fa#edit"></opensilex-Icon>
           </template>
@@ -57,45 +57,37 @@
               </span>
             </div>
             <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
+            <opensilex-UriView :uri="project.uri" ></opensilex-UriView>
+            <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
+            <opensilex-TextView
+              label="component.project.financialFunding"
+              :value="project.financialFunding"
+            ></opensilex-TextView>
+            <opensilex-UriView
+              label="component.project.website"
+              :value="project.homePage"
+              :url="project.homePage"
+            ></opensilex-UriView>
 
-            <div class="float-right">
-              <span>
-                <i
-                  @click="showDetails=!showDetails"
-                  :class="showDetails? 'ik ik-minus':'ik ik-plus'"
-                ></i>
-              </span>
+            <opensilex-NameListView
+              label="component.project.relatedProjects"
+              :list="relatedProjectsList"
+              to="project"
+            ></opensilex-NameListView>
+            <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
+            <div class="static-field">
+              <span class="field-view-title">{{$t('component.common.description')}}:</span>
+              <div class="float-right">
+                <span>
+                  <i
+                    @click="showDetails=!showDetails"
+                    :class="showDetails? 'ik ik-minus':'ik ik-plus'"
+                  ></i>
+                </span>
+              </div>
             </div>
             <b-collapse v-model="showDetails" class="mt-2">
-              <opensilex-UriView :uri="project.uri" :url="project.uri"></opensilex-UriView>
-              <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
-              <opensilex-TextView
-                label="component.project.financialFunding"
-                :value="project.hasFinancialFunding"
-              ></opensilex-TextView>
-              <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
-              <opensilex-TextView label="component.common.description" :value="project.description"></opensilex-TextView>
-              <opensilex-TextView label="component.project.website" :value="project.homePage"></opensilex-TextView>
-              <opensilex-NameListView
-                label="component.project.coordinators"
-                :objects="coordinatorsList"
-                to="contact"
-              ></opensilex-NameListView>
-              <opensilex-NameListView
-                label="component.project.scientificContacts"
-                :objects="scientificContactsList"
-                to="contact"
-              ></opensilex-NameListView>
-              <opensilex-NameListView
-                label="component.project.administrativeContacts"
-                :objects="administrativeContactsList"
-                to="contact"
-              ></opensilex-NameListView>
-              <opensilex-NameListView
-                label="component.project.relatedProjects"
-                :objects="relatedProjectsList"
-                to="project"
-              ></opensilex-NameListView>
+              <opensilex-TextView :value="project.description"></opensilex-TextView>
             </b-collapse>
           </template>
 
@@ -120,9 +112,9 @@
           </template>
           <template v-slot:body></template>
         </opensilex-Card>
-      </b-col>
+      </div>
 
-      <b-col cols="7">
+        <div class="col col-xl-7">
         <opensilex-Card label="component.project.experiments" icon="ik#ik-layers">
           <template v-slot:body>
             <opensilex-TableAsyncView
@@ -144,6 +136,10 @@
               <template v-slot:cell(endDate)="{data}">
                 <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
               </template>
+
+              <template v-slot:cell(comment)="{data}">
+                <span>{{textReduce(data.item.comment)}}</span>
+              </template>
               <template v-slot:cell(state)="{data}">
                 <i
                   v-if="!isEnded(data.item)"
@@ -160,30 +156,30 @@
           </template>
         </opensilex-Card>
 
-        <!--    <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
+        <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
           <template v-slot:rightHeader>
             <opensilex-Icon icon="fa#edit"></opensilex-Icon>
           </template>
           <template v-slot:body>
             <opensilex-NameListView
               label="component.project.scientificContacts"
-              :objects="scientificContactsList"
+              :list="scientificContactsList"
               to="contact"
             ></opensilex-NameListView>
             <opensilex-NameListView
               label="component.project.coordinators"
-              :objects="coordinatorsList"
+              :list="coordinatorsList"
               to="contact"
             ></opensilex-NameListView>
             <opensilex-NameListView
               label="component.project.administrativeContacts"
-              :objects="administrativeContactsList"
+              :list="administrativeContactsList"
               to="contact"
             ></opensilex-NameListView>
           </template>
-        </opensilex-Card>-->
-      </b-col>
-    </b-row>
+        </opensilex-Card>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -215,6 +211,7 @@ export default class ProjectDetails extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   project: ProjectGetDetailDTO = {
+    name: "",
     startDate: ""
   };
 
@@ -255,6 +252,15 @@ export default class ProjectDetails extends Vue {
     this.loadProject(this.$route.params.uri);
   }
 
+  textReduce(text) {
+    if (text.length > 60) {
+      var shortname = text.substring(0, 60) + " ...";
+      return text.substring(0, 60) + " ...";
+    } else {
+      return text;
+    }
+  }
+
   loadProject(uri: string) {
     this.service
       .getProject(uri)
@@ -283,7 +289,7 @@ export default class ProjectDetails extends Vue {
         undefined, // isEnded
         options.orderBy,
         options.currentPage,
-        4
+        6
       );
   }
 
@@ -401,6 +407,7 @@ export default class ProjectDetails extends Vue {
     }
 
     let period = endDate.diff(statDate);
+    console.log(moment.duration(period));
     let duration = Math.floor(moment.duration(period).asMonths());
 
     result +=
@@ -415,7 +422,7 @@ export default class ProjectDetails extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
+<style  lang="scss">
 </style>
 
 <i18n>

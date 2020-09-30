@@ -10,7 +10,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
     >
       <template v-slot>
-        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.common.add"></opensilex-CreateButton>
+        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.project.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

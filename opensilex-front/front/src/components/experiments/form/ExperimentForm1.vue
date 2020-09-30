@@ -39,14 +39,14 @@
       </div>
     </div>
 
-    <!-- Campaign -->
+     <!-- Campaign 
     <opensilex-InputForm
       :value.sync="experiment.campaign"
       label="component.experiment.campaign"
       helpMessage="component.experiment.campaign-help"
       type="text"
     ></opensilex-InputForm>
-
+    -->
     <!-- Species -->
     <opensilex-SpeciesSelector :required="true" :multiple="true" :species.sync="experiment.species"></opensilex-SpeciesSelector>
     <!-- Factor -->

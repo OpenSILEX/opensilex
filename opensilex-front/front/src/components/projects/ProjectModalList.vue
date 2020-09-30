@@ -123,7 +123,7 @@ export default class ProjectModalList extends ProjectList {
       sortable: true
     },
     {
-      key: "hasFinancialFunding",
+      key: "financialFunding",
       label: "component.project.financialFunding",
       sortable: true
     }

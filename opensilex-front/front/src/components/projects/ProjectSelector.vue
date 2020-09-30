@@ -1,17 +1,18 @@
 <template>
-<div>
-  <opensilex-SelectForm
-    :label="label"
-    :selected.sync="projectsURI"
-    :multiple="multiple"
-    :itemLoadingMethod="loadProjects"
-    :searchMethod="searchProjects"
-    :conversionMethod="projectToSelectNode"
-    placeholder="component.project.filter-placeholder"
-    @select="select"
-    @deselect="deselect"
-  ></opensilex-SelectForm>
-</div>
+  <div>
+    <opensilex-SelectForm
+      :label="label"
+      :selected.sync="projectsURI"
+      :multiple="multiple"
+      :itemLoadingMethod="loadProjects"
+      :searchMethod="searchProjects"
+      :conversionMethod="projectToSelectNode"
+      placeholder="component.project.selector-placeholder"
+      noResultsText="component.project.selector-search-no-result"
+      @select="select"
+      @deselect="deselect"
+    ></opensilex-SelectForm>
+  </div>
 </template>
 
 <script lang="ts">

@@ -3,7 +3,7 @@
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
-      label="component.user.user-uri"
+      label="component.project.project-uri"
       helpMessage="component.common.uri.help-message"
       :editMode="editMode"
       :generated.sync="uriGenerated"
@@ -53,7 +53,7 @@
     <!-- Financial funding -->
 
     <opensilex-InputForm
-      :value.sync="form.hasFinancialFunding"
+      :value.sync="form.financialFunding"
       label="component.project.financialFunding"
       type="text"
       placeholder="component.project.form-financialFunding-placeholder"

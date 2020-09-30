@@ -43,10 +43,10 @@ export default class ProjectForm extends Vue {
 
   getEmptyForm() {
     return {
-    uri: null,
+      uri: null,
       name: "",
       shortname: undefined,
-      hasFinancialFunding: undefined,
+      financialFunding: undefined,
       description: undefined,
       objective: undefined,
       startDate: "",
@@ -112,13 +112,13 @@ export default class ProjectForm extends Vue {
 <i18n>
 en:
   ProjectForm:
-    create: Create
-    update: Update
+    create: Create a project
+    update: Update the project
     project-already-exists: Project already exists
 
 fr:
   ProjectForm:
-    create: Créer
-    update: Modifier
+    create: Créer un projet
+    update: Modifier le projet
     project-already-exists: Le projet existe déjà
 </i18n>

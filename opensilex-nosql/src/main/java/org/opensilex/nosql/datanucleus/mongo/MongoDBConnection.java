@@ -10,6 +10,8 @@ import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.model.geojson.GeoJsonObjectType;
+import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -85,14 +87,16 @@ public class MongoDBConnection extends BaseService implements DataNucleusService
                 String value = options.get(key);
                 connectionString += key + "=" + value;
                 i++;
+
                 if (i < options.size()) {
                     connectionString += "&";
                 }
             }
         }
         CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
         CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-                pojoCodecRegistry);
+                pojoCodecRegistry, geoJsonCodecRegistry);
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(connectionString))
                 .codecRegistry(codecRegistry)

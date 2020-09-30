@@ -41,7 +41,7 @@ public class ProjectGetDetailDTO extends ProjectDTO {
                 .setStartDate(model.getStartDate())
                 .setEndDate(model.getEndDate())
                 .setShortname(model.getShortname())
-                .setHasFinancialFunding(model.getHasFinancialFunding())
+                .setFinancialFunding(model.getFinancialFunding())
                 .setDescription(model.getDescription())
                 .setObjective(model.getObjective())
                 .setHomePage(model.getHomePage());

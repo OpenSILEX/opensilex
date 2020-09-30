@@ -24,7 +24,7 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setUri(getUri());
 
         model.setShortname(getShortname());
-        model.setHasFinancialFunding(hasFinancialFunding);
+        model.setFinancialFunding(financialFunding);
         model.setStartDate(startDate);
         model.setEndDate(endDate);
         model.setName(name);

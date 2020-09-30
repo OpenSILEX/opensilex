@@ -39,8 +39,8 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
             ontology = Oeso.class,
             property = "hasFinancialFunding"
     )
-    private String hasFinancialFunding;
-    public static final String FINANCIAL_FUNDING_FIELD = "hasFinancialFunding";
+    private String financialFunding;
+    public static final String FINANCIAL_FUNDING_FIELD = "financialFunding";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -119,12 +119,12 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
         this.shortname = shortname;
     }
 
-    public String getHasFinancialFunding() {
-        return hasFinancialFunding;
+    public String getFinancialFunding() {
+        return financialFunding;
     }
 
-    public void setHasFinancialFunding(String hasFinancialFunding) {
-        this.hasFinancialFunding = hasFinancialFunding;
+    public void setFinancialFunding(String financialFunding) {
+        this.financialFunding = financialFunding;
     }
 
     public List<ProjectModel> getRelatedProjects() {

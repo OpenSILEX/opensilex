@@ -25,7 +25,7 @@ public abstract class ProjectDTO {
 
     protected String shortname;
 
-    protected String hasFinancialFunding;
+    protected String financialFunding;
 
     protected String description;
 
@@ -58,8 +58,8 @@ public abstract class ProjectDTO {
         return this;
     }
 
-     @Required
-    @ApiModelProperty(example = "prject1")
+    @Required
+    @ApiModelProperty(example = "DROught-tolerant yielding PlantS", required=true)
     public String getName() {
         return name;
     }
@@ -68,7 +68,7 @@ public abstract class ProjectDTO {
         this.name = name;
         return this;
     }
-
+    @ApiModelProperty(example = "DROPS")
     public String getShortname() {
         return shortname;
     }
@@ -78,15 +78,16 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    public String getHasFinancialFunding() {
-        return hasFinancialFunding;
+    @ApiModelProperty(example = "European Union")
+    public String getFinancialFunding() {
+        return financialFunding;
     }
 
-    public ProjectDTO setHasFinancialFunding(String hasFinancialFunding) {
-        this.hasFinancialFunding = hasFinancialFunding;
+    public ProjectDTO setFinancialFunding(String financialFunding) {
+        this.financialFunding = financialFunding;
         return this;
     }
-
+    @ApiModelProperty(example = "DROPS aims at developing novel methods....")
     public String getDescription() {
         return description;
     }
@@ -95,7 +96,7 @@ public abstract class ProjectDTO {
         this.description = description;
         return this;
     }
-
+    @ApiModelProperty(example = "Developing novel methods and strategies for genetic yield improvement under dry environments and for enhanced plant water-use efficiency.")
     public String getObjective() {
         return objective;
     }
@@ -106,7 +107,7 @@ public abstract class ProjectDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "2020-02-20")
+    @ApiModelProperty(example = "2010-02-20", required=true)
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -116,7 +117,7 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "2020-02-20")
+    @ApiModelProperty(example = "2015-02-20")
     public LocalDate getEndDate() {
         return endDate;
     }
@@ -134,7 +135,7 @@ public abstract class ProjectDTO {
         this.keywords = keywords;
         return this;
     }
-
+    @ApiModelProperty(example = "https://www.inrae.fr/dropsproject")
     public URI getHomePage() {
         return homePage;
     }
@@ -144,11 +145,10 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
     public List<URI> getExperiments() {
         return experiments;
     }
-
+    
     public ProjectDTO setExperiments(List<URI> experiments) {
         this.experiments = experiments;
         return this;

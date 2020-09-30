@@ -110,7 +110,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "objective")
+    @ApiModelProperty(example = "Genomic prediction of maize yield")
     public String getObjective() {
         return objective;
     }
@@ -120,7 +120,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "comment")
+    @ApiModelProperty(example = "Genomic prediction of maize yield across European environmental scenarios")
     public String getComment() {
         return comment;
     }

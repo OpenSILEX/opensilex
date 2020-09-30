@@ -40,7 +40,7 @@ public class ProjectGetDTO extends ProjectDTO {
                 .setName(model.getName())
                 .setStartDate(model.getStartDate())
                 .setShortname(model.getShortname())
-                .setHasFinancialFunding(model.getHasFinancialFunding())
+                .setFinancialFunding(model.getFinancialFunding())
                 .setDescription(model.getDescription())
                 .setObjective(model.getObjective())
                 .setHomePage(model.getHomePage());

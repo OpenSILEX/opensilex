@@ -12,41 +12,39 @@
       <template v-slot>
         <opensilex-CreateButton
           @click="experimentForm.showCreateForm()"
-          label="component.experiment.search.buttons.create-experiment"
+          label="component.experiment.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 
-    <opensilex-SearchFilterField 
-      @clear="resetFilters()"
-      @search="updateFilters()">
+    <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
       <template v-slot:filters>
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('component.common.name')}}</label>
-            <opensilex-StringFilter
-              :filter.sync="labelFilter"
-              placeholder="ExperimentList.label-filter-placeholder"
-            ></opensilex-StringFilter>
-          </div>
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <label>{{$t('component.common.name')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="labelFilter"
+            placeholder="ExperimentList.label-filter-placeholder"
+          ></opensilex-StringFilter>
+        </div>
 
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('component.common.year')}}</label>
-            <opensilex-StringFilter
-              :filter.sync="yearFilter"
-              type="number"
-              min="1000"
-              max="9999"
-              placeholder="ExperimentList.year-filter-placeholder"
-            ></opensilex-StringFilter>
-          </div>
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <label>{{$t('component.common.year')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="yearFilter"
+            type="number"
+            min="1000"
+            max="9999"
+            placeholder="ExperimentList.year-filter-placeholder"
+          ></opensilex-StringFilter>
+        </div>
 
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <opensilex-SpeciesSelector
-              label="component.common.species"
-              :multiple="true"
-              :species.sync="speciesFilter"
-            ></opensilex-SpeciesSelector>
-          </div>
+        <div class="col col-xl-4 col-sm-6 col-12">
+          <opensilex-SpeciesSelector
+            label="component.common.species"
+            :multiple="true"
+            :species.sync="speciesFilter"
+          ></opensilex-SpeciesSelector>
+        </div>
       </template>
     </opensilex-SearchFilterField>
 
@@ -56,11 +54,10 @@
           <template v-slot:cell(label)="{data}">
             <opensilex-UriLink
               :uri="data.item.uri"
-               :value="data.item.label"
+              :value="data.item.label"
               :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.label }}"
             ></opensilex-UriLink>
           </template>
-
 
           <template v-slot:cell(species)="{data}">
             <span :key="index" v-for="(uri, index) in data.item.species">
@@ -182,17 +179,16 @@ export default class ExperimentList extends Vue {
     this.$opensilex.updateURLParameter("species", this.speciesFilter);
   }
 
-
-  updateFilters(){
+  updateFilters() {
     this.updateYearFilter();
     this.updateLabelFilter();
     this.updateSpeciesFilter();
     this.refresh();
   }
   resetFilters() {
-    this.yearFilter="";
-    this.labelFilter="";
-    this.speciesFilter=[];
+    this.yearFilter = "";
+    this.labelFilter = "";
+    this.speciesFilter = [];
     this.updateFilters();
   }
 
@@ -243,20 +239,21 @@ export default class ExperimentList extends Vue {
     }
   ];
 
-  created() {
-    let query: any = this.$route.query;
-    if (query.label) {
-      this.labelFilter = decodeURI(query.label);
-    }
-    if (query.year) {
-      this.yearFilter = decodeURI(query.year);
-    }
-    if (query.species && Array.isArray(query.species)) {
-      for (let i in query.species) {
-        this.speciesFilter.push(decodeURI(query.species[i]));
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.loadSpecies();
       }
-    }
+    );
+  }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
+  loadSpecies() {
     let service: SpeciesService = this.$opensilex.getService(
       "opensilex.SpeciesService"
     );
@@ -271,9 +268,27 @@ export default class ExperimentList extends Vue {
             http.response.result[i]
           );
         }
+        console.log( this.speciesByUri);
         this.$opensilex.enableLoader();
+        this.refresh();
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  created() {
+    let query: any = this.$route.query;
+    if (query.label) {
+      this.labelFilter = decodeURI(query.label);
+    }
+    if (query.year) {
+      this.yearFilter = decodeURI(query.year);
+    }
+    if (query.species && Array.isArray(query.species)) {
+      for (let i in query.species) {
+        this.speciesFilter.push(decodeURI(query.species[i]));
+      }
+    }
+    this.loadSpecies();
   }
 
   getSpeciesName(uri: String): String {
@@ -291,7 +306,6 @@ export default class ExperimentList extends Vue {
   }
 
   fields = [
-    
     {
       key: "label",
       label: "component.common.name",

@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :vid="vid"
   >
     <template v-slot:field="field">
       <b-form-input
@@ -75,6 +76,9 @@ export default class InputForm extends Vue {
 
   @Prop()
   autocomplete: string;
+
+  @Prop()
+  vid;
 }
 </script>
 

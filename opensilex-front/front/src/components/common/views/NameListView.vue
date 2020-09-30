@@ -22,7 +22,7 @@ import copy from "copy-to-clipboard";
 import Vue from "vue";
 
 @Component
-export default class NamelListView extends Vue {
+export default class NameListView extends Vue {
   $opensilex;
   @Prop()
   label: string;
@@ -30,7 +30,7 @@ export default class NamelListView extends Vue {
   @Prop()
   to: string;
 
-  @PropSync("objects")
+  @PropSync("list")
   values: Array<any>;
 
 }

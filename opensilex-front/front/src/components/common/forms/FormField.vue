@@ -12,6 +12,7 @@
       :name="$t(label)"
       :rules="getRules()"
       v-slot="{ errors }"
+      :vid="vid"
     >
       <div v-bind:class="{ errors: errors.length > 0 }">
         <slot name="field" v-bind:id="id" v-bind:validator="validatorRef"></slot>
@@ -54,6 +55,9 @@ export default class FormField extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
   id: string;
+
+  @Prop()
+  vid: string;
 
   created() {
     this.id = this.$opensilex.generateID();

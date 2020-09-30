@@ -15,9 +15,9 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(uri)"
+        v-on:click.prevent="copyURI(url)"
         class="uri-copy"
-        :title="$t('component.copyToClipboard.copyUri')"
+        :title="$t('component.copyToClipboard.copyUrl')"
       >
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
@@ -82,7 +82,7 @@ export default class UriLink extends Vue {
   copyURI(address) {
     copy(address);
     this.$opensilex.showSuccessToast(
-      this.$t("component.common.uri-copy") + ": " + address
+      this.url ? this.$t("component.common.url-copy") + ": " + address: this.$t("component.common.uri-copy") + ": " + address
     );
   }
 }

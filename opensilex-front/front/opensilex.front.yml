@@ -1,10 +1,10 @@
 menu:
-  - id: dashboard
-    label: component.menu.dashboard
-    route:
-      path: /users
-      component: opensilex-UserView
-      credentials: []
+  # - id: dashboard
+  #   label: component.menu.dashboard
+  #   route:
+  #     path: /users
+  #     component: opensilex-UserView
+  #     credentials: []
   - id: infrastructures
     label: component.menu.infrastructure
     route:
@@ -19,14 +19,14 @@ menu:
         label: component.menu.data.images
         route:
           path: /images
-          component: phis-ImageView
+          component: opensilex-ImageView
           credentials: []
-      - id: data
-        label: component.menu.data.label
-        route:
-          path: /data
-          component: opensilex-DataView
-          credentials: []
+      # - id: data
+      #   label: component.menu.data.label
+      #   route:
+      #     path: /data
+      #     component: opensilex-DataView
+      #     credentials: []
   - id: projects
     label: component.menu.projects
     route:
@@ -38,46 +38,46 @@ menu:
     label: component.menu.experiments
     route:
       path: /experiments
-      component: opensilex-ExperimentList
+      component: opensilex-ExperimentListView
       credentials:
         - experiment-read
   - id: scientificObjects
     label: component.menu.scientificObjects
     route:
-      path: /scientificObjects
+      path: /scientific-objects
       component: opensilex-ScientificObjectList
       credentials: []
-  - id: equipments
-    label: component.menu.equipments.label
-    route:
-      path: /users
-      component: opensilex-UserView
-      credentials: []
-    children:
-      - id: sensors
-        label: component.menu.equipments.sensors
-        route:
-          path: /users
-          component: opensilex-UserView
-          credentials: []
-      - id: actuators
-        label: component.menu.equipments.actuators
-        route:
-          path: /users
-          component: opensilex-UserView
-          credentials: []
-      - id: vectors
-        label: component.menu.equipments.vectors
-        route:
-          path: /users
-          component: opensilex-UserView
-          credentials: []
-      - id: radiometricTargets
-        label: component.menu.equipments.radiometricTargets
-        route:
-          path: /users
-          component: opensilex-UserView
-          credentials: []
+  # - id: equipments
+  #   label: component.menu.equipments.label
+  #   route:
+  #     path: /users
+  #     component: opensilex-UserView
+  #     credentials: []
+  #   children:
+  #     - id: sensors
+  #       label: component.menu.equipments.sensors
+  #       route:
+  #         path: /users
+  #         component: opensilex-UserView
+  #         credentials: []
+  #     - id: actuators
+  #       label: component.menu.equipments.actuators
+  #       route:
+  #         path: /users
+  #         component: opensilex-UserView
+  #         credentials: []
+  #     - id: vectors
+  #       label: component.menu.equipments.vectors
+  #       route:
+  #         path: /users
+  #         component: opensilex-UserView
+  #         credentials: []
+  #     - id: radiometricTargets
+  #       label: component.menu.equipments.radiometricTargets
+  #       route:
+  #         path: /users
+  #         component: opensilex-UserView
+  #         credentials: []
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:

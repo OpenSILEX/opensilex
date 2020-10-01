@@ -1,8 +1,15 @@
 <template v-slot:label>
   <span>
-    <label class="form-label" :for="labelFor">{{$t(label)}}</label>
-    &nbsp;
-    <font-awesome-icon v-if="helpMessage" tabindex="0" icon="question-circle" v-b-tooltip.hover.top="$t(helpMessage)" />
+    <label class="form-label" :for="labelFor">
+      {{$t(label)}}
+      &nbsp;
+      <font-awesome-icon
+        v-if="helpMessage"
+        tabindex="0"
+        icon="question-circle"
+        v-b-tooltip.hover.top="$t(helpMessage)"
+      />
+    </label>
   </span>
 </template>
 

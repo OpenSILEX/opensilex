@@ -280,6 +280,8 @@ import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 components["opensilex-ExperimentForm2"] = ExperimentForm2;
 import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
+import ExperimentListView from './experiments/ExperimentListView.vue';
+components["opensilex-ExperimentListView"] = ExperimentListView;
 import ExperimentView from './experiments/ExperimentView.vue';
 components["opensilex-ExperimentView"] = ExperimentView;
 import ExperimentDetail from './experiments/views/ExperimentDetail.vue';

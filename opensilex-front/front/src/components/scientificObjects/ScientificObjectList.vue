@@ -13,7 +13,6 @@
             @clear="reset()"
             label="ScientificObjectsList.filter.label"
             advancedSearchLabel="ScientificObjectsList.advancedSearch"
-            :showTitle="true"
             :showAdvancedSearch="true"
         >
             <template v-slot:filters>

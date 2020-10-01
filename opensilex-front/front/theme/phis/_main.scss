@@ -374,7 +374,7 @@ p {
 		    position: fixed;
 		    left: 0;
 		    top: 0;
-		    width: 240px;
+		    min-width: 240px;
 		    height: 100vh;
 		    background-color: $white;
 		    z-index: 1040;
@@ -1079,7 +1079,7 @@ p {
 			    	}
 			    }
 			    &:hover {
-			    	width: 240px;
+			    	min-width: 240px;
 			    	.header-brand {
 			    		.text {
 						    display: inline-block;

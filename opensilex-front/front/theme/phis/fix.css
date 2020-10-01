@@ -68,6 +68,10 @@
     color: #dc3545;
 }
 
+.table.b-table > thead > tr > th {
+    vertical-align: middle;
+}
+
 /**
  * Fix for multiselect module
  */

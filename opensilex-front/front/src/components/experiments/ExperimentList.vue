@@ -1,142 +1,150 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-layers"
-      title="component.menu.experiments"
-      description="component.experiment.search.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+  <div>
+    <opensilex-SearchFilterField
+      @search="refresh()"
+      @clear="reset()"
+      label="component.experiment.search.label"
+      :showAdvancedSearch="true"
     >
-      <template v-slot>
-        <opensilex-CreateButton
-          @click="experimentForm.showCreateForm()"
-          label="component.experiment.add"
-        ></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
-
-    <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
       <template v-slot:filters>
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('ExperimentList.filter-label')}}:</label>
-            <opensilex-StringFilter
-              :filter.sync="labelFilter"
-              @update="updateLabelFilter()"
-              placeholder="ExperimentList.label-filter-placeholder"
-            ></opensilex-StringFilter>
-          </div>
+        <!-- Label -->
+        <opensilex-FilterField>
+          <opensilex-InputForm
+            :value.sync="filter.label"
+            label="ExperimentList.filter-label"
+            type="text"
+            placeholder="ExperimentList.filter-label-placeholder"
+          ></opensilex-InputForm>
+        </opensilex-FilterField>
 
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <label>{{$t('ExperimentList.filter-year')}}:</label>
-            <opensilex-StringFilter
-              :filter.sync="yearFilter"
-              type="number"
-              min="1000"
-              max="9999"
-              @update="updateYearFilter()"
-              placeholder="ExperimentList.year-filter-placeholder"
-            ></opensilex-StringFilter>
-          </div>
+        <!-- Species -->
+        <opensilex-FilterField>
+          <opensilex-SelectForm
+            label="ExperimentList.filter-species"
+            placeholder="ExperimentList.filter-species-placeholder"
+            :multiple="true"
+            :selected.sync="filter.species"
+            :options="species"
+          ></opensilex-SelectForm>
+        </opensilex-FilterField>
 
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <opensilex-SpeciesSelector
-              label="ExperimentList.filter-species"
-              :multiple="true"
-              :species.sync="speciesFilter"
-              @clear="updateSpeciesFilter()"
-              @select="updateSpeciesFilter()"
-              @deselect="updateSpeciesFilter()"
-            ></opensilex-SpeciesSelector>
-          </div>
-          
-           <!-- Factor -->
-          <div class="col col-xl-4 col-sm-6 col-12">
-            <opensilex-FactorSelector 
+
+        <!-- Factors -->
+        <opensilex-FilterField>
+                      <opensilex-FactorSelector 
               :multiple="true" 
-              :factors.sync="factorsFilter"  
-              @clear="updateFactorsFilter()"
-              @select="updateFactorsFilter()"
-              @deselect="updateFactorsFilter()">
+              :factors.sync="filter.factors"  
+              >
             </opensilex-FactorSelector>
-          </div>
+        </opensilex-FilterField>
+
+        <opensilex-FilterField>
+          <label>{{$t('ExperimentList.filter-year')}}</label>
+          <opensilex-StringFilter
+            placeholder="ExperimentList.filter-year-placeholder"
+            :filter.sync="filter.yearFilter"
+            type="number"
+            min="1000"
+            max="9999"
+          ></opensilex-StringFilter>
+        </opensilex-FilterField>
+      </template>
+
+      <template v-slot:advancedSearch>
+         <!-- Projects -->
+        <opensilex-FilterField>
+          <opensilex-SelectForm
+            label="ExperimentList.filter-project"
+            placeholder="ExperimentList.filter-project-placeholder"
+            :selected.sync="filter.projects"
+            :conversionMethod="projectGetDTOToSelectNode"
+            modalComponent="opensilex-ProjectModalList"
+            :isModalSearch="true"
+          ></opensilex-SelectForm>
+        </opensilex-FilterField>
+
+        <!-- State -->
+        <opensilex-FilterField>
+          <opensilex-SelectForm
+            label="ExperimentList.filter-state"
+            placeholder="ExperimentList.filter-state-placeholder"
+            :multiple="false"
+            :selected.sync="filter.state"
+            :options="experimentStates"
+          ></opensilex-SelectForm>
+        </opensilex-FilterField>
       </template>
     </opensilex-SearchFilterField>
 
-    <opensilex-PageContent>
-      <template v-slot>
-        <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchExperiments" :fields="fields">
-          <template v-slot:cell(label)="{data}">
-            <opensilex-UriLink
-              :uri="data.item.uri"
-              :value="data.item.label"
-              :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.label }}"
-            ></opensilex-UriLink>
-          </template>
-
-          <template v-slot:cell(species)="{data}">
-            <span :key="index" v-for="(uri, index) in data.item.species">
-              <span :title="uri">{{ getSpeciesName(uri) }}</span>
-              <span v-if="index + 1 < data.item.species.length">,</span>
-            </span>
-          </template>
-
-          <template v-slot:cell(startDate)="{data}">
-            <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
-          </template>
-          <template v-slot:cell(endDate)="{data}">
-            <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
-          </template>
-
-          <template v-slot:cell(state)="{data}">
-            <i
-              v-if="!isEnded(data.item)"
-              class="ik ik-activity badge-icon badge-info-opensilex"
-              :title="$t('component.experiment.common.status.in-progress')"
-            ></i>
-            <i
-              v-else
-              class="ik ik-archive badge-icon badge-light"
-              :title="$t('component.experiment.common.status.finished')"
-            ></i>
-            <i
-              v-if="data.item.isPublic"
-              class="ik ik-users badge-icon badge-info"
-              :title="$t('component.experiment.common.status.public')"
-            ></i>
-          </template>
-
-          <template v-slot:cell(actions)="{data}">
-            <b-button-group size="sm">
-              <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="showEditForm(data.item.uri)"
-                label="component.experiment.update"
-                :small="true"
-              ></opensilex-EditButton>
-              <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
-                @click="deleteExperiment(data.item.uri)"
-                label="component.experiment.delete"
-                :small="true"
-              ></opensilex-DeleteButton>
-            </b-button-group>
-          </template>
-        </opensilex-TableAsyncView>
+    <opensilex-TableAsyncView
+      ref="tableRef"
+      :searchMethod="searchExperiments"
+      :fields="fields"
+      :isSelectable="isSelectable"
+    >
+      <template v-slot:cell(uri)="{data}">
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
+        ></opensilex-UriLink>
       </template>
-    </opensilex-PageContent>
-    <opensilex-ExperimentForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-      ref="experimentForm"
-      @onCreate="refresh()"
-      @onUpdate="refresh()"
-    ></opensilex-ExperimentForm>
+
+      <template v-slot:cell(label)="{data}">{{data.item.label}}</template>
+
+      <template v-slot:cell(species)="{data}">
+        <span :key="index" v-for="(uri, index) in data.item.species">
+          <span :title="uri">{{ getSpeciesName(uri) }}</span>
+          <span v-if="index + 1 < data.item.species.length">,</span>
+        </span>
+      </template>
+
+      <template v-slot:cell(startDate)="{data}">
+        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+      </template>
+      <template v-slot:cell(endDate)="{data}">
+        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+      </template>
+
+      <template v-slot:cell(state)="{data}">
+        <i
+          v-if="!isEnded(data.item)"
+          class="ik ik-activity badge-icon badge-info-opensilex"
+          :title="$t('component.experiment.common.status.in-progress')"
+        ></i>
+        <i
+          v-else
+          class="ik ik-archive badge-icon badge-light"
+          :title="$t('component.experiment.common.status.finished')"
+        ></i>
+        <i
+          v-if="data.item.isPublic"
+          class="ik ik-users badge-icon badge-info"
+          :title="$t('component.experiment.common.status.public')"
+        ></i>
+      </template>
+
+      <template v-slot:cell(actions)="{data}">
+        <b-button-group size="sm">
+          <opensilex-EditButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            @click="$emit('onEdit', data.item.uri)"
+            label="component.experiment.update"
+            :small="true"
+          ></opensilex-EditButton>
+          <opensilex-DeleteButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+            @click="deleteExperiment(data.item.uri)"
+            label="component.experiment.delete"
+            :small="true"
+          ></opensilex-DeleteButton>
+        </b-button-group>
+      </template>
+    </opensilex-TableAsyncView>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueConstructor from "vue";
 import copy from "copy-to-clipboard";
@@ -156,21 +164,20 @@ import {
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { UserGetDTO } from "opensilex-security/index";
 
-export class ExperimentState {
-  code: String;
-  label: String;
-
-  constructor(code: String, label: String) {
-    this.code = code;
-    this.label = label;
-  }
-}
-
 @Component
 export default class ExperimentList extends Vue {
   $opensilex: any;
+  $i18n: any;
 
-  @Ref("experimentForm") readonly experimentForm!: any;
+  @Prop({
+    default: false
+  })
+  isSelectable;
+
+  @Prop({
+    default: false
+  })
+  noActions;
 
   get user() {
     return this.$store.state.user;
@@ -180,40 +187,7 @@ export default class ExperimentList extends Vue {
     return this.$store.state.credentials;
   }
 
-  private labelFilter: any = "";
-  updateLabelFilter() {
-    this.$opensilex.updateURLParameter("label", this.labelFilter, "");
-  }
-
-  private yearFilter: any = "";
-  updateYearFilter() {
-    this.$opensilex.updateURLParameter("year", this.yearFilter, "");
-  }
-
-  private speciesFilter: any = [];
-  updateSpeciesFilter() {
-    this.$opensilex.updateURLParameter("species", this.speciesFilter);
-  }
-
-  private factorsFilter: any = [];
-  updateFactorsFilter() {
-    this.$opensilex.updateURLParameter("factors", this.factorsFilter);
-  }
-
-  updateFilters() {
-    this.updateYearFilter();
-    this.updateLabelFilter();
-    this.updateSpeciesFilter();
-    this.updateFactorsFilter();
-    this.refresh();
-  }
-  resetFilters() {
-    this.yearFilter = "";
-    this.labelFilter = "";
-    this.speciesFilter = [];
-    this.factorsFilter = []; 
-  }
-
+  species = [];
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Ref("tableRef") readonly tableRef!: any;
@@ -222,12 +196,52 @@ export default class ExperimentList extends Vue {
     this.tableRef.refresh();
   }
 
+  filter = {
+    label: "",
+    species: [],
+    factors: [],
+    projects: [],
+    yearFilter: null,
+    state: ""
+  };
+
+  reset() {
+    this.filter = {
+      label: "",
+      species: [],
+      factors: [],
+      projects: [],
+      yearFilter: null,
+      state: ""
+    };
+  }
+
   searchExperiments(options) {
     let startDateFilter: string = undefined;
     let endDateFilter: string = undefined;
-    if (this.yearFilter) {
-      startDateFilter = this.yearFilter.toString() + "-01-01";
-      endDateFilter = this.yearFilter.toString() + "-12-31";
+    if (this.filter.yearFilter) {
+      startDateFilter = this.filter.yearFilter.toString() + "-01-01";
+      endDateFilter = this.filter.yearFilter.toString() + "-12-31";
+    }
+
+    let isPublic = undefined;
+    let isEnded = undefined;
+    if (this.filter.state) {
+      if (this.filter.state == "public") {
+        isPublic = true;
+      }
+      if (this.filter.state == "finished") {
+        isEnded = true;
+      } else if (this.filter.state == "in-progress") {
+        isEnded = false;
+      }
+    }
+
+    let projects = [];
+    if (this.filter.projects) {
+      for (let i in this.filter.projects) {
+        projects.push(this.filter.projects[i].id);
+      }
     }
 
     return this.$opensilex
@@ -235,39 +249,51 @@ export default class ExperimentList extends Vue {
       .searchExperiments(
         startDateFilter, // startDate
         endDateFilter, // endDate
-        this.labelFilter, // label
-        this.speciesFilter, // species
-        this.factorsFilter, // factors
-        undefined, // projects
-        undefined, // isPublic
-        undefined, // isEnded
+        this.filter.label, // label
+        this.filter.species, // species
+        this.filter.factors, // factors
+        projects, // projects
+        isPublic, // isPublic
+        isEnded, // isEnded
         options.orderBy,
         options.currentPage,
         options.pageSize
       );
   }
 
-  experimentStates: Array<ExperimentState> = [
-    {
-      code: "in-progress",
-      label: "component.experiment.common.status.in-progress"
-    },
-    {
-      code: "finished",
-      label: "component.experiment.common.status.finished"
-    },
-    {
-      code: "public",
-      label: "component.experiment.common.status.public"
-    }
-  ];
+  experimentStates = [];
+
+  created() {
+    let service: SpeciesService = this.$opensilex.getService(
+      "opensilex.SpeciesService"
+    );
+
+    service
+      .getAllSpecies()
+      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+        this.species = [];
+        for (let i = 0; i < http.response.result.length; i++) {
+          this.speciesByUri.set(
+            http.response.result[i].uri,
+            http.response.result[i]
+          );
+          this.species.push({
+            id: http.response.result[i].uri,
+            label: http.response.result[i].label
+          });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+
+    this.refreshStateLabel();
+  }
 
   private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        this.loadSpecies();
+        this.refreshStateLabel();
       }
     );
   }
@@ -276,41 +302,21 @@ export default class ExperimentList extends Vue {
     this.langUnwatcher();
   }
 
-  loadSpecies() {
-    let service: SpeciesService = this.$opensilex.getService(
-      "opensilex.SpeciesService"
-    );
-
-    this.$opensilex.disableLoader();
-    service
-      .getAllSpecies()
-      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-          this.speciesByUri.set(
-            http.response.result[i].uri,
-            http.response.result[i]
-          );
-        }
-        this.$opensilex.enableLoader();
-        this.refresh();
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  created() {
-    let query: any = this.$route.query;
-    if (query.label) {
-      this.labelFilter = decodeURI(query.label);
-    }
-    if (query.year) {
-      this.yearFilter = decodeURI(query.year);
-    }
-    if (query.species && Array.isArray(query.species)) {
-      for (let i in query.species) {
-        this.speciesFilter.push(decodeURI(query.species[i]));
+  refreshStateLabel() {
+    this.experimentStates = [
+      {
+        id: "in-progress",
+        label: this.$i18n.t("component.experiment.common.status.in-progress")
+      },
+      {
+        id: "finished",
+        label: this.$i18n.t("component.experiment.common.status.finished")
+      },
+      {
+        id: "public",
+        label: this.$i18n.t("component.experiment.common.status.public")
       }
-    }
-    this.loadSpecies();
+    ];
   }
 
   getSpeciesName(uri: String): String {
@@ -327,43 +333,44 @@ export default class ExperimentList extends Vue {
     return false;
   }
 
-  fields = [
-    {
-      key: "label",
-      label: "component.common.name",
-      sortable: true
-    },
-    {
-      key: "species",
-      label: "component.experiment.species"
-    },
-    {
-      key: "startDate",
-      label: "component.experiment.startDate",
-      sortable: true
-    },
-    {
-      key: "endDate",
-      label: "component.experiment.endDate",
-      sortable: true
-    },
-    {
-      key: "state",
-      label: "component.experiment.search.column.state"
-    },
-    {
-      label: "component.common.actions",
-      key: "actions"
-    }
-  ];
-
-  showEditForm(uri: string) {
-    this.$opensilex
-      .getService("opensilex.ExperimentsService")
-      .getExperiment(uri)
-      .then(http => {
-        this.experimentForm.showEditForm(http.response.result);
+  get fields() {
+    let tableFields = [
+      {
+        key: "uri",
+        label: "component.common.uri",
+        sortable: true
+      },
+      {
+        key: "label",
+        label: "component.common.name",
+        sortable: true
+      },
+      {
+        key: "species",
+        label: "component.experiment.species"
+      },
+      {
+        key: "startDate",
+        label: "component.experiment.startDate",
+        sortable: true
+      },
+      {
+        key: "endDate",
+        label: "component.experiment.endDate",
+        sortable: true
+      },
+      {
+        key: "state",
+        label: "component.experiment.search.column.state"
+      }
+    ];
+    if (!this.noActions) {
+      tableFields.push({
+        key: "actions",
+        label: "component.common.actions"
       });
+    }
+    return tableFields;
   }
 
   deleteExperiment(uri: string) {
@@ -375,6 +382,16 @@ export default class ExperimentList extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  projectGetDTOToSelectNode(dto) {
+    if (dto) {
+      return {
+        id: dto.uri,
+        label: dto.shortname ? dto.shortname : dto.label
+      };
+    }
+    return null;
+  }
 }
 </script>
 
@@ -385,17 +402,28 @@ export default class ExperimentList extends Vue {
 <i18n>
 en:
   ExperimentList:
-    filter-label: Name
-    label-filter-placeholder: Enter a name
-    filter-year: Year
-    year-filter-placeholder: Enter a year
-    filter-species: Species
+    filter-label: Search by name
+    filter-label-placeholder: Enter a name
+    filter-year: Search by year
+    filter-year-placeholder: Enter a year
+    filter-species: Search by species
+    filter-species-placeholder: Select one or more species
+    filter-project: Search by project
+    filter-project-placeholder: Select a project
+    filter-state: Search by state
+    filter-state-placeholder: Select an experiment state
 
 fr:
   ExperimentList:
-    filter-label: Nom
-    label-filter-placeholder: Saisir un nom
-    filter-year: Année
-    year-filter-placeholder: Saisir une année
-    filter-species: Espèces
+    filter-label: Filtrer par nom
+    filter-label-placeholder: Saisir un nom
+    filter-year: Filtrer par année
+    filter-year-placeholder: Saisir une année
+    filter-species: Filtrer par espèces
+    filter-species-placeholder: Sélectionner une ou plusieurs espèces
+    filter-project: Filtrer par projet
+    filter-project-placeholder: Sélectionner un projet
+    filter-state: Filtrer par état
+    filter-state-placeholder: Sélectionner un état
+
 </i18n>

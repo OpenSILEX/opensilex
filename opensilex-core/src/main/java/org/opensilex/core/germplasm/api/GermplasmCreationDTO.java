@@ -191,14 +191,14 @@ public class GermplasmCreationDTO {
         this.attributes = attributes;
     }  
     
-    public GermplasmModel newModel(String lang) {
+    public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
         
         if (uri != null) {
             model.setUri(uri);
         }
         if (label != null) {
-            model.setLabel(new SPARQLLabel(label, lang));
+            model.setLabel(new SPARQLLabel(label, ""));
         }
         if (rdfType != null) {
             model.setType(rdfType);

@@ -507,25 +507,7 @@ export default class GermplasmTable extends Vue {
           failure = true;
         }
 
-          let row = this.tabulator.getRow(index);
-          row.reformat();
-          this.okNumber = this.okNumber + 1;
-          this.progressValue = this.progressValue + 1;
-
-          resolve();
-        })
-        .catch(error => {
-          let errorMessage: string;
-          let errorMessage2: string;
-          let failure = true;
-          try {
-            errorMessage = error.response.result.message;
-            failure = false;
-          } catch (e1) {
-            failure = true;
-          }
-
-          if (failure) {
+        if (failure) {
             try {
               errorMessage =
                 error.response.metadata.status[0].exception.details;
@@ -533,23 +515,23 @@ export default class GermplasmTable extends Vue {
               errorMessage = "uncatched error";
             }
           }
+          
+        if (onlyChecking) {
+          this.tabulator.updateData([
+            { rowNumber: index, checkingStatus: errorMessage, status: "NOK" }
+          ]);
+        } else {
+          this.tabulator.updateData([
+            { rowNumber: index, insertionStatus: errorMessage, status: "NOK" }
+          ]);
+        }
 
-          if (onlyChecking) {
-            this.tabulator.updateData([
-              { rowNumber: index, checkingStatus: errorMessage, status: "NOK" }
-            ]);
-          } else {
-            this.tabulator.updateData([
-              { rowNumber: index, insertionStatus: errorMessage, status: "NOK" }
-            ]);
-          }
-
-          let row = this.tabulator.getRow(index);
-          row.reformat();
-          this.errorNumber = this.errorNumber + 1;
-          this.progressValue = this.progressValue + 1;
-          resolve();
-        });
+        let row = this.tabulator.getRow(index);
+        row.reformat();
+        this.errorNumber = this.errorNumber + 1;
+        this.progressValue = this.progressValue + 1;
+        resolve();
+      });
     });
   }
 

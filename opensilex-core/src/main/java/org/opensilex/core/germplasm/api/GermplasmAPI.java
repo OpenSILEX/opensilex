@@ -1,6 +1,6 @@
 /*
  * ******************************************************************************
- *                                     GermplasmDAO.java
+ *                                     GermplasmAPI.java
  *  OpenSILEX
  *  Copyright © INRA 2019
  *  Creation date:  23 March, 2020
@@ -151,7 +151,7 @@ public class GermplasmAPI {
         if (!checkOnly) {
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
             // create new germplasm
-            GermplasmModel model = germplasmDTO.newModel(currentUser.getLanguage());
+            GermplasmModel model = germplasmDTO.newModel();
             GermplasmModel germplasm = germplasmDAO.create(model, currentUser);
             //return germplasm uri
 
@@ -444,7 +444,7 @@ public class GermplasmAPI {
 
             germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
 
-            GermplasmModel model = germplasmDTO.newModel(currentUser.getLanguage());
+            GermplasmModel model = germplasmDTO.newModel();
             germplasmDAO.update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
@@ -503,13 +503,12 @@ public class GermplasmAPI {
     }
 
     private ErrorResponse check(GermplasmCreationDTO germplasmDTO, GermplasmDAO germplasmDAO, boolean update) throws Exception {
-        ErrorResponse error = null;
 
         if (!update) {
             // check if germplasm URI already exists
             if (sparql.uriExists(GermplasmModel.class, germplasmDTO.getUri())) {
                 // Return error response 409 - CONFLICT if URI already exists
-                error = new ErrorResponse(
+                return new ErrorResponse(
                         Response.Status.CONFLICT,
                         "Germplasm URI already exists",
                         "Duplicated URI: " + germplasmDTO.getUri()
@@ -521,7 +520,7 @@ public class GermplasmAPI {
             //boolean exists = germplasmDAO.labelExistsCaseInsensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
             if (exists) {
                 // Return error response 409 - CONFLICT if label already exists
-                error = new ErrorResponse(
+                return new ErrorResponse(
                         Response.Status.PRECONDITION_FAILED,
                         "Germplasm label already exists for this species",
                         "Duplicated label: " + germplasmDTO.getLabel()
@@ -534,14 +533,45 @@ public class GermplasmAPI {
         //boolean isType = germplasmDAO.isGermplasmType(germplasmDTO.getRdfType()); 
         if (!isType) {
             // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
-            error = new ErrorResponse(
+            return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "rdfType doesn't exist in the ontology",
                     "wrong rdfType: " + germplasmDTO.getRdfType().toString()
             );
         }
-
-        // check that fromAccession, fromVariety or fromSpecies are given 
+        
+        //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
+        if (germplasmDTO.getFromSpecies() != null) {
+           if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getFromSpecies())) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "The given species doesn't exist in the database",
+                        "unknown species : " + germplasmDTO.getFromSpecies().toString()
+                );
+            } 
+        }
+         
+        if (germplasmDTO.getFromVariety() != null) {
+            if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmDTO.getFromVariety())) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "The given variety doesn't exist in the database",
+                        "unknown variety : " + germplasmDTO.getFromVariety().toString()
+                );
+            }
+        }
+        
+        if (germplasmDTO.getFromAccession() != null) {
+            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getFromAccession())) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "The given accession doesn't exist in the database",
+                        "unknown accession : " + germplasmDTO.getFromAccession().toString()
+                );
+            }        
+        }
+        
+        // check that fromAccession, fromVariety or fromSpecies are given
         boolean missingLink = true;
         String message = new String();
         if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
@@ -549,7 +579,7 @@ public class GermplasmAPI {
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Variety.getURI())) {
             message = "fromSpecies";
             if (germplasmDTO.getFromSpecies() != null) {
-                missingLink = false;
+                missingLink = false;               
             }
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Accession.getURI())) {
             message = "fromVariety or fromSpecies";
@@ -559,30 +589,19 @@ public class GermplasmAPI {
         } else {
             message = "fromAccession, fromVariety or fromSpecies";
             if (germplasmDTO.getFromSpecies() != null || germplasmDTO.getFromVariety() != null || germplasmDTO.getFromAccession() != null) {
-                missingLink = false;
+                missingLink = false;                
             }
         }
 
         if (missingLink) {
             // Return error response 409 - CONFLICT if link fromSpecies, fromVariety or fromAccession is missing
-            error = new ErrorResponse(
+            return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "missing attribute",
                     "you have to fill " + message
             );
         }
 
-        // check the given accession exists 
-//        if (germplasmDTO.getFromAccession() != null) {
-//            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getFromAccession())) {
-//                // Return error response 409 - CONFLICT if accession doesn't exist in the DB
-//                return new ErrorResponse(
-//                        Response.Status.BAD_REQUEST,
-//                        "The given accession doesn't exist in the database",
-//                        "unknown accession : " + germplasmDTO.getFromAccession().toString()
-//                ).getResponse();
-//            }
-//        }        
         // check coherence between species, variety and accession
         boolean isRelated;
         if (germplasmDTO.getFromSpecies() != null && germplasmDTO.getFromVariety() != null) {
@@ -590,7 +609,7 @@ public class GermplasmAPI {
             isRelated = cache.get(new Key(germplasmDTO), this::checkVarietySpecies);
             //isRelated = checkVarietySpecies(germplasmDTO.getFromSpecies(), germplasmDTO.getFromVariety());
             if (!isRelated) {
-                error = new ErrorResponse(
+                return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
                         "wrong species : " + germplasmDTO.getFromSpecies().toString()
@@ -603,7 +622,7 @@ public class GermplasmAPI {
             //check coherence between accession and species
             isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionSpecies);
             if (!isRelated) {
-                error = new ErrorResponse(
+                return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
                         "wrong species : " + germplasmDTO.getFromSpecies().toString()
@@ -615,7 +634,7 @@ public class GermplasmAPI {
             //check coherence between variety and accession
             isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionVariety);
             if (!isRelated) {
-                error = new ErrorResponse(
+                return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
                         "wrong species : " + germplasmDTO.getFromSpecies().toString()
@@ -623,7 +642,7 @@ public class GermplasmAPI {
             }
         }
 
-        return error;
+        return null;
     }
 
     private GermplasmCreationDTO completeDTO(GermplasmCreationDTO germplasmDTO, GermplasmDAO germplasmDAO) throws Exception {

@@ -1,33 +1,32 @@
 <template>
   <div>
-
     <div v-if="project" class="row">
       <div class="col col-xl-5" style="min-width: 400px">
         <opensilex-Card icon="ik#ik-clipboard">
           <template v-slot:rightHeader>
-               <span
-                  v-if="!isEnded(project)"
-                  class="badge badge-pill badge-info-phis"
-                  :title="$t('component.project.view.status.in-progress')"
-                >
-                  <i class="ik ik-activity mr-1"></i>
-                  {{ $t('component.project.common.status.in-progress') }}
-                </span>
-                <span
-                  v-else
-                  class="badge badge-pill badge-light"
-                  :title="$t('component.project.view.status.finished')"
-                >
-                  <i class="ik ik-archive"></i>
-                  {{ $t('component.project.common.status.finished') }}
-                </span>
-       <!--       
+            <span
+              v-if="!isEnded(project)"
+              class="badge badge-pill badge-info-phis"
+              :title="$t('component.project.view.status.in-progress')"
+            >
+              <i class="ik ik-activity mr-1"></i>
+              {{ $t('component.project.common.status.in-progress') }}
+            </span>
+            <span
+              v-else
+              class="badge badge-pill badge-light"
+              :title="$t('component.project.view.status.finished')"
+            >
+              <i class="ik ik-archive"></i>
+              {{ $t('component.project.common.status.finished') }}
+            </span>
+            <!--       
 
-            <opensilex-Icon icon="fa#edit"></opensilex-Icon> -->
+            <opensilex-Icon icon="fa#edit"></opensilex-Icon>-->
           </template>
           <template v-slot:body>
             <opensilex-StringView label="component.project.name" :value="project.name"></opensilex-StringView>
-           <!--  <div class="static-field">
+            <!--  <div class="static-field">
               <span
                 class="field-view-title"
               >{{ $t('component.common.state') }}{{ $t('component.common.colon') }}</span>
@@ -49,9 +48,9 @@
                   {{ $t('component.project.common.status.finished') }}
                 </span>
               </span>
-            </div> -->
+            </div>-->
             <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
-            <opensilex-UriView :uri="project.uri" ></opensilex-UriView>
+            <opensilex-UriView :uri="project.uri"></opensilex-UriView>
             <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
             <opensilex-TextView
               label="component.project.financialFunding"
@@ -63,15 +62,14 @@
               :url="project.homePage"
             ></opensilex-UriView>
 
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.project.relatedProjects"
               :list="relatedProjectsList"
               to="project"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
             <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
 
             <opensilex-TextView label="component.project.description" :value="project.description"></opensilex-TextView>
-            
           </template>
 
           <!--   <template v-slot:footer>
@@ -81,10 +79,9 @@
             </span>
           </template>-->
         </opensilex-Card>
-      
       </div>
 
-        <div class="col col-xl-7">
+      <div class="col col-xl-7">
         <opensilex-Card label="component.project.experiments" icon="ik#ik-layers">
           <template v-slot:body>
             <opensilex-TableAsyncView
@@ -127,25 +124,25 @@
         </opensilex-Card>
 
         <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
-       <!--    <template v-slot:rightHeader>
+          <!--    <template v-slot:rightHeader>
             <opensilex-Icon icon="fa#edit"></opensilex-Icon>
-          </template> -->
+          </template>-->
           <template v-slot:body>
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.project.scientificContacts"
               :list="scientificContactsList"
               to="contact"
-            ></opensilex-NameListView>
-            <opensilex-NameListView
+            ></opensilex-UriListView>
+            <opensilex-UriListView
               label="component.project.coordinators"
               :list="coordinatorsList"
               to="contact"
-            ></opensilex-NameListView>
-            <opensilex-NameListView
+            ></opensilex-UriListView>
+            <opensilex-UriListView
               label="component.project.administrativeContacts"
               :list="administrativeContactsList"
               to="contact"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
           </template>
         </opensilex-Card>
       </div>
@@ -180,10 +177,7 @@ export default class ProjectDescription extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
 
-  project: ProjectGetDetailDTO = {
-    name: "",
-    startDate: ""
-  };
+  project: ProjectGetDetailDTO = null;
 
   period: string = "";
 

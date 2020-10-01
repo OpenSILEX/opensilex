@@ -145,8 +145,8 @@ import StringView from './common/views/StringView.vue'
 components["opensilex-StringView"] = StringView;
 import ListView from './common/views/ListView.vue'
 components["opensilex-ListView"] = ListView;
-import NameListView from './common/views/NameListView.vue'
-components["opensilex-NameListView"] = NameListView;
+import UriListView from './common/views/UriListView.vue'
+components["opensilex-UriListView"] = UriListView;
 
 import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;

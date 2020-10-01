@@ -22,7 +22,7 @@ import copy from "copy-to-clipboard";
 import Vue from "vue";
 
 @Component
-export default class NameListView extends Vue {
+export default class UriListView extends Vue {
   $opensilex;
   @Prop()
   label: string;

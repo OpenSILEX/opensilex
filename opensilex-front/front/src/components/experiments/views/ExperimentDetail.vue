@@ -35,19 +35,11 @@
             <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
 
             <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
-
-            <div class="static-field">
-              <span
-                class="static-field-key"
-              >{{ $t('component.experiment.objective') }}{{ $t('component.common.colon') }}</span>
-              <div class="static-field-text">{{ experiment.objective }}</div>
-            </div>
-            <div class="static-field">
-              <span
-                class="static-field-key"
-              >{{ $t('component.experiment.comment') }}{{ $t('component.common.colon') }}</span>
-              <div class="static-field-text">{{ experiment.comment }}</div>
-            </div>
+            <opensilex-TextView
+              label="component.experiment.objective"
+              :value="experiment.objective"
+            ></opensilex-TextView>
+            <opensilex-TextView label="component.experiment.comment" :value="experiment.comment"></opensilex-TextView>
           </template>
         </opensilex-Card>
       </div>
@@ -61,11 +53,11 @@
               <span class="static-field-line"></span>
             </div>-->
 
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.experiment.projects"
               :list="projectsList"
               to="project"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
 
             <!--     <div class="static-field">
               <span
@@ -74,39 +66,35 @@
               <span class="static-field-line">{{ experiment.campaign }}</span>
             </div>-->
 
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.experiment.infrastructures"
               :list="infrastructuresList"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
 
-            <opensilex-NameListView
-              label="component.experiment.species"
-              :list="speciesList"
-              
-            ></opensilex-NameListView>
+            <opensilex-UriListView label="component.experiment.species" :list="speciesList"></opensilex-UriListView>
 
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
               :list="factorsList"
               to="factor/details"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
 
-            <opensilex-NameListView label="component.experiment.groups" :list="groupsList"></opensilex-NameListView>
+            <opensilex-UriListView label="component.experiment.groups" :list="groupsList"></opensilex-UriListView>
           </template>
         </opensilex-Card>
         <opensilex-Card icon="ik#ik-users" :label="$t('component.experiment.contacts')">
           <template v-slot:body>
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
               :list="scientificSupervisorsList"
               to="contact"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
 
-            <opensilex-NameListView
+            <opensilex-UriListView
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
               to="contact"
-            ></opensilex-NameListView>
+            ></opensilex-UriListView>
           </template>
         </opensilex-Card>
       </div>

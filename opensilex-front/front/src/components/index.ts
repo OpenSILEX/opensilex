@@ -322,6 +322,10 @@ import ProjectSelector from './projects/ProjectSelector.vue';
 components["opensilex-ProjectSelector"] = ProjectSelector;
 import ProjectDetails from './projects/ProjectDetails.vue';
 components["opensilex-ProjectDetails"] = ProjectDetails;
+import ProjectDescription from './projects/details/ProjectDescription.vue';
+components["opensilex-ProjectDescription"] = ProjectDescription;
+import ProjectDocuments from './projects/details/ProjectDocuments.vue';
+components["opensilex-ProjectDocuments"] = ProjectDocuments;
 
 // Species
 import SpeciesSelector from './species/SpeciesSelector.vue';

@@ -290,6 +290,8 @@
         "project": {
             "add": "Ajouter un projet",
             "uri": "URI du projet",
+            "details":"Details",
+            "documents":"Documents associés",
             "project-uri": "URI du projet",
             "project":"Projet",
             "filter-description": "Recherche",

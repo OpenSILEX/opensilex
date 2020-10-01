@@ -291,6 +291,8 @@
             "selectedLabel": "Selected Project(s)",
             "project":"Project",
             "uri": "URI",
+            "details":"Details",
+            "documents":"Associated documents",
             "project-uri": "Project URI",
             "filter-description": "Search",
             "search-description": "Manage and configure the projects ",

@@ -49,7 +49,7 @@
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/project/'+ encodeURIComponent(data.item.uri)}"
+          :to="{path: '/project/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.name }}"
         ></opensilex-UriLink>
       </template>
 

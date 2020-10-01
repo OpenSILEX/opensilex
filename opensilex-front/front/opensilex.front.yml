@@ -165,7 +165,12 @@ routes:
     component: opensilex-VariableDetails
     credentials:
       - variable-read
-  - path: /project/:uri
+  - path: /project/details/:uri
+    component: opensilex-ProjectDetails
+    credentials:
+      - project-read
+
+  - path: /project/documents/:uri
     component: opensilex-ProjectDetails
     credentials:
       - project-read

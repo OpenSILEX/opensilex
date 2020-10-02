@@ -33,6 +33,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.core.experiment.api.ExperimentGetListDTO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
@@ -163,7 +166,7 @@ public class FactorAPI {
      */
     @GET
     @Path("get/{uri}/levels")
-    @ApiOperation("Get an factor")
+    @ApiOperation("Get factor levels")
     @ApiProtected
     @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -180,6 +183,41 @@ public class FactorAPI {
         if (model != null) {
             FactorDetailsGetDTO dtoFromModel = FactorDetailsGetDTO.fromModel(model);
             return new SingleObjectResponse<>(dtoFromModel.getFactorLevels()).getResponse();
+        } else {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Factor not found",
+                    "Unknown factor URI: " + uri.toString()).getResponse();
+        }
+    }
+    
+    
+    /**
+     * Retreive experiments which study effects of this factor
+     *
+     * @param uri factor uri 
+     * @return Return factor associated experiments
+     * @throws Exception in case of server error
+     */
+    @GET
+    @Path("get/{uri}/experiments")
+    @ApiOperation("Get factor associated experiments")
+    @ApiProtected
+    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Experiments retrieved", response = ExperimentGetListDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Factor not found", response = ErrorResponse.class)})
+    public Response getFactorAssciatedExperiments(
+            @ApiParam(value = "Factor URI", example = "platform-factor:irrigation", required = true) @PathParam("uri") @NotNull URI uri)
+            throws Exception {
+        FactorDAO dao = new FactorDAO(sparql);
+        FactorModel model = dao.get(uri);
+        if (model != null) {
+            List<ExperimentModel> experiments = model.getExperiments();
+            ListWithPagination<ExperimentModel> experimentsList = new ListWithPagination(experiments);
+            // Convert paginated list to DTO
+            ListWithPagination<ExperimentGetListDTO> convertList = experimentsList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);
+            return new PaginatedListResponse<>(convertList).getResponse();
         } else {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Factor not found",
                     "Unknown factor URI: " + uri.toString()).getResponse();
@@ -260,9 +298,10 @@ public class FactorAPI {
             factorGetDTO.setComment(factorModel.getComment());
             getFactorDTOList.add(factorGetDTO);
         }
-
+        PaginatedListResponse<FactorGetDTO> paginatedListResponse = new PaginatedListResponse<>();
+        paginatedListResponse.setResult(getFactorDTOList);
         // Return paginated list of factor DTO
-        return new PaginatedListResponse<>(getFactorDTOList).getResponse();
+        return paginatedListResponse.getResponse();
     }
 
     /**

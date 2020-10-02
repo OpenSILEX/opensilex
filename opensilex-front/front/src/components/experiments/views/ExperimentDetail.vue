@@ -2,7 +2,10 @@
   <div>
     <div v-if="experiment" class="row">
       <div class="col col-xl-6" style="min-width: 400px">
-        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.experiment.description')">
+        <opensilex-Card
+          icon="ik#ik-clipboard"
+          :label="$t('component.experiment.description')"
+        >
           <template v-slot:rightHeader>
             <span
               v-if="!experiment.isEnded"
@@ -10,7 +13,7 @@
               :title="$t('component.experiment.view.status.finished')"
             >
               <i class="ik ik-activity mr-1"></i>
-              {{ $t('component.experiment.common.status.in-progress') }}
+              {{ $t("component.experiment.common.status.in-progress") }}
             </span>
             <span
               v-else
@@ -18,7 +21,7 @@
               :title="$t('component.experiment.view.status.finished')"
             >
               <i class="ik ik-archive"></i>
-              {{ $t('component.experiment.common.status.finished') }}
+              {{ $t("component.experiment.common.status.finished") }}
             </span>
 
             <span
@@ -27,24 +30,36 @@
               :title="$t('component.experiment.view.status.public')"
             >
               <i class="ik ik-users mr-1"></i>
-              {{ $t('component.experiment.common.status.public') }}
+              {{ $t("component.experiment.common.status.public") }}
             </span>
           </template>
           <template v-slot:body>
-            <opensilex-StringView label="component.common.name" :value="experiment.label"></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.name"
+              :value="experiment.label"
+            ></opensilex-StringView>
             <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
 
-            <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.period"
+              :value="period"
+            ></opensilex-StringView>
             <opensilex-TextView
               label="component.experiment.objective"
               :value="experiment.objective"
             ></opensilex-TextView>
-            <opensilex-TextView label="component.experiment.comment" :value="experiment.comment"></opensilex-TextView>
+            <opensilex-TextView
+              label="component.experiment.comment"
+              :value="experiment.comment"
+            ></opensilex-TextView>
           </template>
         </opensilex-Card>
       </div>
       <div class="col col-xl-6">
-        <opensilex-Card icon="ik#ik-box" :label="$t('component.experiment.context')">
+        <opensilex-Card
+          icon="ik#ik-box"
+          :label="$t('component.experiment.context')"
+        >
           <template v-slot:body>
             <!--   <div class="static-field">
               <span
@@ -71,7 +86,10 @@
               :list="infrastructuresList"
             ></opensilex-UriListView>
 
-            <opensilex-UriListView label="component.experiment.species" :list="speciesList"></opensilex-UriListView>
+            <opensilex-UriListView
+              label="component.experiment.species"
+              :list="speciesList"
+            ></opensilex-UriListView>
 
             <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
@@ -79,10 +97,16 @@
               to="factor/details"
             ></opensilex-UriListView>
 
-            <opensilex-UriListView label="component.experiment.groups" :list="groupsList"></opensilex-UriListView>
+            <opensilex-UriListView
+              label="component.experiment.groups"
+              :list="groupsList"
+            ></opensilex-UriListView>
           </template>
         </opensilex-Card>
-        <opensilex-Card icon="ik#ik-users" :label="$t('component.experiment.contacts')">
+        <opensilex-Card
+          icon="ik#ik-users"
+          :label="$t('component.experiment.contacts')"
+        >
           <template v-slot:body>
             <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
@@ -116,12 +140,12 @@ import {
   SpeciesDTO,
   SpeciesService,
   FactorsService,
-  FactorGetDTO
+  FactorGetDTO,
 } from "opensilex-core/index";
 import {
   SecurityService,
   GroupDTO,
-  UserGetDTO
+  UserGetDTO,
 } from "opensilex-security/index";
 import VueI18n from "vue-i18n";
 import moment from "moment";
@@ -182,7 +206,7 @@ export default class ExperimentDetail extends Vue {
           );
           this.setPreviousAndNextExperiment();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$opensilex.errorHandler(error);
         });
     }
@@ -210,7 +234,7 @@ export default class ExperimentDetail extends Vue {
     );
 
     if (this.experiment.infrastructures) {
-      this.experiment.infrastructures.forEach(infrastructure => {
+      this.experiment.infrastructures.forEach((infrastructure) => {
         service
           .getInfrastructure(infrastructure)
           .then(
@@ -229,7 +253,7 @@ export default class ExperimentDetail extends Vue {
     );
 
     if (this.experiment.groups) {
-      this.experiment.groups.forEach(group => {
+      this.experiment.groups.forEach((group) => {
         service
           .getGroup(group)
           .then((http: HttpResponse<OpenSilexResponse<GroupDTO>>) => {
@@ -248,10 +272,10 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.scientificSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.scientificSupervisorsList = http.response.result.map(item => {
+          this.scientificSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.uri,
-              name: item.firstName + " " + item.lastName
+              name: item.firstName + " " + item.lastName,
             };
           });
         })
@@ -262,10 +286,10 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.technicalSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.technicalSupervisorsList = http.response.result.map(item => {
+          this.technicalSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.uri,
-              name: item.firstName + " " + item.lastName
+              name: item.firstName + " " + item.lastName,
             };
           });
         })
@@ -285,17 +309,17 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                species => species == http.response.result[i].uri
+                (species) => species == http.response.result[i].uri
               )
             ) {
               this.speciesList.push(http.response.result[i]);
             }
           }
 
-          this.speciesList = this.speciesList.map(item => {
+          this.speciesList = this.speciesList.map((item) => {
             return {
               uri: item.uri,
-              name: item.label
+              name: item.label,
             };
           });
         })
@@ -315,7 +339,7 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.factors.find(
-                factors => factors == http.response.result[i].uri
+                (factors) => factors == http.response.result[i].uri
               )
             ) {
               this.factorsList.push(http.response.result[i]);
@@ -332,7 +356,7 @@ export default class ExperimentDetail extends Vue {
     );
 
     if (this.experiment.projects) {
-      this.experiment.projects.forEach(project => {
+      this.experiment.projects.forEach((project) => {
         service
           .getProject(project)
           .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {

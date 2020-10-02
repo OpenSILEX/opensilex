@@ -7,9 +7,14 @@
     ></opensilex-PageHeader>
     <opensilex-PageActions>
       <template v-slot>
-        <opensilex-HelpButton @click="helpModal.show()" label="component.common.help-button"></opensilex-HelpButton>
+        <opensilex-HelpButton
+          @click="helpModal.show()"
+          label="component.common.help-button"
+        ></opensilex-HelpButton>
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
+          "
           @click="factorForm.showCreateForm()"
           label="component.factor.add-button"
         ></opensilex-CreateButton>
@@ -22,7 +27,8 @@
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
       ref="factorForm"
-      modalSize="xl"
+      modalSize="lg"
+      :tutorial="true"
       :successMessage="successMessage"
       component="opensilex-FactorForm"
       createTitle="component.factor.add"
@@ -202,14 +208,15 @@ en:
       factors: factor
       add: Add factor
       add-button: Add factor
+      update-button: Update factor
       update: Update factor
       name: Name
-      name-help: Default name
+      name-help: Usual name which describe a factor in an experiment
       name-placeholder: Irrigation, Shading, Planting year, etc.
       category: Category
-      category-help: Category of the factor
+      category-help: General category used to classify factors
       category-placeholder: Environnement-Irrigation, Field management, etc ...
-      comment: comment
+      comment: Comment
       comment-help: Description associated to this factors (protocol, amount of component)
       comment-error: Must contains at least 10 characters
       comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
@@ -226,7 +233,6 @@ en:
         nutrient: Nutrient
         atmospheric: Atmospheric
         temperature: Temperature
-
 fr:
   component:
     factor:
@@ -234,20 +240,20 @@ fr:
       label: Facteur
       uri: URI
       uri-help: Identifiant unique du facteur
-      names-placeholder: Renseignez un alias de facteur
       filter-placeholder: Utiliser ce filter pour filter les facteurs
       factors: facteur
       add: Ajouter facteur
       add-button: Ajouter facteur
+      update-button: Modifier facteur
       update: Mettre à jour un facteur
       name: Nom
       name-en: Nom
-      name-help: Nom par défaut
+      name-help: Nom qui décrit un facteur dans une expérimentation
       name-placeholder: Irrigation, Ombrage, Année de plantation, etc.
       category: Catégorie
-      category-help: Catégorie liée au facteur
+      category-help: Grandes catégories servant à classifier les facteurs
       category-placeholder: Irrigation-Environnement, Conduite au champ , etc.
-      comment: description
+      comment: Description
       comment-help: Description associée à ce facteur (protocole, apport de composé)
       form-comment-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
       errors:

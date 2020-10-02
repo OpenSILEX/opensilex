@@ -115,8 +115,8 @@
                 "experiment": "Associated experiments"
             },
             "import-files": {
-                "csv-file": " Import CSV file",
-                "csv-template": "Get CSV template file"
+                "csv-file": " Load CSV",
+                "csv-template": "Download template"
             },
             "tabulator": {
                 "reset-table": "Reset table",
@@ -534,8 +534,8 @@
             "relation": "Relations",
             "relation-help": "Relation associated between interoperable concept URI and this local individual",
             "relation-placeholder": "Exact Match",
-            "add": "Insert references",
-            "update": "Update relations",
+            "add": "Add references",
+            "update": "Update references",
             "exactMatch": "Exact match",
             "closeMatch": "Close match",
             "broader": "Broader",

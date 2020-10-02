@@ -40,9 +40,10 @@
         "vue-json-csv": "1.2.11",
         "vue-papa-parse": "1.3.0",
         "vue-select": "^3.9.5",
-        "vue-tabulator": "1.2.2",
+        "vue-tabulator": "1.3.0",
         "vuejs-datepicker": "^1.6.2",
-        "vuejs-logger": "1.10.2"
+        "vuejs-logger": "1.10.2",
+        "vue-tour": "1.5.0"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "4.3.1",

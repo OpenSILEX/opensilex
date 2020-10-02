@@ -11,15 +11,38 @@
     <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
     <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
 
-    <template v-slot:modal-title>
-      <i>
-        <slot name="icon">
-          <opensilex-Icon :icon="icon" class="icon-title" />
-        </slot>
-        <span v-if="editMode">{{ $t(editTitle) }}</span>
-        <span v-else>{{ $t(createTitle) }}</span>
-      </i>
+    <template class="mt-1" v-slot:modal-header>
+      <b-row class="mt-1" style="width:100%">
+        <b-col cols="10" >
+          <i>
+            <h4> 
+              <slot name="icon">
+                <opensilex-Icon :icon="icon" class="icon-title" />
+              </slot>
+              <span v-if="editMode">{{ $t(editTitle) }}</span>
+              <span v-else>{{ $t(createTitle) }}</span>
+          
+            </h4>
+          </i>
+        </b-col>
+        <b-col cols="1">
+          <opensilex-HelpButton
+            v-if="tutorial && !editMode"
+              class="ml-2"
+              variant="outline-secondary"
+              label="component.tutorial.label"  
+              @click="getFormRef().tutorial()"
+          ></opensilex-HelpButton> 
+        </b-col>
+        <b-col cols="1">
+        <!-- Emulate built in modal header close button action -->
+        <button type="button" class="close" @click="modalRef.hide()" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        </b-col>
+      </b-row> 
     </template>
+
 
     <ValidationObserver ref="validatorRef">
       <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
@@ -46,6 +69,9 @@ export default class ModalForm extends Vue {
   editMode = false;
 
   form = {};
+
+  @Prop({ default: false })
+  tutorial :boolean;
 
   @Prop()
   component;

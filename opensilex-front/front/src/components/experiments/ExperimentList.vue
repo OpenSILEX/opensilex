@@ -19,32 +19,48 @@
 
     <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
       <template v-slot:filters>
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <label>{{$t('component.common.name')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="labelFilter"
-            placeholder="ExperimentList.label-filter-placeholder"
-          ></opensilex-StringFilter>
-        </div>
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <label>{{$t('ExperimentList.filter-label')}}:</label>
+            <opensilex-StringFilter
+              :filter.sync="labelFilter"
+              @update="updateLabelFilter()"
+              placeholder="ExperimentList.label-filter-placeholder"
+            ></opensilex-StringFilter>
+          </div>
 
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <label>{{$t('component.common.year')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="yearFilter"
-            type="number"
-            min="1000"
-            max="9999"
-            placeholder="ExperimentList.year-filter-placeholder"
-          ></opensilex-StringFilter>
-        </div>
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <label>{{$t('ExperimentList.filter-year')}}:</label>
+            <opensilex-StringFilter
+              :filter.sync="yearFilter"
+              type="number"
+              min="1000"
+              max="9999"
+              @update="updateYearFilter()"
+              placeholder="ExperimentList.year-filter-placeholder"
+            ></opensilex-StringFilter>
+          </div>
 
-        <div class="col col-xl-4 col-sm-6 col-12">
-          <opensilex-SpeciesSelector
-            label="component.common.species"
-            :multiple="true"
-            :species.sync="speciesFilter"
-          ></opensilex-SpeciesSelector>
-        </div>
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <opensilex-SpeciesSelector
+              label="ExperimentList.filter-species"
+              :multiple="true"
+              :species.sync="speciesFilter"
+              @clear="updateSpeciesFilter()"
+              @select="updateSpeciesFilter()"
+              @deselect="updateSpeciesFilter()"
+            ></opensilex-SpeciesSelector>
+          </div>
+          
+           <!-- Factor -->
+          <div class="col col-xl-4 col-sm-6 col-12">
+            <opensilex-FactorSelector 
+              :multiple="true" 
+              :factors.sync="factorsFilter"  
+              @clear="updateFactorsFilter()"
+              @select="updateFactorsFilter()"
+              @deselect="updateFactorsFilter()">
+            </opensilex-FactorSelector>
+          </div>
       </template>
     </opensilex-SearchFilterField>
 
@@ -183,14 +199,21 @@ export default class ExperimentList extends Vue {
     this.updateYearFilter();
     this.updateLabelFilter();
     this.updateSpeciesFilter();
+    this.updateFactorsFilter();
     this.refresh();
   }
   resetFilters() {
     this.yearFilter = "";
     this.labelFilter = "";
     this.speciesFilter = [];
+    this.factorsFilter = [];
     this.updateFilters();
   }
+
+  private factorsFilter: any = [];
+  updateFactorsFilter() {
+    this.$opensilex.updateURLParameter("factors", this.factorsFilter);
+   }
 
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
@@ -215,6 +238,7 @@ export default class ExperimentList extends Vue {
         endDateFilter, // endDate
         this.labelFilter, // label
         this.speciesFilter, // species
+        this.factorsFilter, // factors
         undefined, // projects
         undefined, // isPublic
         undefined, // isEnded
@@ -362,17 +386,17 @@ export default class ExperimentList extends Vue {
 <i18n>
 en:
   ExperimentList:
-    filter-label: Search by name
+    filter-label: Name
     label-filter-placeholder: Enter a name
-    filter-year: Search by year
+    filter-year: Year
     year-filter-placeholder: Enter a year
-    filter-species: Search by species
+    filter-species: Species
 
 fr:
   ExperimentList:
-    filter-label: Filtrer par nom
+    filter-label: Nom
     label-filter-placeholder: Saisir un nom
-    filter-year: Filtrer par année
+    filter-year: Année
     year-filter-placeholder: Saisir une année
-    filter-species: Filtrer par espèces
+    filter-species: Espèces
 </i18n>

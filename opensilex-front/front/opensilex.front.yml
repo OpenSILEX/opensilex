@@ -79,8 +79,8 @@ menu:
       - id: variables
         label: component.menu.variables
         route:
-            path: /variables
-            component: opensilex-VariableView      
+          path: /variables
+          component: opensilex-VariableView
       - id: factors
         label: component.menu.experimentalDesign.factors
         route:
@@ -124,19 +124,19 @@ menu:
     label: component.menu.configuration
     children:
       - id: scientificObjectTypes
-        label: component.menu.scientificObjectTypes 
+        label: component.menu.scientificObjectTypes
         route:
           path: /scientific-object-types
           component: opensilex-ScientificObjectTypes
           credentials:
             - is-admin
       - id: facilitiesTypes
-        label: component.menu.facilitiesTypes 
+        label: component.menu.facilitiesTypes
         route:
           path: /facilities-types
           component: opensilex-InfrastructureFacilitiesTypes
           credentials:
-            - is-admin            
+            - is-admin
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
@@ -149,7 +149,7 @@ routes:
   - path: /experiment/data/:uri
     component: opensilex-ExperimentView
     credentials:
-      - experiment-read      
+      - experiment-read
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
     credentials:
@@ -157,7 +157,7 @@ routes:
   - path: /facilities-types/properties
     component: opensilex-InfrastructureFacilitiesTypes
     credentials:
-      - is-admin      
+      - is-admin
   - path: /VariableCreate
     component: opensilex-VariableCreate
     credentials: []
@@ -187,6 +187,14 @@ routes:
     component: opensilex-FactorForm
     credentials:
       - factor-modification
+  - path: /factor/details/:uri
+    component: opensilex-FactorView
+    credentials:
+      - factor-read
+  - path: /factor/experiments/:uri
+    component: opensilex-FactorView
+    credentials:
+      - factor-read
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

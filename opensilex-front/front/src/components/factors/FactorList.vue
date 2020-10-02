@@ -11,7 +11,7 @@
             <label for="name">{{$t('component.factor.list.filter.name')}}</label>
             <opensilex-StringFilter
               id="name"
-              :filter.sync="filter.name" 
+              :filter.sync="filter.name"
               placeholder="component.factor.name-placeholder"
             ></opensilex-StringFilter>
           </b-form-group>
@@ -61,7 +61,7 @@
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/factor/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.name }}"
+          :to="{path: '/factor/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
       <template v-slot:cell(category)="{data}">{{$t(getCategoryLabel(data.value))}}</template>

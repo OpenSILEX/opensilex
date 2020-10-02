@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" :size="modalSize" :static="static">
+  <b-modal ref="modalRef" :size="modalSize" :static="static" no-close-on-backdrop no-close-on-esc >
     <template v-slot:modal-title>
       <i>
         <slot name="icon">

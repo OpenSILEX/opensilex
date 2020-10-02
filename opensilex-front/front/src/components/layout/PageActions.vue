@@ -1,14 +1,14 @@
 <template>
   <div class="card">
-    <div class="card-header row clearfix">
+    <div class="card-header row clearfix"   :style="(small ? 'padding: 8px 20px;' : '')">
       <div class="d-inline-block w-100 float-left">
-        <b-nav pills>
+        <slot name="buttons"></slot>
+        <b-nav :tabs="(tabs == true ? true : false)">
           <router-link
             v-if="returnTo && returnButton"
             :to="returnTo"
             v-slot="{ href, route, navigate,}"
-          >
-            <li>
+          > 
               <a
                 class="btn btn-outline-primary back-button mr-2 h-100"
                 :href="href"
@@ -16,8 +16,7 @@
                 @click="navigate"
               >
                 <opensilex-Icon icon="ik#ik-corner-up-left" class="icon-title" />
-              </a>
-            </li>
+              </a> 
           </router-link>
           <router-link
             v-if="!returnTo && returnButton"
@@ -26,12 +25,10 @@
             :title="$t(returnToTitle)"
             event
             @click.native.prevent="$router.go(-1)"
-          >
-            <li>
+          > 
               <a class="btn btn-outline-primary mr-2 h-100 back-button">
                 <opensilex-Icon class="icon-title" icon="ik#ik-corner-up-left" />
-              </a>
-            </li>
+              </a> 
           </router-link>
           <slot></slot>
         </b-nav>
@@ -64,6 +61,12 @@ export default class PageActions extends Vue {
 
   @Prop({ default: false })
   returnButton: boolean;
+ 
+  @Prop({ default: false })
+  tabs: boolean;
+ 
+  @Prop({ default: false })
+  small: boolean;
 }
 </script>
 

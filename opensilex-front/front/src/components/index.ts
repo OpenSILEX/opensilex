@@ -100,6 +100,8 @@ import FactorLevelPropertySelector from './factors/FactorLevelPropertySelector.v
 components["opensilex-FactorLevelPropertySelector"] = FactorLevelPropertySelector;
 import FactorLevelPropertyView from './factors/FactorLevelPropertyView.vue';
 components["opensilex-FactorLevelPropertyView"] = FactorLevelPropertyView;
+import AssociatedExperiments from './factors/AssociatedExperiments.vue';
+components["opensilex-AssociatedExperiments"] = AssociatedExperiments;
 
 // Common
 import FormInputLabelHelper from './common/forms/FormInputLabelHelper.vue'
@@ -108,6 +110,8 @@ import FormField from './common/forms/FormField.vue'
 components["opensilex-FormField"] = FormField;
 import InputForm from './common/forms/InputForm.vue'
 components["opensilex-InputForm"] = InputForm;
+import Tutorial from './common/views/Tutorial.vue'
+components["opensilex-Tutorial"] = Tutorial;
 import TextAreaForm from './common/forms/TextAreaForm.vue'
 components["opensilex-TextAreaForm"] = TextAreaForm;
 import SelectForm from './common/forms/SelectForm.vue'

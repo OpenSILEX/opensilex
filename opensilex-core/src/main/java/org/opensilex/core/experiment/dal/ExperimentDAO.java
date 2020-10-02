@@ -205,6 +205,7 @@ public class ExperimentDAO {
     public ListWithPagination<ExperimentModel> search(
             String label,
             List<URI> species,
+            List<URI> factors,
             LocalDate startDate,
             LocalDate endDate,
             Boolean isEnded,
@@ -219,6 +220,7 @@ public class ExperimentDAO {
                 (SelectBuilder select) -> {
                     appendRegexLabelFilter(select, label);
                     appendSpeciesFilter(select, species);
+                    appendFactorsFilter(select, factors);
                     appendDateFilters(select, isEnded, startDate, endDate);
                     appendProjectListFilter(select, projects);
                     appendUserExperimentsFilter(select, user);
@@ -245,6 +247,14 @@ public class ExperimentDAO {
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_FIELD, species);
         }
     }
+    
+    private void appendFactorsFilter(SelectBuilder select, List<URI> factors) throws Exception {
+        if (factors != null && !factors.isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
+            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.FACTORS_FIELD, factors);
+        }
+    }
+
 
     private void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {

@@ -2,8 +2,12 @@
   <b-row>
     <b-col>
       <h6 class="mb-3">
-        <strong>{{$t('component.factorLevel.associated')}}</strong>
+        <strong>{{ $t("component.factorLevel.associated") }}</strong>
       </h6>
+      <p>{{ $t("component.factorLevel.associated-help") }}</p>
+      <p v-if="editMode" class="alert-info">
+        {{ $t("component.factorLevel.alert-help") }}
+      </p>
       <b-row>
         <b-col>
           <!-- <p>{{$t('component.common.tabulator.add-multiple')}}</p> -->
@@ -11,15 +15,22 @@
             <b-row class="ml-1">
               <b-button
                 class="mr-2"
-                @click="resetTable"
-                variant="outline-secondary"
-              >{{$t('component.common.tabulator.reset-table')}}</b-button>
-              <b-button
-                class="mr-2"
                 @click="csvExport"
                 variant="outline-primary"
-              >{{$t('component.common.import-files.csv-template')}}</b-button>
-              <opensilex-CSVInputFile :headersToCheck="['name','comment']" v-on:updated="uploaded"></opensilex-CSVInputFile>
+                >{{
+                  $t("component.common.import-files.csv-template")
+                }}</b-button
+              >
+              <opensilex-CSVInputFile
+                :headersToCheck="['name', 'comment']"
+                v-on:updated="uploaded"
+              ></opensilex-CSVInputFile>
+              <b-button
+                class="mr-2"
+                @click="resetTable"
+                variant="outline-secondary"
+                >{{ $t("component.common.tabulator.reset-table") }}</b-button
+              >
               <opensilex-Button
                 class="mb-2 mr-4"
                 @click="addEmptyRow"
@@ -139,9 +150,11 @@ export default class FactorLevelTable extends Vue {
       title: "Delete",
       field: "actions",
       headerSort: false,
-      widthGrow: 0.3,
+      widthGrow: 0.2,
       formatter: function (cell, formatterParams, onRendered) {
-        return '<button type="button" class="btn btn-danger btn-sm" style="padding: 0px 0px"><span data-v-4d3fd064=""><!----><svg  aria-hidden="true" focusable="false" data-prefix="fas" style="font-size: 1em" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
+        return '<span style="color:red"><!----><svg   aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span>';
+
+        // return '<button class="btn btn-danger btn-sm" style="padding: 0px 0px"><span data-v-4d3fd064=""><!----><svg  aria-hidden="true" focusable="false" data-prefix="fas" style="" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
       },
     },
   ];
@@ -275,9 +288,6 @@ export default class FactorLevelTable extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4";
-
-$headerTextColor: #000;
 </style>
 
 <i18n>
@@ -291,6 +301,8 @@ en:
       factorLevel: factor level
       add: Add row
       associated: Levels
+      associated-help: Levels describe the possible values of a factor
+      alert-help: Levels can be linked to scientific objects be careful when update
       unique-name: Name is required and must be unique
       update: update factor level
       name: name
@@ -309,6 +321,8 @@ fr:
       factorLevel: niveau de facteur
       add: Ajouter une ligne
       associated: Niveaux de facteurs associés
+      associated-help: Les niveaux décrivent les valeurs possibles d'un facteur
+      alert-help: Les niveaux peuvent être liés à des objets scientifique faite attention lors de leur édition
       unique-name: Le nom est requis et doit être unique
       update: Modifier un niveau de facteur
       name: nom

@@ -12,6 +12,7 @@ package org.opensilex.core.factor.dal;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -59,6 +60,15 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     )
     List<FactorLevelModel> factorLevels = new ArrayList<>();
     public static final String FACTORLEVELS_SPARQL_VAR = "factorLevels";
+    
+    
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "studyEffectOf",
+            inverse = true
+    )
+    List<ExperimentModel> experiments;
+    public static final String EXPERMIENTS_FIELD = "experiments";
 
     public String getName() {
         return name;
@@ -94,6 +104,14 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
         this.factorLevels = factorLevels;
     }
 
+    public List<ExperimentModel> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<ExperimentModel> experiments) {
+        this.experiments = experiments;
+    }
+    
     @Override
     public String[] getUriSegments(FactorModel instance) {
         return new String[]{

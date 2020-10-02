@@ -6,38 +6,46 @@
       :description="factor.name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true" :returnTo="goBack()" :returnToTitle="returnTitle()">
+    <opensilex-PageActions :tabs="true" :returnButton="true" :returnTo="goBack()" :returnToTitle="returnTitle()">
       <template v-slot>
         <b-nav-item
+          class="ml-3"
           :active="isDetailsTab()"
-          :disabled="!isDetailsTab()"
           :to="{path: '/factor/details/' + encodeURIComponent(uri)}"
         >{{ $t('component.factor.details.label') }}</b-nav-item>
+        <b-nav-item
+          :active="isExperimentTab()"
+          :to="{path: '/factor/experiments/' + encodeURIComponent(uri)}"
+        >{{ $t('component.common.details.experiment') }}</b-nav-item>
         <b-nav-item
           :active="false"
           :disabled="true"
           :to="{path: '/factor/document/' + encodeURIComponent(uri)}"
         >{{ $t('component.common.details.document') }}</b-nav-item>
-        <b-nav-item
-          :active="false"
-          :disabled="true"
-          :to="{path: '/factor/experiment/' + encodeURIComponent(uri)}"
-        >{{ $t('component.common.details.experiment') }}</b-nav-item>
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-FactorDetails v-if="isDetailsTab()" :factor="factor"></opensilex-FactorDetails>
+        <opensilex-FactorDetails
+          v-if="isDetailsTab()"
+          @onUpdate="callUpdateFactorService"
+          :factor="factor"
+        ></opensilex-FactorDetails>
+        <opensilex-AssociatedExperiments v-else-if="isExperimentTab()" :uri="uri"></opensilex-AssociatedExperiments>
       </template>
     </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { FactorDetailsGetDTO, FactorsService } from "opensilex-core/index";
+import {
+  FactorDetailsGetDTO,
+  FactorUpdateDTO,
+  FactorsService,
+} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -51,19 +59,44 @@ export default class FactorView extends Vue {
   $i18n: any;
   service: FactorsService;
   factor: any = {
-        uri: null,
-        name: null,
-        category: null,
-        comment: null,
-        exactMatch: [],
-        closeMatch: [],
-        broader: [],
-        narrower: [],
-        factorLevels: []
-      };
+    uri: null,
+    name: null,
+    category: null,
+    comment: null,
+    exactMatch: [],
+    closeMatch: [],
+    broader: [],
+    narrower: [],
+    factorLevels: [],
+  };
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  callUpdateFactorService(form: FactorUpdateDTO, done) {
+    console.log("callUpdateFactorService");
+    if (form instanceof Promise) {
+      form.then((factor) => {
+        this.service
+          .updateFactor(form)
+          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            let uri = http.response.result;
+            console.debug("Updated factor", uri);
+          });
+      });
+    } else {
+      this.service
+        .updateFactor(form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("Updated factor", uri);
+        });
+    }
   }
 
   created() {
@@ -76,8 +109,6 @@ export default class FactorView extends Vue {
     this.loadFactor(uri);
   }
 
- 
-
   loadFactor(uri: string) {
     this.service
       .getFactor(uri)
@@ -89,6 +120,10 @@ export default class FactorView extends Vue {
 
   isDetailsTab() {
     return this.$route.path.startsWith("/factor/details/");
+  }
+
+  isExperimentTab() {
+    return this.$route.path.startsWith("/factor/experiments/");
   }
 
   goBack() {

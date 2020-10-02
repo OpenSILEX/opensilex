@@ -1,7 +1,7 @@
 <template>
   <opensilex-Button
     @click="deleteAction"
-    variant="danger"
+    variant="outline-danger"
     :small="small"
     :label="label"
     :disabled="disabled"

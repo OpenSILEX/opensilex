@@ -112,8 +112,8 @@
                 "experiment": "Expérimentations associées"
             },
             "import-files": {
-                "csv-file": " Importer un fichier CSV",
-                "csv-template": "Télécharger un gabarit CSV"
+                "csv-file": "Charger un CSV",
+                "csv-template": "Télécharger un gabarit"
             },
             "tabulator": {
                 "reset-table": "Vider la table",
@@ -467,8 +467,8 @@
             "relation": "Relations",
             "relation-help": "Relation entre l'individu décrit et le concept intéropérable lié à cet identifiant",
             "relation-placeholder": "Equivalent",
-            "update": "Insérer les relations",
-            "add": "Créer une nouvelle relation",
+            "update": "Mettre à jour les références",
+            "add": "Ajouter la référence",
             "exactMatch": "Equivalent",
             "closeMatch": "Similaire",
             "broader": "Plus général",

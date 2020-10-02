@@ -1,7 +1,7 @@
 <template>
   <opensilex-Button
     @click="$emit('click')"
-    variant="outline-info"
+    :variant="variant"
     :small="small"
     :label="label"
     :disabled="disabled"
@@ -24,6 +24,9 @@ export default class HelpButton extends Vue {
 
   @Prop()
   disabled: boolean;
+
+  @Prop({default:"outline-info"})
+  variant: string;
 }
 </script>
 

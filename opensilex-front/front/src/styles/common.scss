@@ -120,6 +120,7 @@ label::first-letter {
 @import "../node_modules/bootstrap/scss/bootstrap";
 @import "../node_modules/bootstrap-vue/src/index.scss";
 @import "../node_modules/vue-airbnb-style-datepicker/dist/vue-airbnb-style-datepicker.min.css";
+$textSize: 12; 
 @import "../node_modules/vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4.scss";
 
 .error-message {
@@ -197,25 +198,16 @@ input:invalid {
 
 .tabulator .tabulator-header .tabulator-col.tabulator-sortable.required .tabulator-col-title{
   color: #D00; 
-  font-size: 13px;
 }
 
-.tabulator {
-  font-size: 13px;
-}
 
 .tabulator .tabulator-row {
-  min-height: 1rem;
+  min-height: 0.8rem;
   height: 30px;
 }
 
 .tabulator .tabulator-cell {
   height: 30px;
-  font-size: 13px;
-}
-
-.tabulator .tabulator-col-title {
-  font-size: 13px;
 }
 
 .tabulator .tabulator-col-content {

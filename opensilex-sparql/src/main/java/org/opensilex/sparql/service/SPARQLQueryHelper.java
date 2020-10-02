@@ -347,27 +347,25 @@ public class SPARQLQueryHelper {
     
     /**
      * <pre>
-     * 
-     * 
+     * INTERSECTION of interval( delimited by startDate / EndDate) AND the entity lifetime is not null
+     * 3 cases :
+     *  . entity's endDate is in interval 
+     *  . entity's endDate SUP  upper bound && entity's startDate INF lower bound
+     *  . entity's endDate is null && entity's startDate INF upper bound
      * 
      * </pre>
-    /**
-     * @param startDateVarName the name of the startDate variable , should not
-     * be null if startDate is not null
+     * @param startDateVarName the name of the startDate variable
      * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable , should not be
-     * null if endDate is not null
+     * @param endDateVarName the name of the endDate variable 
      * @param endDate the end date
-     * @return an Expr according the two given LocalDate and variable names      <pre>
+     * @return an Expr according the two given LocalDate and variable names  
      *     null if startDate and endDate are both null
      *     an {@link E_LogicalOr} 
-     * </pre>
-     *
-     * 
-     * @see ExprFactory#and(Object, Object)
-     * @see ExprFactory#or(Object, Object)
-     * @see ExprFactory#le(Object, Object)
-     * @see ExprFactory#ge(Object, Object)
+     * Ex:
+     *  FILTER ( ( ( ( ?endDate <= "2020-12-31"^^xsd:date ) && ( ?endDate >= "2020-01-01"^^xsd:date ) ) 
+     *      || ( ( ?endDate >= "2020-12-31"^^xsd:date ) && ( ?startDate <= "2020-12-31"^^xsd:date ) ) ) 
+     *      || ( ( ?startDate <= "2020-12-31"^^xsd:date ) && ( ! bound(?endDate) ) ) )
+ 
      */
     
     public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {

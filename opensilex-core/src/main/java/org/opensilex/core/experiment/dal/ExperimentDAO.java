@@ -275,10 +275,12 @@ public class ExperimentDAO {
             }
         }
 
-        Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
-        if (dateRangeExpr != null) {
+        if (startDate != null & endDate != null) {
+
+            Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
             select.addFilter(dateRangeExpr);
         }
+
     }
 
     private void appendProjectListFilter(SelectBuilder select, List<URI> projects) throws Exception {

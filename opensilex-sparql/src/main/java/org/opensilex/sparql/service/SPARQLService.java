@@ -57,6 +57,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
@@ -154,7 +155,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public static PrefixMapping getPrefixMapping() {
-        return PrefixMapping.Factory.create().setNsPrefixes(prefixes);
+        return new SPARQLPrefixMapping().setNsPrefixes(prefixes);
     }
 
     private static void addPrefixes(UpdateBuilder builder) {

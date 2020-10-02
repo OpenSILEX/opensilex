@@ -48,6 +48,7 @@
             max="9999"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
+
       </template>
 
       <template v-slot:advancedSearch>

@@ -45,14 +45,10 @@ export default class UserSelector extends Vue {
       );
   }
 
-  searchUsers(searchQuery) {
+  searchUsers(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchUsers(searchQuery)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) =>
-          http.response.result
-      );
+      .searchUsers(searchQuery, undefined, page, pageSize);
   }
 
   userToSelectNode(dto: UserGetDTO) {

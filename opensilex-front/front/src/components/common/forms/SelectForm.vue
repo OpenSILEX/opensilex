@@ -37,6 +37,7 @@
           :value="selectedValues"
           valueFormat="node"
           :async="searchMethod != null"
+          :default-options="searchMethod != null"
           :load-options="loadOptions"
           :options="internalOption"
           :placeholder="$t(placeholder)"
@@ -59,6 +60,9 @@
           <template v-slot:value-label="{node}">
             <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
           </template>
+          <template v-if="resultCount < totalCount" v-slot:after-list>
+            <i class="more-results-info">{{$t('SelectorForm.refineSearchMessage', [resultCount, totalCount])}}</i>
+          </template>
         </treeselect>
         <treeselect
           v-else
@@ -68,6 +72,7 @@
           :value="selectedValues"
           valueFormat="node"
           :async="searchMethod != null"
+          :default-options="searchMethod != null"
           :load-options="loadOptions"
           :options="options || internalOption"
           :placeholder="$t(placeholder)"
@@ -89,6 +94,9 @@
           </template>
           <template v-slot:value-label="{node}">
             <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          </template>
+          <template v-if="resultCount < totalCount" v-slot:after-list>
+            <i class="more-results-info">{{$t('SelectorForm.refineSearchMessage', [resultCount, totalCount])}}</i>
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
@@ -200,6 +208,11 @@ export default class SelectForm extends Vue {
     default: null
   })
   actionHandler;
+
+  @Prop({
+    default: 1
+  })
+  resultLimit;
 
   @Watch("selection")
   onSelectionChange() {
@@ -402,13 +415,22 @@ export default class SelectForm extends Vue {
     }
   }
 
+  totalCount = -1;
+  resultCount = 0;
+
   created() {
     let self = this;
     this.debounceSearch = this.debounce(function(query, callback) {
       self.$opensilex.disableLoader();
+      if (query == "") {
+        query = ".*";
+      }
       self
-        .searchMethod(query)
-        .then(list => {
+        .searchMethod(query, 0, this.resultLimit)
+        .then(http => {
+          let list = http.response.result;
+          this.totalCount = http.response.metadata.pagination.totalCount;
+          this.resultCount = list.length;
           let nodeList = [];
           list.forEach(item => {
             nodeList.push(self.conversionMethod(item));
@@ -489,4 +511,20 @@ export default class SelectForm extends Vue {
 ::v-deep .multiselect-popup .vue-treeselect__menu-container {
   display: none;
 }
+
+i.more-results-info {
+  margin-left: 10px;
+  margin-right: 10px;
+}
 </style>
+
+<i18n>
+en:
+  SelectorForm:
+    refineSearchMessage: "{resultCount}/{totalCount} results displayed, please refine your search..."
+    
+fr:
+  SelectorForm:
+    refineSearchMessage: "{0}/{1} résultats affichés, merci de préciser votre recherche..."
+
+</i18n>

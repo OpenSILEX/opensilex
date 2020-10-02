@@ -75,27 +75,20 @@ export default class FactorSelector extends Vue {
       });
   }
 
-  loadOptions(query) {
-    console.debug("search :", query);
+  loadOptions(query, page, pageSize) {
 
     this.filter.name = query;
     this.filter.uri = query;
-    console.log("filter :", this.filter);
     return this.$opensilex
       .getService("opensilex.FactorsService")
-      .searchFactors(null, 0, 10, this.filter)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) =>
-          http.response.result
-      )
-      .then((result) => {
-        let factorMapByCategory = this.sortFactorListByCategory(result);
-        console.debug("factorMapByCategory : ", factorMapByCategory);
+      .searchFactors(null, page, pageSize, this.filter)
+      .then((http) => {
+        let factorMapByCategory = this.sortFactorListByCategory(http.response.result);
         let factorsByCategoryNode = this.transformFactorListByCategoryInNodes(
           factorMapByCategory
         );
-        console.debug("factorsByCategoryNode : ", factorsByCategoryNode);
-        return factorsByCategoryNode;
+        http.response.result = factorsByCategoryNode;
+        return http;
       });
   }
 

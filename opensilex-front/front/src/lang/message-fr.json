@@ -1,6 +1,7 @@
 {
     "component": {
         "common": {
+            "actions": "Actions",
             "multiselect": {
                 "label": {
                     "x-more": "et {count} de plus"

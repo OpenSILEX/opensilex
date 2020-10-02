@@ -3,15 +3,14 @@
     <span class="field-view-title">{{ $t(label) }}</span>
 
     <span class="static-field-line">
-      <span :key="index" v-for="(value, index) in values">
-        <opensilex-UriLink v-if="to" :uri="value.uri" :value="value.name"  :to="{path: '/'+to+'/'+ encodeURIComponent(value.uri)}"></opensilex-UriLink>
+      <span :key="index" v-for="(value, index) in list">
         <opensilex-UriLink
-          v-else
           :uri="value.uri"
-          :value="value.name"
-         
+          :value="value.value"
+          :url="value.url"
+          :to="value.to"
         ></opensilex-UriLink>
-        <span v-if="index + 1 < values.length">,</span>
+        <span v-if="index + 1 < list.length">,</span>
       </span>
     </span>
   </div>
@@ -28,10 +27,7 @@ export default class UriListView extends Vue {
   label: string;
 
   @Prop()
-  to: string;
-
-  @PropSync("list")
-  values: Array<any>;
+  list: Array<any>;
 
 }
 </script>

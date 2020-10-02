@@ -34,14 +34,10 @@ export default class GroupSelector extends Vue {
   @Prop()
   multiple;
 
-  searchGroups(searchQuery) {
+  searchGroups(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchGroups(searchQuery)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<GroupDTO>>>) =>
-          http.response.result
-      );
+      .searchGroups(searchQuery, undefined, page, pageSize)
   }
 
   loadGroups(groupsURI) {

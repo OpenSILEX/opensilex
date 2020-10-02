@@ -65,7 +65,6 @@
             <opensilex-UriListView
               label="component.project.relatedProjects"
               :list="relatedProjectsList"
-              to="project"
             ></opensilex-UriListView>
             <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
 
@@ -131,17 +130,11 @@
             <opensilex-UriListView
               label="component.project.scientificContacts"
               :list="scientificContactsList"
-              to="contact"
             ></opensilex-UriListView>
-            <opensilex-UriListView
-              label="component.project.coordinators"
-              :list="coordinatorsList"
-              to="contact"
-            ></opensilex-UriListView>
+            <opensilex-UriListView label="component.project.coordinators" :list="coordinatorsList"></opensilex-UriListView>
             <opensilex-UriListView
               label="component.project.administrativeContacts"
               :list="administrativeContactsList"
-              to="contact"
             ></opensilex-UriListView>
           </template>
         </opensilex-Card>
@@ -257,14 +250,22 @@ export default class ProjectDescription extends Vue {
   }
 
   loadRelatedProject() {
-    console.log(this.project.relatedProjects);
     if (this.project.relatedProjects) {
+      this.relatedProjectsList = [];
       this.project.relatedProjects.forEach(relatedProject => {
         this.service
           .getProject(relatedProject)
           .then(
             (http: HttpResponse<OpenSilexResponse<ProjectGetDetailDTO>>) => {
-              this.relatedProjectsList.push(http.response.result);
+              let projectDetail = http.response.result;
+              this.relatedProjectsList.push({
+                uri: projectDetail.uri,
+                value:  projectDetail.shortname || projectDetail.name,
+                to: {
+                  path:
+                    "/project/details/" + encodeURIComponent(projectDetail.uri)
+                }
+              });
             }
           )
           .catch(this.$opensilex.errorHandler);
@@ -282,8 +283,9 @@ export default class ProjectDescription extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.scientificContactsList = http.response.result.map(item => {
             return {
-              uri: item.uri,
-              name: item.firstName + " " + item.lastName
+              uri: item.email,
+              url: "mailto:" + item.email,
+              value: item.firstName + " " + item.lastName
             };
           });
         })
@@ -296,8 +298,9 @@ export default class ProjectDescription extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.coordinatorsList = http.response.result.map(item => {
             return {
-              uri: item.uri,
-              name: item.firstName + " " + item.lastName
+              uri: item.email,
+              url: "mailto:" + item.email,
+              value: item.firstName + " " + item.lastName
             };
           });
         })
@@ -310,8 +313,9 @@ export default class ProjectDescription extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.administrativeContactsList = http.response.result.map(item => {
             return {
-              uri: item.uri,
-              name: item.firstName + " " + item.lastName
+              uri: item.email,
+              url: "mailto:" + item.email,
+              value: item.firstName + " " + item.lastName
             };
           });
         })

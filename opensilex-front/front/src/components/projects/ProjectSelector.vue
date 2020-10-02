@@ -34,7 +34,7 @@ export default class ProjectSelector extends Vue {
   @Prop()
   multiple;
 
-  searchProjects(searchQuery) {
+  searchProjects(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.ProjectsService")
       .searchProjects(
@@ -44,13 +44,9 @@ export default class ProjectSelector extends Vue {
         searchQuery, //name
         undefined,
         undefined,
-        0,
-        200
+        page,
+        pageSize
       )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) =>
-          http.response.result
-      );
   }
 
   loadProjects(projectsURI) {

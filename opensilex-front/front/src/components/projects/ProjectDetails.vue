@@ -1,12 +1,11 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="fa#sun"
       title="component.project.project"
       :description="name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true">
+    <opensilex-PageActions :returnButton="true" :returnTo="{path: '/projects'}">
         <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"

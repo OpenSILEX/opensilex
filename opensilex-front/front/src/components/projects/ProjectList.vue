@@ -2,8 +2,6 @@
   <div>
     <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
       <template v-slot:filters>
-
-
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('component.common.keyword')}}</label>
           <opensilex-StringFilter
@@ -11,7 +9,7 @@
             placeholder="component.project.filter-keywords-placeholder"
           ></opensilex-StringFilter>
         </div>
-        
+
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('component.common.name')}}</label>
           <opensilex-StringFilter
@@ -19,7 +17,6 @@
             placeholder="component.project.filter-label-placeholder"
           ></opensilex-StringFilter>
         </div>
-
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('component.common.year')}}</label>
@@ -178,12 +175,7 @@ export default class ProjectList extends Vue {
   get fields() {
     let tableFields: any = [
       {
-        key: "uri",
-        label: "component.common.uri",
-        sortable: true
-      },
-      {
-        key: "label",
+        key: "name",
         label: "component.common.name",
         sortable: true
       },
@@ -203,9 +195,13 @@ export default class ProjectList extends Vue {
         sortable: true
       },
       {
-        key: "hasFinancialFunding",
+        key: "financialFunding",
         label: "component.project.financialFunding",
         sortable: true
+      },
+      {
+        key: "state",
+        label: "component.common.state"
       }
     ];
     if (!this.noActions) {

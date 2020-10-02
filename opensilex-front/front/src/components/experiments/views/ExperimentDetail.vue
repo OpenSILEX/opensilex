@@ -68,11 +68,7 @@
               <span class="static-field-line"></span>
             </div>-->
 
-            <opensilex-UriListView
-              label="component.experiment.projects"
-              :list="projectsList"
-              to="project"
-            ></opensilex-UriListView>
+            <opensilex-UriListView label="component.experiment.projects" :list="projectsList"></opensilex-UriListView>
 
             <!--     <div class="static-field">
               <span
@@ -94,7 +90,6 @@
             <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
               :list="factorsList"
-              to="factor/details"
             ></opensilex-UriListView>
 
             <opensilex-UriListView
@@ -111,13 +106,11 @@
             <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
               :list="scientificSupervisorsList"
-              to="contact"
             ></opensilex-UriListView>
 
             <opensilex-UriListView
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
-              to="contact"
             ></opensilex-UriListView>
           </template>
         </opensilex-Card>
@@ -239,7 +232,11 @@ export default class ExperimentDetail extends Vue {
           .getInfrastructure(infrastructure)
           .then(
             (http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-              this.infrastructuresList.push(http.response.result);
+              let infraDetail = http.response.result;
+              this.infrastructuresList.push({
+                uri: infraDetail.uri,
+                value: infraDetail.name
+              });
             }
           )
           .catch(this.$opensilex.errorHandler);
@@ -253,14 +250,17 @@ export default class ExperimentDetail extends Vue {
     );
 
     if (this.experiment.groups) {
-      this.experiment.groups.forEach((group) => {
-        service
-          .getGroup(group)
-          .then((http: HttpResponse<OpenSilexResponse<GroupDTO>>) => {
-            this.groupsList.push(http.response.result);
-          })
-          .catch(this.$opensilex.errorHandler);
-      });
+      service
+        .getGroupsByURI(this.experiment.groups)
+        .then((http: HttpResponse<OpenSilexResponse<GroupDTO[]>>) => {
+          this.groupsList = http.response.result.map(group => {
+            return {
+              uri: group.uri,
+              value: group.name
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
@@ -272,10 +272,11 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.scientificSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.scientificSupervisorsList = http.response.result.map((item) => {
+           this.scientificSupervisorsList = http.response.result.map(item => {
             return {
-              uri: item.uri,
-              name: item.firstName + " " + item.lastName,
+              uri: item.email,
+              url: "mailto:" + item.email,
+              value: item.firstName + " " + item.lastName
             };
           });
         })
@@ -286,10 +287,11 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.technicalSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.technicalSupervisorsList = http.response.result.map((item) => {
+           this.technicalSupervisorsList = http.response.result.map(item => {
             return {
-              uri: item.uri,
-              name: item.firstName + " " + item.lastName,
+              uri: item.email,
+              url: "mailto:" + item.email,
+              value: item.firstName + " " + item.lastName
             };
           });
         })
@@ -319,7 +321,7 @@ export default class ExperimentDetail extends Vue {
           this.speciesList = this.speciesList.map((item) => {
             return {
               uri: item.uri,
-              name: item.label,
+              value: item.label
             };
           });
         })
@@ -345,6 +347,16 @@ export default class ExperimentDetail extends Vue {
               this.factorsList.push(http.response.result[i]);
             }
           }
+
+          this.factorsList = this.factorsList.map(item => {
+            return {
+              uri: item.uri,
+              value: item.name,
+              to: {
+                path: "/factor/details/" + encodeURIComponent(item.uri)
+              }
+            };
+          });
         })
         .catch(this.$opensilex.errorHandler);
     }
@@ -360,7 +372,15 @@ export default class ExperimentDetail extends Vue {
         service
           .getProject(project)
           .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {
-            this.projectsList.push(http.response.result);
+            let projectDetail = http.response.result;
+            this.projectsList.push({
+              uri: projectDetail.uri,
+              value: projectDetail.shortname || projectDetail.name,
+              to: {
+                path:
+                  "/project/details/" + encodeURIComponent(projectDetail.uri)
+              }
+            });
           })
           .catch(this.$opensilex.errorHandler);
       });

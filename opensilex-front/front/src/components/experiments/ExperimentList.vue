@@ -48,7 +48,6 @@
             max="9999"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
-
       </template>
 
       <template v-slot:advancedSearch>
@@ -83,14 +82,13 @@
       :fields="fields"
       :isSelectable="isSelectable"
     >
-      <template v-slot:cell(uri)="{data}">
+      <template v-slot:cell(label)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
+          :value="data.item.label"
           :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
-
-      <template v-slot:cell(label)="{data}">{{data.item.label}}</template>
 
       <template v-slot:cell(species)="{data}">
         <span :key="index" v-for="(uri, index) in data.item.species">
@@ -336,11 +334,6 @@ export default class ExperimentList extends Vue {
 
   get fields() {
     let tableFields = [
-      {
-        key: "uri",
-        label: "component.common.uri",
-        sortable: true
-      },
       {
         key: "label",
         label: "component.common.name",

@@ -1,5 +1,5 @@
 <template>
-  <div class="footer fixed-bottom">
+  <div class="footer ">
     <div class="w-100 clearfix">
       <span
         class="text-center text-sm-left d-md-inline-block"

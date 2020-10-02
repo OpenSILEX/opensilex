@@ -94,7 +94,6 @@ public class DataDAO {
                     );
             }
         }
-
         //check objects uri
         if (data.getObject() != null) {
             if (!data.getObject().isEmpty()) {
@@ -360,7 +359,6 @@ public class DataDAO {
 
     public <T extends DataFileModel> void createFile(DataFileModel model, File file) throws URISyntaxException, Exception {
         //generate URI
-
         nosql.generateUniqueUriIfNullOrValidateCurrent(model);
         
         Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString()).toAbsolutePath();

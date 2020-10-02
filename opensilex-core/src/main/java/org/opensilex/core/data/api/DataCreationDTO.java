@@ -55,7 +55,7 @@ public class DataCreationDTO{
     public void setUri(URI uri) {
         this.uri = uri;
     }
-
+    
     public void setObject(List<EntityModel> objects){
         this.scientificObjects = objects;
     }

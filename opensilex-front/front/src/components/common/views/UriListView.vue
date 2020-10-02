@@ -1,6 +1,6 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{ $t(label) }}{{ $t('component.common.colon') }}</span>
+    <span class="field-view-title">{{ $t(label) }}</span>
 
     <span class="static-field-line">
       <span :key="index" v-for="(value, index) in values">

@@ -251,9 +251,6 @@ extend("dateDiff", {
   params: ["startDate"],
   validate: (value, { startDate }:any) => {
 
-    console.log("value");
-    console.log(value);
-    console.log(startDate);
     if(startDate === null) {
       return true;
     }

@@ -57,9 +57,9 @@
               :value="project.financialFunding"
             ></opensilex-TextView>
             <opensilex-UriView
-              label="component.project.website"
+              title="component.project.website"
               :value="project.homePage"
-              :url="project.homePage"
+              :uri="project.homePage"
             ></opensilex-UriView>
 
             <opensilex-UriListView
@@ -276,76 +276,46 @@ export default class ProjectDescription extends Vue {
       "opensilex.SecurityService"
     );
     let that = this;
-    if (this.project.scientificContacts) {
-      let promises = [],
-        promise;
-      let list = [];
-
-      this.project.scientificContacts.forEach(scientificContact => {
-        promise = service
-          .getUser(scientificContact)
-          .catch(this.$opensilex.errorHandler);
-        promises.push(promise);
-      });
-      Promise.all(promises).then(function(responses) {
-        responses.forEach(http => {
-          list.push(http.response.result);
-        });
-        that.scientificContactsList = list.map(item => {
-          return {
-            uri: item.uri,
-            name: item.firstName + " " + item.lastName
-          };
-        });
-      });
+    if (this.project.scientificContacts.length) {
+      service
+        .getUsersByURI(this.project.scientificContacts)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+          this.scientificContactsList = http.response.result.map(item => {
+            return {
+              uri: item.uri,
+              name: item.firstName + " " + item.lastName
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
 
-    if (this.project.coordinators) {
-      let promises = [],
-        promise;
-      let list = [];
-
-      this.project.coordinators.forEach(coordinator => {
-        promise = service
-          .getUser(coordinator)
-          .catch(this.$opensilex.errorHandler);
-        promises.push(promise);
-      });
-      Promise.all(promises).then(function(responses) {
-        responses.forEach(http => {
-          list.push(http.response.result);
-        });
-        that.coordinatorsList = list.map(item => {
-          return {
-            uri: item.uri,
-            name: item.firstName + " " + item.lastName
-          };
-        });
-      });
+    if (this.project.coordinators.length) {
+      service
+        .getUsersByURI(this.project.coordinators)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+          this.coordinatorsList = http.response.result.map(item => {
+            return {
+              uri: item.uri,
+              name: item.firstName + " " + item.lastName
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
 
-    if (this.project.administrativeContacts) {
-      let promises = [],
-        promise;
-      let list = [];
-
-      this.project.administrativeContacts.forEach(administrativeContact => {
-        promise = service
-          .getUser(administrativeContact)
-          .catch(this.$opensilex.errorHandler);
-        promises.push(promise);
-      });
-      Promise.all(promises).then(function(responses) {
-        responses.forEach(http => {
-          list.push(http.response.result);
-        });
-        that.administrativeContactsList = list.map(item => {
-          return {
-            uri: item.uri,
-            name: item.firstName + " " + item.lastName
-          };
-        });
-      });
+    if (this.project.administrativeContacts.length) {
+      service
+        .getUsersByURI(this.project.administrativeContacts)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+          this.administrativeContactsList = http.response.result.map(item => {
+            return {
+              uri: item.uri,
+              name: item.firstName + " " + item.lastName
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 

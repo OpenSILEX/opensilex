@@ -244,51 +244,32 @@ export default class ExperimentDetail extends Vue {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
-    let that = this;
-    if (this.experiment.scientificSupervisors) {
-      let promises = [],
-        promise;
-      let list = [];
-      this.experiment.scientificSupervisors.forEach(scientificSupervisor => {
-        promise = service
-          .getUser(scientificSupervisor)
-          .catch(this.$opensilex.errorHandler);
-        promises.push(promise);
-      });
-      Promise.all(promises).then(function(responses) {
-        responses.forEach(http => {
-          list.push(http.response.result);
-        });
-        that.scientificSupervisorsList = list.map(item => {
-          return {
-            uri: item.uri,
-            name: item.firstName + " " + item.lastName
-          };
-        });
-      });
+    if (this.experiment.scientificSupervisors.length) {
+      service
+        .getUsersByURI(this.experiment.scientificSupervisors)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+          this.scientificSupervisorsList = http.response.result.map(item => {
+            return {
+              uri: item.uri,
+              name: item.firstName + " " + item.lastName
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
 
-    if (this.experiment.technicalSupervisors) {
-      let promises = [],
-        promise;
-      let list = [];
-      this.experiment.technicalSupervisors.forEach(technicalSupervisor => {
-        promise = service
-          .getUser(technicalSupervisor)
-          .catch(this.$opensilex.errorHandler);
-        promises.push(promise);
-      });
-      Promise.all(promises).then(function(responses) {
-        responses.forEach(http => {
-          list.push(http.response.result);
-        });
-        that.technicalSupervisorsList = list.map(item => {
-          return {
-            uri: item.uri,
-            name: item.firstName + " " + item.lastName
-          };
-        });
-      });
+    if (this.experiment.technicalSupervisors.length) {
+      service
+        .getUsersByURI(this.experiment.technicalSupervisors)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+          this.technicalSupervisorsList = http.response.result.map(item => {
+            return {
+              uri: item.uri,
+              name: item.firstName + " " + item.lastName
+            };
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
@@ -317,7 +298,6 @@ export default class ExperimentDetail extends Vue {
               name: item.label
             };
           });
-          console.log(this.speciesList);
         })
         .catch(this.$opensilex.errorHandler);
     }

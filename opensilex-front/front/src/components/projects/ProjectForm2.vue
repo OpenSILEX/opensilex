@@ -74,10 +74,4 @@ export default class ProjectForm2 extends Vue {
 }
 </script>
 
-<style scoped>
-div >>> label.required::after {
-  content: " * ";
-  color: red;
-}
-</style>
 

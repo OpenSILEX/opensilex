@@ -268,7 +268,6 @@ export default class ExperimentList extends Vue {
             http.response.result[i]
           );
         }
-        console.log( this.speciesByUri);
         this.$opensilex.enableLoader();
         this.refresh();
       })

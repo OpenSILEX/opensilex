@@ -15,7 +15,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(url)"
+        v-on:click.prevent="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUrl')"
       >
@@ -69,11 +69,10 @@ export default class UriLink extends Vue {
       return null;
     } else if (this.url) {
       return this.url;
-    } else if (
-      (this.uri && this.uri.startsWith("http://")) ||
-      this.uri.startsWith("https://")
-    ) {
-      return this.uri;
+    } else if (this.uri) {
+      return this.uri.startsWith("http://") || this.uri.startsWith("https://")
+        ? this.uri
+        : null;
     } else {
       return null;
     }
@@ -82,7 +81,9 @@ export default class UriLink extends Vue {
   copyURI(address) {
     copy(address);
     this.$opensilex.showSuccessToast(
-      this.url ? this.$t("component.common.url-copy") + ": " + address: this.$t("component.common.uri-copy") + ": " + address
+      address.startsWith("http://") || address.startsWith("https://")
+        ? this.$t("component.common.url-copy") + ": " + address
+        : this.$t("component.common.uri-copy") + ": " + address
     );
   }
 }

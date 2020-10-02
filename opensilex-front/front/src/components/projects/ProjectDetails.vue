@@ -58,9 +58,6 @@ export default class ProjectDetails extends Vue {
     return this.$route.path.startsWith("/project/documents/");
   }
 
-  goBack() {
-    window.history.back();
-  }
 }
 </script>
 

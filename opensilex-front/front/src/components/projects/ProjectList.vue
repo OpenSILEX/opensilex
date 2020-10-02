@@ -220,7 +220,7 @@ export default class ProjectList extends Vue {
       this.financialFilter,
       options.orderBy,
       options.currentPage,
-      30
+      options.pageSize
     );
   }
   isEnded(project) {

@@ -190,7 +190,8 @@ public class ExperimentDAO {
                     appendRegexLabelFilter(select, label);
                     appendSpeciesFilter(select, species);
                     appendFactorsFilter(select, factors);
-                    appendDateFilters(select, isEnded, startDate, endDate);
+                    appendIsActiveFilter(select, isEnded);
+                    appendDateFilter(select, startDate, endDate);
                     appendProjectListFilter(select, projects);
                     appendUserExperimentsFilter(select, user);
                     appendPublicFilter(select, isPublic);

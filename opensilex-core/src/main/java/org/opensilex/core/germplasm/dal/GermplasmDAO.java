@@ -193,6 +193,16 @@ public class GermplasmDAO {
                 pageSize
         );
     }
+    
+    public List<URI> getGermplasmURIsBySpecies(List<URI> species, String lang) throws Exception {
+        return sparql.searchURIs(
+                GermplasmModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));
+                }
+        );
+    }
 
     private void appendUriFilter(SelectBuilder select, URI uri) {
         if (uri != null) {

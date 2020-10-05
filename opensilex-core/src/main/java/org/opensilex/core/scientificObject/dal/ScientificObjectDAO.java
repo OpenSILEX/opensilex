@@ -22,12 +22,14 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -46,8 +48,11 @@ public class ScientificObjectDAO {
 
     private final SPARQLService sparql;
 
-    public ScientificObjectDAO(SPARQLService sparql) {
+    private final NoSQLService nosql;
+
+    public ScientificObjectDAO(SPARQLService sparql, NoSQLService nosql) {
         this.sparql = sparql;
+        this.nosql = nosql;
     }
 
     public SPARQLPartialTreeListModel<ExperimentalObjectModel> searchTreeByExperiment(URI experimentURI, URI parentURI, int maxChild, int maxDepth, UserModel currentUser) throws Exception {
@@ -127,9 +132,20 @@ public class ScientificObjectDAO {
             }
         }
 
-        List<String> germplasmURIs = new ArrayList<>();
-        for (SpeciesModel germplasm : xp.getSpecies()) {
-            germplasmURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
+        List<String> germplasmStringURIs = new ArrayList<>();
+        List<URI> germplasmURIs = new ArrayList<>();
+        List<SpeciesModel> species = xp.getSpecies();
+        for (SpeciesModel germplasm : species) {
+            germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
+            germplasmURIs.add(germplasm.getUri());
+        }
+
+        if (germplasmURIs.size() > 0) {
+            GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
+            List<URI> subSpecies = dao.getGermplasmURIsBySpecies(germplasmURIs, currentUser.getLanguage());
+            for (URI germplasmURI : subSpecies) {
+                germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasmURI));
+            }
         }
 
         customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
@@ -146,7 +162,7 @@ public class ScientificObjectDAO {
         customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
             try {
                 String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                if (!germplasmURIs.contains(germplasmURI)) {
+                if (!germplasmStringURIs.contains(germplasmURI)) {
                     csvErrors.addInvalidValueError(cell);
                 }
             } catch (URISyntaxException ex) {

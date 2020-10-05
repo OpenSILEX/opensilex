@@ -43,6 +43,7 @@ import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -93,6 +94,9 @@ public class ScientificObjectAPI {
     @Inject
     private SPARQLService sparql;
 
+    @Inject
+    private NoSQLService nosql;
+
     /**
      * @param experimentURI the experiment URI
      * @return Return list of scientific objetcs tree corresponding to the given experiment URI
@@ -113,7 +117,7 @@ public class ScientificObjectAPI {
     public Response getScientificObjectsTree(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         SPARQLPartialTreeListModel<ExperimentalObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
         return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
     }
@@ -134,7 +138,7 @@ public class ScientificObjectAPI {
     public Response getScientificObjectsList(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> sientificObjects = dao.searchByExperiment(experimentURI, currentUser);
         List<NamedResourceDTO> dtoList = sientificObjects.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<NamedResourceDTO>(dtoList).getResponse();
@@ -157,7 +161,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
             @ApiParam(value = "Scientific object uris", required = true) List<URI> objectsURI
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> sientificObjects = dao.searchByURIs(experimentURI, objectsURI, currentUser);
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -182,7 +186,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Children limit", example = "20") @QueryParam("limit") Integer limit,
             @ApiParam(value = "Children offset", example = "0") @QueryParam("offset") Integer offset
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, offset, limit, currentUser);
         List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -205,7 +209,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true) @PathParam("objuri") URI objectURI
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         ExperimentalObjectModel model = dao.getByURIAndExperiment(experimentURI, objectURI, currentUser);
         return new SingleObjectResponse<ScientificObjectDetailDTO>(ScientificObjectDetailDTO.getDTOFromModel(model)).getResponse();
     }
@@ -231,7 +235,7 @@ public class ScientificObjectAPI {
         URI xpURI = descriptionDto.getExperiment();
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
@@ -258,7 +262,7 @@ public class ScientificObjectAPI {
         URI xpURI = descriptionDto.getExperiment();
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         URI soURI = dao.update(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
@@ -283,7 +287,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpURI") @NotNull @ValidURI URI xpURI,
             @ApiParam(value = "Scientific object URI", example = "http://example.com/", required = true) @PathParam("objURI") @NotNull @ValidURI URI objURI
     ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         dao.delete(xpURI, objURI, currentUser);
         return new ObjectUriResponse(Response.Status.OK, objURI).getResponse();
     }
@@ -309,7 +313,7 @@ public class ScientificObjectAPI {
         URI xpURI = descriptionDto.getExperiment();
         URI soType = descriptionDto.getType();
         String validationToken = descriptionDto.getValidationToken();
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         CSVValidationModel errors;
         if (validationToken == null) {
@@ -355,7 +359,7 @@ public class ScientificObjectAPI {
         URI xpURI = descriptionDto.getExperiment();
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         CSVValidationModel errors = dao.validateCSV(xpURI, soType, file, currentUser);
 

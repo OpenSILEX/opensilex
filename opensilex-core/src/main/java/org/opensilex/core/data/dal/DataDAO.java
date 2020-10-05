@@ -67,8 +67,8 @@ public class DataDAO {
         this.fs = fs;
     }
    
-    public <T extends DataModel> T create(T instance) throws NamingException, URISyntaxException, Exception{
-        nosql.prepareInstanceCreation(instance,  instance.getUri()!=null);
+    public DataModel create(DataModel instance) throws NamingException, URISyntaxException, Exception{
+        nosql.prepareInstanceCreation(instance);
         return instance;
     }
 

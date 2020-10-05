@@ -28,14 +28,9 @@
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
-
         <!-- Factors -->
         <opensilex-FilterField>
-                      <opensilex-FactorSelector 
-              :multiple="true" 
-              :factors.sync="filter.factors"  
-              >
-            </opensilex-FactorSelector>
+          <opensilex-FactorSelector :multiple="true" :factors.sync="filter.factors"></opensilex-FactorSelector>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
@@ -51,7 +46,7 @@
       </template>
 
       <template v-slot:advancedSearch>
-         <!-- Projects -->
+        <!-- Projects -->
         <opensilex-FilterField>
           <opensilex-SelectForm
             label="ExperimentList.filter-project"
@@ -213,6 +208,7 @@ export default class ExperimentList extends Vue {
       yearFilter: null,
       state: ""
     };
+    this.refresh();
   }
 
   searchExperiments(options) {

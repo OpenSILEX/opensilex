@@ -2,10 +2,7 @@
   <div>
     <div v-if="experiment" class="row">
       <div class="col col-xl-6" style="min-width: 400px">
-        <opensilex-Card
-          icon="ik#ik-clipboard"
-          :label="$t('component.experiment.description')"
-        >
+        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.experiment.description')">
           <template v-slot:rightHeader>
             <span
               v-if="!experiment.isEnded"
@@ -34,32 +31,20 @@
             </span>
           </template>
           <template v-slot:body>
-            <opensilex-StringView
-              label="component.common.name"
-              :value="experiment.label"
-            ></opensilex-StringView>
+            <opensilex-StringView label="component.common.name" :value="experiment.label"></opensilex-StringView>
             <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
 
-            <opensilex-StringView
-              label="component.common.period"
-              :value="period"
-            ></opensilex-StringView>
+            <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
             <opensilex-TextView
               label="component.experiment.objective"
               :value="experiment.objective"
             ></opensilex-TextView>
-            <opensilex-TextView
-              label="component.experiment.comment"
-              :value="experiment.comment"
-            ></opensilex-TextView>
+            <opensilex-TextView label="component.experiment.comment" :value="experiment.comment"></opensilex-TextView>
           </template>
         </opensilex-Card>
       </div>
       <div class="col col-xl-6">
-        <opensilex-Card
-          icon="ik#ik-box"
-          :label="$t('component.experiment.context')"
-        >
+        <opensilex-Card icon="ik#ik-box" :label="$t('component.experiment.context')">
           <template v-slot:body>
             <!--   <div class="static-field">
               <span
@@ -82,26 +67,17 @@
               :list="infrastructuresList"
             ></opensilex-UriListView>
 
-            <opensilex-UriListView
-              label="component.experiment.species"
-              :list="speciesList"
-            ></opensilex-UriListView>
+            <opensilex-UriListView label="component.experiment.species" :list="speciesList"></opensilex-UriListView>
 
             <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
               :list="factorsList"
             ></opensilex-UriListView>
 
-            <opensilex-UriListView
-              label="component.experiment.groups"
-              :list="groupsList"
-            ></opensilex-UriListView>
+            <opensilex-UriListView label="component.experiment.groups" :list="groupsList"></opensilex-UriListView>
           </template>
         </opensilex-Card>
-        <opensilex-Card
-          icon="ik#ik-users"
-          :label="$t('component.experiment.contacts')"
-        >
+        <opensilex-Card icon="ik#ik-users" :label="$t('component.experiment.contacts')">
           <template v-slot:body>
             <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
@@ -133,12 +109,12 @@ import {
   SpeciesDTO,
   SpeciesService,
   FactorsService,
-  FactorGetDTO,
+  FactorGetDTO
 } from "opensilex-core/index";
 import {
   SecurityService,
   GroupDTO,
-  UserGetDTO,
+  UserGetDTO
 } from "opensilex-security/index";
 import VueI18n from "vue-i18n";
 import moment from "moment";
@@ -199,7 +175,7 @@ export default class ExperimentDetail extends Vue {
           );
           this.setPreviousAndNextExperiment();
         })
-        .catch((error) => {
+        .catch(error => {
           this.$opensilex.errorHandler(error);
         });
     }
@@ -226,8 +202,11 @@ export default class ExperimentDetail extends Vue {
       "opensilex.InfrastructuresService"
     );
 
-    if (this.experiment.infrastructures) {
-      this.experiment.infrastructures.forEach((infrastructure) => {
+    if (
+      this.experiment.infrastructures &&
+      this.experiment.infrastructures.length > 0
+    ) {
+      this.experiment.infrastructures.forEach(infrastructure => {
         service
           .getInfrastructure(infrastructure)
           .then(
@@ -249,7 +228,7 @@ export default class ExperimentDetail extends Vue {
       "opensilex.SecurityService"
     );
 
-    if (this.experiment.groups) {
+    if (this.experiment.groups && this.experiment.groups.length > 0) {
       service
         .getGroupsByURI(this.experiment.groups)
         .then((http: HttpResponse<OpenSilexResponse<GroupDTO[]>>) => {
@@ -268,11 +247,14 @@ export default class ExperimentDetail extends Vue {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
-    if (this.experiment.scientificSupervisors.length) {
+    if (
+      this.experiment.scientificSupervisors &&
+      this.experiment.scientificSupervisors.length > 0
+    ) {
       service
         .getUsersByURI(this.experiment.scientificSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-           this.scientificSupervisorsList = http.response.result.map(item => {
+          this.scientificSupervisorsList = http.response.result.map(item => {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
@@ -283,11 +265,14 @@ export default class ExperimentDetail extends Vue {
         .catch(this.$opensilex.errorHandler);
     }
 
-    if (this.experiment.technicalSupervisors.length) {
+    if (
+      this.experiment.technicalSupervisors &&
+      this.experiment.technicalSupervisors.length > 0
+    ) {
       service
         .getUsersByURI(this.experiment.technicalSupervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-           this.technicalSupervisorsList = http.response.result.map(item => {
+          this.technicalSupervisorsList = http.response.result.map(item => {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
@@ -304,21 +289,21 @@ export default class ExperimentDetail extends Vue {
       "opensilex.SpeciesService"
     );
 
-    if (this.experiment.species) {
+    if (this.experiment.species && this.experiment.species.length > 0) {
       service
         .getAllSpecies()
         .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                (species) => species == http.response.result[i].uri
+                species => species == http.response.result[i].uri
               )
             ) {
               this.speciesList.push(http.response.result[i]);
             }
           }
 
-          this.speciesList = this.speciesList.map((item) => {
+          this.speciesList = this.speciesList.map(item => {
             return {
               uri: item.uri,
               value: item.label
@@ -334,14 +319,14 @@ export default class ExperimentDetail extends Vue {
       "opensilex.FactorsService"
     );
 
-    if (this.experiment.species) {
+    if (this.experiment.factors && this.experiment.factors.length > 0) {
       service
         .getAllFactors()
         .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.factors.find(
-                (factors) => factors == http.response.result[i].uri
+                factors => factors == http.response.result[i].uri
               )
             ) {
               this.factorsList.push(http.response.result[i]);
@@ -368,7 +353,7 @@ export default class ExperimentDetail extends Vue {
     );
 
     if (this.experiment.projects) {
-      this.experiment.projects.forEach((project) => {
+      this.experiment.projects.forEach(project => {
         service
           .getProject(project)
           .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {

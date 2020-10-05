@@ -58,7 +58,7 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/scientificObjects")
+@Api(value = "/scientificObjects", hidden = true)
 @Path("scientificObjects")
 public class ScientificObjectResourceService extends ResourceService {
 

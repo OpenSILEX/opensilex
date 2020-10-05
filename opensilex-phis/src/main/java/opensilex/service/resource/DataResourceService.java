@@ -61,7 +61,7 @@ import java.util.Map;
  *
  * @Author Arnaud Charleroy
  */
-@Api("/data")
+@Api(value = "/data", hidden = true)
 @Path("/data")
 public class DataResourceService extends ResourceService {
 

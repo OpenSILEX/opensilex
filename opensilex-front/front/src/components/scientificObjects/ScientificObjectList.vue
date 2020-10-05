@@ -164,9 +164,7 @@
         OntologyService,
     } from "opensilex-core/index";
     import {
-        PropertyDTO, 
-        ScientificObjectDTO,
-        ScientificObjectsService
+        PropertyDTO,
     } from "opensilex-phis/index";
     import Oeso from "../../ontologies/Oeso";
     import HttpResponse, {OpenSilexResponse, MetadataDTO, PaginationDTO}  from "../../lib/HttpResponse";
@@ -275,28 +273,29 @@
                 germplasm_URI = this.filter.germplasm[0].id;
             }
 
-            let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
-            return scientificObjectsService.getScientificObjectsBySearch(
-                options.pageSize,
-                options.currentPage,
-                uri,
-                experiment, 
-                undefined, 
-                germplasm_URI, 
-                true
-            ).then(http => {
-                let result = {
-                    response: {
-                        metadata: null,
-                        result: null
-                    }
-                };
-                result.response.metadata = http.response.metadata;
-                let data:any = http.response.result;
-                result.response.result = data.data;
+            return Promise.resolve([]);
+            // let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
+            // return scientificObjectsService.getScientificObjectsBySearch(
+            //     options.pageSize,
+            //     options.currentPage,
+            //     uri,
+            //     experiment, 
+            //     undefined, 
+            //     germplasm_URI, 
+            //     true
+            // ).then(http => {
+            //     let result = {
+            //         response: {
+            //             metadata: null,
+            //             result: null
+            //         }
+            //     };
+            //     result.response.metadata = http.response.metadata;
+            //     let data:any = http.response.result;
+            //     result.response.result = data.data;
                 
-                return result;
-            });
+            //     return result;
+            // });
         }
 
         experimentGetListDTOToSelectNode(dto: ExperimentGetListDTO) {

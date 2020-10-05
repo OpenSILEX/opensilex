@@ -101,7 +101,6 @@ import {
   Trait,
   Method,
   Unit,
-  DataService,
   MethodsService,
   TraitsService,
   UnitsService

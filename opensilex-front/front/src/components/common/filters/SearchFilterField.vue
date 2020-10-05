@@ -18,13 +18,14 @@
           <div class="card-header-right">
             <div class="card-option">
               <li>
-                <i class="ik minimize-card ik-plus" v-on:click="toogleAdvancedSearch($event)"></i>
+                <i v-if="!advancedSearchOpen" class="ik minimize-card ik-plus" v-on:click="toogleAdvancedSearch($event)"></i>
+                <i v-if="advancedSearchOpen" class="ik minimize-card ik-minus" v-on:click="toogleAdvancedSearch($event)"></i>
               </li>
             </div>
           </div>
         </div>
         <div
-          class="card-body advancedSearch"
+          class="card-body advancedSearch row"
           style="background-color: rgb(246, 248, 251);"
           v-bind:class="{ 'open': advancedSearchOpen}"
         >
@@ -33,7 +34,7 @@
       </div>
     </div>
 
-    <div class="container-fluid button-group" v-if="withButton">
+    <div class="container-fluid button-group" v-if="withButton" v-bind:class="{ 'advancedSearchClosed': !advancedSearchOpen}">
       <div class="row">
         <div class="col-md-12 text-right">
           <slot name="clear">
@@ -110,6 +111,10 @@ export default class SearchFilterField extends Vue {
   padding-left: 45px !important;
   padding-right: 15px !important;
   padding-bottom: 0 !important;
+}
+
+.advancedSearchClosed {
+  padding-top: 15px;
 }
 </style>
 

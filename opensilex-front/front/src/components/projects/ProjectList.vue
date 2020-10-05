@@ -1,6 +1,6 @@
 <template>
   <div>
-    <opensilex-SearchFilterField @clear="resetFilters()" @search="updateFilters()">
+    <opensilex-SearchFilterField @clear="reset()" @search="refresh()">
       <template v-slot:filters>
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('component.common.keyword')}}</label>
@@ -124,52 +124,20 @@ export default class ProjectList extends Vue {
   noActions;
 
   private yearFilter: any = "";
-  updateYearFilter() {
-    this.$opensilex.updateURLParameter("year", this.yearFilter, "");
-  }
   private nameFilter: any = "";
-  updateNameFilter() {
-    this.$opensilex.updateURLParameter("name", this.nameFilter, "");
-  }
   private termFilter: any = "";
-  updateTermFilter() {
-    this.$opensilex.updateURLParameter("term", this.termFilter, "");
-  }
   private financialFilter: any = "";
-  updateFinancialFilter() {
-    this.$opensilex.updateURLParameter("financial", this.financialFilter, "");
-  }
 
-  updateFilters() {
-    this.updateYearFilter();
-    this.updateNameFilter();
-    this.updateTermFilter();
-    this.updateFinancialFilter();
-    this.refresh();
-  }
-  resetFilters() {
+  reset() {
     this.yearFilter = "";
     this.nameFilter = "";
     this.termFilter = "";
     this.financialFilter = "";
-    this.updateFilters();
+    this.refresh();
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
-    let query: any = this.$route.query;
-    if (query.name) {
-      this.nameFilter = decodeURI(query.name);
-    }
-    if (query.term) {
-      this.termFilter = decodeURI(query.term);
-    }
-    if (query.year) {
-      this.yearFilter = decodeURI(query.year);
-    }
-    if (query.financial) {
-      this.financialFilter = decodeURI(query.financial);
-    }
   }
 
   get fields() {
@@ -241,6 +209,7 @@ export default class ProjectList extends Vue {
       options.pageSize
     );
   }
+
   isEnded(project) {
     if (project.endDate) {
       return moment(project.endDate, "YYYY-MM-DD").diff(moment()) < 0;

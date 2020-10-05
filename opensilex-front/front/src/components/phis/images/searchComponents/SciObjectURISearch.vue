@@ -35,7 +35,6 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 
 import { EventBus } from "./../event-bus";
-import { ScientificObjectsService, ScientificObjectDTO } from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -103,7 +102,7 @@ export default class SciObjectURISearch extends Vue {
       this.onChange(value);
     } else {
       this.uri = value;
-      let service: ScientificObjectsService = this.$opensilex.getService(
+      let service = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
       );
       if (this.selectedExperiment === null) {
@@ -124,7 +123,7 @@ export default class SciObjectURISearch extends Vue {
         )
         .then(
           (
-            http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>
+            http: HttpResponse<OpenSilexResponse<Array<any>>>
           ) => {
             const res = http.response.result as any;
             const data = res.data;

@@ -125,7 +125,7 @@
 }
 
 .card-body.advancedSearch.open {
-    display: block;
+    display: flex;
 }
 
 .properties-configuration .dropdown-menu {

@@ -51,7 +51,7 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author Morgane Vidal <morgane.vidal@inra.fr>
  */
-@Api("/variables")
+@Api(value = "/variables", hidden = true)
 @Path("variables")
 public class VariableResourceService extends ResourceService {
 

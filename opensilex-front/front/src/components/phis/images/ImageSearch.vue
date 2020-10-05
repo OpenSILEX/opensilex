@@ -25,7 +25,6 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { EventBus } from "./event-bus";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
-import { ScientificObjectDTO, ScientificObjectsService } from "opensilex-phis/index";
 
 @Component
 export default class ImageSearch extends Vue {
@@ -52,7 +51,7 @@ export default class ImageSearch extends Vue {
       this.form.objectList = [];
       this.$emit("onSearchFormSubmit", this.form);
     } else {
-      let service: ScientificObjectsService = this.$opensilex.getService(
+      let service = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
       );
 
@@ -81,7 +80,7 @@ export default class ImageSearch extends Vue {
         )
         .then(
           (
-            http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>
+            http: HttpResponse<OpenSilexResponse<Array<any>>>
           ) => {
             const res = http.response.result as any;
             const data = res.data;

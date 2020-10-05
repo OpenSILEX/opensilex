@@ -38,7 +38,6 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { Image } from "./image";
-import { DataService, FileDescriptionDTO } from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -48,7 +47,7 @@ export default class ImageView extends Vue {
   get user() {
     return this.$store.state.user;
   }
-  dataService: DataService = this.$opensilex.getService(
+  dataService = this.$opensilex.getService(
     "opensilex.DataService"
   );
   images = [];
@@ -154,9 +153,9 @@ export default class ImageView extends Vue {
         this.currentPage - 1
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<FileDescriptionDTO>>>) => {
+        (http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
           const res = http.response.result as any;
-          const data = res.data as Array<FileDescriptionDTO>;
+          const data = res.data as Array<any>;
           if (http.response.metadata.pagination !== null) {
             this.totalImages = http.response.metadata.pagination.totalCount;
           } else {
@@ -178,7 +177,7 @@ export default class ImageView extends Vue {
       });
   }
 
-  imagesFilter(data: Array<FileDescriptionDTO>) {
+  imagesFilter(data: Array<any>) {
     // each images may have more than one concerned item .
     if (this.searchImagesFields.objectType !== null) { //if an object type is selected , add only images with this type
       data.forEach(element => {

@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <div v-if="uri" class="row">
+    <div class="row">
       <div class="col col-xl-12">
         <div class="card">
           <div class="card-header">
@@ -15,17 +14,18 @@
               :required="true"
               :selected.sync="selectedVariable"
               :options="usedVariables"
-              @select="tableRef.refresh()"
+              @select="refresh()"
             ></opensilex-SelectForm>
 
             <opensilex-TableAsyncView
               v-if="selectedVariable"
-              ref="tableRef"
+              ref="XXXXX"
               :searchMethod="searchData"
               :fields="fields"
             >
-              <template v-slot:cell(object)="{data}">
-                <opensilex-UriLink :uri="data.item.object" :value="objects[data.item.object]"></opensilex-UriLink>
+              <template v-slot:cell(uri)="{}">
+                {{objects}}
+                <!-- <opensilex-UriLink :uri="data.item.uri" :value="objects[data.item.uri]"></opensilex-UriLink> -->
               </template>
 
               <template v-slot:cell(date)="{data}">
@@ -39,7 +39,6 @@
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
@@ -72,7 +71,7 @@ export default class ExperimentData extends Vue {
 
   uri = null;
 
-  @Ref("tableRef") readonly tableRef!: any;
+  @Ref("XXXXX") readonly tableRef!: any;
 
   created() {
     this.uri = this.$route.params.uri;
@@ -101,7 +100,7 @@ export default class ExperimentData extends Vue {
 
   fields = [
     {
-      key: "object",
+      key: "uri",
       label: "ExperimentData.object"
     },
     {
@@ -132,7 +131,7 @@ export default class ExperimentData extends Vue {
         .then(http => {
           let objectToLoad = [];
           for (let i in http.response.result) {
-            let objectURI = http.response.result[i].object;
+            let objectURI = http.response.result[i].uri;
             if (!this.objects[objectURI] && !objectToLoad.includes(objectURI)) {
               objectToLoad.push(objectURI);
             }
@@ -147,6 +146,7 @@ export default class ExperimentData extends Vue {
                   let obj = httpObj.response.result[j];
                   this.objects[obj.uri] = obj.name + " (" + obj.typeLabel + ")";
                 }
+                console.error(this.objects);
                 resolve(http);
               })
               .catch(reject);
@@ -156,6 +156,13 @@ export default class ExperimentData extends Vue {
         })
         .catch(reject);
     });
+  }
+
+  refresh() {
+    console.error(this.tableRef, this.$refs.tableRef);
+    if (this.tableRef) {
+      this.tableRef.refresh();
+    }
   }
 }
 </script>

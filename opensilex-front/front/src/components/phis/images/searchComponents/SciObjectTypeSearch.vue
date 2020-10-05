@@ -26,7 +26,6 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { EventBus } from "./../event-bus";
-import { ScientificObjectDTO, UriService, Uri, ScientificObjectsService } from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -44,7 +43,7 @@ export default class SciObjectTypeSearch extends Vue {
   soTypes: any = [];
   type: string = null;
   allTypes: any = [];
-  scientificObjectService: ScientificObjectsService = this.$opensilex.getService(
+  scientificObjectService = this.$opensilex.getService(
     "opensilex.ScientificObjectsService"
   );
   sciObjectUri: string =
@@ -63,7 +62,7 @@ export default class SciObjectTypeSearch extends Vue {
   }
 
   created() {
-    let service: UriService = this.$opensilex.getService(
+    let service = this.$opensilex.getService(
       "opensilex.UriService"
     );
     const result = service
@@ -72,7 +71,7 @@ export default class SciObjectTypeSearch extends Vue {
         100,
         0
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<Uri>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
         const res = http.response.result as any;
         res.data.forEach(element => {
           this.soTypes.push({
@@ -113,7 +112,7 @@ export default class SciObjectTypeSearch extends Vue {
         undefined
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
+        (http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
           const res = http.response.result as any;
           const data = res.data;
           let uriTypes = [];

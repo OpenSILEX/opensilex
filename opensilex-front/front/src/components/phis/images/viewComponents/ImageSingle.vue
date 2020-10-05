@@ -17,10 +17,6 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { EventBus } from "./../event-bus";
 import { Image } from "./../image";
-import {
-  ScientificObjectsService,
-  ScientificObjectDTO
-} from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -58,7 +54,7 @@ export default class ImageSingle extends Vue {
   }
 
   getObjectAlias() {
-    let service: ScientificObjectsService = this.$opensilex.getService(
+    let service = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
     const result = service
@@ -71,7 +67,7 @@ export default class ImageSingle extends Vue {
         undefined
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
+        (http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
           const res = http.response.result as any;
           this.image.objectAlias = res.data[0].label;
           this.objectAlias = res.data[0].label;

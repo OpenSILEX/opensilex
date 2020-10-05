@@ -259,27 +259,7 @@ export default class ExperimentList extends Vue {
   experimentStates = [];
 
   created() {
-    let service: SpeciesService = this.$opensilex.getService(
-      "opensilex.SpeciesService"
-    );
-
-    service
-      .getAllSpecies()
-      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-        this.species = [];
-        for (let i = 0; i < http.response.result.length; i++) {
-          this.speciesByUri.set(
-            http.response.result[i].uri,
-            http.response.result[i]
-          );
-          this.species.push({
-            id: http.response.result[i].uri,
-            label: http.response.result[i].label
-          });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-
+    this.loadSpecies();
     this.refreshStateLabel();
   }
 
@@ -289,6 +269,7 @@ export default class ExperimentList extends Vue {
       () => this.$store.getters.language,
       lang => {
         this.refreshStateLabel();
+        this.loadSpecies();
       }
     );
   }
@@ -312,6 +293,28 @@ export default class ExperimentList extends Vue {
         label: this.$i18n.t("component.experiment.common.status.public")
       }
     ];
+  }
+
+  loadSpecies() {
+    let service: SpeciesService = this.$opensilex.getService(
+      "opensilex.SpeciesService"
+    );
+    service
+      .getAllSpecies()
+      .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+        this.species = [];
+        for (let i = 0; i < http.response.result.length; i++) {
+          this.speciesByUri.set(
+            http.response.result[i].uri,
+            http.response.result[i]
+          );
+          this.species.push({
+            id: http.response.result[i].uri,
+            label: http.response.result[i].label
+          });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   getSpeciesName(uri: String): String {

@@ -210,7 +210,7 @@ export default class SelectForm extends Vue {
   actionHandler;
 
   @Prop({
-    default: 1
+    default: 10
   })
   resultLimit;
 

@@ -41,12 +41,12 @@ menu:
       component: opensilex-ExperimentListView
       credentials:
         - experiment-read
-  - id: scientificObjects
-    label: component.menu.scientificObjects
-    route:
-      path: /scientific-objects
-      component: opensilex-ScientificObjectList
-      credentials: []
+#  - id: scientificObjects
+#    label: component.menu.scientificObjects
+#    route:
+#      path: /scientific-objects
+#      component: opensilex-ScientificObjectList
+#      credentials: []
   # - id: equipments
   #   label: component.menu.equipments.label
   #   route:

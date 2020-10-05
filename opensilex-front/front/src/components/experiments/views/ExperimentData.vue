@@ -19,7 +19,7 @@
 
             <opensilex-TableAsyncView
               v-if="selectedVariable"
-              ref="XXXXX"
+              ref="dataRef"
               :searchMethod="searchData"
               :fields="fields"
             >
@@ -71,7 +71,7 @@ export default class ExperimentData extends Vue {
 
   uri = null;
 
-  @Ref("XXXXX") readonly tableRef!: any;
+  @Ref("dataRef") readonly dataRef!: any;
 
   created() {
     this.uri = this.$route.params.uri;
@@ -146,7 +146,6 @@ export default class ExperimentData extends Vue {
                   let obj = httpObj.response.result[j];
                   this.objects[obj.uri] = obj.name + " (" + obj.typeLabel + ")";
                 }
-                console.error(this.objects);
                 resolve(http);
               })
               .catch(reject);
@@ -159,9 +158,8 @@ export default class ExperimentData extends Vue {
   }
 
   refresh() {
-    console.error(this.tableRef, this.$refs.tableRef);
-    if (this.tableRef) {
-      this.tableRef.refresh();
+    if (this.dataRef) {
+      this.dataRef.refresh();
     }
   }
 }

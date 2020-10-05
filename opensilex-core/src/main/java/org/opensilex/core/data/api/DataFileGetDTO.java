@@ -17,7 +17,7 @@ import org.opensilex.core.data.dal.EntityModel;
  *
  * @author Alice Boizet
  */
-class DataFileGetDTO {
+public class DataFileGetDTO {
 
     private URI uri;
        
@@ -83,7 +83,7 @@ class DataFileGetDTO {
         DataFileGetDTO dto = new DataFileGetDTO();        
         dto.setUri(model.getUri());
         dto.setRdfType(model.getRdfType());
-        //dto.setScientificObjects(model.getScientificObjects());
+        dto.setScientificObjects(model.getObject());
         dto.setDate(model.getDate().toString());        
         dto.setMetadata(model.getMetadata());   
         

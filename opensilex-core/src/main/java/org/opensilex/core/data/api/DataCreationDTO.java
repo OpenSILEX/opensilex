@@ -54,7 +54,7 @@ public class DataCreationDTO{
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
+
     public void setObject(List<EntityModel> objects){
         this.scientificObjects = objects;
     }
@@ -86,6 +86,14 @@ public class DataCreationDTO{
     public List<EntityModel> getScientificObjects(){
         return scientificObjects;
     }
+    
+    /*public List<URI> getObjectsUri(){
+        List<URI> objectsURI = new ArrayList<>();
+        for(DataScientificObjectModel object:scientificObjects){
+            objectsURI.add(object.getUri());
+        }
+        return objectsURI;
+    }*/
     
     public URI getVariable(){
         return variable;

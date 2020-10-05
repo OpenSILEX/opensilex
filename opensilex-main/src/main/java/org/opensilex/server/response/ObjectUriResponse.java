@@ -7,6 +7,7 @@
 package org.opensilex.server.response;
 
 import java.net.URI;
+import java.util.List;
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -34,6 +35,21 @@ public class ObjectUriResponse extends JsonResponse<String> {
         this.result = uri.toString();
     }
 
+    /**
+     * Generic constructor for list of URI.
+     *
+     * @param status response status
+     * @param uris list uri
+     */
+    public ObjectUriResponse(Status status, List<URI> uris) {
+        super(status);
+        this.metadata = new MetadataDTO(new PaginationDTO());
+        uris.forEach(uri -> {
+            this.metadata.addDataFile(uri);
+        });
+        this.result = uris.toString();
+    }
+    
     /**
      * Constructor OK for an URI.
      *

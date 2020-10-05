@@ -80,8 +80,8 @@ public class DataAPI {
     public static final String DATA_EXAMPLE_VARIABLEURI = "http://opensilex.dev/variable#variable.2020-08-21_11-21-23entity6_method6_quality6_unit6";
     public static final String DATA_EXAMPLE_PROVENANCEURI = "http://opensilex.dev/provenance/1598001689415";
     public static final String DATA_EXAMPLE_VALUE = "8.6";
-    public static final String DATA_EXAMPLE_MINIMAL_DATE  = "2020-08-21T00:00:00";
-    public static final String DATA_EXAMPLE_MAXIMAL_DATE = "2020-09-21T00:00:00";
+    public static final String DATA_EXAMPLE_MINIMAL_DATE  = "2020-08-21T00:00:00+0100";
+    public static final String DATA_EXAMPLE_MAXIMAL_DATE = "2020-09-21T00:00:00+0100";
     
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.data.modification";
@@ -172,8 +172,13 @@ public class DataAPI {
                 //dao.prepareURI(model);
                 dataList.add(model);
         }
-            dao.createAll(dataList);
-            return new ObjectUriResponse().getResponse();
+            dataList = (List<DataModel>) dao.createAll(dataList);
+            List<URI> createdResources = new ArrayList<>();
+            for (DataModel data : dataList){
+                createdResources.add(data.getUri());
+            }
+            
+            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();//PaginatedListResponse(Response.Status.CREATED,createdResources).getResponse();//PaginatedListResponse<>(dataList).getResponse();
         }
         
     }
@@ -348,7 +353,7 @@ public class DataAPI {
      * @return the insertion result.
      */
     @POST
-    @Path("file")
+    @Path("file/create")
     @ApiOperation(value = "Post data file")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = ObjectUriResponse.class)})
@@ -360,22 +365,19 @@ public class DataAPI {
             @ApiParam(value = "Data file", required = true, type = "file") @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-        //FileDescriptionDAO fileDescriptionDao = new FileDescriptionDAO(sparql);
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
 
-        DataFileModel model = dto.newModel();      
-        //Boolean dao.valid(model) = true;
-        Boolean valid = true;
-        if (valid) {            
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataFileModel model = dto.newModel(); 
+
+        ErrorResponse error = dao.valid(model);
+        //Boolean valid = true;
+        if (error != null) { 
+            return error.getResponse();
+        } else {
+            
             model.setFilename(fileContentDisposition.getFileName());
             dao.createFile(model, file);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } else {
-            return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "Unknown Object or Provenance URI",
-                        "Unknown Object or Provenance URI"
-            ).getResponse();
         }
         
     }
@@ -407,7 +409,7 @@ public class DataAPI {
      * }
      */
     @POST
-    @Path("filepaths")
+    @Path("filepaths/create")
     @ApiOperation(value = "Post data about existing files")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ObjectUriResponse.class)})
@@ -415,14 +417,14 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postDataFilePaths(
-            @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<DataFileCreationDTO> dtoList,
+            @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<DataFilePathCreationDTO> dtoList,
             @Context HttpServletRequest context
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         
         Set<URI> objectsURI = new HashSet<>();
         Set<String> provenances= new HashSet<>();
-        for(DataFileCreationDTO dto : dtoList ){ 
+        for(DataFilePathCreationDTO dto : dtoList ){ 
             if (dto.getScientificObjects() != null) {
                 for (EntityModel obj:dto.getScientificObjects()) {
                     objectsURI.add(obj.getUri());
@@ -436,7 +438,7 @@ public class DataAPI {
             return error.getResponse();
         } else {
             List<DataModel> dataList = new ArrayList();
-            for(DataFileCreationDTO dto : dtoList ){            
+            for(DataFilePathCreationDTO dto : dtoList ){            
                 DataFileModel model = dto.newModel();
                 // get the the absolute file path according to the fileStorageDirectory
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));
@@ -454,7 +456,12 @@ public class DataAPI {
                 dataList.add(model);
         }
             dataList = (List<DataModel>) dao.createAll(dataList);
-            return new PaginatedListResponse<>(dataList).getResponse();
+            List<URI> createdResources = new ArrayList<>();
+            for (DataModel data : dataList){
+                createdResources.add(data.getUri());
+            }
+            
+            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
         }     
 
     }
@@ -468,7 +475,7 @@ public class DataAPI {
      */
     @ApiProtected
     @GET
-    @Path("file/{fileUri}")
+    @Path("file/get/{uri}")
     @ApiOperation(value = "Get data file")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve file")
@@ -476,13 +483,13 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getDataFile(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @NotNull URI fileUri,
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
             @Context HttpServletResponse response
     ) {
         try {
             DataDAO dao = new DataDAO(nosql, sparql, fs);
 
-            DataFileModel description = dao.getFile(fileUri);
+            DataFileModel description = dao.getFile(uri);
             if (description == null) {
                 return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
@@ -524,24 +531,24 @@ public class DataAPI {
      * }
      */
     @GET
-    @Path("file/{fileUri}/description")
+    @Path("file/description/{uri}")
     @ApiOperation(value = "Get data file description")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve file description", response = DataFileCreationDTO.class),})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescription(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @NotNull URI fileUri
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
-        DataFileModel description = dao.getFile(fileUri);
+        DataFileModel description = dao.getFile(uri);
 
         if (description != null) {
             return new SingleObjectResponse<>(DataFileGetDTO.fromModel(description)).getResponse();
         } else {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Data not found",
-                    "Unknown data URI: " + fileUri.toString()).getResponse();
+                    "Unknown data URI: " + uri.toString()).getResponse();
         }
     }
     
@@ -557,7 +564,7 @@ public class DataAPI {
      */
     @ApiProtected
     @GET
-    @Path("file/thumbnail{fileUri}")
+    @Path("file/thumbnail/{uri}")
     @ApiOperation(value = "Get picture thumbnail")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve thumbnail of a picture")
@@ -565,14 +572,14 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_OCTET_STREAM})
     public Response getPicturesThumbnails(
-            @ApiParam(value = "Search by fileUri", required = true) @PathParam("fileUri") @NotNull URI fileUri,
+            @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Thumbnail width") @QueryParam("scaledWidth") @Min(256) @Max(1920) @DefaultValue("640") Integer scaledWidth,
             @ApiParam(value = "Thumbnail height") @QueryParam("scaledHeight") @Min(144) @Max(1080) @DefaultValue("360") Integer scaledHeight,
             @Context HttpServletResponse response) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
-        DataFileModel description = dao.getFile(fileUri);
+        DataFileModel description = dao.getFile(uri);
         if (description == null) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         }

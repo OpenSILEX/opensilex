@@ -12,7 +12,6 @@ import org.opensilex.nosql.model.NoSQLModel;
 import javax.jdo.annotations.NotPersistent;
 import java.util.List;
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Convert;
 import javax.jdo.annotations.Element;
 import javax.jdo.annotations.Embedded;
 import javax.jdo.annotations.Join;
@@ -171,5 +170,5 @@ public class ProvenanceModel implements NoSQLModel{
         String[] lab = {this.label};
         return lab;
     }
-
+    
 }

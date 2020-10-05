@@ -122,10 +122,10 @@ public class ImageResizer {
         Path scaledImagePath = null;
         try {
             srcImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
+            Files.write(srcImagePath, img);
 
             // create tmp file
             scaledImagePath = Files.createTempFile(Paths.get(RESIZED_PICTURE_TMP_DIR.toString()), null, null);
-            Files.write(scaledImagePath, img);
 
             List<String> command = new ArrayList<>();
             command.add(CONVERT_COMMAND);
@@ -187,7 +187,8 @@ public class ImageResizer {
 
             // write scaled image as byte array
             baos = new ByteArrayOutputStream();
-            ImageIO.write(scaledImg, IMAGE_IO_JPEG_TYPE, baos);
+            String fileExt = tika.detect(img).replace("image/", "");            
+            ImageIO.write(scaledImg, fileExt, baos);
             baos.flush();
             byte[] resizedImageData = baos.toByteArray();
 

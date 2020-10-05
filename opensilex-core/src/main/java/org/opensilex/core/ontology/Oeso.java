@@ -140,4 +140,9 @@ public class Oeso {
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
     public static final Resource ScientificObjectClass = Ontology.resource(NS, "ScientificObjectClass");
     public static final Property isScientificObjectManagedClass = Ontology.property(NS, "isScientificObjectManagedClass");
+    
+    // ---- PROVENANCES ----
+    public static final Property ImageAnalysis = Ontology.property(NS, "ImageAnalysis");
+    public static final Property Image = Ontology.property(NS, "Image");
+
 }

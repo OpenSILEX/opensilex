@@ -7,6 +7,7 @@
 package org.opensilex.nosql.datanucleus;
 
 import com.mongodb.client.MongoClient;
+import com.mongodb.DuplicateKeyException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.JDOQLTypedQuery;
@@ -30,6 +32,7 @@ import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
+import org.opensilex.nosql.exceptions.NoSQLDuplicateKeyException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.nosql.service.NoSQLService;
@@ -111,7 +114,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
      * @param checkUriExist necessary to check if URI already existing
      * @throws Exception
      */
-    public <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist) throws Exception {
+    private <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, List<URI> alreadyGenerateURI) throws Exception {
         URI uri = instance.getUri();
 
         if (uri == null) {
@@ -119,26 +122,93 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             int retry = 0;
             String graphPrefix = baseURI.resolve(instance.getGraphPrefix()).toString();
             uri = instance.generateURI(graphPrefix, instance, retry);
-            while (existByURI(instance, uri)) {
+            while (alreadyGenerateURI.contains(uri)) {
                 uri = instance.generateURI(graphPrefix, instance, retry++);
             }
 
             instance.setUri(uri);
-        } else if (checkUriExist && (existByURI(instance, uri))) {
+       } else if (alreadyGenerateURI.contains(uri)) {
             throw new NoSQLAlreadyExistingUriException(uri);
         }
     }
-
-    /**
-     * Method to prepare an instance for creation
-     *
-     * @param instance will be created
-     * @return DBMS Id of instance
-     * @throws Exception
-     */
+    
+    public <T extends NoSQLModel> void generateUniqueUriIfNullOrValidateCurrent(T instance) throws Exception {
+        generateUniqueUriIfNullOrValidateCurrent(instance, new ArrayList<>() );
+    }
+    
+     /**
+      * Method to prepare an instance for creation
+      * 
+      * @param instance will be created
+      * @return DBMS Id of instance
+      * @throws Exception 
+      */
     public <T extends NoSQLModel> Object prepareInstanceCreation(T instance) throws Exception{
-        generateUniqueUriIfNullOrValidateCurrent(instance, true);
-        return create((Object)instance);
+        return prepareInstanceCreation(instance, false);
+    }
+    
+    public <T extends NoSQLModel> Object prepareInstanceCreation(T instance, boolean forceURI) throws Exception{
+        generateUniqueUriIfNullOrValidateCurrent(instance);
+        if (forceURI)
+            return createForceURI(instance);
+        else
+            return create(instance);
+    }
+    
+    public <T extends NoSQLModel> void prepareInstancesListCreation(Collection<T> instances) throws Exception {
+        List<URI> alreadyGenerateURI = new ArrayList<>();
+        List<T> instancesUserURI = new ArrayList<>();
+        List<T> instancesGeneratedURI = new ArrayList<>();
+        for (T instance:instances){
+            if(instance.getUri()!= null)
+                instancesUserURI.add(instance);
+            else{
+                generateUniqueUriIfNullOrValidateCurrent(instance, alreadyGenerateURI);
+                instancesGeneratedURI.add(instance);
+            }
+            alreadyGenerateURI.add(instance.getUri());
+        }
+        
+        try{
+            createAllForceURI(instancesGeneratedURI);
+            createAll(instancesUserURI);
+        }catch (Exception e){
+            throw e;
+        }
+    }
+    
+    private <T extends NoSQLModel> T createTransactionnal(Transaction tx1, PersistenceManager persistenceManager, T instance) throws Exception{
+        String graphPrefix = baseURI.resolve(instance.getGraphPrefix()).toString();
+        int retry = 0;
+        URI uri = null;
+        int errorCode = 11000;
+        T insertInstance = null;
+
+        while(errorCode == 11000){
+            try{
+                insertInstance = (T) persistenceManager.makePersistent(instance);
+                errorCode = 0;
+            }catch(Exception err){
+                Throwable cause = err.getCause();
+
+                if(cause instanceof DuplicateKeyException){
+                    errorCode = ((DuplicateKeyException) cause).getCode();
+                }else{
+                    tx1.setRollbackOnly();
+                    throw new NoSQLDuplicateKeyException(String.valueOf(retry));
+                }
+
+                uri = instance.generateURI(graphPrefix, instance, retry++);
+                try{
+                    instance.setUri(uri);
+                }catch(Exception e){
+                    tx1.setRollbackOnly();
+                    throw e;
+                }
+            }
+        }
+        
+        return insertInstance;
     }
 
     /**
@@ -150,20 +220,145 @@ public class DataNucleusService extends BaseService implements NoSQLService {
      */
     @Override
     public Object create(Object instance) throws NamingException {
-
-        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+       
+       try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+           Transaction tx1 = persistenceManager.currentTransaction();
+           Object insertInstance = null;
             try{
-                Transaction tx1 = persistenceManager.currentTransaction();
+                tx1.setRestoreValues(true);
                 tx1.begin();
-                persistenceManager.makePersistent(instance);
+                insertInstance = persistenceManager.makePersistent(instance);
+                return JDOHelper.getObjectId(instance);
+            }catch (Exception ex){
+                tx1.rollback();
+                return null;
+            }finally{
+                persistenceManager.close();
+            }
+                            
+
+        }
+    }
+    
+    public <T extends NoSQLModel> Object createForceURI(T instance) throws NamingException, NoSQLBadPersistenceManagerException {
+       
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            Transaction tx1 = persistenceManager.currentTransaction();
+            Object insertInstance = null;
+            try{
+                tx1.begin();
+                insertInstance = createTransactionnal(tx1, persistenceManager,(NoSQLModel) instance);
                 tx1.commit();
                 return JDOHelper.getObjectId(instance);
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
+                tx1.rollback();
+                return null;
             }finally{
                 persistenceManager.close();
             }
         }
     }
+    
+    @Override
+    public void createAll(Collection instances) throws NamingException{
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            Transaction tx1 = persistenceManager.currentTransaction();
+            List<Object> insertInstances = new ArrayList<>();
+            try{
+                tx1.begin();
+                for(Object instance: instances){
+                    Object insertInstance = persistenceManager.makePersistent(instance);
+                    insertInstances.add(insertInstance);
+                }
+                tx1.commit();
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
+                tx1.rollback();
+                deleteAll(insertInstances);
+                throw ex;
+            }finally{
+                persistenceManager.close();
+            }
+        }
+    }
+    
+    public <T extends NoSQLModel> void createAllForceURI(Collection<T> instances) throws NamingException, Exception{
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            Transaction tx1 = persistenceManager.currentTransaction();
+            List<T> insertInstances = new ArrayList<>();
+            try{
+                tx1.begin();
+                for(T instance: instances){
+                    T insertInstance = createTransactionnal(tx1, persistenceManager, instance);
+                    insertInstances.add(insertInstance);
+                }
+                tx1.commit();
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
+                deleteList(insertInstances);
+                throw ex;
+            }finally{
+                persistenceManager.close();
+            }
+        }
+    }
+    
+    /**
+     * Method to update data in database
+     * 
+     * @param instance the new data with an already existing URI in the database
+     * @throws NamingException
+     * @throws NoSQLInvalidURIException
+     * @throws NoSQLBadPersistenceManagerException 
+     */
+    public <T extends NoSQLModel> void update(T instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            try{
+                T oldInstance = findByURI(instance, instance.getUri(),persistenceManager);
+                if (oldInstance == null)
+                    throw new NoSQLInvalidURIException(instance.getUri());
 
+                T newInstance = oldInstance.update(instance);
+                delete((Object)oldInstance, persistenceManager);
+                update((Object) newInstance,persistenceManager);
+            }finally{
+                persistenceManager.close();
+            }
+        } 
+    }
+    
+    /**
+     * Method to write update data 
+     * 
+     * @param instance update data
+     * @param pm Persistence Manager
+     * @return DBMS Id
+     * @throws NamingException
+     * @throws NoSQLBadPersistenceManagerException 
+     */
+    public Object update(Object instance, PersistenceManager pm) throws NamingException, NoSQLBadPersistenceManagerException {
+        if(pm == null) throw new NoSQLBadPersistenceManagerException();
+        
+        Transaction tx1 = pm.currentTransaction();
+        tx1.begin();
+        pm.makePersistent(instance);
+        tx1.commit();
+        return JDOHelper.getObjectId(instance);
+    }
+    
+    /**
+     * Method to write update data 
+     * 
+     * @param instance update data
+     * @return DBMS Id
+     * @throws NamingException
+     */
+    @Override
+    public Object update(Object instance) throws NamingException {
+        return create(instance);
+    }
+    
     /**
      * Method to delete already founded instance 
      * with an already existing PersistenceManager
@@ -230,7 +425,41 @@ public class DataNucleusService extends BaseService implements NoSQLService {
             }
         }
     }
+    
+    public <T extends NoSQLModel> void deleteList(Collection<T> instances) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+        for(T instance: instances){
+            try{
+                delete(instance, instance.getUri());
+            }catch(NoSQLInvalidURIException ex){
+                continue;
+            }
+        }
+    }
+    @Override
+    public void deleteAll(Collection instances) throws NamingException {
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            try{
+                persistenceManager.deletePersistentAll(instances);
+            }finally{
+                persistenceManager.close();
+            }
+        }
+    }
+    
+    public void deleteAll(Collection instances,PersistenceManager pm) throws NamingException, NoSQLBadPersistenceManagerException {
+        if (pm == null) throw new NoSQLBadPersistenceManagerException();
+        Transaction transaction = pm.currentTransaction();
+        transaction.begin();
+        pm.deletePersistentAll(instances);
+        transaction.commit();
+    }
 
+    @Override
+    public Long deleteAll(JDOQLTypedQuery query) throws NamingException {
+        return (Long) query.deletePersistentAll();
+
+    }
+      
     /**
      * Method to find data by DBMS Id
      *
@@ -320,121 +549,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         T result = findByURI(instance,uri);
         return result!=null;
     }
-
-    @Override
-    public Long count(JDOQLTypedQuery query) throws NamingException {
-        return (Long) query.executeResultUnique();
-    }
-
-    /**
-     * Method to update data in database
-     *
-     * @param instance the new data with an already existing URI in the database
-     * @throws NamingException
-     * @throws NoSQLInvalidURIException
-     * @throws NoSQLBadPersistenceManagerException
-     */
-    public <T extends NoSQLModel> void update(T instance) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
-        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
-            try{
-                T oldInstance = findByURI(instance, instance.getUri(),persistenceManager);
-                if (oldInstance == null)
-                    throw new NoSQLInvalidURIException(instance.getUri());
-
-                T newInstance = oldInstance.update(instance);
-                delete((Object)oldInstance, persistenceManager);
-                update((Object) newInstance,persistenceManager);
-            }finally{
-                persistenceManager.close();
-            }
-        }
-    }
-
-    /**
-     * Method to write update data
-     *
-     * @param instance update data
-     * @param pm Persistence Manager
-     * @return DBMS Id
-     * @throws NamingException
-     * @throws NoSQLBadPersistenceManagerException
-     */
-    public Object update(Object instance, PersistenceManager pm) throws NamingException, NoSQLBadPersistenceManagerException {
-        if(pm == null) throw new NoSQLBadPersistenceManagerException();
-
-        Transaction tx1 = pm.currentTransaction();
-        tx1.begin();
-        pm.makePersistent(instance);
-        tx1.commit();
-        return JDOHelper.getObjectId(instance);
-    }
-
-    /**
-     * Method to write update data
-     *
-     * @param instance update data
-     * @return DBMS Id
-     * @throws NamingException
-     */
-    @Override
-    public Object update(Object instance) throws NamingException {
-        return create(instance);
-    }
-
-    @Override
-    public void createAll(Collection instances) throws NamingException {
-        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
-            try{
-                Transaction tx1 = persistenceManager.currentTransaction();
-                tx1.begin();
-                persistenceManager.makeTransactionalAll(instances);
-                persistenceManager.makePersistentAll(instances);
-                tx1.commit();
-            }finally{
-                persistenceManager.close();
-            }
-        }
-    }
-
-    @Override
-    public void deleteAll(Collection instances) throws NamingException {
-        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
-            try{
-                persistenceManager.deletePersistentAll(instances);
-            }finally{
-                persistenceManager.close();
-            }
-        }
-    }
-
-    @Override
-    public Long deleteAll(JDOQLTypedQuery query) throws NamingException {
-        return (Long) query.deletePersistentAll();
-
-    }
-
-    /**
-     * Erase JDO Cache
-     */
-    public void flush(){
-        JDOQueryCache cache = ((JDOPersistenceManagerFactory)PMF).getQueryCache();
-        cache.evictAll();
-    }
-
-    @Override
-    public void shutdown() {
-        if (PMF != null) {
-            PMF.close();
-        }
-    }
-
-    public <T extends NoSQLModel> void prepareInstancesListCreation(Collection<T> instances) throws Exception {
-        for (T instance:instances) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, true);
-        }
-        createAll(instances);
-    }
-
+    
     public <T extends NoSQLModel> List<T> searchWithPagination(
             PersistenceManager pm,
             Class<T> objectClass,
@@ -484,4 +599,23 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         return this.connection.getMongoDBClient();
     }
 
+     @Override
+    public Long count(JDOQLTypedQuery query) throws NamingException {
+        return (Long) query.executeResultUnique();
+    }
+    
+    /**
+     * Erase JDO Cache
+     */
+    public void flush(){
+        JDOQueryCache cache = ((JDOPersistenceManagerFactory)PMF).getQueryCache();
+        cache.evictAll();
+    }
+    
+    @Override
+    public void shutdown() {
+        if (PMF != null) {
+            PMF.close();
+        }
+    }
 }

@@ -7,6 +7,7 @@
 package org.opensilex.core.provenance.api;
 
 import java.net.URI;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 
 /**
  * Provenance Get DTO
@@ -24,4 +25,15 @@ public class ProvenanceGetDTO extends ProvenanceCreationDTO {
         this.uri = uri;
     }
     
+    public static ProvenanceGetDTO fromModel(ProvenanceModel model){
+        ProvenanceGetDTO dto = new ProvenanceGetDTO();        
+        dto.setUri(model.getUri());
+        dto.setLabel(model.getLabel());
+        dto.setComment(model.getComment());
+        dto.setExperiments(model.getExperiments());
+        dto.setActivity(model.getActivity());
+        dto.setAgents(model.getAgents());
+        
+        return dto;
+    }
 }

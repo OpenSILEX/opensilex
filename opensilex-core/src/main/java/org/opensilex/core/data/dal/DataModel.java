@@ -18,11 +18,13 @@ import java.util.Map;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Element;
 import javax.jdo.annotations.Embedded;
+import javax.jdo.annotations.Index;
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Unique;
 import javax.jdo.query.BooleanExpression;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.server.rest.validation.DateFormat;
@@ -32,6 +34,7 @@ import org.opensilex.server.rest.validation.DateFormat;
  * @author sammy
  */
 @PersistenceCapable(table = "Data")
+@Index(name="Unicity", unique="true", members={"variable", "scientificObjects","provenanceURI","date"})
 public class DataModel implements NoSQLModel{
 
     @NotPersistent
@@ -50,6 +53,7 @@ public class DataModel implements NoSQLModel{
     })
     @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
+
     private List<EntityModel> scientificObjects;
     
     private URI variable;

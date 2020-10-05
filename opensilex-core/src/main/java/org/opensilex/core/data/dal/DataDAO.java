@@ -20,6 +20,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 
@@ -66,7 +68,7 @@ public class DataDAO {
     }
    
     public <T extends DataModel> T create(T instance) throws NamingException, URISyntaxException, Exception{
-        nosql.prepareInstanceCreation(instance);
+        nosql.prepareInstanceCreation(instance,  instance.getUri()!=null);
         return instance;
     }
 
@@ -83,29 +85,32 @@ public class DataDAO {
     
     public ErrorResponse valid(DataModel data) throws SPARQLException, NamingException, IOException, Exception{
         //check variables uri
-        if (!sparql.uriExists(VariableModel.class, data.getVariable())) {
-            return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong variable uri",
-                            "Variable "+data.getVariable()+" doesn't exist"
-                );
-        }
-        
-        //check objects uri
-        if (!data.getObject().isEmpty()) {
-            List<URI> objects = new ArrayList<>();
-            data.getObject().forEach(object -> {
-                objects.add(object.getUri());
-            });
-            if (!sparql.uriListExists(ScientificObjectModel.class, objects )) {
+        if (data.getVariable() != null) {
+            if (!sparql.uriExists(VariableModel.class, data.getVariable())) {
                 return new ErrorResponse(
                                 Response.Status.BAD_REQUEST,
-                                "wrong object uri",
-                                "A given object uri doesn't exist " + objects.toString()
+                                "wrong variable uri",
+                                "Variable "+data.getVariable()+" doesn't exist"
                     );
             }
         }
-        
+
+        //check objects uri
+        if (data.getObject() != null) {
+            if (!data.getObject().isEmpty()) {
+                List<URI> objects = new ArrayList<>();
+                data.getObject().forEach(object -> {
+                    objects.add(object.getUri());
+                });
+                if (!sparql.uriListExists(ScientificObjectModel.class, objects )) {
+                    return new ErrorResponse(
+                                    Response.Status.BAD_REQUEST,
+                                    "wrong object uri",
+                                    "A given object uri doesn't exist " + objects.toString()
+                        );
+                }
+            }
+        }
         //check provenance uri
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         if (!provDAO.provenanceExists(data.getProvenanceURI())) {
@@ -117,7 +122,6 @@ public class DataDAO {
         }
         
         return null;
-
     }
 
     public void prepareURI(DataModel data) throws Exception {
@@ -356,7 +360,8 @@ public class DataDAO {
 
     public <T extends DataFileModel> void createFile(DataFileModel model, File file) throws URISyntaxException, Exception {
         //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true);
+
+        nosql.generateUniqueUriIfNullOrValidateCurrent(model);
         
         Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString()).toAbsolutePath();
         final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
@@ -381,7 +386,7 @@ public class DataDAO {
         String filter = "";
 
         if (objectUri != null)
-            filter = filter + "object == \"" + objectUri.toString() +"\" && ";
+            filter = filter + "scientificObjects.contains(obj) && obj.uri == \"" + objectUri.toString() +"\" && ";
 
         if (provenanceUri != null)
             filter = filter + "provenanceURI == \""+ provenanceUri.toString() + "\" && ";

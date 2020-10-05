@@ -131,7 +131,7 @@ public class ProvenanceAPI {
         ProvenanceModel provenance = dao.get(uri);
 
         if (provenance != null) {
-            return new SingleObjectResponse<>(provenance).getResponse();
+            return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
         } else {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Provenance not found",
                     "Unknown provenance URI: " + uri.toString()).getResponse();

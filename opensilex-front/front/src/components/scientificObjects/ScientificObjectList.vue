@@ -217,7 +217,6 @@
     } from "opensilex-core/index";
     import {
         PropertyDTO, 
-        RdfResourceDTO,
         ScientificObjectDTO,
         ScientificObjectsService
     } from "opensilex-phis/index";

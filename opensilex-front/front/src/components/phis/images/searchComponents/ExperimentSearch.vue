@@ -22,7 +22,6 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { EventBus } from "./../event-bus";
-import { ExperimentsService, Experiment } from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -52,7 +51,7 @@ export default class ExperimentSearch extends Vue {
     //   this.userFocus = false;
     //   this.experiment = null;
     // });
-    let service: ExperimentsService = this.$opensilex.getService(
+    let service = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
     const result = service
@@ -69,7 +68,7 @@ export default class ExperimentSearch extends Vue {
         undefined,
         undefined
       )
-      .then((http: HttpResponse<OpenSilexResponse<Array<Experiment>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
         const res = http.response.result as any;
         const data = res.data;
 

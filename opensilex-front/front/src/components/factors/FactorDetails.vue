@@ -57,6 +57,31 @@
             ></opensilex-ExternalReferencesDetails>
           </template>
         </opensilex-Card>
+
+        <opensilex-Card
+          label="component.skos.ontologies-references-label"
+          icon="fa#globe-americas"
+        >
+          <template v-slot:header>
+            <div class="ml-4">
+              <opensilex-InteroperabilityButton
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
+                  )
+                "
+                :small="false"
+                label="component.skos.update"
+                @click="skosReferences.show()"
+              ></opensilex-InteroperabilityButton>
+            </div>
+          </template>
+          <template v-slot:body>
+            <opensilex-ExternalReferencesDetails
+              :skosReferences="factor"
+            ></opensilex-ExternalReferencesDetails>
+          </template>
+        </opensilex-Card>
       </b-col>
 
       <b-col>
@@ -120,7 +145,7 @@ export default class FactorDetails extends Vue {
   $i18n: any;
 
   @Ref("skosReferences") readonly skosReferences!: any;
-
+ 
   @Ref("factorForm") readonly factorForm!: any;
 
   get user() {

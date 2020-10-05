@@ -717,6 +717,47 @@ export default class OpenSilexVuePlugin {
         });
     }
 
+    /**
+    * 
+    * @param servicePath a string defines path which will
+    *  be combine with api base path. e.g. "/data-analysis/get/{uri}/download"
+    * @param name name of the returned file
+    * @param extension extension of the file
+    */
+    downloadFilefromService(servicePath: string, name: string, extension: string) {
+        console.log(this.baseApi);
+        let url =
+            this.baseApi +
+            servicePath;
+        let headers = {};
+        let user = this.getUser();
+        if (user != User.ANONYMOUS()) {
+            headers["Authorization"] = user.getAuthorizationHeader();
+        }
+        let promise = fetch(url, {
+            method: "GET",
+            headers: headers,
+        });
+
+        return promise
+            .then(function (response) {
+                return response.blob();
+            })
+            .then((result) => {
+                let objectURL = URL.createObjectURL(result);
+                let fileUrl = result;
+                let link = document.createElement("a");
+                link.href = objectURL;
+                link.setAttribute("download", name + "." + extension);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+
     public datatypes = [];
     private datatypesByURI = {};
 

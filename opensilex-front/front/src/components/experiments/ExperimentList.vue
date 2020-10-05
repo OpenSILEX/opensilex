@@ -195,6 +195,11 @@ export default class ExperimentList extends Vue {
     this.$opensilex.updateURLParameter("species", this.speciesFilter);
   }
 
+  private factorsFilter: any = [];
+  updateFactorsFilter() {
+    this.$opensilex.updateURLParameter("factors", this.factorsFilter);
+  }
+
   updateFilters() {
     this.updateYearFilter();
     this.updateLabelFilter();
@@ -206,14 +211,8 @@ export default class ExperimentList extends Vue {
     this.yearFilter = "";
     this.labelFilter = "";
     this.speciesFilter = [];
-    this.factorsFilter = [];
-    this.updateFilters();
+    this.factorsFilter = []; 
   }
-
-  private factorsFilter: any = [];
-  updateFactorsFilter() {
-    this.$opensilex.updateURLParameter("factors", this.factorsFilter);
-   }
 
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 

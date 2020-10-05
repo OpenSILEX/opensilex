@@ -9,7 +9,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "ScientificObject",
-        graph = "scientific-objects",
+        graph = "set/scientific-objects",
         prefix = "so"
 )
 public class ScientificObjectModel extends ExperimentalObjectModel {

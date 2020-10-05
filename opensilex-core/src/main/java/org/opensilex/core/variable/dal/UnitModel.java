@@ -14,7 +14,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Unit",
-        graph = "variable"
+        graph = "set/variables"
 )
 public class UnitModel extends BaseVariableModel<UnitModel> {
 

@@ -25,7 +25,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Germplasm",
-        graph = "germplasm",
+        graph = "set/germplasms",
         prefix = "germplasm"
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel> {

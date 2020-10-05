@@ -236,8 +236,7 @@ export default class ProjectDescription extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined, // startDate
-        undefined, // endDate
+        undefined, //year
         undefined, // label
         undefined, // species
         [this.$route.params.uri], // projects

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -180,9 +181,8 @@ public class ProjectAPI {
     /**
      * Search projects
      *
+     * @param year
      * @param term
-     * @param startDate
-     * @param endDate
      * @param financial
      * @param name
      * @param orderByList
@@ -206,9 +206,8 @@ public class ProjectAPI {
         @ApiResponse(code = 200, message = "Return Project list", response = ProjectGetDTO.class, responseContainer = "List")
     })
     public Response searchProjects(
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
-            @ApiParam(value = "Search by end date", example = "2018-06-15") @QueryParam("endDate") LocalDate endDate,
-            @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("term") String term,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+             @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("term") String term,
             @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("name") String name,
             @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial") String financial,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
@@ -220,8 +219,7 @@ public class ProjectAPI {
                 name,
                 term,
                 financial,
-                startDate,
-                endDate,
+                year,
                 currentUser,
                 orderByList,
                 page,

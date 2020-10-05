@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -121,7 +123,7 @@ public class ProjectDAO {
         sparql.create(instances);
     }
 
-    public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding, LocalDate startDate, LocalDate endDate, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding,  Integer year, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, name),
@@ -134,8 +136,16 @@ public class ProjectDAO {
 
         Expr financialFundingFilter = SPARQLQueryHelper.regexFilter(ProjectModel.FINANCIAL_FUNDING_FIELD, financialFunding);
 
-        Expr dateFilter = SPARQLQueryHelper.intervalDateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
-
+       LocalDate startDate ;
+        LocalDate endDate;
+        if (year != null) {
+            String yearString = Integer.toString(year);
+             startDate = LocalDate.parse(yearString + "-01-01");
+             endDate = LocalDate.parse(yearString + "-12-31");
+        }else {
+            startDate=null;
+            endDate=null;
+        }
         return sparql.searchWithPagination(
                 ProjectModel.class,
                 null,
@@ -152,9 +162,7 @@ public class ProjectDAO {
                         select.addFilter(financialFundingFilter);
                     }
 
-                    if (dateFilter != null) {
-                        select.addFilter(dateFilter);
-                    }
+                    appendDateFilters(select, startDate, endDate);
 
                     appendUserProjectsFilter(select, user);
                 },
@@ -162,6 +170,22 @@ public class ProjectDAO {
                 page,
                 pageSize
         );
+    }
+    
+     private void appendDateFilters(SelectBuilder select, LocalDate startDate, LocalDate endDate) throws Exception {
+        
+
+        if (startDate != null && endDate != null) {
+
+            Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
+            select.addFilter(dateRangeExpr);
+        } else {
+            if (startDate != null || endDate != null) {
+                Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ProjectModel.START_DATE_FIELD, startDate, ProjectModel.END_DATE_FIELD, endDate);
+                select.addFilter(dateRangeExpr);
+            }
+        }
+
     }
 
     private void appendUserProjectsFilter(SelectBuilder select, UserModel user) throws Exception {

@@ -156,6 +156,8 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
+    
+
     @Test
     public void testSearch() throws Exception {
 
@@ -165,7 +167,6 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("campaign", creationDTO.getCampaign());
                 put("startDate", creationDTO.getStartDate());
                 put("label", creationDTO.getLabel());
                 put("uri", uri);
@@ -183,6 +184,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         assertFalse(xps.isEmpty());
     }
+    
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

@@ -54,7 +54,6 @@ export default class ExperimentSelector extends Vue {
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
         undefined,
-        undefined,
         this.filterLabel,
         undefined,
         undefined,

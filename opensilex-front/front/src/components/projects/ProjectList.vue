@@ -191,16 +191,10 @@ export default class ProjectList extends Vue {
   }
 
   loadData(options) {
-    let startDateFilter: string = undefined;
-    let endDateFilter: string = undefined;
-    if (this.yearFilter) {
-      startDateFilter = this.yearFilter.toString() + "-01-01";
-      endDateFilter = this.yearFilter.toString() + "-12-31";
-    }
+ 
 
     return this.service.searchProjects(
-      startDateFilter,
-      endDateFilter,
+      this.yearFilter,
       this.termFilter,
       this.nameFilter,
       this.financialFilter,

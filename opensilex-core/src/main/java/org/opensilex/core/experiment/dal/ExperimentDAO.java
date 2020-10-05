@@ -129,34 +129,6 @@ public class ExperimentDAO {
     }
 
     @Deprecated
-    public ListWithPagination<ExperimentModel> search(
-            URI uri,
-            String label,
-            Integer campaign,
-            Boolean isEnded,
-            List<URI> variables, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-
-        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
-                ExperimentModel.class,
-                null,
-                (SelectBuilder select) -> {
-                    appendUriRegexFilter(select, uri);
-                    appendRegexLabelFilter(select, label);
-                    appendDateFilters(select, isEnded, null, null);
-                    appendCampaignFilter(select, campaign);
-                    appendVariablesListFilter(select, variables);
-                },
-                orderByList,
-                page,
-                pageSize
-        );
-        for (ExperimentModel xp : xps.getList()) {
-            filterExperimentSensors(xp);
-        }
-        return xps;
-    }
-
-    @Deprecated
     public ListWithPagination<ExperimentModel> search(URI uri,
             Integer campaign,
             String label,
@@ -176,16 +148,6 @@ public class ExperimentDAO {
                     appendRegexLabelFilter(select, label);
                     appendCampaignFilter(select, campaign);
                     appendSpeciesFilter(select, species);
-
-                    LocalDate startDateObj = null;
-                    if (startDate != null) {
-                        startDateObj = LocalDate.parse(startDate);
-                    }
-                    LocalDate endDateObj = null;
-                    if (endDate != null) {
-                        endDateObj = LocalDate.parse(endDate);
-                    }
-                    appendDateFilters(select, isEnded, startDateObj, endDateObj);
                     appendGroupsListFilters(select, admin, isPublic, groups);
                     appendProjectListFilter(select, projects);
                 },
@@ -201,16 +163,25 @@ public class ExperimentDAO {
     }
 
     public ListWithPagination<ExperimentModel> search(
+            Integer year,
             String label,
             List<URI> species,
             List<URI> factors,
-            LocalDate startDate,
-            LocalDate endDate,
             Boolean isEnded,
             List<URI> projects,
             Boolean isPublic,
             UserModel user,
             List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+        LocalDate startDate ;
+        LocalDate endDate;
+        if (year != null) {
+            String yearString = Integer.toString(year);
+             startDate = LocalDate.parse(yearString + "-01-01");
+             endDate = LocalDate.parse(yearString + "-12-31");
+        }else {
+            startDate=null;
+            endDate=null;
+        }
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
                 ExperimentModel.class,
@@ -268,7 +239,24 @@ public class ExperimentDAO {
         }
     }
 
-    private void appendDateFilters(SelectBuilder select, Boolean ended, LocalDate startDate, LocalDate endDate) throws Exception {
+    private void appendDateFilter(SelectBuilder select, LocalDate startDate, LocalDate endDate) throws Exception {
+
+        if (startDate != null && endDate != null) {
+
+            Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
+            select.addFilter(dateRangeExpr);
+        } else {
+            if (startDate != null || endDate != null) {
+                Expr dateRangeExpr = SPARQLQueryHelper.dateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
+                select.addFilter(dateRangeExpr);
+
+            }
+
+        }
+
+    }
+
+    private void appendIsActiveFilter(SelectBuilder select, Boolean ended) throws Exception {
         if (ended != null) {
             Node endDateVar = NodeFactory.createVariable(ExperimentModel.END_DATE_FIELD);
             Node currentDateNode = SPARQLDeserializers.getForClass(LocalDate.class).getNode(LocalDate.now());
@@ -281,12 +269,6 @@ public class ExperimentDAO {
                 Expr noEndDateFilter = exprFactory.not(exprFactory.bound(endDateVar));
                 select.addFilter(exprFactory.or(noEndDateFilter, exprFactory.gt(endDateVar, currentDateNode)));
             }
-        }
-
-        if (startDate != null & endDate != null) {
-
-            Expr dateRangeExpr = SPARQLQueryHelper.intervalDateRange(ExperimentModel.START_DATE_FIELD, startDate, ExperimentModel.END_DATE_FIELD, endDate);
-            select.addFilter(dateRangeExpr);
         }
 
     }

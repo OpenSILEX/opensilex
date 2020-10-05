@@ -39,7 +39,6 @@ export default class ProjectSelector extends Vue {
       .getService("opensilex.ProjectsService")
       .searchProjects(
         undefined,
-        undefined,
         undefined, 
         searchQuery, //name
         undefined,

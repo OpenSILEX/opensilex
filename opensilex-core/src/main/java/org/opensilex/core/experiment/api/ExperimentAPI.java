@@ -30,6 +30,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Size;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.factor.dal.FactorDAO;
@@ -187,7 +189,17 @@ public class ExperimentAPI {
     /**
      * Search experiments
      *
+     * @param year
+     * @param label
+     * @param species
+     * @param projects
+     * @param isPublic
+     * @param isEnded
+     * @param orderByList
+     * @param page
+     * @param pageSize
      * @return filtered, ordered and paginated list
+     * @throws java.lang.Exception
      * @see ExperimentDAO
      */
     @GET
@@ -204,14 +216,13 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetListDTO.class, responseContainer = "List")
     })
     public Response searchExperiments(
-            @ApiParam(value = "Search by start date", example = "2017-06-15") @QueryParam("startDate") LocalDate startDate,
-            @ApiParam(value = "Search by end date", example = "2017-06-15") @QueryParam("endDate") LocalDate endDate,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factors,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search private(false) or public experiments(true)", example = "true") @QueryParam("isPublic") Boolean isPublic,
-            @ApiParam(value = "Search ended(false) or active experiments(true)", example = "true") @QueryParam("isEnded") Boolean isEnded,
+            @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("isPublic") Boolean isPublic,
+            @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("isEnded") Boolean isEnded,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
@@ -219,11 +230,10 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
         ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                year,
                 label,
                 species,
                 factors,
-                startDate,
-                endDate,
                 isEnded,
                 projects,
                 isPublic,

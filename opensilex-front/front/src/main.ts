@@ -255,12 +255,12 @@ extend("decimal", (value, { decimals = '*', separator = '.' }: any = {}) => {
 
 extend("dateDiff", {
   params: ["startDate"],
-  validate: (value, { startDate }:any) => {
+  validate: (value, { startDate }: any) => {
 
-    if(startDate === null) {
+    if (startDate === null) {
       return true;
     }
-    return moment(value, "YYYY-MM-DD").diff(moment(startDate,"YYYY-MM-DD"))> 0;
+    return moment(value, "YYYY-MM-DD").diff(moment(startDate, "YYYY-MM-DD")) > 0;
   },
   message:
     "The difference between date"
@@ -411,6 +411,7 @@ $opensilex.loadModules([
     // Get OpenSilex configuration
     console.debug("Start loading configuration...");
     const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
+
     vueJsService.getConfig()
       .then(function (configResponse) {
         const config: FrontConfigDTO = configResponse.response.result;
@@ -450,8 +451,6 @@ $opensilex.loadModules([
               user = $opensilex.loadUserFromCookie();
               console.debug("User sucessfully loaded from cookie !");
             }
-
-
 
             if (!user.isLoggedIn()) {
               console.debug("User is ANONYMOUS !");

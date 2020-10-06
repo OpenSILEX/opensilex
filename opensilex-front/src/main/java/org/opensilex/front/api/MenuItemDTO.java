@@ -9,13 +9,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.NotNull;
+import org.opensilex.front.config.CustomMenuItem;
 import org.opensilex.front.config.MenuItem;
 
 @ApiModel
 public class MenuItemDTO {
 
-    public static MenuItemDTO fromModel(MenuItem menuItem, List<String> menuExclusions) {
+    public static MenuItemDTO fromModel(MenuItem menuItem, Map<String, String> menuLabelMap, List<String> menuExclusions) {
         MenuItemDTO menuDTO = new MenuItemDTO();
 
         menuDTO.setId(menuItem.id());
@@ -25,7 +27,36 @@ public class MenuItemDTO {
         List<MenuItemDTO> children = new ArrayList<>(mc.size());
         for (MenuItem child : mc) {
             if (!menuExclusions.contains(child.id())) {
-                children.add(fromModel(child, menuExclusions));
+                children.add(fromModel(child, menuLabelMap, menuExclusions));
+            }
+        }
+        menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));
+
+        RouteDTO routeDTO = RouteDTO.fromModel(menuItem.route());
+        menuDTO.setRoute(routeDTO);
+
+        menuLabelMap.put(menuDTO.getId(), menuDTO.getLabel());
+        return menuDTO;
+    }
+
+    public static MenuItemDTO fromCustomModel(CustomMenuItem menuItem, Map<String, String> menuLabelMap, List<String> menuExclusions, String lang) {
+        MenuItemDTO menuDTO = new MenuItemDTO();
+
+        menuDTO.setId(menuItem.id());
+        Map<String, String> menuLabel = menuItem.label();
+        if (menuLabel.containsKey(lang)) {
+            menuDTO.setLabel(menuLabel.get(lang));
+        } else if (menuLabelMap.containsKey(menuDTO.getId())) {
+            menuDTO.setLabel(menuLabelMap.get(menuDTO.getId()));
+        } else {
+            menuDTO.setLabel(menuDTO.getId());
+        }
+
+        List<CustomMenuItem> mc = menuItem.children();
+        List<MenuItemDTO> children = new ArrayList<>(mc.size());
+        for (CustomMenuItem child : mc) {
+            if (!menuExclusions.contains(child.id())) {
+                children.add(fromCustomModel(child, menuLabelMap, menuExclusions, lang));
             }
         }
         menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));

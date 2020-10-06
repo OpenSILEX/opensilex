@@ -6,10 +6,12 @@
 package org.opensilex.front;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.opensilex.front.config.FrontRoutingConfig;
 import org.opensilex.front.config.Route;
 import org.opensilex.front.config.MenuItem;
 import java.util.List;
+import java.util.Map;
 import org.apache.catalina.Context;
 import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.opensilex.config.ConfigManager;
@@ -17,6 +19,7 @@ import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.front.config.CustomMenuItem;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
@@ -63,7 +66,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
 
     private FrontConfigDTO config = null;
 
-    public FrontConfigDTO getConfigDTO() {
+    public FrontConfigDTO getConfigDTO(String lang) {
         if (this.config == null || getOpenSilex().isDev()) {
             FrontConfig frontConfig = getConfig(FrontConfig.class);
 
@@ -82,9 +85,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 config.setThemeName(themeId[1]);
             }
 
+            Map<String, String> menuLabelMap = new HashMap<>();
             List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
-
             List<String> menuExclusions = frontConfig.menuExclusions();
 
             for (OpenSilexModule m : getOpenSilex().getModules()) {
@@ -95,7 +98,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                         FrontRoutingConfig frontRoutingConfig = cfg.loadConfig("", FrontRoutingConfig.class);
                         for (MenuItem menuItem : frontRoutingConfig.menu()) {
                             if (!menuExclusions.contains(menuItem.id())) {
-                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem, menuExclusions);
+                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem, menuLabelMap, menuExclusions);
                                 globalMenu.add(menuDTO);
                             }
                         }
@@ -108,6 +111,18 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 } catch (Exception ex) {
                     LOGGER.warn("Error will loading front configuration opensilex.front.yml for: " + m.getClass().getCanonicalName(), ex);
                 }
+            }
+
+            List<CustomMenuItem> customMenu = frontConfig.customMenu();
+            if (customMenu != null && customMenu.size() > 0) {
+                List<MenuItemDTO> customMenuDTO = new ArrayList<>();
+                for (CustomMenuItem menuItem : customMenu) {
+                    if (!menuExclusions.contains(menuItem.id())) {
+                        MenuItemDTO menuDTO = MenuItemDTO.fromCustomModel(menuItem, menuLabelMap, menuExclusions, lang);
+                        customMenuDTO.add(menuDTO);
+                    }
+                }
+                globalMenu = customMenuDTO;
             }
 
             config.setMenu(globalMenu);

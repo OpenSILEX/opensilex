@@ -39,6 +39,8 @@ front:
     footerComponent: inrae-sixtine-SixtineFooterComponent
     menuComponent: inrae-sixtine-SixtineMenuComponent
     headerComponent: inrae-sixtine-SixtineHeaderComponent
+    customMenu:
+        
     menuExclusions:
         - radiometricTargets
         - vectors

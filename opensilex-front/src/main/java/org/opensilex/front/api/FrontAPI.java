@@ -37,6 +37,9 @@ import org.opensilex.OpenSilexModule;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
+import org.opensilex.security.authentication.ApiTranslatable;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -57,16 +60,20 @@ public class FrontAPI {
     @Inject
     private FrontModule frontModule;
 
+    @CurrentUser
+    UserModel user;
+        
     @GET
     @Path("/config")
     @ApiOperation(value = "Return the current configuration")
+    @ApiTranslatable
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Front application configuration", response = FrontConfigDTO.class)
     })
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConfig() throws Exception {
 
-        FrontConfigDTO config = frontModule.getConfigDTO();
+        FrontConfigDTO config = frontModule.getConfigDTO(user.getLanguage());
 
         return new SingleObjectResponse<FrontConfigDTO>(config).getResponse();
     }

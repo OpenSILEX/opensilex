@@ -6,8 +6,8 @@
 package org.opensilex.front;
 
 import java.util.List;
-import java.util.Map;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.front.config.CustomMenuItem;
 
 /**
  *
@@ -61,4 +61,10 @@ public interface FrontConfig {
             value = "List of menu identifiers to exclude"
     )
     List<String> menuExclusions();
+
+    @ConfigDescription(
+            value = "Application menu custom definition"
+    )
+    List<CustomMenuItem> customMenu();
+
 }

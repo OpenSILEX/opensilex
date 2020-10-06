@@ -28,16 +28,14 @@ import javax.naming.NamingException;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.api.jdo.JDOQueryCache;
-import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
-import org.opensilex.nosql.exceptions.NoSQLDuplicateKeyException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.nosql.utils.URIGenerator;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -151,16 +149,21 @@ public class DataNucleusService extends BaseService implements NoSQLService {
     
     public <T extends NoSQLModel> Object prepareInstanceCreation(T instance, boolean forceURI) throws Exception{
         generateUniqueUriIfNullOrValidateCurrent(instance);
-        if (forceURI)
+        if (instance.getUri() == null){
+            generateUniqueUriIfNullOrValidateCurrent(instance);
             return createForceURI(instance);
-        else
+        }else{
             return create(instance);
+        }
     }
     
     public <T extends NoSQLModel> void prepareInstancesListCreation(Collection<T> instances) throws Exception {
         List<URI> alreadyGenerateURI = new ArrayList<>();
         List<T> instancesUserURI = new ArrayList<>();
         List<T> instancesGeneratedURI = new ArrayList<>();
+        if(instances.size() > 10000)
+            throw new NoSQLTooLargeSetException();
+        
         for (T instance:instances){
             if(instance.getUri()!= null)
                 instancesUserURI.add(instance);
@@ -173,7 +176,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         
         try{
             createAllForceURI(instancesGeneratedURI);
-            createAll(instancesUserURI);
+            createAllNoSQLModel(instancesUserURI);
         }catch (Exception e){
             throw e;
         }
@@ -188,6 +191,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
 
         while(errorCode == 11000){
             try{
+                //TimeUnit.SECONDS.sleep(1);
                 insertInstance = (T) persistenceManager.makePersistent(instance);
                 errorCode = 0;
             }catch(Exception err){
@@ -197,7 +201,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                     errorCode = ((DuplicateKeyException) cause).getCode();
                 }else{
                     tx1.setRollbackOnly();
-                    throw new NoSQLDuplicateKeyException(String.valueOf(retry));
+                    throw err;
                 }
 
                 uri = instance.generateURI(graphPrefix, instance, retry++);
@@ -230,10 +234,11 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                 tx1.setRestoreValues(true);
                 tx1.begin();
                 insertInstance = persistenceManager.makePersistent(instance);
+                tx1.commit();
                 return JDOHelper.getObjectId(instance);
             }catch (Exception ex){
-                tx1.rollback();
-                return null;
+                if(tx1.isActive()) tx1.rollback();
+                throw ex;
             }finally{
                 persistenceManager.close();
             }
@@ -242,7 +247,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
     }
     
-    public <T extends NoSQLModel> Object createForceURI(T instance) throws NamingException, NoSQLBadPersistenceManagerException {
+    public <T extends NoSQLModel> Object createForceURI(T instance) throws NamingException, NoSQLBadPersistenceManagerException, Exception {
        
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             Transaction tx1 = persistenceManager.currentTransaction();
@@ -254,8 +259,8 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                 return JDOHelper.getObjectId(instance);
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
-                tx1.rollback();
-                return null;
+                if(tx1.isActive()) tx1.rollback();
+                throw ex;
             }finally{
                 persistenceManager.close();
             }
@@ -276,8 +281,30 @@ public class DataNucleusService extends BaseService implements NoSQLService {
                 tx1.commit();
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
-                tx1.rollback();
+                if(tx1.isActive()) tx1.rollback();
                 deleteAll(insertInstances);
+                throw ex;
+            }finally{
+                persistenceManager.close();
+            }
+        }
+    }
+    
+    public <T extends NoSQLModel>void createAllNoSQLModel(Collection<T> instances) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException{
+        try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
+            Transaction tx1 = persistenceManager.currentTransaction();
+            List<T> insertInstances = new ArrayList<>();
+            try{
+                tx1.begin();
+                for(T instance: instances){
+                    T insertInstance = persistenceManager.makePersistent(instance);
+                    insertInstances.add(insertInstance);
+                }
+                tx1.commit();
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(DataNucleusService.class.getName()).log(Level.SEVERE, null, ex);
+                if(tx1.isActive()) tx1.rollback();
+                deleteList(insertInstances);
                 throw ex;
             }finally{
                 persistenceManager.close();

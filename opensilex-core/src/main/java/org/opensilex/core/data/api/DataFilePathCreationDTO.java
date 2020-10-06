@@ -6,13 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-<<<<<<< HEAD
 import java.text.ParseException;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
-=======
+import java.text.ParseException;
 import javax.validation.constraints.NotNull;
->>>>>>> insert data list optimisation + new uri generation
+import org.opensilex.core.data.dal.DataFileModel;
+>>>>>>> Size max for set of data + datanucleus rollback
 
 /**
  *

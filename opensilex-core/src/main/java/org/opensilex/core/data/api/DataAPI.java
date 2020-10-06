@@ -437,6 +437,7 @@ public class DataAPI {
                 DataFileModel model = dto.newModel();
                 // get the the absolute file path according to the fileStorageDirectory
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));
+                
 
                 if (!fs.exist(absoluteFilePath)) {
                     return new ErrorResponse(

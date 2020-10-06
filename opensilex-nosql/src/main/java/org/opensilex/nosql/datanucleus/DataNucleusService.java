@@ -28,7 +28,6 @@ import javax.naming.NamingException;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.api.jdo.JDOQueryCache;
-import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
@@ -37,7 +36,6 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.nosql.utils.URIGenerator;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -401,6 +399,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
     }
     
+<<<<<<< HEAD
     public <T extends NoSQLModel> void createAllForceURI(Collection<T> instances) throws NamingException, Exception{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             Transaction tx1 = persistenceManager.currentTransaction();
@@ -422,6 +421,8 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
     }
     
+=======
+>>>>>>> Size max for set of data + datanucleus rollback
     public <T extends NoSQLModel> void createAllForceURI(Collection<T> instances) throws NamingException, Exception{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             Transaction tx1 = persistenceManager.currentTransaction();

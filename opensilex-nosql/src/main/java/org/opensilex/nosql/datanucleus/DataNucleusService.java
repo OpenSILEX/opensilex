@@ -27,7 +27,6 @@ import javax.naming.NamingException;
 import org.datanucleus.PropertyNames;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.api.jdo.JDOQueryCache;
-import org.datanucleus.exceptions.NucleusDataStoreException;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.opensilex.OpenSilex;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
@@ -36,7 +35,6 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.nosql.utils.URIGenerator;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -189,6 +187,7 @@ public class DataNucleusService extends BaseService implements NoSQLService {
 
         while(errorCode == 11000){
             try{
+                //TimeUnit.SECONDS.sleep(1);
                 insertInstance = (T) persistenceManager.makePersistent(instance);
                 errorCode = 0;
             }catch(Exception err){

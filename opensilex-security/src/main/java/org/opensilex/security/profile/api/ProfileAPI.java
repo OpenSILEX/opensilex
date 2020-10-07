@@ -62,23 +62,7 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(SecurityModule.REST_SECURITY_API_ID)
 @Path("/profile")
-@ApiCredentialGroup(
-        groupId = ProfileAPI.CREDENTIAL_GROUP_PROFILE_ID,
-        groupLabelKey = ProfileAPI.CREDENTIAL_GROUP_PROFILE_LABEL_KEY
-)
 public class ProfileAPI {
-
-    public static final String CREDENTIAL_GROUP_PROFILE_ID = "Profiles";
-    public static final String CREDENTIAL_GROUP_PROFILE_LABEL_KEY = "credential-groups.profiles";
-
-    public static final String CREDENTIAL_PROFILE_MODIFICATION_ID = "profile-modification";
-    public static final String CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY = "credential.profile.modification";
-
-    public static final String CREDENTIAL_PROFILE_DELETE_ID = "profile-delete";
-    public static final String CREDENTIAL_PROFILE_DELETE_LABEL_KEY = "credential.profile.delete";
-
-    public static final String CREDENTIAL_PROFILE_READ_ID = "profile-read";
-    public static final String CREDENTIAL_PROFILE_READ_LABEL_KEY = "credential.profile.read";
 
     @Inject
     private SPARQLService sparql;
@@ -91,11 +75,7 @@ public class ProfileAPI {
         @ApiResponse(code = 403, message = "Current user can't create profiles"),
         @ApiResponse(code = 409, message = "Profile name already exists")
     })
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
-    )
+    @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
@@ -137,11 +117,7 @@ public class ProfileAPI {
     @PUT
     @Path("update")
     @ApiOperation("Update a profile")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
-    )
+    @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -185,10 +161,6 @@ public class ProfileAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a profile by it's URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -222,11 +194,7 @@ public class ProfileAPI {
     @DELETE
     @Path("delete/{uri}")
     @ApiOperation("Delete a profile")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_DELETE_LABEL_KEY
-    )
+    @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteProfile(
@@ -241,10 +209,6 @@ public class ProfileAPI {
     @Path("search")
     @ApiOperation("Search profiles")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -282,10 +246,6 @@ public class ProfileAPI {
     @Path("get-all")
     @ApiOperation("Get all profiles")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROFILE_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROFILE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

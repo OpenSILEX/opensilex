@@ -18,24 +18,27 @@
       placeholder="component.profile.form-name-placeholder"
     ></opensilex-InputForm>
 
-    <!-- Profiles categories -->
-    <b-card no-body v-if="form.credentials">
-      <b-tabs pills card>
-        <b-tab
-          v-for="credentialsGroup in credentialsGroups"
-          v-bind:key="credentialsGroup.groupId"
-          v-bind:title="$t(credentialsGroup.groupKeyLabel)"
-        >
-          <!-- Profiles category credentials -->
-          <b-form-checkbox-group
-            v-bind:key="credentialsGroup.groupId"
-            v-model="selectedCredentials[credentialsGroup.groupId]"
-            v-bind:options="credentialOptions[credentialsGroup.groupId]"
-            switches
-          ></b-form-checkbox-group>
-        </b-tab>
-      </b-tabs>
-    </b-card>
+    <b-table-simple hover small responsive>
+      <b-thead>
+        <b-tr>
+          <b-th>Credential group</b-th>
+          <b-th>Credentials</b-th>
+        </b-tr>
+      </b-thead>
+      <b-tbody>
+        <b-tr v-for="credentialsGroup in credentialsGroups" v-bind:key="credentialsGroup.groupId">
+          <b-td>{{$t(credentialsGroup.groupKeyLabel)}}</b-td>
+          <b-td>
+            <b-form-checkbox-group
+              v-bind:key="credentialsGroup.groupId"
+              v-model="selectedCredentials[credentialsGroup.groupId]"
+              v-bind:options="credentialOptions[credentialsGroup.groupId]"
+              switches
+            ></b-form-checkbox-group>
+          </b-td>
+        </b-tr>
+      </b-tbody>
+    </b-table-simple>
   </b-form>
 </template>
 

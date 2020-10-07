@@ -4,14 +4,11 @@ menu:
   #   route:
   #     path: /users
   #     component: opensilex-UserView
-  #     credentials: []
   - id: infrastructures
     label: component.menu.infrastructure
     route:
       path: /infrastructures
       component: opensilex-InfrastructureView
-      credentials:
-        - infrastructure-read
   - id: data
     label: component.menu.data.label
     children:
@@ -26,58 +23,47 @@ menu:
       #   route:
       #     path: /data
       #     component: opensilex-DataView
-      #     credentials: []
   - id: projects
     label: component.menu.projects
     route:
       path: /projects
       component: opensilex-ProjectView
-      credentials:
-        - project-read
   - id: experiments
     label: component.menu.experiments
     route:
       path: /experiments
       component: opensilex-ExperimentListView
-      credentials:
-        - experiment-read
 #  - id: scientificObjects
 #    label: component.menu.scientificObjects
 #    route:
 #      path: /scientific-objects
 #      component: opensilex-ScientificObjectList
-#      credentials: []
   # - id: equipments
   #   label: component.menu.equipments.label
   #   route:
   #     path: /users
   #     component: opensilex-UserView
-  #     credentials: []
   #   children:
   #     - id: sensors
   #       label: component.menu.equipments.sensors
   #       route:
   #         path: /users
   #         component: opensilex-UserView
-  #         credentials: []
   #     - id: actuators
   #       label: component.menu.equipments.actuators
   #       route:
   #         path: /users
   #         component: opensilex-UserView
-  #         credentials: []
   #     - id: vectors
   #       label: component.menu.equipments.vectors
   #       route:
   #         path: /users
   #         component: opensilex-UserView
-  #         credentials: []
   #     - id: radiometricTargets
   #       label: component.menu.equipments.radiometricTargets
   #       route:
   #         path: /users
   #         component: opensilex-UserView
-  #         credentials: []
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -91,16 +77,12 @@ menu:
         route:
           path: /factors
           component: opensilex-FactorsView
-          credentials:
-            - factor-read
       - id: germplasm
         label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain
         route:
           path: /germplasm
           component: opensilex-GermplasmView
-          credentials:
-            - germplasm-read
   - id: security
     label: component.menu.security.label
     children:
@@ -109,22 +91,18 @@ menu:
         route:
           path: /users
           component: opensilex-UserView
-          credentials:
-            - user-read
       - id: groups
         label: component.menu.security.groups
         route:
           path: /groups
           component: opensilex-GroupView
-          credentials:
-            - group-read
       - id: profiles
         label: component.menu.security.profiles
         route:
           path: /profiles
           component: opensilex-ProfileView
           credentials:
-            - profile-read
+            - is-admin
   - id: configuration
     label: component.menu.configuration
     children:
@@ -145,16 +123,10 @@ menu:
 routes:
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
-    credentials:
-      - experiment-read
   - path: /experiment/scientific-objects/:uri
     component: opensilex-ExperimentView
-    credentials:
-      - experiment-read
   - path: /experiment/data/:uri
     component: opensilex-ExperimentView
-    credentials:
-      - experiment-read
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
     credentials:
@@ -165,41 +137,21 @@ routes:
       - is-admin
   - path: /VariableCreate
     component: opensilex-VariableCreate
-    credentials: []
   - path: /variable/:uri
     component: opensilex-VariableDetails
-    credentials:
-      - variable-read
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
-    credentials:
-      - project-read
-
   - path: /project/documents/:uri
     component: opensilex-ProjectDetails
-    credentials:
-      - project-read
-  - path: /factor/details/:uri
-    component: opensilex-FactorView
-    credentials: []
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
-    credentials: []
+    credentials: [germplasm-modification]
   - path: /germplasm/:uri
     component: opensilex-GermplasmDetails
-    credentials: []
-  - path: /factor/create
-    component: opensilex-FactorForm
-    credentials:
-      - factor-modification
   - path: /factor/details/:uri
     component: opensilex-FactorView
-    credentials:
-      - factor-read
   - path: /factor/experiments/:uri
     component: opensilex-FactorView
-    credentials:
-      - factor-read
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

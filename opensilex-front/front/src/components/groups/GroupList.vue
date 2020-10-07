@@ -6,13 +6,14 @@
       placeholder="component.group.filter-placeholder"
     ></opensilex-StringFilter>
 
-    <opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchGroups"
-      :fields="fields"
-    >
-      <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri" @click="data.toggleDetails()"></opensilex-UriLink>
+    <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchGroups" :fields="fields">
+      <template v-slot:cell(name)="{data}">
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.name"
+          :noExternalLink="true"
+          @click="data.toggleDetails()"
+        ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(userProfiles)="{data}">
@@ -91,11 +92,6 @@ export default class GroupList extends Vue {
   }
 
   fields = [
-    {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
     {
       key: "name",
       label: "component.common.name",

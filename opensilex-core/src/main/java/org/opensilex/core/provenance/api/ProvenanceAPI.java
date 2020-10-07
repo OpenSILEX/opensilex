@@ -113,10 +113,6 @@ public class ProvenanceAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a provenance")
     @ApiProtected
-    @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_READ_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -152,10 +148,6 @@ public class ProvenanceAPI {
     @Path("search")
     @ApiOperation("Get lists of provenances")
     @ApiProtected
-    @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_READ_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

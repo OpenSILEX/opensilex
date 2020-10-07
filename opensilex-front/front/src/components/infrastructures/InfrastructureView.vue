@@ -10,7 +10,6 @@
         <!-- Infrastructure tree -->
         <opensilex-InfrastructureTree
           ref="infrastructureTree"
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_READ_ID)"
           @onSelect="updateSelected"
         ></opensilex-InfrastructureTree>
         <!-- Infrastructure facilities -->

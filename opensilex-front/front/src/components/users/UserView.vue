@@ -15,7 +15,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-UserList
-          v-if="user.hasCredential(credentials.CREDENTIAL_USER_READ_ID)"
           ref="userList"
           @onEdit="userForm.showEditForm($event)"
         ></opensilex-UserList>
@@ -72,13 +71,13 @@ en:
   UserView:
     title: Users
     description: Manage and configure users
-    create: Create user
+    create: Add user
     update: Update user
 
 fr:
   UserView:
     title: Utilisateurs
     description: Gérer et configurer les utilisateurs
-    create: Créer un utilisateur
+    create: Ajouter un utilisateur
     update: Modifier l'utilisateur
 </i18n>

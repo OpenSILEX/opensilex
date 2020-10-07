@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -212,6 +213,7 @@ public class AuthenticationAPI {
                     credential.setLabel(label);
                     credentials.add(credential);
                 });
+                credentials.sort(Comparator.comparing(CredentialDTO::getLabel).reversed());
                 credentialsGroup.setGroupKeyLabel(groupLabels.get(groupId));
                 credentialsGroup.setCredentials(credentials);
                 credentialsGroupList.add(credentialsGroup);

@@ -4,7 +4,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(uri)"
+        v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
@@ -15,7 +15,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(uri)"
+        v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUrl')"
       >
@@ -32,7 +32,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
-        v-on:click.prevent="copyURI(uri)"
+        v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
       >
@@ -64,13 +64,18 @@ export default class UriLink extends Vue {
   @Prop()
   to: string;
 
+  @Prop({
+    default: false
+  })
+  noExternalLink: boolean
+
   get computeURL() {
     if (this.to) {
       return null;
     } else if (this.url) {
       return this.url;
     } else if (this.uri) {
-      return this.uri.startsWith("http://") || this.uri.startsWith("https://")
+      return !this.noExternalLink && (this.uri.startsWith("http://") || this.uri.startsWith("https://"))
         ? this.uri
         : null;
     } else {

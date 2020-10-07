@@ -77,9 +77,6 @@ public class FactorAPI {
     public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
     public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factor.modification";
 
-    public static final String CREDENTIAL_FACTOR_READ_ID = "factor-read";
-    public static final String CREDENTIAL_FACTOR_READ_LABEL_KEY = "credential.factor.read";
-
     public static final String CREDENTIAL_FACTOR_DELETE_ID = "factor-delete";
     public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factor.delete";
 
@@ -137,7 +134,6 @@ public class FactorAPI {
     @Path("get/{uri}")
     @ApiOperation("Get an factor")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -168,7 +164,6 @@ public class FactorAPI {
     @Path("get/{uri}/levels")
     @ApiOperation("Get factor levels")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -201,7 +196,6 @@ public class FactorAPI {
     @Path("get/{uri}/experiments")
     @ApiOperation("Get factor associated experiments")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -214,6 +208,7 @@ public class FactorAPI {
         FactorModel model = dao.get(uri);
         if (model != null) {
             List<ExperimentModel> experiments = model.getExperiments();
+            // TODO: filter experiments with those accessible to current user
             ListWithPagination<ExperimentModel> experimentsList = new ListWithPagination(experiments);
             // Convert paginated list to DTO
             ListWithPagination<ExperimentGetListDTO> convertList = experimentsList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);
@@ -239,7 +234,6 @@ public class FactorAPI {
     @Path("search")
     @ApiOperation("Search factors")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -280,7 +274,6 @@ public class FactorAPI {
     @Path("get-all")
     @ApiOperation("Get all factors")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_READ_ID, credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -391,10 +384,6 @@ public class FactorAPI {
     @Path("get-by-uris")
     @ApiOperation("Get a list of factors by their URIs")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_FACTOR_READ_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

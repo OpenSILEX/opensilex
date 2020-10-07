@@ -192,10 +192,10 @@
             "form-password-placeholder": "Saisir le mot de passe de l'utilisateur",
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
             "filter-search-no-result": "Désolé, aucun utilisateur ne correspond à votre recherche.",
-            "filter-placeholder": "Utiliser ce champ pour chercher des utilisateurs",
+            "filter-placeholder": "Rechercher des utilisateurs...",
             "users": "utilisateurs",
             "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
-            "add": "Créer un utilisateur",
+            "add": "Ajouter un utilisateur",
             "update": "Modifier l'utilisateur",
             "delete": "Supprimer l'utilisateur",
             "details": "Afficher ou masquer les détails de l'utilisateur",
@@ -219,11 +219,11 @@
             "profile-uri": "URI du profil",
             "form-name-placeholder": "Saisir le nom du profil",
             "label": "profil",
-            "add": "Créer un profil",
+            "add": "Ajouter un profil",
             "update": "Modifier le profil",
             "delete": "Supprimer le profil",
             "details": "Afficher ou masquer les détails du profil",
-            "filter-placeholder": "Utiliser ce champ pour chercher des profils",
+            "filter-placeholder": "Rechercher des profils...",
             "credentials": "Droits",
             "credential": "aucun droit | 1 droit | {count} droits",
             "errors": {
@@ -237,11 +237,11 @@
             "form-description-placeholder": "Saisir la description du groupe",
             "form-all-users-title": "Liste globale des utilisateurs",
             "form-selected-users-title": "Liste des utilisateurs sélectionnés",
-            "add": "Créer un groupe",
+            "add": "Ajouter un groupe",
             "update": "Modifier le groupe",
             "delete": "Supprimer le groupe",
             "details": "Afficher ou masquer les détails du groupe",
-            "filter-placeholder": "Utiliser ce champ pour chercher des groupes",
+            "filter-placeholder": "Rechercher des groupes...",
             "user-profiles": "Utilisateurs et profils",
             "errors": {
                 "group-already-exists": "Un groupe existe déjà avec cette URI ou ce nom."
@@ -269,7 +269,7 @@
             "filter-label-placeholder": "Saisir un nom",
             "filter-keywords-placeholder": "Mots dans description ou objectifs",
             "filter-financial-placeholder": "Saisir un support financier",
-            "selector-placeholder":"Utiliser ce champ pour chercher des projets",
+            "selector-placeholder":"Saisir des projets",
             "selector-search-no-result": "Désolé, aucun projet ne correspond à votre recherche.",
             "name" : "Nom",
             "shortname" : "Nom court",
@@ -349,8 +349,8 @@
             "search": {
                 "description": "Gérer et configurer les expérimentations",
                 "buttons": {
-                    "create-experiment": "Créer une expérimentation",
-                    "create-experiment-help": "Créer une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
+                    "create-experiment": "Ajouter une expérimentation",
+                    "create-experiment-help": "Ajouter une expérimentation (informations expérimentales, variables/capteurs/facteurs associés)"
                 },
                 "column": {
                     "alias": "Alias",
@@ -402,8 +402,8 @@
             "form-name-placeholder": "Saisir le nom de l'infrastructure",
             "form-type-placeholder": "Saisir le type d'infrastructure",
             "form-parent-placeholder": "Saisir l'infrastructure parente",
-            "filter-placeholder": "Utiliser ce champ pour chercher des infrastructures",
-            "add": "Créer une infrastructure",
+            "filter-placeholder": "Rechercher des infrastructures...",
+            "add": "Ajouter une infrastructure",
             "update": "Modifier l'infrastructure",
             "detail": "Détails",
             "description": "Gérer et configurer les infrastructures",
@@ -411,8 +411,7 @@
             "list": "Liste",
             "facility": {
                 "facility-uri": "URI de l'installation technique",
-                "add": "Créer une installation technique",
-                "update": "Modifier l'installation technique",
+                "add": "Ajouter une installation technique",
                 "form-name-placeholder": "Saisir le nom de l'installation technique",
                 "form-type-placeholder": "Saisir le type de l'installation technique"
             },
@@ -532,62 +531,42 @@
     "credential": {
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
-            "read": "Visualisation des expérimentations",
             "delete": "Suppression des expérimentations"
         },
         "infrastructure": {
             "modification": "Ajout / Modification des infrastructures",
-            "read": "Visualisation des infrastructures",
             "delete": "Suppression des infrastructures"
         },
         "group": {
             "modification": "Ajout / Modification des groupes",
-            "read": "Visualisation des groupes",
             "delete": "Suppression des groupes"
-        },
-        "profile": {
-            "modification": "Ajout / Modification des profiles",
-            "read": "Visualisation des profiles",
-            "delete": "Suppression des profiles"
         },
         "project": {
             "modification": "Ajout / Modification des projets",
-            "read": "Visualisation des projets",
             "delete": "Suppression des projets"
         },
         "user": {
             "modification": "Ajout / Modification des utilisateurs",
-            "read": "Visualisation des utilisateurs",
             "delete": "Suppression des utilisateurs"
         },
         "variable": {
             "modification": "Ajout / Modification des variables",
-            "read": "Visualisation des variables",
             "delete": "Suppression des variables"
         },
         "factor": {
             "modification": "Ajout / Modification des facteurs",
-            "read": "Visualisation facteurs",
             "delete": "Suppression des facteurs"
-        },
-        "factorLevels": {
-            "modification": "Ajout / Modification des niveaux de facteurs",
-            "read": "Visualisation niveaux de facteurs",
-            "delete": "Suppression des niveaux de facteurs"
         },
         "germplasm": {
             "modification": "Ajout / Modification germplasm",
-            "read": "Visualisation des germplasm",
             "delete": "Suppression des germplasm"
         },
         "scientific-objects": {
             "modification": "Ajout / Modification des objets scientifiques",
-            "read": "Visualisation des objets scientifiques",
             "delete": "Suppression des objets scientifiques"
         },
         "data": {
             "modification": "Ajout / Modification des données",
-            "read": "Visualisation des données",
             "delete": "Suppression des données"
         }
     },

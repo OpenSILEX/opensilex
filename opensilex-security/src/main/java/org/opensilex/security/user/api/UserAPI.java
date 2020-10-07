@@ -86,9 +86,6 @@ public class UserAPI {
     public static final String CREDENTIAL_USER_DELETE_ID = "user-delete";
     public static final String CREDENTIAL_USER_DELETE_LABEL_KEY = "credential.user.delete";
 
-    public static final String CREDENTIAL_USER_READ_ID = "user-read";
-    public static final String CREDENTIAL_USER_READ_LABEL_KEY = "credential.user.read";
-
     @CurrentUser
     UserModel currentUser;
 
@@ -182,10 +179,6 @@ public class UserAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a user by it's URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_READ_ID,
-            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -228,10 +221,6 @@ public class UserAPI {
     @Path("get-by-uris")
     @ApiOperation("Get a list of users by their URIs")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_READ_ID,
-            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -280,10 +269,6 @@ public class UserAPI {
     @Path("search")
     @ApiOperation("Search users")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_READ_ID,
-            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -381,10 +366,6 @@ public class UserAPI {
     @Path("get-groups/{uri}")
     @ApiOperation("Get groups associated to a user")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_READ_ID,
-            credentialLabelKey = CREDENTIAL_USER_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

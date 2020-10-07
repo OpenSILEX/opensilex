@@ -22,8 +22,6 @@ import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DE
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_READ_LABEL_KEY;
 
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.MethodModel;
@@ -144,10 +142,6 @@ public class MethodAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a method")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -172,10 +166,6 @@ public class MethodAPI {
     @Path("search")
     @ApiOperation("Search methods corresponding to given criteria")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return Method list", response = NamedResourceDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)

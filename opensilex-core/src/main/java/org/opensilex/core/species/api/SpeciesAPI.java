@@ -7,7 +7,6 @@
 package org.opensilex.core.species.api;
 
 import io.swagger.annotations.*;
-import java.net.URI;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -20,9 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-import org.opensilex.core.experiment.api.ExperimentAPI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;

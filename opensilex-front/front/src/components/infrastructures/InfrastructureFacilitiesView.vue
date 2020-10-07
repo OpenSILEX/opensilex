@@ -19,6 +19,7 @@
       hover
       small
       responsive
+      sort-icon-left
       sort-by="typeLabel"
       :items="selected.facilities"
       :fields="fields"
@@ -41,13 +42,13 @@
           <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
             @click="facilityForm.showEditForm(data.item)"
-            label="component.infrastructure.facility.update"
+            label="InfrastructureFacilitiesView.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
             @click="deleteFacility(data.item.uri)"
-            label="component.infrastructure.facility.delete"
+            label="InfrastructureFacilitiesView.delete"
             :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>
@@ -59,7 +60,7 @@
       ref="facilityForm"
       component="opensilex-InfrastructureFacilityForm"
       createTitle="component.infrastructure.facility.add"
-      editTitle="component.infrastructure.facility.update"
+      editTitle="InfrastructureFacilitiesView.update"
       icon="ik#ik-map"
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
@@ -133,3 +134,15 @@ export default class InfrastructureFacilitiesView extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  InfrastructureFacilitiesView:
+    update: Update infrastructure facility
+    delete: Delete infrastructure facility
+
+fr:
+  InfrastructureFacilitiesView:
+    update: Modifier l'installation technique
+    delete: Supprimer l'installation technique
+
+</i18n>

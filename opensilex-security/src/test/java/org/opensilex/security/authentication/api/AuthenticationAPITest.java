@@ -82,15 +82,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             {
                 add(UserAPI.CREDENTIAL_USER_DELETE_ID);
                 add(UserAPI.CREDENTIAL_USER_MODIFICATION_ID);
-                add(UserAPI.CREDENTIAL_USER_READ_ID);
-            }
-        };
-
-        List<String> profileCredentialsMap = new ArrayList<String>() {
-            {
-                add(ProfileAPI.CREDENTIAL_PROFILE_DELETE_ID);
-                add(ProfileAPI.CREDENTIAL_PROFILE_MODIFICATION_ID);
-                add(ProfileAPI.CREDENTIAL_PROFILE_READ_ID);
             }
         };
 
@@ -98,7 +89,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             {
                 add(GroupAPI.CREDENTIAL_GROUP_DELETE_ID);
                 add(GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID);
-                add(GroupAPI.CREDENTIAL_GROUP_READ_ID);
             }
         };
 
@@ -106,10 +96,6 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             if (credentialGroup.getGroupId().equals(UserAPI.CREDENTIAL_GROUP_USER_ID)) {
                 credentialGroup.getCredentials().forEach((credential) -> {
                     assertTrue(userCredentialsMap.contains(credential.getId()));
-                });
-            } else if (credentialGroup.getGroupId().equals(ProfileAPI.CREDENTIAL_GROUP_PROFILE_ID)) {
-                credentialGroup.getCredentials().forEach((credential) -> {
-                    assertTrue(profileCredentialsMap.contains(credential.getId()));
                 });
             } else if (credentialGroup.getGroupId().equals(GroupAPI.CREDENTIAL_GROUP_GROUP_ID)) {
                 credentialGroup.getCredentials().forEach((credential) -> {

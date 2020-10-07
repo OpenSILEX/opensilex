@@ -86,9 +86,6 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.data.modification";
 
-    public static final String CREDENTIAL_DATA_READ_ID = "data-read";
-    public static final String CREDENTIAL_DATA_READ_LABEL_KEY = "credential.data.read";
-
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
 
@@ -187,7 +184,6 @@ public class DataAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a data")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_DATA_READ_ID, credentialLabelKey = CREDENTIAL_DATA_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -211,7 +207,6 @@ public class DataAPI {
     @Path("search")
     @ApiOperation("Search data")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_DATA_READ_ID, credentialLabelKey = CREDENTIAL_DATA_READ_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

@@ -40,7 +40,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-FactorList
-          v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_READ_ID)"
           ref="factorList"
           @onEdit="editFactor"
           @onDetails="showFactorDetails"

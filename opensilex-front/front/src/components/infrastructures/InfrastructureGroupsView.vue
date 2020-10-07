@@ -7,7 +7,7 @@
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
           @click="groupForm.showCreateForm()"
           label="component.group.add"
         ></opensilex-CreateButton>
@@ -19,6 +19,7 @@
       hover
       small
       responsive
+      sort-icon-left
       sort-by="name"
       :items="selected.groups"
       :fields="fields"
@@ -62,13 +63,13 @@
             :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
             @click="groupForm.showEditForm(data.item)"
             label="component.group.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_DELETE_ID)"
             @click="deleteGroup(data.item.uri)"
             label="component.group.delete"
             :small="true"
@@ -78,7 +79,7 @@
     </b-table>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
       ref="groupForm"
       component="opensilex-GroupForm"
       createTitle="component.group.add"

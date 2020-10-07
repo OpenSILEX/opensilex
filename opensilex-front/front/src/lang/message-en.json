@@ -191,10 +191,10 @@
             "form-email-placeholder": "Enter user email address",
             "form-password-placeholder": "Enter user password",
             "form-admin-option-label": "Enable this option to create a super administrator",
-            "filter-placeholder": "Use this field to search users",
+            "filter-placeholder": "Search users...",
             "filter-search-no-result": "Sorry, no user is matching your research.",
             "users": "users",
-            "add": "Create user",
+            "add": "Add user",
             "update": "Update user",
             "delete": "Delete user",
             "details": "Show or hide user details",
@@ -216,11 +216,11 @@
             "profile-uri": "Profile URI",
             "form-name-placeholder": "Enter profile name",
             "label": "profile",
-            "add": "Create profile",
+            "add": "Add profile",
             "update": "Update profile",
             "delete": "Delete profile",
             "details": "Show or hide profile details",
-            "filter-placeholder": "Use this field to search profiles",
+            "filter-placeholder": "Search profiles...",
             "credentials": "credentials",
             "credential": "no credentials | 1 credential | {count} credentials",
             "errors": {
@@ -234,11 +234,11 @@
             "form-description-placeholder": "Enter group description",
             "form-all-users-title": "Global users list",
             "form-selected-users-title": "Selected users list",
-            "add": "Create group",
+            "add": "Add group",
             "update": "Update group",
             "delete": "Delete group",
             "details": "Show or hide group details",
-            "filter-placeholder": "Use this field to search groups",
+            "filter-placeholder": "Search groups...",
             "user-profiles": "Users and profiles",
             "errors": {
                 "group-already-exists": "Group already exists with this URI or this name"
@@ -266,7 +266,7 @@
             "filter-label-placeholder": "Enter a name",
             "filter-keywords-placeholder": "Word in description or objective",
             "filter-financial-placeholder": "Enter a financial funding",
-            "selector-placeholder":"Use this field to search projects",
+            "selector-placeholder":"Search projects",
             "selector-search-no-result": "Sorry, no user is matching your research.",
             "name" : "Name",
             "shortname" : "Short name",
@@ -358,8 +358,8 @@
                 "selectLabel": "Select Experiments",
                 "selectedLabel": "Selected Experiment(s)",
                 "buttons": {
-                    "create-experiment": "Create experiment",
-                    "create-experiment-help": " Create an experiment (experimental informations, sensors/variables/factors linked)"
+                    "create-experiment": "Add experiment",
+                    "create-experiment-help": " Add an experiment (experimental informations, sensors/variables/factors linked)"
                 },
                 "column": {
                     "alias": "Alias",
@@ -467,8 +467,8 @@
             "form-name-placeholder": "Enter infrastructure name",
             "form-type-placeholder": "Enter infrastructure type",
             "form-parent-placeholder": "Enter parent infrastructure",
-            "filter-placeholder": "Use this field to search infrastructures",
-            "add": "create infrastructure",
+            "filter-placeholder": "Search infrastructures...",
+            "add": "Add infrastructure",
             "update": "update infrastructure",
             "detail": "Details",
             "description": "Manage and configure infrastructures",
@@ -476,8 +476,7 @@
             "list": "List",
             "facility": {
                 "facility-uri": "Infrastructure facility URI",
-                "add": "Create an infrastructure facility",
-                "update": "Update infrastructure facility",
+                "add": "Add infrastructure facility",
                 "form-name-placeholder": "Enter infrastructure facility name",
                 "form-type-placeholder": "Enter infrastructure facility type"
             },
@@ -604,7 +603,7 @@
                     "method-description": "Method description",
                     "unit": "Add an unit",
                     "unit-description": "Unit description",
-                    "variable": " Create variable"
+                    "variable": " Add a variable"
                 }
             }
         }
@@ -624,63 +623,43 @@
     },
     "credential": {
         "experiment": {
-            "modification": "Create / update experiments",
-            "read": "View experiments",
+            "modification": "Add / update experiments",
             "delete": "Delete experiments"
         },
         "infrastructure": {
-            "modification": "Create / update infrastructures",
-            "read": "View infrastructures",
+            "modification": "Add / update infrastructures",
             "delete": "Delete infrastructures"
         },
         "group": {
-            "modification": "Create / update groups",
-            "read": "View groups",
+            "modification": "Add / update groups",
             "delete": "Delete groups"
         },
-        "profile": {
-            "modification": "Create / update profiles",
-            "read": "View profiles",
-            "delete": "Delete profiles"
-        },
         "project": {
-            "modification": "Create / update projects",
-            "read": "View projects",
+            "modification": "Add / update projects",
             "delete": "Delete projects"
         },
         "user": {
-            "modification": "Create / update users",
-            "read": "View users",
+            "modification": "Add / update users",
             "delete": "Delete users"
         },
         "variable": {
-            "modification": "Create / update variables",
-            "read": "View variables",
+            "modification": "Add / update variables",
             "delete": "Delete variables"
         },
         "factor": {
-            "modification": "Create / update factors",
-            "read": "View factors",
+            "modification": "Add / update factors",
             "delete": "Delete factors"
         },
-        "factorLevels": {
-            "modification": "Create / update FactorLevels",
-            "read": "View factor levels",
-            "delete": "Delete factor levels"
-        },
         "germplasm": {
-            "modification": "Create / update germplasm",
-            "read": "View germplasm",
+            "modification": "Add / update germplasm",
             "delete": "Delete germplasm"
         },
         "scientific-objects": {
-            "modification": "Create / update scientific objects",
-            "read": "View scientific objects",
+            "modification": "Add / update scientific objects",
             "delete": "Delete scientific objects"
         },
         "data": {
-            "modification": "Create / update data",
-            "read": "View data",
+            "modification": "Add / update data",
             "delete": "Delete data"
         }
     },

@@ -12,12 +12,17 @@
       :fields="fields"
       defaultSortBy="email"
     >
-      <template v-slot:cell(email)="{data}">
-        <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
+      <template v-slot:cell(lastName)="{data}">
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.lastName"
+          :noExternalLink="true"
+          @click="data.toggleDetails()"
+        ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri" @click="loadUserDetail(data)"></opensilex-UriLink>
+      <template v-slot:cell(email)="{data}">
+        <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
       </template>
 
       <template v-slot:cell(admin)="{data}">
@@ -104,13 +109,8 @@ export default class UserList extends Vue {
 
   fields = [
     {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
-    {
-      key: "email",
-      label: "component.user.email",
+      key: "lastName",
+      label: "component.user.last-name",
       sortable: true
     },
     {
@@ -119,11 +119,10 @@ export default class UserList extends Vue {
       sortable: true
     },
     {
-      key: "lastName",
-      label: "component.user.last-name",
+      key: "email",
+      label: "component.user.email",
       sortable: true
     },
-
     {
       key: "admin",
       label: "component.user.admin",
@@ -151,10 +150,12 @@ export default class UserList extends Vue {
     );
   }
 
+  currentURI = null;
   groupDetails = [];
   loadUserDetail(data) {
     if (!data.detailsShowing) {
       this.groupDetails = [];
+      this.currentURI = data.item.uri;
       this.$opensilex.disableLoader();
       this.service
         .getUserGroups(data.item.uri)

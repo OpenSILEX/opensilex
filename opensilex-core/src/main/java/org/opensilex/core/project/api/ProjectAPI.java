@@ -69,9 +69,6 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_DELETE_ID = "project-delete";
     public static final String CREDENTIAL_PROJECT_DELETE_LABEL_KEY = "credential.project.delete";
 
-    public static final String CREDENTIAL_PROJECT_READ_ID = "project-read";
-    public static final String CREDENTIAL_PROJECT_READ_LABEL_KEY = "credential.project.read";
-
     protected static final String PROJECT_EXAMPLE_URI = "http://opensilex/set/project/BW1";
 
     @CurrentUser
@@ -160,10 +157,6 @@ public class ProjectAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a project by URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -196,10 +189,6 @@ public class ProjectAPI {
     @Path("search")
     @ApiOperation("Search Projects")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -235,10 +224,6 @@ public class ProjectAPI {
     @Path("get-by-uris")
     @ApiOperation("Get a list of projects by their URIs")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PROJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_PROJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

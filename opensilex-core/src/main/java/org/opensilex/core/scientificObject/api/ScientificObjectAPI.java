@@ -82,9 +82,6 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID = "scientific-objects-delete";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_LABEL_KEY = "credential.scientific-objects.delete";
 
-    public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID = "scientific-objects-read";
-    public static final String CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY = "credential.scientific-objects.read";
-
     public static final int DEFAULT_CHILDREN_LIMIT = 10;
     public static final int DEFAULT_DEPTH_LIMIT = 2;
 
@@ -105,10 +102,6 @@ public class ScientificObjectAPI {
     @Path("get-tree/{xpuri}")
     @ApiOperation("Get scientific objet tree for an experiment")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -126,10 +119,6 @@ public class ScientificObjectAPI {
     @Path("get-list/{xpuri}")
     @ApiOperation("Get scientific objet list for an experiment")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -148,10 +137,6 @@ public class ScientificObjectAPI {
     @Path("get-list-by-uris/{xpuri}")
     @ApiOperation("Get scientific objet list for an experiment")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -171,10 +156,6 @@ public class ScientificObjectAPI {
     @Path("get-children/{xpuri}/{parenturi}")
     @ApiOperation("Get list of scientific object children")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -196,10 +177,6 @@ public class ScientificObjectAPI {
     @Path("get-detail/{xpuri}/{objuri}")
     @ApiOperation("Get scientific object detail")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -344,10 +321,6 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
     })
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_READ_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(

@@ -6,9 +6,7 @@
       description="component.profile.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-    >
+    <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
       </template>
@@ -17,7 +15,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-ProfileList
-          v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_READ_ID)"
           ref="profileList"
           v-bind:credentialsGroups="credentialsGroups"
           @onEdit="profileForm.showEditForm($event)"
@@ -26,7 +23,6 @@
     </opensilex-PageContent>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
       ref="profileForm"
       component="opensilex-ProfileForm"
       createTitle="component.profile.add"

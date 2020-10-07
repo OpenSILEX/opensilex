@@ -50,9 +50,6 @@ public class VariableAPI {
     public static final String CREDENTIAL_VARIABLE_DELETE_ID = "variable-delete";
     public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.variable.delete";
 
-    public static final String CREDENTIAL_VARIABLE_READ_ID = "variable-read";
-    public static final String CREDENTIAL_VARIABLE_READ_LABEL_KEY = "credential.variable.read";
-
     @Inject
     private SPARQLService sparql;
 
@@ -139,10 +136,6 @@ public class VariableAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a variable")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Variable retrieved", response = VariableDetailsDTO.class),
             @ApiResponse(code = 404, message = "Variable URI not found", response = ErrorResponse.class)
@@ -172,10 +165,6 @@ public class VariableAPI {
                     " _unit_name : the name of the variable unit\n\n"
             )
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return Variable list", response = VariableGetDTO.class, responseContainer = "List")
     })
@@ -213,10 +202,6 @@ public class VariableAPI {
                     " _unit_name : the name of the variable unit\n\n"
     )
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return Variable list", response = VariableDetailsDTO.class, responseContainer = "List")
     })

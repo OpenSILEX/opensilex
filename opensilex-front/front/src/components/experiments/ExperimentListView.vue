@@ -20,7 +20,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-ExperimentList
-          v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_READ_ID)"
           ref="experimentList"
           @onEdit="showEditForm($event)"
         ></opensilex-ExperimentList>

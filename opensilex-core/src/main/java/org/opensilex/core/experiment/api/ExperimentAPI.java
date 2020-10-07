@@ -69,9 +69,6 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_ID = "experiment-modification";
     public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY = "credential.experiment.modification";
 
-    public static final String CREDENTIAL_EXPERIMENT_READ_ID = "experiment-read";
-    public static final String CREDENTIAL_EXPERIMENT_READ_LABEL_KEY = "credential.experiment.read";
-
     public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
@@ -167,10 +164,6 @@ public class ExperimentAPI {
     @Path("get/{uri}")
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -206,10 +199,6 @@ public class ExperimentAPI {
     @Path("search")
     @ApiOperation("Search Experiments")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -302,10 +291,6 @@ public class ExperimentAPI {
     @Path("{uri}/get-facilities")
     @ApiOperation("get all facilities involved in an experiment")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -326,10 +311,6 @@ public class ExperimentAPI {
     @Path("{uri}/get-available-facilities")
     @ApiOperation("get all facilities available for an experiment (depending of which infrastructures are selected)")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_READ_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

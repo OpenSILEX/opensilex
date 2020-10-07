@@ -19,7 +19,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-GermplasmList
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_READ_ID)"
           ref="germplasmList"
           @onEdit="editGermplasm"
           @onDelete="deleteGermplasm"

@@ -27,7 +27,7 @@
             </div>
 
             <opensilex-PageContent
-                v-show="loadVariableList() && user.hasCredential(credentials.CREDENTIAL_VARIABLE_READ_ID)" >
+                v-show="loadVariableList()" >
                 <template v-slot>
                     <opensilex-VariableList
                         ref="variableList"
@@ -72,7 +72,7 @@
                 <div class="col-md-6">
                     <!-- Element list -->
                     <opensilex-EntityList
-                        v-show="! loadVariableList()  && user.hasCredential(credentials.CREDENTIAL_VARIABLE_READ_ID)"
+                        v-show="! loadVariableList()"
                         ref="entityTree"
                         @onSelect="updateSelected"
                         @onEdit="showEditForm"

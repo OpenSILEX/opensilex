@@ -11,7 +11,11 @@ import java.util.List;
 import java.util.Set;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -132,11 +136,22 @@ public class InfrastructureDAO {
 
         String lang = user.getLanguage();
         Set<URI> userInfras = new HashSet<>();
+        
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
             Var userProfileVar = makeVar("_userProfile");
-            select.addWhere(makeVar(InfrastructureModel.URI_FIELD), SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD));
+            Var userVar = makeVar("_userURI");
+            Var uriVar = makeVar(InfrastructureModel.URI_FIELD);
+            
+            select.addWhere(uriVar, SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD));
             select.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar);
-            select.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+            select.addWhere(userProfileVar, SecurityOntology.hasUser, userVar);
+            Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
+            
+            Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
+            select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
+            Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
+            
+            select.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
         });
 
         userInfras.addAll(infras);

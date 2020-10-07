@@ -79,9 +79,6 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_MODIFICATION_ID = "germplasm-modification";
     public static final String CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY = "credential.germplasm.modification";
 
-    public static final String CREDENTIAL_GERMPLASM_READ_ID = "germplasm-read";
-    public static final String CREDENTIAL_GERMPLASM_READ_LABEL_KEY = "credential.germplasm.read";
-
     public static final String CREDENTIAL_GERMPLASM_DELETE_ID = "germplasm-delete";
     public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.germplasm.delete";
 
@@ -171,10 +168,6 @@ public class GermplasmAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a germplasm by its URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
-            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
-    )
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetSingleDTO.class),
@@ -213,10 +206,6 @@ public class GermplasmAPI {
     @Path("get/{uri}/experiments")
     @ApiOperation("Get lists of experiments where the germplasm has been used")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
-            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -233,6 +222,7 @@ public class GermplasmAPI {
         // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
         ListWithPagination<ExperimentModel> experiments = germplasmDAO.getExpFromGermplasm(currentUser, uri, orderByList, page, pageSize);
+        // TODO: filter experiments with those accessible to current user
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = experiments.convert(
@@ -254,10 +244,6 @@ public class GermplasmAPI {
     @Path("get/{experimentUri}/germplasmList")
     @ApiOperation("Get lists of experiments where the germplasm has been used")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
-            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -303,10 +289,6 @@ public class GermplasmAPI {
     @Path("search")
     @ApiOperation("Search germplasm")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
-            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -368,10 +350,6 @@ public class GermplasmAPI {
     @Path("search")
     @ApiOperation("Search germplasm")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GERMPLASM_READ_ID,
-            credentialLabelKey = CREDENTIAL_GERMPLASM_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

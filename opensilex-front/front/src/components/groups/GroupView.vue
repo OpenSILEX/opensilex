@@ -16,7 +16,6 @@
       <template v-slot>
         <opensilex-GroupList
           ref="groupList"
-          v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_READ_ID)"
           @onEdit="groupForm.showEditForm($event)"
         ></opensilex-GroupList>
       </template>

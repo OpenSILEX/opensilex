@@ -132,10 +132,6 @@ public class EntityAPI {
     @Path("get/{uri}")
     @ApiOperation("Get an entity")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -158,10 +154,6 @@ public class EntityAPI {
     @Path("search")
     @ApiOperation("Search entities corresponding to given criteria")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_READ_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return Entity list", response = NamedResourceDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)

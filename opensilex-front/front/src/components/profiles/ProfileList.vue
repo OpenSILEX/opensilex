@@ -6,11 +6,7 @@
       placeholder="component.profile.filter-placeholder"
     ></opensilex-StringFilter>
 
-    <opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchProfiles"
-      :fields="fields"
-    >
+    <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchProfiles" :fields="fields">
       <template v-slot:cell(credentials)="{data}">
         <div>{{$tc("component.profile.credential", data.item.credentials.length, {count: data.item.credentials.length})}}</div>
       </template>
@@ -33,8 +29,13 @@
         </b-card-group>
       </template>
 
-      <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri" @click="data.toggleDetails()"></opensilex-UriLink>
+      <template v-slot:cell(name)="{data}">
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.name"
+          :noExternalLink="true"
+          @click="data.toggleDetails()"
+        ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(actions)="{data}">
@@ -46,13 +47,11 @@
             :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             label="component.profile.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
             @click="deleteProfile(data.item.uri)"
             label="component.profile.delete"
             :small="true"
@@ -132,11 +131,6 @@ export default class ProfileList extends Vue {
   }
 
   fields = [
-    {
-      key: "uri",
-      label: "component.common.uri",
-      sortable: true
-    },
     {
       key: "name",
       label: "component.common.name",

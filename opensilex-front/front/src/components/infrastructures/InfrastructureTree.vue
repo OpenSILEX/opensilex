@@ -35,19 +35,19 @@
         <opensilex-EditButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="editInfrastructure(node.data.uri)"
-          label="component.infrastructure.facility.edit"
+          label="InfrastructureTree.edit"
           :small="true"
         ></opensilex-EditButton>
         <opensilex-AddChildButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="createInfrastructure(node.data.uri)"
-          label="component.infrastructure.facility.add-child"
+          label="InfrastructureTree.add-child"
           :small="true"
         ></opensilex-AddChildButton>
         <opensilex-DeleteButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
           @click="deleteInfrastructure(node.data.uri)"
-          label="component.infrastructure.facility.delete"
+          label="InfrastructureTree.delete"
           :small="true"
         ></opensilex-DeleteButton>
       </template>
@@ -264,3 +264,15 @@ export default class InfrastructureTree extends Vue {
 }
 </style>
 
+<i18n>
+en:
+  InfrastructureTree:
+    edit: Edit infrastructure
+    add-child:  Add sub-infrastructure
+    delete: Delete infrastructure
+fr:
+  InfrastructureTree:
+    edit: Editer l'infrastructure
+    add-child:  Ajouter une sous-infrastructure
+    delete: Supprimer l'infrastructure
+</i18n>

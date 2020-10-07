@@ -67,9 +67,6 @@ public class GroupAPI {
     public static final String CREDENTIAL_GROUP_DELETE_ID = "group-delete";
     public static final String CREDENTIAL_GROUP_DELETE_LABEL_KEY = "credential.group.delete";
 
-    public static final String CREDENTIAL_GROUP_READ_ID = "group-read";
-    public static final String CREDENTIAL_GROUP_READ_LABEL_KEY = "credential.group.read";
-
     @Inject
     private SPARQLService sparql;
 
@@ -200,10 +197,6 @@ public class GroupAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a group by it's URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GROUP_READ_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -250,10 +243,6 @@ public class GroupAPI {
     @Path("search")
     @ApiOperation("Search groups")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GROUP_READ_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -306,10 +295,6 @@ public class GroupAPI {
     @Path("get-by-uris")
     @ApiOperation("Get a list of groups by their URIs")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_GROUP_READ_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

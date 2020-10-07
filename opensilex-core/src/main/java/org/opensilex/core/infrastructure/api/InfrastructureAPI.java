@@ -38,6 +38,10 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_ID;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_LABEL_KEY;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -66,9 +70,6 @@ public class InfrastructureAPI {
 
     public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_ID = "infrastructure-delete";
     public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY = "credential.infrastructure.delete";
-
-    public static final String CREDENTIAL_INFRASTRUCTURE_READ_ID = "infrastructure-read";
-    public static final String CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY = "credential.infrastructure.read";
 
     @Inject
     private SPARQLService sparql;
@@ -111,10 +112,6 @@ public class InfrastructureAPI {
     @Path("get/{uri}")
     @ApiOperation("Get an experiment by URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -156,10 +153,6 @@ public class InfrastructureAPI {
     @Path("search")
     @ApiOperation("Search infrastructures tree")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -234,10 +227,6 @@ public class InfrastructureAPI {
     @Path("facility/get/{uri}")
     @ApiOperation("Get an infrastructure facility by URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -308,8 +297,8 @@ public class InfrastructureAPI {
     @ApiOperation("Create an infrastructure team")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -334,10 +323,6 @@ public class InfrastructureAPI {
     @Path("team/get/{uri}")
     @ApiOperation("Get an infrastructure team by URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_READ_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -358,8 +343,8 @@ public class InfrastructureAPI {
     @ApiOperation("Delete an infrastructure team")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_GROUP_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -380,8 +365,8 @@ public class InfrastructureAPI {
     @ApiOperation("Update an infrastructure team")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

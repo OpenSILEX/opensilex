@@ -79,7 +79,7 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
+    
     public List<URI> getProjects() {
         return projects;
     }

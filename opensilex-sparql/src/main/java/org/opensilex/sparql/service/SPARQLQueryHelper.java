@@ -336,6 +336,9 @@ public class SPARQLQueryHelper {
             Node startVar = NodeFactory.createVariable(startDateVarName);
             Expr startDateExpr = exprFactory.ge(startVar, dateDeserializer.getNode(startDate));
           
+            if (!endDateNull) {
+                return exprFactory.and(startDateExpr, endDateExpr);
+            }
             return startDateExpr;
         }
         return endDateExpr;

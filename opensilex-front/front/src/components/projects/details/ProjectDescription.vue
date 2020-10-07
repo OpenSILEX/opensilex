@@ -238,7 +238,8 @@ export default class ProjectDescription extends Vue {
       .searchExperiments(
         undefined, //year
         undefined, // label
-        undefined, // species
+        undefined, // species,
+        undefined, // factors,
         [this.$route.params.uri], // projects
         undefined, // isPublic
         undefined, // isEnded

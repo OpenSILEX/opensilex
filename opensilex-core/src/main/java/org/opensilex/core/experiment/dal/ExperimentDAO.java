@@ -129,6 +129,34 @@ public class ExperimentDAO {
     }
 
     @Deprecated
+    public ListWithPagination<ExperimentModel> search(
+            URI uri,
+            String label,
+            Integer campaign,
+            Boolean isEnded,
+            List<URI> variables, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+
+        ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
+                ExperimentModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendUriRegexFilter(select, uri);
+                    appendRegexLabelFilter(select, label);
+                    appendIsActiveFilter(select, isEnded);
+                    appendCampaignFilter(select, campaign);
+                    appendVariablesListFilter(select, variables);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
+        for (ExperimentModel xp : xps.getList()) {
+            filterExperimentSensors(xp);
+        }
+        return xps;
+    }
+
+    @Deprecated
     public ListWithPagination<ExperimentModel> search(URI uri,
             Integer campaign,
             String label,

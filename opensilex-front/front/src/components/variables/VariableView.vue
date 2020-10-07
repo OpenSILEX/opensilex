@@ -38,12 +38,12 @@
                 </template>
             </opensilex-PageContent>
 
-            <opensilex-VariableForm
+            <opensilex-VariableCreate
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                 ref="variableCreate"
                 @onCreate="showVariableDetails"
                 @onUpdate="showVariableDetails"
-            ></opensilex-VariableForm>
+            ></opensilex-VariableCreate>
 
             <!-- Create form -->
             <opensilex-EntityCreate
@@ -61,7 +61,6 @@
             <opensilex-UnitCreate
                 ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
             ></opensilex-UnitCreate>
-
 
             <opensilex-ExternalReferencesModalForm
                 ref="skosReferences"
@@ -108,7 +107,7 @@ import EntityList from "./views/EntityList.vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import EntityCreate from "./form/EntityCreate.vue";
 import UnitCreate from "./form/UnitCreate.vue";
-import VariableCreate from "./form/VariableForm.vue";
+import VariableCreate from "./form/VariableCreate.vue";
 import QualityCreate from "./form/QualityCreate.vue";
 import MethodCreate from "./form/MethodCreate.vue";
 import VariableList from "./VariableList.vue";
@@ -259,18 +258,14 @@ export default class VariableView extends Vue {
     }
 
     updateReferences(variable){
-        if(variable.dataType && variable.dataType.uri){
-            variable.dataType = variable.dataType.uri
-        }
-        variable.entity = variable.entity.uri ? variable.entity.uri : variable.entity;
-        variable.quality = variable.quality.uri ? variable.quality.uri : variable.quality;
-        variable.method = variable.method.uri ? variable.method.uri : variable.method;
-        variable.unit = variable.unit.uri ? variable.unit.uri : variable.unit;
 
-        this.service.updateVariable(variable).then(() => {
-            let message = this.$i18n.t("VariableView.name") + " " + variable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+        let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
+
+        this.service.updateVariable(formattedVariable).then(() => {
+            let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
             this.$opensilex.showSuccessToast(message);
-            this.showVariableDetails(variable.uri);
+            this.skosReferences.hide();
+            this.showVariableDetails(formattedVariable.uri);
         }).catch(this.$opensilex.errorHandler);
     }
 
@@ -306,7 +301,6 @@ en:
         title: Variables
         description : Manage and configure variables, entity, quality, method and units
         add: Add
-        edit: Edit variable
         entity: Entity
         quality: Characteristic
         method: Method
@@ -318,7 +312,6 @@ fr:
         title: Variables
         description : Gérer et configurer les variables, entités, qualités, méthodes et unités
         add: Ajouter
-        edit: Éditer une variable
         entity: Entité
         quality: Caractéristique
         method: Méthode

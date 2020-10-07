@@ -17,24 +17,23 @@
                         @click="showEditForm"
                     ></opensilex-Button>
 
-                    <opensilex-VariableForm
+                    <opensilex-VariableCreate
                         v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         ref="variableForm"
-                        @onUpdate="afterUpdate"
-                    ></opensilex-VariableForm>
-
+                        @onUpdate="loadVariable"
+                    ></opensilex-VariableCreate>
 
                     <opensilex-Button
                         v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         label="VariableDetails.edit-references" :small="false" icon="fa#globe-americas"
-                        @click="showSkosReferences"
+                        @click="skosReferences.show()"
                     ></opensilex-Button>
 
                     <opensilex-ExternalReferencesModalForm
                         v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         ref="skosReferences"
                         :references.sync="variable"
-                        @onUpdate="afterUpdate(variable)"
+                        @onUpdate="updateReferences"
                     ></opensilex-ExternalReferencesModalForm>
                 </template>
             </opensilex-PageActions>
@@ -48,7 +47,7 @@
                         <template v-slot:body>
                             <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri" :url="variable.uri"></opensilex-UriView>
                             <opensilex-StringView label="component.common.name" :value="variable.name"></opensilex-StringView>
-                            <opensilex-StringView label="VariableForm.longName" :value="variable.longName"></opensilex-StringView>
+                            <opensilex-StringView label="VariableForm.altName" :value="variable.longName"></opensilex-StringView>
                             <opensilex-TextView label="component.common.description" :value="variable.comment"></opensilex-TextView>
                         </template>
                     </opensilex-Card>
@@ -56,13 +55,13 @@
                 <b-col>
                     <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
                         <template v-slot:body>
-                            <opensilex-UriView title="Variables.entity"  v-if="variable.entity"
+                            <opensilex-UriView title="VariableView.entity"  v-if="variable.entity"
                                                :value="variable.entity.name" :uri="getEntityPageUrl()" :url="getEntityPageUrl()"></opensilex-UriView>
-                            <opensilex-UriView title="Variables.quality"  v-if="variable.quality"
+                            <opensilex-UriView title="VariableView.quality"  v-if="variable.quality"
                                                :value="variable.quality.name" :uri="getQualityPageUrl()" :url="getQualityPageUrl()"></opensilex-UriView>
-                            <opensilex-UriView title="Variables.method"  v-if="variable.method"
+                            <opensilex-UriView title="VariableView.method"  v-if="variable.method"
                                                :value="variable.method.name" :uri="getMethodPageUrl()" :url="getMethodPageUrl()"></opensilex-UriView>
-                            <opensilex-UriView title="Variables.unit"  v-if="variable.unit"
+                            <opensilex-UriView title="VariableView.unit"  v-if="variable.unit"
                                                :value="variable.unit.name" :uri="getUnitPageUrl()" :url="getUnitPageUrl()"></opensilex-UriView>
                         </template>
                     </opensilex-Card>
@@ -103,6 +102,8 @@ import {Component, Ref} from "vue-property-decorator";
     import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import VariableView from "./VariableView.vue";
+import VariableCreate from "./form/VariableCreate.vue";
+import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
     @Component
     export default class VariableDetails extends Vue {
@@ -132,7 +133,7 @@ import VariableView from "./VariableView.vue";
             narrower: []
         };
 
-        @Ref("variableForm") readonly variableForm!: any;
+        @Ref("variableForm") readonly variableForm!: VariableCreate;
 
         @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
@@ -142,27 +143,26 @@ import VariableView from "./VariableView.vue";
         }
 
         loadVariable(uri: string) {
-            this.service.getVariable(uri)
-                .then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-                    this.variable = http.response.result;
-                })
-                .catch(this.$opensilex.errorHandler);
+            this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
+                this.variable = http.response.result;
+            }).catch(this.$opensilex.errorHandler);
         }
 
-        showEditForm(){
+        showEditForm() {
             // make a deep copy of the variable in order to not change the current dto
             // In case a field has been updated into the form without confirmation (by sending update to the server)
             let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
             this.variableForm.showEditForm(variableDtoCopy);
         }
 
-        showSkosReferences() {
-            this.skosReferences.show();
-        }
+        updateReferences(variable){
+            let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
-        afterUpdate(uri){
-            this.skosReferences.hide();
-            this.loadVariable(uri);
+            this.service.updateVariable(formattedVariable).then(() => {
+                let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                this.$opensilex.showSuccessToast(message);
+                this.skosReferences.hide();
+            }).catch(this.$opensilex.errorHandler);
         }
 
         getDataTypeLabel(dataTypeUri: string): string{

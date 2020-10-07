@@ -45,19 +45,16 @@
 
 
     <ValidationObserver ref="validatorRef">
-      <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
-        <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
-      </component>
+        <component v-if=mustRenderComponent ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
+            <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
+        </component>
     </ValidationObserver>
   </b-modal>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ModalForm extends Vue {
@@ -67,6 +64,8 @@ export default class ModalForm extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
   editMode = false;
+
+  mustRenderComponent: boolean = false;
 
   form = {};
 
@@ -164,31 +163,41 @@ export default class ModalForm extends Vue {
   }
 
   showCreateForm() {
-    this.form = this.getFormRef().getEmptyForm();
-    let form = this.initForm(this.form);
-    if (form) {
-      this.form = form;
-    }
-    this.modalRef.show();
+    this.mustRenderComponent = true;
     this.editMode = false;
-    this.validatorRef.reset();
-    if (this.getFormRef().reset) {
-      this.getFormRef().reset();
-    }
+
+    this.$nextTick(() => {
+      this.form = this.getFormRef().getEmptyForm();
+      let form = this.initForm(this.form);
+      if (form) {
+        this.form = form;
+      }
+      this.modalRef.show();
+
+      this.validatorRef.reset();
+      if (this.getFormRef().reset) {
+        this.getFormRef().reset();
+      }
+    });
   }
 
   showEditForm(form) {
-    this.form = form;
-    this.modalRef.show();
+    this.mustRenderComponent = true;
     this.editMode = true;
-    this.validatorRef.reset();
-    if (this.getFormRef().reset) {
-      this.getFormRef().reset();
-    }
+
+    this.$nextTick(() => {
+      this.form = form;
+      this.modalRef.show();
+      this.validatorRef.reset();
+      if (this.getFormRef().reset) {
+        this.getFormRef().reset();
+      }
+    });
   }
 
   hide() {
     this.modalRef.hide();
+    this.mustRenderComponent = false;
   }
 }
 </script>

@@ -367,10 +367,10 @@ import VariableView from './variables/VariableView.vue';
 components["opensilex-VariableView"] = VariableView;
 import VariableDetails from './variables/VariableDetails.vue';
 components["opensilex-VariableDetails"] = VariableDetails;
+import VariableCreate from './variables/form/VariableCreate.vue';
+components["opensilex-VariableCreate"] = VariableCreate;
 import VariableForm from './variables/form/VariableForm.vue';
 components["opensilex-VariableForm"] = VariableForm;
-import VariableForm1 from './variables/form/VariableForm1.vue';
-components["opensilex-VariableForm1"] = VariableForm1;
 import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 

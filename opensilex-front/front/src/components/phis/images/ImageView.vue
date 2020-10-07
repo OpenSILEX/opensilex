@@ -38,7 +38,7 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { Image } from "./image";
-import { DataService, FileDescriptionDTO } from "opensilex-phis/index";
+/* import { DataService, FileDescriptionDTO } from "opensilex-phis/index"; */
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
@@ -48,9 +48,9 @@ export default class ImageView extends Vue {
   get user() {
     return this.$store.state.user;
   }
-  dataService: DataService = this.$opensilex.getService(
+  /* dataService: DataService = this.$opensilex.getService(
     "opensilex.DataService"
-  );
+  ); */
   images = [];
 
   showSearchComponent: boolean = true;
@@ -141,7 +141,7 @@ export default class ImageView extends Vue {
   getData() {
     console.log("this.searchImagesFields");
     console.log(this.searchImagesFields);
-    this.dataService
+  /*   this.dataService
       .getDataFileDescriptionsBySearch(
         this.searchImagesFields.rdfType,
         this.searchImagesFields.startDate,
@@ -175,12 +175,12 @@ export default class ImageView extends Vue {
         console.log(error);
         this.canReload = false;
         this.showScrollSpinner = false;
-      });
+      }); */
   }
 
-  imagesFilter(data: Array<FileDescriptionDTO>) {
+  imagesFilter(data: Array<any>) {
     // each images may have more than one concerned item .
-    if (this.searchImagesFields.objectType !== null) { //if an object type is selected , add only images with this type
+  /*   if (this.searchImagesFields.objectType !== null) { //if an object type is selected , add only images with this type
       data.forEach(element => {
         element.concernedItems.forEach(concernedItem => {
           if (this.searchImagesFields.objectType === concernedItem.typeURI) {
@@ -218,7 +218,7 @@ export default class ImageView extends Vue {
       });
     }
     this.showedImages = this.images.length;
-    this.showScrollSpinner = false;
+    this.showScrollSpinner = false; */
     //this.showImage();
   }
 

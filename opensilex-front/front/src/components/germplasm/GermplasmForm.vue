@@ -39,6 +39,15 @@
     <b-form-tags
         v-model="value"        
     ></b-form-tags> -->
+
+    <!-- code -->
+    <opensilex-InputForm
+      v-if= '!form.rdfType.endsWith("Species")'
+      :value.sync="form.code"
+      label="GermplasmForm.code"
+      type="text"
+      helpMessage="GermplasmForm.code-help"
+    ></opensilex-InputForm>
     
     <!-- fromSpecies -->
     <opensilex-InputForm
@@ -229,13 +238,15 @@ en:
     fromAccession: Accession URI
     accession-help: Accession URI of the germplasm
     institute: Institute
-    institute-help: The code of the institute which the sgermplasm comes from
+    institute-help: The code of the institute which the germplasm comes from
     comment: Comment
     comment-help: Description associated to the germplasm 
     year: Production Year
     year-help: Year when the ressource has been produced
     synonyms: Synonyms
     synonyms-help: Fill with a synonym and press Enter
+    code: Code
+    code-help: The code of the germplasm
 
 fr:
   GermplasmForm:
@@ -259,5 +270,7 @@ fr:
     year-help: Year when the ressource has been produced
     synonyms: Synonymes
     synonyms-help: Entrer un synonyme et appuyer sur Entrée
+    code: Code
+    code-help: Code de la ressource génétique
 </i18n>
 

@@ -738,6 +738,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Accession</rdfs:label>
+        <rdfs:label xml:lang="fr">Accession</rdfs:label>
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
@@ -950,6 +952,14 @@
         <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
     </owl:Class>
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de Porte-greffe</rdfs:label>
+        <rdfs:label xml:lang="en">Rootstock Lot</rdfs:label>
+    </owl:Class>
+
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
@@ -985,6 +995,21 @@
         <rdfs:label xml:lang="fr">Objet scientifique</rdfs:label>
     </owl:Class>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de greffon</rdfs:label>
+        <rdfs:label xml:lang="en">Scion Lot</rdfs:label>
+    </owl:Class>
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+        <rdfs:label xml:lang="fr">Lot de semence</rdfs:label>
+        <rdfs:label xml:lang="en">Seed Lot</rdfs:label>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SensingDevice -->
@@ -999,6 +1024,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
+        <rdfs:label xml:lang="en">Species</rdfs:label>
     </owl:Class>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#Unit -->
@@ -1108,6 +1135,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="fr">Variété</rdfs:label>
+        <rdfs:label xml:lang="en">Variety</rdfs:label>
     </owl:Class>
     
 

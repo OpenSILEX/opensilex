@@ -216,13 +216,13 @@ export default class GermplasmTable extends Vue {
     if (this.$attrs.germplasmType.endsWith('Species'))  {
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Variety'))  {
-      let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"id", visible:true, editor:true};
+      let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeVar,  speciesCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Accession')) {
-      let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"id", visible:true, editor:true};
+      let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeAcc, speciesCol, varietyCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]        
     } else {
-      let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"id", visible:true, editor:true};
+      let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
     }
 

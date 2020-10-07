@@ -23,7 +23,10 @@ import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
@@ -138,14 +141,6 @@ public class GermplasmDAO {
 
     public GermplasmModel create(GermplasmModel germplasm, UserModel user) throws Exception {
         sparql.create(germplasm);
-
-        if (germplasm.getAttributes() != null) {
-            GermplasmAttributeModel model = new GermplasmAttributeModel();
-            model.setUri(germplasm.getUri());
-            model.setAttribute(germplasm.getAttributes());
-            addAttributes(model);
-        }
-
         return germplasm;
     }
 
@@ -230,19 +225,28 @@ public class GermplasmDAO {
 
     private void appendSpeciesFilter(SelectBuilder select, URI species) throws Exception {
         if (species != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString()))));
+            select.addFilter(SPARQLQueryHelper.or(
+                    SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString()))),
+                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString())))
+            ));
         }
     }
 
     private void appendVarietyFilter(SelectBuilder select, URI variety) throws Exception {
         if (variety != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString()))));
+            select.addFilter(SPARQLQueryHelper.or(
+                    SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString()))),
+                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString())))
+            ));
         }
     }
 
     private void appendAccessionFilter(SelectBuilder select, URI accession) throws Exception {
         if (accession != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString()))));
+            select.addFilter(SPARQLQueryHelper.or(
+                    SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString()))),
+                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString())))
+            ));
         }
     }
 
@@ -325,9 +329,15 @@ public class GermplasmDAO {
 
     private void appendExperimentFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
-            select.addWhere(makeVar("so"), Oeso.hasGermplasm, makeVar(SPARQLResourceModel.URI_FIELD));
-            //String uristring = SPARQLDeserializers.getExpandedURI(uri.toString());
-            select.addWhere(makeVar("so"), Oeso.participatesIn, SPARQLDeserializers.nodeURI(uri));
+            WhereBuilder builder1 = new WhereBuilder();
+            WhereBuilder builder2 = new WhereBuilder();
+            builder1.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar(SPARQLResourceModel.URI_FIELD)));
+            builder2.addWhere(makeVar("gpl"), makeVar("p"), makeVar("uri"));
+            builder2.addWhere(makeVar("uri"), RDF.type, makeVar("gplType"));
+            builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
+            builder2.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
+            builder1.addUnion(builder2);
+            select.addWhere(builder1);
         }
     }
 

@@ -195,7 +195,7 @@ export default class ExperimentList extends Vue {
     species: [],
     factors: [],
     projects: [],
-    yearFilter: null,
+    yearFilter: undefined,
     state: ""
   };
 
@@ -205,19 +205,14 @@ export default class ExperimentList extends Vue {
       species: [],
       factors: [],
       projects: [],
-      yearFilter: null,
+      yearFilter: undefined,
       state: ""
     };
     this.refresh();
   }
 
   searchExperiments(options) {
-    let startDateFilter: string = undefined;
-    let endDateFilter: string = undefined;
-    if (this.filter.yearFilter) {
-      startDateFilter = this.filter.yearFilter.toString() + "-01-01";
-      endDateFilter = this.filter.yearFilter.toString() + "-12-31";
-    }
+   
 
     let isPublic = undefined;
     let isEnded = undefined;

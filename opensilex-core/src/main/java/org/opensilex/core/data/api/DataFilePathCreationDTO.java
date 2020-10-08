@@ -12,7 +12,6 @@ import org.opensilex.core.data.dal.DataFileModel;
 import java.text.ParseException;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
->>>>>>> Size max for set of data + datanucleus rollback
 
 /**
  *

@@ -135,7 +135,7 @@ export default class InfrastructureTree extends Vue {
     this.service
       .searchInfrastructuresTree(this.filter)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        if (this.infrastructureForm) {
+        if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
           this.infrastructureForm
             .getFormRef()
             .setParentInfrastructures(http.response.result);

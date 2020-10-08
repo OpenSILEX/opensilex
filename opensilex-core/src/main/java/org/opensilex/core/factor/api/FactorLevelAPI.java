@@ -75,10 +75,6 @@ public class FactorLevelAPI {
     @Path("get/{uri}")
     @ApiOperation("Get an factor level")
     @ApiProtected
-    @ApiCredential(
-            credentialId = FactorAPI.CREDENTIAL_FACTOR_READ_ID,
-            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -115,10 +111,6 @@ public class FactorLevelAPI {
     @Path("get-details/{uri}")
     @ApiOperation("Get an factor level")
     @ApiProtected
-    @ApiCredential(
-            credentialId = FactorAPI.CREDENTIAL_FACTOR_READ_ID,
-            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_READ_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

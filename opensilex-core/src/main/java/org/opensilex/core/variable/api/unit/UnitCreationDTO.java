@@ -52,7 +52,7 @@ public class UnitCreationDTO extends SKOSReferencesDTO {
         return model;
     }
 
-    @ApiModelProperty(example = "Centimeter")
+    @ApiModelProperty(example = "Centimeter", required = true)
     public String getName() {
         return name;
     }

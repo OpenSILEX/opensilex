@@ -47,7 +47,7 @@ public class MethodCreationDTO extends SKOSReferencesDTO {
         return model;
     }
 
-    @ApiModelProperty(example = "ImageAnalysis")
+    @ApiModelProperty(example = "ImageAnalysis", required = true)
     public String getName() {
         return name;
     }

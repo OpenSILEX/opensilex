@@ -42,7 +42,7 @@ public class EntityCreationDTO extends SKOSReferencesDTO {
         return model;
     }
 
-    @ApiModelProperty(example = "Plant")
+    @ApiModelProperty(example = "Plant", required = true)
     public String getName() {
         return name;
     }

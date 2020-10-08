@@ -704,7 +704,7 @@ en:
             datatype: "Precise the data type. Here we are using decimal numbers."
             description: "Finalize the variable with some text description of it."
         example:
-            entity: "Grain"
+            entity: "Seed"
             quality: "Yield"
             method: "Harvest yield sensor"
             unit: "Kilogram per hectare"

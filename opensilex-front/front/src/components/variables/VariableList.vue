@@ -93,13 +93,7 @@ export default class VariableList extends Vue {
     }
 
     searchVariables(options) {
-        return this.$service
-            .searchVariables(
-                this.nameFilter,
-                options.orderBy,
-                options.currentPage,
-                options.pageSize
-            );
+        return this.$service.searchVariables(this.nameFilter, options.orderBy, options.currentPage, options.pageSize);
     }
 
     created() {
@@ -156,10 +150,12 @@ export default class VariableList extends Vue {
 en:
     VariableList:
         label-filter: Search variables
-        label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc."
+        label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc.
+            This filter apply on URI, name, alternative name, or on entity/characteristic/method/unit name."
 fr:
     VariableList:
         label-filter: Chercher une variable
-        label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc."
+        label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc.
+            Ce filtre s'applique à l'URI, au nom, au nom alternatif et au nom de l'entité/caractéristique/méthode/unité."
 
 </i18n>

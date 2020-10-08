@@ -46,7 +46,7 @@ public class QualityCreationDTO extends SKOSReferencesDTO {
         return model;
     }
 
-    @ApiModelProperty(example = "Height")
+    @ApiModelProperty(example = "Height", required = true)
     public String getName() {
         return name;
     }

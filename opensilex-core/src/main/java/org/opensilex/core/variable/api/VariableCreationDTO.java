@@ -66,7 +66,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     private List<OntologyReference> relations;
 
-    @ApiModelProperty(example = "Plant_Height")
+    @ApiModelProperty(example = "Plant_Height", required = true)
     @NotNull
     public String getName() {
         return name;
@@ -95,7 +95,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant", required = true)
     public URI getEntity() {
         return entity;
     }
@@ -105,7 +105,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/quality/Height")
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/quality/Height", required = true)
     public URI getQuality() {
         return quality;
     }
@@ -124,7 +124,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @NotNull
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/centimeter")
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/centimeter", required = true)
     public URI getUnit() {
         return unit;
     }

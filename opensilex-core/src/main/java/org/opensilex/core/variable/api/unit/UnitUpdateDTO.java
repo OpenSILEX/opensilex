@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.unit;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 
@@ -12,6 +14,7 @@ public class UnitUpdateDTO extends UnitCreationDTO {
 
     @NotNull
     @Override
+    @ApiModelProperty(required = true)
     public URI getUri() {
         return super.getUri();
     }

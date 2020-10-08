@@ -21,13 +21,13 @@
                     <opensilex-CreateButton
                         v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         @click="showCreateForm"
-                        label="EntityList.add-button-title"
+                        :label="buttonTitle"
                     ></opensilex-CreateButton>
                 </div>
             </div>
 
             <opensilex-PageContent
-                v-show="loadVariableList()" >
+                v-if="loadVariableList()" >
                 <template v-slot>
                     <opensilex-VariableList
                         ref="variableList"
@@ -72,7 +72,7 @@
                 <div class="col-md-6">
                     <!-- Element list -->
                     <opensilex-EntityList
-                        v-show="! loadVariableList()"
+                        v-if="! loadVariableList() "
                         ref="entityTree"
                         @onSelect="updateSelected"
                         @onEdit="showEditForm"
@@ -150,11 +150,12 @@ export default class VariableView extends Vue {
     @Ref("variableList") readonly variableList!: VariableList;
     @Ref("entityTree") readonly entityTree!: EntityList;
 
+    buttonTitle;
+
     created(){
         this.service = this.$opensilex.getService("opensilex-core.VariablesService");
 
         // load variable list by default
-
         let query: any = this.$route.query;
         if(query && query.elementType){
             let requestedTypeIdx = VariableView.elementTypes.findIndex(elem => elem == decodeURI(query.elementType));
@@ -172,16 +173,21 @@ export default class VariableView extends Vue {
             this.elementIndex = tabIndex;
             this.elementType = VariableView.elementTypes[this.elementIndex];
             this.$opensilex.updateURLParameter("elementType",this.elementType);
+            this.buttonTitle = "VariableView."+this.getButtonTitleTranslationSubKey();
 
-            if(this.entityTree){
-                // update entity list with the new elementType value
-                this.$nextTick(() => {
-                    this.$opensilex.updateURLParameter("name", "");
-                    this.entityTree.refresh();
-                });
+            if(this.elementType == VariableView.VARIABLE_TYPE){
+                this.$opensilex.updateURLParameter("selected","");
+                this.variableList.refresh();
+            }else{
+                if(this.entityTree){
+                    // update entity list with the new elementType value
+                    this.$nextTick(() => {
+                        this.$opensilex.updateURLParameter("name", "");
+                        this.entityTree.refresh();
+                    });
+                }
             }
         }
-
     }
 
     private loadVariableList() : boolean {
@@ -243,6 +249,31 @@ export default class VariableView extends Vue {
         }
     }
 
+    private getButtonTitleTranslationSubKey(): string {
+        switch (this.elementType) {
+            case VariableView.VARIABLE_TYPE : {
+                return "add-variable";
+            }
+            case VariableView.ENTITY_TYPE : {
+                return "add-entity";
+            }
+            case VariableView.QUALITY_TYPE : {
+                return "add-quality";
+            }
+            case VariableView.METHOD_TYPE: {
+                return "add-method";
+            }
+            case VariableView.UNIT_TYPE: {
+                return "add-unit";
+            }
+            default : {
+                return "add-variable";
+            }
+        }
+    }
+
+
+
     showCreateForm(){
         this.getForm().showCreateForm();
     }
@@ -300,21 +331,30 @@ en:
         name: The variable
         title: Variables
         description : Manage and configure variables, entity, quality, method and units
-        add: Add
+        add-variable: Add variable
         entity: Entity
+        add-entity: Add entity
         quality: Characteristic
+        add-quality: Add characteristic
         method: Method
+        add-method: Add method
         unit: "Unit/Level"
+        add-unit: Add unit
 
 fr:
     VariableView:
         name: La variable
         title: Variables
         description : Gérer et configurer les variables, entités, qualités, méthodes et unités
-        add: Ajouter
+        add-variable: Ajouter une variable
         entity: Entité
+        add-entity: Ajouter une entité
         quality: Caractéristique
+        add-quality: Ajouter une caractéristique
         method: Méthode
+        add-method: Ajouter une méthode
         unit: "Unité/Niveau"
+        add-unit: Ajouter une unité
+
 </i18n>
 

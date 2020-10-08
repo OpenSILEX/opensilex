@@ -93,9 +93,9 @@ export default class EntityList extends Vue {
     searchElements(): Promise<HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>> {
 
         switch (this.type) {
-            case VariableView.VARIABLE_TYPE: {
-                return this.service.searchVariables(this.nameFilter,["name=asc"]);
-            }
+            // case VariableView.VARIABLE_TYPE: {
+            //     return this.service.searchVariables(this.nameFilter,["name=asc"]);
+            // }
             case VariableView.ENTITY_TYPE: {
                 return this.service.searchEntities(this.nameFilter,["name=asc"]);
             }
@@ -109,12 +109,16 @@ export default class EntityList extends Vue {
                 return this.service.searchUnits(this.nameFilter,["name=asc"]);
             }
             default: {
-                return this.service.searchVariables(this.nameFilter,["name=asc"]);
+                return this.service.searchEntities(this.nameFilter,["name=asc"]);
             }
         }
     }
 
     refresh(uri?) {
+
+        if(this.type == VariableView.VARIABLE_TYPE){
+            return;
+        }
 
         this.searchElements()
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
@@ -254,11 +258,9 @@ export default class EntityList extends Vue {
 en:
     EntityList:
         filter-placeholder: Search objects by name
-        add-button-title: Add
 
 fr:
     EntityList:
         filter-placeholder: Rechercher des élements par nom
-        add-button-title: Ajouter
 </i18n>
 

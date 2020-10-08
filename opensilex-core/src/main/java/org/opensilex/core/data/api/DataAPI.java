@@ -89,6 +89,9 @@ public class DataAPI {
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
+    
+    public static final String ERROR_SIZE_SET = "Too large set";
+    public static final String ERROR_MAX_SIZE_SET = "Set are limited to";
 
     @Inject
     private DataNucleusService nosql;
@@ -173,8 +176,8 @@ public class DataAPI {
             try{
                 dataList = (List<DataModel>) dao.createAll(dataList);
             }catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "Too large set of data",
-                    "Set are limited to 10 000 datas").getResponse();
+                return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
             }
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList){
@@ -460,8 +463,8 @@ public class DataAPI {
             try {
                 dataList = (List<DataModel>) dao.createAll(dataList);
             }catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "Too large set",
-                    "Set are limited to 10 000").getResponse();
+                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
             }
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList){

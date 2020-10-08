@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 public class DataNucleusService extends BaseService implements NoSQLService {
 
     public final static Logger LOGGER = LoggerFactory.getLogger(DataNucleusService.class);
+    public int SIZE_MAX = 10000;
     /**
      * static final for the JNDI name of the PersistenceManagerFactory
      */
@@ -161,8 +162,8 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         List<URI> alreadyGenerateURI = new ArrayList<>();
         List<T> instancesUserURI = new ArrayList<>();
         List<T> instancesGeneratedURI = new ArrayList<>();
-        if(instances.size() > 10000)
-            throw new NoSQLTooLargeSetException();
+        if(instances.size() > SIZE_MAX)
+            throw new NoSQLTooLargeSetException(SIZE_MAX);
         
         for (T instance:instances){
             if(instance.getUri()!= null)

@@ -88,7 +88,7 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         List<ResourceTreeDTO> root1Children = searchedRoot1.get().getChildren();
         assertEquals(1, root1Children.size());
         assertEquals(0, searchedRoot2.get().getChildren().size());
-        assertEquals(root1Child1, root1Children.get(0).getUri());
+        assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0).getUri()));
     }
 
     @Override

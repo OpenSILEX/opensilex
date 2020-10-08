@@ -24,7 +24,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
@@ -118,7 +120,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(creationDTO.getSymbol(),dtoFromDb.getSymbol());
         assertEquals(creationDTO.getAlternativeSymbol(),dtoFromDb.getAlternativeSymbol());
 
-        assertEquals(Oeso.Unit.getURI(),dtoFromDb.getType().toString());
+        assertTrue(SPARQLDeserializers.compareURIs(Oeso.Unit.getURI(),dtoFromDb.getType().toString()));
     }
 
     @Override

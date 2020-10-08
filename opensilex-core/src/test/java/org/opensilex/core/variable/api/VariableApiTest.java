@@ -18,9 +18,11 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
@@ -37,7 +39,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
     private VariableCreationDTO getCreationDto() throws Exception {
 
         SPARQLService service = getSparqlService();
-        
+
         EntityModel entity = new EntityModel();
         entity.setName("Artemisia absinthium");
         entity.setComment("A plant which was used in the past for building methanol");
@@ -62,8 +64,8 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         service.create(unit);
 
         VariableCreationDTO variableDto = new VariableCreationDTO();
-        variableDto.setName(entity.getName()+quality.getName());
-        variableDto.setLongName(variableDto.getName()+method.getName()+unit.getName());
+        variableDto.setName(entity.getName() + quality.getName());
+        variableDto.setLongName(variableDto.getName() + method.getName() + unit.getName());
         variableDto.setComment("A comment about a variable");
 
         variableDto.setEntity(entity.getUri());
@@ -81,7 +83,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreateGetAndDelete() throws Exception {
-        super.testCreateGetAndDelete(createPath,getByUriPath, deletePath, getCreationDto());
+        super.testCreateGetAndDelete(createPath, getByUriPath, deletePath, getCreationDto());
     }
 
     @Test
@@ -91,7 +93,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         dto.setName("name");
         dto.setComment("only a comment, not a name");
 
-        Response postResult = getJsonPostResponse(target(createPath),dto);
+        Response postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();
@@ -105,13 +107,13 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         dto.setEntity(null);
         dto.setQuality(null);
 
-        postResult = getJsonPostResponse(target(createPath),dto);
+        postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Variable+"/58165");
+        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Variable + "/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -148,9 +150,8 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getComment(), dtoFromApi.getComment());
-        assertEquals(dto.getEntity(), dtoFromApi.getEntity().getUri());
-        assertEquals(dto.getTraitUri(), dtoFromApi.getTraitUri());
-
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getTraitUri(), dtoFromApi.getTraitUri()));
     }
 
     @Test
@@ -166,21 +167,21 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<VariableDetailsDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
+        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
         });
         VariableDetailsDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
 
-        assertEquals(creationDTO.getName(),dtoFromDb.getName());
-        assertEquals(creationDTO.getLongName(),dtoFromDb.getLongName());
-        assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
-        assertEquals(creationDTO.getTraitUri(),dtoFromDb.getTraitUri());
-        assertEquals(creationDTO.getTraitName(),dtoFromDb.getTraitName());
+        assertEquals(creationDTO.getName(), dtoFromDb.getName());
+        assertEquals(creationDTO.getLongName(), dtoFromDb.getLongName());
+        assertEquals(creationDTO.getComment(), dtoFromDb.getComment());
+        assertEquals(creationDTO.getTraitUri(), dtoFromDb.getTraitUri());
+        assertEquals(creationDTO.getTraitName(), dtoFromDb.getTraitName());
 
-        assertEquals(creationDTO.getEntity(),dtoFromDb.getEntity().getUri());
-        assertEquals(creationDTO.getQuality(),dtoFromDb.getQuality().getUri());
-        assertEquals(creationDTO.getMethod(),dtoFromDb.getMethod().getUri());
-        assertEquals(creationDTO.getUnit(),dtoFromDb.getUnit().getUri());
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getEntity(), dtoFromDb.getEntity().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getQuality(), dtoFromDb.getQuality().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getMethod(), dtoFromDb.getMethod().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
     }
 
     @Override

@@ -33,6 +33,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for API testing
  */
-//@Category(IntegrationTestCategory.class)
+@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -279,5 +280,4 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
         System.out.println(json);
     }
-
 }

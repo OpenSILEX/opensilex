@@ -22,9 +22,11 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
@@ -113,7 +115,8 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
         assertNotNull(dtoFromDb);
         assertEquals(creationDTO.getName(),dtoFromDb.getName());
         assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
-        assertEquals(Oeso.Method.getURI(),dtoFromDb.getType().toString());
+        
+        assertTrue(SPARQLDeserializers.compareURIs(Oeso.Method.getURI(),dtoFromDb.getType().toString()));
     }
 
     @Override

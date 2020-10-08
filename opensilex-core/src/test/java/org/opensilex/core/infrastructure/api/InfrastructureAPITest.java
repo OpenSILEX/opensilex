@@ -18,6 +18,7 @@ import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -79,8 +80,8 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
         List<ResourceTreeDTO> list = response.getResult();
         assertFalse(list.isEmpty());
-        Optional<ResourceTreeDTO> searchedRoot1 = list.stream().filter(treeDTO -> treeDTO.getUri().equals(root1)).findFirst();
-        Optional<ResourceTreeDTO> searchedRoot2 = list.stream().filter(treeDTO -> treeDTO.getUri().equals(root2)).findFirst();
+        Optional<ResourceTreeDTO> searchedRoot1 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root1)).findFirst();
+        Optional<ResourceTreeDTO> searchedRoot2 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root2)).findFirst();
         assertTrue(searchedRoot1.isPresent());
         assertTrue(searchedRoot2.isPresent());
 

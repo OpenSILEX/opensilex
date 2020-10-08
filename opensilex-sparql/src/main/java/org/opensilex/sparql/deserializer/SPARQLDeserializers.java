@@ -209,4 +209,16 @@ public class SPARQLDeserializers {
     public static boolean compareURIs(String uri1, String uri2) {
         return getExpandedURI(uri1).equals(getExpandedURI(uri2));
     }
+
+    public static boolean compareURIs(URI uri1, URI uri2) {
+        return getExpandedURI(uri1).equals(getExpandedURI(uri2));
+    }
+
+    public static boolean compareURIs(String uri1, URI uri2) {
+        return getExpandedURI(uri1).equals(getExpandedURI(uri2));
+    }
+
+    public static boolean compareURIs(URI uri1, String uri2) {
+        return getExpandedURI(uri1).equals(getExpandedURI(uri2));
+    }
 }

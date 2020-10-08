@@ -7,7 +7,6 @@
  * Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * *******************************************************************************
  */
-
 package org.opensilex.core.geospatial.dal;
 
 import com.mongodb.client.model.geojson.Geometry;
@@ -18,25 +17,20 @@ import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
-import org.opensilex.nosql.datanucleus.DataNucleusServiceConfig;
-import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
-import org.opensilex.nosql.datanucleus.mongo.MongoDBConnection;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.unit.test.AbstractUnitTest;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import org.opensilex.integration.test.AbstractIntegrationTest;
+import org.opensilex.nosql.service.NoSQLService;
 
 /**
  * @author Jean Philippe VERT
  */
-public class GeospatialDAOTest extends AbstractUnitTest {
+public class GeospatialDAOTest extends AbstractIntegrationTest {
 
     private static GeospatialDAO geospatialDAO;
     private final URI type;
@@ -47,51 +41,7 @@ public class GeospatialDAOTest extends AbstractUnitTest {
 
     @BeforeClass
     public static void setupMongo() throws Exception {
-        MongoDBConnection connection = new MongoDBConnection(new MongoDBConfig() {
-            @Override
-            public String host() {
-                return "127.0.0.1";
-            }
-
-            @Override
-            public int port() {
-                return 8668;
-            }
-
-            @Override
-            public String database() {
-                return "opensilex";
-            }
-
-            @Override
-            public String username() {
-                return null;
-            }
-
-            @Override
-            public String password() {
-                return null;
-            }
-
-            @Override
-            public String authDB() {
-                return null;
-            }
-
-            @Override
-            public Map<String, String> options() {
-                return new HashMap<>();
-            }
-        });
-        connection.setOpenSilex(opensilex);
-        connection.setup();
-
-        DataNucleusServiceConfig serviceConfig = () -> connection;
-
-        DataNucleusService service = new DataNucleusService(serviceConfig);
-        service.setOpenSilex(getOpensilex());
-        service.setup();
-        service.startup();
+        NoSQLService service = getOpensilex().getServiceInstance("nosql", NoSQLService.class);
         geospatialDAO = new GeospatialDAO(service);
     }
 

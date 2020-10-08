@@ -7,17 +7,11 @@
 package org.opensilex.nosql.datanucleus.mongo;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.model.geojson.GeoJsonObjectType;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
@@ -26,6 +20,12 @@ import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * MongoDB connection for DataNucleus.
@@ -93,10 +93,16 @@ public class MongoDBConnection extends BaseService implements DataNucleusService
                 }
             }
         }
-        CodecRegistry pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
-        CodecRegistry codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
-                pojoCodecRegistry, geoJsonCodecRegistry);
+
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromCodecs(new URICodec()),
+                CodecRegistries.fromProviders(
+                        new GeoJsonCodecProvider(),
+                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
+                )
+        );
+
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(connectionString))
                 .codecRegistry(codecRegistry)

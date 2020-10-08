@@ -11,13 +11,13 @@ menu:
       component: opensilex-InfrastructureView
   - id: data
     label: component.menu.data.label
-    children:
-      - id: images
-        label: component.menu.data.images
-        route:
-          path: /images
-          component: opensilex-ImageView
-          credentials: []
+#    children:
+#      - id: images
+#        label: component.menu.data.images
+#        route:
+#          path: /images
+#          component: opensilex-ImageView
+#          credentials: []
       # - id: data
       #   label: component.menu.data.label
       #   route:

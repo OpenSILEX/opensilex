@@ -30,6 +30,10 @@ public @interface ApiCredential {
     public String credentialId();
     
     public String credentialLabelKey();
+    
+    public String groupId() default "";
+    
+    public String groupLabelKey() default "";
 
     public boolean hide() default false;
     

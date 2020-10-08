@@ -58,19 +58,37 @@ public final class AuthenticationDAO {
             Set<Method> methods = sparql.getOpenSilex().getMethodsAnnotatedWith(ApiCredential.class);
             methods.forEach((method) -> {
                 ApiCredential apiCredential = method.getAnnotation(ApiCredential.class);
-                ApiCredentialGroup apiCredentialGroup = method.getDeclaringClass().getAnnotation(ApiCredentialGroup.class);
-                if (apiCredentialGroup != null && apiCredential != null && !apiCredential.hide()) {
-                    String groupId = apiCredentialGroup.groupId();
-                    if (!credentialsGroups.containsKey(groupId)) {
-                        credentialsGroups.put(groupId, new HashMap<>());
-                        credentialsGroupLabels.put(groupId, apiCredentialGroup.groupLabelKey());
+
+                if (apiCredential != null && !apiCredential.hide()) {
+                    String groupId = apiCredential.groupId();
+                    String groupLabelKey = apiCredential.groupLabelKey();
+                    if (groupId.isEmpty() || groupLabelKey.isEmpty()) {
+                        ApiCredentialGroup apiCredentialGroup = method.getDeclaringClass().getAnnotation(ApiCredentialGroup.class);
+                        if (apiCredentialGroup != null) {
+                            groupId = apiCredentialGroup.groupId();
+                            groupLabelKey = apiCredentialGroup.groupLabelKey();
+                        } else {
+                            groupId = null;
+                        }
                     }
 
-                    Map<String, String> groupMap = credentialsGroups.get(groupId);
+                    if (groupId != null && !groupId.isEmpty()) {
 
-                    LOGGER.debug("Register credential: " + groupId + " - " + apiCredential.credentialId() + " (" + apiCredential.credentialLabelKey() + ")");
-                    groupMap.put(apiCredential.credentialId(), apiCredential.credentialLabelKey());
-                    credentialsIdList.add(apiCredential.credentialId());
+                        if (groupLabelKey.isEmpty()) {
+                            groupLabelKey = groupId;
+                        }
+                        
+                        if (!credentialsGroups.containsKey(groupId)) {
+                            credentialsGroups.put(groupId, new HashMap<>());
+                            credentialsGroupLabels.put(groupId, groupLabelKey);
+                        }
+
+                        Map<String, String> groupMap = credentialsGroups.get(groupId);
+
+                        LOGGER.debug("Register credential: " + groupId + " - " + apiCredential.credentialId() + " (" + apiCredential.credentialLabelKey() + ")");
+                        groupMap.put(apiCredential.credentialId(), apiCredential.credentialLabelKey());
+                        credentialsIdList.add(apiCredential.credentialId());
+                    }
                 }
             });
         }

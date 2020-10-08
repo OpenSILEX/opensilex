@@ -40,6 +40,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_ID;
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_LABEL_KEY;
+import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_GROUP_ID;
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID;
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
@@ -297,6 +298,8 @@ public class InfrastructureAPI {
     @ApiOperation("Create an infrastructure team")
     @ApiProtected
     @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
             credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )
@@ -343,6 +346,8 @@ public class InfrastructureAPI {
     @ApiOperation("Delete an infrastructure team")
     @ApiProtected
     @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
             credentialId = CREDENTIAL_GROUP_DELETE_ID,
             credentialLabelKey = CREDENTIAL_GROUP_DELETE_LABEL_KEY
     )
@@ -365,6 +370,8 @@ public class InfrastructureAPI {
     @ApiOperation("Update an infrastructure team")
     @ApiProtected
     @ApiCredential(
+            groupId = CREDENTIAL_GROUP_GROUP_ID,
+            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
             credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
             credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
     )

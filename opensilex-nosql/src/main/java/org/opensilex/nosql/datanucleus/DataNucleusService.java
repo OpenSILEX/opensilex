@@ -399,7 +399,6 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
     }
     
-<<<<<<< HEAD
     public <T extends NoSQLModel> void createAllForceURI(Collection<T> instances) throws NamingException, Exception{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             Transaction tx1 = persistenceManager.currentTransaction();
@@ -421,8 +420,6 @@ public class DataNucleusService extends BaseService implements NoSQLService {
         }
     }
     
-=======
->>>>>>> Size max for set of data + datanucleus rollback
     public <T extends NoSQLModel> void createAllForceURI(Collection<T> instances) throws NamingException, Exception{
         try (PersistenceManager persistenceManager = getPersistentConnectionManager()) {
             Transaction tx1 = persistenceManager.currentTransaction();

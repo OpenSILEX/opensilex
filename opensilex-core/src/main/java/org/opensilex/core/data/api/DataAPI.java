@@ -48,6 +48,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.data.dal.EntityModel;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -169,7 +170,12 @@ public class DataAPI {
                 //dao.prepareURI(model);
                 dataList.add(model);
         }
-            dataList = (List<DataModel>) dao.createAll(dataList);
+            try{
+                dataList = (List<DataModel>) dao.createAll(dataList);
+            }catch(NoSQLTooLargeSetException ex){
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "Too large set of data",
+                    "Set are limited to 10 000 datas").getResponse();
+            }
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList){
                 createdResources.add(data.getUri());
@@ -451,7 +457,12 @@ public class DataAPI {
                 model.setFilename(absoluteFilePath.getFileName().toString());
                 dataList.add(model);
         }
-            dataList = (List<DataModel>) dao.createAll(dataList);
+            try {
+                dataList = (List<DataModel>) dao.createAll(dataList);
+            }catch(NoSQLTooLargeSetException ex){
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "Too large set",
+                    "Set are limited to 10 000").getResponse();
+            }
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList){
                 createdResources.add(data.getUri());

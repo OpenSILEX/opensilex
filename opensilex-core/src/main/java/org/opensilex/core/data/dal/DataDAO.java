@@ -358,6 +358,7 @@ public class DataDAO {
     }
 
     public <T extends DataFileModel> void createFile(DataFileModel model, File file) throws URISyntaxException, Exception {
+<<<<<<< HEAD
         //generate URI
 <<<<<<< HEAD
 =======
@@ -366,6 +367,9 @@ public class DataDAO {
 =======
 >>>>>>> insert data list optimisation + new uri generation
 >>>>>>> insert data list optimisation + new uri generation
+=======
+        
+>>>>>>> minor update: custom return TooLargeSet
         nosql.generateUniqueUriIfNullOrValidateCurrent(model);
         
         Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString()).toAbsolutePath();

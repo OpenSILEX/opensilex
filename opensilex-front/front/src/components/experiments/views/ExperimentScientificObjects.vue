@@ -73,6 +73,9 @@
                 :searchMethod="searchParents"
                 :itemLoadingMethod="getParentsByURI"
               ></opensilex-SelectForm>
+              
+              <!-- TODO add geometry input --> 
+            
             </template>
           </opensilex-ModalForm>
         </b-card>

@@ -197,6 +197,7 @@ public class ScientificObjectDAO {
     }
 
     public URI create(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+
         SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
 
         if (objectURI == null) {
@@ -253,12 +254,14 @@ public class ScientificObjectDAO {
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);
 
-        for (RDFObjectRelationDTO relation : relations) {
-            if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
-                throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+        if (relations != null) {
+            for (RDFObjectRelationDTO relation : relations) {
+                if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
+                    throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+                }
             }
         }
-
+        
         object.addRelation(xpURI, new URI(RDFS.label.getURI()), String.class, name);
 
         return object;

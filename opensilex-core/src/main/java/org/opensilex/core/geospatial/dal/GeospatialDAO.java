@@ -18,25 +18,27 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
-import org.bson.Document;
-import org.jetbrains.annotations.NotNull;
-import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.utils.ListWithPagination;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.bson.BsonReader;
+import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.json.JsonReader;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.GeometryCollection;
+import org.jetbrains.annotations.NotNull;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.utils.ListWithPagination;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 /**
  * Geospatial DAO
@@ -50,9 +52,41 @@ public class GeospatialDAO {
     public GeospatialDAO(@NotNull NoSQLService nosql) {
         MongoDatabase db = nosql.getMongoDBClient().getDatabase("opensilex");
         String nameCollection = "Geospatial";
-        db.getCollection(nameCollection, GeospatialModel.class).drop();
-        db.createCollection(nameCollection);
         geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
+    }
+
+    public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {
+
+        if (geo instanceof Feature) {
+            Feature feature = (Feature) geo;
+            geo = feature.getGeometry();
+        } else if (geo instanceof FeatureCollection) {
+            FeatureCollection featureCol = (FeatureCollection) geo;
+            GeometryCollection geoCol = new GeometryCollection();
+            List<Feature> features = featureCol.getFeatures();
+            for (Feature feature : features) {
+                geoCol.add(feature.getGeometry());
+            }
+            geo = geoCol;
+        }
+
+        String geoJSON = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geo);
+        BsonReader jsonReader = new JsonReader(geoJSON);
+
+        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
+        Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
+        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
+
+        return geometry;
+    }
+
+    public static GeoJsonObject geometryToGeoJson(Geometry geometry) throws JsonProcessingException {
+        Feature geo = new Feature();
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
+        geo.setGeometry(geoJsonGeometry);
+
+        return geo;
     }
 
     public GeospatialModel create(@NotNull GeospatialModel instanceGeospatial) {
@@ -83,7 +117,10 @@ public class GeospatialDAO {
 
     public GeospatialModel update(@NotNull GeospatialModel geospatial, URI uri, URI graph) {
         if (geospatial.getGeometry() != null) {
-            Document filter = new Document("uri", uri).append("graph", graph);
+            URI uriDeserializers = SPARQLDeserializers.formatURI(uri);
+            URI graphDeserializers = SPARQLDeserializers.formatURI(graph);
+
+            Document filter = new Document("uri", uriDeserializers).append("graph", graphDeserializers);
 
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
             return geometryCollection.findOneAndReplace(filter, geospatial);
@@ -92,7 +129,10 @@ public class GeospatialDAO {
     }
 
     public void delete(URI uri, URI graph) {
-        Document filter = new Document("uri", uri).append("graph", graph);
+        URI uriDeserializers = SPARQLDeserializers.formatURI(uri);
+        URI graphDeserializers = SPARQLDeserializers.formatURI(graph);
+
+        Document filter = new Document("uri", uriDeserializers).append("graph", graphDeserializers);
 
         geometryCollection.deleteOne(filter);
     }
@@ -156,39 +196,5 @@ public class GeospatialDAO {
 
     public ListWithPagination<GeospatialModel> searchNear(@NotNull GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
         return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
-    }
-
-    public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {
-
-        if (geo instanceof Feature) {
-            Feature feature = (Feature) geo;
-            geo = feature.getGeometry();
-        } else if (geo instanceof FeatureCollection) {
-            FeatureCollection featureCol = (FeatureCollection) geo;
-            GeometryCollection geoCol = new GeometryCollection();
-            List<Feature> features = featureCol.getFeatures();
-            for (Feature feature : features) {
-                geoCol.add(feature.getGeometry());
-            }
-            geo = geoCol;
-        }
-
-        String geoJSON = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geo);
-        BsonReader jsonReader = new JsonReader(geoJSON);
-
-        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
-        Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
-        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
-
-        return geometry;
-    }
-
-    public static GeoJsonObject geometryToGeoJson(Geometry geometry) throws JsonProcessingException {
-        Feature geo = new Feature();
-        String geoJSON = geometry.toJson();
-        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
-        geo.setGeometry(geoJsonGeometry);
-        
-        return geo;
     }
 }

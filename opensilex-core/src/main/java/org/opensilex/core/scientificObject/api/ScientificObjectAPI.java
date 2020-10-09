@@ -42,6 +42,8 @@ import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
@@ -62,6 +64,23 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Julien BONNEFONT
@@ -85,10 +104,8 @@ public class ScientificObjectAPI {
 
     @CurrentUser
     UserModel currentUser;
-
     @Inject
     private SPARQLService sparql;
-
     @Inject
     private NoSQLService nosql;
 
@@ -196,10 +213,30 @@ public class ScientificObjectAPI {
         URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+        ClientSession session = nosql.getMongoDBClient().startSession();
+        session.startTransaction();
+        try {
+            sparql.startTransaction();
+            URI soURI = dao.create(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
-        return new ObjectUriResponse(soURI).getResponse();
+            GeospatialModel geospatialModel = new GeospatialModel();
+            geospatialModel.setUri(soURI);
+            geospatialModel.setType(soType);
+            geospatialModel.setGraph(descriptionDto.getExperiment());
+            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
+            geoDAO.create(geospatialModel);
+
+            sparql.commitTransaction();
+            session.commitTransaction();
+
+            return new ObjectUriResponse(soURI).getResponse();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            session.abortTransaction();
+            throw ex;
+        }
     }
 
     @PUT
@@ -223,10 +260,30 @@ public class ScientificObjectAPI {
         URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        URI soURI = dao.update(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+        ClientSession session = nosql.getMongoDBClient().startSession();
+        session.startTransaction();
+        try {
+            sparql.startTransaction();
+            URI soURI = dao.update(xpURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
-        return new ObjectUriResponse(soURI).getResponse();
+            GeospatialModel geospatialModel = new GeospatialModel();
+            geospatialModel.setUri(soURI);
+            geospatialModel.setType(soType);
+            geospatialModel.setGraph(descriptionDto.getExperiment());
+            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
+            geoDAO.update(geospatialModel, soURI, xpURI);
+
+            sparql.commitTransaction();
+            session.commitTransaction();
+
+            return new ObjectUriResponse(soURI).getResponse();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            session.abortTransaction();
+            throw ex;
+        }
     }
 
     @DELETE
@@ -248,8 +305,24 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Scientific object URI", example = "http://example.com/", required = true) @PathParam("objURI") @NotNull @ValidURI URI objURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        dao.delete(xpURI, objURI, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, objURI).getResponse();
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
+        ClientSession session = nosql.getMongoDBClient().startSession();
+        session.startTransaction();
+        try {
+            sparql.startTransaction();
+            dao.delete(xpURI, objURI, currentUser);
+            geoDAO.delete(objURI, xpURI);
+
+            sparql.commitTransaction();
+            session.commitTransaction();
+
+            return new ObjectUriResponse(Response.Status.OK, objURI).getResponse();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            session.abortTransaction();
+            throw ex;
+        }
     }
 
     @POST

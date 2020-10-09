@@ -15,7 +15,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.DataScientificObjectModel;
 import org.opensilex.core.data.dal.EntityModel;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;

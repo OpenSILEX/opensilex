@@ -45,7 +45,7 @@
 
 
     <ValidationObserver ref="validatorRef">
-        <component v-if=mustRenderComponent ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
+        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -64,8 +64,6 @@ export default class ModalForm extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
   editMode = false;
-
-  mustRenderComponent: boolean = false;
 
   form = {};
 
@@ -163,7 +161,6 @@ export default class ModalForm extends Vue {
   }
 
   showCreateForm() {
-    this.mustRenderComponent = true;
     this.editMode = false;
 
     this.$nextTick(() => {
@@ -182,7 +179,6 @@ export default class ModalForm extends Vue {
   }
 
   showEditForm(form) {
-    this.mustRenderComponent = true;
     this.editMode = true;
 
     this.$nextTick(() => {
@@ -197,7 +193,6 @@ export default class ModalForm extends Vue {
 
   hide() {
     this.modalRef.hide();
-    this.mustRenderComponent = false;
   }
 }
 </script>

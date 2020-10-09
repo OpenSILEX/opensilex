@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <div class="card-header row clearfix"   :style="(small ? 'padding: 8px 20px;' : '')">
+    <div class="card-header row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
       <div class="d-inline-block w-100 float-left">
         <slot name="buttons"></slot>
         <b-nav :tabs="(tabs == true ? true : false)">
@@ -8,15 +8,15 @@
             v-if="returnTo && returnButton"
             :to="returnTo"
             v-slot="{ href, route, navigate,}"
-          > 
-              <a
-                class="btn btn-outline-primary back-button mr-2 h-100"
-                :href="href"
-                :title="$t(returnToTitle)"
-                @click="navigate"
-              >
-                <opensilex-Icon icon="ik#ik-corner-up-left" class="icon-title" />
-              </a> 
+          >
+            <a
+              class="btn btn-outline-primary back-button mr-2 h-100"
+              :href="href"
+              :title="$t(returnToTitle)"
+              @click="navigate"
+            >
+              <opensilex-Icon icon="ik#ik-corner-up-left" class="icon-title" />
+            </a>
           </router-link>
           <router-link
             v-if="!returnTo && returnButton"
@@ -25,19 +25,18 @@
             :title="$t(returnToTitle)"
             event
             @click.native.prevent="$router.go(-1)"
-          > 
-              <a class="btn btn-outline-primary mr-2 h-100 back-button">
-                <opensilex-Icon class="icon-title" icon="ik#ik-corner-up-left" />
-              </a> 
+          >
+            <a class="btn btn-outline-primary mr-2 h-100 back-button">
+              <opensilex-Icon class="icon-title" icon="ik#ik-corner-up-left" />
+            </a>
           </router-link>
           <slot></slot>
         </b-nav>
       </div>
-       <div class="card-header-right">
+      <div class="card-header-right">
         <slot name="rightHeader"></slot>
       </div>
     </div>
-     
   </div>
 </template>
 
@@ -47,7 +46,7 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync,
+  PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
@@ -61,10 +60,10 @@ export default class PageActions extends Vue {
 
   @Prop({ default: false })
   returnButton: boolean;
- 
+
   @Prop({ default: false })
   tabs: boolean;
- 
+
   @Prop({ default: false })
   small: boolean;
 }

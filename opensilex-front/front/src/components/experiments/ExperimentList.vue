@@ -212,8 +212,6 @@ export default class ExperimentList extends Vue {
   }
 
   searchExperiments(options) {
-   
-
     let isPublic = undefined;
     let isEnded = undefined;
     if (this.filter.state) {

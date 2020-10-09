@@ -88,6 +88,7 @@
               :searchMethod="loadExperiments"
               :fields="fields"
               defaultSortBy="name"
+               :defaultPageSize="6"
             >
               <template v-slot:cell(label)="{data}">
                 <opensilex-UriLink
@@ -245,7 +246,7 @@ export default class ProjectDescription extends Vue {
         undefined, // isEnded
         options.orderBy,
         options.currentPage,
-        6
+        options.pageSize
       );
   }
 

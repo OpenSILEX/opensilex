@@ -190,46 +190,5 @@ public class GeospatialDAO {
         geo.setGeometry(geoJsonGeometry);
         
         return geo;
-//        switch (geometry.getType()) {
-//            case GEOMETRY_COLLECTION:
-//                break;
-//            case LINE_STRING:
-//                break;
-//            case MULTI_LINE_STRING:
-//                break;
-//            case MULTI_POINT:
-//                break;
-//            case MULTI_POLYGON:
-//                break;
-//            case POINT:
-//                break;
-//            case POLYGON:
-//                break;
-//            default:
-//                break;
-//        }
-//
-//        if (geo instanceof Feature) {
-//            Feature feature = (Feature) geo;
-//            geo = feature.getGeometry();
-//        } else if (geo instanceof FeatureCollection) {
-//            FeatureCollection featureCol = (FeatureCollection) geo;
-//            GeometryCollection geoCol = new GeometryCollection();
-//            List<Feature> features = featureCol.getFeatures();
-//            for (Feature feature : features) {
-//                geoCol.add(feature.getGeometry());
-//            }
-//            geo = geoCol;
-//        }
-//
-//        
-//        String geoJSON = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geo);
-//        BsonReader jsonReader = new JsonReader(geoJSON);
-//
-//        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
-//        Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
-//        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
-//
-//        return geometry;
     }
 }

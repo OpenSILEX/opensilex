@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.geospatial.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -16,6 +17,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 import org.opensilex.nosql.service.NoSQLService;
@@ -24,6 +26,17 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import org.bson.BsonReader;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.json.JsonReader;
+import org.geojson.Feature;
+import org.geojson.FeatureCollection;
+import org.geojson.GeoJsonObject;
+import org.geojson.GeometryCollection;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  * Geospatial DAO
@@ -98,7 +111,6 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
-
     public ListWithPagination<GeospatialModel> searchIntersects(URI type, @NotNull Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
         if (type != null) {
@@ -144,5 +156,80 @@ public class GeospatialDAO {
 
     public ListWithPagination<GeospatialModel> searchNear(@NotNull GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
         return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
+    }
+
+    public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {
+
+        if (geo instanceof Feature) {
+            Feature feature = (Feature) geo;
+            geo = feature.getGeometry();
+        } else if (geo instanceof FeatureCollection) {
+            FeatureCollection featureCol = (FeatureCollection) geo;
+            GeometryCollection geoCol = new GeometryCollection();
+            List<Feature> features = featureCol.getFeatures();
+            for (Feature feature : features) {
+                geoCol.add(feature.getGeometry());
+            }
+            geo = geoCol;
+        }
+
+        String geoJSON = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geo);
+        BsonReader jsonReader = new JsonReader(geoJSON);
+
+        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
+        Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
+        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
+
+        return geometry;
+    }
+
+    public static GeoJsonObject geometryToGeoJson(Geometry geometry) throws JsonProcessingException {
+        Feature geo = new Feature();
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
+        geo.setGeometry(geoJsonGeometry);
+        
+        return geo;
+//        switch (geometry.getType()) {
+//            case GEOMETRY_COLLECTION:
+//                break;
+//            case LINE_STRING:
+//                break;
+//            case MULTI_LINE_STRING:
+//                break;
+//            case MULTI_POINT:
+//                break;
+//            case MULTI_POLYGON:
+//                break;
+//            case POINT:
+//                break;
+//            case POLYGON:
+//                break;
+//            default:
+//                break;
+//        }
+//
+//        if (geo instanceof Feature) {
+//            Feature feature = (Feature) geo;
+//            geo = feature.getGeometry();
+//        } else if (geo instanceof FeatureCollection) {
+//            FeatureCollection featureCol = (FeatureCollection) geo;
+//            GeometryCollection geoCol = new GeometryCollection();
+//            List<Feature> features = featureCol.getFeatures();
+//            for (Feature feature : features) {
+//                geoCol.add(feature.getGeometry());
+//            }
+//            geo = geoCol;
+//        }
+//
+//        
+//        String geoJSON = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geo);
+//        BsonReader jsonReader = new JsonReader(geoJSON);
+//
+//        CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
+//        Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
+//        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
+//
+//        return geometry;
     }
 }

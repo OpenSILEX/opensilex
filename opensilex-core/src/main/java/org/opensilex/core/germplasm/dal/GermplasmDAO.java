@@ -11,6 +11,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
@@ -36,6 +36,8 @@ import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -168,8 +170,14 @@ public class GermplasmDAO {
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) throws Exception {
-
-        return sparql.searchWithPagination(
+        
+        if (experiment != null) {
+            List<URI> gplUrisFromExp = getGermplasmURIsFromExp(experiment);
+            if (gplUrisFromExp.isEmpty()) {
+                return new ListWithPagination<>(new ArrayList());
+            }
+            else {
+                return sparql.searchWithPagination(
                 GermplasmModel.class,
                 user.getLanguage(),
                 (SelectBuilder select) -> {
@@ -181,12 +189,34 @@ public class GermplasmDAO {
                     appendAccessionFilter(select, accession);
                     appendInstituteFilter(select, institute);
                     appendProductionYearFilter(select, productionYear);
-                    appendExperimentFilter(select, experiment);
+                    SPARQLQueryHelper.inURI(select, GermplasmModel.URI_FIELD, gplUrisFromExp);
                 },
                 orderByList,
                 page,
                 pageSize
-        );
+                );
+            }
+                           
+        } else {
+
+            return sparql.searchWithPagination(
+                    GermplasmModel.class,
+                    user.getLanguage(),
+                    (SelectBuilder select) -> {
+                        appendUriFilter(select, uri);
+                        appendRdfTypeFilter(select, rdfType);
+                        appendRegexLabelAndSynonymFilter(select, label);
+                        appendSpeciesFilter(select, species);
+                        appendVarietyFilter(select, variety);
+                        appendAccessionFilter(select, accession);
+                        appendInstituteFilter(select, institute);
+                        appendProductionYearFilter(select, productionYear);                    
+                    },
+                    orderByList,
+                    page,
+                    pageSize
+            );
+        }
     }
     
     public List<URI> getGermplasmURIsBySpecies(List<URI> species, String lang) throws Exception {
@@ -322,23 +352,51 @@ public class GermplasmDAO {
 
     private void appendGermplasmFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
-            select.addWhere(makeVar("so"), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(uri));
-            select.addWhere(makeVar("so"), Oeso.participatesIn, makeVar(SPARQLResourceModel.URI_FIELD));
+            WhereBuilder builder = new WhereBuilder();
+            builder.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString())));
+            
+            WhereBuilder builder2 = new WhereBuilder();
+            builder2.addWhere(makeVar("gpl"), makeVar("p"), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()));
+            builder2.addWhere(makeVar("gpl"), RDF.type, makeVar("gplType"));
+            builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
+            builder2.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
+            
+            builder.addUnion(builder2);
+            select.addWhere(builder);
         }
     }
 
-    private void appendExperimentFilter(SelectBuilder select, URI uri) {
+    private void appendExperimentFilter(SelectBuilder selectBuilder, URI uri) throws SPARQLException, Exception {
         if (uri != null) {
-            WhereBuilder builder1 = new WhereBuilder();
-            WhereBuilder builder2 = new WhereBuilder();
-            builder1.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar(SPARQLResourceModel.URI_FIELD)));
-            builder2.addWhere(makeVar("gpl"), makeVar("p"), makeVar("uri"));
-            builder2.addWhere(makeVar("uri"), RDF.type, makeVar("gplType"));
-            builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
-            builder2.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
-            builder1.addUnion(builder2);
-            select.addWhere(builder1);
+            List<URI> germplasmURIs = getGermplasmURIsFromExp(uri);
+            SPARQLQueryHelper.inURI(selectBuilder, GermplasmModel.URI_FIELD, germplasmURIs);
         }
+    }
+    
+    private List<URI> getGermplasmURIsFromExp(URI uri) throws SPARQLDeserializerNotFoundException, SPARQLException, Exception {
+        SelectBuilder select = new SelectBuilder();
+        select.addVar("uri");
+        WhereBuilder builder1 = new WhereBuilder();
+        WhereBuilder builder2 = new WhereBuilder();
+        builder1.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("uri")));
+        builder2.addWhere(makeVar("gpl"), makeVar("p"), makeVar("uri"));
+        builder2.addWhere(makeVar("uri"), RDF.type, makeVar("gplType"));
+        builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
+        builder2.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
+        builder1.addUnion(builder2);
+        select.addWhere(builder1);
+
+        List<URI> germplasmURIs = new ArrayList<>();
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        List<SPARQLResult> result = sparql.executeSelectQuery(select);
+
+        for (SPARQLResult res:result) {
+            germplasmURIs.add(uriDeserializer.fromString((res.getStringValue("uri"))));
+        }
+        
+        return germplasmURIs;
+        
     }
 
     private static class Key {

@@ -5,18 +5,11 @@
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>
-    <opensilex-PageActions>
-      <template v-slot>
-        <b-nav pills>
-          <router-link
-            to="/germplasm/"
-            class="btn btn-outline-primary back-button"
-            :title="$t('GermplasmDetails.backToList')"
-          >
-            <i class="ik ik-corner-up-left"></i>
-          </router-link>
-        </b-nav>
-      </template>
+    <opensilex-PageActions :returnButton="true" >   
+      <opensilex-HelpButton
+          @click="helpModal.show()"
+          label="component.common.help-button"
+      ></opensilex-HelpButton>    
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -52,12 +45,15 @@
       </b-input-group> -->
       <opensilex-GermplasmTable v-if="selectedType" ref="germplasmTable" :germplasmType="selectedType" :key="tabulatorRefresh"></opensilex-GermplasmTable>
     </opensilex-PageContent>
+    <b-modal ref="helpModal" size="xl" hide-header ok-only>
+      <opensilex-GermplasmHelp></opensilex-GermplasmHelp>
+    </b-modal>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import {
   GermplasmCreationDTO,
   OntologyService,
@@ -73,6 +69,9 @@ export default class GermplasmCreate extends Vue {
   germplasmTypes: any = [];
   selectedType: string = null;
   tabulatorRefresh = 0;;
+
+  @Ref("helpModal") readonly helpModal!: any;
+
   get user() {
     return this.$store.state.user;
   }

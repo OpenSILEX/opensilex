@@ -318,6 +318,8 @@ import GermplasmPropertyView from './germplasm/GermplasmPropertyView.vue';
 components["opensilex-GermplasmPropertyView"] = GermplasmPropertyView;
 import GermplasmPropertySelector from './germplasm/GermplasmPropertySelector.vue';
 components["opensilex-GermplasmPropertySelector"] = GermplasmPropertySelector;
+import GermplasmHelp from './germplasm/GermplasmHelp.vue';
+components["opensilex-GermplasmHelp"] = GermplasmHelp;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

@@ -19,7 +19,6 @@
             placeholder="GermplasmList.filter.species-placeholder"
             :multiple="false"
             :species.sync="filter.fromSpecies"
-            @clear="updateFilters(filter.label = null)"
           ></opensilex-SpeciesSelector>
         </div>
         <div class="col col-xl-4 col-sm-6 col-12">

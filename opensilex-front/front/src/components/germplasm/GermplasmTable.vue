@@ -174,7 +174,7 @@ export default class GermplasmTable extends Vue {
 
     let statusCol ={title:"status", field:"status",visible:false};
 
-    let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150};
+    let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150, validator: "unique"};
 
     let labelCol = 
       {title:this.$t('GermplasmTable.label') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
@@ -536,10 +536,36 @@ export default class GermplasmTable extends Vue {
   }
 
   uploaded(data) {
-    for (let idx = 0; idx < data.length; idx++) {
-      data[idx]["rowNumber"] = idx + 1;
+    if (data.length > 1000) {
+      alert(this.$t('GermplasmTable.alertFileSize'));
+    } else {
+      var uniqueNames = [];
+      var uniqueURIs = [];
+      let insertionOK = true;
+      for (let idx = 0; idx < data.length; idx++) {
+        data[idx]["rowNumber"] = idx + 1;
+        if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
+          uniqueNames.push(data[idx].name);        
+        } else {
+          insertionOK = false
+          alert(this.$t('GermplasmTable.alertDuplicate') + " : " + data[idx].name + " id: " + data[idx]["rowNumber"]);
+          break
+        }
+        if(data[idx].uri !== "") {
+            if (uniqueURIs.indexOf(data[idx].uri) === -1){
+              uniqueURIs.push(data[idx].uri);        
+            } else {
+              insertionOK = false
+              alert(this.$t('GermplasmTable.alertDuplicate') + " : " + data[idx].uri  + " id: " + idx+1);
+              break
+            }
+        } 
+      }
+      if (insertionOK) {
+        this.tabulator.setData(data);
+      }
     }
-    this.tabulator.setData(data);
+        
   }
 
   filterLines() {
@@ -633,6 +659,9 @@ en:
     insertionStatusMessage: created
     filterLines: Filter the lines
     infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
+    alertDuplicate: The file contains a duplicate name
+    alertDuplicateURI: The file contains a duplicate uri
+    alertFileSize: The file has too many lines, 1000 lines maximum
 
 fr:
   GermplasmTable:
@@ -674,4 +703,7 @@ fr:
     seeErrorLines: See lines
     seeAll : see all 
     infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
+    alertDuplicateName: Le fichier comporte un doublon de nom 
+    alertDuplicateURI: Le fichier comporte un doublon d'uri
+    alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
 </i18n>

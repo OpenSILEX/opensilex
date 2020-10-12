@@ -43,7 +43,7 @@ public class ScientificObjectDescriptionDTO extends RDFObjectDTO {
      * geometry of the Geospatial
      */
     @ApiModelProperty(value = "The geographical coordinates of the Geospatial", example = "{'type':'Polygon','coordinates':[[[3.97167246,43.61328981], [3.97171243,43.61332417],[3.9717427,43.61330558],[3.97170272,43.61327122], [3.97167246,43.61328981],[3.97167246,43.61328981]]]}")
-    protected GeoJsonObject geometry;
+    private GeoJsonObject geometry;
 
     public GeoJsonObject getGeometry() {
         return geometry;

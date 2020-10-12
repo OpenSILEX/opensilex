@@ -5,15 +5,21 @@
  */
 package org.opensilex.core.scientificObject.api;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
  *
@@ -32,6 +38,8 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
     private List<NamedResourceDTO<FactorLevelModel>> factorLevels;
 
     private List<RDFObjectRelationDTO> relations;
+
+    private GeoJsonObject geometry;
 
     public URI getParent() {
         return parent;
@@ -81,6 +89,14 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
         this.relations = relations;
     }
 
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
+    }
+
     @Override
     public void toModel(ExperimentalObjectModel model) {
         super.toModel(model);
@@ -118,6 +134,16 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
     public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model) {
         ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
         dto.fromModel(model);
+
+        return dto;
+    }
+
+    public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
+        ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
+        if (model != null) {
+            dto.fromModel(model);
+        }
+        dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
 
         return dto;
     }

@@ -5,6 +5,9 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
+import com.mongodb.client.ClientSession;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import com.auth0.jwt.interfaces.Claim;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
 import io.swagger.annotations.Api;
@@ -42,9 +45,6 @@ import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -64,23 +64,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
-
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.security.NoSuchAlgorithmException;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author Julien BONNEFONT
@@ -104,8 +87,10 @@ public class ScientificObjectAPI {
 
     @CurrentUser
     UserModel currentUser;
+
     @Inject
     private SPARQLService sparql;
+
     @Inject
     private NoSQLService nosql;
 
@@ -187,8 +172,12 @@ public class ScientificObjectAPI {
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true) @PathParam("objuri") URI objectURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
         ExperimentalObjectModel model = dao.getByURIAndExperiment(experimentURI, objectURI, currentUser);
-        return new SingleObjectResponse<ScientificObjectDetailDTO>(ScientificObjectDetailDTO.getDTOFromModel(model)).getResponse();
+        GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, experimentURI);
+
+        return new SingleObjectResponse<ScientificObjectDetailDTO>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
     }
 
     @POST

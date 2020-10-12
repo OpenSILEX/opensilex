@@ -28,7 +28,6 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.GeometryCollection;
-import org.jetbrains.annotations.NotNull;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -49,7 +48,7 @@ public class GeospatialDAO {
 
     final MongoCollection<GeospatialModel> geometryCollection;
 
-    public GeospatialDAO(@NotNull NoSQLService nosql) {
+    public GeospatialDAO(NoSQLService nosql) {
         MongoDatabase db = nosql.getMongoDBClient().getDatabase("opensilex");
         String nameCollection = "Geospatial";
         geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
@@ -89,7 +88,7 @@ public class GeospatialDAO {
         return geo;
     }
 
-    public GeospatialModel create(@NotNull GeospatialModel instanceGeospatial) {
+    public GeospatialModel create(GeospatialModel instanceGeospatial) {
         if (instanceGeospatial.getGeometry() != null) {
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
             addIndex();
@@ -99,8 +98,8 @@ public class GeospatialDAO {
         return instanceGeospatial;
     }
 
-    protected GeospatialModel getGeometryByURI(@NotNull URI uri, @NotNull URI graph) {
-        Document filter = new Document("uri", uri).append("graph", graph);
+    public GeospatialModel getGeometryByURI(URI uri, URI graph) {
+        Document filter = getFilter(uri, graph);
 
         return geometryCollection.find(filter).first();
     }
@@ -115,12 +114,9 @@ public class GeospatialDAO {
         geometryCollection.createIndex(indexGeometry);
     }
 
-    public GeospatialModel update(@NotNull GeospatialModel geospatial, URI uri, URI graph) {
+    public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph) {
         if (geospatial.getGeometry() != null) {
-            URI uriDeserializers = SPARQLDeserializers.formatURI(uri);
-            URI graphDeserializers = SPARQLDeserializers.formatURI(graph);
-
-            Document filter = new Document("uri", uriDeserializers).append("graph", graphDeserializers);
+            Document filter = getFilter(uri, graph);
 
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
             return geometryCollection.findOneAndReplace(filter, geospatial);
@@ -128,17 +124,18 @@ public class GeospatialDAO {
         return geospatial;
     }
 
-    public void delete(URI uri, URI graph) {
-        URI uriDeserializers = SPARQLDeserializers.formatURI(uri);
-        URI graphDeserializers = SPARQLDeserializers.formatURI(graph);
+    private Document getFilter(URI uri, URI graph) {
+        return new Document("uri", SPARQLDeserializers.getExpandedURI(uri)).append("graph", SPARQLDeserializers.getExpandedURI(graph));
+    }
 
-        Document filter = new Document("uri", uriDeserializers).append("graph", graphDeserializers);
+    public void delete(URI uri, URI graph) {
+        Document filter = getFilter(uri, graph);
 
         geometryCollection.deleteOne(filter);
     }
 
-    @NotNull
-    private ListWithPagination<GeospatialModel> getGeospatialModelListWithPagination(Integer page, Integer pageSize, @NotNull FindIterable<GeospatialModel> geospatialFindIterable) {
+
+    private ListWithPagination<GeospatialModel> getGeospatialModelListWithPagination(Integer page, Integer pageSize, FindIterable<GeospatialModel> geospatialFindIterable) {
         List<GeospatialModel> geospatialListWithPagination = new ArrayList<>();
         int total = 0;
 
@@ -151,7 +148,7 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
-    public ListWithPagination<GeospatialModel> searchIntersects(URI type, @NotNull Geometry geometry, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchIntersects(URI type, Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
         if (type != null) {
             filter = new Document("type", type);
@@ -163,11 +160,11 @@ public class GeospatialDAO {
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
-    public ListWithPagination<GeospatialModel> searchIntersects(@NotNull GeospatialModel geometryI, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchIntersects(GeospatialModel geometryI, Integer page, Integer pageSize) {
         return searchIntersects(geometryI.getType(), geometryI.getGeometry(), page, pageSize);
     }
 
-    public ListWithPagination<GeospatialModel> searchWithin(URI type, @NotNull Geometry geometry, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchWithin(URI type, Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
         if (type != null) {
             filter = new Document("type", type);
@@ -179,7 +176,7 @@ public class GeospatialDAO {
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
-    public ListWithPagination<GeospatialModel> searchWithin(@NotNull GeospatialModel geometryI, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchWithin(GeospatialModel geometryI, Integer page, Integer pageSize) {
         return searchWithin(geometryI.getType(), geometryI.getGeometry(), page, pageSize);
     }
 
@@ -194,7 +191,7 @@ public class GeospatialDAO {
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
-    public ListWithPagination<GeospatialModel> searchNear(@NotNull GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchNear(GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
         return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
     }
 }

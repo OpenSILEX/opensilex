@@ -123,7 +123,7 @@ export default class OntologyClassTreeView extends Vue {
   displayClassDetail(uri) {
     this.$opensilex
       .getService("opensilex-core.VueJsOntologyExtensionService")
-      .getClassProperties(uri)
+      .getClassProperties(uri, this.rdfClass)
       .then(http => {
         this.selected = http.response.result;
         this.$emit("selectionChange", this.selected);

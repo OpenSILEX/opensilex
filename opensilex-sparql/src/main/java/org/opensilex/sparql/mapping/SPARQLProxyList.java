@@ -5,11 +5,13 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.service.SPARQLService;
+import static org.opensilex.sparql.utils.SHACL.defaultValue;
 
 /**
  *
@@ -35,6 +37,18 @@ abstract class SPARQLProxyList<T> extends SPARQLProxy<List> {
     @SuppressWarnings("unchecked")
     public List<T> getInstance() {
         return super.getInstance();
+    }
+    
+    public abstract int getSize() throws Exception;
+    
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        boolean noParameters = (method.getParameterCount() == 0);
+        if (method.getName().equals("size") && noParameters && !this.isLoaded()) {
+            return this.getSize();
+        } else {
+            return super.invoke(proxy, method, args);
+        }
     }
 
 }

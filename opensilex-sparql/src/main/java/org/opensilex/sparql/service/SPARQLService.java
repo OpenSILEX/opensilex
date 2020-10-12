@@ -57,7 +57,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
@@ -339,10 +338,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
-        return loadByURI(getDefaultGraph(objectClass), objectClass, uri, lang);
+        return loadByURI(objectClass, uri, lang, null);
+    }
+
+    public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
+        return loadByURI(getDefaultGraph(objectClass), objectClass, uri, lang, filterHandler);
     }
 
     public <T extends SPARQLResourceModel> T loadByURI(Node graph, Class<T> objectClass, URI uri, String lang) throws Exception {
+        return loadByURI(graph, objectClass, uri, lang, null);
+    }
+
+    public <T extends SPARQLResourceModel> T loadByURI(Node graph, Class<T> objectClass, URI uri, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
             lang = getDefaultLang();
@@ -351,6 +358,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
         select.addValueVar(mapper.getURIFieldExprVar(), SPARQLDeserializers.nodeURI(uri));
+
+        if (filterHandler != null) {
+            filterHandler.accept(select);
+        }
 
         List<SPARQLResult> results = executeSelectQuery(select);
 
@@ -720,7 +731,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             // ensure that there are no ORDER BY clause provided by the handler, into the COUNT query, else the query will be incorrect
             Query countQuery = selectCount.getHandlerBlock().getAggregationHandler().getQuery();
-            if(countQuery.getOrderBy() != null){
+            if (countQuery.getOrderBy() != null) {
                 countQuery.getOrderBy().clear();
             }
         }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -74,11 +75,12 @@ public class VueOwlExtensionAPI {
         @ApiResponse(code = 200, message = "Return class model definition ", response = VueClassDTO.class)
     })
     public Response getClass(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        ClassModel classDescription = ontologyDAO.getClassModel(rdfType, currentUser.getLanguage());
+        ClassModel classDescription = ontologyDAO.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
 
@@ -164,11 +166,12 @@ public class VueOwlExtensionAPI {
         @ApiResponse(code = 200, message = "Return class model properties definitions ", response = VueClassDTO.class)
     })
     public Response getClassProperties(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+        ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
         VueClassDTO classProperties = new VueClassDTO();
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
@@ -286,7 +289,7 @@ public class VueOwlExtensionAPI {
             dto.setIntputComponent(objectType.getInputComponent());
             dto.setViewComponent(objectType.getViewComponent());
 
-            ClassModel objectClass = dao.getClassModel(dto.getUri(), currentUser.getLanguage());
+            ClassModel objectClass = dao.getClassModel(dto.getUri(), null, currentUser.getLanguage());
             dto.setRdfClass(RDFClassDTO.fromModel(new RDFClassDTO(), objectClass));
             datatypeDTOs.add(dto);
         }

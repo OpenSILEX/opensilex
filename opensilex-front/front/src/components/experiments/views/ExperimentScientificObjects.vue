@@ -17,31 +17,17 @@
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
           </div>
-          <opensilex-TreeView
+          <opensilex-TreeViewAsync
+            ref="soTree"
             :nodes.sync="nodes"
+            :searchMethod="searchMethod"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
-            @toggle="loadChildrenIfRequired($event)"
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
                 <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
               </span>&nbsp;
-              <strong v-if="node.data.selected">{{ node.title }}</strong>
-              <span v-if="!node.data.selected">{{ node.title }}</span>
-              <span
-                class="async-tree-action"
-                v-if="node.children.length > 0 && node.data.childCount > 0  && node.data.childCount > node.children.length"
-              >
-                ({{node.data.typeLabel}} - {{node.children.length}}/{{node.data.childCount}}
-                <span>
-                  -
-                  <a
-                    href="#"
-                    @click.prevent="loadMoreChildren(node)"
-                  >{{$t('ExperimentScientificObjects.load-more')}}</a>
-                </span>)
-              </span>
-              <span class="async-tree-action" v-else>&nbsp;({{node.data.typeLabel}})</span>
+              <span>{{ node.title }}</span>
             </template>
 
             <template v-slot:buttons="{ node }">
@@ -59,12 +45,12 @@
               ></opensilex-AddChildButton>
               <opensilex-DeleteButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                @click="deleteScientificObject(node.data.uri)"
+                @click="deleteScientificObject(node)"
                 label="ExperimentScientificObjects.delete-scientific-object"
                 :small="true"
               ></opensilex-DeleteButton>
             </template>
-          </opensilex-TreeView>
+          </opensilex-TreeViewAsync>
           <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
             ref="soForm"
@@ -112,6 +98,7 @@ export default class ExperimentScientificObjects extends Vue {
   uri: string;
 
   @Ref("soForm") readonly soForm!: any;
+  @Ref("soTree") readonly soTree!: any;
   @Ref("csvImporter") readonly csvImporter!: any;
 
   get user() {
@@ -139,20 +126,18 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   refresh() {
-    this.soService.getScientificObjectsTree(this.uri).then(http => {
-      let treeNode = [];
-      let first = true;
-      for (let i in http.response.result) {
-        let resourceTree: PartialResourceTreeDTO = http.response.result[i];
-        let node = this.dtoToNode(resourceTree);
-        treeNode.push(node);
-      }
-      this.nodes = treeNode;
-    });
-
-    this.soService.getScientificObjectsList(this.uri).then(http => {
-      this.availableParents = http.response.result;
-    });
+    // this.soService.getScientificObjectsTree(this.uri).then(http => {
+    //   let treeNode = [];
+    //   for (let i in http.response.result) {
+    //     let resourceTree: PartialResourceTreeDTO = http.response.result[i];
+    //     let node = this.dtoToNode(resourceTree);
+    //     treeNode.push(node);
+    //   }
+    //   this.nodes = treeNode;
+    // });
+    // this.soService.getScientificObjectsList(this.uri).then(http => {
+    //   this.availableParents = http.response.result;
+    // });
   }
 
   loadAllChildren(node) {
@@ -187,41 +172,13 @@ export default class ExperimentScientificObjects extends Vue {
       });
   }
 
-  loadMoreChildren(node) {
-    let nodeURI = node.data.uri;
-
-    let root = this.nodes[node.path[0]];
-    for (let i = 1; i < node.path.length; i++) {
-      root = root.children[node.path[i]];
-    }
-
-    if (root.children.length < node.data.childCount) {
-      let remainingChildren = node.data.childCount - root.children.length;
-      let offset = root.children.length;
-      let limit = Math.min(remainingChildren, 40);
-      this.soService
-        .getScientificObjectsChildren(this.uri, nodeURI, limit, offset)
-        .then(http => {
-          let childrenNodes = [];
-          for (let i in http.response.result) {
-            let soDTO = http.response.result[i];
-
-            let soNode = {
-              title: soDTO.name,
-              data: soDTO,
-              isLeaf: soDTO.childCount == 0,
-              children: [],
-              isExpanded: false,
-              isSelected: false,
-              isDraggable: false,
-              isSelectable: true
-            };
-            childrenNodes.push(soNode);
-          }
-
-          root.children = root.children.concat(childrenNodes);
-        });
-    }
+  searchMethod(nodeURI, page, pageSize) {
+    return this.soService.getScientificObjectsChildren(
+      this.uri,
+      nodeURI,
+      page,
+      pageSize
+    );
   }
 
   private dtoToNode(dto: PartialResourceTreeDTO) {
@@ -319,11 +276,11 @@ export default class ExperimentScientificObjects extends Vue {
     });
   }
 
-  public deleteScientificObject(objectURI: any) {
-    this.soService.deleteScientificObject(this.uri, objectURI).then(http => {
+  public deleteScientificObject(node: any) {
+    this.soService.deleteScientificObject(this.uri, node.data.uri).then(http => {
       if (this.selected.uri == http.response.result) {
         this.selected = null;
-        this.refresh();
+        this.soTree.delete(node);
       }
     });
   }
@@ -406,12 +363,11 @@ export default class ExperimentScientificObjects extends Vue {
       });
   }
 
-  loadChildrenIfRequired(node) {
-    console.error(node);
-    if (node.children.length == 0 && node.data.childCount > 0) {
-      this.loadMoreChildren(node);
-    }
-  }
+  // loadChildrenIfRequired(node) {
+  //   if (node.children.length == 0 && node.data.childCount > 0) {
+  //     this.loadMoreChildren(node);
+  //   }
+  // }
 
   validateCSV(objectType, csvFile) {
     return this.$opensilex.uploadFileToService(

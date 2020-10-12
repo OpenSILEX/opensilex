@@ -23,9 +23,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -60,6 +62,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.PartialResourceTreeDTO;
 import org.opensilex.sparql.response.PartialResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
 
 /**
@@ -134,7 +137,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("get-list-by-uris/{xpuri}")
+    @Path("get-by-uris/{xpuri}")
     @ApiOperation("Get scientific objet list for an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -153,7 +156,7 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("get-children/{xpuri}/{parenturi}")
+    @Path("get-children/{xpuri}")
     @ApiOperation("Get list of scientific object children")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -163,13 +166,14 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
-            @ApiParam(value = "Parent object URI", example = "http://example.com/", required = true) @PathParam("parenturi") URI parentURI,
-            @ApiParam(value = "Children limit", example = "20") @QueryParam("limit") Integer limit,
-            @ApiParam(value = "Children offset", example = "0") @QueryParam("offset") Integer offset
+            @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parenturi") URI parentURI,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectModel> sientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, offset, limit, currentUser);
-        List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, page, pageSize, currentUser);
+
+        ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
 

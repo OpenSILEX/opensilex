@@ -41,4 +41,18 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
         return list;
     }
 
+    @Override
+    public int getSize() throws Exception {
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(genericType);
+
+        Node nodeURI = SPARQLDeserializers.nodeURI(uri);
+        return service.count(genericType, lang, (SelectBuilder select) -> {
+            if (isReverseRelation) {
+                select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);
+            } else {
+                select.addWhere(nodeURI, property, makeVar(mapper.getURIFieldName()));
+            }
+        });
+    }
+
 }

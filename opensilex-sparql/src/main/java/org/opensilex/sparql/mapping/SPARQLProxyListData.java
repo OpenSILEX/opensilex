@@ -60,5 +60,28 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
         return results;
     }
+    
+    
+    @Override
+    public int getSize() throws Exception {
+         SelectBuilder select = new SelectBuilder();
+
+        Var value = makeVar("value");
+        select.addVar("(COUNT(DISTINCT ?value))", makeVar("count"));
+
+        if (isReverseRelation) {
+            select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
+        } else {
+            select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
+        }
+
+        List<SPARQLResult> resultSet = service.executeSelectQuery(select);
+        
+        if (resultSet.size() == 1) {
+            return Integer.valueOf(resultSet.get(0).getStringValue("count"));
+        } else {
+            return this.loadData().size();
+        }
+    }
 
 }

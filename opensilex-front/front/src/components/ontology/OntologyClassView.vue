@@ -75,7 +75,7 @@ export default class OntologyClassView extends Vue {
   showEditForm(data) {
     this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .getClass(data.uri)
+      .getClass(data.uri, this.rdfClass)
       .then(http => {
         let form = http.response.result;
         this.classForm.getFormRef().setParentTypes(this.classesTree.getTree());

@@ -79,7 +79,7 @@ export default class ScientificObjectDetail extends Vue {
 
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(this.selected.type)
+      .getClassProperties(this.selected.type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
       .then(http => {
         let classModel: any = http.response.result;
 

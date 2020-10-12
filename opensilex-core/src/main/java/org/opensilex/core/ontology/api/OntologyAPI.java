@@ -109,11 +109,12 @@ public class OntologyAPI {
         @ApiResponse(code = 200, message = "Return class model definition ", response = RDFClassDTO.class)
     })
     public Response getClass(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @ValidURI URI rdfType
+            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+        ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription)).getResponse();
     }
@@ -128,13 +129,14 @@ public class OntologyAPI {
         @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFClassDTO.class, responseContainer = "List")
     })
     public Response getClasses(
-            @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @ValidURI List<URI> rdfTypes
+            @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @NotNull @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
         for (URI rdfType : rdfTypes) {
-            ClassModel classDescription = dao.getClassModel(rdfType, currentUser.getLanguage());
+            ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
             classes.add(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription));
         }
 

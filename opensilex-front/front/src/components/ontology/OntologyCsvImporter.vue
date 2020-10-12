@@ -306,7 +306,7 @@ export default class OntologyCsvImporter extends Vue {
     if (this.objectType != null) {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.objectType)
+        .getClassProperties(this.objectType, this.baseType)
         .then(http => {
           let classModel: any = http.response.result;
 
@@ -457,7 +457,14 @@ export default class OntologyCsvImporter extends Vue {
   validationErrors = null;
 
   getValidationErrorDetail(validationError, errorType) {
+    console.error(errorType, validationError);
     switch (errorType) {
+      
+      case "missingHeaders":
+            return this.$t(
+          "OntologyCsvImporter.validationErrorMissingHeaderMessage",
+          {"header" : validationError}
+        );
       case "missingRequiredValueErrors":
         return this.$t(
           "OntologyCsvImporter.validationErrorMissingRequiredMessage",
@@ -585,6 +592,7 @@ en:
     duplicateURIErrors: Duplicate URI
     validationErrorMessage: "Column: '{header}' - Value: '{value}'"
     validationErrorMissingRequiredMessage: "Column: '{header}'"
+    validationErrorMissingHeaderMessage: "Header: '{header}'"
     validationErrorDuplicateURIMessage: "Column: '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
     validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
     CSVIsValid: Your CSV file has been successfully validated, click OK to import it
@@ -617,6 +625,7 @@ fr:
     duplicateURIErrors: URI dupliquée
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
     validationErrorMissingRequiredMessage: "Colonne: '{header}'"
+    validationErrorMissingHeaderMessage: "En-tête: '{header}'"
     validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
     validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
     CSVIsValid: Votre fichier CSV est valide, cliquer sur OK pour l'importer

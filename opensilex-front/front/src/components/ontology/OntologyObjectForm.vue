@@ -181,7 +181,7 @@ export default class OntologyObjectForm extends Vue {
     if (type) {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.form.type)
+        .getClassProperties(this.form.type, this.baseType)
         .then(http => {
           this.typeModel = http.response.result;
           if (!this.editMode) {

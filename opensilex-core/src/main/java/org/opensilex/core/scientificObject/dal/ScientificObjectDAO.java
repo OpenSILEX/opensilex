@@ -39,6 +39,7 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  *
@@ -93,12 +94,12 @@ public class ScientificObjectDAO {
         return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
     }
 
-    public List<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer offset, Integer limit, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
         Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        return sparql.search(
+        return sparql.searchWithPagination(
                 experimentGraph,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
@@ -111,8 +112,8 @@ public class ScientificObjectDAO {
                     }
                 },
                 null,
-                offset,
-                limit);
+                page,
+                pageSize);
     }
 
     public CSVValidationModel validateCSV(URI xpURI, URI soType, InputStream file, UserModel currentUser) throws Exception {
@@ -170,7 +171,7 @@ public class ScientificObjectDAO {
             }
         });
 
-        return ontologyDAO.validateCSV(xpURI, soType, file, currentUser, customValidators, new ScientificObjectExperimentURIGenerator(xpURI));
+        return ontologyDAO.validateCSV(xpURI, soType, new URI(Oeso.ScientificObject.getURI()), file, currentUser, customValidators, new ScientificObjectExperimentURIGenerator(xpURI));
     }
 
     public URI create(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -225,7 +226,7 @@ public class ScientificObjectDAO {
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, currentUser.getLanguage());
+        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);

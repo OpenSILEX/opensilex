@@ -160,9 +160,13 @@ public final class OntologyDAO {
         model.setObjectProperties(objectPropertiesMap);
     }
 
-    public ClassModel getClassModel(URI rdfClass, String lang) throws Exception {
-        ClassModel model = sparql.getByURI(ClassModel.class,
-                rdfClass, lang);
+    public ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws Exception {
+        ClassModel model = sparql.loadByURI(ClassModel.class,
+                rdfClass, lang, (select) -> {
+                    if (parentClass != null) {
+                        select.addWhere(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass));
+                    }
+                });
 
         if (model == null) {
             throw new NotFoundURIException(rdfClass);
@@ -173,10 +177,10 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI rdfType, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
+    public CSVValidationModel validateCSV(URI graph, URI rdfType, URI parentClass, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
         Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
 
-        ClassModel model = getClassModel(rdfType, currentUser.getLanguage());
+        ClassModel model = getClassModel(rdfType, parentClass, currentUser.getLanguage());
 
         model.getRestrictions().values().forEach(restriction -> {
             URI propertyURI = restriction.getOnProperty();

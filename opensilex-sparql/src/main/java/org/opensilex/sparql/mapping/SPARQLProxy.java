@@ -68,6 +68,10 @@ abstract class SPARQLProxy<T> implements InvocationHandler {
 
         return instance;
     }
+    
+    protected boolean isLoaded() {
+        return this.loaded;
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

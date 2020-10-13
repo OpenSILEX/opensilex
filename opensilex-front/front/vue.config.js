@@ -12,6 +12,7 @@ module.exports = {
             'opensilex': 'opensilex'
         },
         resolve: {
+            extensions: ['.md'],
             alias: {
                 'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
             }
@@ -40,5 +41,17 @@ module.exports = {
             .use('yaml')
             .loader('yaml-loader')
             .end()
+            
+        // Add markdown file parsing
+        config.module.rule('md')
+            .test(/\.md$/)
+            .use('vue-loader')
+            .loader('vue-loader')
+            .end()
+            .use('vue-markdown-loader')
+            .loader('vue-markdown-loader/lib/markdown-compiler')
+            .options({
+              raw: true
+            })
     }
 };

@@ -169,20 +169,33 @@ export default class FactorsView extends Vue {
   }
 
   deleteFactor(uri: string) {
-    console.debug("deleteFactor " + uri);
-    this.service
-      .deleteFactor(uri)
-      .then(() => {
-        this.factorList.refresh();
-        let message =
-          this.$i18n.t("component.factor.label") +
-          " " +
-          uri +
-          " " +
-          this.$i18n.t("component.common.success.delete-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch(this.$opensilex.errorHandler);
+    console.debug("check Associated factor " + uri);
+    let isAssociated = this.$opensilex
+      .getService("opensilex.FactorsService")
+      .getFactorAssciatedExperiments(uri)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        console.log();
+        if (http.response.metadata.pagination.totalCount > 0) {
+          this.$opensilex.showErrorToast(
+            this.$i18n.t("component.factor.isAssociatedTo")
+          );
+        } else {
+          console.debug("deleteFactor " + uri);
+          this.service
+            .deleteFactor(uri)
+            .then(() => {
+              this.factorList.refresh();
+              let message =
+                this.$i18n.t("component.factor.label") +
+                " " +
+                uri +
+                " " +
+                this.$i18n.t("component.common.success.delete-success-message");
+              this.$opensilex.showSuccessToast(message);
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
+      });
   }
 
   successMessage(factor) {
@@ -232,6 +245,8 @@ en:
         nutrient: Nutrient
         atmospheric: Atmospheric
         temperature: Temperature
+      isAssociatedTo : This factor is associated with one or several experiments and can not be removed
+
 fr:
   component:
     factor:
@@ -268,5 +283,5 @@ fr:
         nutrient: Nutriments
         atmospheric: Atmosphérique
         temperature: Température
-
+      isAssociatedTo : Ce facteur est associé à une ou plusieurs expérimentations et ne peut être supprimé
 </i18n>

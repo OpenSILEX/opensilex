@@ -28,7 +28,7 @@ export class ExternalOntologies {
         of plant cultivation and more.. It is published by FAO and edited by a community of experts.`
         }],
         [ExternalOntologies.BIOPORTAL, {
-            link: "https://ncbo.bioontology.org/",
+            link: "http://bioportal.bioontology.org/",
             label: "BioPortal",
             description: `The goal of the National Center for Biomedical Ontology is to
         support biomedical researchers in their knowledge-intensive work, by providing

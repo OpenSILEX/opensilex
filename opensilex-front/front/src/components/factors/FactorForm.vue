@@ -1,6 +1,7 @@
 <template>
   <div>
     <opensilex-Tutorial
+      v-if="!editMode"
       ref="factorTutorial"
       :steps="steps"
       @onSkip="continueFormEditing()"
@@ -114,7 +115,9 @@ export default class FactorForm extends Vue {
 
   reset() {
     this.uriGenerated = true;
-    this.factorTutorial.stop();
+    if(!this.editMode){
+      this.factorTutorial.stop();
+    }
   }
 
   addEmptyRow() {
@@ -261,7 +264,6 @@ export default class FactorForm extends Vue {
   }
 
   create(form) {
-    this.clearEmptyFactorsLevels();
     console.log("factor", form);
     return this.$opensilex
       .getService("opensilex.FactorsService")
@@ -286,7 +288,6 @@ export default class FactorForm extends Vue {
   }
 
   update(form) {
-    this.clearEmptyFactorsLevels();
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .updateFactor(form)
@@ -295,12 +296,6 @@ export default class FactorForm extends Vue {
         console.debug("Factor updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
-  }
-
-  clearEmptyFactorsLevels() {
-    this.form.factorLevels = this.form.factorLevels.filter(
-      (factorLevel) => factorLevel.name !== null && factorLevel.name !== ""
-    );
   }
 
   get languageCode(): string {

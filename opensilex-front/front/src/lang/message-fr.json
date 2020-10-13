@@ -100,7 +100,7 @@
             "help-button": "Aide",
             "list": {
                 "buttons": {
-                    "interoperability": "Interopérabilité",
+                    "interoperability": "Références",
                     "update": "Modifier",
                     "delete": "Supprimer"
                 }
@@ -428,6 +428,7 @@
             "relation-placeholder": "Equivalent",
             "update": "Mettre à jour les références",
             "add": "Ajouter la référence",
+            "addTo": "Ajouter des références à",
             "exactMatch": "Equivalent",
             "closeMatch": "Similaire",
             "broader": "Plus général",
@@ -436,7 +437,7 @@
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",
             "ontologies-references-label": "Réferences",
-            "link-external": "Ajouter des références à",
+            "link-external": "Références pour l'interopérabilité",
             "link-external-button": "Ajouter des références (optionnel)",
             "no-external-links-provided": "Aucune référence disponible",
             "external-already-existing": "Référence déja associée"

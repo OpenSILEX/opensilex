@@ -73,7 +73,7 @@ public class FactorAPI {
 
     public static final String CREDENTIAL_FACTOR_GROUP_ID = "Factors";
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
-
+    
     public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
     public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factor.modification";
 
@@ -99,7 +99,10 @@ public class FactorAPI {
     @Path("create")
     @ApiOperation("Create an factor")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY)
+    @ApiCredential(
+        credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createFactor(@ApiParam("Factor description") @Valid FactorCreationDTO dto) throws Exception {
@@ -308,7 +311,10 @@ public class FactorAPI {
     @Path("delete/{uri}")
     @ApiOperation("Delete an factor")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_DELETE_ID, credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY)
+    @ApiCredential(
+        credentialId = CREDENTIAL_FACTOR_DELETE_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -341,7 +347,10 @@ public class FactorAPI {
     @Path("update")
     @ApiOperation("Update a factor")
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY)
+    @ApiCredential(
+        credentialId = CREDENTIAL_FACTOR_MODIFICATION_ID,
+        credentialLabelKey = CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

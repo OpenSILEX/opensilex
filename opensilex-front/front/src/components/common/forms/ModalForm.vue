@@ -29,7 +29,7 @@
           <opensilex-HelpButton
             v-if="tutorial && !editMode"
               class="ml-2"
-              variant="outline-secondary"
+              variant="outline-info"
               label="component.tutorial.label"  
               @click="getFormRef().tutorial()"
           ></opensilex-HelpButton> 

@@ -101,7 +101,7 @@
             "help-button": "Help",
             "list": {
                 "buttons": {
-                    "interoperability": "Interoperability",
+                    "interoperability": "References",
                     "update": "Update",
                     "delete": "Delete"
                 }
@@ -492,6 +492,7 @@
             "relation-help": "Relation associated between interoperable concept URI and this local individual",
             "relation-placeholder": "Exact Match",
             "add": "Add references",
+            "addTo": "Add references to",
             "update": "Update references",
             "exactMatch": "Exact match",
             "closeMatch": "Close match",
@@ -501,7 +502,7 @@
             "no-current-relation": "No relation selected",
             "current-relation": "Current selected relation",
             "ontologies-references-label": "References",
-            "link-external": "Add references to",
+            "link-external": "Interoperability References",
             "link-external-button": "Add references (optional)",
             "no-external-links-provided": "No references available",
             "external-already-existing": "Already associated reference"

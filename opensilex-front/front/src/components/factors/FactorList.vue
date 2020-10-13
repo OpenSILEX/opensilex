@@ -142,7 +142,7 @@ export default class FactorList extends Vue {
     name: "",
     comment: "",
     experiment: null,
-    category: ""
+    category: "",
   };
 
   resetSearch() {

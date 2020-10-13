@@ -6,22 +6,29 @@
       :description="factor.name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true" :returnTo="goBack()" :returnToTitle="returnTitle()">
+    <opensilex-PageActions
+      :tabs="true"
+      :returnButton="true"
+      :returnTo="goBack()"
+      :returnToTitle="returnTitle()"
+    >
       <template v-slot>
         <b-nav-item
           class="ml-3"
           :active="isDetailsTab()"
-          :to="{path: '/factor/details/' + encodeURIComponent(uri)}"
-        >{{ $t('component.factor.details.label') }}</b-nav-item>
+          :to="{ path: '/factor/details/' + encodeURIComponent(uri) }"
+          >{{ $t("component.factor.details.label") }}</b-nav-item
+        >
         <b-nav-item
           :active="isExperimentTab()"
-          :to="{path: '/factor/experiments/' + encodeURIComponent(uri)}"
-        >{{ $t('component.common.details.experiment') }}</b-nav-item>
-        <b-nav-item
+          :to="{ path: '/factor/experiments/' + encodeURIComponent(uri) }"
+          >{{ $t("component.common.details.experiment") }}</b-nav-item
+        >
+        <!-- <b-nav-item
           :active="false"
           :disabled="true"
           :to="{path: '/factor/document/' + encodeURIComponent(uri)}"
-        >{{ $t('component.common.details.document') }}</b-nav-item>
+        >{{ $t('component.common.details.document') }}</b-nav-item> -->
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>
@@ -31,7 +38,10 @@
           @onUpdate="callUpdateFactorService"
           :factor="factor"
         ></opensilex-FactorDetails>
-        <opensilex-AssociatedExperiments v-else-if="isExperimentTab()" :uri="uri"></opensilex-AssociatedExperiments>
+        <opensilex-AssociatedExperiments
+          v-else-if="isExperimentTab()"
+          :uri="uri"
+        ></opensilex-AssociatedExperiments>
       </template>
     </opensilex-PageContent>
   </div>
@@ -135,7 +145,7 @@ export default class FactorView extends Vue {
       return "/factors";
     }
   }
-  
+
   returnTitle() {
     // return to the previous page
     if (this.createdFactor) {

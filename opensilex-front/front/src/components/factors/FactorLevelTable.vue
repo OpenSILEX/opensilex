@@ -34,7 +34,7 @@
               <opensilex-Button
                 class="mb-2 mr-4"
                 @click="addEmptyRow"
-                variant="outline-info"
+                variant="outline-dark"
                 label="component.factorLevel.add"
                 icon
                 :small="false"
@@ -45,13 +45,21 @@
       </b-row>
       <b-row>
         <b-col cols="10">
-          <VueTabulator
-            ref="tabulatorRef"
-            class="table-light table-bordered"
-            v-model="this.internalFactorLevels"
-            :options="options"
-            @cell-click="removeFactorLevel"
-          />
+          <ValidationProvider
+            rules="requiredTabulator"
+            ref="validationProvider"
+            :skipIfEmpty="false"
+            v-slot="{ errors }"
+          >
+            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+            <VueTabulator
+              ref="tabulatorRef"
+              class="table-light table-bordered"
+              v-model="internalFactorLevels"
+              :options="options"
+              @cell-click="cellActions"
+            />
+          </ValidationProvider>
         </b-col>
       </b-row>
       <!-- <span class="error-message alert alert-info"> Number of factor{{this.internalFactorLevels.length}}</span> -->
@@ -67,6 +75,22 @@ import { FactorsService } from "opensilex-core/index";
 import HttpResponse, {
   OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
+import ValidationProvider from "vee-validate";
+import { extend } from "vee-validate";
+
+extend("requiredTabulator", (value) => {
+  let valid = true;
+  value.some(function (factorLevel) {
+    if (factorLevel.name == null || factorLevel.name.trim() === "") {
+      valid = false;
+    }
+  });
+  if (!valid) {
+    return "Missing factor level name";
+  } else {
+    return valid;
+  }
+});
 
 @Component
 export default class FactorLevelTable extends Vue {
@@ -113,6 +137,9 @@ export default class FactorLevelTable extends Vue {
   };
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
+
+  @Ref("validationProvider") readonly validationProvider!: any;
+
   @Prop({ default: false })
   editMode: boolean;
 
@@ -130,6 +157,15 @@ export default class FactorLevelTable extends Vue {
       formater: "string",
       widthGrow: 0.5,
       visible: this.editMode,
+    },
+    {
+      title: "Id Value",
+      field: "id",
+      formater: "number",
+      visible: false,
+      formatter: function (cell, formatterParams, onRendered) {
+        return Date.now();
+      },
     },
     {
       title: 'Name<span class="required">*</span>',
@@ -171,6 +207,11 @@ export default class FactorLevelTable extends Vue {
         this.changeTableLang(lang);
       }
     );
+    this.internalFactorLevels.forEach(function (factorLevel) {
+      if (factorLevel.id === null) {
+        factorLevel.id = Date.now();
+      }
+    });
   }
 
   beforeDestroy() {
@@ -201,7 +242,7 @@ export default class FactorLevelTable extends Vue {
     langs: this.langs,
   };
 
-  removeFactorLevel(evt, clickedCell) {
+  cellActions(evt, clickedCell) {
     console.debug(evt, clickedCell);
     let columnName = clickedCell.getField();
     console.debug(columnName);
@@ -210,8 +251,13 @@ export default class FactorLevelTable extends Vue {
       let row = clickedCell.getRow();
       console.debug("actions row", row);
 
-      var nameCell = row.getCell("name");
-      console.debug("name cell value", nameCell.getValue());
+      var idCell = row.getCell("id");
+      console.debug(
+        "id cell value",
+        idCell.getValue(),
+        "name value",
+        row.getCell("name").getValue()
+      );
 
       let factorLevelUri = row.uri;
 
@@ -219,7 +265,7 @@ export default class FactorLevelTable extends Vue {
         this.deleteFactorLevel(row.uri)
           .then(() => {
             this.internalFactorLevels = this.internalFactorLevels.filter(
-              (factorLevel) => factorLevel.name !== nameCell.getValue()
+              (factorLevel) => factorLevel.id !== idCell.getValue()
             );
             let message =
               this.$i18n.t("component.factorLevel.label") +
@@ -232,7 +278,7 @@ export default class FactorLevelTable extends Vue {
           .catch(this.$opensilex.errorHandler);
       } else {
         this.internalFactorLevels = this.internalFactorLevels.filter(
-          (factorLevel) => factorLevel.name !== nameCell.getValue()
+          (factorLevel) => factorLevel.id !== idCell.getValue()
         );
       }
     }
@@ -250,6 +296,7 @@ export default class FactorLevelTable extends Vue {
   addEmptyRow() {
     console.debug("add row");
     this.internalFactorLevels.unshift({
+      id: Date.now(),
       uri: null,
       name: null,
       comment: null,
@@ -257,6 +304,7 @@ export default class FactorLevelTable extends Vue {
   }
   addRow(row) {
     console.debug("add row", row);
+    row.id = Date.now();
     if (row.name != undefined && row.name != null && row.name != "") {
       this.internalFactorLevels.unshift(row);
     }

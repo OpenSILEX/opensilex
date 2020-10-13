@@ -2,13 +2,15 @@
     <b-modal ref="modalRef" size="lg" hide-footer :static="true">
         <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
         <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
-        <template v-slot:modal-title>{{$t('component.skos.link-external')}} :</template>
+        <template v-slot:modal-title>{{$t('component.skos.link-external')}}</template>
 
         <div>
             <opensilex-ExternalReferencesForm
                     :references.sync="references"
-                    :displayInsertButton="true"
+                    :displayInsertButton="false"
                     @onUpdate="update"
+                    @onAdd="update"
+                    @onDelete="update"
             ></opensilex-ExternalReferencesForm>
         </div>
 

@@ -1,12 +1,20 @@
 <template>
   <div>
     <div>
-      <b-table v-if="relations.length != 0" striped bordered :items="relations" :fields="fields">
+      <b-table v-if="relations.length != 0"
+              striped
+              hover
+              small
+              responsive
+              sort-icon-left
+              bordered 
+              :items="relations" 
+              :fields="fields">
         <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
         <template v-slot:cell(relation)="data">{{$t(data.value)}}</template>
         <template v-slot:head(relationURI)="data">{{$t(data.label)}}</template>
         <template v-slot:cell(relationURI)="data">
-          <a :href="data.value" target="_blank">{{$t(data.value)}}</a>
+          <a :href="data.value" target="_blank">{{data.value}}</a>
         </template>
       </b-table>
       <p v-else>

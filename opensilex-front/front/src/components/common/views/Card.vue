@@ -2,7 +2,7 @@
   <div class="card">
     <div class="card-header">
       <h3>
-        <opensilex-Icon :icon="icon" class="icon-title" />
+        <opensilex-Icon :icon="icon" class="icon-title" />&nbsp;
         <span class="capitalize-first-letter">{{ $t(label) }}</span>
       </h3>
       <slot name="header"></slot>

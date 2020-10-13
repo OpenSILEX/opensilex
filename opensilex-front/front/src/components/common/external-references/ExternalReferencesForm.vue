@@ -3,7 +3,7 @@
         <ValidationObserver ref="validatorRef">
             <b-form>
                 <p>
-                    {{$t('component.skos.link-external')}} :
+                    {{$t('component.skos.addTo')}}  
                     <em>
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
@@ -36,43 +36,22 @@
                             </b-card-text>
                         </div>
                         <div class="col">
-                            <b-form-group>
-                                <opensilex-FormInputLabelHelper
-                                        label="component.skos.relation"
-                                        helpMessage="component.skos.relation-help"
-                                ></opensilex-FormInputLabelHelper>
-                                <ValidationProvider
-                                        :name="$t('component.skos.relation')"
-                                        :rules="{
-                  required: true
-                }"
-                                        v-slot="{ errors }"
-                                >
-                                    <b-form-select
-                                            required
-                                            v-model="currentRelation"
-                                            :placeholder="$t('component.skos.relation-placeholder')"
-                                    >
-                                        <b-form-select-option
-                                                v-for="option in options"
-                                                v-bind:key="option.value"
-                                                v-bind:value="option.value"
-                                        >{{ $t(option.text) }}
-                                        </b-form-select-option>
-                                    </b-form-select>
-                                    <div class="mt-3">
-                                        {{ $t('component.skos.current-relation')}} :
-                                        <strong>{{ $t((currentRelation == "") ? 'component.skos.no-current-relation' :
-                                            currentRelation) }}</strong>
-                                    </div>
-                                    <div class="error-message alert alert-danger">{{ errors[0] }}</div>
-                                </ValidationProvider>
-                            </b-form-group>
-                            <!-- URI -->
-                            <b-form-group>
+                             <opensilex-FilterField :fullWidth="true">
+                                <opensilex-SelectForm
+                                label="component.skos.relation"
+                                helpMessage="component.skos.relation-help"
+                                placeholder="component.skos.no-relation"
+                                :selected.sync="currentRelation"
+                                :options="options" 
+                                :required="true"
+                                ></opensilex-SelectForm>
+                            </opensilex-FilterField>
+                             <!-- URI -->
+                            <opensilex-FilterField :fullWidth="true">
+                            <b-form-group :required="true">
                                 <opensilex-FormInputLabelHelper
                                         label="component.skos.uri"
-                                        helpMessage="component.skos.-help"
+                                        helpMessage="component.skos.uri-help"
                                 ></opensilex-FormInputLabelHelper>
                                 <ValidationProvider
                                         :name="$t('component.skos.uri')"
@@ -105,6 +84,7 @@
                                 >{{$t('component.skos.add')}}
                                 </b-button>
                             </b-form-group>
+                            </opensilex-FilterField>
                         </div>
                     </div>
                 </b-card>
@@ -120,24 +100,34 @@
             </b-form>
         </ValidationObserver>
         <div>
-            <b-table v-if="relations.length !== 0" striped hover :items="relations" :fields="fields">
+            <b-table v-if="relations.length !== 0"
+            striped
+              hover
+              small
+              responsive
+              sort-icon-left
+              bordered  
+             :items="relations" 
+             :fields="fields">
                 <template v-slot:head(relation)="data">{{$t(data.label)}}</template>
                 <template v-slot:cell(relation)="data">{{$t(data.value)}}</template>
                 <template v-slot:head(relationURI)="data">{{$t(data.label)}}</template>
                 <template v-slot:cell(relationURI)="data">
-                    <a :href="data.value" target="_blank">{{$t(data.value)}}</a>
+                    <a :href="data.value" target="_blank">{{ data.value }}</a>
                 </template>
                 <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
                 <template v-slot:cell(actions)="data">
-                    <b-button-group size="sm">
+                    <div class="text-center">
+                    <b-button-group size="md">
                         <b-button
-                                size="sm"
+                                size="md"
                                 @click="removeRelationsToSkosReferences(data.item)"
                                 variant="danger"
                         >
-                            <font-awesome-icon icon="trash-alt" size="sm"/>
+                              <opensilex-Icon icon="fa#trash-alt" />
                         </b-button>
                     </b-button-group>
+                    </div>
                 </template>
             </b-table>
             <p v-else>
@@ -180,19 +170,13 @@
 
         skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
 
-        options: any[] = [
-            {
-                value: "",
-                text: "component.skos.no-relation",
-                disabled: true
-            }
-        ];
+        options: any[] = [];
 
         created() {
             for (let [key, value] of this.skosRelationsMap) {
                 this.$set(this.options, this.options.length, {
-                    value: key,
-                    text: value
+                    id: key,
+                    label: this.$t(value)
                 });
             }
         }
@@ -257,6 +241,15 @@
             this.validateForm().then(isValid => {
                 if (isValid) {
                     this.addRelationToSkosReferences();
+                    return new Promise((resolve, reject) => {
+                        this.$emit("onAdd", this.skosReferences, result => {
+                            if (result instanceof Promise) {
+                                result.then(resolve).catch(reject);
+                            } else {
+                                resolve(result);
+                            }
+                        });
+                    });
                 }
             });
         }
@@ -297,6 +290,15 @@
                     return value != row.relationURI;
                 });
             }
+            return new Promise((resolve, reject) => {
+                        this.$emit("onDelete", this.skosReferences, result => {
+                            if (result instanceof Promise) {
+                                result.then(resolve).catch(reject);
+                            } else {
+                                resolve(result);
+                            }
+                        });
+                    });
         }
 
         async update() {

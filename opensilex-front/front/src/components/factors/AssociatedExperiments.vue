@@ -87,6 +87,7 @@ export class ExperimentState {
 @Component
 export default class ExperimentList extends Vue {
   $opensilex: any;
+  $store : any;
 
   get user() {
     return this.$store.state.user;

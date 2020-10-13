@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.service.SPARQLService;
-import static org.opensilex.sparql.utils.SHACL.defaultValue;
 
 /**
  *

@@ -88,8 +88,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
-  ScientificObjectsService,
-  PartialResourceTreeDTO
+  ScientificObjectsService
 } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
 @Component
@@ -171,28 +170,6 @@ export default class ExperimentScientificObjects extends Vue {
       page,
       pageSize
     );
-  }
-
-  private dtoToNode(dto) {
-    let isLeaf = dto.children.length == 0;
-
-    let childrenDTOs = [];
-    if (!isLeaf) {
-      for (let i in dto.children) {
-        childrenDTOs.push(this.dtoToNode(dto.children[i]));
-      }
-    }
-
-    return {
-      title: dto.name,
-      data: dto,
-      isLeaf: isLeaf && dto.childCount == 0,
-      children: childrenDTOs,
-      isExpanded: !isLeaf,
-      isSelected: false,
-      isDraggable: false,
-      isSelectable: true
-    };
   }
 
   searchParents(query, page, pageSize) {
@@ -365,12 +342,6 @@ export default class ExperimentScientificObjects extends Vue {
         this.displayScientificObjectDetails(form.uri);
       });
   }
-
-  // loadChildrenIfRequired(node) {
-  //   if (node.children.length == 0 && node.data.childCount > 0) {
-  //     this.loadMoreChildren(node);
-  //   }
-  // }
 
   validateCSV(objectType, csvFile) {
     return this.$opensilex.uploadFileToService(

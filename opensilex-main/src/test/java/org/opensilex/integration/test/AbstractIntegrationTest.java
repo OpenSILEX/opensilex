@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 
@@ -26,10 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Client;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.test.TestProperties;
+import org.glassfish.jersey.test.spi.TestContainer;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import org.junit.Rule;
@@ -52,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * Abstract class used for API testing
  */
 @Category(IntegrationTestCategory.class)
-public abstract class AbstractIntegrationTest extends JerseyTest {
+public abstract class AbstractIntegrationTest extends CustomJerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
 
@@ -81,12 +84,42 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         // args.put(OpenSilex.DEBUG_ARG_KEY, "true");
         LOGGER.debug("Create OpenSilex instance for Integration Test");
         opensilex = OpenSilex.createInstance(args);
-
     }
-
+    
+    
     @AfterClass
     public static void stopOpenSilex() throws Exception {
+        try {
+            if (globalTestContainer != null) {
+                globalTestContainer.stop();
+            }
+        } finally {
+            closeIfNotNull(globalClient);
+        }
+        globalTestContainer = null;
+        globalClient = null;
         opensilex.shutdown();
+    }
+    
+    private static TestContainer globalTestContainer = null;
+    private static Client globalClient  = null;
+    
+    @Before
+    public void setUp() throws Exception {
+        if (globalTestContainer == null) {
+            super.setUp();
+            globalTestContainer = this.getTestContainer();
+            globalClient = this.getClient();
+        } else {
+            this.setTestContainer(globalTestContainer);
+            this.setClient(globalClient);
+        }
+        
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        // DO NOTHING
     }
 
     @Override

@@ -169,7 +169,7 @@ public class DataDAO {
         }
 
         if (startDate != null) {
-            filter = filter + "date > :dateMin && ";
+            filter = filter + "(date > :dateMin || date == :dateMin) && ";
             try {
                 LocalDate sdate = LocalDate.parse(startDate, simpleDateFormatter);
                 startDate += "T00:00:00+0000";
@@ -178,7 +178,7 @@ public class DataDAO {
             params.put("dateMin", convertDateTime(startDate));
         }
         if (endDate != null) {
-            filter = filter + "date < :dateMax && ";
+            filter = filter + "(date < :dateMax || date == :dateMax) && ";
             try {
                 LocalDate edate = LocalDate.parse(endDate, simpleDateFormatter);
                 endDate += "T00:00:00+0000";
@@ -390,7 +390,7 @@ public class DataDAO {
             filter = filter + "provenanceURI == \""+ provenanceUri.toString() + "\" && ";
 
         if (startDate != null){
-            filter = filter + "date > :dateMin && ";
+            filter = filter + "(date < :dateMin || date == :dateMin) && ";
             try {
                 LocalDate sdate = LocalDate.parse(startDate,simpleDateFormatter);
                 startDate += "T00:00:00+0000";
@@ -399,7 +399,7 @@ public class DataDAO {
             params.put("dateMin", convertDateTime(startDate));
         }
         if(endDate != null){
-            filter = filter + "date < :dateMax && ";
+            filter = filter + "(date < :dateMax || date == :dateMax) && ";
             try {
                 LocalDate edate = LocalDate.parse(endDate,simpleDateFormatter);
                 endDate += "T00:00:00+0000";

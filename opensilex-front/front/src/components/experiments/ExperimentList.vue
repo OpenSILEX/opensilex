@@ -162,6 +162,7 @@ import { UserGetDTO } from "opensilex-security/index";
 export default class ExperimentList extends Vue {
   $opensilex: any;
   $i18n: any;
+  $store: any;
 
   @Prop({
     default: false

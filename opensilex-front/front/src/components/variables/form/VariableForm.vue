@@ -217,17 +217,11 @@
 
 <script lang="ts">
 import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
-import {VariablesService} from "opensilex-core/api/variables.service";
-
 import Vue from "vue";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
-import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
-import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
-import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
+import { NamedResourceDTO, EntityCreationDTO, QualityCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
 export default class VariableForm extends Vue {

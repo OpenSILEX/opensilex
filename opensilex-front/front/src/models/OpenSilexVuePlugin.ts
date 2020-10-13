@@ -405,6 +405,7 @@ export default class OpenSilexVuePlugin {
                 this.handleUnexpectedError(error, message);
                 break;
         }
+        return false;
     }
 
     public errorHandler = this.handleError.bind(this);

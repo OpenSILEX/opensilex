@@ -18,16 +18,10 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import HttpResponse, {
-        OpenSilexResponse
-    } from "opensilex-security/HttpResponse";
-    import { VariablesService } from "opensilex-core/index";
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-    import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
-    import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+    import { VariablesService, VariableGetDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
     import ModalForm from "../../common/forms/ModalForm.vue";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import {VariableUpdateDTO} from "opensilex-core/model/variableUpdateDTO";
+    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
     @Component
     export default class VariableCreate extends Vue {

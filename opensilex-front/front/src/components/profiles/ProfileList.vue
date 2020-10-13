@@ -73,6 +73,8 @@ import HttpResponse, {
 @Component
 export default class ProfileList extends Vue {
   $opensilex: any;
+  $store: any;
+  $route: any;
 
   get user() {
     return this.$store.state.user;

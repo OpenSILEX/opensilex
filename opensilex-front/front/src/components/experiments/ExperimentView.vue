@@ -40,6 +40,8 @@ import VueRouter from "vue-router";
 
 @Component
 export default class ExperimentView extends Vue {
+  $route: any;
+
   uri = null;
   name: string = "";
 

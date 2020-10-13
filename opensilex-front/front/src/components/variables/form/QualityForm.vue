@@ -65,9 +65,9 @@
 <script lang="ts">
     import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import QualityCreate from "./QualityCreate.vue";
+    import { QualityCreationDTO } from "opensilex-core/index";
 
     @Component
     export default class QualityForm extends Vue {

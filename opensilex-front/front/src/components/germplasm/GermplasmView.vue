@@ -58,11 +58,13 @@ import {
   } from "opensilex-core/index"
 import GermplasmCreate from "./GermplasmCreate.vue";
 import Oeso from "../../ontologies/Oeso";
+import VueRouter from "vue-router";
 
 @Component
 export default class GermplasmView extends Vue {
   $opensilex: any;
   $store: any;
+  $router: VueRouter;
   service: GermplasmService;
 
   get user() {

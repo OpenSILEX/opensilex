@@ -33,18 +33,18 @@
 <script lang="ts">
 import {Component, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VariablesService} from "opensilex-core/api/variables.service";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import UnitCreate from "../form/UnitCreate.vue";
 import EntityCreate from "../form/EntityCreate.vue";
 import VariableView from "../VariableView.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import { VariablesService, NamedResourceDTO } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
 export default class EntityList extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $store: any;
+    $route: any;
     service: VariablesService;
 
     @PropSync("_type")

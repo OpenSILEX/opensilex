@@ -43,9 +43,8 @@ export default class SciObjectTypeSearch extends Vue {
   soTypes: any = [];
   type: string = null;
   allTypes: any = [];
-  scientificObjectService = this.$opensilex.getService(
-    "opensilex.ScientificObjectsService"
-  );
+  scientificObjectService;
+
   sciObjectUri: string =
     "http://www.opensilex.org/vocabulary/oeso#ScientificObject";
 
@@ -62,6 +61,9 @@ export default class SciObjectTypeSearch extends Vue {
   }
 
   created() {
+    this.scientificObjectService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
     let service = this.$opensilex.getService(
       "opensilex.UriService"
     );

@@ -78,6 +78,7 @@ import HttpResponse, {
 export default class UserForm extends Vue {
   $opensilex: any;
   $i18n: any;
+  $store: any;
 
   get user() {
     return this.$store.state.user;

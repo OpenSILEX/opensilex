@@ -68,7 +68,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 export default class ExperimentData extends Vue {
   $opensilex: any;
   $t: any;
-
+  $route: any;
   uri = null;
 
   @Ref("dataRef") readonly dataRef!: any;

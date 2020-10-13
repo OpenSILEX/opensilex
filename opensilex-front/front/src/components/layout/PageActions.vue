@@ -7,7 +7,7 @@
           <router-link
             v-if="returnTo && returnButton"
             :to="returnTo"
-            v-slot="{ href, route, navigate,}"
+            v-slot="{ href, route, navigate}"
           >
             <a
               class="btn btn-outline-primary back-button mr-2 h-100"

@@ -183,6 +183,7 @@ public class VueOwlExtensionAPI {
         List<VueClassPropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
         for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
             VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            pDTO.setIsCustom(false);
             pDTO.setProperty(dt.getUri());
             pDTO.setName(dt.getName());
             if (dt.getComment() != null) {
@@ -196,6 +197,7 @@ public class VueOwlExtensionAPI {
                 pDTO.setTargetProperty(dt.getTypeRestriction());
                 pDTO.setInputComponent(vueType.getInputComponent());
                 pDTO.setViewComponent(vueType.getViewComponent());
+                pDTO.setIsCustom(true);
             }
             if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
                 pDTO.setInherited(true);
@@ -209,6 +211,7 @@ public class VueOwlExtensionAPI {
         List<VueClassPropertyDTO> objectProperties = new ArrayList<>(classDescription.getObjectProperties().size());
         for (ObjectPropertyModel obj : classDescription.getObjectProperties().values()) {
             VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            pDTO.setIsCustom(false);
             pDTO.setProperty(obj.getUri());
             pDTO.setName(obj.getName());
             if (obj.getComment() != null) {
@@ -222,6 +225,7 @@ public class VueOwlExtensionAPI {
                 pDTO.setTargetProperty(obj.getTypeRestriction());
                 pDTO.setInputComponent(vueType.getInputComponent());
                 pDTO.setViewComponent(vueType.getViewComponent());
+                pDTO.setIsCustom(true);
             }
             if (parentModel.isObjectPropertyRestriction(obj.getUri())) {
                 pDTO.setInherited(true);

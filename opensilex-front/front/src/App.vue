@@ -54,6 +54,7 @@ export default class App extends Vue {
 
   $opensilex: OpenSilexVuePlugin;
   $bvToast: any;
+  $store: any;
 
   created() {
     this.$opensilex.$bvToast = this.$bvToast;

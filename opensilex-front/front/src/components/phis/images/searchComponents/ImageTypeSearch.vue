@@ -24,6 +24,8 @@ import { UriService } from "opensilex-phis/index";
 export default class ImageTypeSearch extends Vue {
   $opensilex: any;
   $store: any;
+  $route: any;
+
   get user() {
     return this.$store.state.user;
   }

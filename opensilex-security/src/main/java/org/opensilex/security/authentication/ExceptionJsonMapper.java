@@ -63,7 +63,9 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
         } else {
             response = new ErrorResponse(exception).getResponse();
         }
-        LOGGER.error("Exception returned to user service call: \n" + uriInfo.getAbsolutePath().toString(), exception);
+        if (response.getStatus() >= 500) {
+            LOGGER.error("Unexpected exception returned to user service call: \n" + uriInfo.getAbsolutePath().toString(), exception);
+        }
         return response;
     }
 

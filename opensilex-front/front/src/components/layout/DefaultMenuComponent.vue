@@ -50,7 +50,8 @@ import { MenuItemDTO } from '../../lib';
 @Component
 export default class DefaultMenuComponent extends Vue {
   $route: any;
-  
+  $store: any;
+
   get menu(): Array<Menu> {
     return this.$store.state.menu;
   }

@@ -54,13 +54,13 @@
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
             <opensilex-EditButton
-              v-if="!data.item.inherited"
+              v-if="!data.item.inherited && data.item.isCustom"
               @click="editDataProperty(data.item)"
               label="OntologyClassDetail.updateProperty"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
-              v-if="!data.item.inherited"
+              v-if="!data.item.inherited && data.item.isCustom"
               @click="deleteClassPropertyRestriction(data.item.property)"
               label="OntologyClassDetail.deleteProperty"
               :small="true"
@@ -107,13 +107,13 @@
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
             <opensilex-EditButton
-              v-if="!data.item.inherited"
+              v-if="!data.item.inherited && data.item.isCustom"
               @click="editObjectProperty(data.item)"
               label="OntologyClassDetail.updateProperty"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
-              v-if="!data.item.inherited"
+              v-if="!data.item.inherited && data.item.isCustom"
               @click="deleteClassPropertyRestriction(data.item.property)"
               label="OntologyClassDetail.deleteProperty"
               :small="true"
@@ -236,8 +236,10 @@ export default class OntologyClassDetail extends Vue {
     this.ontologyService.deleteClassPropertyRestriction(
       this.selected.uri,
       propertyURI
-    );
-    this.$emit("onDetailChange");
+    ).then(() => {
+      this.$emit("onDetailChange");
+    }).catch(this.$opensilex.errorHandler);
+   
   }
 
   

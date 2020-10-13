@@ -36,6 +36,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class TypeForm extends Vue {
   $opensilex: any;
+  $store: any;
   service: OntologyService;
 
   @PropSync("type")

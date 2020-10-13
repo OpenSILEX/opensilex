@@ -36,7 +36,8 @@ import { Component} from "vue-property-decorator";
 import Vue from "vue";
 @Component
 export default class ProjectDetails extends Vue {
- 
+  $route: any;
+
   uri = null;
   name: string = "";
 

@@ -85,6 +85,7 @@ import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 export default class InfrastructureTree extends Vue {
   $opensilex: any;
   $store: any;
+  $route: any;
   service: InfrastructuresService;
 
   get user() {

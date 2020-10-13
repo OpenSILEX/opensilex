@@ -12,9 +12,9 @@
 
     import {Component, PropSync} from "vue-property-decorator";
     import Vue from "vue";
-    import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import UnitCreate from "./UnitCreate.vue";
+    import { UnitCreationDTO } from "opensilex-core/index";
 
     @Component
     export default class UnitExternalReferencesForm extends Vue {

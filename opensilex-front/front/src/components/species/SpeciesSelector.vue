@@ -26,6 +26,8 @@ import { SpeciesDTO } from "opensilex-core/index";
 @Component
 export default class SpeciesSelector extends Vue {
   $opensilex: any;
+  $store: any;
+
   service: SecurityService;
 
   @PropSync("species")

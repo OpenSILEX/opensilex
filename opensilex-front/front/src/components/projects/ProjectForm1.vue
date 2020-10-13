@@ -81,6 +81,7 @@ import { ProjectCreationDTO } from "opensilex-core/index";
 @Component
 export default class ProjectForm1 extends Vue {
   $opensilex: any;
+  $store: any;
 
   get user() {
     return this.$store.state.user;

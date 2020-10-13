@@ -85,6 +85,7 @@ import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
+  $store: any;
 
   @Ref("facilityForm") readonly facilityForm!: any;
 

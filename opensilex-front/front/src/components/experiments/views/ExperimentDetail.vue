@@ -123,6 +123,8 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 export default class ExperimentDetail extends Vue {
   $opensilex: any;
   $t: any;
+  $route: any;
+  $store: any;
 
   uri: string = "";
   period: string = "";

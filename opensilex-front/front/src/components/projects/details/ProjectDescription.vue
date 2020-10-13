@@ -161,6 +161,8 @@ import { SecurityService, UserGetDTO } from "opensilex-security/index";
 export default class ProjectDescription extends Vue {
   $opensilex: any;
   $route: any;
+  $store: any;
+
   service: ProjectsService;
   get user() {
     return this.$store.state.user;

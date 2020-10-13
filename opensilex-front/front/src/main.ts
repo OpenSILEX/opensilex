@@ -12,7 +12,7 @@ import "reflect-metadata"
 declare var document: any;
 
 // Import Vue as a global window variable
-import Vue, { Component } from 'vue'
+import Vue from 'vue'
 declare var window: any;
 window.Vue = Vue;
 
@@ -211,8 +211,9 @@ import { email } from 'vee-validate/dist/rules';
 import moment from "moment";
 
 for (let [rule, validation] of Object.entries(rules)) {
+  let anyVal: any = validation;
   extend(rule, {
-    ...validation
+    ...anyVal
   });
 }
 
@@ -499,7 +500,7 @@ $opensilex.loadModules([
             ]).then(() => {
               // Initialize main application rendering
               console.debug("Initialize main application rendering");
-              new Vue({
+              let vueOptions: any = {
                 router,
                 store,
                 render: h => h(App, {
@@ -513,7 +514,8 @@ $opensilex.loadModules([
                 },
                 ),
                 i18n
-              }).$mount('#app').$nextTick(() => {
+              };
+              new Vue(vueOptions).$mount('#app').$nextTick(() => {
                 // Hide loader
                 console.debug("Hide application init loader");
                 document.getElementById('opensilex-loader').style.visibility = 'hidden';

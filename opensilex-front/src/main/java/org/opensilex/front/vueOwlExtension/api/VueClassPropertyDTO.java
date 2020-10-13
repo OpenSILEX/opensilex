@@ -30,6 +30,8 @@ public class VueClassPropertyDTO{
     protected boolean isList;
     
     protected boolean isRequired;
+    
+    protected boolean isCustom;
 
     public URI getProperty() {
         return property;
@@ -102,7 +104,13 @@ public class VueClassPropertyDTO{
     public void setIsRequired(boolean isRequired) {
         this.isRequired = isRequired;
     }
-    
-    
+
+    public boolean isIsCustom() {
+        return isCustom;
+    }
+
+    public void setIsCustom(boolean isCustom) {
+        this.isCustom = isCustom;
+    }
 
 }

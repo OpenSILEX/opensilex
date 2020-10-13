@@ -83,6 +83,8 @@ import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 @Component
 export default class TableAsyncView extends Vue {
   $opensilex: any;
+  $route: any;
+  $store: any;
 
   @Ref("tableRef") readonly tableRef!: any;
 

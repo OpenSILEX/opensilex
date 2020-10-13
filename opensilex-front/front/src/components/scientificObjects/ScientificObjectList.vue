@@ -163,9 +163,6 @@
         ExperimentGetListDTO,
         OntologyService,
     } from "opensilex-core/index";
-    import {
-        PropertyDTO,
-    } from "opensilex-phis/index";
     import Oeso from "../../ontologies/Oeso";
     import HttpResponse, {OpenSilexResponse, MetadataDTO, PaginationDTO}  from "../../lib/HttpResponse";
 
@@ -240,7 +237,7 @@
         filter = new ScientificObjectFilter();
 
         static async asyncInit($opensilex) {
-            await $opensilex.loadModule("opensilex-phis");
+            // await $opensilex.loadModule("opensilex-phis");
         }
         
         get user() {

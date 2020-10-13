@@ -14,6 +14,7 @@ import Vue from "vue";
 
 @Component
 export default class DefaultFooterComponent extends Vue {
+  $store: any;
 
   get release() {
     return this.$store.state.release;

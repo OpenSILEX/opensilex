@@ -102,9 +102,7 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VariablesService} from "opensilex-core/api/variables.service";
 import EntityList from "./views/EntityList.vue";
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import EntityCreate from "./form/EntityCreate.vue";
 import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
@@ -112,12 +110,15 @@ import QualityCreate from "./form/QualityCreate.vue";
 import MethodCreate from "./form/MethodCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
+import { VariablesService } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class VariableView extends Vue {
 
     $opensilex: any;
     $store: any;
+    $route: any;
     $router: any;
     service: VariablesService;
 

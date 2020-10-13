@@ -83,15 +83,9 @@
 <script lang="ts">
 import {Component, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
-import {OntologyService} from "opensilex-core/api/ontology.service";
-import HttpResponse, {
-    OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
-import {VariablesService} from "opensilex-core/api/variables.service";
 import UnitCreate from "./UnitCreate.vue";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import { UnitCreationDTO } from "opensilex-core/index";
 
 @Component
 export default class UnitForm extends Vue {

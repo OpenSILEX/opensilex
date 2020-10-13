@@ -13,8 +13,8 @@
     import {Component, PropSync} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
     import MethodCreate from "./MethodCreate.vue";
+    import { MethodCreationDTO } from "opensilex-core/index";
 
     @Component
     export default class MethodExternalReferencesForm extends Vue {

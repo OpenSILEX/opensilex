@@ -121,6 +121,7 @@ import Oeso from "../../ontologies/Oeso";
 @Component
 export default class GermplasmForm extends Vue {
   $opensilex: any;
+  $store: any;
   service: GermplasmService;
 
 

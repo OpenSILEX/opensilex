@@ -63,6 +63,8 @@ import {
 export default class VariableList extends Vue {
     $opensilex: any;
     $service: VariablesService;
+    $store: any;
+    $route: any;
 
     get user() {
         return this.$store.state.user;

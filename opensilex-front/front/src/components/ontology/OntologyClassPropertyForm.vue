@@ -89,6 +89,7 @@ export default class OntologyClassPropertyForm extends Vue {
         let uri = http.response.result;
         console.debug("Object type property added", uri);
       })
+      .catch(this.$opensilex.errorHandler);
   }
 
   update(form) {
@@ -107,6 +108,7 @@ export default class OntologyClassPropertyForm extends Vue {
         let uri = http.response.result;
         console.debug("Object type property updated", uri);
       })
+      .catch(this.$opensilex.errorHandler);
   }
 
    buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {

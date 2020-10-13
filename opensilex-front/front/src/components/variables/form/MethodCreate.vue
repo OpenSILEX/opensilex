@@ -19,13 +19,9 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-    import {VariablesService} from "opensilex-core/api/variables.service";
-    import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
-    import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
-    import {MethodGetDTO} from "opensilex-core/model/methodGetDTO";
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import { VariablesService, MethodGetDTO, MethodCreationDTO, ObjectUriResponse } from "opensilex-core/index";
+    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
     @Component
     export default class MethodCreate extends Vue {

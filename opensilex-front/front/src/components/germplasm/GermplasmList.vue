@@ -135,6 +135,7 @@ import { GermplasmSearchDTO } from "opensilex-core/index";
 export default class GermplasmList extends Vue {
   $opensilex: any;
   $store: any;
+  $route: any;
   $router: VueRouter;
   service: GermplasmService;
 

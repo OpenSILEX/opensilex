@@ -58,6 +58,7 @@ import { UserGetDTO } from "opensilex-security/index";
 @Component
 export default class ExperimentListView extends Vue {
   $opensilex: any;
+  $store: any;
 
   @Ref("experimentForm") readonly experimentForm!: any;
 

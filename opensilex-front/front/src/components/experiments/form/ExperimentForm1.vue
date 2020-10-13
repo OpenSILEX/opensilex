@@ -83,6 +83,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentForm1 extends Vue {
   $opensilex: any;
+  $store: any;
 
   @Prop()
   editMode;

@@ -19,14 +19,9 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-    import {VariablesService} from "opensilex-core/api/variables.service";
-    import {UnitCreationDTO} from "opensilex-core/model/unitCreationDTO";
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-    import {UnitGetDTO} from "opensilex-core/model/unitGetDTO";
-    import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
-    import {UnitUpdateDTO} from "opensilex-core/model/unitUpdateDTO";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import { VariablesService, UnitGetDTO, UnitCreationDTO, ObjectUriResponse } from "opensilex-core/index";
+    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
     @Component
     export default class UnitCreate extends Vue {

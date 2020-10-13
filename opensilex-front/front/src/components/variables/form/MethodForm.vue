@@ -66,9 +66,9 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {MethodCreationDTO} from "opensilex-core/model/methodCreationDTO";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import MethodCreate from "./MethodCreate.vue";
+    import { MethodCreationDTO } from "opensilex-core/index";
 
     @Component
     export default class MethodForm extends Vue {

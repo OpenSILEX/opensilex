@@ -97,14 +97,6 @@ import moment from 'moment';
 import {
   ExperimentGetListDTO
 } from "opensilex-core/index";
-import {
-  Trait,
-  Method,
-  Unit,
-  MethodsService,
-  TraitsService,
-  UnitsService
-} from "opensilex-phis/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { UserGetDTO } from "opensilex-security/index";
 
@@ -131,6 +123,7 @@ class DataFilter {
 @Component
 export default class DataView extends Vue {
   $opensilex: any;
+  $store: any;
 
   filter = new DataFilter();
 
@@ -165,7 +158,7 @@ export default class DataView extends Vue {
   }
 
   loadUnits() {
-    let service: UnitsService = this.$opensilex.getService("opensilex-phis.UnitsService");
+    let service = this.$opensilex.getService("opensilex-phis.UnitsService");
     return service.getUnitsBySearch(
       100,
       0,
@@ -175,7 +168,7 @@ export default class DataView extends Vue {
   }
 
   loadTraits() {
-    let service: TraitsService = this.$opensilex.getService("opensilex-phis.TraitsService");
+    let service = this.$opensilex.getService("opensilex-phis.TraitsService");
     return service.getTraitsBySearch(
       100,
       0,
@@ -185,7 +178,7 @@ export default class DataView extends Vue {
   }
 
   loadMethods() {
-    let service: MethodsService = this.$opensilex.getService("opensilex-phis.MethodsService");
+    let service = this.$opensilex.getService("opensilex-phis.MethodsService");
     return service.getMethodsBySearch(
       100,
       0,

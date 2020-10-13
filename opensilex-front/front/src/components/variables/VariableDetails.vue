@@ -98,12 +98,10 @@
 import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-    import {VariablesService} from "opensilex-core/api/variables.service";
-    import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
-import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
-import VariableView from "./VariableView.vue";
-import VariableCreate from "./form/VariableCreate.vue";
-import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+    import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
+    import VariableView from "./VariableView.vue";
+    import VariableCreate from "./form/VariableCreate.vue";
+    import { VariablesService, VariableDetailsDTO } from "opensilex-core/index";
 
     @Component
     export default class VariableDetails extends Vue {

@@ -135,6 +135,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 @Component
 export default class GermplasmDetails extends Vue {
   $opensilex: any;
+  $route: any;
   $store: any;
   $router: any;
   $t: any;

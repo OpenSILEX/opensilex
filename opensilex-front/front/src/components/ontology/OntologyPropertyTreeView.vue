@@ -38,6 +38,7 @@ import { PropSync } from "vue-property-decorator";
 @Component
 export default class OntologyPropertyTreeView extends Vue {
   $opensilex: any;
+  $store: any;
 
   get user() {
     return this.$store.state.user;

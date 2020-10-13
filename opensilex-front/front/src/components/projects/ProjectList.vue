@@ -105,6 +105,8 @@ import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 @Component
 export default class ProjectList extends Vue {
   $opensilex: any;
+  $store: any;
+
   service: ProjectsService;
   get user() {
     return this.$store.state.user;

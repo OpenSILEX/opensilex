@@ -17,6 +17,7 @@ import moment from "moment";
 @Component
 export default class XSDDateTimeView extends Vue {
   $opensilex: any;
+  $store: any;
 
   @Prop()
   value;

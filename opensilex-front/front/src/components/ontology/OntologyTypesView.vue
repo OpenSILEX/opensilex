@@ -36,6 +36,7 @@ import Vue from "vue";
 @Component
 export default class OntologyTypesView extends Vue {
   $opensilex: any;
+  $route: any;
 
   @Prop()
   rdfClass;

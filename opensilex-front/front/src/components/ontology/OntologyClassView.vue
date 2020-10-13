@@ -45,6 +45,7 @@ import OWL from "../../ontologies/OWL";
 @Component
 export default class OntologyClassView extends Vue {
   $opensilex: any;
+  $store: any;
 
   @Prop()
   rdfClass;

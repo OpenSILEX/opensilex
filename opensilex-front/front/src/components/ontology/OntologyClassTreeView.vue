@@ -38,6 +38,7 @@ import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class OntologyClassTreeView extends Vue {
   $opensilex: any;
+  $store: any;
 
   get user() {
     return this.$store.state.user;

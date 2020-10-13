@@ -94,6 +94,8 @@ import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
+  $route: any;
+  $store: any;
   soService: ScientificObjectsService;
   uri: string;
 

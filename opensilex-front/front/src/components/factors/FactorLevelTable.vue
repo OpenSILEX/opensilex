@@ -150,50 +150,52 @@ export default class FactorLevelTable extends Vue {
   })
   internalFactorLevels: any[];
 
-  tableColumns: any[] = [
-    {
-      title: "Generated Uri",
-      field: "uri",
-      formater: "string",
-      widthGrow: 0.5,
-      visible: this.editMode,
-    },
-    {
-      title: "Id Value",
-      field: "id",
-      formater: "number",
-      visible: false,
-      formatter: function (cell, formatterParams, onRendered) {
-        return Date.now();
+  get tableColumns(): any[] {
+    return [
+      {
+        title: "Generated Uri",
+        field: "uri",
+        formater: "string",
+        widthGrow: 0.5,
+        visible: this.editMode,
       },
-    },
-    {
-      title: 'Name<span class="required">*</span>',
-      field: "name",
-      formater: "string",
-      editor: "input",
-      validator: ["required", "unique"],
-      widthGrow: 0.5,
-    },
-    {
-      title: "Comment",
-      field: "comment",
-      formater: "string",
-      editor: "input",
-      widthGrow: 1,
-    },
-    {
-      title: "Delete",
-      field: "actions",
-      headerSort: false,
-      widthGrow: 0.2,
-      formatter: function (cell, formatterParams, onRendered) {
-        return '<span style="color:red"><!----><svg   aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span>';
+      {
+        title: "Id Value",
+        field: "id",
+        formater: "number",
+        visible: false,
+        formatter: function (cell, formatterParams, onRendered) {
+          return Date.now();
+        },
+      },
+      {
+        title: 'Name<span class="required">*</span>',
+        field: "name",
+        formater: "string",
+        editor: "input",
+        validator: ["required", "unique"],
+        widthGrow: 0.5,
+      },
+      {
+        title: "Comment",
+        field: "comment",
+        formater: "string",
+        editor: "input",
+        widthGrow: 1,
+      },
+      {
+        title: "Delete",
+        field: "actions",
+        headerSort: false,
+        widthGrow: 0.2,
+        formatter: function (cell, formatterParams, onRendered) {
+          return '<span style="color:red"><!----><svg   aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span>';
 
-        // return '<button class="btn btn-danger btn-sm" style="padding: 0px 0px"><span data-v-4d3fd064=""><!----><svg  aria-hidden="true" focusable="false" data-prefix="fas" style="" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
+          // return '<button class="btn btn-danger btn-sm" style="padding: 0px 0px"><span data-v-4d3fd064=""><!----><svg  aria-hidden="true" focusable="false" data-prefix="fas" style="" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
+        },
       },
-    },
-  ];
+    ];
+  }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.FactorsService");

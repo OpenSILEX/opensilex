@@ -66,6 +66,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 export default class GermplasmCreate extends Vue {
   service: OntologyService;
   $opensilex: any;
+  $store: any;
   germplasmTypes: any = [];
   selectedType: string = null;
   tabulatorRefresh = 0;;

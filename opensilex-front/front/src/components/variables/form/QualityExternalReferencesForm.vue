@@ -13,8 +13,8 @@
     import {Component, PropSync} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
     import QualityCreate from "./QualityCreate.vue";
+    import { QualityCreationDTO } from "opensilex-core/index";
 
     @Component
     export default class QualityExternalReferencesForm extends Vue {

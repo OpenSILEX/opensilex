@@ -19,12 +19,9 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-    import {VariablesService} from "opensilex-core/api/variables.service";
-    import {QualityCreationDTO} from "opensilex-core/model/qualityCreationDTO";
-    import {QualityGetDTO} from "opensilex-core/model/qualityGetDTO";
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import { VariablesService, QualityGetDTO, QualityCreationDTO, ObjectUriResponse } from "opensilex-core/index";
+    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
     @Component
     export default class QualityCreate extends Vue {

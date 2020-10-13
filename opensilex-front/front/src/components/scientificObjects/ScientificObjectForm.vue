@@ -54,6 +54,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ScientificObjectForm extends Vue {
   $opensilex: any;
+  $store: any;
 
   v = "";
   @Prop()

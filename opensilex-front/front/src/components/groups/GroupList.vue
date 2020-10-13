@@ -68,6 +68,7 @@ import { SecurityService, GroupDTO } from "opensilex-security/index";
 export default class GroupList extends Vue {
   $opensilex: any;
   $store: any;
+  $route: any;
 
   get user() {
     return this.$store.state.user;

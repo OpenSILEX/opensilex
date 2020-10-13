@@ -164,7 +164,13 @@
         @Prop({default: (() => [])})
         ontologiesToSelect: string[];
 
-        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(this.ontologiesToSelect);
+        get externalOntologiesRefs(): any[] {
+            if (this.ontologiesToSelect) {
+                return ExternalOntologies.getExternalOntologiesReferences(this.ontologiesToSelect);
+            } else {
+                return [];
+            }
+        }
 
         relationsInternal: any[] = [];
 

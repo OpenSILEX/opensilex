@@ -177,7 +177,9 @@ export default class VariableView extends Vue {
 
             if(this.elementType == VariableView.VARIABLE_TYPE){
                 this.$opensilex.updateURLParameter("selected","");
-                this.variableList.refresh();
+                if (this.variableList) {
+                    this.variableList.refresh();
+                }
             }else{
                 if(this.entityTree){
                     // update entity list with the new elementType value

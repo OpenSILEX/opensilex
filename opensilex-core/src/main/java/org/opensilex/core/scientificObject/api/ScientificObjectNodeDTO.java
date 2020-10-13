@@ -14,27 +14,6 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
 
-    private Integer childCount;
-
-    public Integer getChildCount() {
-        return childCount;
-    }
-
-    public void setChildCount(Integer childCount) {
-        this.childCount = childCount;
-    }
-
-    @Override
-    public void toModel(ScientificObjectModel model) {
-        super.toModel(model);
-    }
-
-    @Override
-    public void fromModel(ScientificObjectModel model) {
-        super.fromModel(model);
-        this.setChildCount(model.getChildren().size());
-    }
-
     @Override
     public ScientificObjectModel newModelInstance() {
         return new ScientificObjectModel();

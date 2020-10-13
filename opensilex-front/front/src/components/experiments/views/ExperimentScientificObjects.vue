@@ -64,13 +64,14 @@
             @onCreate="refresh()"
             @onUpdate="refresh()"
           >
-            <template v-slot:customFields="{form, editMode}">
+            <template v-slot:customFields="{form}">
               <opensilex-SelectForm
                 label="ExperimentScientificObjects.parent-label"
                 :selected.sync="form.parent"
                 :multiple="false"
                 :required="false"
-                :options="getParentOptions(form, editMode)"
+                :searchMethod="searchParents"
+                :itemLoadingMethod="getParentsByURI"
               ></opensilex-SelectForm>
             </template>
           </opensilex-ModalForm>
@@ -126,18 +127,9 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   refresh() {
-    // this.soService.getScientificObjectsTree(this.uri).then(http => {
-    //   let treeNode = [];
-    //   for (let i in http.response.result) {
-    //     let resourceTree: PartialResourceTreeDTO = http.response.result[i];
-    //     let node = this.dtoToNode(resourceTree);
-    //     treeNode.push(node);
-    //   }
-    //   this.nodes = treeNode;
-    // });
-    // this.soService.getScientificObjectsList(this.uri).then(http => {
-    //   this.availableParents = http.response.result;
-    // });
+    if (this.soTree) {
+      this.soTree.refresh();
+    }
   }
 
   loadAllChildren(node) {
@@ -181,7 +173,7 @@ export default class ExperimentScientificObjects extends Vue {
     );
   }
 
-  private dtoToNode(dto: PartialResourceTreeDTO) {
+  private dtoToNode(dto) {
     let isLeaf = dto.children.length == 0;
 
     let childrenDTOs = [];
@@ -203,27 +195,36 @@ export default class ExperimentScientificObjects extends Vue {
     };
   }
 
-  getParentOptions(form, editMode) {
-    let parentOptions = [];
-    for (let i in this.availableParents) {
-      let availableParent = this.availableParents[i];
-      if (!editMode || availableParent.uri != form.uri) {
-        parentOptions.push({
-          id: availableParent.uri,
-          label: availableParent.name + " (" + availableParent.typeLabel + ")"
-        });
-      } else {
-        parentOptions.push({
-          id: availableParent.uri,
-          label: availableParent.name + " (" + availableParent.typeLabel + ")",
-          isDisabled: true
-        });
-      }
-    }
-    return parentOptions;
+  searchParents(query, page, pageSize) {
+    return this.soService
+      .searchScientificObjects(this.uri, query, page, pageSize)
+      .then(http => {
+        let nodeList = [];
+        for (let so of http.response.result) {
+          nodeList.push({
+            id: so.uri,
+            label: so.name + " (" + so.typeLabel + ")"
+          });
+        }
+        http.response.result = nodeList;
+        return http;
+      });
   }
 
-  availableParents = [];
+  getParentsByURI(soURIs) {
+    return this.soService
+      .getScientificObjectsListByUris(this.uri, soURIs)
+      .then(http => {
+        let nodeList = [];
+        for (let so of http.response.result) {
+          nodeList.push({
+            id: so.uri,
+            label: so.name + " (" + so.typeLabel + ")"
+          });
+        }
+        return nodeList;
+      });
+  }
 
   editScientificObject(node) {
     this.soForm
@@ -277,12 +278,14 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public deleteScientificObject(node: any) {
-    this.soService.deleteScientificObject(this.uri, node.data.uri).then(http => {
-      if (this.selected.uri == http.response.result) {
-        this.selected = null;
-        this.soTree.delete(node);
-      }
-    });
+    this.soService
+      .deleteScientificObject(this.uri, node.data.uri)
+      .then(http => {
+        if (this.selected.uri == http.response.result) {
+          this.selected = null;
+          this.soTree.refresh();
+        }
+      });
   }
 
   callScientificObjectCreation(form) {

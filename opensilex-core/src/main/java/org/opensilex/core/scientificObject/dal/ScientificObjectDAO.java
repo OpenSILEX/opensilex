@@ -56,32 +56,6 @@ public class ScientificObjectDAO {
         this.nosql = nosql;
     }
 
-    public SPARQLPartialTreeListModel<ExperimentalObjectModel> searchTreeByExperiment(URI experimentURI, URI parentURI, int maxChild, int maxDepth, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(experimentURI, currentUser);
-
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        return sparql.searchPartialResourceTree(
-                experimentGraph,
-                ExperimentalObjectModel.class,
-                currentUser.getLanguage(),
-                ScientificObjectModel.PARENT_FIELD,
-                Oeso.isPartOf,
-                parentURI,
-                maxChild,
-                maxDepth,
-                null
-        );
-    }
-
-    public List<ScientificObjectModel> searchByExperiment(URI experimentURI, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(experimentURI, currentUser);
-
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        return sparql.search(experimentGraph, ScientificObjectModel.class, currentUser.getLanguage());
-    }
-
     public List<ScientificObjectModel> searchByURIs(URI experimentURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
@@ -109,6 +83,25 @@ public class ScientificObjectDAO {
                     } else {
                         Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
+                    }
+                },
+                null,
+                page,
+                pageSize);
+    }
+
+    public ListWithPagination<ScientificObjectModel> searchByExperiment(URI experimentURI, String pattern, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+
+        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        return sparql.searchWithPagination(
+                experimentGraph,
+                ScientificObjectModel.class,
+                currentUser.getLanguage(),
+                (select) -> {
+                    if (pattern != null && !pattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, pattern));
                     }
                 },
                 null,

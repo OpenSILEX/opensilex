@@ -521,7 +521,7 @@ i.more-results-info {
 <i18n>
 en:
   SelectorForm:
-    refineSearchMessage: "{resultCount}/{totalCount} results displayed, please refine your search..."
+    refineSearchMessage: "{0}/{1} results displayed, please refine your search..."
     
 fr:
   SelectorForm:

@@ -121,11 +121,6 @@ export default class TreeViewAsync extends Vue {
     });
   }
 
-  delete(node) {
-    console.error("DELETE", node, node.path)
-    this.asyncTree.remove(node.path);
-  }
-
   updateTreeNodes(http) {
     for (let i in http.response.result) {
       let soDTO = http.response.result[i];

@@ -57,10 +57,6 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.PartialResourceTreeDTO;
-import org.opensilex.sparql.response.PartialResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
@@ -85,9 +81,6 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID = "scientific-objects-delete";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_LABEL_KEY = "credential.scientific-objects.delete";
 
-    public static final int DEFAULT_CHILDREN_LIMIT = 10;
-    public static final int DEFAULT_DEPTH_LIMIT = 2;
-
     @CurrentUser
     UserModel currentUser;
 
@@ -96,45 +89,6 @@ public class ScientificObjectAPI {
 
     @Inject
     private NoSQLService nosql;
-
-    /**
-     * @param experimentURI the experiment URI
-     * @return Return list of scientific objetcs tree corresponding to the given experiment URI
-     */
-    @GET
-    @Path("get-tree/{xpuri}")
-    @ApiOperation("Get scientific objet tree for an experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs tree corresponding to the given experiment URI", response = PartialResourceTreeDTO.class, responseContainer = "List")
-    })
-    public Response getScientificObjectsTree(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
-    ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        SPARQLPartialTreeListModel<ExperimentalObjectModel> tree = dao.searchTreeByExperiment(experimentURI, null, DEFAULT_CHILDREN_LIMIT, DEFAULT_DEPTH_LIMIT, currentUser);
-        return new PartialResourceTreeResponse(PartialResourceTreeDTO.fromResourceTree(tree)).getResponse();
-    }
-
-    @GET
-    @Path("get-list/{xpuri}")
-    @ApiOperation("Get scientific objet list for an experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given experiment URI", response = NamedResourceDTO.class, responseContainer = "List")
-    })
-    public Response getScientificObjectsList(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
-    ) throws Exception {
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectModel> sientificObjects = dao.searchByExperiment(experimentURI, currentUser);
-        List<NamedResourceDTO> dtoList = sientificObjects.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<NamedResourceDTO>(dtoList).getResponse();
-    }
 
     @POST
     @Path("get-by-uris/{xpuri}")
@@ -162,7 +116,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
@@ -172,6 +126,28 @@ public class ScientificObjectAPI {
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildrenByExperiment(experimentURI, parentURI, page, pageSize, currentUser);
+
+        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = scientificObjects.convert(ScientificObjectNodeWithChildrenDTO.class, ScientificObjectNodeWithChildrenDTO::getDTOFromModel);
+        return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("search/{xpuri}")
+    @ApiOperation("Search list of scientific objects")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+    })
+    public Response searchScientificObjects(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
+            @ApiParam(value = "Regex pattern for filtering by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchByExperiment(experimentURI, pattern, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -184,7 +160,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment URI", response = ScientificObjectDetailDTO.class)
     })
     public Response getScientificObjectDetail(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,

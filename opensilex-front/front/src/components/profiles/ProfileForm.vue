@@ -21,8 +21,8 @@
     <b-table-simple hover small responsive>
       <b-thead>
         <b-tr>
-          <b-th>Credential group</b-th>
-          <b-th>Credentials</b-th>
+          <b-th>{{$t("ProfileForm.credentialGroups")}}</b-th>
+          <b-th>{{$t("ProfileForm.credentials")}}</b-th>
         </b-tr>
       </b-thead>
       <b-tbody>
@@ -179,3 +179,14 @@ export default class ProfileForm extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  ProfileForm:
+    credentialGroups: Credential groups
+    credentials: Credentials
+
+fr:
+  ProfileForm:
+    credentialGroups: Groupes d'autorisation
+    credentials: Autorisations    
+</i18n>

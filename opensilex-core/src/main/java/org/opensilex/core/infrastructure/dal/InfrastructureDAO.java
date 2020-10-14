@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -142,9 +143,12 @@ public class InfrastructureDAO {
             Var userVar = makeVar("_userURI");
             Var uriVar = makeVar(InfrastructureModel.URI_FIELD);
             
-            select.addWhere(uriVar, SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD));
-            select.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar);
-            select.addWhere(userProfileVar, SecurityOntology.hasUser, userVar);
+            WhereHandler userProfileGroup = new WhereHandler();
+            userProfileGroup.addWhere(select.makeTriplePath(uriVar, SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD)));
+            userProfileGroup.addWhere(select.makeTriplePath(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar));
+            userProfileGroup.addWhere(select.makeTriplePath(userProfileVar, SecurityOntology.hasUser, userVar));
+            select.getWhereHandler().addOptional(userProfileGroup);
+            
             Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
             
             Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);

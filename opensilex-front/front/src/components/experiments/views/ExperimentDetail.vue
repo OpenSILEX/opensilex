@@ -144,7 +144,7 @@ export default class ExperimentDetail extends Vue {
   nextExperiment: string = null;
 
   created() {
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadExperiment();
   }
 

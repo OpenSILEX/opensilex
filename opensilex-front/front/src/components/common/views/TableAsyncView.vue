@@ -154,7 +154,7 @@ export default class TableAsyncView extends Vue {
       }
 
       if (query.sortBy) {
-        this.sortBy = decodeURI(query.sortBy) || this.defaultSortBy;
+        this.sortBy = decodeURIComponent(query.sortBy) || this.defaultSortBy;
       } else {
         this.sortBy = this.defaultSortBy;
       }

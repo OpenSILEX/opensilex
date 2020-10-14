@@ -177,7 +177,7 @@ export default class GermplasmDetails extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
 
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadGermplasm(this.uri);
   }
 

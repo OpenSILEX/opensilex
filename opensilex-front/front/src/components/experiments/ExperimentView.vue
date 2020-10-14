@@ -49,7 +49,7 @@ export default class ExperimentView extends Vue {
     this.uri = this.$route.params.uri;
     let query: any = this.$route.query;
     if (query.name) {
-      this.name = decodeURI(query.name);
+      this.name = decodeURIComponent(query.name);
     }
   }
 

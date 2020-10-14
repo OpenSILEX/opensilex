@@ -101,7 +101,7 @@ export default class VariableList extends Vue {
     created() {
         let query: any = this.$route.query;
         if (query.name) {
-            this.nameFilter = decodeURI(query.name);
+            this.nameFilter = decodeURIComponent(query.name);
         }
         this.$opensilex.disableLoader();
         this.$service = this.$opensilex.getService("opensilex.VariablesService");

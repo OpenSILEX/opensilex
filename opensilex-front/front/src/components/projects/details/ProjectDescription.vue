@@ -208,7 +208,7 @@ export default class ProjectDescription extends Vue {
   ];
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
-    this.loadProject(this.$route.params.uri);
+    this.loadProject(decodeURIComponent(this.$route.params.uri));
   }
 
   textReduce(text) {

@@ -172,7 +172,7 @@ export default class FactorList extends Vue {
     this.resetFilters();
     for (let [key, value] of Object.entries(this.filter)) {
       if (query[key]) {
-        this.filter[key] = decodeURI(query[key]);
+        this.filter[key] = decodeURIComponent(query[key]);
       }
     }
   }

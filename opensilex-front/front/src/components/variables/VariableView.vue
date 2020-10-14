@@ -159,7 +159,7 @@ export default class VariableView extends Vue {
         // load variable list by default
         let query: any = this.$route.query;
         if(query && query.elementType){
-            let requestedTypeIdx = VariableView.elementTypes.findIndex(elem => elem == decodeURI(query.elementType));
+            let requestedTypeIdx = VariableView.elementTypes.findIndex(elem => elem == decodeURIComponent(query.elementType));
             this.updateType(requestedTypeIdx);
         }else{
             let variableIdx = VariableView.elementTypes.findIndex(elem => elem == VariableView.VARIABLE_TYPE);

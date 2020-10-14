@@ -70,10 +70,10 @@ export default class EntityList extends Vue {
 
         let query: any = this.$route.query;
         if (query && query.name) {
-            this.nameFilter = decodeURI(query.name);
+            this.nameFilter = decodeURIComponent(query.name);
         }
         if (query && query.selected) {
-            this.refresh(decodeURI(query.selected));
+            this.refresh(decodeURIComponent(query.selected));
         } else {
             this.refresh();
         }

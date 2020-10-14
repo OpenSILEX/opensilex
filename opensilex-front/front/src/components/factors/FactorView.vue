@@ -111,12 +111,11 @@ export default class FactorView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
     if (this.$route.query.created != null) {
       this.createdFactor = this.$route.query.created;
     }
-    let uri = this.$route.params.uri;
-    this.loadFactor(uri);
+    this.loadFactor(this.uri);
   }
 
   loadFactor(uri: string) {

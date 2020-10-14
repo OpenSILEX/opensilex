@@ -118,7 +118,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("facilitySelector") readonly facilitySelector!: any;
 
   created() {
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
 
     this.soService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"

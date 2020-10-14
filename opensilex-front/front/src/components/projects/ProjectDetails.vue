@@ -42,10 +42,10 @@ export default class ProjectDetails extends Vue {
   name: string = "";
 
   created() {
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
     let query: any = this.$route.query;
     if (query.name) {
-      this.name = decodeURI(query.name);
+      this.name = decodeURIComponent(query.name);
     }
     
   }

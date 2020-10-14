@@ -96,7 +96,7 @@ export default class UserList extends Vue {
   created() {
     let query: any = this.$route.query;
     if (query.filter) {
-      this.filter = decodeURI(query.filter);
+      this.filter = decodeURIComponent(query.filter);
     }
 
     this.service = this.$opensilex.getService("opensilex.SecurityService");

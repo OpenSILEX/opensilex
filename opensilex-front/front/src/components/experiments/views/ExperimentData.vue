@@ -74,7 +74,7 @@ export default class ExperimentData extends Vue {
   @Ref("dataRef") readonly dataRef!: any;
 
   created() {
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
   }
 
   usedVariables = [];

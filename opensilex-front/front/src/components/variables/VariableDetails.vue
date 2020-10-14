@@ -137,7 +137,7 @@ import {Component, Ref} from "vue-property-decorator";
 
         created() {
             this.service = this.$opensilex.getService("opensilex.VariablesService");
-            this.loadVariable(this.$route.params.uri);
+            this.loadVariable(decodeURIComponent(this.$route.params.uri));
         }
 
         loadVariable(uri: string) {

@@ -145,4 +145,7 @@ public class Oeso {
     public static final Property ImageAnalysis = Ontology.property(NS, "ImageAnalysis");
     public static final Property Image = Ontology.property(NS, "Image");
 
+    // ---- DOCUMENTS ----
+    public static final Resource Document = Ontology.resource(NS, "Document");
+    public static final Property concerns = Ontology.property(NS, "concerns");
 }

@@ -620,7 +620,8 @@
         "infrastructures": "Infrastructures",
         "germplasm": "Germplasm",
         "scientific-objects": "Scientific objects",
-        "data": "Data"
+        "data": "Data",
+        "documents": "Documents"
     },
     "credential": {
         "experiment": {
@@ -662,6 +663,10 @@
         "data": {
             "modification": "Add / update data",
             "delete": "Delete data"
+        },
+        "document": {
+            "modification": "Add / update documents",
+            "delete": "Delete documents"
         }
     },
     "validations": {

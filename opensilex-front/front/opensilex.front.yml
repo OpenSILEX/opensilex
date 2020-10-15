@@ -72,6 +72,11 @@ menu:
         route:
           path: /variables
           component: opensilex-VariableView
+      - id: documents
+        label: Documents
+        route:
+          path: /documents
+          component: opensilex-DocumentView
       - id: factors
         label: component.menu.experimentalDesign.factors
         route:
@@ -148,10 +153,20 @@ routes:
     credentials: [germplasm-modification]
   - path: /germplasm/:uri
     component: opensilex-GermplasmDetails
+    credentials: []
+  - path: /factor/create
+    component: opensilex-FactorForm
+    credentials:
+      - factor-modification
   - path: /factor/details/:uri
     component: opensilex-FactorView
   - path: /factor/experiments/:uri
     component: opensilex-FactorView
+    credentials:
+      - factor-read
+  - path: /document/details/:uri
+    component: opensilex-DocumentDetails
+    credentials: []
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

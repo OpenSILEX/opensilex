@@ -34,7 +34,11 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+
 import static junit.framework.TestCase.assertEquals;
+
 
 /**
  * @author Vincent MIGOT
@@ -150,6 +154,19 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected Response getJsonPostResponse(WebTarget target, Object entity) throws Exception {
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
+
+        /**
+     *
+     * Get {@link Response} from an {@link ApiProtected} POST service call.
+     *
+     * @param target the {@link WebTarget} on which POST the given entity
+     * @param multipart the data to POST on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPostResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
+        return appendToken(target.register(MultiPartFeature.class)).post(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
+    }
     
     /**
      *
@@ -178,6 +195,19 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
             return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, OpenSilex.DEFAULT_LANGUAGE).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
         }
         return appendToken(target).header(HttpHeaders.ACCEPT_LANGUAGE, lang).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
+    }
+
+    /**
+     *
+     * Get {@link Response} from an {@link ApiProtected} PUT service call.
+     *
+     * @param target the {@link WebTarget} on which PUT the given entity
+     * @param multipart the data to PUT on the given target
+     * @return target invocation response.
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getJsonPutResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
+        return appendToken(target.register(MultiPartFeature.class)).put(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
     }
 
     /**

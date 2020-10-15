@@ -87,7 +87,7 @@ import org.opensilex.sparql.service.SPARQLService;
  * @author Arnaud Charleroy <arnaud.charleroy@inra.fr>, Morgane Vidal
  * <morgane.vidal@inra.fr>
  */
-@Api("/documents")
+@Api(value="/documents", hidden = true)
 @Path("/documents")
 public class DocumentResourceService extends ResourceService {
 

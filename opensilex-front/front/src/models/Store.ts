@@ -109,7 +109,10 @@ let store = new Vuex.Store({
       CREDENTIAL_FACTOR_MODIFICATION_ID: "factor-modification",
       CREDENTIAL_FACTOR_DELETE_ID: "factor-delete",
       CREDENTIAL_GERMPLASM_MODIFICATION_ID: "germplasm-modification",
-      CREDENTIAL_GERMPLASM_DELETE_ID: "germplasm-delete"
+      CREDENTIAL_GERMPLASM_DELETE_ID: "germplasm-delete",
+      CREDENTIAL_DOCUMENT_MODIFICATION_ID: "document-modification",
+      CREDENTIAL_DOCUMENT_DELETE_ID: "document-delete"
+
     }
   },
   getters: {

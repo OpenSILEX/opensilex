@@ -448,4 +448,14 @@ components["opensilex-SciObjectTypeSearch"] = SciObjectTypeSearch;
 import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
 components["opensilex-TimeSearch"] = TimeSearch;
 
+// DOCUMENT
+import DocumentView from './documents/DocumentView.vue';
+components["opensilex-DocumentView"] = DocumentView;
+import DocumentForm from './documents/DocumentForm.vue';
+components["opensilex-DocumentForm"] = DocumentForm;
+import DocumentList from './documents/DocumentList.vue';
+components["opensilex-DocumentList"] = DocumentList;
+import DocumentDetails from './documents/DocumentDetails.vue';
+components["opensilex-DocumentDetails"] = DocumentDetails;
+
 export default components;

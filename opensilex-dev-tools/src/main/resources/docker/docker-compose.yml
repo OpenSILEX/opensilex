@@ -32,3 +32,4 @@ networks:
 volumes:
    mongodb_data:
    rdf4j_data:
+

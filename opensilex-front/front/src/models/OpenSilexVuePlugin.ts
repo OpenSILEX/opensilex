@@ -668,7 +668,7 @@ export default class OpenSilexVuePlugin {
      *  {description  : {"name" :"filename",....}, file : File Object}
      *  @see UploadFile interface
      */
-    uploadFileToService(servicePath: string, body: UploadFileBody) {
+    uploadFileToService(servicePath: string, body: UploadFileBody, isUpdated : boolean) {
         console.log(this.baseApi);
         let formData = new FormData();
 
@@ -696,7 +696,7 @@ export default class OpenSilexVuePlugin {
         }
 
         let options = {
-            method: 'POST',
+            method: isUpdated ? 'PUT' : 'POST',
             body: formData,
             // If you add this, upload won't work
             headers

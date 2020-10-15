@@ -253,9 +253,8 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
-
         try {
-            String moveQuery = "MOVE <" + oldGraphURI + "> TO <" + newGraphURI + ">";
+            String moveQuery = "MOVE GRAPH <" + oldGraphURI + "> TO <" + newGraphURI + ">";
             Update renameQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, moveQuery);
             if (getTimeout() > 0) {
                 renameQuery.setMaxExecutionTime(getTimeout());

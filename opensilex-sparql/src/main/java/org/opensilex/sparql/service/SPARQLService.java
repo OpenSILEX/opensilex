@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
@@ -287,9 +288,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     @Override
     public void renameGraph(URI oldGraphURI, URI newGraphURI) throws SPARQLException {
+        URI fullOldURI;
+        try {
+            fullOldURI = new URI(SPARQLDeserializers.getExpandedURI(oldGraphURI));
+        } catch (URISyntaxException ex) {
+            throw new SPARQLInvalidURIException("Invalid origin graph URI", oldGraphURI);
+        }
+        
+        URI fullNewURI;
+        try {
+            fullNewURI = new URI(SPARQLDeserializers.getExpandedURI(newGraphURI));
+        } catch (URISyntaxException ex) {
+            throw new SPARQLInvalidURIException("Invalid destination graph URI", newGraphURI);
+        }
+        
         disableSHACL();
-        LOGGER.debug("MOVE GRAPH " + oldGraphURI + " TO " + newGraphURI);
-        connection.renameGraph(oldGraphURI, newGraphURI);
+        LOGGER.debug("MOVE GRAPH " + fullOldURI + " TO " + fullNewURI);
+        connection.renameGraph(fullOldURI, fullNewURI);
         enableSHACL();
     }
 

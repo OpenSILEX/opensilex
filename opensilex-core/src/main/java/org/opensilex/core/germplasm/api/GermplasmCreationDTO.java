@@ -43,8 +43,8 @@ public class GermplasmCreationDTO {
      * Germplasm label
      */
     @Required
-    @ApiModelProperty(value = "Germplasm label", example = "SL_001", required = true)
-    protected String label;
+    @ApiModelProperty(value = "Germplasm name", example = "SL_001", required = true)
+    protected String name;
     
     /**
      * Germplasm id (accessionNumber, varietyCode...)
@@ -107,12 +107,12 @@ public class GermplasmCreationDTO {
         this.rdfType = rdfType;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String label) {
+        this.name = label;
     }
 
     public String getCode() {
@@ -197,8 +197,8 @@ public class GermplasmCreationDTO {
         if (uri != null) {
             model.setUri(uri);
         }
-        if (label != null) {
-            model.setLabel(new SPARQLLabel(label, ""));
+        if (name != null) {
+            model.setLabel(new SPARQLLabel(name, ""));
         }
         if (rdfType != null) {
             model.setType(rdfType);

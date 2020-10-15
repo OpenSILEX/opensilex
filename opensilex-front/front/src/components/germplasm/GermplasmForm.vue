@@ -22,10 +22,10 @@
     <!-- label -->
     <opensilex-InputForm
       :value.sync="form.label"
-      label="GermplasmForm.label"
+      label="GermplasmForm.name"
       type="text"
       :required="true"
-      helpMessage="GermplasmForm.label-help"
+      helpMessage="GermplasmForm.name-help"
     ></opensilex-InputForm>
 
     <!-- synonyms -->
@@ -152,7 +152,7 @@ export default class GermplasmForm extends Vue {
       return {
         uri: null,
         rdfType: null,
-        label: null,
+        name: null,
         code: null,
         fromSpecies: null,
         fromVariety: null,
@@ -175,7 +175,7 @@ export default class GermplasmForm extends Vue {
     return {
       uri: null,
       rdfType: null,
-      label: null,
+      name: null,
       code: null,
       fromSpecies: null,
       fromVariety: null,
@@ -226,8 +226,8 @@ export default class GermplasmForm extends Vue {
 
 en:
   GermplasmForm:
-    label: Name
-    label-help: Name used to define this germplasm
+    name: Name
+    name-help: Name used to define this germplasm
     uri: URI
     uri-help: Unique germplasm identifier
     rdfType: Type
@@ -251,8 +251,8 @@ en:
 
 fr:
   GermplasmForm:
-    label: Nom
-    label-help: Nom du germplasm
+    name: Nom
+    name-help: Nom du germplasm
     uri: URI
     uri-help: Identifiant unique du germplasm
     rdfType: Type

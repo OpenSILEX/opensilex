@@ -22,7 +22,7 @@ public class GermplasmGetAllDTO {
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
      */
-    protected URI rdfType;
+    protected URI type;
 
     /**
      * typeLabel
@@ -32,12 +32,12 @@ public class GermplasmGetAllDTO {
     /**
      * Germplasm label
      */
-    protected String label;
+    protected String name;
 
     /**
      * Germplasm species URI
      */
-    protected URI fromSpecies;
+    protected URI species;
 
     /**
      * speciesLabel
@@ -52,12 +52,12 @@ public class GermplasmGetAllDTO {
         this.uri = uri;
     }
 
-    public URI getRdfType() {
-        return rdfType;
+    public URI getType() {
+        return type;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+    public void setType(URI type) {
+        this.type = type;
     }
 
     public String getTypeLabel() {
@@ -68,20 +68,20 @@ public class GermplasmGetAllDTO {
         this.typeLabel = typeLabel;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public URI getFromSpecies() {
-        return fromSpecies;
+    public URI getSpecies() {
+        return species;
     }
 
-    public void setFromSpecies(URI fromSpecies) {
-        this.fromSpecies = fromSpecies;
+    public void setSpecies(URI species) {
+        this.species = species;
     }
 
     public String getSpeciesLabel() {
@@ -102,12 +102,12 @@ public class GermplasmGetAllDTO {
         GermplasmGetAllDTO dto = new GermplasmGetAllDTO();
 
         dto.setUri(model.getUri());
-        dto.setRdfType(model.getType());
+        dto.setType(model.getType());
         dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
-        dto.setLabel(model.getName());
+        dto.setName(model.getName());
 
         if (model.getSpecies() != null) {
-            dto.setFromSpecies(model.getSpecies().getUri());
+            dto.setSpecies(model.getSpecies().getUri());
             try {
                 dto.setSpeciesLabel(model.getSpecies().getName());
             } catch (Exception e) {

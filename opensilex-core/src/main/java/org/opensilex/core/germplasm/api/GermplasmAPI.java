@@ -9,6 +9,12 @@
  */
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.swagger.annotations.Api;
@@ -16,12 +22,18 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -35,8 +47,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -83,7 +99,7 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.germplasm.delete";
 
     protected final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
-    protected static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#variety";
+    protected static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
     protected static final String GERMPLASM_EXAMPLE_SPECIES = "http://www.phenome-fppn.fr/id/species/zeamays";
     protected static final String GERMPLASM_EXAMPLE_VARIETY = "";
     protected static final String GERMPLASM_EXAMPLE_ACCESSION = "";
@@ -297,8 +313,8 @@ public class GermplasmAPI {
     })
     public Response searchGermplasmList(
             @ApiParam(value = "Search by uri", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uri") URI uri,
-            @ApiParam(value = "Search by type", example = GERMPLASM_EXAMPLE_TYPE) @QueryParam("type") URI rdfType,
-            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("label") String label,
+            @ApiParam(value = "Search by type", example = GERMPLASM_EXAMPLE_TYPE) @QueryParam("type") URI type,
+            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by species", example = GERMPLASM_EXAMPLE_SPECIES) @QueryParam("species") URI species,
             @ApiParam(value = "Search by variety", example = GERMPLASM_EXAMPLE_VARIETY) @QueryParam("variety") URI variety,
             @ApiParam(value = "Search by accession", example = GERMPLASM_EXAMPLE_ACCESSION) @QueryParam("accession") URI accession,
@@ -314,8 +330,8 @@ public class GermplasmAPI {
         ListWithPagination<GermplasmModel> resultList = dao.search(
                 currentUser,
                 uri,
-                rdfType,
-                label,
+                type,
+                name,
                 species,
                 variety,
                 accession,
@@ -368,8 +384,8 @@ public class GermplasmAPI {
         ListWithPagination<GermplasmModel> resultList = dao.search(
                 currentUser,
                 germplasmSearchDTO.getUri(),
-                germplasmSearchDTO.getRdfType(),
-                germplasmSearchDTO.getLabel(),
+                germplasmSearchDTO.getType(),
+                germplasmSearchDTO.getName(),
                 germplasmSearchDTO.getFromSpecies(),
                 germplasmSearchDTO.getFromVariety(),
                 germplasmSearchDTO.getFromAccession(),
@@ -389,6 +405,75 @@ public class GermplasmAPI {
 
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    /**
+     *
+     * @param germplasmSearchDTO
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws Exception
+     */
+    @POST
+    @Path("exportCSV")
+    @ApiOperation("export germplasm")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with germplasm list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportGermplasm(
+            @ApiParam("Germplasm search form") GermplasmSearchDTO germplasmSearchDTO
+            ) throws Exception {
+
+        // Search germplasm with germplasm DAO
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
+        List<GermplasmModel> resultList = dao.searchForExport(
+                currentUser,
+                germplasmSearchDTO.getUri(),
+                germplasmSearchDTO.getType(),
+                germplasmSearchDTO.getName(),
+                germplasmSearchDTO.getFromSpecies(),
+                germplasmSearchDTO.getFromVariety(),
+                germplasmSearchDTO.getFromAccession(),
+                germplasmSearchDTO.getInstitute(),
+                germplasmSearchDTO.getProductionYear(),
+                germplasmSearchDTO.getExperiment()
+        );
+
+        // Convert list to DTO
+        List<GermplasmGetExportDTO> resultDTOList = new ArrayList<>();
+        for (GermplasmModel germplasm:resultList) {
+            GermplasmGetExportDTO dto = GermplasmGetExportDTO.fromModel(germplasm);
+            resultDTOList.add(dto);
+        }
+        
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
+        
+        Builder csvSchemaBuilder = CsvSchema.builder();
+	JsonNode firstObject = jsonTree.elements().next();
+        firstObject.fieldNames().forEachRemaining(fieldName -> {csvSchemaBuilder.addColumn(fieldName);} );
+	CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        StringWriter str = new StringWriter();
+        
+        CsvMapper csvMapper = new CsvMapper();
+	csvMapper.writerFor(JsonNode.class)
+	  .with(csvSchema)
+	  .writeValue(str, jsonTree);
+        
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String fileName = "export_germplasm" + dtf.format(date);
+
+        return Response.ok(str.toString(), MediaType.TEXT_PLAIN_TYPE)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .build();
+        
     }
 
     /**
@@ -501,7 +586,7 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.PRECONDITION_FAILED,
                         "Germplasm label already exists for this species",
-                        "Duplicated label: " + germplasmDTO.getLabel()
+                        "Duplicated label: " + germplasmDTO.getName()
                 );
             }
         }
@@ -585,7 +670,7 @@ public class GermplasmAPI {
         if (germplasmDTO.getFromSpecies() != null && germplasmDTO.getFromVariety() != null) {
             //check coherence between variety and species
             isRelated = cache.get(new Key(germplasmDTO), this::checkVarietySpecies);
-            //isRelated = checkVarietySpecies(germplasmDTO.getFromSpecies(), germplasmDTO.getFromVariety());
+            //isRelated = checkVarietySpecies(germplasmDTO.getSpecies(), germplasmDTO.getFromVariety());
             if (!isRelated) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,

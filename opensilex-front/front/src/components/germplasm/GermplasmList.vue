@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <opensilex-SearchFilterField
       @search="updateFilters()"
       @clear="resetSearch()"
@@ -8,7 +9,7 @@
       <template v-slot:filters>
         <div class="col col-xl-4 col-sm-6 col-12">
           <opensilex-TypeForm
-            :type.sync="filter.rdfType"
+            :type.sync="filter.type"
             :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
             placeholder="GermplasmList.filter.rdfType-placeholder"
           ></opensilex-TypeForm>
@@ -49,7 +50,7 @@
             <label>{{$t('GermplasmList.filter.label')}}</label>
             <b-input-group>
               <opensilex-StringFilter
-                :filter.sync="filter.label"
+                :filter.sync="filter.name"
                 placeholder="GermplasmList.filter.label-placeholder"
               ></opensilex-StringFilter>
             </b-input-group>
@@ -66,9 +67,11 @@
               ></opensilex-ExperimentSelector>
             </b-input-group>
           </b-form-group>
-        </div>
-      </template>
+        </div>           
+      </template>       
     </opensilex-SearchFilterField>
+
+    <b-button class="mb-2 mr-2" @click="exportGermplasm()" >{{$t('GermplasmList.export')}}</b-button> 
 
     <opensilex-TableAsyncView
       ref="tableRef"
@@ -79,10 +82,10 @@
       labelNumberOfSelectedRow="GermplasmList.selected"
       iconNumberOfSelectedRow="ik#ik-feather"
     >
-      <template v-slot:cell(label)="{data}">
+      <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
-          :value="data.item.label"
+          :value="data.item.name"
           :to="{path: '/germplasm/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
@@ -157,13 +160,17 @@ export default class GermplasmList extends Vue {
     return this.$store.state.credentials;
   }
 
+  get lang() {
+    return this.$store.state.lang;
+  }
+
   germplasmTypes = [];
   speciesList = [];
   experimentsList = [];
 
   filter: GermplasmSearchDTO = {
-    rdfType: null,
-    label: null,
+    type: null,
+    name: null,
     fromSpecies: null,
     productionYear: null,
     institute: null,
@@ -178,8 +185,8 @@ export default class GermplasmList extends Vue {
 
   resetFilters() {
     this.filter = {
-      rdfType: null,
-      label: null,
+      type: null,
+      name: null,
       fromSpecies: null,
       productionYear: null,
       institute: null,
@@ -226,7 +233,7 @@ export default class GermplasmList extends Vue {
   }
 
   updateTypeFilter() {
-    this.$opensilex.updateURLParameter("type", this.filter.rdfType);
+    this.$opensilex.updateURLParameter("type", this.filter.type);
     this.refresh();
   }
 
@@ -249,7 +256,7 @@ export default class GermplasmList extends Vue {
   }
 
   updateNameFilter() {
-    this.$opensilex.updateURLParameter("name", this.filter.label);
+    this.$opensilex.updateURLParameter("name", this.filter.name);
     this.refresh();
   }
 
@@ -261,8 +268,8 @@ export default class GermplasmList extends Vue {
   get fields() {
     let tableFields = [
       {
-        key: "label",
-        label: "GermplasmList.label",
+        key: "name",
+        label: "GermplasmList.name",
         sortable: true
       },
       {
@@ -298,6 +305,15 @@ export default class GermplasmList extends Vue {
       this.filter
     );
   }
+
+  exportGermplasm() {
+    let path = "/core/germplasm/exportCSV";
+    let today = new Date();
+    let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    this.$opensilex
+     .downloadFilefromPostService(path, filename, "csv", this.filter, this.lang);
+  }
+
 
   loadExperiments() {
     let expService: ExperimentsService = this.$opensilex.getService(
@@ -348,7 +364,7 @@ export default class GermplasmList extends Vue {
 en:
   GermplasmList:
     uri: URI
-    label: Name
+    name: Name
     rdfType: Type
     fromSpecies: Species URI
     speciesLabel: Species
@@ -356,6 +372,7 @@ en:
     delete: Delete Germplasm
     selectLabel: Select Germplasm
     selected: Selected Germplasm
+    export: Export Germplasm list
 
     filter:
       description: Germplasm Search
@@ -385,6 +402,7 @@ fr:
     delete: Supprimer le germplasm
     selectLabel: Sélection de Matériel Génétiques
     selected: Matériel Génétique(s) Sélectionné(s)
+    export: Exporter la liste
 
     filter:
       description: Recherche de Ressources Génétiques
@@ -401,6 +419,6 @@ fr:
       experiment: Expérimentation
       experiment-placeholder: Sélectionner une expérimentation
       search: Rechercher
-      reset: Réinitialiser
+      reset: Réinitialiser      
   
 </i18n>

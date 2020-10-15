@@ -46,14 +46,14 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
     protected GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setLabel("testSpecies");
+        germplasmDTO.setName("testSpecies");
         germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
         return germplasmDTO;
     }
 
     protected GermplasmCreationDTO getCreationVarietyDTO(URI speciesURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setLabel("testVariety");
+        germplasmDTO.setName("testVariety");
         germplasmDTO.setRdfType(new URI(Oeso.Variety.toString()));
         germplasmDTO.setFromSpecies(speciesURI);
         return germplasmDTO;
@@ -61,7 +61,7 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
     protected GermplasmCreationDTO getCreationAccessionDTO(URI varietyURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setLabel("testAccession");
+        germplasmDTO.setName("testAccession");
         germplasmDTO.setRdfType(new URI(Oeso.Accession.toString()));
         germplasmDTO.setFromVariety(varietyURI);
         return germplasmDTO;
@@ -69,7 +69,7 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
     protected GermplasmCreationDTO getCreationLotDTO(URI accessionURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
-        germplasmDTO.setLabel("testLot");
+        germplasmDTO.setName("testLot");
         germplasmDTO.setRdfType(new URI(Oeso.PlantMaterialLot.toString()));
         germplasmDTO.setFromAccession(accessionURI);
         return germplasmDTO;
@@ -145,8 +145,8 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         LOGGER.info(uri.toString());
 
         GermplasmSearchDTO searchDTO = new GermplasmSearchDTO();
-        searchDTO.label = getCreationSpeciesDTO().label;
-        searchDTO.rdfType = getCreationSpeciesDTO().rdfType;
+        searchDTO.name = getCreationSpeciesDTO().name;
+        searchDTO.type = getCreationSpeciesDTO().rdfType;
 
         Response getResult = getJsonPostResponse(target(searchPath), searchDTO, OpenSilex.DEFAULT_LANGUAGE);
 
@@ -170,7 +170,7 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // update the germplasm
         germplasm.setUri(extractUriFromResponse(postResult));
-        germplasm.setLabel("new alias");
+        germplasm.setName("new alias");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), germplasm);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
@@ -186,7 +186,7 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         GermplasmGetSingleDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(germplasm.getLabel(), dtoFromApi.getLabel());
+        assertEquals(germplasm.getName(), dtoFromApi.getName());
     }
 
     @Test

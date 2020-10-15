@@ -3,7 +3,7 @@
     <opensilex-PageHeader
       icon="fa#sun"
       title="GermplasmDetails.title"
-      :description="germplasm.label"
+      :description="germplasm.name"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" >   
@@ -27,7 +27,7 @@
               ></opensilex-UriView>
               <opensilex-StringView class="test" v-else label="GermplasmDetails.uri" :value="germplasm.uri"></opensilex-StringView>
               <opensilex-StringView label="GermplasmDetails.rdfType" :value="germplasm.typeLabel"></opensilex-StringView>
-              <opensilex-StringView label="GermplasmDetails.label" :value="germplasm.label"></opensilex-StringView>
+              <opensilex-StringView label="GermplasmDetails.name" :value="germplasm.name"></opensilex-StringView>
               <opensilex-StringView
                 v-if="germplasm.synonyms.length>0"
                 label="GermplasmDetails.synonyms"
@@ -54,22 +54,22 @@
                 :value="germplasm.comment"
               ></opensilex-StringView>
               <opensilex-LabelUriView
-                v-if="(germplasm.speciesLabel != null) || (germplasm.fromSpecies != null)"
+                v-if="(germplasm.speciesLabel != null) || (germplasm.species != null)"
                 label="GermplasmDetails.species"
                 :value="germplasm.speciesLabel"
-                :uri="germplasm.fromSpecies"
+                :uri="germplasm.species"
               ></opensilex-LabelUriView>
               <opensilex-LabelUriView
-                v-if="(germplasm.varietyLabel != null) || (germplasm.fromVariety != null)"
+                v-if="(germplasm.varietyLabel != null) || (germplasm.variety != null)"
                 label="GermplasmDetails.variety"
                 :value="germplasm.varietyLabel"
-                :uri="germplasm.fromVariety"
+                :uri="germplasm.variety"
               ></opensilex-LabelUriView>
               <opensilex-LabelUriView
-                v-if="(germplasm.accessionLabel != null) || (germplasm.fromAccession != null)"
+                v-if="(germplasm.accessionLabel != null) || (germplasm.accession != null)"
                 label="GermplasmDetails.accession"
                 :value="germplasm.accessionLabel"
-                :uri="germplasm.fromAccession"
+                :uri="germplasm.accession"
               ></opensilex-LabelUriView>
             </template>
           </opensilex-Card>
@@ -158,14 +158,14 @@ export default class GermplasmDetails extends Vue {
 
   germplasm: GermplasmGetSingleDTO = {
     uri: null,
-    label: null,
-    rdfType: null,
+    name: null,
+    type: null,
     typeLabel: null,
-    fromSpecies: null,
+    species: null,
     speciesLabel: null,
-    fromVariety: null,
+    variety: null,
     varietyLabel: null,
-    fromAccession: null,
+    accession: null,
     accessionLabel: null,
     institute: null,
     code: null,
@@ -176,7 +176,6 @@ export default class GermplasmDetails extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
-
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadGermplasm(this.uri);
   }
@@ -262,7 +261,7 @@ en:
     experiment: Associated experiments
     document: Associated documents
     uri: URI
-    label: Name
+    name: Name
     rdfType: Type
     species: Species
     variety: Variety
@@ -285,7 +284,7 @@ fr:
     experiment: Expérimentations associées
     document: Documents associées
     uri: URI 
-    label: Nom 
+    name: Nom 
     rdfType: Type 
     species: Espèce 
     variety: Variété 

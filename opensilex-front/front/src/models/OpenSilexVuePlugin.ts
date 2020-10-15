@@ -49,6 +49,10 @@ export default class OpenSilexVuePlugin {
         return this.$store.state.user;
     }
 
+    getLang() {
+        return this.$store.state.lang;
+    }
+
     getBaseAPI() {
         return this.baseApi;
     }
@@ -719,26 +723,58 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-    * 
     * @param servicePath a string defines path which will
     *  be combine with api base path. e.g. "/data-analysis/get/{uri}/download"
     * @param name name of the returned file
     * @param extension extension of the file
     */
     downloadFilefromService(servicePath: string, name: string, extension: string) {
+    return this.downloadFilefromPostOrGetService(servicePath, name, extension, "GET", null)
+    }
+
+    /**
+    * @param servicePath a string defines path which will
+    * @param name name of the returned file
+    * @param extension extension of the file
+    * @param body body of a post request
+    */
+    downloadFilefromPostService(servicePath: string, name: string, extension: string, body: any, lang: string) {
+        return this.downloadFilefromPostOrGetService(servicePath, name, extension, "POST", body)
+    }
+
+    /**    * 
+    * @param servicePath a string defines path which will
+    * @param name name of the returned file
+    * @param extension extension of the file
+    * @param method REST service method (POST or GET)
+    * @param body body of a post request
+    */
+    downloadFilefromPostOrGetService(servicePath: string, name: string, extension: string, method: string, body: any) {
+        this.showLoader();
         console.log(this.baseApi);
         let url =
             this.baseApi +
             servicePath;
         let headers = {};
-        let user = this.getUser();
+
+        let user = this.getUser(); 
         if (user != User.ANONYMOUS()) {
-            headers["Authorization"] = user.getAuthorizationHeader();
+            headers["Authorization"] = user.getAuthorizationHeader();            
         }
-        let promise = fetch(url, {
-            method: "GET",
-            headers: headers,
-        });
+
+        headers["Accept-Language"] = this.getLang();
+
+        let request: RequestInit =  {
+            method: method,
+            headers: headers
+        }
+
+        if (body != null) {
+            request['body'] = JSON.stringify(body)
+            headers["Content-Type"] = "application/json";
+        }
+        
+        let promise = fetch(url, request);            
 
         return promise
             .then(function (response) {
@@ -746,13 +782,13 @@ export default class OpenSilexVuePlugin {
             })
             .then((result) => {
                 let objectURL = URL.createObjectURL(result);
-                let fileUrl = result;
                 let link = document.createElement("a");
                 link.href = objectURL;
                 link.setAttribute("download", name + "." + extension);
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
+                this.hideLoader()
             })
             .catch(function (error) {
                 console.log(error);

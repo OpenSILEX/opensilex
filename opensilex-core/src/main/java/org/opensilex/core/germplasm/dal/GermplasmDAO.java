@@ -97,7 +97,7 @@ public class GermplasmDAO {
         AskBuilder askQuery = new AskBuilder()
                 .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
                 .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(germplasm.getRdfType()))
-                .addWhere("?uri", RDFS.label, germplasm.getLabel());
+                .addWhere("?uri", RDFS.label, germplasm.getName());
 
         if (germplasm.getFromSpecies() != null) {
             askQuery.addWhere("?uri", Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getFromSpecies()));
@@ -215,6 +215,60 @@ public class GermplasmDAO {
                     orderByList,
                     page,
                     pageSize
+            );
+        }
+    }
+    
+    public List<GermplasmModel> searchForExport (
+            UserModel user,
+            URI uri,
+            URI rdfType,
+            String label,
+            URI species,
+            URI variety,
+            URI accession,
+            String institute,
+            Integer productionYear,
+            URI experiment
+    ) throws Exception {
+        
+        if (experiment != null) {
+            List<URI> gplUrisFromExp = getGermplasmURIsFromExp(experiment);
+            if (gplUrisFromExp.isEmpty()) {
+                return new ArrayList();
+            }
+            else {
+                return sparql.search(
+                GermplasmModel.class,
+                user.getLanguage(),
+                (SelectBuilder select) -> {
+                    appendUriFilter(select, uri);
+                    appendRdfTypeFilter(select, rdfType);
+                    appendRegexLabelAndSynonymFilter(select, label);
+                    appendSpeciesFilter(select, species);
+                    appendVarietyFilter(select, variety);
+                    appendAccessionFilter(select, accession);
+                    appendInstituteFilter(select, institute);
+                    appendProductionYearFilter(select, productionYear);
+                    SPARQLQueryHelper.inURI(select, GermplasmModel.URI_FIELD, gplUrisFromExp);
+                });
+            }
+                           
+        } else {
+
+            return sparql.search(
+                    GermplasmModel.class,
+                    user.getLanguage(),
+                    (SelectBuilder select) -> {
+                        appendUriFilter(select, uri);
+                        appendRdfTypeFilter(select, rdfType);
+                        appendRegexLabelAndSynonymFilter(select, label);
+                        appendSpeciesFilter(select, species);
+                        appendVarietyFilter(select, variety);
+                        appendAccessionFilter(select, accession);
+                        appendInstituteFilter(select, institute);
+                        appendProductionYearFilter(select, productionYear);                    
+                    }
             );
         }
     }

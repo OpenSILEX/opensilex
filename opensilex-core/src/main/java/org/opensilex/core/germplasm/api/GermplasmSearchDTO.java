@@ -22,12 +22,12 @@ public class GermplasmSearchDTO {
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
      */
-    protected URI rdfType;
+    protected URI type;
     
     /**
      * Germplasm label
      */
-    protected String label;
+    protected String name;
     
     /**
      * Germplasm id (accessionNumber, varietyCode...)
@@ -76,21 +76,21 @@ public class GermplasmSearchDTO {
     
     @ValidURI
     @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    public URI getRdfType() {
-        return rdfType;
+    public URI getType() {
+        return type;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+    public void setType(URI type) {
+        this.type = type;
     }
 
-    @ApiModelProperty(value = "Germplasm label", example = "SL_001")
-    public String getLabel() {
-        return label;
+    @ApiModelProperty(value = "Germplasm name", example = "SL_001")
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @ValidURI

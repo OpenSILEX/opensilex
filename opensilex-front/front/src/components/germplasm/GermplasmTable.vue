@@ -27,8 +27,8 @@
       <opensilex-CSVInputFile v-on:updated="uploaded">         
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('GermplasmTable.resetTable')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="addRow" variant="outline-info">{{$t('GermplasmTable.addRow')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-info">{{$t('GermplasmTable.addColumn')}}</b-button>  
+      <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('GermplasmTable.addRow')}}</b-button>
+      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('GermplasmTable.addColumn')}}</b-button>  
       <b-form-select v-if="this.checkedLines>0"
         id="filter"
         v-model="filter"
@@ -82,7 +82,7 @@ import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
-var Tabulator = require("tabulator-tables");
+import Tabulator from 'tabulator-tables';
 
 @Component
 export default class GermplasmTable extends Vue {
@@ -111,6 +111,7 @@ export default class GermplasmTable extends Vue {
   @Ref("progressModal") readonly progressModal!: any;
   @Ref("progressBar") readonly progressBar!: any;
   @Ref("colModal") readonly colModal!: any;
+  @Ref("table") readonly table!: any;
 
   props = [
     {
@@ -122,8 +123,14 @@ export default class GermplasmTable extends Vue {
   ];
 
   tabulator = null;
-
+  
+//   new Tabulator(this.table, {
+//     columns:[
+//         {title:"Name", field:"name", headerHozAlign:"right"}, //right align column header title
+//     ],
+// });
   tableData = [];
+   @Ref("helpModal") readonly helpModal!: any;
 
   tableColumns = [];
 
@@ -145,7 +152,6 @@ export default class GermplasmTable extends Vue {
 
   private langUnwatcher;
   mounted() {
-    //this.$nextTick(() => {
       this.langUnwatcher = this.$store.watch(
         () => this.$store.getters.language,
         lang => {       
@@ -177,7 +183,7 @@ export default class GermplasmTable extends Vue {
     let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150, validator: "unique"};
 
     let labelCol = 
-      {title:this.$t('GermplasmTable.label') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
+      {title:this.$t('GermplasmTable.name') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
         validator: "unique"
         // [{
         //   type:function(cell, value, parameters){
@@ -229,7 +235,7 @@ export default class GermplasmTable extends Vue {
     this.tableData = [];
     this.addInitialXRows(5);
 
-    this.tabulator = new Tabulator(this.$refs.table, {
+    this.tabulator = new Tabulator(this.table, {
       data: this.tableData, //link data to table
       reactiveData: true, //enable data reactivity
       columns: this.tableColumns, //define table columns
@@ -338,7 +344,7 @@ export default class GermplasmTable extends Vue {
     for (let idx = 0; idx < dataToInsert.length; idx++) {
       let form: GermplasmCreationDTO = {
         rdfType: null,
-        label: null,
+        name: null,
         uri: null,
         fromSpecies: null,
         fromVariety: null,
@@ -357,7 +363,7 @@ export default class GermplasmTable extends Vue {
         form.uri = dataToInsert[idx].uri;
       }
       if (dataToInsert[idx].name != null && dataToInsert[idx].name != "") {
-        form.label = dataToInsert[idx].name;
+        form.name = dataToInsert[idx].name;
       }
       if (
         dataToInsert[idx].fromSpecies != null &&
@@ -422,7 +428,7 @@ export default class GermplasmTable extends Vue {
       }
 
       if (
-        form.label == null &&
+        form.name == null &&
         form.uri == null &&
         form.fromSpecies == null &&
         form.fromVariety == null &&
@@ -548,7 +554,7 @@ export default class GermplasmTable extends Vue {
           uniqueNames.push(data[idx].name);        
         } else {
           insertionOK = false
-          alert(this.$t('GermplasmTable.alertDuplicate') + " : " + data[idx].name + " id: " + data[idx]["rowNumber"]);
+          alert(this.$t('GermplasmTable.alertDuplicateName') + " " + data[idx]["rowNumber"] + ", name= " + data[idx].name);
           break
         }
         if(data[idx].uri !== "") {
@@ -556,7 +562,7 @@ export default class GermplasmTable extends Vue {
               uniqueURIs.push(data[idx].uri);        
             } else {
               insertionOK = false
-              alert(this.$t('GermplasmTable.alertDuplicate') + " : " + data[idx].uri  + " id: " + idx+1);
+              alert(this.$t('GermplasmTable.alertDuplicateURI') + " " + data[idx]["rowNumber"] + ", uri= " + data[idx].uri);
               break
             }
         } 
@@ -622,7 +628,7 @@ export default class GermplasmTable extends Vue {
 
 en:
   GermplasmTable:
-    label: Name
+    name: Name
     uri: URI
     rdfType: Type
     fromSpecies : Species URI
@@ -659,13 +665,13 @@ en:
     insertionStatusMessage: created
     filterLines: Filter the lines
     infoMandatoryFields: It is mandatory to fill the species URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
-    alertDuplicate: The file contains a duplicate name
-    alertDuplicateURI: The file contains a duplicate uri
+    alertDuplicate: The file contains a duplicate name at line
+    alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
 
 fr:
   GermplasmTable:
-    label: Nom
+    name: Nom
     uri: URI
     rdfType: Type
     fromSpecies : URI de l'espèce
@@ -703,7 +709,7 @@ fr:
     seeErrorLines: See lines
     seeAll : see all 
     infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
-    alertDuplicateName: Le fichier comporte un doublon de nom 
-    alertDuplicateURI: Le fichier comporte un doublon d'uri
+    alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
+    alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
 </i18n>

@@ -176,7 +176,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchParents(query, page, pageSize) {
     return this.soService
-      .searchScientificObjects(this.uri, query, page, pageSize)
+      .searchScientificObjects(this.uri, query, undefined, page, pageSize)
       .then(http => {
         let nodeList = [];
         for (let so of http.response.result) {

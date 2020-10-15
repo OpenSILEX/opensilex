@@ -141,13 +141,14 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjects(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI,
-            @ApiParam(value = "Regex pattern for filtering by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") URI experimentURI,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant")  @QueryParam("rdfType") URI rdfType,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchByExperiment(experimentURI, pattern, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchByExperiment(experimentURI, pattern, rdfType, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();

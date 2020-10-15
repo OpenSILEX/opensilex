@@ -3,13 +3,13 @@
     <template v-slot:header>
       <h3>
         <opensilex-Icon icon="ik#ik-map" />
-        {{$t("component.infrastructure.facilities")}}
+        {{$t("InfrastructureFacilitiesView.facilities")}}
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="facilityForm.showCreateForm()"
-          label="component.infrastructure.facility.add"
+          label="InfrastructureFacilitiesView.add"
         ></opensilex-CreateButton>
       </div>
     </template>
@@ -38,7 +38,7 @@
       </template>
 
       <template v-slot:cell(actions)="data">
-        <b-button-group class="tree-button-group" size="sm">
+        <b-button-group size="sm">
           <opensilex-EditButton
             v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
             @click="facilityForm.showEditForm(data.item)"
@@ -59,7 +59,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
       ref="facilityForm"
       component="opensilex-InfrastructureFacilityForm"
-      createTitle="component.infrastructure.facility.add"
+      createTitle="InfrastructureFacilitiesView.add"
       editTitle="InfrastructureFacilitiesView.update"
       icon="ik#ik-map"
       @onCreate="$emit('onCreate', $event)"
@@ -140,10 +140,12 @@ en:
   InfrastructureFacilitiesView:
     update: Update infrastructure facility
     delete: Delete infrastructure facility
-
+    add: Add infrastructure facility
+    facilities: Facilities
 fr:
   InfrastructureFacilitiesView:
     update: Modifier l'installation technique
     delete: Supprimer l'installation technique
-
+    add: Ajouter une installation technique
+    facilities: Installations techniques
 </i18n>

@@ -3,7 +3,7 @@
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
-      label="component.infrastructure.facility.facility-uri"
+      label="InfrastructureFacilityForm.facility-uri"
       :editMode="editMode"
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
@@ -14,7 +14,7 @@
       label="component.common.name"
       type="text"
       :required="true"
-      placeholder="component.infrastructure.facility.form-name-placeholder"
+      placeholder="InfrastructureFacilityForm.form-name-placeholder"
     ></opensilex-InputForm>
 
     <!-- Type -->
@@ -22,7 +22,7 @@
       :type.sync="form.type"
       :baseType="$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI"
       :required="true"
-      placeholder="component.infrastructure.facility.form-type-placeholder"
+      placeholder="InfrastructureFacilityForm.form-type-placeholder"
     ></opensilex-TypeForm>
   </b-form>
 </template>
@@ -87,7 +87,7 @@ export default class InfrastructureFacilityForm extends Vue {
           this.$opensilex.errorHandler(
             error,
             this.$t(
-              "component.infrastructure.errors.infrastructure-facility-already-exists"
+              "InfrastructureFacilityForm.infrastructure-facility-already-exists"
             )
           );
         } else {
@@ -113,3 +113,17 @@ export default class InfrastructureFacilityForm extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  InfrastructureFacilityForm:
+    facility-uri: Infrastructure facility URI
+    form-name-placeholder: Enter infrastructure facility name
+    form-type-placeholder: Select infrastructure facility type
+    infrastructure-facility-already-exists: Infrastructure facility already exists with this URI
+fr:
+  InfrastructureFacilityForm:
+    facility-uri: URI de l'installation technique
+    form-name-placeholder: Saisir le nom de l'installation technique
+    form-type-placeholder: Sélectionner le type de l'installation technique
+    infrastructure-facility-already-exists: Une installation technique existe déjà avec cette URI
+</i18n>

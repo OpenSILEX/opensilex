@@ -38,6 +38,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ListWithPagination;
 
@@ -90,7 +91,7 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> searchByExperiment(URI experimentURI, String pattern, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> searchByExperiment(URI experimentURI, String pattern, URI rdfType, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(experimentURI, currentUser);
 
@@ -102,6 +103,9 @@ public class ScientificObjectDAO {
                 (select) -> {
                     if (pattern != null && !pattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, pattern));
+                    }
+                    if (rdfType != null) {
+                        select.addWhere(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType));
                     }
                 },
                 null,

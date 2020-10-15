@@ -3,7 +3,7 @@
     <opensilex-PageHeader
       icon="ik#ik-globe"
       title="component.menu.infrastructures"
-      description="component.infrastructure.description"
+      description="InfrastructureView.description"
     ></opensilex-PageHeader>
     <div class="row">
       <div class="col-md-6">
@@ -77,3 +77,11 @@ export default class InfrastructureView extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  InfrastructureView:
+    description: Manage and configure infrastructures
+fr:
+  InfrastructureView:
+    description: Gérer et configurer les infrastructures
+</i18n>

@@ -3,7 +3,7 @@
     <template v-slot:header>
       <h3>
         <opensilex-Icon icon="ik#ik-clipboard" />
-        {{$t("component.infrastructure.detail")}}
+        {{$t("component.common.details-label")}}
       </h3>
     </template>
     <div>

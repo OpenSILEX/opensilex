@@ -4,7 +4,7 @@
     :selected.sync="infrastructuresURI"
     :multiple="multiple"
     :options="infrastructuresOptions"
-    placeholder="component.infrastructure.filter-placeholder"
+    placeholder="InfrastructureTree.filter-placeholder"
     @select="select"
     @deselect="deselect"
   ></opensilex-SelectForm>

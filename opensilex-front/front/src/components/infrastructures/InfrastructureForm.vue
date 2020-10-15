@@ -3,7 +3,7 @@
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
-      label="component.infrastructure.infrastructure-uri"
+      label="InfrastructureForm.infrastructure-uri"
       :editMode="editMode"
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
@@ -14,7 +14,7 @@
       label="component.common.name"
       type="text"
       :required="true"
-      placeholder="component.infrastructure.form-name-placeholder"
+      placeholder="InfrastructureForm.form-name-placeholder"
     ></opensilex-InputForm>
 
     <!-- Type -->
@@ -22,7 +22,7 @@
       :type.sync="form.type"
       :baseType="$opensilex.Oeso.INFRASTRUCTURE_TYPE_URI"
       :required="true"
-      placeholder="component.infrastructure.form-type-placeholder"
+      placeholder="InfrastructureForm.form-type-placeholder"
     ></opensilex-TypeForm>
 
     <!-- Parent -->
@@ -30,7 +30,7 @@
       :selected.sync="form.parent"
       :options="parentOptions"
       label="component.common.parent"
-      placeholder="component.infrastructure.form-parent-placeholder"
+      placeholder="InfrastructureForm.form-parent-placeholder"
     ></opensilex-SelectForm>
   </b-form>
 </template>
@@ -120,7 +120,7 @@ export default class InfrastructureForm extends Vue {
           this.$opensilex.errorHandler(
             error,
             this.$t(
-              "component.infrastructure.errors.infrastructure-already-exists"
+              "InfrastructureForm.infrastructure-already-exists"
             )
           );
         } else {
@@ -146,3 +146,19 @@ export default class InfrastructureForm extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+en:
+  InfrastructureForm:
+    infrastructure-uri: Infrastructure URI
+    form-name-placeholder: Enter infrastructure name
+    form-type-placeholder: Select infrastructure type
+    form-parent-placeholder: Select parent infrastructure
+    infrastructure-already-exists: Infrastructure already exists with this URI
+fr:
+  InfrastructureForm:
+    infrastructure-uri: URI de l'infrastructure
+    form-name-placeholder: Saisir le nom de l'infrastructure
+    form-type-placeholder: Sélectionner le type d'infrastructure
+    form-parent-placeholder: Sélectionner l'infrastructure parente
+    infrastructure-already-exists: Une infrastructure existe déjà avec cette URI
+</i18n>

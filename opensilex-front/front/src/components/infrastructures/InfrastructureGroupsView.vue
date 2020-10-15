@@ -55,7 +55,7 @@
       </template>
 
       <template v-slot:cell(actions)="data">
-        <b-button-group class="tree-button-group" size="sm">
+        <b-button-group size="sm">
           <opensilex-DetailButton
             @click="data.toggleDetails"
             label="component.group.details"

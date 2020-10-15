@@ -4,13 +4,13 @@
     <template v-slot:header>
       <h3>
         <opensilex-Icon icon="ik#ik-globe" />
-        {{$t("component.infrastructure.list")}}
+        {{$t("component.common.list-label")}}
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="createInfrastructure()"
-          label="component.infrastructure.add"
+          label="InfrastructureTree.add"
         ></opensilex-CreateButton>
       </div>
     </template>
@@ -19,7 +19,7 @@
     <opensilex-StringFilter
       :filter.sync="filter"
       @update="updateFilter()"
-      placeholder="component.infrastructure.filter-placeholder"
+      placeholder="InfrastructureTree.filter-placeholder"
     ></opensilex-StringFilter>
 
     <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
@@ -57,8 +57,8 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
       ref="infrastructureForm"
       component="opensilex-InfrastructureForm"
-      createTitle="component.infrastructure.add"
-      editTitle="component.infrastructure.update"
+      createTitle="InfrastructureTree.add"
+      editTitle="InfrastructureTree.update"
       icon="ik#ik-globe"
       @onCreate="refresh($event.uri)"
       @onUpdate="refresh($event.uri)"
@@ -268,11 +268,17 @@ export default class InfrastructureTree extends Vue {
 <i18n>
 en:
   InfrastructureTree:
+    filter-placeholder: Search infrastructures...
+    add: Add infrastructure
+    update: Update infrastructure
     edit: Edit infrastructure
-    add-child:  Add sub-infrastructure
+    add-child: Add sub-infrastructure
     delete: Delete infrastructure
 fr:
   InfrastructureTree:
+    filter-placeholder: Rechercher des infrastructures...
+    add: Ajouter une infrastructure
+    update: Modifier l'infrastructure
     edit: Editer l'infrastructure
     add-child:  Ajouter une sous-infrastructure
     delete: Supprimer l'infrastructure

@@ -17,6 +17,8 @@
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
+            "details-label": "details",
+            "list-label": "List",
             "element": "The element",
             "keyword": "Keyword",
             "keywords": "Keywords",
@@ -460,28 +462,6 @@
                     "hasPart": "All Alias / URI",
                     "isPartOf": "All Alias / URI"
                 }
-            }
-        },
-        "infrastructure": {
-            "infrastructure-uri": "Infrastructure URI",
-            "form-name-placeholder": "Enter infrastructure name",
-            "form-type-placeholder": "Enter infrastructure type",
-            "form-parent-placeholder": "Enter parent infrastructure",
-            "filter-placeholder": "Search infrastructures...",
-            "add": "Add infrastructure",
-            "update": "update infrastructure",
-            "detail": "Details",
-            "description": "Manage and configure infrastructures",
-            "facilities": "Facilities",
-            "list": "List",
-            "facility": {
-                "facility-uri": "Infrastructure facility URI",
-                "add": "Add infrastructure facility",
-                "form-name-placeholder": "Enter infrastructure facility name",
-                "form-type-placeholder": "Enter infrastructure facility type"
-            },
-            "errors": {
-                "infrastructure-already-exists": "Infrastructure already exists with this URI or this name"
             }
         },
         "skos": {

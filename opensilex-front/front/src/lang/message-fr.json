@@ -16,6 +16,8 @@
             "name": "Nom",
             "term":"Terme",
             "comment": "Description",
+            "details-label": "Détails",
+            "list-label": "Liste",
             "element": "L'élément",
             "keyword": "Keyword",
             "keywords": "Mot clés",
@@ -395,28 +397,6 @@
                 "infra-groups-projects": "Infrastructures, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
-            }
-        },
-        "infrastructure": {
-            "infrastructure-uri": "URI de l'infrastructure",
-            "form-name-placeholder": "Saisir le nom de l'infrastructure",
-            "form-type-placeholder": "Saisir le type d'infrastructure",
-            "form-parent-placeholder": "Saisir l'infrastructure parente",
-            "filter-placeholder": "Rechercher des infrastructures...",
-            "add": "Ajouter une infrastructure",
-            "update": "Modifier l'infrastructure",
-            "detail": "Détails",
-            "description": "Gérer et configurer les infrastructures",
-            "facilities": "Installations techniques",
-            "list": "Liste",
-            "facility": {
-                "facility-uri": "URI de l'installation technique",
-                "add": "Ajouter une installation technique",
-                "form-name-placeholder": "Saisir le nom de l'installation technique",
-                "form-type-placeholder": "Saisir le type de l'installation technique"
-            },
-            "errors": {
-                "infrastructure-already-exists": "Une utilisateur existe déjà avec cette URI ou cette adresse email."
             }
         },
         "skos": {

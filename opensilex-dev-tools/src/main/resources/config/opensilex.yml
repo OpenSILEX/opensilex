@@ -1,22 +1,21 @@
 ontologies:
-    baseURI: http://opensilex.dev/
+    baseURI: http://www.opensilex.org/
     baseURIAlias: dev
     sparql:
-        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
-
-file-system:
-    fs:
+file-system: 
+    fs: 
         config:
-            basePath: ../../opensilex-data
+            basePath: /home/bonnefoj/Documents/opensilexFiles
+                
 
-big-data:
+big-data:   
     nosql:
         config:
-            connection:
+            connection: 
                 config:
                     host: localhost
                     port: 8668
@@ -28,7 +27,24 @@ big-data:
             database: opensilex
     
 phisws:
+    postgreSQL:
+        host: localhost
+        port: 8669
+        database: opensilex
+        username: opensilex
+        password: opensilex
+        
+    ontologyBaseURI: http://www.opensilex.org/
+    vocabulary: http://www.opensilex.org/vocabulary/oeso
     infrastructure: opensilex
     
-#core:
-#    enableLogs: true
+    uploadFileServerIP: localhost
+    uploadFileServerUsername: bonnefoj
+    uploadFileServerPassword: pic3.14
+    
+    layerFileServerDirectory: /var/www/html/layers
+    layerFileServerAddress: http://localhost/layers
+    
+    uploadImageServerDirectory: /var/www/html/images
+    imageFileServerDirectory: http://localhost/images
+        

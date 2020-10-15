@@ -203,6 +203,7 @@ public class ProvenanceAPI {
                 uri,
                 null,
                 null,
+                true,
                 0,
                 1
         );

@@ -108,7 +108,7 @@
               <b-tbody>
                 <slot v-for="(row, index) in validationErrors">
                   <b-tr>
-                    <b-th :rowspan="row.listSize">{{row.index}}</b-th>
+                    <b-th :rowspan="row.listSize">{{row.index + 3}}</b-th>
                     <b-td>{{$t("OntologyCsvImporter." + row.firstErrorType.type)}}</b-td>
                     <b-td>
                       <ul>
@@ -229,7 +229,7 @@ export default class OntologyCsvImporter extends Vue {
 
     for (let i in rowsValues) {
       let rowValues = rowsValues[i];
-      csvRows.push("\"" + rowValues.join("\",\"") + "\"");
+      csvRows.push('"' + rowValues.join('","') + '"');
     }
 
     csvContent += csvRows.join("\r\n");
@@ -378,15 +378,18 @@ export default class OntologyCsvImporter extends Vue {
 
   importCSV() {
     this.validationErrors = null;
-    this.uploadCSV(this.objectType, this.validationToken, this.csvFile).then(
-      response => {
+    this.uploadCSV(this.objectType, this.validationToken, this.csvFile)
+      .then(response => {
         this.checkCSVValidation(response);
         if (this.validationToken) {
+          this.$opensilex.showSuccessToast(
+            this.$i18n.t("OntologyCsvImporter.csv-import-success-message")
+          );
           this.$emit("csvImported");
           this.hide();
         }
-      }
-    );
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   checkCSVValidation(response) {
@@ -459,11 +462,10 @@ export default class OntologyCsvImporter extends Vue {
   getValidationErrorDetail(validationError, errorType) {
     console.error(errorType, validationError);
     switch (errorType) {
-      
       case "missingHeaders":
-            return this.$t(
+        return this.$t(
           "OntologyCsvImporter.validationErrorMissingHeaderMessage",
-          {"header" : validationError}
+          { header: validationError }
         );
       case "missingRequiredValueErrors":
         return this.$t(
@@ -601,6 +603,7 @@ en:
     csv-file-select-button: Select
     downloadTemplate: Download CSV template
     separator: separator
+    csv-import-success-message: CSV file imported sucessfully
 
 fr:
   OntologyCsvImporter:
@@ -634,4 +637,5 @@ fr:
     csv-file-select-button: Parcourir
     downloadTemplate: Télécharger le modèle de fichier CSV
     separator: séparateur
+    csv-import-success-message: Fichier CSV importé
 </i18n>

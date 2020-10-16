@@ -140,9 +140,6 @@ export default class ExperimentDetail extends Vue {
   installationsList = [];
   infrastructuresList = [];
 
-  previousExperiment: string = null;
-  nextExperiment: string = null;
-
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadExperiment();
@@ -164,18 +161,16 @@ export default class ExperimentDetail extends Vue {
           this.experiment = http.response.result;
 
           this.loadProjects();
-          this.loadUsers();
-          this.loadSpecies();
-          this.loadFactors();
-          this.loadGroups();
-          this.loadInstallations();
           this.loadInfrastructures();
+          this.loadUsers();
+          this.loadGroups();
+          this.loadFactors();
+          this.loadSpecies();
 
           this.period = this.formatPeriod(
             this.experiment.startDate,
             this.experiment.endDate
           );
-          this.setPreviousAndNextExperiment();
         })
         .catch(error => {
           this.$opensilex.errorHandler(error);
@@ -183,21 +178,6 @@ export default class ExperimentDetail extends Vue {
     }
   }
 
-  setPreviousAndNextExperiment() {
-    if (this.$store.state.search.results) {
-      let length = this.$store.state.search.results.length;
-      let index = this.$store.state.search.results.indexOf(this.uri);
-
-      if (index > 0) {
-        this.previousExperiment = this.$store.state.search.results[index - 1];
-      }
-      if (index < length) {
-        this.nextExperiment = this.$store.state.search.results[index + 1];
-      }
-    }
-  }
-
-  loadInstallations() {}
 
   loadInfrastructures() {
     let service: InfrastructuresService = this.$opensilex.getService(
@@ -209,18 +189,10 @@ export default class ExperimentDetail extends Vue {
       this.experiment.infrastructures.length > 0
     ) {
       this.experiment.infrastructures.forEach(infrastructure => {
-        service
-          .getInfrastructure(infrastructure)
-          .then(
-            (http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-              let infraDetail = http.response.result;
-              this.infrastructuresList.push({
-                uri: infraDetail.uri,
-                value: infraDetail.name
-              });
-            }
-          )
-          .catch(this.$opensilex.errorHandler);
+        this.infrastructuresList.push({
+          uri: infrastructure.uri,
+          value: infrastructure.name
+        });
       });
     }
   }
@@ -356,20 +328,14 @@ export default class ExperimentDetail extends Vue {
 
     if (this.experiment.projects) {
       this.experiment.projects.forEach(project => {
-        service
-          .getProject(project)
-          .then((http: HttpResponse<OpenSilexResponse<ProjectCreationDTO>>) => {
-            let projectDetail = http.response.result;
-            this.projectsList.push({
-              uri: projectDetail.uri,
-              value: projectDetail.shortname || projectDetail.name,
+        this.projectsList.push({
+              uri: project.uri,
+              value: project.name,
               to: {
                 path:
-                  "/project/details/" + encodeURIComponent(projectDetail.uri)
+                  "/project/details/" + encodeURIComponent(project.uri)
               }
             });
-          })
-          .catch(this.$opensilex.errorHandler);
       });
     }
   }

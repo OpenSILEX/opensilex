@@ -12,11 +12,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -33,7 +35,6 @@ import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -91,11 +92,32 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> searchByExperiment(URI experimentURI, String pattern, URI rdfType, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(URI experimentURI, String pattern, URI rdfType, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+        Node experimentGraph = null;
+        Expr graphFilter = null;
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(experimentURI, currentUser);
+        if (experimentURI != null) {
+            xpDAO.validateExperimentAccess(experimentURI, currentUser);
+            experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        } else if (!currentUser.isAdmin()) {
+            Set<URI> allowedExperimentURIs = xpDAO.getUserExperiments(currentUser);
+            List<URI> selectedExperimentURIs = allowedExperimentURIs.stream().filter((URI xpURI) -> {
+                if (experimentURI == null) {
+                    return true;
+                }
+                return SPARQLDeserializers.compareURIs(xpURI, experimentURI);
+            }).collect(Collectors.toList());;
+            if (selectedExperimentURIs.size() == 0) {
+                return new ListWithPagination<ScientificObjectModel>(new ArrayList<>());
+            } else if (selectedExperimentURIs.size() == 1) {
+                experimentGraph = SPARQLDeserializers.nodeURI(selectedExperimentURIs.get(0));
+            } else {
+                experimentGraph = makeVar("?__graph");
+                graphFilter = SPARQLQueryHelper.inURIFilter("__graph", selectedExperimentURIs);
+            }
+        }
 
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+        final Expr finalGraphFilter = graphFilter;
         return sparql.searchWithPagination(
                 experimentGraph,
                 ScientificObjectModel.class,
@@ -106,6 +128,9 @@ public class ScientificObjectDAO {
                     }
                     if (rdfType != null) {
                         select.addWhere(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType));
+                    }
+                    if (finalGraphFilter != null) {
+                        select.addFilter(finalGraphFilter);
                     }
                 },
                 null,

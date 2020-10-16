@@ -8,6 +8,7 @@ package org.opensilex.sparql.mapping;
 import java.lang.reflect.Method;
 import java.net.URI;
 import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLMultipleObjectException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -28,11 +29,15 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
 
     @Override
     protected T loadData() throws Exception {
-        T data = service.loadByURI(type, uri, lang);
+        T data = null;
+        try {
+            data = service.loadByURI(type, uri, lang);
+        } catch (SPARQLMultipleObjectException ex) {
+        }
         if (data == null) {
             data = service.loadByURI(graph, type, uri, lang);
         }
-        
+
         return data;
     }
 

@@ -177,6 +177,7 @@ export default class ProjectDescription extends Vue {
 
   period: string = "";
 
+  uri = null;
   experiments = [];
   scientificContactsList = [];
   coordinatorsList = [];
@@ -208,7 +209,8 @@ export default class ProjectDescription extends Vue {
   ];
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
-    this.loadProject(decodeURIComponent(this.$route.params.uri));
+    this.uri = decodeURIComponent(this.$route.params.uri);
+    this.loadProject();
   }
 
   textReduce(text) {
@@ -220,9 +222,9 @@ export default class ProjectDescription extends Vue {
     }
   }
 
-  loadProject(uri: string) {
+  loadProject() {
     this.service
-      .getProject(uri)
+      .getProject(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<ProjectGetDetailDTO>>) => {
         this.project = http.response.result;
         this.period = this.formatPeriod(
@@ -243,7 +245,7 @@ export default class ProjectDescription extends Vue {
         undefined, // label
         undefined, // species,
         undefined, // factors,
-        [this.$route.params.uri], // projects
+        [decodeURIComponent(this.uri)], // projects
         undefined, // isPublic
         undefined, // isEnded
         options.orderBy,

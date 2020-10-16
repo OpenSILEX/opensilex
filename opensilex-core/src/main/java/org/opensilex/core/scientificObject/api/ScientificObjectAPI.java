@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
+import com.auth0.jwt.interfaces.Claim;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -41,6 +42,7 @@ import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -132,7 +134,7 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("search/{xpuri}")
+    @Path("search")
     @ApiOperation("Search list of scientific objects")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -141,14 +143,14 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjects(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") URI experimentURI,
+            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("xpuri") URI experimentURI,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant")  @QueryParam("rdfType") URI rdfType,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdfType") URI rdfType,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchByExperiment(experimentURI, pattern, rdfType, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(experimentURI, pattern, rdfType, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -280,6 +282,9 @@ public class ScientificObjectAPI {
             errors = filesValidationCache.getIfPresent(validationToken);
             if (errors == null) {
                 errors = dao.validateCSV(xpURI, soType, file, currentUser);
+            } else {
+                Map<String, Claim> claims = TokenGenerator.getTokenClaims(validationToken);
+                xpURI = new URI(claims.get(CLAIM_EXPERIMENT_URI).asString());
             }
         }
 
@@ -289,7 +294,7 @@ public class ScientificObjectAPI {
 
         if (!errors.hasErrors()) {
             sparql.create(SPARQLDeserializers.nodeURI(xpURI), errors.getObjects());
-            csvValidation.setValidationToken(generateCSVValidationToken(xpURI, soType));
+            csvValidation.setValidationToken("done");
         }
 
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
@@ -305,7 +310,9 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "File description with metadata", required = true, type = "string") @Valid @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
+            @ApiParam(value = "File description with metadata", required = true, type = "string")
+            @Valid
+            @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
@@ -332,7 +339,6 @@ public class ScientificObjectAPI {
     private static String generateCSVValidationToken(URI experiementURI, URI objectTypeURI) throws NoSuchAlgorithmException, IOException {
         Map<String, Object> additionalClaims = new HashMap<>();
         additionalClaims.put(CLAIM_EXPERIMENT_URI, experiementURI);
-        additionalClaims.put(CLAIM_OBJECT_TYPE_URI, objectTypeURI);
         return TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, additionalClaims);
     }
 
@@ -349,10 +355,5 @@ public class ScientificObjectAPI {
      * Experiment URI claim key
      */
     private static final String CLAIM_EXPERIMENT_URI = "experiment_uri";
-
-    /**
-     * Experiment URI claim key
-     */
-    private static final String CLAIM_OBJECT_TYPE_URI = "object_type_uri";
 
 }

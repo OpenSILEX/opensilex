@@ -123,7 +123,7 @@ export default class DocumentDetails extends Vue {
   
   created() {
     this.service = this.$opensilex.getService("opensilex.DocumentsService");
-    this.uri = this.$route.params.uri;
+    this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadDocument(this.uri);
   }
 

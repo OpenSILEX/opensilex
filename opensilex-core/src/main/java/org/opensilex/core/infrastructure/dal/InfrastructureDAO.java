@@ -80,7 +80,7 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
-        addAskInfrastructureAccess(ask, makeVar(InfrastructureModel.URI_FIELD), user);
+        addAskInfrastructureAccess(ask, SPARQLDeserializers.nodeURI(infrastructureURI), user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureURI);
@@ -122,7 +122,7 @@ public class InfrastructureDAO {
         }
     }
 
-    public void addAskInfrastructureAccess(AskBuilder ask, Var infraURIVar, UserModel user) {
+    public void addAskInfrastructureAccess(AskBuilder ask, Object infraURIVar, UserModel user) {
         Var userProfileVar = makeVar("_userProfile");
         Var groupVar = makeVar(InfrastructureModel.GROUP_FIELD);
         ask.addWhere(infraURIVar, SecurityOntology.hasGroup, groupVar);

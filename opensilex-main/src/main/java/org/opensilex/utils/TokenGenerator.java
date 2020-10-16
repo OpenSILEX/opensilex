@@ -7,7 +7,10 @@ package org.opensilex.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyPair;
@@ -63,6 +66,16 @@ public class TokenGenerator {
 
         // Return signed token
         return tokenBuilder.sign(algoRSA);
+    }
+
+    public static Map<String, Claim> getTokenClaims(String token) {
+        JWTVerifier verifier = JWT.require(algoRSA)
+                .withIssuer(TOKEN_ISSUER)
+                .build();
+
+        DecodedJWT jwt = verifier.verify(token);
+
+        return jwt.getClaims();
     }
 
     public static String generateFileHash(InputStream fis) throws NoSuchAlgorithmException, IOException {

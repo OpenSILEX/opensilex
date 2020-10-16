@@ -414,7 +414,7 @@ public class ExperimentDAO {
 
     public void validateExperimentAccess(URI experimentURI, UserModel user) throws Exception {
         if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
-            throw new NotFoundURIException(experimentURI);
+            throw new NotFoundURIException("Experiment URI not found: ", experimentURI);
         }
 
         if (user.isAdmin()) {
@@ -423,7 +423,7 @@ public class ExperimentDAO {
 
         AskBuilder ask = sparql.getUriExistsQuery(ExperimentModel.class, experimentURI);
 
-        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+        Node uriVar = SPARQLDeserializers.nodeURI(experimentURI);
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_user");
         Var groupVar = makeVar(ExperimentModel.GROUP_FIELD);

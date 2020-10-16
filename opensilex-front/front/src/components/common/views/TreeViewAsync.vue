@@ -106,7 +106,9 @@ export default class TreeViewAsync extends Vue {
       if (this.observer) {
         this.observer.disconnect();
       }
-      this.observer.observe(this.load);
+      if (this.load) {
+        this.observer.observe(this.load);
+      }
     });
   }
 

@@ -209,10 +209,15 @@ public class ProjectDAO {
         select.addOptional(new Triple(uriVar, Oeso.hasAdministrativeContact.asNode(), technicalSupervisorVar));
         Expr hasAdministrativeContact = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
 
+        Var creatorVar = makeVar(ProjectModel.CREATOR_FIELD);
+        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+
+        
         select.addFilter(SPARQLQueryHelper.or(
                 hasCoordinator,
                 hasScientificContact,
-                hasAdministrativeContact
+                hasAdministrativeContact,
+                isCreator
         ));
     }
 
@@ -226,7 +231,7 @@ public class ProjectDAO {
         }
 
         Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+        Node uriVar = SPARQLDeserializers.nodeURI(projectURI);
 
         AskBuilder ask = sparql.getUriExistsQuery(ProjectModel.class, projectURI);
 

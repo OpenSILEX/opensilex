@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
@@ -383,7 +382,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (results.size() == 1) {
             return mapper.createInstance(graph, results.get(0), lang, this);
         } else if (results.size() > 1) {
-            throw new SPARQLException("Multiple objects for the same URI: " + uri.toString());
+            throw new SPARQLMultipleObjectException(uri);
         } else {
             return null;
         }

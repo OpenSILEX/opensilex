@@ -82,8 +82,11 @@ export default class ExperimentFacilitySelector extends Vue {
     let infrastructures;
 
     this.xpService.getExperiment(this.uri).then(http => {
-      let infrastructuresURI = http.response.result.infrastructures;
-
+      let infrastructures = http.response.result.infrastructures;
+      let infrastructuresURI = [];
+      infrastructures.forEach((infrastructure) => {
+        infrastructuresURI.push(infrastructure.uri);
+      });
       Promise.all([
         this.xpService.getAvailableFacilities(this.uri).then(http => {
           availableFacilities = http.response.result;

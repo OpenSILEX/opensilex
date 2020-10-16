@@ -125,7 +125,9 @@ public class GeospatialDAO {
     }
 
     private Document getFilter(URI uri, URI graph) {
-        return new Document("uri", SPARQLDeserializers.getExpandedURI(uri)).append("graph", SPARQLDeserializers.getExpandedURI(graph));
+        if (graph != null)
+            return new Document("uri", SPARQLDeserializers.getExpandedURI(uri)).append("graph", SPARQLDeserializers.getExpandedURI(graph));
+        return new Document("uri", SPARQLDeserializers.getExpandedURI(uri));
     }
 
     public void delete(URI uri, URI graph) {

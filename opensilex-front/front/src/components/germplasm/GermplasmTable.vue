@@ -210,9 +210,9 @@ export default class GermplasmTable extends Vue {
         // }] 
       };
     let synonymCol = {title:this.$t('GermplasmTable.synonyms'), field:"synonyms", visible:true, editor:true};
-    let speciesCol = {title:this.$t('GermplasmTable.fromSpecies') + '<span class="requiredOnCondition">*</span>', field:"fromSpecies", visible:true, editor:true};
-    let varietyCol = {title:this.$t('GermplasmTable.fromVariety') + '<span class="requiredOnCondition">*</span>', field:"fromVariety", visible:true, editor:true};
-    let accessionCol = {title:this.$t('GermplasmTable.fromAccession') + '<span class="requiredOnCondition">*</span>', field:"fromAccession", visible:true, editor:true}
+    let speciesCol = {title:this.$t('GermplasmTable.fromSpecies') + '<span class="requiredOnCondition">*</span>', field:"species", visible:true, editor:true};
+    let varietyCol = {title:this.$t('GermplasmTable.fromVariety') + '<span class="requiredOnCondition">*</span>', field:"variety", visible:true, editor:true};
+    let accessionCol = {title:this.$t('GermplasmTable.fromAccession') + '<span class="requiredOnCondition">*</span>', field:"accession", visible:true, editor:true}
     let instituteCol =  {title:this.$t('GermplasmTable.institute'), field:"institute", visible:true, editor:true};
     let productionYearCol =  {title:this.$t('GermplasmTable.year'), field:"productionYear", visible:true, editor:true};
     let commentCol = {title:this.$t('GermplasmTable.comment'), field:"comment", visible:true, editor:true};
@@ -343,12 +343,12 @@ export default class GermplasmTable extends Vue {
 
     for (let idx = 0; idx < dataToInsert.length; idx++) {
       let form: GermplasmCreationDTO = {
-        rdfType: null,
+        type: null,
         name: null,
         uri: null,
-        fromSpecies: null,
-        fromVariety: null,
-        fromAccession: null,
+        species: null,
+        variety: null,
+        accession: null,
         institute: null,
         productionYear: null,
         comment: null,
@@ -357,7 +357,7 @@ export default class GermplasmTable extends Vue {
         attributes: null
       };
 
-      form.rdfType = this.$attrs.germplasmType;
+      form.type = this.$attrs.germplasmType;
 
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
@@ -366,22 +366,22 @@ export default class GermplasmTable extends Vue {
         form.name = dataToInsert[idx].name;
       }
       if (
-        dataToInsert[idx].fromSpecies != null &&
-        dataToInsert[idx].fromSpecies != ""
+        dataToInsert[idx].species != null &&
+        dataToInsert[idx].species != ""
       ) {
-        form.fromSpecies = dataToInsert[idx].fromSpecies;
+        form.species = dataToInsert[idx].species;
       }
       if (
         dataToInsert[idx].fromVariety != null &&
         dataToInsert[idx].fromVariety != ""
       ) {
-        form.fromVariety = dataToInsert[idx].fromVariety;
+        form.variety = dataToInsert[idx].variety;
       }
       if (
         dataToInsert[idx].fromAccession != null &&
         dataToInsert[idx].fromAccession != ""
       ) {
-        form.fromAccession = dataToInsert[idx].fromAccession;
+        form.accession = dataToInsert[idx].accession;
       }
       if (
         dataToInsert[idx].institute != null &&
@@ -430,9 +430,9 @@ export default class GermplasmTable extends Vue {
       if (
         form.name == null &&
         form.uri == null &&
-        form.fromSpecies == null &&
-        form.fromVariety == null &&
-        form.fromAccession == null &&
+        form.species == null &&
+        form.variety == null &&
+        form.accession == null &&
         form.institute == null &&
         form.productionYear == null &&
         form.comment == null &&

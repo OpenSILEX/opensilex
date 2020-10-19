@@ -500,6 +500,13 @@ public class GermplasmAPI {
     ) {
         try {
             GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+            if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
+                return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "The germplasm is a species",
+                    "You can't update a species"
+                ).getResponse();
+            }
             ErrorResponse error = check(germplasmDTO, germplasmDAO, true);
             if (error != null) {
                 return error.getResponse();
@@ -592,44 +599,44 @@ public class GermplasmAPI {
         }
 
         // check rdfType
-        boolean isType = cacheType.get(new KeyType(germplasmDTO.getRdfType()), this::checkType);
+        boolean isType = cacheType.get(new KeyType(germplasmDTO.getType()), this::checkType);
         //boolean isType = germplasmDAO.isGermplasmType(germplasmDTO.getRdfType()); 
         if (!isType) {
             // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "rdfType doesn't exist in the ontology",
-                    "wrong rdfType: " + germplasmDTO.getRdfType().toString()
+                    "wrong rdfType: " + germplasmDTO.getType().toString()
             );
         }
         
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
-        if (germplasmDTO.getFromSpecies() != null) {
-           if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getFromSpecies())) {
+        if (germplasmDTO.getSpecies() != null) {
+           if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getSpecies())) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't exist in the database",
-                        "unknown species : " + germplasmDTO.getFromSpecies().toString()
+                        "unknown species : " + germplasmDTO.getSpecies().toString()
                 );
             } 
         }
          
-        if (germplasmDTO.getFromVariety() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmDTO.getFromVariety())) {
+        if (germplasmDTO.getVariety() != null) {
+            if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmDTO.getVariety())) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given variety doesn't exist in the database",
-                        "unknown variety : " + germplasmDTO.getFromVariety().toString()
+                        "unknown variety : " + germplasmDTO.getVariety().toString()
                 );
             }
         }
         
-        if (germplasmDTO.getFromAccession() != null) {
-            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getFromAccession())) {
+        if (germplasmDTO.getAccession() != null) {
+            if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getAccession())) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given accession doesn't exist in the database",
-                        "unknown accession : " + germplasmDTO.getFromAccession().toString()
+                        "unknown accession : " + germplasmDTO.getAccession().toString()
                 );
             }        
         }
@@ -637,21 +644,21 @@ public class GermplasmAPI {
         // check that fromAccession, fromVariety or fromSpecies are given
         boolean missingLink = true;
         String message = new String();
-        if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
+        if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
             missingLink = false;
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Variety.getURI())) {
+        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Variety.getURI())) {
             message = "fromSpecies";
-            if (germplasmDTO.getFromSpecies() != null) {
+            if (germplasmDTO.getSpecies() != null) {
                 missingLink = false;               
             }
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Accession.getURI())) {
+        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Accession.getURI())) {
             message = "fromVariety or fromSpecies";
-            if (germplasmDTO.getFromSpecies() != null || germplasmDTO.getFromVariety() != null) {
+            if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null) {
                 missingLink = false;
             }
         } else {
             message = "fromAccession, fromVariety or fromSpecies";
-            if (germplasmDTO.getFromSpecies() != null || germplasmDTO.getFromVariety() != null || germplasmDTO.getFromAccession() != null) {
+            if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null || germplasmDTO.getAccession() != null) {
                 missingLink = false;                
             }
         }
@@ -667,7 +674,7 @@ public class GermplasmAPI {
 
         // check coherence between species, variety and accession
         boolean isRelated;
-        if (germplasmDTO.getFromSpecies() != null && germplasmDTO.getFromVariety() != null) {
+        if (germplasmDTO.getSpecies() != null && germplasmDTO.getVariety() != null) {
             //check coherence between variety and species
             isRelated = cache.get(new Key(germplasmDTO), this::checkVarietySpecies);
             //isRelated = checkVarietySpecies(germplasmDTO.getSpecies(), germplasmDTO.getFromVariety());
@@ -675,32 +682,32 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getFromSpecies().toString()
+                        "wrong species : " + germplasmDTO.getSpecies().toString()
                 );
             }
 
         }
 
-        if (germplasmDTO.getFromSpecies() != null && germplasmDTO.getFromAccession() != null) {
+        if (germplasmDTO.getSpecies() != null && germplasmDTO.getAccession() != null) {
             //check coherence between accession and species
             isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionSpecies);
             if (!isRelated) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getFromSpecies().toString()
+                        "wrong species : " + germplasmDTO.getSpecies().toString()
                 );
             }
         }
 
-        if (germplasmDTO.getFromVariety() != null && germplasmDTO.getFromAccession() != null) {
+        if (germplasmDTO.getVariety() != null && germplasmDTO.getAccession() != null) {
             //check coherence between variety and accession
             isRelated = cache.get(new Key(germplasmDTO), this::checkAccessionVariety);
             if (!isRelated) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't match with the given variety",
-                        "wrong species : " + germplasmDTO.getFromSpecies().toString()
+                        "wrong species : " + germplasmDTO.getSpecies().toString()
                 );
             }
         }
@@ -709,18 +716,18 @@ public class GermplasmAPI {
     }
 
     private GermplasmCreationDTO completeDTO(GermplasmCreationDTO germplasmDTO, GermplasmDAO germplasmDAO) throws Exception {
-        if (germplasmDTO.getFromSpecies() == null && germplasmDTO.getFromVariety() != null) {
-            GermplasmModel variety = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getFromVariety()), this::getGermplasm);
+        if (germplasmDTO.getSpecies() == null && germplasmDTO.getVariety() != null) {
+            GermplasmModel variety = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getVariety()), this::getGermplasm);
             if (variety != null) {
-                germplasmDTO.setFromSpecies(variety.getSpecies().getUri());
+                germplasmDTO.setSpecies(variety.getSpecies().getUri());
             }
 
         }
-        if (germplasmDTO.getFromAccession() != null && germplasmDTO.getFromVariety() == null && germplasmDTO.getFromSpecies() == null) {
-            GermplasmModel accession = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getFromAccession()), this::getGermplasm);
+        if (germplasmDTO.getAccession() != null && germplasmDTO.getVariety() == null && germplasmDTO.getSpecies() == null) {
+            GermplasmModel accession = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getAccession()), this::getGermplasm);
             if (accession != null) {
-                germplasmDTO.setFromVariety(accession.getVariety().getUri());
-                germplasmDTO.setFromSpecies(accession.getSpecies().getUri());
+                germplasmDTO.setVariety(accession.getVariety().getUri());
+                germplasmDTO.setSpecies(accession.getSpecies().getUri());
             }
         }
         return germplasmDTO;
@@ -791,8 +798,8 @@ public class GermplasmAPI {
         }
 
         private Key(GermplasmCreationDTO germplasmDTO) {
-            species = germplasmDTO.getFromSpecies();
-            variety = germplasmDTO.getFromVariety();
+            species = germplasmDTO.getSpecies();
+            variety = germplasmDTO.getVariety();
         }
 
         @Override

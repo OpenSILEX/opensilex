@@ -123,7 +123,6 @@ export default class GermplasmView extends Vue {
     this.service
       .getGermplasm(uri)
       .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
-        console.log(http.response.result);
         this.germplasmForm.getFormRef().getAttributes(http.response.result);
         this.germplasmForm.showEditForm(http.response.result);
         

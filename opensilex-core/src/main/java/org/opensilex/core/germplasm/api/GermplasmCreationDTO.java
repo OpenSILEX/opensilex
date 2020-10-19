@@ -37,7 +37,7 @@ public class GermplasmCreationDTO {
      */
     @NotNull
     @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    protected URI rdfType;
+    protected URI type;
     
     /**
      * Germplasm label
@@ -57,21 +57,21 @@ public class GermplasmCreationDTO {
      */
     @ValidURI
     @ApiModelProperty(value = "species URI", example = "http://opensilex.dev/opensilex/id/species#zeamays")
-    protected URI fromSpecies;
+    protected URI species;
     
     /**
      * Germplasm Variety URI
      */
     @ValidURI
     @ApiModelProperty(value = "variety URI", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    protected URI fromVariety;
+    protected URI variety;
     
     /**
      * Germplasm Accession URI
      */    
     @ValidURI
     @ApiModelProperty(value = "accession URI", example = "http://opensilex.dev/opensilex/id/accession#B73_INRA")
-    protected URI fromAccession;
+    protected URI accession;
 
     /**
      * institute where the accession has been created
@@ -99,12 +99,12 @@ public class GermplasmCreationDTO {
         this.uri = uri;
     }
 
-    public URI getRdfType() {
-        return rdfType;
+    public URI getType() {
+        return type;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+    public void setType(URI type) {
+        this.type = type;
     }
 
     public String getName() {
@@ -123,28 +123,28 @@ public class GermplasmCreationDTO {
         this.code = code;
     }
 
-    public URI getFromSpecies() {
-        return fromSpecies;
+    public URI getSpecies() {
+        return species;
     }
 
-    public void setFromSpecies(URI fromSpecies) {
-        this.fromSpecies = fromSpecies;
+    public void setSpecies(URI species) {
+        this.species = species;
     }
 
-    public URI getFromVariety() {
-        return fromVariety;
+    public URI getVariety() {
+        return variety;
     }
 
-    public void setFromVariety(URI fromVariety) {
-        this.fromVariety = fromVariety;
+    public void setVariety(URI variety) {
+        this.variety = variety;
     }
 
-    public URI getFromAccession() {
-        return fromAccession;
+    public URI getAccession() {
+        return accession;
     }
 
-    public void setFromAccession(URI fromAccession) {
-        this.fromAccession = fromAccession;
+    public void setAccession(URI accession) {
+        this.accession = accession;
     }
 
     public String getInstitute() {
@@ -200,24 +200,24 @@ public class GermplasmCreationDTO {
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
-        if (rdfType != null) {
-            model.setType(rdfType);
+        if (type != null) {
+            model.setType(type);
         }
         
-        if (fromSpecies != null) {
-            GermplasmModel species = new GermplasmModel();
-            species.setUri(fromSpecies);
-            model.setSpecies(species);
+        if (species != null) {
+            GermplasmModel speciesModel = new GermplasmModel();
+            speciesModel.setUri(this.species);
+            model.setSpecies(speciesModel);
         }
-        if (fromVariety != null) {
-            GermplasmModel variety = new GermplasmModel();
-            variety.setUri(fromVariety);
-            model.setVariety(variety);
+        if (variety != null) {
+            GermplasmModel varietyModel = new GermplasmModel();
+            varietyModel.setUri(this.variety);
+            model.setVariety(varietyModel);
         }
-        if (fromAccession != null) {
-            GermplasmModel accession = new GermplasmModel();
-            accession.setUri(fromAccession);
-            model.setAccession(accession);
+        if (accession != null) {
+            GermplasmModel accessionModel = new GermplasmModel();
+            accessionModel.setUri(this.accession);
+            model.setAccession(accessionModel);
         }
         
         if (institute != null) {

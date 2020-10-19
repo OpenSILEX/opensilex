@@ -46,6 +46,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
+import static org.opensilex.sparql.utils.Ontology.subClassAny;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -96,15 +97,15 @@ public class GermplasmDAO {
     public boolean labelExistsCaseSensitiveBySpecies(GermplasmCreationDTO germplasm) throws Exception {
         AskBuilder askQuery = new AskBuilder()
                 .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(germplasm.getRdfType()))
+                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(germplasm.getType()))
                 .addWhere("?uri", RDFS.label, germplasm.getName());
 
-        if (germplasm.getFromSpecies() != null) {
-            askQuery.addWhere("?uri", Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getFromSpecies()));
-        } else if (germplasm.getFromVariety() != null) {
-            askQuery.addWhere("?uri", Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm.getFromVariety()));
-        } else if (germplasm.getFromAccession() != null) {
-            askQuery.addWhere("?uri", Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getFromAccession()));
+        if (germplasm.getSpecies() != null) {
+            askQuery.addWhere("?uri", Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getSpecies()));
+        } else if (germplasm.getVariety() != null) {
+            askQuery.addWhere("?uri", Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm.getVariety()));
+        } else if (germplasm.getAccession() != null) {
+            askQuery.addWhere("?uri", Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getAccession()));
         }
 
         return sparql.executeAskQuery(askQuery);
@@ -412,7 +413,7 @@ public class GermplasmDAO {
             WhereBuilder builder2 = new WhereBuilder();
             builder2.addWhere(makeVar("gpl"), makeVar("p"), NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()));
             builder2.addWhere(makeVar("gpl"), RDF.type, makeVar("gplType"));
-            builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
+            builder2.addWhere(makeVar("gplType"), Ontology.subClassAny, Oeso.Germplasm);
             builder2.addGraph(makeVar(SPARQLResourceModel.URI_FIELD), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
             
             builder.addUnion(builder2);
@@ -435,7 +436,7 @@ public class GermplasmDAO {
         builder1.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("uri")));
         builder2.addWhere(makeVar("gpl"), makeVar("p"), makeVar("uri"));
         builder2.addWhere(makeVar("uri"), RDF.type, makeVar("gplType"));
-        builder2.addWhere(makeVar("gplType"), RDFS.subClassOf, Oeso.Germplasm);
+        builder2.addWhere(makeVar("gplType"), Ontology.subClassAny, Oeso.Germplasm);
         builder2.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
         builder1.addUnion(builder2);
         select.addWhere(builder1);

@@ -47,31 +47,31 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
     protected GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testSpecies");
-        germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
+        germplasmDTO.setType(new URI(Oeso.Species.toString()));
         return germplasmDTO;
     }
 
     protected GermplasmCreationDTO getCreationVarietyDTO(URI speciesURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testVariety");
-        germplasmDTO.setRdfType(new URI(Oeso.Variety.toString()));
-        germplasmDTO.setFromSpecies(speciesURI);
+        germplasmDTO.setType(new URI(Oeso.Variety.toString()));
+        germplasmDTO.setSpecies(speciesURI);
         return germplasmDTO;
     }
 
     protected GermplasmCreationDTO getCreationAccessionDTO(URI varietyURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testAccession");
-        germplasmDTO.setRdfType(new URI(Oeso.Accession.toString()));
-        germplasmDTO.setFromVariety(varietyURI);
+        germplasmDTO.setType(new URI(Oeso.Accession.toString()));
+        germplasmDTO.setVariety(varietyURI);
         return germplasmDTO;
     }
 
     protected GermplasmCreationDTO getCreationLotDTO(URI accessionURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testLot");
-        germplasmDTO.setRdfType(new URI(Oeso.PlantMaterialLot.toString()));
-        germplasmDTO.setFromAccession(accessionURI);
+        germplasmDTO.setType(new URI(Oeso.PlantMaterialLot.toString()));
+        germplasmDTO.setAccession(accessionURI);
         return germplasmDTO;
     }
 
@@ -80,7 +80,6 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // create species
         final Response postResultSpecies = getJsonPostResponse(target(createPath), getCreationSpeciesDTO());
-        LOGGER.info(postResultSpecies.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -90,7 +89,6 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // create Variety
         final Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(createdSpeciesUri));
-        LOGGER.info(postResultVariety.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVariety.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -100,7 +98,6 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // create Accession
         final Response postResultAccession = getJsonPostResponse(target(createPath), getCreationAccessionDTO(createdVarietyUri));
-        LOGGER.info(postResultAccession.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultAccession.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -110,7 +107,6 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // create Lot
         final Response postResultLot = getJsonPostResponse(target(createPath), getCreationLotDTO(createdAccessionUri));
-        LOGGER.info(postResultLot.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultLot.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -142,11 +138,10 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         GermplasmCreationDTO creationDTO = getCreationSpeciesDTO();
         final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
-        LOGGER.info(uri.toString());
 
         GermplasmSearchDTO searchDTO = new GermplasmSearchDTO();
         searchDTO.name = getCreationSpeciesDTO().name;
-        searchDTO.type = getCreationSpeciesDTO().rdfType;
+        searchDTO.type = getCreationSpeciesDTO().type;
 
         Response getResult = getJsonPostResponse(target(searchPath), searchDTO, OpenSilex.DEFAULT_LANGUAGE);
 
@@ -164,19 +159,30 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testUpdate() throws Exception {
 
-        // create the germplasm
-        GermplasmCreationDTO germplasm = getCreationSpeciesDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), germplasm);
+        // create a species
+        GermplasmCreationDTO species = getCreationSpeciesDTO();
+        final Response postResult = getJsonPostResponse(target(createPath), species);
 
         // update the germplasm
-        germplasm.setUri(extractUriFromResponse(postResult));
-        germplasm.setName("new alias");
+        species.setUri(extractUriFromResponse(postResult));
+        species.setName("new alias");
+        
+        //check that you can't update a species
+        final Response updateSpecies = getJsonPutResponse(target(updatePath), species);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateSpecies.getStatus());        
 
-        final Response updateResult = getJsonPutResponse(target(updatePath), germplasm);
+        // create a Variety
+        GermplasmCreationDTO variety = getCreationVarietyDTO(species.getUri());
+        final Response postResultVariety = getJsonPostResponse(target(createPath), variety);
+        
+        // update the variety
+        variety.setUri(extractUriFromResponse(postResultVariety));
+        variety.setName("new alias");
+        final Response updateResult = getJsonPutResponse(target(updatePath), variety);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new germplasm and compare to the expected germplasm
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), germplasm.getUri().toString());
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), variety.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -186,7 +192,7 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
         GermplasmGetSingleDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(germplasm.getName(), dtoFromApi.getName());
+        assertEquals(variety.getName(), dtoFromApi.getName());
     }
 
     @Test
@@ -202,18 +208,15 @@ public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
 
         // check if URI no longer exists
         Response getResult = getJsonGetByUriResponse(target(uriPath), uriToDelete.toString());
-        LOGGER.info("status no longer exists " + getResult.getStatus());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
 
         // create the species that can't be deleted because it is linked to a variety
         GermplasmCreationDTO speciesNotToDelete = getCreationSpeciesDTO();
         Response postResponse2 = getJsonPostResponse(target(createPath), speciesNotToDelete);
         URI uriNotToDelete = extractUriFromResponse(postResponse2);
-        LOGGER.info("uri not to delete " + uriNotToDelete);
 
         // create Variety linked to this species
         Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(uriNotToDelete));
-        LOGGER.info("variety creation " + postResultVariety.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVariety.getStatus());
 
         // try to delete the species that can't be deleted and get a bad request status

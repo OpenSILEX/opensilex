@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver ref="validatorRef" v-if="form.rdfType">
+  <ValidationObserver ref="validatorRef" v-if="form.type">
     
     <!-- URI -->
     <opensilex-UriForm
@@ -10,18 +10,18 @@
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
-    <!-- rdfType -->
+    <!-- type -->
     <opensilex-TypeForm
-      :type.sync="form.rdfType"
+      :type.sync="form.type"
       :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
       :required="true"
-      helpMessage="GermplasmForm.rdfType-help"
+      helpMessage="GermplasmForm.type-help"
       disabled
     ></opensilex-TypeForm>
     
     <!-- label -->
     <opensilex-InputForm
-      :value.sync="form.label"
+      :value.sync="form.name"
       label="GermplasmForm.name"
       type="text"
       :required="true"
@@ -42,43 +42,43 @@
 
     <!-- code -->
     <opensilex-InputForm
-      v-if= '!form.rdfType.endsWith("Species")'
+      v-if= '!form.type.endsWith("Species")'
       :value.sync="form.code"
       label="GermplasmForm.code"
       type="text"
       helpMessage="GermplasmForm.code-help"
     ></opensilex-InputForm>
     
-    <!-- fromSpecies -->
+    <!-- species -->
     <opensilex-InputForm
-      v-if= '!form.rdfType.endsWith("Species")'
-      :value.sync="form.fromSpecies"
-      label="GermplasmForm.fromSpecies"
+      v-if= '!form.type.endsWith("Species")'
+      :value.sync="form.species"
+      label="GermplasmForm.species"
       type="text"
       helpMessage="GermplasmForm.species-help"
     ></opensilex-InputForm>
  
-    <!-- fromVariety -->
+    <!-- variety -->
     <opensilex-InputForm
-      v-if= '! (form.rdfType.endsWith("Species") || form.rdfType.endsWith("Variety"))'
-      :value.sync="form.fromVariety"
-      label="GermplasmForm.fromVariety"
+      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety"))'
+      :value.sync="form.variety"
+      label="GermplasmForm.variety"
       type="text"
       helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
     
-    <!-- fromAccession -->
+    <!-- accession -->
     <opensilex-InputForm
-      v-if= '! (form.rdfType.endsWith("Species") || form.rdfType.endsWith("Variety") || form.rdfType.endsWith("Accession"))'
-      :value.sync="form.fromAccession"
-      label="GermplasmForm.fromAccession"
+      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety") || form.type.endsWith("Accession"))'
+      :value.sync="form.accession"
+      label="GermplasmForm.accession"
       type="text"
       helpMessage="GermplasmForm.accession-help"
     ></opensilex-InputForm>
     
     <!-- institute -->
     <opensilex-InputForm
-      v-if= '!form.rdfType.endsWith("Species")'
+      v-if= '!form.type.endsWith("Species")'
       :value.sync="form.institute"
       label="GermplasmForm.institute"
       type="text"
@@ -87,7 +87,7 @@
     
     <!-- year -->
     <opensilex-InputForm
-      v-if= '!form.rdfType.endsWith("Species")'
+      v-if= '!form.type.endsWith("Species")'
       :value.sync="form.productionYear"
       label="GermplasmForm.year"
       type="text"
@@ -151,12 +151,12 @@ export default class GermplasmForm extends Vue {
     default: () => {
       return {
         uri: null,
-        rdfType: null,
+        type: null,
         name: null,
         code: null,
-        fromSpecies: null,
-        fromVariety: null,
-        fromAccession: null,
+        species: null,
+        variety: null,
+        accession: null,
         institute: null,
         productionYear: null,
         comment: null,
@@ -174,12 +174,12 @@ export default class GermplasmForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      rdfType: null,
+      type: null,
       name: null,
       code: null,
-      fromSpecies: null,
-      fromVariety: null,
-      fromAccession: null,
+      species: null,
+      variety: null,
+      accession: null,
       institute: null,
       productionYear: null,
       comment: null,
@@ -230,13 +230,13 @@ en:
     name-help: Name used to define this germplasm
     uri: URI
     uri-help: Unique germplasm identifier
-    rdfType: Type
-    rdfType-help: Germplasm Type
-    fromSpecies : Species URI
+    type: Type
+    type-help: Germplasm Type
+    species : Species URI
     species-help: Species URI of the germplasm
-    fromVariety : Variety URI
+    variety : Variety URI
     variety-help: Variety URI of the germplasm
-    fromAccession: Accession URI
+    accession: Accession URI
     accession-help: Accession URI of the germplasm
     institute: Institute
     institute-help: The code of the institute which the germplasm comes from
@@ -255,13 +255,13 @@ fr:
     name-help: Nom du germplasm
     uri: URI
     uri-help: Identifiant unique du germplasm
-    rdfType: Type
-    rdfType-help: Type du germplasm
-    fromSpecies : URI de l'espèce
+    type: Type
+    type-help: Type du germplasm
+    species : URI de l'espèce
     species-help: URI de l'espèce
-    fromVariety : URI de variété
+    variety : URI de variété
     variety-help: URI de la variété
-    fromAccession: URI d'accession
+    accession: URI d'accession
     accession-help: Accession URI of the germplasm
     institute: institut
     institute-help: Code de l'institut dont provient le germplasm

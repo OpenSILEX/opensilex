@@ -8,7 +8,7 @@
 
     <opensilex-PageActions :returnButton="true" >   
         <b-button
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"           
+          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID) && !germplasm.type.endsWith('Species')"           
           @click="update"
           label="update"
           variant="primary"
@@ -127,6 +127,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   GermplasmGetSingleDTO,
+  GermplasmCreationDTO,
   GermplasmService,
   ExperimentGetListDTO,
 } from "opensilex-core/index";

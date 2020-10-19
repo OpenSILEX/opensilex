@@ -80,7 +80,7 @@ export default class GermplasmAttributesTable extends Vue {
       field: "actions",
       widthGrow: 0.3,
       formatter: function(cell, formatterParams, onRendered) {
-        return '<button data-v-4d3fd064="" data-v-4c148622="" data-v-13e99aa8="" title="component.factor.delete" type="button" class="btn btn-danger btn-sm"><span data-v-0514f944="" data-v-4d3fd064=""><!----><svg data-v-0514f944="" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span><!----></button>';
+          return '<span style="color:red"><!----><svg   aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-trash-alt fa-w-14 fa-sm"><path data-v-0514f944="" fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" class=""></path></svg></span>';
       }
     }
   ];
@@ -90,7 +90,6 @@ export default class GermplasmAttributesTable extends Vue {
     //this.getAttributes();
   }
 
-
   options: any = {
     layout: "fitColumns",
     cellHozAlign: "center",
@@ -98,8 +97,6 @@ export default class GermplasmAttributesTable extends Vue {
     columns: this.tableColumns,
     maxHeight: "100%", //do not let table get bigger than the height of its parent element
   };
-
-
 
   resetTable() {
     this.attributesArray = [];
@@ -158,7 +155,6 @@ export default class GermplasmAttributesTable extends Vue {
 </script>
 
 <style scoped lang="scss">
-@import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4";
 </style>
 
 <i18n>

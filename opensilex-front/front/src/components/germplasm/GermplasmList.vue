@@ -16,6 +16,7 @@
         </div>
         <div class="col col-xl-4 col-sm-6 col-12">
           <opensilex-SpeciesSelector
+            ref="speciesSelector"
             label="GermplasmList.filter.species"
             placeholder="GermplasmList.filter.species-placeholder"
             :multiple="false"
@@ -104,6 +105,7 @@
             @click="$emit('onEdit', data.item.uri)"
             label="GermplasmList.update"
             :small="true"
+            :disabled="data.item.type.endsWith('Species')"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"

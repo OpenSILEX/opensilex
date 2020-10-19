@@ -23,4 +23,12 @@ big-data:
           port: 28018
           # MongoDB database (String)
           database: test
-
+          
+file-system:
+  # File storage service (FileStorageService)
+  fs:
+    # Service implementation class for: fs (FileStorageService)
+    implementation: org.opensilex.fs.service.FileStorageService
+    config:
+      defaultFS:
+        implementation: org.opensilex.fs.local.TempFileSystemConnection

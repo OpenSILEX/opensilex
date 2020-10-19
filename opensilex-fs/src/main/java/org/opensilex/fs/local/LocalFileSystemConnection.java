@@ -35,6 +35,10 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
         this.basePath = basePath;
     }
 
+    public Path getBasePath() throws IOException {
+        return this.basePath;
+    }
+
     public Path getAbsolutePath(Path filePath) throws IOException {
         if (this.basePath == null) {
             return filePath;

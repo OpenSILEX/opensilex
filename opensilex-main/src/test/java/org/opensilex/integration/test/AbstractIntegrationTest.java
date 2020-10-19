@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import org.junit.Rule;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -54,7 +53,6 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for API testing
  */
-@Category(IntegrationTestCategory.class)
 public abstract class AbstractIntegrationTest extends CustomJerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
@@ -85,8 +83,7 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
         LOGGER.debug("Create OpenSilex instance for Integration Test");
         opensilex = OpenSilex.createInstance(args);
     }
-    
-    
+
     @AfterClass
     public static void stopOpenSilex() throws Exception {
         try {
@@ -100,10 +97,10 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
         globalClient = null;
         opensilex.shutdown();
     }
-    
+
     private static TestContainer globalTestContainer = null;
-    private static Client globalClient  = null;
-    
+    private static Client globalClient = null;
+
     @Before
     public void setUp() throws Exception {
         if (globalTestContainer == null) {
@@ -114,9 +111,9 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
             this.setTestContainer(globalTestContainer);
             this.setClient(globalClient);
         }
-        
+
     }
-    
+
     @After
     public void tearDown() throws Exception {
         // DO NOTHING
@@ -273,7 +270,8 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a
+     * {@link ObjectUriResponse}
      *
      * @param response the Response on which we want to extract URI
      * @return the URI extracted from the given Response
@@ -287,7 +285,8 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a
+     * {@link PaginatedListResponse}
      *
      * @param response the Response on which we want to extract an URI List
      * @return the List of URI extracted from the given Response

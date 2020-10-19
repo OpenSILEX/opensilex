@@ -22,7 +22,6 @@ import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.nosql.model.QTestModel;
 import org.opensilex.nosql.model.TestModel;
 import org.opensilex.nosql.service.NoSQLService;
-import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  *

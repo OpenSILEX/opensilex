@@ -24,25 +24,24 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
-import org.opensilex.integration.test.AbstractIntegrationTest;
+import org.opensilex.core.AbstractMongoIntegrationTest;
+import static org.opensilex.integration.test.AbstractIntegrationTest.getOpensilex;
 import org.opensilex.nosql.service.NoSQLService;
 
 /**
  * @author Jean Philippe VERT
  */
-public class GeospatialDAOTest extends AbstractIntegrationTest {
+public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
-    private static GeospatialDAO geospatialDAO;
+    private static GeospatialDAO geospatialDAO = null;
     private final URI type;
 
     public GeospatialDAOTest() throws URISyntaxException {
         this.type = new URI("http://www.opensilex.org/vocabulary/oeso#WindyArea");
-    }
-
-    @BeforeClass
-    public static void setupMongo() throws Exception {
-        NoSQLService service = getOpensilex().getServiceInstance("nosql", NoSQLService.class);
-        geospatialDAO = new GeospatialDAO(service);
+        if (geospatialDAO == null) {
+            NoSQLService service = getOpensilex().getServiceInstance("nosql", NoSQLService.class);
+            geospatialDAO = new GeospatialDAO(service);
+        }
     }
 
     private void verificationOfCorrectInsertion(Geometry geometry, URI uri, @NotNull URI type, URI graph) {

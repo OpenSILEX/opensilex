@@ -20,12 +20,10 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.integration.test.IntegrationTestCategory;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -33,8 +31,7 @@ import org.opensilex.server.response.SingleObjectResponse;
  *
  * @author Alice Boizet
  */
-@Category(IntegrationTestCategory.class)
-public class ProvenanceAPITest extends AbstractSecurityIntegrationTest {
+public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     
     protected String path = "/core/provenance";
 

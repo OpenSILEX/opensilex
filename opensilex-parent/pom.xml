@@ -99,6 +99,8 @@
         <!-- test only dependencies version -->
         <junit.version>4.13.1</junit.version>
         <mockito.version>3.5.13</mockito.version>
+        <embed.mongo.version>2.2.0</embed.mongo.version>
+        <awaitability.version>3.0.0</awaitability.version>
         
         <!-- maven plugins versions -->
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
@@ -385,10 +387,10 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-	    <groupId>com.fasterxml.jackson.dataformat</groupId>
-	    <artifactId>jackson-dataformat-csv</artifactId>
-	    <version>${jackson.version}</version>
-	</dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator-annotation-processor</artifactId>
@@ -501,6 +503,23 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+        
+        <!-- MongoDB test container --> 
+        <dependency>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+            <version>${embed.mongo.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitability.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -705,51 +724,6 @@
                     <version>${maven.resources.plugin.version}</version>
                 </plugin>
                 
-                <!--mongodb embed testing server--> 
-                <plugin>
-                    <groupId>com.github.joelittlejohn.embedmongo</groupId>
-                    <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.4.2</version>
-                    <executions>
-                        <execution>
-                            <id>start</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>start</goal>
-                            </goals>
-                            <configuration>
-                                <port>37017</port>
-                                <bindIp>127.0.0.1</bindIp>
-                                <version>4.0.16</version>
-                                <!--optional, default 2.2.1--> 
-        
-                                <!--<downloadPath>http://internal-mongo-repo/</downloadPath>-->
-                                <!--optional, default is http://fastdl.mongodb.org/--> 
-
-                                <features>ONLY_WITH_SSL, NO_HTTP_INTERFACE_ARG</features>
-                                <storageEngine>wiredTiger</storageEngine>
-                                <!--optional, one of wiredTiger or mmapv1 (default is mmapv1)--> 
-        
-                                <skip>${skipIntegrationTest}</skip>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>stop</id>
-                            <phase>post-integration-test</phase>
-                            <goals>
-                                <goal>stop</goal>
-                            </goals>
-                            <configuration>
-                                <port>37017</port>
-                                <bindIp>127.0.0.1</bindIp>
-                                <skip>${skipIntegrationTest}</skip>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <skip>${skipIntegrationTest}</skip>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>

@@ -31,7 +31,7 @@ public class AbstractUnitTest {
             LOGGER.debug("\n\n####### Starting UT: " + description.getTestClass().getSimpleName() + " - " + description.getMethodName() + " #######");
         }
     };
-
+    
     protected static OpenSilex opensilex;
 
     public static OpenSilex getOpensilex() {

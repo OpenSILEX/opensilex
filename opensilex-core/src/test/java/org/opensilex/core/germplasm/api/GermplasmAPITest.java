@@ -19,12 +19,10 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.integration.test.IntegrationTestCategory;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -33,8 +31,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  *
  * @author Alice BOIZET
  */
-@Category(IntegrationTestCategory.class)
-public class GermplasmAPITest extends AbstractSecurityIntegrationTest {
+public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
     protected String path = "/core/germplasm";
 

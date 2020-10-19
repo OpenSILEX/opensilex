@@ -20,7 +20,7 @@ big-data:
           # MongoDB main host (String)
           host: 127.0.0.1
           # MongoDB main host port (int)
-          port: 37017
+          port: 28018
           # MongoDB database (String)
           database: test
 

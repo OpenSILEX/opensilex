@@ -12,10 +12,10 @@ package org.opensilex.core.area.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
-import org.jetbrains.annotations.NotNull;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;

@@ -11,12 +11,13 @@ package org.opensilex.core.area.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.geojson.GeoJsonObject;
-import org.jetbrains.annotations.NotNull;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Area Model

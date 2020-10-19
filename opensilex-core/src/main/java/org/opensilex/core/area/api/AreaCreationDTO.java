@@ -42,8 +42,8 @@ public class AreaCreationDTO {
      * Area Type : Area, WindyArea, etc
      */
     @NotNull
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#WindyArea")
-    protected URI rdfType;
+    @ApiModelProperty(value = "type URI", example = "vocabulary:WindyArea")
+    protected URI type;
 
     /**
      * geometry of the Area
@@ -75,12 +75,12 @@ public class AreaCreationDTO {
         this.name = name;
     }
 
-    public URI getRdfType() {
-        return rdfType;
+    public URI getType() {
+        return type;
     }
 
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+    public void setType(URI type) {
+        this.type = type;
     }
 
     public GeoJsonObject getGeometry() {
@@ -110,8 +110,8 @@ public class AreaCreationDTO {
             model.setName(name);
         }
 
-        if (rdfType != null) {
-            model.setType(rdfType);
+        if (type != null) {
+            model.setType(type);
         }
 
         if (geometry != null) {

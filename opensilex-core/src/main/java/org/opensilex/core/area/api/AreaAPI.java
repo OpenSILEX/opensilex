@@ -23,6 +23,7 @@ import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -52,6 +53,12 @@ public class AreaAPI {
     public static final String CREDENTIAL_AREA_READ_ID = "area-read";
     public static final String CREDENTIAL_AREA_READ_LABEL_KEY = "credential.area.read";
 
+    public static final String CREDENTIAL_AREA_MODIFICATION_ID = "area-modification";
+    public static final String CREDENTIAL_AREA_MODIFICATION_LABEL_KEY = "credential.area.modification";
+
+    public static final String CREDENTIAL_AREA_DELETE_LABEL_KEY = "credential.area.delete";
+    private static final String CREDENTIAL_AREA_DELETE_ID = "area-delete";
+
     @Inject
     private SPARQLService sparql;
 
@@ -64,6 +71,7 @@ public class AreaAPI {
      * @param dto the Area to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the created Area {@link URI}
+     * @throws java.lang.Exception if creation failed
      */
     @POST
     @Path("create")
@@ -76,14 +84,14 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Create a area", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a area", response = ObjectUriResponse.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
 
     public Response createArea(
-            @org.jetbrains.annotations.NotNull @ApiParam("Area description") @Valid AreaCreationDTO dto
+            @ApiParam("Area description") @NotNull @Valid AreaCreationDTO dto
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
@@ -92,18 +100,18 @@ public class AreaAPI {
         session.startTransaction();
         try {
             sparql.startTransaction();
-            URI areaURI = dao.create(dto.getName(), dto.getRdfType(), dto.getDescription());
+            URI areaURI = dao.create(dto.getUri(), dto.getName(), dto.getType(), dto.getDescription());
 
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
-            geospatialModel.setType(dto.getRdfType());
+            geospatialModel.setType(dto.getType());
             geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(dto.getGeometry()));
             geoDAO.create(geospatialModel);
 
             sparql.commitTransaction();
             session.commitTransaction();
 
-            return new ObjectUriResponse(areaURI).getResponse();
+            return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
             session.abortTransaction();
@@ -112,7 +120,7 @@ public class AreaAPI {
     }
 
     /**
-     * @param uri of the area
+     * @param uri uri of the area
      * @return all the data associated with the area
      * @throws Exception the data is non-compliant or the uri already existing
      */
@@ -137,7 +145,7 @@ public class AreaAPI {
         AreaDAO areaDAO = new AreaDAO(sparql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        AreaModel model = areaDAO.getByURI(uri);
+        AreaModel model = areaDAO.get(uri);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(uri, null);
 
         // Check if area is found
@@ -153,54 +161,89 @@ public class AreaAPI {
         }
     }
 
+    @PUT
+    @Path("update")
+    @ApiOperation("Update a area")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_AREA_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Area updated", response = ObjectUriResponse.class)
+    })
+    public Response updateArea(
+            @ApiParam(value = "Area description", required = true) @NotNull @Valid AreaCreationDTO areaDTO
+    ) throws Exception {
+
+        AreaDAO dao = new AreaDAO(sparql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
+        ClientSession session = nosql.getMongoDBClient().startSession();
+        session.startTransaction();
+        try {
+            sparql.startTransaction();
+            URI areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getType(), areaDTO.getDescription());
+
+            GeospatialModel geospatialModel = new GeospatialModel();
+            geospatialModel.setUri(areaURI);
+            geospatialModel.setType(areaDTO.getType());
+            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(areaDTO.getGeometry()));
+            geoDAO.update(geospatialModel, areaURI, null);
+
+            sparql.commitTransaction();
+            session.commitTransaction();
+
+            return new ObjectUriResponse(areaURI).getResponse();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            session.abortTransaction();
+            throw ex;
+        }
+    }
+
     /**
-     * @param name zone name
-     * @param type Area Type : Area, WindyArea, etc
-     * @param page Page number
-     * @param pageSize Page size
-     * @return the result of the search by intersection
-     * @throws Exception in case of a problem in the area search
+     * @param areaURI uri of the area
+     * @return the result of the deletion
+     * @throws Exception if deletion fails
      */
-//    @GET
-//    @Path("search")
-//    @ApiOperation("Search Area")
-//    @ApiProtected
-//    @ApiCredential(
-//            credentialId = CREDENTIAL_AREA_READ_ID,
-//            credentialLabelKey = CREDENTIAL_AREA_READ_LABEL_KEY
-//    )
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Return the list of zones by intersection", response = AreaSearchDTO.class, responseContainer = "List"),
-//            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
-//    })
-//    public Response searchAreaList(
-//            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-//            @ApiParam(value = "Search by type", example = AREA_EXAMPLE_TYPE) @QueryParam("type") URI type,
-////                                   @ApiParam(value = "Search by area intersection", example = AREA_EXAMPLE_GEOMETRY) @QueryParam("geometry") GeoJsonObject geometry,
-//            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-//            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
-//    ) throws Exception {
-//        // Search area with area DAO
-//        AreaDAO dao = new AreaDAO(sparql, nosql);
-//        GeometryModel geometry = null;
-//        ListWithPagination<AreaModel> resultList = dao.search(
-//                currentUser,
-//                name,
-//                type,
-//                geometry,
-//                page,
-//                pageSize
-//        );
-//
-//        // Convert paginated list to DTO
-//        ListWithPagination<AreaSearchDTO> resultDTOList = resultList.convert(
-//                AreaSearchDTO.class,
-//                AreaSearchDTO::fromModel
-//        );
-//
-//        // Return paginated list of profiles DTO
-//        return new PaginatedListResponse<>(resultDTOList).getResponse();
-//    }
+    @DELETE
+    @Path("delete/{areaURI}")
+    @ApiOperation("Delete a area")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_AREA_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_AREA_DELETE_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleting the area", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "The URI for the area was not found.", response = ErrorResponse.class)
+    })
+    public Response deleteArea(
+            @ApiParam(value = "Area URI", example = "http://example.com/", required = true) @PathParam("areaURI") @NotNull @ValidURI URI areaURI
+    ) throws Exception {
+        AreaDAO dao = new AreaDAO(sparql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
+        ClientSession session = nosql.getMongoDBClient().startSession();
+        session.startTransaction();
+        try {
+            sparql.startTransaction();
+            dao.delete(areaURI);
+            geoDAO.delete(areaURI, null);
+
+            sparql.commitTransaction();
+            session.commitTransaction();
+
+            return new ObjectUriResponse(Response.Status.OK, areaURI).getResponse();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction();
+            session.abortTransaction();
+            throw ex;
+        }
+    }
 }

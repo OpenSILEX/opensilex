@@ -62,15 +62,22 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     public static void stopMongo() {
         if (mongod != null) {
             try {
-                mongod.stop();
+                mongod.stopInternal();
             } catch (IllegalStateException e) {
-                if (mongod != null) {
-                    await().atMost(1, TimeUnit.MINUTES).until(() -> !mongod.isProcessRunning());
-                } else {
-                    throw new IllegalStateException(e);
+
+            } finally {
+                try {
+                    mongod.stop();
+                } catch (IllegalStateException e) {
+                    if (mongod != null) {
+                        await().atMost(1, TimeUnit.MINUTES).until(() -> !mongod.isProcessRunning());
+                    } else {
+                        throw new IllegalStateException(e);
+                    }
                 }
             }
         }
+
         if (mongoExec != null) {
             mongoExec.stop();
         }

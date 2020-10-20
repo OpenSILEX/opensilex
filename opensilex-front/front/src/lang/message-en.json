@@ -133,7 +133,7 @@
             },
             "experiments": "Experiments",
             "variables": "Variables",
-            "infrastructure": "Infrastructure",
+            "infrastructure": "Organization",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
@@ -155,7 +155,7 @@
                 "factors": "Factors",
                 "germplasm": "Germplasm"
             },
-            "infrastructures": "Infrastructures",
+            "infrastructures": "Organizations",
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
             "facilitiesTypes": "Facilities types"
@@ -324,8 +324,8 @@
             "alias": "Alias",
             "technicalSupervisors": "Technical supervisors",
             "scientificSupervisors": "Scientific supervisors",
-            "infrastructures": "Infrastructures",
-            "infrastructures-help": "The list of experiment infrastructures",
+            "infrastructures": "Organizations",
+            "infrastructures-help": "The list of experiment organizations",
             "contacts": "Contacts",
             "period": "Periode",
             "description": "Description",
@@ -405,8 +405,6 @@
                 "groups-selected-list-title": "Experiment groups",
                 "projects-selection-list-title": "Global projects list",
                 "projects-selected-list-title": "Experiment projects",
-                "infrastructures-selection-list-title": "Global infrastructures list",
-                "infrastructures-selected-list-title": "Experiment infrastructures",
                 "placeholder": {
                     "species": "Select one or more species"
                 }
@@ -414,7 +412,7 @@
             "form-wizard": {
                 "label": "Experiment creation wizard",
                 "general-informations": "General informations",
-                "infra-groups-projects": "Infrastructures, groups and projects",
+                "infra-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
             }
@@ -597,7 +595,7 @@
         "users": "Users",
         "variables": "Variables",
         "factors": "Factors",
-        "infrastructures": "Infrastructures",
+        "infrastructures": "Organizations",
         "germplasm": "Germplasm",
         "scientific-objects": "Scientific objects",
         "data": "Data",
@@ -609,8 +607,8 @@
             "delete": "Delete experiments"
         },
         "infrastructure": {
-            "modification": "Add / update infrastructures",
-            "delete": "Delete infrastructures"
+            "modification": "Add / update Organizations",
+            "delete": "Delete Organizations"
         },
         "group": {
             "modification": "Add / update groups",

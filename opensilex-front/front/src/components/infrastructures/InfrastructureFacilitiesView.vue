@@ -2,11 +2,12 @@
   <b-card v-if="selected">
     <template v-slot:header>
       <h3>
-        <opensilex-HelpButton @click="helpModal.show()" label="component.common.help-button"></opensilex-HelpButton>
          {{$t("InfrastructureFacilitiesView.facilities")}}
-        <b-modal ref="helpModal" size="md" hide-header ok-only>
-          <opensilex-InfrastructureFacilityHelp></opensilex-InfrastructureFacilityHelp>
-        </b-modal>        
+        &nbsp;
+        <font-awesome-icon
+          icon="question-circle"
+          v-b-tooltip.hover.top="$t('InfrastructureFacilitiesView.infrastructure-facility-help')"
+        />      
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
@@ -90,7 +91,6 @@ export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
 
-  @Ref("helpModal") readonly helpModal!: any;
   @Ref("facilityForm") readonly facilityForm!: any;
 
   get user() {
@@ -146,10 +146,14 @@ en:
     delete: Delete infrastructure facility
     add: Add infrastructure facility
     facilities: Facilities
+    infrastructure-facility-help: "Factilities correspond to the various fixed installations of an infrastructure.
+                                  These can be greenhouses, cadastral plots, culture chambers, ..."
 fr:
   InfrastructureFacilitiesView:
     update: Modifier l'installation technique
     delete: Supprimer l'installation technique
     add: Ajouter une installation technique
     facilities: Installations techniques
+    infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une infrastructure.
+                                  Il peux s'agir de serres, parcelles cadastrales, chambres de culture, ..."
 </i18n>

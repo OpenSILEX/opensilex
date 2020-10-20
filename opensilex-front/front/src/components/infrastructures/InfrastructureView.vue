@@ -80,8 +80,8 @@ export default class InfrastructureView extends Vue {
 <i18n>
 en:
   InfrastructureView:
-    description: Manage and configure infrastructures
+    description: Manage and configure organizations
 fr:
   InfrastructureView:
-    description: Gérer et configurer les infrastructures
+    description: Gérer et configurer les organisations
 </i18n>

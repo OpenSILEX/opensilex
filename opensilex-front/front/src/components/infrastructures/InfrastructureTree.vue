@@ -3,11 +3,12 @@
     <!-- Card header -->
     <template v-slot:header>
       <h3>
-        <opensilex-HelpButton @click="helpModal.show()" label="component.common.help-button"></opensilex-HelpButton>
         {{$t("InfrastructureTree.infrastructure-component")}}
-        <b-modal ref="helpModal" size="md" hide-header ok-only>
-          <opensilex-InfrastructureHelp></opensilex-InfrastructureHelp>
-        </b-modal>
+        &nbsp;
+        <font-awesome-icon
+          icon="question-circle"
+          v-b-tooltip.hover.top="$t('InfrastructureTree.infrastructure-help')"
+        />
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
@@ -90,8 +91,6 @@ export default class InfrastructureTree extends Vue {
   $store: any;
   $route: any;
   service: InfrastructuresService;
-
-  @Ref("helpModal") readonly helpModal!: any;
 
   get user() {
     return this.$store.state.user;
@@ -273,20 +272,22 @@ export default class InfrastructureTree extends Vue {
 <i18n>
 en:
   InfrastructureTree:
-    filter-placeholder: Search infrastructures...
-    add: Add infrastructure
-    update: Update infrastructure
-    edit: Edit infrastructure
-    add-child: Add sub-infrastructure
-    delete: Delete infrastructure
-    infrastructure-component: Infrastructure components
+    filter-placeholder: Search organizations...
+    add: Add organization
+    update: Update organization
+    edit: Edit organization
+    add-child: Add sub-organization
+    delete: Delete organization
+    infrastructure-component: Organizations
+    infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
 fr:
   InfrastructureTree:
-    filter-placeholder: Rechercher des infrastructures...
-    add: Ajouter une infrastructure
-    update: Modifier l'infrastructure
-    edit: Editer l'infrastructure
-    add-child:  Ajouter une sous-infrastructure
-    delete: Supprimer l'infrastructure
-    infrastructure-component: Composants d'infrastructure
+    filter-placeholder: Rechercher des organisations...
+    add: Ajouter une organisation
+    update: Modifier l'organisation
+    edit: Editer l'organisation
+    add-child:  Ajouter une sous-organisation
+    delete: Supprimer l'organisation
+    infrastructure-component: Organisations
+    infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulières et/ou avec des équipes dédiées."
 </i18n>

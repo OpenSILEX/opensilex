@@ -131,7 +131,7 @@
                 "images": "Images"
             },
             "experiments": "Expérimentations",
-            "infrastructure": "Infrastructures",
+            "infrastructure": "Organisations",
             "installations": "Installations",
             "projects": "Projets",
             "variables": "Variables",
@@ -155,7 +155,7 @@
                 "factorLevels": "Niveaux de facteurs",
                 "germplasm": "Ressources Génétiques"
             },
-            "infrastructures": "Infrastructures",
+            "infrastructures": "Organisations",
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations techniques"
@@ -321,7 +321,7 @@
             "description": "Description",
             "technicalSupervisors": "Responsables techniques",
             "scientificSupervisors": "Responsables scientifiques",
-            "infrastructures": "Infrastructures",
+            "infrastructures": "Organisations",
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
             "update": "Modifier l'expérimentation",
@@ -385,16 +385,14 @@
                 "groups-selected-list-title": "Groupes de l'expérience",
                 "projects-selection-list-title": "Liste des projets",
                 "projects-selected-list-title": "Projets de l'expérience",
-                "infrastructures-selection-list-title": "Liste des infrastructures",
-                "infrastructures-selected-list-title": "Infrastructures de l'expérience",
                 "placeholder": {
-                    "species": "Select une ou plusieurs espèces"
+                    "species": "Selectionner une ou plusieurs espèces"
                 }
             },
             "form-wizard": {
                 "label": "Assistant de création d'expérimentation",
                 "general-informations": "Informations générales",
-                "infra-groups-projects": "Infrastructures, groupes et projets",
+                "infra-groups-projects": "Organisations, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
             }
@@ -504,7 +502,7 @@
         "users": "Utilisateurs",
         "variables": "Variables",
         "factors": "Facteurs",
-        "infrastructures": "Infrastructures",
+        "infrastructures": "Organisations",
         "germplasm": "Germplasm",
         "scientific-objects": "Objets scientifiques",
         "data": "Data",
@@ -516,8 +514,8 @@
             "delete": "Suppression des expérimentations"
         },
         "infrastructure": {
-            "modification": "Ajout / Modification des infrastructures",
-            "delete": "Suppression des infrastructures"
+            "modification": "Ajout / Modification des Organisations",
+            "delete": "Suppression des Organisations"
         },
         "group": {
             "modification": "Ajout / Modification des groupes",

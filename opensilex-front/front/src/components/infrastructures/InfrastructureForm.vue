@@ -149,16 +149,16 @@ export default class InfrastructureForm extends Vue {
 <i18n>
 en:
   InfrastructureForm:
-    infrastructure-uri: Infrastructure URI
-    form-name-placeholder: Enter infrastructure name
-    form-type-placeholder: Select infrastructure type
-    form-parent-placeholder: Select parent infrastructure
-    infrastructure-already-exists: Infrastructure already exists with this URI
+    infrastructure-uri: Organization URI
+    form-name-placeholder: Enter organization name
+    form-type-placeholder: Select organization type
+    form-parent-placeholder: Select parent organization
+    infrastructure-already-exists: Organization already exists with this URI
 fr:
   InfrastructureForm:
-    infrastructure-uri: URI de l'infrastructure
-    form-name-placeholder: Saisir le nom de l'infrastructure
-    form-type-placeholder: Sélectionner le type d'infrastructure
-    form-parent-placeholder: Sélectionner l'infrastructure parente
-    infrastructure-already-exists: Une infrastructure existe déjà avec cette URI
+    infrastructure-uri: URI de l'organisation
+    form-name-placeholder: Saisir le nom de l'organisation
+    form-type-placeholder: Sélectionner le type d'organisation
+    form-parent-placeholder: Sélectionner l'organisation parente
+    infrastructure-already-exists: Une organisation existe déjà avec cette URI
 </i18n>

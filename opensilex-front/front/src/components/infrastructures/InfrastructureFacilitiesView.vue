@@ -2,8 +2,11 @@
   <b-card v-if="selected">
     <template v-slot:header>
       <h3>
-        <opensilex-Icon icon="ik#ik-map" />
-        {{$t("InfrastructureFacilitiesView.facilities")}}
+        <opensilex-HelpButton @click="helpModal.show()" label="component.common.help-button"></opensilex-HelpButton>
+         {{$t("InfrastructureFacilitiesView.facilities")}}
+        <b-modal ref="helpModal" size="md" hide-header ok-only>
+          <opensilex-InfrastructureFacilityHelp></opensilex-InfrastructureFacilityHelp>
+        </b-modal>        
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
@@ -87,6 +90,7 @@ export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
 
+  @Ref("helpModal") readonly helpModal!: any;
   @Ref("facilityForm") readonly facilityForm!: any;
 
   get user() {

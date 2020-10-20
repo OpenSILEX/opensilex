@@ -3,8 +3,11 @@
     <!-- Card header -->
     <template v-slot:header>
       <h3>
-        <opensilex-Icon icon="ik#ik-globe" />
-        {{$t("component.common.list-label")}}
+        <opensilex-HelpButton @click="helpModal.show()" label="component.common.help-button"></opensilex-HelpButton>
+        {{$t("InfrastructureTree.infrastructure-component")}}
+        <b-modal ref="helpModal" size="md" hide-header ok-only>
+          <opensilex-InfrastructureHelp></opensilex-InfrastructureHelp>
+        </b-modal>
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
@@ -87,6 +90,8 @@ export default class InfrastructureTree extends Vue {
   $store: any;
   $route: any;
   service: InfrastructuresService;
+
+  @Ref("helpModal") readonly helpModal!: any;
 
   get user() {
     return this.$store.state.user;
@@ -274,6 +279,7 @@ en:
     edit: Edit infrastructure
     add-child: Add sub-infrastructure
     delete: Delete infrastructure
+    infrastructure-component: Infrastructure components
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des infrastructures...
@@ -282,4 +288,5 @@ fr:
     edit: Editer l'infrastructure
     add-child:  Ajouter une sous-infrastructure
     delete: Supprimer l'infrastructure
+    infrastructure-component: Composants d'infrastructure
 </i18n>

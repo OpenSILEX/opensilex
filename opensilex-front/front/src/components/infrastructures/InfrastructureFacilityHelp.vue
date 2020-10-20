@@ -1,9 +1,9 @@
 <template>
   <div v-if="lang === 'fr'">
-    <InfrastructureHelpFR></InfrastructureHelpFR>
+    <InfrastructureFacilityHelpFR></InfrastructureFacilityHelpFR>
   </div>
   <div v-else>
-    <InfrastructureHelpEN></InfrastructureHelpEN> 
+    <InfrastructureFacilityHelpEN></InfrastructureFacilityHelpEN> 
   </div>
 </template>
 

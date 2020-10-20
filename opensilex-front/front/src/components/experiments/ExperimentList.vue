@@ -388,28 +388,28 @@ export default class ExperimentList extends Vue {
 <i18n>
 en:
   ExperimentList:
-    filter-label: Search by name
+    filter-label: Name
     filter-label-placeholder: Enter a name
-    filter-year: Search by year
+    filter-year: Year
     filter-year-placeholder: Enter a year
-    filter-species: Search by species
+    filter-species: Species
     filter-species-placeholder: Select one or more species
-    filter-project: Search by project
+    filter-project: Project
     filter-project-placeholder: Select a project
-    filter-state: Search by state
+    filter-state: State
     filter-state-placeholder: Select an experiment state
 
 fr:
   ExperimentList:
-    filter-label: Filtrer par nom
+    filter-label: Nom
     filter-label-placeholder: Saisir un nom
-    filter-year: Filtrer par année
+    filter-year: Année
     filter-year-placeholder: Saisir une année
-    filter-species: Filtrer par espèces
+    filter-species: Espèces
     filter-species-placeholder: Sélectionner une ou plusieurs espèces
-    filter-project: Filtrer par projet
+    filter-project: Projet
     filter-project-placeholder: Sélectionner un projet
-    filter-state: Filtrer par état
+    filter-state: Etat
     filter-state-placeholder: Sélectionner un état
 
 </i18n>

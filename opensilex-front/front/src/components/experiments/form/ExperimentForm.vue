@@ -116,13 +116,13 @@ export default class ExperimentForm extends Vue {
 <i18n>
 en:
   ExperimentForm:
-    create: Create
-    update: Update
+    create: Add experiment
+    update: Update experiment
     experiment-already-exists: Experiment already exists
 
 fr:
   ExperimentForm:
-    create: Créer
-    update: Modifier
+    create: Ajouter une expérimentation
+    update: Modifier une expérimentation
     experiment-already-exists: L'expérimentation existe déjà
 </i18n>

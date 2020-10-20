@@ -15,7 +15,7 @@ Depending on the selected germplasm type, the insertion table will change.
 ## Rules : 
 **General** :
 - The name is mandatory for every germplasm type
-- If the URI is not given, then the system will automatically generate a URi. This URI is the unique identifier in the database.
+- If the URI is not given, then the system will automatically generate a URI. This URI is the unique identifier in the database.
 - All other columns are optional excepted Species URI,variety URI and accession URI.
 - To add several synonyms, use | as seperator
 - You can add additional information by clicking on the button *Add Column*. (this new attributes are used for information but won't be used as search filter for example.)

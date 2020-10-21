@@ -7,6 +7,7 @@ package org.opensilex.nosql;
 
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 /**
  *
@@ -19,4 +20,8 @@ public interface NoSQLConfig {
     )
     public NoSQLService nosql();
 
+    @ConfigDescription(
+            value = "MongoDB data source"
+    )
+    public MongoDBService mongodb();
 }

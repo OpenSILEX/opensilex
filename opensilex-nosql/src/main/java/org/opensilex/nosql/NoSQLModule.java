@@ -12,7 +12,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

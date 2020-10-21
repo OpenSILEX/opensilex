@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.slf4j.Logger;

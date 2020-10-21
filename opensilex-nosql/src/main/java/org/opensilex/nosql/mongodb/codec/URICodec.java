@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.nosql.datanucleus.mongo;
+package org.opensilex.nosql.mongodb.codec;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;

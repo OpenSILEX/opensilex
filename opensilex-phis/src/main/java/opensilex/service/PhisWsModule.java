@@ -14,7 +14,7 @@ import org.apache.jena.riot.Lang;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.nosql.datanucleus.mongo.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;

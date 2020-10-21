@@ -1,72 +1,62 @@
 //******************************************************************************
-//                      MongoDBConnection.java
+//                         NoSQLService.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.nosql.datanucleus.mongo;
+package org.opensilex.nosql.mongodb;
 
-import org.opensilex.nosql.mongodb.codec.URICodec;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
-import org.opensilex.nosql.datanucleus.DataNucleusServiceConnection;
-import org.opensilex.service.BaseService;
-import org.opensilex.service.ServiceDefaultDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+import org.opensilex.nosql.mongodb.codec.URICodec;
+import org.opensilex.nosql.model.NoSQLModel;
+import org.opensilex.service.BaseService;
+import org.opensilex.service.ServiceDefaultDefinition;
 
-/**
- * MongoDB connection for DataNucleus.
- * <pre>
- * TODO: Implement it
- * </pre>
- *
- * @see org.opensilex.nosql.datanucleus.DataNucleusService
- * @author Vincent Migot
- */
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
-public class MongoDBConnection extends BaseService implements DataNucleusServiceConnection {
+public class MongoDBService extends BaseService {
 
-    public final static Logger LOGGER = LoggerFactory.getLogger(MongoDBConnection.class);
-
-    public MongoDBConnection(MongoDBConfig config) {
+    public MongoDBService(MongoDBConfig config) {
         super(config);
     }
-
+    
     public MongoDBConfig getImplementedConfig() {
         return (MongoDBConfig) this.getConfig();
     }
-
-    private DataNucleusService datanucleus;
-
-    @Override
-    public void definePersistentManagerProperties(Properties pmfProperties) {
-        MongoDBConfig cfg = getImplementedConfig();
-        pmfProperties.setProperty("javax.jdo.option.ConnectionURL", "mongodb:" + cfg.host() + ":" + cfg.port() + "/" + cfg.database());
-        pmfProperties.setProperty("javax.jdo.option.Mapping", "mongodb");
-        pmfProperties.setProperty("datanucleus.schema.autoCreateAll", "true");
+    
+    public <T extends NoSQLModel> T create(T instance, Class<T> instanceClass) {
+        MongoDatabase db = getMongoDBClient().getDatabase("opensilex");
+        MongoCollection<T> c = db.getCollection("???", instanceClass);
+        c.insertOne(instance);
+        return instance;
     }
+//
+//    public void delete(Class cls, Object key) throws NamingException;
+//
+//    public <T> T findById(Class cls, Object key) throws NamingException;
+//
+//    public Long count(JDOQLTypedQuery query) throws NamingException;
+//
+//    public Object update(Object instance) throws NamingException;
+//
+//    public void createAll(Collection<Object> instances) throws NamingException;
+//
+//    public void deleteAll(Collection<Object> instances) throws NamingException;
+//
+//    public Long deleteAll(JDOQLTypedQuery query) throws NamingException;
 
-    @Override
-    public void setDatanucleus(DataNucleusService datanucleus) {
-        this.datanucleus = datanucleus;
-    }
-
-    @Override
     public MongoClient getMongoDBClient() {
         String connectionString = "mongodb://";
         MongoDBConfig cfg = getImplementedConfig();
@@ -111,5 +101,4 @@ public class MongoDBConnection extends BaseService implements DataNucleusService
                 .build();
         return MongoClients.create(clientSettings);
     }
-
 }

@@ -21,7 +21,11 @@ big-data:
                     host: localhost
                     port: 8668
                     database: opensilex
-
+    mongodb:
+        config:
+            host: localhost
+            port: 8668
+            database: opensilex
     
 phisws:
     infrastructure: opensilex

@@ -5,7 +5,7 @@
       :description="name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true" :returnTo="{path: '/projects'}">
+    <opensilex-PageActions :returnButton="true">
         <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"

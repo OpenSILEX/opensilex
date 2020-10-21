@@ -8,6 +8,7 @@
             v-if="returnTo && returnButton"
             :to="returnTo"
             v-slot="{ href, route, navigate}"
+            @click.native="goBack"
           >
             <a
               class="btn btn-outline-primary back-button mr-2 h-100"
@@ -52,8 +53,18 @@ import Vue from "vue";
 
 @Component
 export default class PageActions extends Vue {
-  @Prop()
-  returnTo: string;
+  
+  get returnTo() {
+    if (this.$store.state.previousPage.length > 0) {
+      return this.$store.state.previousPage[this.$store.state.previousPage.length - 1];
+    } else {
+      return false;
+    }
+  }
+
+  goBack() {
+    this.$store.commit("goBack");
+  }
 
   @Prop({ default: "component.pageActions.returnToTitle" })
   returnToTitle: string;

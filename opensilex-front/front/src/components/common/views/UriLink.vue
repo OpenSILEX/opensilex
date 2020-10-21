@@ -1,6 +1,6 @@
 <template>
   <span>
-    <router-link v-if="to" class="uri" :title="uri" :to="to">
+    <router-link v-if="to" class="uri" :title="uri" :to="to" @focus.native="storePrevious" @click.native="storeReturnPage">
       <span>{{value || uri}}</span>
       &nbsp;
       <button
@@ -51,6 +51,7 @@ import Vue from "vue";
 export default class UriLink extends Vue {
   $opensilex: any;
   $t: any;
+  $router: any;
 
   @Prop()
   uri: string;
@@ -90,6 +91,14 @@ export default class UriLink extends Vue {
         ? this.$t("component.common.url-copy") + ": " + address
         : this.$t("component.common.uri-copy") + ": " + address
     );
+  }
+
+  storePrevious() {
+    this.$store.commit("storeCandidatePage", this.$router);
+  }
+
+  storeReturnPage() {
+    this.$store.commit("validateCandidatePage", this.$router);
   }
 }
 </script>

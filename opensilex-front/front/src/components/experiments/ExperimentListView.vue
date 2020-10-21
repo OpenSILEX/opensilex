@@ -80,7 +80,18 @@ export default class ExperimentListView extends Vue {
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
       .then(http => {
-        this.experimentForm.showEditForm(http.response.result);
+        let form = http.response.result;
+        let projectsURIs = [];
+        for (let i in form.projects) {
+          projectsURIs.push(form.projects[i].uri);
+        }
+        form.projects = projectsURIs;
+         let infraURIs = [];
+        for (let i in form.infrastructures) {
+          infraURIs.push(form.infrastructures[i].uri);
+        }
+        form.infrastructures = infraURIs;
+        this.experimentForm.showEditForm(form);
       });
   }
 }

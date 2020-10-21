@@ -9,8 +9,6 @@
     <opensilex-PageActions
       :tabs="true"
       :returnButton="true"
-      :returnTo="goBack()"
-      :returnToTitle="returnTitle()"
     >
       <template v-slot>
         <b-nav-item
@@ -61,7 +59,6 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 @Component
 export default class FactorView extends Vue {
   uri = null;
-  createdFactor = false;
   $opensilex: any;
   $store: any;
   $route: any;
@@ -112,9 +109,6 @@ export default class FactorView extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.FactorsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
-    if (this.$route.query.created != null) {
-      this.createdFactor = this.$route.query.created;
-    }
     this.loadFactor(this.uri);
   }
 
@@ -133,24 +127,6 @@ export default class FactorView extends Vue {
 
   isExperimentTab() {
     return this.$route.path.startsWith("/factor/experiments/");
-  }
-
-  goBack() {
-    // return to the previous page
-    if (!this.createdFactor) {
-      return false;
-    } else {
-      // return to the list if factor has just been created
-      return "/factors";
-    }
-  }
-
-  returnTitle() {
-    // return to the previous page
-    if (this.createdFactor) {
-      // return to the list if factor has just been created
-      return "component.factor.returnButton";
-    }
   }
 }
 </script>

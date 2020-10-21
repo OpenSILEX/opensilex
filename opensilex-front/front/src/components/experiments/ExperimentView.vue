@@ -6,7 +6,7 @@
       :description="name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true" :returnTo="{path: '/experiments'}">
+    <opensilex-PageActions :tabs="true" :returnButton="true">
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"

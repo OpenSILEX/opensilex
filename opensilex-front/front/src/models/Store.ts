@@ -72,6 +72,23 @@ let defaultConfig: FrontConfigDTO = {
   routes: []
 };
 
+let computePage = function(router) {
+  let queryParams = new URLSearchParams(window.location.search);
+  let queryValues = {};
+  queryParams.forEach((value, key) => {
+    queryValues[key] = value;
+  });
+  let realRoute: any = {};
+  for (let i in router.currentRoute) {
+    if (i == "query") {
+      realRoute.query = queryValues;
+    } else {
+      realRoute[i] = router.currentRoute[i];
+    }
+  }
+  return realRoute;
+}
+
 export class SearchStore {
 
   results = [];
@@ -90,6 +107,8 @@ let store = new Vuex.Store({
     disconnected: false,
     release: new Release(),
     lang: "en",
+    previousPageCandidate: null,
+    previousPage: [],
     search: {
       experiments: new SearchStore()
     },
@@ -231,6 +250,21 @@ let store = new Vuex.Store({
       console.debug("Define user language", lang);
       state.user.setLocale(lang);
       state.lang = lang;
+    },
+    storeCandidatePage(state, router) {
+      state.previousPageCandidate = computePage(router);
+    },
+    validateCandidatePage(state) {
+      if (state.previousPageCandidate) {
+        state.previousPage.push(state.previousPageCandidate);
+      }
+      state.previousPageCandidate = null;
+    }, 
+    storeReturnPage(state, router) {
+      state.previousPage.push(computePage(router));
+    },
+    goBack(state) {
+      state.previousPage.pop();
     }
   },
   actions: {

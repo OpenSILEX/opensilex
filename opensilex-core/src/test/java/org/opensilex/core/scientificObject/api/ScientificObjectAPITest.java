@@ -12,15 +12,18 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.junit.Before;
 import org.junit.Test;
-import org.opensilex.core.experiment.api.ExperimentCreationDTO;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,31 +35,29 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  * @author Vincent MIGOT
  * @author Jean Philippe VERT
  */
-public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
+public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
-    protected final String path = "/core/scientific-object";
+    protected static final String path = "/core/scientific-object";
 
-    protected final String uriPath = path + "/get/{uri}";
-    protected final String createPath = path + "/create";
-    protected final String updatePath = path + "/update";
-    protected final String deletePath = path + "/delete/{uri}";
-    private final int soCount = 0;
+    public static final String uriPath = path + "/get-detail/{xpuri}/{objuri}";
+    public static final String createPath = path + "/create";
+    public static final String updatePath = path + "/update";
+    public static final String deletePath = path + "/delete/{xpURI}/{objURI}";
+    private int soCount = 1;
+    private static URI experiment;
 
-    protected ScientificObjectDescriptionDTO getCreationDTO() throws Exception {
-        ExperimentCreationDTO xpDto = new ExperimentCreationDTO();
-        xpDto.setLabel("xp");
-
-        LocalDate currentDate = LocalDate.now();
-        xpDto.setStartDate(currentDate.minusDays(3));
-        xpDto.setEndDate(currentDate.plusDays(3));
-        xpDto.setCampaign(currentDate.getYear());
-        xpDto.setObjective("Objective");
-
-        final Response postResult = getJsonPostResponse(target(createPath), xpDto);
+    @Before
+    public void beforeClass() throws Exception {
+        final Response postResultXP = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        assertEquals(Status.CREATED.getStatusCode(), postResultXP.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
-        URI createdUri = extractUriFromResponse(postResult);
+        experiment = extractUriFromResponse(postResultXP);
+        final Response getResultXP = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experiment.toString());
+        assertEquals(Status.OK.getStatusCode(), getResultXP.getStatus());
+    }
 
+    protected ScientificObjectDescriptionDTO getCreationDTO() throws Exception {
         ScientificObjectDescriptionDTO dto = new ScientificObjectDescriptionDTO();
         List<Position> list = new LinkedList<>();
         list.add(new Position(3.97167246, 43.61328981));
@@ -67,9 +68,9 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
         list.add(new Position(3.97167246, 43.61328981));
         Geometry geometry = new Polygon(list);
 
-        dto.setName("SO " + soCount);
-        dto.setType(new URI("vocabulary:Plot"));
-        dto.setExperiment(createdUri);
+        dto.setName("SO " + soCount++);
+        dto.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
+        dto.setExperiment(experiment);
         dto.setGeometry(geometryToGeoJson(geometry));
 
         return dto;
@@ -77,14 +78,21 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getResponse(createdUri);
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+    }
+
+    private Response getResponse(URI createdUri) throws Exception {
+        WebTarget getDetailTarget = target(uriPath);
+        getDetailTarget = getDetailTarget.resolveTemplate("xpuri", experiment.toString());
+        getDetailTarget = getDetailTarget.resolveTemplate("objuri", createdUri.toString());
+
+        return appendToken(getDetailTarget).get();
     }
 
     @Test
@@ -96,7 +104,6 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
         // update the so
         soDTO.setUri(extractUriFromResponse(postResult));
         soDTO.setName("new alias");
-        soDTO.setType(new URI("vocabulary:Leaf"));
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         soDTO.setGeometry(geometryToGeoJson(geometry));
 
@@ -104,7 +111,7 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new scientific object and compare it to the expected scientific object
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), soDTO.getUri().toString());
+        final Response getResult = getResponse(soDTO.getUri());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -114,7 +121,7 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
-        assertEquals(soDTO.getType(), dtoFromApi.getType());
+        assertEquals(soDTO.getType(), new URI(SPARQLDeserializers.getExpandedURI(dtoFromApi.getType())));
         assertEquals(soDTO.getGeometry(), dtoFromApi.getGeometry());
     }
 
@@ -122,13 +129,17 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
     public void testDelete() throws Exception {
         // create object and check if URI exists
         Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
-        String uri = extractUriFromResponse(postResponse).toString();
+        URI uri = extractUriFromResponse(postResponse);
 
         // delete object and check if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+        WebTarget getDeleteByUriTarget = target(deletePath);
+        getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("xpURI", experiment.toString());
+        getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("objURI", uri);
+
+        final Response delResult = appendToken(getDeleteByUriTarget).delete();
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        final Response getResult = getResponse(uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -137,7 +148,7 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getResponse(uri);
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -146,5 +157,18 @@ public class ScientificObjectAPITest extends AbstractSecurityIntegrationTest {
         });
         ScientificObjectDetailDTO soGetDetailDTO = getResponse.getResult();
         assertNotNull(soGetDetailDTO);
+    }
+
+    @Test
+    public void testGetByUriFail() throws Exception {
+
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        JsonNode node = postResult.readEntity(JsonNode.class);
+        ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
+        String uri = postResponse.getResult();
+
+        // call the service with a non existing pseudo random URI
+        final Response getResult = getResponse(new URI(uri + "7FG4FG89FG4GH4GH57"));
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 }

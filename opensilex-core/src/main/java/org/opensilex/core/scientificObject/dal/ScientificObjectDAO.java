@@ -249,7 +249,7 @@ public class ScientificObjectDAO {
         xpDAO.validateExperimentAccess(xpURI, currentUser);
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
+        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ExperimentalObject.getURI()), currentUser.getLanguage());
 
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);

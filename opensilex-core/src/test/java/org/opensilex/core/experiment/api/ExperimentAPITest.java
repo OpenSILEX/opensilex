@@ -33,15 +33,15 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/experiment";
+    protected static String path = "/core/experiment";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    public static String uriPath = path + "/get/{uri}";
+    public static String searchPath = path + "/search";
+    public static String createPath = path + "/create";
+    public static String updatePath = path + "/update";
+    public static String deletePath = path + "/delete/{uri}";
 
-    protected ExperimentCreationDTO getCreationDTO() {
+    public static ExperimentCreationDTO getCreationDTO() {
 
         ExperimentCreationDTO xpDto = new ExperimentCreationDTO();
         xpDto.setLabel("xp");

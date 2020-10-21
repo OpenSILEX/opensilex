@@ -140,9 +140,7 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
 
     public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
         ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
-        if (model != null) {
-            dto.fromModel(model);
-        }
+        dto.fromModel(model);
         dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
 
         return dto;

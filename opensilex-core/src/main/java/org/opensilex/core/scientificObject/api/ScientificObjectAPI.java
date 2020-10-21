@@ -177,7 +177,10 @@ public class ScientificObjectAPI {
         ExperimentalObjectModel model = dao.getByURIAndExperiment(experimentURI, objectURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, experimentURI);
 
-        return new SingleObjectResponse<ScientificObjectDetailDTO>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
+        if (model != null)
+            return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
+        else
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
     }
 
     @POST
@@ -220,9 +223,9 @@ public class ScientificObjectAPI {
             sparql.commitTransaction();
             session.commitTransaction();
 
-            return new ObjectUriResponse(soURI).getResponse();
+            return new ObjectUriResponse(Response.Status.CREATED, soURI).getResponse();
         } catch (Exception ex) {
-            sparql.rollbackTransaction();
+            sparql.rollbackTransaction(ex);
             session.abortTransaction();
             throw ex;
         }

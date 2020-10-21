@@ -132,13 +132,6 @@ export default class FactorView extends Vue {
 </script>
 
 <style scoped lang="scss">
-.back-button {
-  margin-right: 15px;
-  height: 37px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 </style>
 
 <i18n>

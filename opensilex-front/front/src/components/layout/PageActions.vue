@@ -22,7 +22,6 @@
           <router-link
             v-if="!returnTo && returnButton"
             to="/"
-            class="ml-3"
             :title="$t(returnToTitle)"
             event
             @click.native.prevent="$router.go(-1)"
@@ -53,10 +52,11 @@ import Vue from "vue";
 
 @Component
 export default class PageActions extends Vue {
-  
   get returnTo() {
     if (this.$store.state.previousPage.length > 0) {
-      return this.$store.state.previousPage[this.$store.state.previousPage.length - 1];
+      return this.$store.state.previousPage[
+        this.$store.state.previousPage.length - 1
+      ];
     } else {
       return false;
     }
@@ -85,6 +85,11 @@ export default class PageActions extends Vue {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-right: 6px;
+  padding-bottom: 4px;
+  height: 35px!important;
+  padding-top: 4px;
+  padding-left: 9px;
 }
 
 button {

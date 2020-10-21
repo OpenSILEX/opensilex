@@ -45,7 +45,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.core.data.dal.EntityModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
@@ -157,7 +157,7 @@ public class DataAPI {
         for(DataCreationDTO dto : dtoList ){
             variablesURI.add(dto.getVariable());
             if (dto.getScientificObjects() != null) {
-                for(EntityModel object: dto.getScientificObjects())
+                for(ProvEntityModel object: dto.getScientificObjects())
                     objectsURI.add(object.getUri());
             }            
             provenances.add(dto.getProvenance().getUri().toString());
@@ -430,7 +430,7 @@ public class DataAPI {
         Set<String> provenances= new HashSet<>();
         for(DataFilePathCreationDTO dto : dtoList ){ 
             if (dto.getScientificObjects() != null) {
-                for (EntityModel obj:dto.getScientificObjects()) {
+                for (ProvEntityModel obj:dto.getScientificObjects()) {
                     objectsURI.add(obj.getUri());
                 } 
             }                        

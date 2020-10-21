@@ -14,7 +14,7 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.EntityModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -26,7 +26,7 @@ public class DataGetDTO {
     @ValidURI
     protected URI uri;
     
-    private List<EntityModel> scientificObjects;
+    private List<ProvEntityModel> scientificObjects;
     
     private URI variable;
     
@@ -44,7 +44,7 @@ public class DataGetDTO {
         this.uri = uri;
     }
     
-    public void setObject(List<EntityModel> objects){
+    public void setObject(List<ProvEntityModel> objects){
         this.scientificObjects = objects;
     }
     
@@ -77,7 +77,7 @@ public class DataGetDTO {
         return uri;
     }
     
-    public List<EntityModel> getObject(){
+    public List<ProvEntityModel> getObject(){
         return scientificObjects;
     }
     

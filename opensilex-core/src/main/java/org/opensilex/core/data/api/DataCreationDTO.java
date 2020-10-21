@@ -15,7 +15,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.EntityModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -29,7 +29,7 @@ public class DataCreationDTO{
     @ValidURI
     protected URI uri;
     
-    private List<EntityModel> scientificObjects;
+    private List<ProvEntityModel> scientificObjects;
     
     @NotNull
     @ValidURI
@@ -55,7 +55,7 @@ public class DataCreationDTO{
         this.uri = uri;
     }
     
-    public void setObject(List<EntityModel> objects){
+    public void setObject(List<ProvEntityModel> objects){
         this.scientificObjects = objects;
     }
     
@@ -83,7 +83,7 @@ public class DataCreationDTO{
         return uri;
     }
     
-    public List<EntityModel> getScientificObjects(){
+    public List<ProvEntityModel> getScientificObjects(){
         return scientificObjects;
     }
     

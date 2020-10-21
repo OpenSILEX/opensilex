@@ -15,7 +15,7 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.EntityModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -33,7 +33,7 @@ public class DataFileCreationDTO{
     @NotNull
     private URI rdfType; 
     
-    private List<EntityModel> scientificObjects;
+    private List<ProvEntityModel> scientificObjects;
     
     @NotNull
     private DataProvenanceModel provenance;
@@ -60,11 +60,11 @@ public class DataFileCreationDTO{
         this.rdfType = rdfType;
     }
 
-    public List<EntityModel> getScientificObjects() {
+    public List<ProvEntityModel> getScientificObjects() {
         return scientificObjects;
     }
 
-    public void setScientificObjects(List<EntityModel> scientificObjects) {
+    public void setScientificObjects(List<ProvEntityModel> scientificObjects) {
         this.scientificObjects = scientificObjects;
     }
 

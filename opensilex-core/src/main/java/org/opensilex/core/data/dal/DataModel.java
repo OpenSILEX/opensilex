@@ -54,7 +54,7 @@ public class DataModel implements NoSQLModel{
     @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
 
-    private List<EntityModel> scientificObjects;
+    private List<ProvEntityModel> scientificObjects;
     
     private URI variable;
     
@@ -71,7 +71,7 @@ public class DataModel implements NoSQLModel{
     @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
     @Column(name="prov:used")
-    List<EntityModel> provUsed;
+    List<ProvEntityModel> provUsed;
     
     private ZonedDateTime date;
     
@@ -90,7 +90,7 @@ public class DataModel implements NoSQLModel{
         this.uri = uri;
     }
     
-    public void setObject(List<EntityModel> objects){
+    public void setObject(List<ProvEntityModel> objects){
         this.scientificObjects = objects;
     }
     
@@ -144,7 +144,7 @@ public class DataModel implements NoSQLModel{
         return uri;
     }
     
-    public List<EntityModel> getObject(){
+    public List<ProvEntityModel> getObject(){
         return scientificObjects;
     }
     
@@ -191,11 +191,11 @@ public class DataModel implements NoSQLModel{
         this.provenanceSettings = provenanceSettings;
     }
     
-    public List<EntityModel> getProvUsed() {
+    public List<ProvEntityModel> getProvUsed() {
         return provUsed;
     }
 
-    public void setProvUsed(List<EntityModel> provUsed) {
+    public void setProvUsed(List<ProvEntityModel> provUsed) {
         this.provUsed = provUsed;
     }
     

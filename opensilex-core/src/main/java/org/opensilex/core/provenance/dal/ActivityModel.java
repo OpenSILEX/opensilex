@@ -19,7 +19,7 @@ import javax.jdo.annotations.Persistent;
  */
 @PersistenceCapable(embeddedOnly="true")
 public class ActivityModel {    
-    @JsonProperty("rdf:type")
+    @JsonProperty("rdfType")
     @Column(name="rdf:type")
     URI type;   
 

@@ -37,9 +37,9 @@ public class DataProvenanceModel {
     @Join(column="uri")
     @Persistent(defaultFetchGroup="true")
     @Column(name="prov:used")
-    @JsonProperty("prov:used")
+    @JsonProperty("provUsed")
     @Cacheable("false")
-    List<EntityModel> provUsed;
+    List<ProvEntityModel> provUsed;
     
     @Column(name="settings")
     @Persistent(defaultFetchGroup="true")    
@@ -53,11 +53,11 @@ public class DataProvenanceModel {
         this.provenanceUri = uri;
     }
 
-    public List<EntityModel> getProvUsed() {
+    public List<ProvEntityModel> getProvUsed() {
         return provUsed;
     }
 
-    public void setProvUsed(List<EntityModel> provUsed) {
+    public void setProvUsed(List<ProvEntityModel> provUsed) {
         this.provUsed = provUsed;
     }
 

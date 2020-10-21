@@ -166,8 +166,13 @@ public class ProvenanceAPI {
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        ListWithPagination<ProvenanceModel> provenances = dao.search(label, experiment, activityType, agentType, agentURI, page, pageSize);
-
+        ListWithPagination<ProvenanceModel> resultList = dao.search(label, experiment, activityType, agentType, agentURI, page, pageSize);
+        
+// Convert paginated list to DTO
+        ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
+                ProvenanceGetDTO.class,
+                ProvenanceGetDTO::fromModel
+        );
         return new PaginatedListResponse<>(provenances).getResponse();
     }
 

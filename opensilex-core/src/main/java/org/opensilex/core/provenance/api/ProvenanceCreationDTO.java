@@ -48,13 +48,13 @@ public class ProvenanceCreationDTO {
     /**
      * activity
      */
-    @JsonProperty("prov:Activity")
+    @JsonProperty("provActivity")
     protected List<ActivityModel> activity;
        
     /**
      * agents
      */
-    @JsonProperty("prov:Agent")
+    @JsonProperty("provAgent")
     protected List<AgentModel> agents;
 
     public URI getUri() {

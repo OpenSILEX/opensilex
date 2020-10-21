@@ -19,7 +19,7 @@ import javax.jdo.annotations.PersistenceCapable;
  */
 @PersistenceCapable(embeddedOnly="true")
 public class AgentModel {    
-    @JsonProperty("rdf:type")
+    @JsonProperty("rdfType")
     @Column(name="rdf:type")
     URI type;
 

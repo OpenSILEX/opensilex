@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.EntityModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 
 /**
  *
@@ -23,7 +23,7 @@ public class DataFileGetDTO {
        
     private URI rdfType;       
     
-    private List<EntityModel> scientificObjects;
+    private List<ProvEntityModel> scientificObjects;
     
     private DataProvenanceModel provenance;
     
@@ -47,11 +47,11 @@ public class DataFileGetDTO {
         this.rdfType = rdfType;
     }
 
-    public List<EntityModel> getScientificObjects() {
+    public List<ProvEntityModel> getScientificObjects() {
         return scientificObjects;
     }
 
-    public void setScientificObjects(List<EntityModel> scientificObjects) {
+    public void setScientificObjects(List<ProvEntityModel> scientificObjects) {
         this.scientificObjects = scientificObjects;
     }
 

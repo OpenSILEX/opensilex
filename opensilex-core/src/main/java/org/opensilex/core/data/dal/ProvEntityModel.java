@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          EntityModel.java
+//                          ProvEntityModel.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -16,8 +16,8 @@ import javax.jdo.annotations.PersistenceCapable;
  * @author Alice Boizet
  */
 @PersistenceCapable(embeddedOnly="true")
-public class EntityModel {
-    @JsonProperty("rdf:type")
+public class ProvEntityModel {
+    @JsonProperty("rdfType")
     @Column(name="rdf:type")
     URI type;
     

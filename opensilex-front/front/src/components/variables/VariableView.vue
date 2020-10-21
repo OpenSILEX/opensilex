@@ -312,6 +312,7 @@ export default class VariableView extends Vue {
     }
 
     showVariableDetails(uri: any) {
+        this.$store.commit("storeReturnPage", this.$router);
         this.$router.push({path: "/variable/" + encodeURIComponent(uri)});
     }
 

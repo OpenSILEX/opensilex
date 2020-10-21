@@ -130,7 +130,6 @@ export default class FactorsView extends Vue {
   showFactorDetails(factorUriResult: any) {
     factorUriResult.then((factorUri) => {
       console.debug("showFactorDetails", factorUri);
-      // this.factorList.refresh();
       this.$store.commit("storeReturnPage", this.$router);
       this.$router.push({
         path: "/factor/details/" + encodeURIComponent(factorUri)

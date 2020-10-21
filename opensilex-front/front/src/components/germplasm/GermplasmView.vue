@@ -87,6 +87,7 @@ export default class GermplasmView extends Vue {
   }
 
   goToGermplasmCreate(){    
+    this.$store.commit("storeReturnPage", this.$router);
     this.$router.push({ path: '/germplasm/create' });
   }  
 

@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
+import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -44,10 +45,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String updatePath = path + "/update";
     public static final String deletePath = path + "/delete/{xpURI}/{objURI}";
     private int soCount = 1;
-    private static URI experiment;
+    private URI experiment;
 
     @Before
-    public void beforeClass() throws Exception {
+    public void beforeTest() throws Exception {
         final Response postResultXP = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultXP.getStatus());
 
@@ -57,34 +58,53 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), getResultXP.getStatus());
     }
 
-    protected ScientificObjectDescriptionDTO getCreationDTO() throws Exception {
+    @After
+    public void afterTest() throws Exception {
+        final Response delResult = getDeleteByUriResponse(target(ExperimentAPITest.deletePath), experiment.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+        experiment = null;
+    }
+
+    protected ScientificObjectDescriptionDTO getCreationDTO(boolean withGeometry) throws Exception {
         ScientificObjectDescriptionDTO dto = new ScientificObjectDescriptionDTO();
-        List<Position> list = new LinkedList<>();
-        list.add(new Position(3.97167246, 43.61328981));
-        list.add(new Position(3.97171243, 43.61332417));
-        list.add(new Position(3.9717427, 43.61330558));
-        list.add(new Position(3.97170272, 43.61327122));
-        list.add(new Position(3.97167246, 43.61328981));
-        list.add(new Position(3.97167246, 43.61328981));
-        Geometry geometry = new Polygon(list);
+
+        if (withGeometry) {
+            List<Position> list = new LinkedList<>();
+            list.add(new Position(3.97167246, 43.61328981));
+            list.add(new Position(3.97171243, 43.61332417));
+            list.add(new Position(3.9717427, 43.61330558));
+            list.add(new Position(3.97170272, 43.61327122));
+            list.add(new Position(3.97167246, 43.61328981));
+            list.add(new Position(3.97167246, 43.61328981));
+            Geometry geometry = new Polygon(list);
+            dto.setGeometry(geometryToGeoJson(geometry));
+        }
 
         dto.setName("SO " + soCount++);
         dto.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
         dto.setExperiment(experiment);
-        dto.setGeometry(geometryToGeoJson(geometry));
 
         return dto;
     }
 
-    @Test
-    public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+    public void testCreate(boolean withGeometry) throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(withGeometry));
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
         final Response getResult = getResponse(createdUri);
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+    }
+
+    @Test
+    public void testCreate() throws Exception {
+        testCreate(true);
+    }
+
+    @Test
+    public void testCreateWithoutGeometry() throws Exception {
+        testCreate(false);
     }
 
     private Response getResponse(URI createdUri) throws Exception {
@@ -95,10 +115,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         return appendToken(getDetailTarget).get();
     }
 
-    @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate(boolean withGeometry) throws Exception {
         // create the so
-        ScientificObjectDescriptionDTO soDTO = getCreationDTO();
+        ScientificObjectDescriptionDTO soDTO = getCreationDTO(withGeometry);
         final Response postResult = getJsonPostResponse(target(createPath), soDTO);
 
         // update the so
@@ -122,13 +141,22 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
         assertEquals(soDTO.getType(), new URI(SPARQLDeserializers.getExpandedURI(dtoFromApi.getType())));
-        assertEquals(soDTO.getGeometry(), dtoFromApi.getGeometry());
+        assertEquals(soDTO.getGeometry().toString(), dtoFromApi.getGeometry().toString());
     }
 
     @Test
-    public void testDelete() throws Exception {
+    public void testUpdate() throws Exception {
+        testUpdate(true);
+    }
+
+    @Test
+    public void testUpdateWithoutGeometry() throws Exception {
+        testUpdate(false);
+    }
+
+    public void testDelete(boolean withGeometry) throws Exception {
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO(withGeometry));
         URI uri = extractUriFromResponse(postResponse);
 
         // delete object and check if URI no longer exists
@@ -144,8 +172,17 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testGetDetail() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+    public void testDelete() throws Exception {
+        testDelete(true);
+    }
+
+    @Test
+    public void testDeleteWithoutGeometry() throws Exception {
+        testDelete(false);
+    }
+
+    public void testGetDetail(boolean withGeometry) throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(withGeometry));
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getResponse(uri);
@@ -160,9 +197,19 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testGetDetail() throws Exception {
+        testGetDetail(true);
+    }
+
+    @Test
+    public void testGetDetailWithoutGeometry() throws Exception {
+        testGetDetail(false);
+    }
+
+    @Test
     public void testGetByUriFail() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(true));
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();

@@ -9,13 +9,13 @@
  */
 package org.opensilex.core.geospatial.dal;
 
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import junit.framework.TestCase;
 import org.jetbrains.annotations.NotNull;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.utils.ListWithPagination;
@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
+import org.junit.AfterClass;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import static org.opensilex.integration.test.AbstractIntegrationTest.getOpensilex;
 import org.opensilex.nosql.service.NoSQLService;
@@ -34,13 +35,22 @@ import org.opensilex.nosql.service.NoSQLService;
 public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     private static GeospatialDAO geospatialDAO = null;
+    private static MongoClient mongoClient = null;
     private final URI type;
 
     public GeospatialDAOTest() throws URISyntaxException {
         this.type = new URI("http://www.opensilex.org/vocabulary/oeso#WindyArea");
         if (geospatialDAO == null) {
             NoSQLService service = getOpensilex().getServiceInstance("nosql", NoSQLService.class);
-            geospatialDAO = new GeospatialDAO(service);
+            mongoClient = service.getMongoDBClient();
+            geospatialDAO = new GeospatialDAO(mongoClient);
+        }
+    }
+
+    @AfterClass
+    public static void closeMongoConnection() {
+        if (mongoClient != null) {
+            mongoClient.close();
         }
     }
 

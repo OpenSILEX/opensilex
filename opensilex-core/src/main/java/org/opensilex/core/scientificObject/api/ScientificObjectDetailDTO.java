@@ -112,11 +112,6 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
             setParentLabel(model.getParent().getName());
         }
 
-//        List<NamedResourceDTO<FactorLevelModel>> factorLevelsDTO = new ArrayList<>(model.getFactorLevels().size());
-//        for (FactorLevelModel factorLevel : model.getFactorLevels()) {
-//            factorLevelsDTO.add(NamedResourceDTO.getDTOFromModel(factorLevel));
-//        }
-//        setFactorLevels(factorLevelsDTO);
         setFactorLevels(new ArrayList<>());
         List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
         for (SPARQLModelRelation relation : model.getRelations()) {
@@ -139,9 +134,10 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
     }
 
     public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
-        ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
-        dto.fromModel(model);
-        dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
+        ScientificObjectDetailDTO dto = getDTOFromModel(model);
+        if (geometryByURI != null) {
+            dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
+        }
 
         return dto;
     }

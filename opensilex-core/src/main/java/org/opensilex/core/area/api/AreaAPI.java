@@ -10,6 +10,7 @@
 package org.opensilex.core.area.api;
 
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoClient;
 import io.swagger.annotations.*;
 import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
@@ -94,9 +95,11 @@ public class AreaAPI {
             @ApiParam("Area description") @NotNull @Valid AreaCreationDTO dto
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
-        ClientSession session = nosql.getMongoDBClient().startSession();
+        ClientSession session = mongoClient.startSession();
         session.startTransaction();
         try {
             sparql.startTransaction();
@@ -116,6 +119,8 @@ public class AreaAPI {
             sparql.rollbackTransaction();
             session.abortTransaction();
             throw ex;
+        } finally {
+            mongoClient.close();
         }
     }
 
@@ -143,22 +148,28 @@ public class AreaAPI {
     ) throws Exception {
         // Get area from DAO by URI
         AreaDAO areaDAO = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
         AreaModel model = areaDAO.get(uri);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(uri, null);
 
         // Check if area is found
+        Response response;
         if (model != null) {
-            return new SingleObjectResponse<>(AreaGetSingleDTO.fromModel(model, geometryByURI)).getResponse();
+            response = new SingleObjectResponse<>(AreaGetSingleDTO.fromModel(model, geometryByURI)).getResponse();
         } else {
             // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(
+            response = new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "Area not found",
                     "Unknown area URI: " + uri.toString()
             ).getResponse();
         }
+        
+        mongoClient.close();
+        return response;
     }
 
     @PUT
@@ -179,9 +190,11 @@ public class AreaAPI {
     ) throws Exception {
 
         AreaDAO dao = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
-        ClientSession session = nosql.getMongoDBClient().startSession();
+        ClientSession session = mongoClient.startSession();
         session.startTransaction();
         try {
             sparql.startTransaction();
@@ -201,6 +214,8 @@ public class AreaAPI {
             sparql.rollbackTransaction();
             session.abortTransaction();
             throw ex;
+        } finally {
+            mongoClient.close();
         }
     }
 
@@ -227,9 +242,11 @@ public class AreaAPI {
             @ApiParam(value = "Area URI", example = "http://example.com/", required = true) @PathParam("areaURI") @NotNull @ValidURI URI areaURI
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+         
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
-        ClientSession session = nosql.getMongoDBClient().startSession();
+        ClientSession session = mongoClient.startSession();
         session.startTransaction();
         try {
             sparql.startTransaction();
@@ -244,6 +261,8 @@ public class AreaAPI {
             sparql.rollbackTransaction();
             session.abortTransaction();
             throw ex;
+        } finally {
+            mongoClient.close();
         }
     }
 }

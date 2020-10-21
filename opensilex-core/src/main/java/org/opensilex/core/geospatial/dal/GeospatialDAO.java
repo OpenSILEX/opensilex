@@ -11,9 +11,11 @@ package org.opensilex.core.geospatial.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
@@ -28,7 +30,6 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.GeometryCollection;
-import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.utils.ListWithPagination;
@@ -48,8 +49,8 @@ public class GeospatialDAO {
 
     final MongoCollection<GeospatialModel> geometryCollection;
 
-    public GeospatialDAO(NoSQLService nosql) {
-        MongoDatabase db = nosql.getMongoDBClient().getDatabase("opensilex");
+    public GeospatialDAO(MongoClient mongoClient) {
+        MongoDatabase db = mongoClient.getDatabase("opensilex");
         String nameCollection = "Geospatial";
         geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
     }
@@ -119,7 +120,7 @@ public class GeospatialDAO {
             Document filter = getFilter(uri, graph);
 
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
-            return geometryCollection.findOneAndReplace(filter, geospatial);
+            return geometryCollection.findOneAndReplace(filter, geospatial, new FindOneAndReplaceOptions().upsert(true));
         }
         return geospatial;
     }

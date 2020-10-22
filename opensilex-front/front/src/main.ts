@@ -130,11 +130,15 @@ Vue.component('country-flag', CountryFlag);
 import Treeselect from '@riophae/vue-treeselect'
 Vue.component("treeselect", Treeselect);
 
-// Vue tour
+//Initialize Vue tour
 import VueTour from 'vue-tour'
 Vue.use(VueTour)
 require('vue-tour/dist/vue-tour.css')
 console.debug("VueTour plugin initialized !");
+
+// Initialize Tree selector
+import GlobalEvents from 'vue-global-events'
+Vue.component('GlobalEvents', GlobalEvents)
 
 import vSelect from "vue-select";
 vSelect.props.components.default = () => ({

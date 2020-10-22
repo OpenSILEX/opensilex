@@ -41,6 +41,7 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -73,7 +74,7 @@ public class ProvenanceAPI {
     UserModel currentUser;
 
     @Inject
-    private DataNucleusService nosql;
+    private MongoDBService nosql;
 
     @Inject
     private SPARQLService sparql;
@@ -101,7 +102,7 @@ public class ProvenanceAPI {
         ProvenanceModel model = provDTO.newModel();
         ProvenanceModel provenance = provDAO.create(model);
 
-        return new ObjectUriResponse(Response.Status.CREATED, provenance.getUri()).getResponse();
+        return new SingleObjectResponse(provenance).getResponse();
     }
 
     /**
@@ -141,6 +142,8 @@ public class ProvenanceAPI {
      * @param activityType
      * @param agentURI
      * @param agentType
+     * @param page
+     * @param pageSize
      * @return
      * @throws java.lang.Exception
      */
@@ -168,103 +171,103 @@ public class ProvenanceAPI {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
         ListWithPagination<ProvenanceModel> resultList = dao.search(label, experiment, activityType, agentType, agentURI, page, pageSize);
         
-// Convert paginated list to DTO
+        // Convert paginated list to DTO
         ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
                 ProvenanceGetDTO.class,
                 ProvenanceGetDTO::fromModel
         );
         return new PaginatedListResponse<>(provenances).getResponse();
     }
-
-    @DELETE
-    @Path("delete/{uri}")
-    @ApiOperation("Delete a provenance")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown provenance URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response deleteProvenance(
-            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
-
-        //check if the provenance can be deleted (not linked to data)
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        ListWithPagination<DataModel> resultList = dataDAO.search(
-                currentUser,
-                null,
-                null,
-                uri,
-                null,
-                null,
-                0,
-                1
-        );
-
-        if (resultList.getTotal() > 0) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "The provenance is linked to some data",
-                    "You can't delete a provenance linked to data"
-            ).getResponse();
-        } else {
-            try {
-                dao.delete(uri);
-                return new ObjectUriResponse(uri).getResponse();
-
-            } catch (NoSQLInvalidURIException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
-                        .getResponse();
-            } catch (NamingException | NoSQLBadPersistenceManagerException e) {
-                return new ErrorResponse(e).getResponse();
-            }
-        }
-    }
-
-    @PUT
-    @Path("update")
-    @ApiProtected
-    @ApiOperation("Update a provenance")
-    @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-
-    public Response update(
-            @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
-    ) throws Exception {
-        try {
-            ProvenanceDAO dao = new ProvenanceDAO(nosql);
-            ProvenanceModel newProvenance = dto.newModel();
-
-            ProvenanceModel storedProvenance = dao.get(dto.getUri());
-
-            if (storedProvenance == null) {
-                throw new NoSQLInvalidURIException(dto.getUri());
-            } else {
-                if (!newProvenance.getLabel().equals(storedProvenance.getLabel())) {
-                    throw new BadRequestException("The label can't be updated");
-                } else {
-                    newProvenance = dao.update(newProvenance);
-                }
-            }
-            return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
-        } catch (NoSQLInvalidURIException | BadRequestException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "wrong provenance json", e.getMessage()).getResponse();
-        } catch (IOException | ParseException | NamingException | NoSQLBadPersistenceManagerException e) {
-            return new ErrorResponse(e).getResponse();
-        }
-    }
+//
+//    @DELETE
+//    @Path("delete/{uri}")
+//    @ApiOperation("Delete a provenance")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
+//            credentialLabelKey = DataAPI.CREDENTIAL_DATA_DELETE_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//        @ApiResponse(code = 200, message = "Provenance deleted", response = ObjectUriResponse.class),
+//        @ApiResponse(code = 400, message = "Invalid or unknown provenance URI", response = ErrorResponse.class),
+//        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+//    public Response deleteProvenance(
+//            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
+//        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+//
+//        //check if the provenance can be deleted (not linked to data)
+//        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+//        ListWithPagination<DataModel> resultList = dataDAO.search(
+//                currentUser,
+//                null,
+//                null,
+//                uri,
+//                null,
+//                null,
+//                0,
+//                1
+//        );
+//
+//        if (resultList.getTotal() > 0) {
+//            return new ErrorResponse(
+//                    Response.Status.BAD_REQUEST,
+//                    "The provenance is linked to some data",
+//                    "You can't delete a provenance linked to data"
+//            ).getResponse();
+//        } else {
+//            try {
+//                dao.delete(uri);
+//                return new ObjectUriResponse(uri).getResponse();
+//
+//            } catch (NoSQLInvalidURIException e) {
+//                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
+//                        .getResponse();
+//            } catch (NamingException | NoSQLBadPersistenceManagerException e) {
+//                return new ErrorResponse(e).getResponse();
+//            }
+//        }
+//    }
+//
+//    @PUT
+//    @Path("update")
+//    @ApiProtected
+//    @ApiOperation("Update a provenance")
+//    @ApiCredential(
+//            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
+//            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//        @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class),
+//        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+//        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+//
+//    public Response update(
+//            @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
+//    ) throws Exception {
+//        try {
+//            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+//            ProvenanceModel newProvenance = dto.newModel();
+//
+//            ProvenanceModel storedProvenance = dao.get(dto.getUri());
+//
+//            if (storedProvenance == null) {
+//                throw new NoSQLInvalidURIException(dto.getUri());
+//            } else {
+//                if (!newProvenance.getLabel().equals(storedProvenance.getLabel())) {
+//                    throw new BadRequestException("The label can't be updated");
+//                } else {
+//                    newProvenance = dao.update(newProvenance);
+//                }
+//            }
+//            return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
+//        } catch (NoSQLInvalidURIException | BadRequestException e) {
+//            return new ErrorResponse(Response.Status.BAD_REQUEST, "wrong provenance json", e.getMessage()).getResponse();
+//        } catch (IOException | ParseException | NamingException | NoSQLBadPersistenceManagerException e) {
+//            return new ErrorResponse(e).getResponse();
+//        }
+//    }
 }

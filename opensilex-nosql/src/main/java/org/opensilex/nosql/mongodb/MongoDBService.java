@@ -8,39 +8,74 @@ package org.opensilex.nosql.mongodb;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.opensilex.nosql.mongodb.codec.URICodec;
-import org.opensilex.nosql.model.NoSQLModel;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.utils.ListWithPagination;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
 
+    private final MongoDatabase db;
+    
     public MongoDBService(MongoDBConfig config) {
         super(config);
+        this.db = getMongoDBClient().getDatabase(config.database());
     }
     
     public MongoDBConfig getImplementedConfig() {
         return (MongoDBConfig) this.getConfig();
     }
     
-    public <T extends NoSQLModel> T create(T instance, Class<T> instanceClass) {
-        MongoDatabase db = getMongoDBClient().getDatabase("opensilex");
-        MongoCollection<T> c = db.getCollection("???", instanceClass);
-        c.insertOne(instance);
+    public <T> T create(T instance, Class<T> instanceClass, String collectionName) {       
+        MongoCollection<T> collection = this.db.getCollection(collectionName, instanceClass);
+        collection.insertOne(instance);
         return instance;
+    }
+    
+    public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri)  {
+        Document filter = new Document("uri", uri);
+        MongoCollection collection = this.db.getCollection(collectionName, instanceClass);
+        return (T) collection.find(filter).first();
+    }
+    
+    public <T> ListWithPagination<T> searchWithPagination(
+            Class<T> instanceClass, 
+            String collectionName, 
+            Document filter, 
+            Integer page,
+            Integer pageSize) {
+        List<T> results = new ArrayList<T>();
+        MongoCollection collection = this.db.getCollection(collectionName, instanceClass);
+        long resultsNumber = collection.countDocuments(filter);
+        int total = (int) resultsNumber;
+        
+        if (total > 0) {
+            FindIterable<T> queryResult = collection.find(filter).skip(page * pageSize).limit(pageSize);
+                    
+            for (T res:queryResult) {
+                results.add(res);
+            }
+        }
+        
+        
+        return new ListWithPagination(results, page, pageSize, total);
     }
 //
 //    public void delete(Class cls, Object key) throws NamingException;
@@ -57,7 +92,7 @@ public class MongoDBService extends BaseService {
 //
 //    public Long deleteAll(JDOQLTypedQuery query) throws NamingException;
 
-    public MongoClient getMongoDBClient() {
+    public final MongoClient getMongoDBClient() {
         String connectionString = "mongodb://";
         MongoDBConfig cfg = getImplementedConfig();
         if (cfg.username() != null && cfg.password() != null && !cfg.username().isEmpty() && !cfg.password().isEmpty()) {
@@ -101,4 +136,5 @@ public class MongoDBService extends BaseService {
                 .build();
         return MongoClients.create(clientSettings);
     }
+    
 }

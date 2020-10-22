@@ -23,55 +23,23 @@ import javax.jdo.annotations.PrimaryKey;
  * Provenance model
  * @author Alice Boizet
  */
-@PersistenceCapable(table = "provenance")
-public class ProvenanceModel implements NoSQLModel{
-    @NotPersistent
-    private final String baseURI = "id/provenance";
-    @NotPersistent
-    private String[] URICompose;
-    
-    @PrimaryKey
+public class ProvenanceModel {
+//    private final String baseURI = "id/provenance";
+//    private String[] URICompose;
+//    
     URI uri;    
     String label;
     String comment;
+    List<URI> experiments;    
     
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="uri", column="uri")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    List<ExperimentProvModel> experiments;    
-    
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="type", column="rdf:type"),
-        @Persistent(name="startedAtTime", column="startedAtTime"),
-        @Persistent(name="endedAtTime", column="endedAtTime"),
-        @Persistent(name="settings", column="settings")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    @Column(name="prov:Activity")
     List<ActivityModel> activity;
     
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="uri", column="uri"),
-        @Persistent(name="type", column="rdf:type"),
-        @Persistent(name="settings", column="settings")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    @Column(name="prov:Agent")
     List<AgentModel> agents;
 
-    @Override
     public URI getUri() {
         return uri;
     }
 
-    @Override
     public void setUri(URI uri) {
         this.uri = uri;
     }
@@ -92,11 +60,11 @@ public class ProvenanceModel implements NoSQLModel{
         this.comment = comment;
     }
 
-    public List<ExperimentProvModel> getExperiments() {
+    public List<URI> getExperiments() {
         return experiments;
     }
 
-    public void setExperiments(List<ExperimentProvModel> experiments) {
+    public void setExperiments(List<URI> experiments) {
         this.experiments = experiments;
     }
     
@@ -116,59 +84,11 @@ public class ProvenanceModel implements NoSQLModel{
         this.agents = agents;
     }
 
-    public void setURICompose(String[] elt){
-        this.URICompose = elt;
-    }
+//    public void setURICompose(String[] elt){
+//        this.URICompose = elt;
+//    }
+//    
+
     
-    @Override
-    public String getGraphPrefix() {
-        return baseURI;
-    }
-
-    @Override
-    public <T extends NoSQLModel> T update(T instance) {
-        ProvenanceModel newInstance =  new ProvenanceModel();
-        ProvenanceModel updateInstance = (ProvenanceModel) instance;
-
-        newInstance.setUri(instance.getUri());
-        if(updateInstance.getLabel() !=  null)
-            newInstance.setLabel(updateInstance.getLabel());
-        else
-            newInstance.setLabel(label);
-
-        if(updateInstance.getComment() != null)
-            newInstance.setComment(updateInstance.getComment());
-        else
-            newInstance.setComment(comment);
-
-        if(updateInstance.getExperiments()!=  null)
-            newInstance.setExperiments(updateInstance.getExperiments());
-        else
-            newInstance.setExperiments(experiments);
-
-        if(updateInstance.getActivity() !=  null)
-            newInstance.setActivity(updateInstance.getActivity());
-        else
-            newInstance.setActivity(activity);
-
-        if(updateInstance.getAgents() !=  null)
-            newInstance.setAgents(updateInstance.getAgents());
-        else
-            newInstance.setAgents(agents);
-
-        return (T) newInstance;
-    }
-
-    @Override
-    public BooleanExpression getURIExpr(URI uri) {
-        QProvenanceModel candidate = QProvenanceModel.candidate();
-        return candidate.uri.eq(uri);
-    }
-
-    @Override
-    public String[] getUriSegments(NoSQLModel instance) {
-        String[] lab = {this.label};
-        return lab;
-    }
     
 }

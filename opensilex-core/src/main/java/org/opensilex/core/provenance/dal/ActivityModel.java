@@ -8,27 +8,21 @@ package org.opensilex.core.provenance.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import java.util.Map;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
+import org.bson.Document;
 
 /**
  * Activity model
  * @author Alice Boizet
  */
-@PersistenceCapable(embeddedOnly="true")
 public class ActivityModel {    
     @JsonProperty("rdfType")
-    @Column(name="rdf:type")
     URI type;   
 
     String startedAtTime;
     
     String endedAtTime;
     
-    @Persistent(defaultFetchGroup="true")
-    Map settings; 
+    Document settings; 
 
     public URI getType() {
         return type;
@@ -54,11 +48,11 @@ public class ActivityModel {
         this.endedAtTime = endedAtTime;
     }
 
-    public Map getSettings() {
+    public Document getSettings() {
         return settings;
     }
 
-    public void setSettings(Map settings) {
+    public void setSettings(Document settings) {
         this.settings = settings;
     }
     

@@ -111,14 +111,14 @@ public class DataDAO {
             }
         }
         //check provenance uri
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        if (!provDAO.provenanceExists(data.getProvenanceURI())) {
-            return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong provenance uri",
-                            "Provenance "+ data.getProvenanceURI() +" doesn't exist"
-                );
-        }
+//        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+//        if (!provDAO.provenanceExists(data.getProvenanceURI())) {
+//            return new ErrorResponse(
+//                            Response.Status.BAD_REQUEST,
+//                            "wrong provenance uri",
+//                            "Provenance "+ data.getProvenanceURI() +" doesn't exist"
+//                );
+//        }
         
         return null;
     }
@@ -134,7 +134,7 @@ public class DataDAO {
         }
 
         ProvenanceModel prov = new ProvenanceModel();
-        prov = nosql.findByURI(prov, data.getProvenanceURI());
+        //prov = nosql.findByURI(prov, data.getProvenanceURI());
         URICompose[2] = prov.getLabel();
 
         data.setURICompose(URICompose);
@@ -288,14 +288,14 @@ public class DataDAO {
         }
 
         //check provenance uri
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        if (!provDAO.provenanceListExists(provenances)) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "wrong provenance uri",
-                    "A given provenance uri doesn't exist"
-            );
-        }
+//        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+//        if (!provDAO.provenanceListExists(provenances)) {
+//            return new ErrorResponse(
+//                    Response.Status.BAD_REQUEST,
+//                    "wrong provenance uri",
+//                    "A given provenance uri doesn't exist"
+//            );
+//        }
 
         return null;
 

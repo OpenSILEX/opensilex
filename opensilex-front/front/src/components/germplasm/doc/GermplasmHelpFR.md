@@ -21,7 +21,8 @@ Selon le type de ressource sélectionné, le tableau d'insertion sera différent
 - Vous pouvez ajouter des attributs en cliquant sur le bouton *Ajouter Colonne*. (Ces attributs sont là à titre d'information, ils ne pourront pas être utilisés pour filtrer par exemple.)
 
 **Création d'espèce**  
-Les espèces issues de l'ontologie Agrovoc ont été automatiquement entrées dans la base. Si une espèce est manquante, vous pouvez l'ajouter en utilisant cette fonctionnalité mais celle-ci ne sera pas traduite.
+Les espèces issues de l'ontologie Agrovoc ont été automatiquement entrées dans la base avec leurs différentes traduction. Pour cette raison, la mise à jour d'une espèce via l'interface n'est pas possible afin d'éviter que leurs traductions soient écrasées.
+Si une espèce est manquante, vous pouvez l'ajouter en utilisant cette fonctionnalité mais celle-ci ne sera alors pas traduite.
 
 **Création de variété** 
 - l'URI de l'espèce est obligatoire et doit exister dans la base. Si celle-ci n'existe pas, il faudra alors créer cette espèce.

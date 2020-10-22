@@ -21,7 +21,8 @@ Depending on the selected germplasm type, the insertion table will change.
 - You can add additional information by clicking on the button *Add Column*. (this new attributes are used for information but won't be used as search filter for example.)
 
 **Species insertion**  
-The species defined by Agrovoc ontology have been automatically inserted inside the system database. If a species is missing, you can add it by using this functionnality but it won't be translated.
+The species defined by Agrovoc ontology have been automatically inserted inside the system database with their translations. For this reason, the species can't be updated for now because this would erase the translations. 
+If a species is missing, you can add it by using this functionnality but it won't be translated.
 
 **Variety insertion** 
 - The species URI is mandatory and the species must exist in the database. If it doesn't exist, you have to insert it.

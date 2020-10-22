@@ -111,8 +111,10 @@ export default class GermplasmView extends Vue {
         .updateGermplasm(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
-          console.debug("germplasm updated", uri);
-          this.germplasmList.refresh();
+          this.$router.push({
+            path: "/germplasm/" + encodeURIComponent(uri),
+          });
+
         })
         .catch(this.$opensilex.errorHandler)
     );

@@ -2,23 +2,26 @@
   <div class="container-fluid" v-if="germplasm.uri">
     <opensilex-PageHeader
       icon="fa#sun"
-      title="GermplasmDetails.title"
-      :description="germplasm.name"
+      :title="germplasm.name"
+      description="GermplasmDetails.title"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true" >   
-        <b-button
-          v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID) && !germplasm.type.endsWith('Species')"           
-          @click="update"
-          label="update"
-          variant="primary"
-        >update</b-button>      
+    <opensilex-PageActions :returnButton="true" >
     </opensilex-PageActions>
 
     <opensilex-PageContent>
       <b-row>
         <b-col>
           <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+            <template v-slot:rightHeader>              
+                <opensilex-EditButton
+                  v-if="!germplasm.type.endsWith('Species')"
+                  @click="updateGermplasm"
+                ></opensilex-EditButton>
+                <opensilex-DeleteButton
+                  @click="deleteGermplasm"
+                ></opensilex-DeleteButton>
+            </template>
             <template v-slot:body>
               <opensilex-UriView
                 v-if="germplasm.uri.startsWith('http')"
@@ -102,7 +105,7 @@
                 <template v-slot:cell(uri)="{data}">
                   <opensilex-UriLink
                     :uri="data.item.uri"
-                    :to="{path: '/experiment/'+ encodeURIComponent(data.item.uri)}"
+                    :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
                   ></opensilex-UriLink>
                 </template>
               </opensilex-TableAsyncView>
@@ -111,13 +114,13 @@
         </b-col>
       </b-row>
     </opensilex-PageContent>
-    <opensilex-ModalForm
-      
+    <opensilex-ModalForm      
       ref="germplasmForm"
       component="opensilex-GermplasmForm"
       editTitle="udpate"
       icon="ik#ik-user"
       modalSize="lg"
+      @onUpdate="update"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -232,6 +235,7 @@ export default class GermplasmDetails extends Vue {
   @Ref("tableAtt") readonly tableAtt!: any;
 
   getAddInfo() {
+    this.addInfo = []
     for (const property in this.germplasm.attributes) {
       let tableData = {
         attribute: property,
@@ -242,8 +246,31 @@ export default class GermplasmDetails extends Vue {
   }
 
   @Ref("germplasmForm") readonly germplasmForm!: any;
-  update() {
+  updateGermplasm() {
+    this.germplasmForm.getFormRef().getAttributes(this.germplasm);
     this.germplasmForm.showEditForm(this.germplasm);
+  }
+
+  update() {
+    this.getAddInfo();
+    this.$emit("onUpdate");    
+  }
+
+
+  deleteGermplasm() {
+    this.service
+      .deleteGermplasm(this.germplasm.uri)
+      .then(() => {
+        let message =
+          this.$i18n.t("GermplasmView.title") +
+          " " +
+          this.germplasm.uri +
+          " " +
+          this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
+        this.$router.go(-1)
+      })
+      .catch(this.$opensilex.errorHandler);
   }
   
 }

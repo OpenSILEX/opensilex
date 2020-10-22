@@ -101,11 +101,11 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID) && !data.item.type.endsWith('Species')"
             @click="$emit('onEdit', data.item.uri)"
             label="GermplasmList.update"
             :small="true"
-            :disabled="data.item.type.endsWith('Species')"
+            
           ></opensilex-EditButton>
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"

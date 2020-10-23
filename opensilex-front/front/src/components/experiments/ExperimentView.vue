@@ -2,8 +2,8 @@
   <div v-if="uri" class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-layers"
-      title="component.experiment.view.title"
-      :description="name"
+      :title="name"
+      description="component.experiment.view.title"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs="true" :returnButton="true">
@@ -16,10 +16,10 @@
           :active="isScientificObjectsTab()"
           :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
         >{{ $t('ExperimentView.scientific-objects') }}</b-nav-item>
-        <b-nav-item
+      <!--   <b-nav-item
           :active="isDataTab()"
           :to="{path: '/experiment/data/' + encodeURIComponent(uri)}"
-        >{{ $t('ExperimentView.data') }}</b-nav-item>
+        >{{ $t('ExperimentView.data') }}</b-nav-item> -->
       </template>
     </opensilex-PageActions>
 
@@ -37,19 +37,33 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import {
+  ExperimentsService,ExperimentGetDTO
+} from "opensilex-core/index";
 
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentView extends Vue {
   $route: any;
 
+  $opensilex: any;
+  service: ExperimentsService;
   uri = null;
   name: string = "";
 
   created() {
+     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
+   
     this.uri = decodeURIComponent(this.$route.params.uri);
-    let query: any = this.$route.query;
-    if (query.name) {
-      this.name = decodeURIComponent(query.name);
+  if (this.uri) {
+      this.service
+        .getExperiment(this.uri)
+        .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+          this.name = http.response.result.label;
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
     }
   }
 

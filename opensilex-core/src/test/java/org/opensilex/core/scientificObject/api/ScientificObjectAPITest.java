@@ -218,4 +218,29 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         final Response getResult = getResponse(new URI(uri + "7FG4FG89FG4GH4GH57"));
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
+
+    public void testGetScientificObjectsListByUris(boolean withGeometry) throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(withGeometry));
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getResponse(uri);
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<ScientificObjectDetailDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {
+        });
+        ScientificObjectDetailDTO soGetDetailDTO = getResponse.getResult();
+        assertNotNull(soGetDetailDTO);
+    }
+
+    @Test
+    public void testGetScientificObjectsListByUris() throws Exception {
+        testGetScientificObjectsListByUris(true);
+    }
+
+    @Test
+    public void testGetScientificObjectsListByUrisWithoutGeometry() throws Exception {
+        testGetScientificObjectsListByUris(false);
+    }
 }

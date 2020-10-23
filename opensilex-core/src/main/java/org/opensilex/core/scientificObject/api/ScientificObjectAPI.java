@@ -5,47 +5,18 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.mongodb.client.ClientSession;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.geospatial.dal.GeospatialModel;
 import com.auth0.jwt.interfaces.Claim;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
-import org.opensilex.core.ontology.api.CSVValidationDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.security.NoSuchAlgorithmException;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import com.mongodb.client.model.geojson.Geometry;
+import io.swagger.annotations.*;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -65,6 +36,24 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author Julien BONNEFONT
@@ -109,8 +98,15 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Scientific object uris", required = true) List<URI> objectsURI
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectModel> sientificObjects = dao.searchByURIs(experimentURI, objectsURI, currentUser);
-        List<ScientificObjectNodeDTO> dtoList = sientificObjects.stream().map(ScientificObjectNodeDTO::getDTOFromModel).collect(Collectors.toList());
+        List<ScientificObjectModel> scientificObjects = dao.searchByURIs(experimentURI, objectsURI, currentUser);
+
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+
+        HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(experimentURI, objectsURI);
+
+        List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
+
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }
 

@@ -13,16 +13,19 @@
             <b-button-group
               v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
             >
-              <b-button v-b-tooltip.hover.top.v-primary="'Edit '+project.name" variant="outline-primary" @click="projectForm.showEditForm(project)">
-                <slot name="icon">
-                  <opensilex-Icon icon="fa#pencil-alt"></opensilex-Icon>
-                </slot>
-              </b-button>
-              <b-button v-b-tooltip.hover.top.v-danger="'Delete '+project.name" variant="outline-danger" @click="deleteProject(project.uri)">
-                <slot name="icon">
-                  <opensilex-Icon icon="fa#trash-alt"></opensilex-Icon>
-                </slot>
-              </b-button>
+             
+              <opensilex-EditButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+                @click="projectForm.showEditForm(project)"
+                label="component.project.update"
+              ></opensilex-EditButton>
+
+              <opensilex-DeleteButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
+                @click="deleteProject(experiment.uri)"
+                label="component.project.delete"
+              ></opensilex-DeleteButton>
+              
             </b-button-group>
           </template>
           <template v-slot:body>
@@ -209,26 +212,12 @@ export default class ProjectDescription extends Vue {
   }
 
   deleteProject(uri: string) {
-    this.$bvModal
-      .msgBoxConfirm(
-        this.$t("component.common.delete-confirmation").toString(),
-        {
-          cancelTitle: this.$t("component.common.cancel").toString(),
-          okTitle: this.$t("component.common.delete").toString(),
-          okVariant: "danger",
-          centered: true
-        }
-      )
-      .then(confirmation => {
-        if (confirmation) {
-          this.service
-            .deleteProject(uri)
-            .then(() => {
-              this.$router.go(-1);
-            })
-            .catch(this.$opensilex.errorHandler);
-        }
-      });
+    this.service
+      .deleteProject(uri)
+      .then(() => {
+        this.$router.go(-1);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   loadProject() {

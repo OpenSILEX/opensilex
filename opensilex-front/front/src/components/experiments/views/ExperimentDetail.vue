@@ -17,14 +17,12 @@
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
                 @click="showEditForm()"
                 label="component.experiment.update"
-                :nosize="true"
               ></opensilex-EditButton>
 
               <opensilex-DeleteButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
                 @click="deleteExperiment(experiment.uri)"
                 label="component.experiment.delete"
-                :nosize="true"
               ></opensilex-DeleteButton>
 
             </b-button-group>

@@ -112,13 +112,13 @@ export default class ProjectForm extends Vue {
 <i18n>
 en:
   ProjectForm:
-    create: Create a project
+    create: Add project
     update: Update the project
     project-already-exists: Project already exists
 
 fr:
   ProjectForm:
-    create: Créer un projet
+    create: Ajouter un projet
     update: Modifier le projet
     project-already-exists: Le projet existe déjà
 </i18n>

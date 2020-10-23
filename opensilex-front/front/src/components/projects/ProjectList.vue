@@ -48,7 +48,7 @@
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/project/details/'+ encodeURIComponent(data.item.uri),query: { name: data.item.name }}"
+          :to="{path: '/project/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
 
@@ -84,7 +84,7 @@
 
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
-            @click="deleteUser(data.item.uri)"
+            @click="deleteProject(data.item.uri)"
             label="component.project.delete"
             :small="true"
           ></opensilex-DeleteButton>
@@ -213,7 +213,7 @@ export default class ProjectList extends Vue {
     return false;
   }
 
-  deleteUser(uri: string) {
+  deleteProject(uri: string) {
     this.service
       .deleteProject(uri)
       .then(() => {

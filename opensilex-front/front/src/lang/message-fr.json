@@ -150,7 +150,7 @@
                 "profiles": "Profils"
             },
             "experimentalDesign": {
-                "label": "Plan d'expérience",
+                "label": "Informations scientifiques",
                 "factors": "Facteurs",
                 "factorLevels": "Niveaux de facteurs",
                 "germplasm": "Ressources Génétiques"
@@ -158,7 +158,8 @@
             "infrastructures": "Organisations",
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
-            "facilitiesTypes": "Types d'installations techniques"
+            "facilitiesTypes": "Types d'installations techniques",
+            "scientific-organisation": "Organisation scientifique"
         },
         "login": {
             "input": {

@@ -4,11 +4,79 @@ menu:
   #   route:
   #     path: /users
   #     component: opensilex-UserView
-  - id: infrastructures
-    label: component.menu.infrastructure
-    route:
-      path: /infrastructures
-      component: opensilex-InfrastructureView
+  - id: scientific-organisation
+    label: component.menu.scientific-organisation
+    children: 
+      - id: infrastructures
+        label: component.menu.infrastructure
+        route:
+          path: /infrastructures
+          component: opensilex-InfrastructureView
+      - id: projects
+        label: component.menu.projects
+        route:
+          path: /projects
+          component: opensilex-ProjectView
+      - id: experiments
+        label: component.menu.experiments
+        route:
+          path: /experiments
+          component: opensilex-ExperimentListView
+  - id: experimentalDesign
+    label: component.menu.experimentalDesign.label
+    children:
+      - id: variables
+        label: component.menu.variables
+        route:
+          path: /variables
+          component: opensilex-VariableView
+      - id: factors
+        label: component.menu.experimentalDesign.factors
+        route:
+          path: /factors
+          component: opensilex-FactorsView
+      - id: germplasm
+        label: component.menu.experimentalDesign.germplasm
+        icon: ik-cloud-rain
+        route:
+          path: /germplasm
+          component: opensilex-GermplasmView
+      - id: documents
+        label: Documents
+        route:
+          path: /documents
+          component: opensilex-DocumentView
+      #  - id: scientificObjects
+      #    label: component.menu.scientificObjects
+      #    route:
+      #      path: /scientific-objects
+      #      component: opensilex-ScientificObjectList
+      # - id: equipments
+      #   label: component.menu.equipments.label
+      #   route:
+      #     path: /users
+      #     component: opensilex-UserView
+      #   children:
+      #     - id: sensors
+      #       label: component.menu.equipments.sensors
+      #       route:
+      #         path: /users
+      #         component: opensilex-UserView
+      #     - id: actuators
+      #       label: component.menu.equipments.actuators
+      #       route:
+      #         path: /users
+      #         component: opensilex-UserView
+      #     - id: vectors
+      #       label: component.menu.equipments.vectors
+      #       route:
+      #         path: /users
+      #         component: opensilex-UserView
+      #     - id: radiometricTargets
+      #       label: component.menu.equipments.radiometricTargets
+      #       route:
+      #         path: /users
+      #         component: opensilex-UserView
   - id: data
     label: component.menu.data.label
 #    children:
@@ -23,73 +91,8 @@ menu:
       #   route:
       #     path: /data
       #     component: opensilex-DataView
-  - id: projects
-    label: component.menu.projects
-    route:
-      path: /projects
-      component: opensilex-ProjectView
-  - id: experiments
-    label: component.menu.experiments
-    route:
-      path: /experiments
-      component: opensilex-ExperimentListView
-#  - id: scientificObjects
-#    label: component.menu.scientificObjects
-#    route:
-#      path: /scientific-objects
-#      component: opensilex-ScientificObjectList
-  # - id: equipments
-  #   label: component.menu.equipments.label
-  #   route:
-  #     path: /users
-  #     component: opensilex-UserView
-  #   children:
-  #     - id: sensors
-  #       label: component.menu.equipments.sensors
-  #       route:
-  #         path: /users
-  #         component: opensilex-UserView
-  #     - id: actuators
-  #       label: component.menu.equipments.actuators
-  #       route:
-  #         path: /users
-  #         component: opensilex-UserView
-  #     - id: vectors
-  #       label: component.menu.equipments.vectors
-  #       route:
-  #         path: /users
-  #         component: opensilex-UserView
-  #     - id: radiometricTargets
-  #       label: component.menu.equipments.radiometricTargets
-  #       route:
-  #         path: /users
-  #         component: opensilex-UserView
-  - id: experimentalDesign
-    label: component.menu.experimentalDesign.label
-    children:
-      - id: variables
-        label: component.menu.variables
-        route:
-          path: /variables
-          component: opensilex-VariableView
-      - id: documents
-        label: Documents
-        route:
-          path: /documents
-          component: opensilex-DocumentView
-      - id: factors
-        label: component.menu.experimentalDesign.factors
-        route:
-          path: /factors
-          component: opensilex-FactorsView
-      - id: germplasm
-        label: component.menu.experimentalDesign.germplasm
-        icon: ik-cloud-rain
-        route:
-          path: /germplasm
-          component: opensilex-GermplasmView
-  - id: security
-    label: component.menu.security.label
+  - id: configuration
+    label: component.menu.configuration
     children:
       - id: users
         label: component.menu.security.users
@@ -108,9 +111,6 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - is-admin
-  - id: configuration
-    label: component.menu.configuration
-    children:
       - id: scientificObjectTypes
         label: component.menu.scientificObjectTypes
         route:

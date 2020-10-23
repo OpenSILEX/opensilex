@@ -151,14 +151,15 @@
                 "profiles": "Profiles"
             },
             "experimentalDesign": {
-                "label": "Experimental Design",
+                "label": "Scientific Information",
                 "factors": "Factors",
                 "germplasm": "Germplasm"
             },
             "infrastructures": "Organizations",
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
-            "facilitiesTypes": "Facilities types"
+            "facilitiesTypes": "Facilities types",
+            "scientific-organisation": "Scientific Organization"
         },
         "login": {
             "input": {

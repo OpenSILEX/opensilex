@@ -7,7 +7,7 @@
         </div>
         <span class="text">
           PHIS
-          <span class="instance-name">Diaphen</span>
+          <span class="instance-name"></span>
         </span>
       </router-link>
       <button id="sidebarClose" class="nav-close">

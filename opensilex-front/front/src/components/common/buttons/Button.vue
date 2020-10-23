@@ -2,14 +2,13 @@
   <b-button
     @click.prevent="$emit('click')"
     :title="$t(label)"
-    :size="small ? 'sm' : 'md'"
     :variant="variant"
     :disabled="disabled"
   >
     <slot name="icon">
       <opensilex-Icon :icon="icon" />
     </slot>
-    <span class="button-label" v-if="!small">{{$t(label)}}</span>
+    <span class="button-label" v-if="size==='md'">{{$t(label)}}</span>
   </b-button>
 </template>
 
@@ -25,9 +24,7 @@ export default class Button extends Vue {
   @Prop()
   variant: string;
 
-  @Prop({
-    default: true,
-  })
+  @Prop()
   small: boolean;
 
   @Prop({
@@ -37,6 +34,16 @@ export default class Button extends Vue {
 
   @Prop()
   icon: string;
+
+  get size(){
+   if(this.small == undefined ||this.small == null){
+     return undefined;
+   }
+   if(this.small == true){
+  return 'sm';
+   }else{
+     return 'md';
+   } }
 }
 </script>
 

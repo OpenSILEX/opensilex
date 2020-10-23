@@ -248,7 +248,7 @@
             }
         },
         "project": {
-            "add": "Add a project",
+            "add": "Add project",
             "selectedLabel": "Selected Project(s)",
             "project":"Project",
             "uri": "URI",

@@ -1,40 +1,71 @@
 <template>
   <div>
+    <opensilex-ExperimentForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      ref="experimentForm"
+      @onUpdate="loadExperiment()"
+    ></opensilex-ExperimentForm>
+
     <div v-if="experiment" class="row">
       <div class="col col-xl-6" style="min-width: 400px">
         <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.experiment.description')">
           <template v-slot:rightHeader>
-            <span
-              v-if="!experiment.isEnded"
-              class="badge badge-pill badge-info-phis"
-              :title="$t('component.experiment.view.status.finished')"
+            <b-button-group
+              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
             >
-              <i class="ik ik-activity mr-1"></i>
-              {{ $t("component.experiment.common.status.in-progress") }}
-            </span>
-            <span
-              v-else
-              class="badge badge-pill badge-light"
-              :title="$t('component.experiment.view.status.finished')"
-            >
-              <i class="ik ik-archive"></i>
-              {{ $t("component.experiment.common.status.finished") }}
-            </span>
+              <opensilex-EditButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                @click="showEditForm()"
+                label="component.experiment.update"
+                :nosize="true"
+              ></opensilex-EditButton>
 
-            <span
-              v-if="experiment.isPublic"
-              class="badge badge-pill badge-info"
-              :title="$t('component.experiment.view.status.public')"
-            >
-              <i class="ik ik-users mr-1"></i>
-              {{ $t("component.experiment.common.status.public") }}
-            </span>
+              <opensilex-DeleteButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+                @click="deleteExperiment(experiment.uri)"
+                label="component.experiment.delete"
+                :nosize="true"
+              ></opensilex-DeleteButton>
+
+            </b-button-group>
           </template>
+
           <template v-slot:body>
             <opensilex-StringView label="component.common.name" :value="experiment.label"></opensilex-StringView>
-            <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
+            <div class="static-field">
+              <span
+                class="field-view-title"
+              >{{ $t('component.common.state') }}{{ $t('component.common.colon') }}</span>
+              <span class="static-field-line">
+                <span
+                  v-if="!isEnded(experiment)"
+                  class="badge badge-pill badge-info-phis"
+                  :title="$t('component.experiment.view.status.in-progress')"
+                >
+                  <i class="ik ik-activity mr-1"></i>
+                  {{ $t("component.experiment.common.status.in-progress") }}
+                </span>
+                <span
+                  v-else
+                  class="badge badge-pill badge-light"
+                  :title="$t('component.experiment.view.status.finished')"
+                >
+                  <i class="ik ik-archive"></i>
+                  {{ $t("component.experiment.common.status.finished") }}
+                </span>
 
+                <span
+                  v-if="experiment.isPublic"
+                  class="badge badge-pill badge-info"
+                  :title="$t('component.experiment.view.status.public')"
+                >
+                  <i class="ik ik-users mr-1"></i>
+                  {{ $t("component.experiment.common.status.public") }}
+                </span>
+              </span>
+            </div>
             <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
+            <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
             <opensilex-TextView
               label="component.experiment.objective"
               :value="experiment.objective"
@@ -43,47 +74,30 @@
           </template>
         </opensilex-Card>
       </div>
+
       <div class="col col-xl-6">
         <opensilex-Card icon="ik#ik-box" :label="$t('component.experiment.context')">
           <template v-slot:body>
-            <!--   <div class="static-field">
-              <span
-                class="static-field-key"
-              >{{ $t('component.experiment.installations') }}{{ $t('component.common.colon') }}</span>
-              <span class="static-field-line"></span>
-            </div>-->
-
             <opensilex-UriListView label="component.experiment.projects" :list="projectsList"></opensilex-UriListView>
-
-            <!--     <div class="static-field">
-              <span
-                class="static-field-key"
-              >{{ $t('component.experiment.campaign') }}{{ $t('component.common.colon') }}</span>
-              <span class="static-field-line">{{ experiment.campaign }}</span>
-            </div>-->
-
             <opensilex-UriListView
               label="component.experiment.infrastructures"
               :list="infrastructuresList"
             ></opensilex-UriListView>
-
             <opensilex-UriListView label="component.experiment.species" :list="speciesList"></opensilex-UriListView>
-
             <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
               :list="factorsList"
             ></opensilex-UriListView>
-
             <opensilex-UriListView label="component.experiment.groups" :list="groupsList"></opensilex-UriListView>
           </template>
         </opensilex-Card>
+
         <opensilex-Card icon="ik#ik-users" :label="$t('component.experiment.contacts')">
           <template v-slot:body>
             <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
               :list="scientificSupervisorsList"
             ></opensilex-UriListView>
-
             <opensilex-UriListView
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
@@ -96,7 +110,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   ExperimentCreationDTO,
@@ -129,7 +143,9 @@ export default class ExperimentDetail extends Vue {
   uri: string = "";
   period: string = "";
 
-  experiment: ExperimentGetDTO = null;
+  @Ref("experimentForm") readonly experimentForm!: any;
+  experiment: any = null;
+  service: ExperimentsService;
 
   speciesList = [];
   factorsList = [];
@@ -141,36 +157,59 @@ export default class ExperimentDetail extends Vue {
   infrastructuresList = [];
 
   created() {
+    this.service = this.$opensilex.getService("opensilex.ExperimentsService");
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadExperiment();
+  }
+
+  showEditForm() {
+    if (
+      this.experiment.projects &&
+      this.experiment.projects.length &&
+      this.experiment.projects[0].uri
+    ) {
+      this.experiment.projects = this.experiment.projects.map(project => {
+        return project.uri;
+      });
+    }
+    if (
+      this.experiment.infrastructures &&
+      this.experiment.infrastructures.length &&
+      this.experiment.infrastructures[0].uri
+    ) {
+      this.experiment.infrastructures = this.experiment.infrastructures.map(
+        infrastructure => {
+          return infrastructure.uri;
+        }
+      );
+    }
+    this.experimentForm.showEditForm(this.experiment);
+  }
+
+  deleteExperiment(uri: string) {
+    this.service
+      .deleteExperiment(uri)
+      .then(() => {
+        this.$router.go(-1);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   get user() {
     return this.$store.state.user;
   }
 
-  loadExperiment() {
-    let service: ExperimentsService = this.$opensilex.getService(
-      "opensilex.ExperimentsService"
-    );
+  get credentials() {
+    return this.$store.state.credentials;
+  }
 
+  loadExperiment() {
     if (this.uri) {
-      service
+      this.service
         .getExperiment(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
           this.experiment = http.response.result;
-
-          this.loadProjects();
-          this.loadInfrastructures();
-          this.loadUsers();
-          this.loadGroups();
-          this.loadFactors();
-          this.loadSpecies();
-
-          this.period = this.formatPeriod(
-            this.experiment.startDate,
-            this.experiment.endDate
-          );
+          this.loadExperimentDetails();
         })
         .catch(error => {
           this.$opensilex.errorHandler(error);
@@ -178,11 +217,25 @@ export default class ExperimentDetail extends Vue {
     }
   }
 
+  loadExperimentDetails() {
+    this.loadProjects();
+    this.loadInfrastructures();
+    this.loadUsers();
+    this.loadGroups();
+    this.loadFactors();
+    this.loadSpecies();
+
+    this.period = this.formatPeriod(
+      this.experiment.startDate,
+      this.experiment.endDate
+    );
+  }
 
   loadInfrastructures() {
     let service: InfrastructuresService = this.$opensilex.getService(
       "opensilex.InfrastructuresService"
     );
+    this.infrastructuresList = [];
 
     if (
       this.experiment.infrastructures &&
@@ -201,7 +254,7 @@ export default class ExperimentDetail extends Vue {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
-
+    this.groupsList = [];
     if (this.experiment.groups && this.experiment.groups.length > 0) {
       service
         .getGroupsByURI(this.experiment.groups)
@@ -221,6 +274,7 @@ export default class ExperimentDetail extends Vue {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
+    this.scientificSupervisorsList = [];
     if (
       this.experiment.scientificSupervisors &&
       this.experiment.scientificSupervisors.length > 0
@@ -238,7 +292,7 @@ export default class ExperimentDetail extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     }
-
+    this.technicalSupervisorsList = [];
     if (
       this.experiment.technicalSupervisors &&
       this.experiment.technicalSupervisors.length > 0
@@ -262,7 +316,7 @@ export default class ExperimentDetail extends Vue {
     let service: SpeciesService = this.$opensilex.getService(
       "opensilex.SpeciesService"
     );
-
+    this.speciesList = [];
     if (this.experiment.species && this.experiment.species.length > 0) {
       service
         .getAllSpecies()
@@ -292,7 +346,7 @@ export default class ExperimentDetail extends Vue {
     let service: FactorsService = this.$opensilex.getService(
       "opensilex.FactorsService"
     );
-
+    this.factorsList = [];
     if (this.experiment.factors && this.experiment.factors.length > 0) {
       service
         .getAllFactors()
@@ -325,19 +379,25 @@ export default class ExperimentDetail extends Vue {
     let service: ProjectsService = this.$opensilex.getService(
       "opensilex.ProjectsService"
     );
-
+    this.projectsList = [];
     if (this.experiment.projects) {
       this.experiment.projects.forEach(project => {
         this.projectsList.push({
-              uri: project.uri,
-              value: project.name,
-              to: {
-                path:
-                  "/project/details/" + encodeURIComponent(project.uri)
-              }
-            });
+          uri: project.uri,
+          value: project.name,
+          to: {
+            path: "/project/details/" + encodeURIComponent(project.uri)
+          }
+        });
       });
     }
+  }
+
+isEnded(experiment) {
+    if (experiment.endDate) {
+      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    }
+    return false;
   }
 
   formatPeriod(startDateValue: string, endDateValue: string) {

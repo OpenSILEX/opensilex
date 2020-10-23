@@ -1,32 +1,33 @@
 <template>
   <div>
+    <opensilex-ProjectForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+      ref="projectForm"
+      @onUpdate="loadProject()"
+    ></opensilex-ProjectForm>
+
     <div v-if="project" class="row">
       <div class="col col-xl-5" style="min-width: 400px">
-        <opensilex-Card icon="ik#ik-clipboard">
+        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.description')">
           <template v-slot:rightHeader>
-            <span
-              v-if="!isEnded(project)"
-              class="badge badge-pill badge-info-phis"
-              :title="$t('component.project.view.status.in-progress')"
+            <b-button-group
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
             >
-              <i class="ik ik-activity mr-1"></i>
-              {{ $t('component.project.common.status.in-progress') }}
-            </span>
-            <span
-              v-else
-              class="badge badge-pill badge-light"
-              :title="$t('component.project.view.status.finished')"
-            >
-              <i class="ik ik-archive"></i>
-              {{ $t('component.project.common.status.finished') }}
-            </span>
-            <!--       
-
-            <opensilex-Icon icon="fa#edit"></opensilex-Icon>-->
+              <b-button v-b-tooltip.hover.top.v-primary="'Edit '+project.name" variant="outline-primary" @click="projectForm.showEditForm(project)">
+                <slot name="icon">
+                  <opensilex-Icon icon="fa#pencil-alt"></opensilex-Icon>
+                </slot>
+              </b-button>
+              <b-button v-b-tooltip.hover.top.v-danger="'Delete '+project.name" variant="outline-danger" @click="deleteProject(project.uri)">
+                <slot name="icon">
+                  <opensilex-Icon icon="fa#trash-alt"></opensilex-Icon>
+                </slot>
+              </b-button>
+            </b-button-group>
           </template>
           <template v-slot:body>
             <opensilex-StringView label="component.project.name" :value="project.name"></opensilex-StringView>
-            <!--  <div class="static-field">
+            <div class="static-field">
               <span
                 class="field-view-title"
               >{{ $t('component.common.state') }}{{ $t('component.common.colon') }}</span>
@@ -48,7 +49,7 @@
                   {{ $t('component.project.common.status.finished') }}
                 </span>
               </span>
-            </div>-->
+            </div>
             <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
             <opensilex-UriView :uri="project.uri"></opensilex-UriView>
             <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
@@ -61,13 +62,11 @@
               :value="project.homePage"
               :uri="project.homePage"
             ></opensilex-UriView>
-
             <opensilex-UriListView
               label="component.project.relatedProjects"
               :list="relatedProjectsList"
             ></opensilex-UriListView>
             <opensilex-TextView label="component.project.objective" :value="project.objective"></opensilex-TextView>
-
             <opensilex-TextView label="component.project.description" :value="project.description"></opensilex-TextView>
           </template>
 
@@ -88,7 +87,7 @@
               :searchMethod="loadExperiments"
               :fields="fields"
               defaultSortBy="name"
-               :defaultPageSize="6"
+              :defaultPageSize="6"
             >
               <template v-slot:cell(label)="{data}">
                 <opensilex-UriLink
@@ -103,7 +102,6 @@
               <template v-slot:cell(endDate)="{data}">
                 <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
               </template>
-
               <template v-slot:cell(comment)="{data}">
                 <span>{{textReduce(data.item.comment)}}</span>
               </template>
@@ -124,9 +122,6 @@
         </opensilex-Card>
 
         <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
-          <!--    <template v-slot:rightHeader>
-            <opensilex-Icon icon="fa#edit"></opensilex-Icon>
-          </template>-->
           <template v-slot:body>
             <opensilex-UriListView
               label="component.project.scientificContacts"
@@ -162,8 +157,8 @@ export default class ProjectDescription extends Vue {
   $opensilex: any;
   $route: any;
   $store: any;
-
   service: ProjectsService;
+
   get user() {
     return this.$store.state.user;
   }
@@ -171,12 +166,12 @@ export default class ProjectDescription extends Vue {
     return this.$store.state.credentials;
   }
 
+  @Ref("projectForm") readonly projectForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
 
   project: ProjectGetDetailDTO = null;
 
   period: string = "";
-
   uri = null;
   experiments = [];
   scientificContactsList = [];
@@ -213,13 +208,27 @@ export default class ProjectDescription extends Vue {
     this.loadProject();
   }
 
-  textReduce(text) {
-    if (text.length > 60) {
-      var shortname = text.substring(0, 60) + " ...";
-      return text.substring(0, 60) + " ...";
-    } else {
-      return text;
-    }
+  deleteProject(uri: string) {
+    this.$bvModal
+      .msgBoxConfirm(
+        this.$t("component.common.delete-confirmation").toString(),
+        {
+          cancelTitle: this.$t("component.common.cancel").toString(),
+          okTitle: this.$t("component.common.delete").toString(),
+          okVariant: "danger",
+          centered: true
+        }
+      )
+      .then(confirmation => {
+        if (confirmation) {
+          this.service
+            .deleteProject(uri)
+            .then(() => {
+              this.$router.go(-1);
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
+      });
   }
 
   loadProject() {
@@ -245,7 +254,7 @@ export default class ProjectDescription extends Vue {
         undefined, // label
         undefined, // species,
         undefined, // factors,
-        [decodeURIComponent(this.uri)], // projects
+        [this.uri], // projects
         undefined, // isPublic
         undefined, // isEnded
         options.orderBy,
@@ -265,7 +274,7 @@ export default class ProjectDescription extends Vue {
               let projectDetail = http.response.result;
               this.relatedProjectsList.push({
                 uri: projectDetail.uri,
-                value:  projectDetail.shortname || projectDetail.name,
+                value: projectDetail.shortname || projectDetail.name,
                 to: {
                   path:
                     "/project/details/" + encodeURIComponent(projectDetail.uri)
@@ -281,7 +290,7 @@ export default class ProjectDescription extends Vue {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
-    let that = this;
+    this.scientificContactsList = [];
     if (this.project.scientificContacts.length) {
       service
         .getUsersByURI(this.project.scientificContacts)
@@ -296,7 +305,7 @@ export default class ProjectDescription extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     }
-
+    this.coordinatorsList = [];
     if (this.project.coordinators.length) {
       service
         .getUsersByURI(this.project.coordinators)
@@ -311,7 +320,7 @@ export default class ProjectDescription extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     }
-
+    this.administrativeContactsList = [];
     if (this.project.administrativeContacts.length) {
       service
         .getUsersByURI(this.project.administrativeContacts)
@@ -359,6 +368,15 @@ export default class ProjectDescription extends Vue {
       ")";
 
     return result;
+  }
+
+  textReduce(text) {
+    if (text.length > 60) {
+      var shortname = text.substring(0, 60) + " ...";
+      return text.substring(0, 60) + " ...";
+    } else {
+      return text;
+    }
   }
 }
 </script>

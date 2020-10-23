@@ -3,6 +3,7 @@
     @click="deleteAction"
     variant="outline-danger"
     :small="small"
+    :nosize="nosize"
     :label="label"
     :disabled="disabled"
     icon="fa#trash-alt"
@@ -21,6 +22,9 @@ export default class DeleteButton extends Vue {
 
   @Prop()
   small: boolean;
+
+  @Prop()
+  nosize: boolean;
 
   @Prop()
   disabled: boolean;

@@ -3,9 +3,10 @@
     @click="$emit('click')"
     variant="outline-primary"
     :small="small"
+    :nosize="nosize"
     :label="label"
     :disabled="disabled"
-    icon="fa#edit"
+    icon="fa#pencil-alt"
   ></opensilex-Button>
 </template>
 
@@ -20,7 +21,9 @@ export default class EditButton extends Vue {
 
   @Prop()
   small: boolean;
-
+  
+  @Prop()
+  nosize: boolean;
   @Prop()
   disabled: boolean;
 }

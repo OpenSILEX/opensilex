@@ -1,5 +1,6 @@
 <template>
   <b-button
+  v-if="!nosize"
     @click.prevent="$emit('click')"
     :title="$t(label)"
     :variant="variant"
@@ -26,6 +27,11 @@ export default class Button extends Vue {
 
   @Prop()
   small: boolean;
+
+   @Prop({
+    default: false,
+  })
+  nosize: boolean;
 
   @Prop({
     default: false,

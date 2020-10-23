@@ -36,6 +36,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -75,9 +76,8 @@ public class GeospatialDAO {
 
         CodecRegistry geoJsonCodecRegistry = fromProviders(new GeoJsonCodecProvider());
         Codec<Geometry> geocodec = geoJsonCodecRegistry.get(Geometry.class);
-        Geometry geometry = geocodec.decode(jsonReader, DecoderContext.builder().build());
 
-        return geometry;
+        return geocodec.decode(jsonReader, DecoderContext.builder().build());
     }
 
     public static GeoJsonObject geometryToGeoJson(Geometry geometry) throws JsonProcessingException {
@@ -148,6 +148,27 @@ public class GeospatialDAO {
         }
 
         return new ListWithPagination<>(geospatialListWithPagination, page, pageSize, total);
+    }
+
+    public HashMap<String, Geometry> getGeometryByUris(URI experimentURI, List<URI> objectsURI) {
+        HashMap<String, Geometry> mapGeo = new HashMap<>();
+
+        for (GeospatialModel geospatialModel : geometryByURIS(objectsURI, experimentURI)) {
+            mapGeo.put(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri()), geospatialModel.getGeometry());
+        }
+
+        // returns all geometries that respond to the filtering, returns a HashMap<String, Geometry>.
+        return mapGeo;
+    }
+
+    private FindIterable<GeospatialModel> geometryByURIS(List<URI> objectsURI, URI experimentURI) {
+        // db.getCollection('Geospatial').find({"uri":{"$in" : ["uri1","uri2", ...]}})
+        Document filter = new Document();
+        if (experimentURI != null) {
+            filter = new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI));
+        }
+
+        return geometryCollection.find(filter).filter(Filters.in("uri", objectsURI));
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.

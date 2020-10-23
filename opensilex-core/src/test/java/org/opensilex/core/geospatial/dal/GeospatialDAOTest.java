@@ -15,19 +15,18 @@ import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import junit.framework.TestCase;
-import org.jetbrains.annotations.NotNull;
+import org.junit.AfterClass;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import org.junit.AfterClass;
-import org.opensilex.core.AbstractMongoIntegrationTest;
-import static org.opensilex.integration.test.AbstractIntegrationTest.getOpensilex;
-import org.opensilex.nosql.service.NoSQLService;
 
 /**
  * @author Jean Philippe VERT
@@ -54,7 +53,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         }
     }
 
-    private void verificationOfCorrectInsertion(Geometry geometry, URI uri, @NotNull URI type, URI graph) {
+    private void verificationOfCorrectInsertion(Geometry geometry, URI uri, URI type, URI graph) {
         GeospatialModel geometryByURI = geospatialDAO.getGeometryByURI(uri, graph);
         TestCase.assertTrue(SPARQLDeserializers.compareURIs(uri.toString(), geometryByURI.getUri().toString()));
         TestCase.assertTrue(SPARQLDeserializers.compareURIs(type.toString(), geometryByURI.getType().toString()));
@@ -62,8 +61,8 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         TestCase.assertEquals(geometry, geometryByURI.getGeometry());
     }
 
-    @NotNull
-    private GeospatialModel getGeospatialModel(@NotNull String typeGeometry, URI uri) throws URISyntaxException {
+
+    private GeospatialModel getGeospatialModel(String typeGeometry, URI uri, boolean otherGraph) throws URISyntaxException {
         Geometry geometry = null;
         // Valid longitude values are between -180 and 180, both inclusive.
         // Valid latitude values are between -90 and 90, both inclusive.
@@ -81,7 +80,12 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         }
 
         URI type = new URI("vocabulary:WindyArea");
-        URI graph = new URI("test-exp:mau17-pg/2");
+        URI graph;
+        if (otherGraph) {
+            graph = new URI("test-exp:mau17-pg/2");
+        } else {
+            graph = new URI("test-exp:ZA17");
+        }
 
         GeospatialModel geospatial = new GeospatialModel();
         geospatial.setUri(uri);
@@ -94,7 +98,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testCreate() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_991"));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_991"), false);
 
         geospatialDAO.create(geospatial);
 
@@ -103,7 +107,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGeometryByURI() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Polygon", new URI("http://opensilex/Geospatial/G_992"));
+        GeospatialModel geospatial = getGeospatialModel("Polygon", new URI("http://opensilex/Geospatial/G_992"), false);
 
         geospatialDAO.create(geospatial);
 
@@ -112,7 +116,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGeometryURIShort() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_993"));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_993"), false);
 
         geospatialDAO.create(geospatial);
 
@@ -121,7 +125,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testDelete() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_994"));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_994"), false);
 
         geospatialDAO.create(geospatial);
         verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
@@ -135,7 +139,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testUpdate() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Polygon", new URI("http://opensilex/Geospatial/G_995"));
+        GeospatialModel geospatial = getGeospatialModel("Polygon", new URI("http://opensilex/Geospatial/G_995"), false);
 
         geospatialDAO.create(geospatial);
         verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
@@ -159,13 +163,49 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test(expected = Exception.class)
     public void testCreateWithExistingUri() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_996"));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_996"), false);
 
         geospatialDAO.create(geospatial);
 
         verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
 
         geospatialDAO.create(geospatial);
+    }
+
+    @Test
+    public void testGetGeometryByUris() throws URISyntaxException {
+        List<URI> objectsURI = new LinkedList<>();
+
+        URI uri = new URI("http://opensilex/Geospatial/G_997");
+        GeospatialModel geospatial = getGeospatialModel("Point", uri, false);
+        geospatialDAO.create(geospatial);
+        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
+        objectsURI.add(uri);
+
+        // returns all geometries that respond to the filtering, returns a HashMap<String, Geometry>.
+        HashMap<String, Geometry> geometryByUris = geospatialDAO.getGeometryByUris(null, objectsURI);
+        TestCase.assertNotNull(geometryByUris);
+    }
+
+    @Test
+    public void testGetGeometryByUrisWithoutUriExperience() throws URISyntaxException {
+        List<URI> objectsURI = new LinkedList<>();
+
+        URI uri = new URI("http://opensilex/Geospatial/G_998");
+        GeospatialModel geospatial = getGeospatialModel("Point", uri, false);
+        geospatialDAO.create(geospatial);
+        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
+        objectsURI.add(uri);
+
+        URI uri2 = new URI("http://opensilex/Geospatial/G_999");
+        GeospatialModel geospatial2 = getGeospatialModel("Polygon", uri2, true);
+        geospatialDAO.create(geospatial2);
+        verificationOfCorrectInsertion(geospatial2.getGeometry(), geospatial2.getUri(), type, geospatial2.getGraph());
+        objectsURI.add(uri2);
+
+        // returns all geometries that match the uri list filtering, returns a HashMap<String, Geometry>.
+        HashMap<String, Geometry> geometryByUrisWithoutUriExperience = geospatialDAO.getGeometryByUris(null, objectsURI);
+        TestCase.assertEquals(geometryByUrisWithoutUriExperience.size(), 2);
     }
 
     @Test
@@ -188,7 +228,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchIntersectsInstance() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""), false);
 
         // Creates a filter that matches all documents containing a field with geospatial data that intersects with the specified shape.
         ListWithPagination<GeospatialModel> searchIntersects = geospatialDAO.searchIntersects(geospatial, 1, 20);
@@ -216,7 +256,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchWithinInstance() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""), false);
 
         // Creates a filter that matches all documents containing a field with geospatial data that withing with the specified shape.
         ListWithPagination<GeospatialModel> searchWithin = geospatialDAO.searchWithin(geospatial, 1, 20);
@@ -236,7 +276,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchNearInstance() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""));
+        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""), false);
 
         // Creates a filter that returns all geospatial data within the distance radius provided.
         ListWithPagination<GeospatialModel> searchNear = geospatialDAO.searchNear(geospatial, null, 20.0, 1, 20);

@@ -224,15 +224,15 @@ export default class FactorForm extends Vue {
 
   updatefactor() {
     return new Promise((resolve, reject) => {
-      console.log("update", this.form);
+      console.debug("update", this.form);
       return this.$emit("onUpdate", this.form, (result) => {
         if (result instanceof Promise) {
           return result
             .then((resolve) => {
-              console.log("resolve", resolve);
+              console.debug("resolve", resolve);
             })
             .catch((reject) => {
-              console.log("resolve", reject);
+              console.debug("resolve", reject);
             });
         } else {
           return resolve(result);
@@ -264,7 +264,7 @@ export default class FactorForm extends Vue {
   }
 
   create(form) {
-    console.log("factor", form);
+    console.debug("factor", form);
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .createFactor(form)

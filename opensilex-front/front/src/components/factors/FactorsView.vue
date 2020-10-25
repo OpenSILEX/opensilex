@@ -161,7 +161,7 @@ export default class FactorsView extends Vue {
     this.service
       .getFactor(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-        console.log(http.response.result);
+        console.debug(http.response.result);
         this.factorForm.showEditForm(http.response.result);
       })
       .catch(this.$opensilex.errorHandler);
@@ -173,7 +173,6 @@ export default class FactorsView extends Vue {
       .getService("opensilex.FactorsService")
       .getFactorAssciatedExperiments(uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        console.log();
         if (http.response.metadata.pagination.totalCount > 0) {
           this.$opensilex.showErrorToast(
             this.$i18n.t("component.factor.isAssociatedTo")

@@ -25,14 +25,11 @@ export default class HelpButton extends Vue {
   @Prop()
   disabled: boolean;
 
-  @Prop({default:"outline-info"})
+  @Prop({ default: "outline-info" })
   variant: string;
 }
 </script>
 
 <style scoped lang="scss">
-.helpButton {
-  padding: 0px 0px;
-}
 </style>
 

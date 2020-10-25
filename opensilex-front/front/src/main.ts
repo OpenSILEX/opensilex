@@ -136,9 +136,13 @@ Vue.use(VueTour)
 require('vue-tour/dist/vue-tour.css')
 console.debug("VueTour plugin initialized !");
 
-// Initialize Tree selector
+// Initialize GlobalEvents selector
 import GlobalEvents from 'vue-global-events'
 Vue.component('GlobalEvents', GlobalEvents)
+
+// Initialize VuePapaParse selector
+import VuePapaParse from "vue-papa-parse";
+Vue.use(VuePapaParse);
 
 import vSelect from "vue-select";
 vSelect.props.components.default = () => ({

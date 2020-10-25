@@ -7,7 +7,7 @@
     <b-form-file
       ref="inputFile"
       accept="text/csv, .csv"
-      @change="fileUpdated"
+      @input="fileUpdated"
       hidden
       style="display:none"
     ></b-form-file>
@@ -24,8 +24,6 @@ import {
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
-import VuePapaParse from "vue-papa-parse";
-Vue.use(VuePapaParse);
 
 @Component
 export default class CSVInputFile extends Vue {
@@ -66,11 +64,10 @@ export default class CSVInputFile extends Vue {
   importCsv() {
     this.inputFile.$el.childNodes[0].click();
   }
-  fileUpdated() {
+  fileUpdated(file)  : any{ 
     this.$opensilex.showLoader();
     this.$nextTick(() => {
-      let file = this.inputFile.selectedFile;
-      this.readUploadedFileAsText(file).then(text => {
+       this.readUploadedFileAsText(file).then(text => {
         console.debug("text", text);
         // delimiter per local
         if (this.delimiterOption == null) {
@@ -143,7 +140,7 @@ export default class CSVInputFile extends Vue {
   }
 
   async readUploadedFileAsText(inputFile) {
-    
+    console.log(inputFile)
     const temporaryFileReader = new FileReader();
 
     return new Promise((resolve, reject) => {

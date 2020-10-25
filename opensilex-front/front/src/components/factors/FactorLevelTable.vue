@@ -14,7 +14,7 @@
           <b-button-group>
             <b-row class="ml-1">
               <b-button
-                class="mr-2"
+                class="mb-2 mr-2"
                 @click="csvExport"
                 variant="outline-primary"
                 >{{
@@ -26,7 +26,7 @@
                 v-on:updated="uploaded"
               ></opensilex-CSVInputFile>
               <b-button
-                class="mr-2"
+                class="mb-2 mr-2"
                 @click="resetTable"
                 variant="outline-secondary"
                 >{{ $t("component.common.tabulator.reset-table") }}</b-button
@@ -97,6 +97,7 @@ export default class FactorLevelTable extends Vue {
   $opensilex: any;
   $store: any;
   $i18n: any;
+  $papa: any;
   service: FactorsService;
   langs: any = {
     fr: {
@@ -160,15 +161,6 @@ export default class FactorLevelTable extends Vue {
         visible: this.editMode,
       },
       {
-        title: "Id Value",
-        field: "id",
-        formater: "number",
-        visible: false,
-        formatter: function (cell, formatterParams, onRendered) {
-          return Date.now();
-        },
-      },
-      {
         title: 'Name<span class="required">*</span>',
         field: "name",
         formater: "string",
@@ -209,21 +201,30 @@ export default class FactorLevelTable extends Vue {
         this.changeTableLang(lang);
       }
     );
-    this.internalFactorLevels.forEach(function (factorLevel) {
-      if (factorLevel.id === null) {
-        factorLevel.id = Date.now();
-      }
-    });
   }
 
   beforeDestroy() {
     this.langUnwatcher();
   }
 
-  uploaded(data) {
+  uploaded(data: any[]) {
+    console.debug("uploaded", data);
     let tmpLength = this.internalFactorLevels.length;
     for (let row in data) {
-      this.addRow(data[row]);
+      console.debug(
+        "uploaded row ",
+        data[row],
+        data[row].name,
+        this.hasDuplicateName(data[row].name)
+      );
+
+      if (!this.hasDuplicateName(data[row].name)) {
+        this.addRow(data[row]);
+      } else {
+        this.$opensilex.showInfoToast(
+          "Already existing factor level : " + data[row].name
+        );
+      }
     }
     if (tmpLength == this.internalFactorLevels.length) {
       this.$opensilex.showInfoToast("Valid file. No data to add");
@@ -253,13 +254,8 @@ export default class FactorLevelTable extends Vue {
       let row = clickedCell.getRow();
       console.debug("actions row", row);
 
-      var idCell = row.getCell("id");
-      console.debug(
-        "id cell value",
-        idCell.getValue(),
-        "name value",
-        row.getCell("name").getValue()
-      );
+      var nameCell = row.getCell("name");
+      console.debug("name value", row.getCell("name").getValue());
 
       let factorLevelUri = row.uri;
 
@@ -267,7 +263,7 @@ export default class FactorLevelTable extends Vue {
         this.deleteFactorLevel(row.uri)
           .then(() => {
             this.internalFactorLevels = this.internalFactorLevels.filter(
-              (factorLevel) => factorLevel.id !== idCell.getValue()
+              (factorLevel) => factorLevel.name !== nameCell.getValue()
             );
             let message =
               this.$i18n.t("component.factorLevel.label") +
@@ -280,10 +276,36 @@ export default class FactorLevelTable extends Vue {
           .catch(this.$opensilex.errorHandler);
       } else {
         this.internalFactorLevels = this.internalFactorLevels.filter(
-          (factorLevel) => factorLevel.id !== idCell.getValue()
+          (factorLevel) => factorLevel.name !== nameCell.getValue()
         );
       }
     }
+  }
+
+  hasEmptyValue() {
+    if (this.internalFactorLevels.length != 0) {
+      if (
+        this.internalFactorLevels.some(
+          (factorLevel) => factorLevel.name === null || factorLevel.name === ""
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  hasDuplicateName(name: string) {
+    if (this.internalFactorLevels.length != 0) {
+      if (
+        this.internalFactorLevels.some(
+          (factorLevel) => factorLevel.name === name
+        )
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   deleteFactorLevel(uri: string) {
@@ -296,17 +318,21 @@ export default class FactorLevelTable extends Vue {
   }
 
   addEmptyRow() {
-    console.debug("add row");
-    this.internalFactorLevels.unshift({
-      id: Date.now(),
-      uri: null,
-      name: null,
-      comment: null,
-    });
+    console.debug("Add row", "empty row", this.hasEmptyValue());
+    if (!this.hasEmptyValue()) {
+      this.internalFactorLevels.unshift({
+        uri: null,
+        name: null,
+        comment: null,
+      });
+    } else {
+      this.$opensilex.showWarningToast(
+        this.$i18n.t("component.factorLevel.errors.factor-empty-row")
+      );
+    }
   }
   addRow(row) {
-    console.debug("add row", row);
-    row.id = Date.now();
+    console.debug("Add row", row, "empty row", this.hasEmptyValue());
     if (row.name != undefined && row.name != null && row.name != "") {
       this.internalFactorLevels.unshift(row);
     }
@@ -319,20 +345,7 @@ export default class FactorLevelTable extends Vue {
 
   csvExport() {
     let arrData = [{ name: "", comment: "" }];
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += [
-      Object.keys(arrData[0]).join(","),
-      ...arrData.map((item) => Object.values(item).join(",")),
-    ]
-      .join("\n")
-      .replace(/(^\[)|(\]$)/gm, "");
-
-    const data = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", data);
-    link.setAttribute("download", "factorLevelTemplate.csv");
-    link.click();
-    link.remove();
+    this.$papa.download(this.$papa.unparse(arrData), "factorLevelTemplate");
   }
 }
 </script>
@@ -360,7 +373,8 @@ en:
       comment: comment
       hasFactor: has factor
       errors:
-        user-already-exists: Factor level already exists with this URI.
+        factor-already-exists: Factor level already exists with this URI.
+        factor-empty-row: You can't add several empty rows
 fr:
   component:
     factorLevel:
@@ -380,6 +394,7 @@ fr:
       comment: description
       hasFactor: est lié au facteur
       errors:
-        user-already-exists: URI du niveau de facteur déjà existante.
+        factor-already-exists: URI du niveau de facteur déjà existante.
+        factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides
 
 </i18n>

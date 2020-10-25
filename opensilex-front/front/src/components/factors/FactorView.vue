@@ -6,10 +6,7 @@
       :description="factor.name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions
-      :tabs="true"
-      :returnButton="true"
-    >
+    <opensilex-PageActions :tabs="true" :returnButton="true">
       <template v-slot>
         <b-nav-item
           class="ml-3"
@@ -33,7 +30,7 @@
       <template v-slot>
         <opensilex-FactorDetails
           v-if="isDetailsTab()"
-          @onUpdate="callUpdateFactorService"
+          @onUpdate="loadFactor(uri)"
           :factor="factor"
         ></opensilex-FactorDetails>
         <opensilex-AssociatedExperiments
@@ -62,6 +59,8 @@ export default class FactorView extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
+  $router: any;
+
   $t: any;
   $i18n: any;
   service: FactorsService;
@@ -86,7 +85,7 @@ export default class FactorView extends Vue {
   }
 
   callUpdateFactorService(form: FactorUpdateDTO, done) {
-    console.log("callUpdateFactorService");
+    console.debug("callUpdateFactorService");
     if (form instanceof Promise) {
       form.then((factor) => {
         this.service

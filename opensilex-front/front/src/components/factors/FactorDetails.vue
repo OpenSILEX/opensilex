@@ -9,8 +9,16 @@
                 @click="factorForm.showEditForm(factor)"
                 variant="outline-primary"
                 label="component.factor.update-button"
-                :small="false"
               ></opensilex-EditButton>
+              <opensilex-InteroperabilityButton
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
+                  )
+                "
+                label="component.skos.update"
+                @click="skosReferences.show()"
+              ></opensilex-InteroperabilityButton>
             </div>
           </template>
           <template v-slot:body>
@@ -37,20 +45,6 @@
           label="component.skos.ontologies-references-label"
           icon="fa#globe-americas"
         >
-          <template v-slot:rightHeader>
-            <div class="ml-4">
-              <opensilex-InteroperabilityButton
-                v-if="
-                  user.hasCredential(
-                    credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
-                  )
-                "
-                :small="false"
-                label="component.skos.update"
-                @click="skosReferences.show()"
-              ></opensilex-InteroperabilityButton>
-            </div>
-          </template>
           <template v-slot:body>
             <opensilex-ExternalReferencesDetails
               :skosReferences="factor"
@@ -105,6 +99,7 @@
       createTitle="component.factor.add"
       editTitle="component.factor.update"
       icon="fa#sun"
+      @onUpdate="update"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -113,6 +108,8 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorCategory } from "./FactorCategory";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import { FactorDetailsGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FactorDetails extends Vue {
@@ -121,6 +118,7 @@ export default class FactorDetails extends Vue {
   $route: any;
   $t: any;
   $i18n: any;
+  service: any;
 
   @Ref("skosReferences") readonly skosReferences!: any;
 
@@ -132,6 +130,9 @@ export default class FactorDetails extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+  created() {
+    this.service = this.$opensilex.getService("opensilex.FactorsService");
   }
 
   factorCategoriesMap: Map<
@@ -174,8 +175,8 @@ export default class FactorDetails extends Vue {
     },
   ];
 
-  update(factor) {
-    this.$emit("onUpdate", factor);
+  update() {
+    this.$emit("onUpdate");
   }
 
   successMessage(factor) {

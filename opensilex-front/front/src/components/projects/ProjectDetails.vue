@@ -3,16 +3,16 @@
     <opensilex-PageHeader :title="name" description="component.project.project"></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true">
-        <template v-slot>
+      <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"
           :to="{path: '/project/details/' + encodeURIComponent(uri)}"
         >{{ $t('component.project.details') }}</b-nav-item>
-        
+<!--
         <b-nav-item
           :active="isDocumentTab()"
           :to="{path: '/project/documents/' + encodeURIComponent(uri)}"
-        >{{ $t('component.project.documents') }}</b-nav-item>-->
+        >{{ $t('component.project.documents') }}</b-nav-item>  -->
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>

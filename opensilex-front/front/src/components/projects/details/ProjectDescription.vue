@@ -10,9 +10,7 @@
       <div class="col col-xl-5" style="min-width: 400px">
         <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.description')">
           <template v-slot:rightHeader>
-            <b-button-group
-              v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-            >
+            <b-button-group>
              
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"

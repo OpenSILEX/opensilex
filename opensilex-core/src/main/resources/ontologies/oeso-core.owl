@@ -812,14 +812,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#FloodArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
@@ -850,14 +842,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
@@ -866,26 +850,10 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#PerenialArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PerenialArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Zone"/>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PollutedArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PollutedArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
     </owl:Class>
     
 
@@ -1110,26 +1078,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Zone -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Zone">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:comment xml:lang="fr">Zone au sens large.
-            Peut définir une zone au sens physique ou théorique</rdfs:comment>
-        <rdfs:label xml:lang="en">area</rdfs:label>
-        <rdfs:label xml:lang="fr">zone</rdfs:label>
     </owl:Class>
     
 
@@ -1612,8 +1560,8 @@
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:comment xml:lang="en">An account of the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Description</rdfs:label>
@@ -1622,8 +1570,8 @@
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/source">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#source-006"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
+        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -1657,8 +1605,8 @@
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
         <rdfs:label xml:lang="en">experiment</rdfs:label>
+        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
         <rdfs:label xml:lang="en">experimental context</rdfs:label>
@@ -1667,8 +1615,8 @@
         <rdfs:label xml:lang="fr">contexte expérimental</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
-        <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
         <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
+        <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
         <rdfs:comment xml:lang="fr">Un facteur d&apos;une expérience est une variable indépendante contrôlée; une variable dont les niveaux sont fixés par l&apos;expérimentateur.</rdfs:comment>
@@ -1680,10 +1628,6 @@
         <rdfs:label xml:lang="fr">Niveau de facteur</rdfs:label>
         <rdfs:label xml:lang="en">Factor level</rdfs:label>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:label xml:lang="fr">zone inondable</rdfs:label>
-        <rdfs:label xml:lang="en">Flood area</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
@@ -1700,14 +1644,6 @@
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
         <rdfs:label xml:lang="fr">Equipe</rdfs:label>
         <rdfs:label xml:lang="en">Team</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
-        <rdfs:label xml:lang="en">limestone area</rdfs:label>
-        <rdfs:label xml:lang="fr">zone calcaire</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#PollutedArea">
-        <rdfs:label xml:lang="en">polluted area</rdfs:label>
-        <rdfs:label xml:lang="fr">zone pollué</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
         <rdfs:label xml:lang="fr">projet</rdfs:label>
@@ -1743,12 +1679,8 @@
         <rdfs:label xml:lang="en">Variety</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
-        <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
         <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:label xml:lang="fr">zone venteuse</rdfs:label>
-        <rdfs:label xml:lang="en">windy area</rdfs:label>
+        <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel">
         <rdfs:label xml:lang="fr">Modalité de facteur</rdfs:label>

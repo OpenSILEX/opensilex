@@ -168,7 +168,7 @@ export default class ExperimentDetail extends Vue {
     if (
       this.experiment.projects &&
       this.experiment.projects.length>0 &&
-      this.experiment.projects[0].uri
+      this.experiment.projects[0].uri  //convert experiment 's project list only one time on open form
     ) {
       this.experiment.projects = this.experiment.projects.map(project => {
         return project.uri;

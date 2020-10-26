@@ -6,7 +6,6 @@
     :label="label"
     :disabled="disabled"
     icon="fa#question"
-    class="helpButton"
   ></opensilex-Button>
 </template>
 

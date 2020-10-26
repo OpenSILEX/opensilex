@@ -89,11 +89,12 @@ export default class ExperimentListView extends Vue {
 
   convertDtoBeforeEditForm(experiment) {  //update experiment don't need detailled list attributs
     let convertedExperiment= experiment;
+    
     if (
      experiment.projects &&
-     experiment.projects.length &&
-      experiment.projects[0].uri
+     experiment.projects.length>0
     ) {
+
      convertedExperiment.projects = experiment.projects.map(project => {
         return project.uri;
       });
@@ -101,8 +102,7 @@ export default class ExperimentListView extends Vue {
 
     if (
       experiment.infrastructures &&
-      experiment.infrastructures.length &&
-      experiment.infrastructures[0].uri
+      experiment.infrastructures.length >0 
     ) {
      convertedExperiment.infrastructures = experiment.infrastructures.map(
         infrastructure => {

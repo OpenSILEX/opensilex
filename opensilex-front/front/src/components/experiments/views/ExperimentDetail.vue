@@ -167,7 +167,7 @@ export default class ExperimentDetail extends Vue {
   convertDtoBeforeEditForm() {
     if (
       this.experiment.projects &&
-      this.experiment.projects.length &&
+      this.experiment.projects.length>0 &&
       this.experiment.projects[0].uri
     ) {
       this.experiment.projects = this.experiment.projects.map(project => {
@@ -176,7 +176,7 @@ export default class ExperimentDetail extends Vue {
     }
     if (
       this.experiment.infrastructures &&
-      this.experiment.infrastructures.length &&
+      this.experiment.infrastructures.length >0 &&
       this.experiment.infrastructures[0].uri
     ) {
       this.experiment.infrastructures = this.experiment.infrastructures.map(

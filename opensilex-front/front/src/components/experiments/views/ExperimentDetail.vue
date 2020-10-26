@@ -24,7 +24,6 @@
                 @click="deleteExperiment(experiment.uri)"
                 label="component.experiment.delete"
               ></opensilex-DeleteButton>
-
             </b-button-group>
           </template>
 
@@ -161,6 +160,11 @@ export default class ExperimentDetail extends Vue {
   }
 
   showEditForm() {
+    this.convertDtoBeforeEditForm();
+    this.experimentForm.showEditForm(this.experiment);
+  }
+
+  convertDtoBeforeEditForm() {
     if (
       this.experiment.projects &&
       this.experiment.projects.length &&
@@ -181,7 +185,6 @@ export default class ExperimentDetail extends Vue {
         }
       );
     }
-    this.experimentForm.showEditForm(this.experiment);
   }
 
   deleteExperiment(uri: string) {
@@ -391,7 +394,7 @@ export default class ExperimentDetail extends Vue {
     }
   }
 
-isEnded(experiment) {
+  isEnded(experiment) {
     if (experiment.endDate) {
       return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
     }

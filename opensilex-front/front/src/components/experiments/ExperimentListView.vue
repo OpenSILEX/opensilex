@@ -1,5 +1,6 @@
 <template>
   <div class="container-fluid">
+
     <opensilex-PageHeader
       icon="ik#ik-layers"
       title="component.menu.experiments"
@@ -25,19 +26,20 @@
         ></opensilex-ExperimentList>
       </template>
     </opensilex-PageContent>
+
     <opensilex-ExperimentForm
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
       ref="experimentForm"
       @onCreate="refresh()"
       @onUpdate="refresh()"
     ></opensilex-ExperimentForm>
+
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
 import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
 import moment from "moment";
@@ -80,20 +82,37 @@ export default class ExperimentListView extends Vue {
       .getService("opensilex.ExperimentsService")
       .getExperiment(uri)
       .then(http => {
-        let form = http.response.result;
-        let projectsURIs = [];
-        for (let i in form.projects) {
-          projectsURIs.push(form.projects[i].uri);
-        }
-        form.projects = projectsURIs;
-         let infraURIs = [];
-        for (let i in form.infrastructures) {
-          infraURIs.push(form.infrastructures[i].uri);
-        }
-        form.infrastructures = infraURIs;
-        this.experimentForm.showEditForm(form);
+
+        this.experimentForm.showEditForm(this.convertDtoBeforeEditForm(http.response.result));
       });
   }
+
+  convertDtoBeforeEditForm(experiment) {  //update experiment don't need detailled list attributs
+    let convertedExperiment= experiment;
+    if (
+     experiment.projects &&
+     experiment.projects.length &&
+      experiment.projects[0].uri
+    ) {
+     convertedExperiment.projects = experiment.projects.map(project => {
+        return project.uri;
+      });
+    }
+
+    if (
+      experiment.infrastructures &&
+      experiment.infrastructures.length &&
+      experiment.infrastructures[0].uri
+    ) {
+     convertedExperiment.infrastructures = experiment.infrastructures.map(
+        infrastructure => {
+          return infrastructure.uri;
+        }
+      );
+    }
+    return convertedExperiment;
+  }
+
 }
 </script>
 

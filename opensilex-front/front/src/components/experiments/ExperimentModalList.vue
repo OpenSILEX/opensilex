@@ -27,7 +27,6 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
 import VueRouter from "vue-router";
 import moment from "moment";
 import copy from "copy-to-clipboard";

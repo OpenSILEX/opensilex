@@ -496,6 +496,16 @@
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
+        },
+        "geometry": {
+            "label": "Géométrie",
+            "add-button": "Saisir une géometrie",
+            "add": "Créer une annotation",
+            "update": "Mettre à jour annotation",
+            "uri": "URI de Géométrie",
+            "comment": "description",
+            "comment-help": "Description associée à cette géométrie (protocole, quantité)",
+            "comment-placeholder" : "Protocole n°1289 - Apport d'eau de 5 ml/jour."
         }
     },
     "credential-groups": {
@@ -544,6 +554,11 @@
         "germplasm": {
             "modification": "Ajout / Modification germplasm",
             "delete": "Suppression des germplasm"
+        },
+        "geometry": {
+            "instruction": "Utilisez Alt+Shift+Drag pour faire pivoter la carte. Utilisez Ctrl+Clic+Glisser pour sélectionner plusieurs éléments.",
+            "editing": "Oui",
+            "selection": "Non"
         },
         "scientific-objects": {
             "modification": "Ajout / Modification des objets scientifiques",

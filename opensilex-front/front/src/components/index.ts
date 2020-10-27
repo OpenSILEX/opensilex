@@ -466,4 +466,8 @@ components["opensilex-DocumentList"] = DocumentList;
 import DocumentDetails from './documents/DocumentDetails.vue';
 components["opensilex-DocumentDetails"] = DocumentDetails;
 
+// Map
+import GeometryView from './geometry/GeometryView.vue';
+components["opensilex-GeometryView"] = GeometryView;
+
 export default components;

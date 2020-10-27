@@ -6,7 +6,7 @@ menu:
   #     component: opensilex-UserView
   - id: scientific-organisation
     label: component.menu.scientific-organisation
-    children: 
+    children:
       - id: infrastructures
         label: component.menu.infrastructure
         route:
@@ -131,6 +131,8 @@ routes:
   - path: /experiment/scientific-objects/:uri
     component: opensilex-ExperimentView
   - path: /experiment/data/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/map/:uri
     component: opensilex-ExperimentView
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes

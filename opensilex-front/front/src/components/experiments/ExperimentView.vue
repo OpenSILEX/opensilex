@@ -16,10 +16,15 @@
           :active="isScientificObjectsTab()"
           :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
         >{{ $t('ExperimentView.scientific-objects') }}</b-nav-item>
-      <!--   <b-nav-item
-          :active="isDataTab()"
-          :to="{path: '/experiment/data/' + encodeURIComponent(uri)}"
-        >{{ $t('ExperimentView.data') }}</b-nav-item> -->
+        <!--   <b-nav-item
+         :active="isDataTab()"
+         :to="{path: '/experiment/data/' + encodeURIComponent(uri)}"
+       >{{ $t('ExperimentView.data') }}</b-nav-item> -->
+        <b-nav-item
+            :active="isMap()"
+            :to="{path: '/experiment/map/'+ encodeURIComponent(uri)}"
+        >{{ $t('Map') }}
+        </b-nav-item>
       </template>
     </opensilex-PageActions>
 
@@ -28,6 +33,7 @@
         <opensilex-ExperimentDetail v-if="isDetailsTab()" :uri="uri"></opensilex-ExperimentDetail>
         <opensilex-ExperimentScientificObjects v-else-if="isScientificObjectsTab()" :uri="uri"></opensilex-ExperimentScientificObjects>
         <opensilex-ExperimentData v-else-if="isDataTab()" :uri="uri"></opensilex-ExperimentData>
+        <opensilex-GeometryView :uri="uri" v-else-if="isMap()"></opensilex-GeometryView>
       </template>
     </opensilex-PageContent>
   </div>
@@ -36,7 +42,6 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import {
   ExperimentsService,ExperimentGetDTO
 } from "opensilex-core/index";
@@ -69,6 +74,10 @@ export default class ExperimentView extends Vue {
 
   isDetailsTab() {
     return this.$route.path.startsWith("/experiment/details/");
+  }
+
+  isMap() {
+    return this.$route.path.startsWith("/experiment/map/");
   }
 
   isScientificObjectsTab() {

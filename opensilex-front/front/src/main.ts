@@ -160,6 +160,10 @@ vSelect.props.components.default = () => ({
 
 Vue.component("v-select", vSelect);
 
+import VueLayers from 'vuelayers'
+import 'vuelayers/lib/style.css' // needs css-loader
+Vue.component("vuelayers", VueLayers);
+
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';

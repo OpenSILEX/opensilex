@@ -589,6 +589,16 @@
                     "variable": " Add a variable"
                 }
             }
+        },
+        "geometry": {
+            "label": "Geometry",
+            "add-button": "Input annotation",
+            "add": "Create metadata",
+            "update": "Update metadata",
+            "uri": "Geometry URI",
+            "comment": "comment",
+            "comment-help": "Description associated with this geometry (protocol, quantity)",
+            "comment-placeholder": "Protocol n°1289 - Amount of water 5 ml/Days."
         }
     },
     "credential-groups": {
@@ -637,6 +647,11 @@
         "germplasm": {
             "modification": "Add / update germplasm",
             "delete": "Delete germplasm"
+        },
+        "geometry": {
+            "instruction": "Use Alt+Shift+Drag to rotate the map. Use Ctrl+Click+Drag to select multiple elements.",
+            "editing": "Yes",
+            "selection": "No"
         },
         "scientific-objects": {
             "modification": "Add / update scientific objects",

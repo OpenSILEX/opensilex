@@ -20,7 +20,7 @@
 
               <opensilex-DeleteButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_DELETE_ID)"
-                @click="deleteProject(experiment.uri)"
+                @click="deleteProject(project.uri)"
                 label="component.project.delete"
               ></opensilex-DeleteButton>
               

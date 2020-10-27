@@ -9,7 +9,22 @@ import com.auth0.jwt.interfaces.Claim;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.geojson.Geometry;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import java.util.ArrayList;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -20,6 +35,7 @@ import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import static org.opensilex.core.scientificObject.dal.ScientificObjectDAO.GEOMETRY_COLUMN_ID;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -33,6 +49,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
@@ -41,7 +58,6 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -118,7 +134,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of scientific objetcs with geometry corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objetcs with geometry corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
             @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
@@ -177,11 +193,12 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("xpuri") URI experimentURI,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdfType") URI rdfType,
+            @ApiParam(value = "Parent URI", example = "http://example.com/") @QueryParam("parentURI") URI parentURI,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(experimentURI, pattern, rdfType, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(experimentURI, pattern, rdfType, parentURI, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -413,8 +430,48 @@ public class ScientificObjectAPI {
 
         csvValidation.setErrors(errors);
 
+        final URI finalXpURI = xpURI;
         if (!errors.hasErrors()) {
-            sparql.create(SPARQLDeserializers.nodeURI(xpURI), errors.getObjects());
+            Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(GEOMETRY_COLUMN_ID);
+            if (geometries != null && geometries.size() > 0) {
+                MongoClient mongoClient = nosql.getMongoDBClient();
+                GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+
+                ClientSession session = mongoClient.startSession();
+                session.startTransaction();
+                try {
+                    sparql.startTransaction();
+                    List<SPARQLResourceModel> objects = errors.getObjects();
+                    sparql.create(SPARQLDeserializers.nodeURI(finalXpURI), objects);
+
+                    List<GeospatialModel> geospacialModels = new ArrayList<>();
+                    geometries.forEach((rowIndex, geometry) -> {
+                        SPARQLResourceModel object = objects.get(rowIndex);
+                        GeospatialModel geospatialModel = new GeospatialModel();
+                        geospatialModel.setUri(object.getUri());
+                        geospatialModel.setType(object.getType());
+                        geospatialModel.setGraph(finalXpURI);
+                        geospatialModel.setGeometry(geometry);
+                        geospacialModels.add(geospatialModel);
+                    });
+
+                    geoDAO.createAll(geospacialModels);
+                    sparql.commitTransaction();
+                    session.commitTransaction();
+
+                } catch (Exception ex) {
+                    sparql.rollbackTransaction();
+                    session.abortTransaction();
+                    throw ex;
+                } finally {
+                    mongoClient.close();
+                }
+            } else {
+
+                List<SPARQLResourceModel> objects = errors.getObjects();
+                sparql.create(SPARQLDeserializers.nodeURI(finalXpURI), objects);
+            }
+
             csvValidation.setValidationToken("done");
         }
 

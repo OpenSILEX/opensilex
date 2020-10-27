@@ -179,6 +179,11 @@ export default class OntologyCsvImporter extends Vue {
   })
   uploadCSV;
 
+  @Prop({
+    default: () => []
+  })
+  customColumns;
+
   show() {
     this.objectType = null;
     this.validatorRef.reset();
@@ -255,7 +260,7 @@ export default class OntologyCsvImporter extends Vue {
       let targetName = "URI";
       fieldDescription +=
         this.$t("component.common.type") + ": " + targetName + lineSeparator;
-    } else {
+    } else if (field.propertyType == "DATA") {
       if (field.targetProperty) {
         let targetType = this.$opensilex.getType(field.targetProperty);
         let targetName = "";
@@ -265,6 +270,9 @@ export default class OntologyCsvImporter extends Vue {
         fieldDescription +=
           this.$t("component.common.type") + ": " + targetName + lineSeparator;
       }
+    } else {
+      fieldDescription +=
+        this.$t("component.common.type") + ": " + field.type + lineSeparator;
     }
 
     fieldDescription +=
@@ -343,17 +351,18 @@ export default class OntologyCsvImporter extends Vue {
             propertiesByURI[objectProperty.property] = objectProperty;
           }
 
-          // TODO sort by properties order
-
           let nameRow = {};
           let commentRow = {};
+
+          // TODO sort by properties order
+
           this.fields.forEach(field => {
             if (field.key == "URI") {
               nameRow[field.key] = this.$t("OntologyCsvImporter.objectURI");
               commentRow[field.key] = this.$t(
                 "OntologyCsvImporter.objectURIComment"
               ).replace("\\n", "\n");
-            } else {
+            } else if (propertiesByURI[field.key]) {
               let fieldKey = field.key;
               let property = propertiesByURI[fieldKey];
 
@@ -361,6 +370,22 @@ export default class OntologyCsvImporter extends Vue {
               commentRow[fieldKey] = this.getFieldDescription(property, "\n");
             }
           });
+
+          for (let i in this.customColumns) {
+            let customColumn = this.customColumns[i];
+
+            this.fields.push({
+              key: customColumn.id,
+              label: customColumn.id
+            });
+
+            nameRow[customColumn.id] = customColumn.label;
+            console.error(customColumn);
+            commentRow[customColumn.id] = this.getFieldDescription(
+              customColumn,
+              "\n"
+            );
+          }
 
           this.rows = [nameRow, commentRow];
         });

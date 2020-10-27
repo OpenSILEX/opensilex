@@ -5,6 +5,8 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import java.io.InputStream;
 import java.net.URI;
@@ -12,19 +14,25 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
@@ -34,6 +42,7 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -52,6 +61,8 @@ public class ScientificObjectDAO {
     private final SPARQLService sparql;
 
     private final NoSQLService nosql;
+    
+    public static String GEOMETRY_COLUMN_ID = "geometry";
 
     public ScientificObjectDAO(SPARQLService sparql, NoSQLService nosql) {
         this.sparql = sparql;
@@ -92,7 +103,7 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(URI experimentURI, String pattern, URI rdfType, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(URI experimentURI, String pattern, URI rdfType, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         Node experimentGraph = null;
         Expr graphFilter = null;
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
@@ -132,6 +143,9 @@ public class ScientificObjectDAO {
                     if (finalGraphFilter != null) {
                         select.addFilter(finalGraphFilter);
                     }
+                    if (parentURI != null) {
+                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                    }
                 },
                 null,
                 page,
@@ -161,6 +175,12 @@ public class ScientificObjectDAO {
         for (SpeciesModel germplasm : species) {
             germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
             germplasmURIs.add(germplasm.getUri());
+        }
+
+        List<String> facilityStringURIs = new ArrayList<>();
+        List<InfrastructureFacilityModel> facilities = xpDAO.getAvailableFacilities(xpURI, currentUser);
+        for (InfrastructureFacilityModel facility : facilities) {
+            facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
         }
 
         if (germplasmURIs.size() > 0) {
@@ -193,7 +213,39 @@ public class ScientificObjectDAO {
             }
         });
 
-        return ontologyDAO.validateCSV(xpURI, soType, new URI(Oeso.ScientificObject.getURI()), file, currentUser, customValidators, new ScientificObjectExperimentURIGenerator(xpURI));
+        customValidators.put(Oeso.hasFacility.toString(), (cell, csvErrors) -> {
+            try {
+                String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                if (!facilityStringURIs.contains(facilityURI)) {
+                    csvErrors.addInvalidValueError(cell);
+                }
+            } catch (URISyntaxException ex) {
+                csvErrors.addInvalidURIError(cell);
+            }
+        });
+
+        List<String> customColumns = new ArrayList();
+        customColumns.add(GEOMETRY_COLUMN_ID);
+
+        Map<Integer, Geometry> geometries = new HashMap<>();
+        customValidators.put(GEOMETRY_COLUMN_ID, (cell, csvErrors) -> {
+            String jsonGeometry = cell.getValue();
+            if (jsonGeometry != null && !jsonGeometry.isEmpty()) {
+                try {
+                    GeoJsonObject geoJson = ObjectMapperContextResolver.getObjectMapper().readValue(jsonGeometry, GeoJsonObject.class);
+                    Geometry geometry = GeospatialDAO.geoJsonToGeometry(geoJson);
+                    geometries.put(cell.getRowIndex(), geometry);
+                } catch (JsonProcessingException ex) {
+                    csvErrors.addInvalidURIError(cell);
+                }
+            }
+        });
+
+        CSVValidationModel validationResult = ontologyDAO.validateCSV(xpURI, soType, new URI(Oeso.ScientificObject.getURI()), file, currentUser, customValidators, customColumns, new ScientificObjectExperimentURIGenerator(xpURI));
+
+        validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
+
+        return validationResult;
     }
 
     public URI create(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -261,7 +313,7 @@ public class ScientificObjectDAO {
                 }
             }
         }
-        
+
         object.addRelation(xpURI, new URI(RDFS.label.getURI()), String.class, name);
 
         return object;

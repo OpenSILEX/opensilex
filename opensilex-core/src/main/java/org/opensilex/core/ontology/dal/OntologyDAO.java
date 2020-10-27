@@ -177,7 +177,7 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI rdfType, URI parentClass, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, URIGenerator<String> uriGenerator) throws Exception {
+    public CSVValidationModel validateCSV(URI graph, URI rdfType, URI parentClass, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, List<String> customColumns, URIGenerator<String> uriGenerator) throws Exception {
         Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
 
         ClassModel model = getClassModel(rdfType, parentClass, currentUser.getLanguage());
@@ -202,27 +202,31 @@ public final class OntologyDAO {
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {
-                    try {
-                        URI id = new URI(ids[i]);
+                    if (customColumns != null && customColumns.contains(ids[i])) {
+                        headerByIndex.put(i, ids[i]);
+                    } else {
+                        try {
+                            URI id = new URI(ids[i]);
 
-                        if (restrictionsByID.containsKey(id)) {
-                            restrictionsByIndex.put(i, restrictionsByID.get(id));
+                            if (restrictionsByID.containsKey(id)) {
+                                restrictionsByIndex.put(i, restrictionsByID.get(id));
 
-                            String header = id.toString();
-                            if (model.isDatatypePropertyRestriction(id)) {
-                                header = model.getDatatypeProperty(id).getName();
-                            } else if (model.isObjectPropertyRestriction(id)) {
-                                header = model.getObjectProperty(id).getName();
+                                String header = id.toString();
+                                if (model.isDatatypePropertyRestriction(id)) {
+                                    header = model.getDatatypeProperty(id).getName();
+                                } else if (model.isObjectPropertyRestriction(id)) {
+                                    header = model.getObjectProperty(id).getName();
+                                }
+                                headerByIndex.put(i, header);
+
+                                restrictionsByID.remove(id);
+
+                            } else if ("uri".equals(ids[i])) {
+                                uriIndex = i;
                             }
-                            headerByIndex.put(i, header);
-
-                            restrictionsByID.remove(id);
-
-                        } else if ("uri".equals(ids[i])) {
-                            uriIndex = i;
+                        } catch (URISyntaxException ex) {
+                            csvValidation.addInvalidHeaderURI(i, ids[i]);
                         }
-                    } catch (URISyntaxException ex) {
-                        csvValidation.addInvalidHeaderURI(i, ids[i]);
                     }
                 }
 
@@ -298,6 +302,14 @@ public final class OntologyDAO {
                     } else {
                         csvValidation.addInvalidURIError(cell);
                     }
+                }
+            } else if (headerByIndex.containsKey(colIndex)) {
+                String header = headerByIndex.get(colIndex);
+                String value = values[colIndex].trim();
+                CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
+                if (customValidators != null) {
+                    BiConsumer<CSVCell, CSVValidationModel> customValidator = customValidators.get(header);
+                    customValidator.accept(cell, csvValidation);
                 }
             }
         }

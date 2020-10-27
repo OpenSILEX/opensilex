@@ -23,6 +23,9 @@ public class CSVValidationModel {
     @JsonIgnore()
     private List<SPARQLResourceModel> objects = new ArrayList<>();
 
+    @JsonIgnore()
+    private Map<String, Object> objectsMetadata = new HashMap<>();
+
     private List<URI> missingHeaders = new ArrayList<>();
 
     private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
@@ -87,6 +90,18 @@ public class CSVValidationModel {
 
     public void setObjects(List<SPARQLResourceModel> objects) {
         this.objects = objects;
+    }
+
+    public Map<String, Object> getObjectsMetadata() {
+        if (hasErrors()) {
+            return new HashMap<>();
+        }
+
+        return objectsMetadata;
+    }
+
+    public void setObjectsMetadata(Map<String, Object> objectsMetadata) {
+        this.objectsMetadata = objectsMetadata;
     }
 
     public boolean hasErrors() {
@@ -162,5 +177,10 @@ public class CSVValidationModel {
     public void addObject(SPARQLResourceModel object) {
         objects.add(object);
     }
+    
+    public void addObjectMetadata(String metadataKey, Object value) {
+        objectsMetadata.put(metadataKey, value);
+    }
+    
 
 }

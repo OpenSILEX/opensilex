@@ -14,6 +14,7 @@
               :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
               :validateCSV="validateCSV"
               :uploadCSV="uploadCSV"
+              :customColumns="customColumns"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
           </div>
@@ -73,9 +74,8 @@
                 :searchMethod="searchParents"
                 :itemLoadingMethod="getParentsByURI"
               ></opensilex-SelectForm>
-              
-              <!-- TODO add geometry input --> 
-            
+
+              <!-- TODO add geometry input -->
             </template>
           </opensilex-ModalForm>
         </b-card>
@@ -90,9 +90,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ScientificObjectsService
-} from "opensilex-core/index";
+import { ScientificObjectsService } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentScientificObjects extends Vue {
@@ -105,6 +103,15 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
   @Ref("csvImporter") readonly csvImporter!: any;
+
+  customColumns = [{
+    id: "geometry",
+    label: "Geometry",
+    type: "GeoJson",
+    comment: "Geospacial representation of the object",
+    isRequired: false,
+    isList: false
+  }];
 
   get user() {
     return this.$store.state.user;
@@ -179,7 +186,14 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchParents(query, page, pageSize) {
     return this.soService
-      .searchScientificObjects(this.uri, query, undefined, page, pageSize)
+      .searchScientificObjects(
+        this.uri,
+        query,
+        undefined,
+        undefined,
+        page,
+        pageSize
+      )
       .then(http => {
         let nodeList = [];
         for (let so of http.response.result) {

@@ -126,8 +126,9 @@ public class GeospatialDAO {
     }
 
     private Document getFilter(URI uri, URI graph) {
-        if (graph != null)
+        if (graph != null) {
             return new Document("uri", SPARQLDeserializers.getExpandedURI(uri)).append("graph", SPARQLDeserializers.getExpandedURI(graph));
+        }
         return new Document("uri", SPARQLDeserializers.getExpandedURI(uri));
     }
 
@@ -136,7 +137,6 @@ public class GeospatialDAO {
 
         geometryCollection.deleteOne(filter);
     }
-
 
     private ListWithPagination<GeospatialModel> getGeospatialModelListWithPagination(Integer page, Integer pageSize, FindIterable<GeospatialModel> geospatialFindIterable) {
         List<GeospatialModel> geospatialListWithPagination = new ArrayList<>();
@@ -227,5 +227,10 @@ public class GeospatialDAO {
 
     public ListWithPagination<GeospatialModel> searchNear(GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
         return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
+    }
+
+    public void createAll(List<GeospatialModel> geospacialModels) {
+        addIndex();
+        geometryCollection.insertMany(geospacialModels);
     }
 }

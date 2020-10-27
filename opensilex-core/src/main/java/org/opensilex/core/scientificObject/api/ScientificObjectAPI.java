@@ -50,6 +50,7 @@ import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -104,6 +105,37 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(experimentURI, objectsURI);
+
+        List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
+
+        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("search-with-geometry/{xpuri}")
+    @ApiOperation("Get scientific objet list with geometry for an experiment")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of scientific objetcs with geometry corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+    })
+    public Response searchScientificObjectsWithGeometryListByUris(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true) @PathParam("xpuri") @NotNull URI experimentURI
+    ) throws Exception {
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+
+        HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByExperiment(experimentURI);
+
+        // retrieving the uri list with geometries in the experiment
+        List<URI> objectsURI = new LinkedList<>();
+        for (Map.Entry<String, Geometry> entry : mapGeo.entrySet()) {
+            objectsURI.add(new URI(entry.getKey()));
+        }
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        List<ScientificObjectModel> scientificObjects = dao.searchByURIs(experimentURI, objectsURI, currentUser);
 
         List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 

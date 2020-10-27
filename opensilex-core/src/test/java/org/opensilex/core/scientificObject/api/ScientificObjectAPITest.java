@@ -12,6 +12,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -28,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
-import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -228,9 +228,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<ScientificObjectDetailDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {
+        SingleObjectResponse<ScientificObjectNodeDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectNodeDTO>>() {
         });
-        ScientificObjectDetailDTO soGetDetailDTO = getResponse.getResult();
+        ScientificObjectNodeDTO soGetDetailDTO = getResponse.getResult();
         assertNotNull(soGetDetailDTO);
     }
 
@@ -242,5 +242,30 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetScientificObjectsListByUrisWithoutGeometry() throws Exception {
         testGetScientificObjectsListByUris(false);
+    }
+
+    public void testSearchScientificObjectsWithGeometryListByUris(boolean withGeometry) throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(withGeometry));
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getResponse(uri);
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<ScientificObjectNodeDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectNodeDTO>>() {
+        });
+        ScientificObjectNodeDTO soGetDetailDTO = getResponse.getResult();
+        assertNotNull(soGetDetailDTO);
+    }
+
+    @Test
+    public void testSearchScientificObjectsWithGeometryListByUris() throws Exception {
+        testSearchScientificObjectsWithGeometryListByUris(true);
+    }
+
+    @Test
+    public void testSearchScientificObjectsWithGeometryListByUrisWithoutGeometry() throws Exception {
+        testSearchScientificObjectsWithGeometryListByUris(false);
     }
 }

@@ -151,24 +151,34 @@ public class GeospatialDAO {
     }
 
     public HashMap<String, Geometry> getGeometryByUris(URI experimentURI, List<URI> objectsURI) {
-        HashMap<String, Geometry> mapGeo = new HashMap<>();
-
-        for (GeospatialModel geospatialModel : geometryByURIS(objectsURI, experimentURI)) {
-            mapGeo.put(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri()), geospatialModel.getGeometry());
-        }
-
-        // returns all geometries that respond to the filtering, returns a HashMap<String, Geometry>.
-        return mapGeo;
-    }
-
-    private FindIterable<GeospatialModel> geometryByURIS(List<URI> objectsURI, URI experimentURI) {
-        // db.getCollection('Geospatial').find({"uri":{"$in" : ["uri1","uri2", ...]}})
         Document filter = new Document();
         if (experimentURI != null) {
             filter = new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI));
         }
 
-        return geometryCollection.find(filter).filter(Filters.in("uri", objectsURI));
+        FindIterable<GeospatialModel> modelList = geometryCollection.find(filter).filter(Filters.in("uri", objectsURI));
+
+        return createGeometryMap(modelList);
+    }
+
+    private HashMap<String, Geometry> createGeometryMap(FindIterable<GeospatialModel> modelList) {
+        HashMap<String, Geometry> mapGeo = new HashMap<>();
+
+        for (GeospatialModel geospatialModel : modelList) {
+            mapGeo.put(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri()), geospatialModel.getGeometry());
+        }
+
+        return mapGeo;
+    }
+
+    public HashMap<String, Geometry> getGeometryByExperiment(URI experimentURI) {
+        if (experimentURI != null) {
+            FindIterable<GeospatialModel> modelList = geometryCollection.find(new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI)));
+
+            return createGeometryMap(modelList);
+        } else {
+            return null;
+        }
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.

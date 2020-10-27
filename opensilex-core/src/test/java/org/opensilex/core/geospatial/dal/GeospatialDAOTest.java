@@ -209,6 +209,23 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testGetGeometryByExperiment() throws URISyntaxException {
+        URI uri = new URI("http://opensilex/Geospatial/G_881");
+        GeospatialModel geospatial = getGeospatialModel("Point", uri, true);
+        geospatialDAO.create(geospatial);
+        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
+
+        URI uri2 = new URI("http://opensilex/Geospatial/G_882");
+        GeospatialModel geospatial2 = getGeospatialModel("Polygon", uri2, true);
+        geospatialDAO.create(geospatial2);
+        verificationOfCorrectInsertion(geospatial2.getGeometry(), geospatial2.getUri(), type, geospatial2.getGraph());
+
+        // returns all the geometries of the experiment, returns a HashMap<String, Geometry>.
+        HashMap<String, Geometry> geometryByUrisWithoutUriExperience = geospatialDAO.getGeometryByExperiment(new URI("test-exp:ZA17"));
+        TestCase.assertNotNull(geometryByUrisWithoutUriExperience);
+    }
+
+    @Test
     public void testSearchIntersects() {
         List<Position> list = new LinkedList<>();
         list.add(new Position(3.97167246, 43.61328981));

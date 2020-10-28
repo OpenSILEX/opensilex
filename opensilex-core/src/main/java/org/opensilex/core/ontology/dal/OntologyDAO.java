@@ -6,6 +6,7 @@
 package org.opensilex.core.ontology.dal;
 
 import com.opencsv.CSVReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -25,6 +27,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -591,6 +594,10 @@ public final class OntologyDAO {
         }
 
         return name;
+    }
+
+    public File exportCSV(URI experimentURI, URI rdfType, URI uri, List<? extends SPARQLResourceModel> objects, UserModel currentUser, BiFunction<String, SPARQLResourceModel, String> customValueGenerator, List<String> customColumns) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

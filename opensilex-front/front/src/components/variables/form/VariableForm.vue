@@ -289,10 +289,6 @@ export default class VariableForm extends Vue {
     }
 
     reset() {
-        this.loadedEntities = [];
-        this.loadedQualities = [];
-        this.loadedMethods = [];
-        this.loadedUnits = [];
         this.uriGenerated = true;
         this.validatorRef.reset();
 
@@ -400,21 +396,23 @@ export default class VariableForm extends Vue {
         return this.service.searchEntities(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 if (http && http.response) {
-                    this.loadedEntities = http.response.result;
+                    for(let dto of http.response.result){
+                        this.loadedEntities.push(dto);
+                    }
                 }
                 return http;
             });
     }
 
     loadEntity(entities: Array<any>) {
-        if(! entities || entities.length !== 1){
+        if (!entities || entities.length !== 1) {
             return undefined;
         }
         // in edit mode, the loaded entity is an object composed of uri and name
-        if(entities[0].uri){
+        if (entities[0].uri) {
             return [this.form.entity];
         }
-        return [this.loadedEntities.find(dto => dto.uri == entities[0])];
+        return [this.loadedEntities.find(dto => dto.uri === entities[0])];
     }
 
     setLoadedEntity(created: EntityCreationDTO) {
@@ -427,7 +425,9 @@ export default class VariableForm extends Vue {
             .searchQualities(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 if (http && http.response) {
-                    this.loadedQualities = http.response.result;
+                    for(let dto of http.response.result){
+                        this.loadedQualities.push(dto);
+                    }
                 }
                 return http;
             });
@@ -454,7 +454,9 @@ export default class VariableForm extends Vue {
             .searchMethods(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 if (http && http.response) {
-                    this.loadedMethods = http.response.result;
+                    for(let dto of http.response.result){
+                        this.loadedMethods.push(dto);
+                    }
                 }
                 return http;
             });
@@ -481,7 +483,9 @@ export default class VariableForm extends Vue {
             .searchUnits(name, ["name=asc"], page,pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 if (http && http.response) {
-                    this.loadedUnits = http.response.result;
+                    for(let dto of http.response.result){
+                        this.loadedUnits.push(dto);
+                    }
                 }
                 return http;
             });

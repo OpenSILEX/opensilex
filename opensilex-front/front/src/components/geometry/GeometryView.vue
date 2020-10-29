@@ -3,7 +3,7 @@
     <div>
       <h1>{{ nameExperiment }}</h1>
     </div>
-    <div id="selectionMode">
+    <div v-if="endReceipt" id="selectionMode">
       {{ $t('credential.geometry.instruction') }}
       <vl-map
           :load-tiles-while-animating="true"
@@ -12,7 +12,7 @@
           style="height: 400px"
           @created="mapCreated"
       >
-        <vl-view :center.sync="center" :rotation.sync="rotation" :zoom.sync="zoom"></vl-view>
+        <vl-view ref="mapView" :rotation.sync="rotation"></vl-view>
 
         <vl-layer-tile id="osm">
           <vl-source-osm></vl-source-osm>
@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VueLayers from "vuelayers";
 import "vuelayers/lib/style.css"; // needs css-loader
@@ -73,6 +73,8 @@ import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
 
 @Component
 export default class GeometryView extends Vue {
+  @Ref("mapView") readonly mapView!: any;
+  @Ref("vectorSource") readonly vectorSource!: any;
   $opensilex: any;
   $store: any;
   el: "map";
@@ -95,23 +97,8 @@ export default class GeometryView extends Vue {
       label: "type",
       sortable: true
     }
-    // {
-    //   key: "properties.comment",
-    //   label: "comment",
-    //   sortable: true
-    // },
-    // {
-    //   key: "properties.author",
-    //   label: "author",
-    //   sortable: true
-    // },
-    // {
-    //   key: "actions",
-    //   label: "actions"
-    // }
   ];
   selectedFeatures: any[] = [];
-  center: number[] = [3.9735156, 43.612549];
   nodes = [];
 
   private nameExperiment: string = "";
@@ -132,7 +119,6 @@ export default class GeometryView extends Vue {
 
   data() {
     return {
-      zoom: 18,
       rotation: 0
     };
   }
@@ -140,7 +126,6 @@ export default class GeometryView extends Vue {
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
     this.loadNameExperiment();
-    // this.loadNamespaces();
     console.log("Loading form view...");
 
     this.service = this.$opensilex.getService(
@@ -160,6 +145,9 @@ export default class GeometryView extends Vue {
               );
             }
           });
+          if (res.length != 0) {
+            this.definesCenter();
+          }
         }
     ).catch(this.$opensilex.errorHandler);
     this.endReceipt = true;
@@ -189,6 +177,17 @@ export default class GeometryView extends Vue {
     });
   }
 
+  definesCenter() {
+    setTimeout(() => {
+      let extent = this.vectorSource.$source.getExtent();
+      extent[0] -= 50;
+      extent[1] -= 50;
+      extent[2] += 50;
+      extent[3] += 50;
+      this.mapView.$view.fit(extent)
+    }, 1000)
+  }
+
   loadNameExperiment() {
     let service: ExperimentsService = this.$opensilex.getService(
         "opensilex.ExperimentsService"
@@ -207,24 +206,13 @@ export default class GeometryView extends Vue {
     this.$emit("select", value);
   }
 
-  // loadNamespaces() {
-  //   let service: VocabulariesService = this.$opensilex.getService(
-  //       "opensilex.VocabulariesService"
-  //   );
-  //
-  //   service.getNamespaces(
-  //       200,
-  //       0
-  //   )
-  //       .then(
-  //           (http: HttpResponse<OpenSilexResponse<Array<Property>>>) => {
-  //             this.arrayPrefix = http.response.result;
-  //           }
-  //       )
-  //       .catch(this.$opensilex.errorHandler);
-  // }
-
   private featureInsert(uri: string, geometry: any, name: any, type: any) {
+    let geoJsonObject;
+    if (geometry.geometry.type == "GeometryCollection") {
+      geoJsonObject = geometry.geometry.geometries[0];
+    } else if (geometry.geometry.type == "Polygon") {
+      geoJsonObject = geometry.geometry;
+    }
     this.features.push({
       type: "Feature",
       properties: {
@@ -232,7 +220,7 @@ export default class GeometryView extends Vue {
         name: name,
         type: type,
       },
-      geometry: geometry.geometry.geometries[0]
+      geometry: geoJsonObject
     });
   }
 }

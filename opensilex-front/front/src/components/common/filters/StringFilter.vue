@@ -19,6 +19,7 @@
         :type="type"
         :number="type=='number'"
         :placeholder="$t(placeholder)"
+        @keydown.enter.native="(event) => {event.preventDefault()}"
       ></b-form-input>
 
       <template v-slot:append>
@@ -101,6 +102,8 @@ export default class StringFilter extends Vue {
   created() {
     this.id = this.$opensilex.generateID();
   }
+ 
+
 }
 </script>
 

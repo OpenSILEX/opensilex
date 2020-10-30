@@ -40,6 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 /**
  * Geospatial DAO
@@ -80,6 +85,14 @@ public class GeospatialDAO {
         return geocodec.decode(jsonReader, DecoderContext.builder().build());
     }
 
+    public static Geometry wktToGeometry(String wktString) throws ParseException, JsonProcessingException {
+        final WKTReader reader = new WKTReader();
+        org.locationtech.jts.geom.Geometry geom = reader.read(wktString);
+        final GeoJsonWriter writer = new GeoJsonWriter();
+        String geoJSON = writer.write(geom);
+        return geoJsonToGeometry(ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class));
+    }
+
     public static GeoJsonObject geometryToGeoJson(Geometry geometry) throws JsonProcessingException {
         Feature geo = new Feature();
         String geoJSON = geometry.toJson();
@@ -87,6 +100,15 @@ public class GeospatialDAO {
         geo.setGeometry(geoJsonGeometry);
 
         return geo;
+    }
+
+    public static String geometryToWkt(Geometry geometry) throws JsonProcessingException, ParseException {
+        GeoJsonObject geoJSON = geometryToGeoJson(geometry);
+        final GeoJsonReader reader = new GeoJsonReader();
+        String geoJSONString = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geoJSON);
+        org.locationtech.jts.geom.Geometry geom = reader.read(geoJSONString);
+        WKTWriter writer = new WKTWriter();
+        return writer.write(geom);
     }
 
     public GeospatialModel create(GeospatialModel instanceGeospatial) {

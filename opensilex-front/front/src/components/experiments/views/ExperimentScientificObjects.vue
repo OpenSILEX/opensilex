@@ -5,18 +5,33 @@
         <b-card>
           <div class="button-zone">
             <opensilex-CreateButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                )
+              "
               @click="createScientificObject()"
               label="ExperimentScientificObjects.create-scientific-object"
-            ></opensilex-CreateButton>&nbsp;
+            ></opensilex-CreateButton
+            >&nbsp;
             <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
             <opensilex-OntologyCsvImporter
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                )
+              "
               :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
               :validateCSV="validateCSV"
               :uploadCSV="uploadCSV"
               :customColumns="customColumns"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
+            <opensilex-CreateButton
+              @click="exportCSV()"
+              label="ExperimentScientificObjects.export-csv"
+            ></opensilex-CreateButton
+            >&nbsp;
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -26,26 +41,40 @@
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
-                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
-              </span>&nbsp;
+                <opensilex-Icon
+                  :icon="$opensilex.getRDFIcon(node.data.type)"
+                /> </span
+              >&nbsp;
               <span>{{ node.title }}</span>
             </template>
 
             <template v-slot:buttons="{ node }">
               <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                  )
+                "
                 @click="editScientificObject(node)"
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
               <opensilex-AddChildButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                  )
+                "
                 @click="createScientificObject(node.data.uri)"
                 label="ExperimentScientificObjects.add-scientific-object-child"
                 :small="true"
               ></opensilex-AddChildButton>
               <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                  )
+                "
                 @click="deleteScientificObject(node)"
                 label="ExperimentScientificObjects.delete-scientific-object"
                 :small="true"
@@ -53,7 +82,11 @@
             </template>
           </opensilex-TreeViewAsync>
           <opensilex-ModalForm
-            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+              )
+            "
             ref="soForm"
             component="opensilex-OntologyObjectForm"
             createTitle="ExperimentScientificObjects.add"
@@ -65,7 +98,7 @@
             @onCreate="refresh()"
             @onUpdate="refresh()"
           >
-            <template v-slot:customFields="{form}">
+            <template v-slot:customFields="{ form }">
               <opensilex-SelectForm
                 label="ExperimentScientificObjects.parent-label"
                 :selected.sync="form.parent"
@@ -81,7 +114,10 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
+        <opensilex-ScientificObjectDetail
+          v-if="selected"
+          :selected="selected"
+        />
       </div>
     </div>
   </div>
@@ -97,6 +133,7 @@ export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
   $route: any;
   $store: any;
+  $t: any;
   soService: ScientificObjectsService;
   uri: string;
 
@@ -104,14 +141,18 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("soTree") readonly soTree!: any;
   @Ref("csvImporter") readonly csvImporter!: any;
 
-  customColumns = [{
-    id: "geometry",
-    label: "Geometry",
-    type: "GeoJson",
-    comment: "Geospacial representation of the object",
-    isRequired: false,
-    isList: false
-  }];
+  get customColumns() {
+    return [
+      {
+        id: "geometry",
+        label: this.$t("ExperimentScientificObjects.geometry-label"),
+        type: "WKT",
+        comment: this.$t("ExperimentScientificObjects.geometry-comment"),
+        isRequired: false,
+        isList: false,
+      },
+    ];
+  }
 
   get user() {
     return this.$store.state.user;
@@ -153,7 +194,7 @@ export default class ExperimentScientificObjects extends Vue {
 
     this.soService
       .getScientificObjectsChildren(this.uri, nodeURI)
-      .then(http => {
+      .then((http) => {
         let childrenNodes = [];
         for (let i in http.response.result) {
           let soDTO = http.response.result[i];
@@ -166,7 +207,7 @@ export default class ExperimentScientificObjects extends Vue {
             isExpanded: true,
             isSelected: false,
             isDraggable: false,
-            isSelectable: true
+            isSelectable: true,
           };
           childrenNodes.push(soNode);
         }
@@ -194,12 +235,12 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
       )
-      .then(http => {
+      .then((http) => {
         let nodeList = [];
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")"
+            label: so.name + " (" + so.typeLabel + ")",
           });
         }
         http.response.result = nodeList;
@@ -210,12 +251,12 @@ export default class ExperimentScientificObjects extends Vue {
   getParentsByURI(soURIs) {
     return this.soService
       .getScientificObjectsListByUris(this.uri, soURIs)
-      .then(http => {
+      .then((http) => {
         let nodeList = [];
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")"
+            label: so.name + " (" + so.typeLabel + ")",
           });
         }
         return nodeList;
@@ -226,13 +267,13 @@ export default class ExperimentScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri
+        experimentURI: this.uri,
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.soService
       .getScientificObjectDetail(this.uri, node.data.uri)
-      .then(http => {
+      .then((http) => {
         let form: any = http.response.result;
 
         this.parentURI = form.parent;
@@ -245,7 +286,7 @@ export default class ExperimentScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri
+        experimentURI: this.uri,
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
@@ -268,7 +309,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetails(nodeUri: any) {
-    this.soService.getScientificObjectDetail(this.uri, nodeUri).then(http => {
+    this.soService.getScientificObjectDetail(this.uri, nodeUri).then((http) => {
       this.selected = http.response.result;
     });
   }
@@ -276,7 +317,7 @@ export default class ExperimentScientificObjects extends Vue {
   public deleteScientificObject(node: any) {
     this.soService
       .deleteScientificObject(this.uri, node.data.uri)
-      .then(http => {
+      .then((http) => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
@@ -296,7 +337,7 @@ export default class ExperimentScientificObjects extends Vue {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j]
+              value: relation.value[j],
             });
           }
         } else {
@@ -311,9 +352,9 @@ export default class ExperimentScientificObjects extends Vue {
         name: form.name,
         type: form.type,
         experiment: this.uri,
-        relations: definedRelations
+        relations: definedRelations,
       })
-      .then(http => {
+      .then((http) => {
         this.refresh();
       });
   }
@@ -332,7 +373,7 @@ export default class ExperimentScientificObjects extends Vue {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j]
+              value: relation.value[j],
             });
           }
         } else {
@@ -344,7 +385,7 @@ export default class ExperimentScientificObjects extends Vue {
     if (!parentSet && form.parent != null) {
       definedRelations.push({
         property: "vocabulary:isPartOf",
-        value: form.parent
+        value: form.parent,
       });
     }
 
@@ -354,9 +395,9 @@ export default class ExperimentScientificObjects extends Vue {
         name: form.name,
         type: form.type,
         experiment: this.uri,
-        relations: definedRelations
+        relations: definedRelations,
       })
-      .then(http => {
+      .then((http) => {
         this.refresh();
         this.displayScientificObjectDetails(form.uri);
       });
@@ -368,9 +409,9 @@ export default class ExperimentScientificObjects extends Vue {
       {
         description: {
           experiment: this.uri,
-          type: objectType
+          type: objectType,
         },
-        file: csvFile
+        file: csvFile,
       }
     );
   }
@@ -382,12 +423,14 @@ export default class ExperimentScientificObjects extends Vue {
         description: {
           experiment: this.uri,
           type: objectType,
-          validationToken: validationToken
+          validationToken: validationToken,
         },
-        file: csvFile
+        file: csvFile,
       }
     );
   }
+
+  exportCSV(objectType) {}
 }
 </script>
 
@@ -414,6 +457,9 @@ en:
     add-scientific-object-child: Add scientific object child
     parent-label: Parent
     load-more: Load more...
+    export-csv: Export CSV
+    geometry-label: Geometry
+    geometry-comment: Geospacial coordinates
 
 fr:
   ExperimentScientificObjects:
@@ -426,4 +472,7 @@ fr:
     add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
     load-more: Charger plus...
+    export-csv: Exporter en CSV
+    geometry-label: Géometrie
+    geometry-comment: Coordonnées géospatialisées
 </i18n>

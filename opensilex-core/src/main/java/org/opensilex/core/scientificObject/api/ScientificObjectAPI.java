@@ -74,9 +74,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.geojson.GeoJsonObject;
+import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.factor.dal.FactorLevelModel;
@@ -88,7 +90,6 @@ import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  * @author Julien BONNEFONT
@@ -532,9 +533,8 @@ public class ScientificObjectAPI {
                 if (geospacialMap.containsKey(uriString)) {
                     GeospatialModel geoModel = geospacialMap.get(uriString);
                     try {
-                        GeoJsonObject geoJson = GeospatialDAO.geometryToGeoJson(geoModel.getGeometry());
-                        return ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geoJson);
-                    } catch (JsonProcessingException ex) {
+                        return GeospatialDAO.geometryToWkt(geoModel.getGeometry());
+                    } catch (JsonProcessingException | ParseException ex) {
                         return null;
                     }
                 } else {
@@ -545,10 +545,12 @@ public class ScientificObjectAPI {
             }
         };
         File csvFile = ontologyDAO.exportCSV(experimentURI, rdfType, new URI(Oeso.ScientificObject.getURI()), objects, currentUser, customValueGenerator, customColumns);
-//        dao.
+
         byte[] csvContent = FileUtils.readFileToByteArray(csvFile);
+        
+        String csvName = "scientific-object-export.csv";
         return Response.ok(csvContent, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachement; filename=\"" + csvFile.getName() + "\"")
+                .header("Content-Disposition", "attachement; filename=\"" + csvName + "\"")
                 .build();
     }
 
@@ -662,13 +664,12 @@ public class ScientificObjectAPI {
 
         Map<Integer, Geometry> geometries = new HashMap<>();
         customValidators.put(GEOMETRY_COLUMN_ID, (cell, csvErrors) -> {
-            String jsonGeometry = cell.getValue();
-            if (jsonGeometry != null && !jsonGeometry.isEmpty()) {
+            String wktGeometry = cell.getValue();
+            if (wktGeometry != null && !wktGeometry.isEmpty()) {
                 try {
-                    GeoJsonObject geoJson = ObjectMapperContextResolver.getObjectMapper().readValue(jsonGeometry, GeoJsonObject.class);
-                    Geometry geometry = GeospatialDAO.geoJsonToGeometry(geoJson);
+                    Geometry geometry = GeospatialDAO.wktToGeometry(wktGeometry);
                     geometries.put(cell.getRowIndex(), geometry);
-                } catch (JsonProcessingException ex) {
+                } catch (JsonProcessingException | ParseException ex) {
                     csvErrors.addInvalidURIError(cell);
                 }
             }

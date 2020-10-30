@@ -60,6 +60,7 @@
         <hibernate.validator.version>6.1.6.Final</hibernate.validator.version>
         <jackson.version>2.11.3</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
+        <jts.version>1.17.1</jts.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
         <swagger.jersey2.jaxrs.version>1.6.2</swagger.jersey2.jaxrs.version>
         <commons.jcs.cache.version>2.2.1</commons.jcs.cache.version>
@@ -403,6 +404,19 @@
             <artifactId>geojson-jackson</artifactId>
             <version>${geojson.jackson.version}</version>
         </dependency>
+        
+        <!-- WKT Support -->
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>${jts.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts.io</groupId>
+            <artifactId>jts-io-common</artifactId>
+            <version>${jts.version}</version>
+        </dependency>
+
         
         <!--Servlet API v4 provided by Tomcat--> 
         <dependency>

@@ -721,6 +721,27 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <rdfs:label xml:lang="en">Administrative Document</rdfs:label>
+        <rdfs:label xml:lang="fr">Document Administratif</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Dataset -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Dataset">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
+        <dc:source>http://purl.org/dc/dcmitype/Dataset</dc:source>
+        <rdfs:label xml:lang="en">DataSet</rdfs:label>
+        <rdfs:label xml:lang="fr">Jeu de données</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
@@ -842,10 +863,31 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#InteractiveResource -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InteractiveResource">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <dc:source>http://purl.org/dc/dcmitype/InteractiveResource</dc:source>
+        <rdfs:label xml:lang="en">Interactive Resource</rdfs:label>
+        <rdfs:label xml:lang="fr">Ressource interactive</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Multimedia -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Multimedia">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <rdfs:label xml:lang="en">Multimedia</rdfs:label>
+        <rdfs:label xml:lang="fr">Multimédia</rdfs:label>
     </owl:Class>
     
 
@@ -872,6 +914,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Publication -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Publication">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
+        <rdfs:label xml:lang="en">Publication</rdfs:label>
+        <rdfs:label xml:lang="fr">Publication</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Quality -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Quality">
@@ -880,10 +932,30 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Report -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Report">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
+        <rdfs:label xml:lang="fr">Rapport de stage</rdfs:label>
+        <rdfs:label xml:lang="en">Report</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScientificDocument -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificDocument">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
+        <rdfs:label xml:lang="fr">Document Scientifique</rdfs:label>
+        <rdfs:label xml:lang="en">Scientific Document</rdfs:label>
     </owl:Class>
     
 
@@ -951,6 +1023,16 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#TechnicalDocument -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
+        <rdfs:label xml:lang="fr">Document Technique</rdfs:label>
+        <rdfs:label xml:lang="en">Technical Document</rdfs:label>
     </owl:Class>
     
 
@@ -1560,8 +1642,8 @@
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
+        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:comment xml:lang="en">An account of the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Description</rdfs:label>
@@ -1570,8 +1652,8 @@
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/source">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#source-006"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
+        <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -1581,8 +1663,8 @@
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Title</rdfs:label>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#title-006"/>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
     </rdf:Description>
@@ -1591,8 +1673,8 @@
         <rdfs:label xml:lang="en">Accession</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Document">
-        <rdfs:label xml:lang="fr">document</rdfs:label>
-        <rdfs:label xml:lang="en">document</rdfs:label>
+        <rdfs:label xml:lang="fr">Document</rdfs:label>
+        <rdfs:label xml:lang="en">Document</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable">
         <rdfs:label xml:lang="fr">variable élaborée</rdfs:label>
@@ -1711,4 +1793,3 @@
 
 
 <!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
-

@@ -89,6 +89,14 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         opensilex = OpenSilex.createInstance(args);
     }
 
+    
+    // Variables defined to have a single test server start/stop per test class execution instead of per method
+    // See: https://github.com/eclipse-ee4j/jersey/issues/4606
+    
+    private static TestContainerFactory testContainerFactory;
+    private static TestContainer globalTestContainer = null;
+    private static Client globalClient = null;
+    
     @AfterClass
     public static void stopOpenSilex() throws Exception {
         try {
@@ -102,9 +110,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         globalClient = null;
         opensilex.shutdown();
     }
-
-    private static TestContainer globalTestContainer = null;
-    private static Client globalClient = null;
 
     @Before
     public void setUp() throws Exception {
@@ -124,10 +129,6 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         }
     }
     
-    
-
-    private static TestContainerFactory testContainerFactory;
-
     @Override
     protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
         if (testContainerFactory == null) {
@@ -150,7 +151,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
 
     @After
     public void tearDown() throws Exception {
-        // DO NOTHING
+        // DISABLE PARENT BEHAVIOR TO PREVENT SERVER STOP - IMPORTANT - DO NOT REMOVE
     }
 
     @Override

@@ -123,12 +123,12 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PermanentPlot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:comment>A community of plants located on a defined area of a field.</rdfs:comment>
-        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
-        <rdfs:label xml:lang="en">plot</rdfs:label>
+        <rdfs:comment xml:lang="en">Permanent or semi-permanent plot</rdfs:comment>
+        <rdfs:comment xml:lang="en">Parcelle permanente ou semi-permanente</rdfs:comment>
+        <rdfs:label xml:lang="fr">Parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">Plot</rdfs:label>
     </owl:Class>
     
     
@@ -1969,7 +1969,12 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:comment>A community of plants located on a defined area of a field.</rdfs:comment>
+        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">plot</rdfs:label>
+    </owl:Class>
     
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
 

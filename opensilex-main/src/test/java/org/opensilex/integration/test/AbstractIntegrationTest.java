@@ -28,8 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
+import org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainer;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,7 +58,7 @@ import org.slf4j.LoggerFactory;
  *
  * Abstract class used for API testing
  */
-public abstract class AbstractIntegrationTest extends CustomJerseyTest {
+public abstract class AbstractIntegrationTest extends JerseyTest {
 
     protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractIntegrationTest.class);
 
@@ -103,13 +108,42 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
 
     @Before
     public void setUp() throws Exception {
-        if (globalTestContainer == null) {
-            super.setUp();
-            globalTestContainer = this.getTestContainer();
+        super.setUp();
+        if (globalClient == null) {
             globalClient = this.getClient();
+        }
+
+    }
+
+    @Override
+    protected Client getClient() {
+        if (globalClient == null) {
+            return super.getClient();
         } else {
-            this.setTestContainer(globalTestContainer);
-            this.setClient(globalClient);
+            return globalClient;
+        }
+    }
+    
+    
+
+    private static TestContainerFactory testContainerFactory;
+
+    @Override
+    protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
+        if (testContainerFactory == null) {
+            testContainerFactory = new CustomTestContainerFactory();
+        }
+        return testContainerFactory;
+    }
+
+    private class CustomTestContainerFactory extends GrizzlyTestContainerFactory {
+
+        @Override
+        public TestContainer create(URI baseUri, DeploymentContext context) {
+            if (globalTestContainer == null) {
+                globalTestContainer = super.create(baseUri, context);
+            }
+            return globalTestContainer;
         }
 
     }
@@ -270,8 +304,7 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a
-     * {@link ObjectUriResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link ObjectUriResponse}
      *
      * @param response the Response on which we want to extract URI
      * @return the URI extracted from the given Response
@@ -285,8 +318,7 @@ public abstract class AbstractIntegrationTest extends CustomJerseyTest {
     }
 
     /**
-     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a
-     * {@link PaginatedListResponse}
+     * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
      *
      * @param response the Response on which we want to extract an URI List
      * @return the List of URI extracted from the given Response

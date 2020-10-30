@@ -275,6 +275,13 @@ extend("dateDiff", {
     "The difference between date"
 });
 
+import { parse } from "wkt";
+extend("wkt", {
+  validate: (value) => {
+    return parse(value) != null;
+  }
+});
+
 
 let validationTranslations = {
   "validations": validationMessagesEN.messages

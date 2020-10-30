@@ -14,6 +14,9 @@
       <!-- Type -->
       <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
 
+      <!-- Type -->
+      <opensilex-GeometryView v-if="selected.geometry" label="component.common.geometry" :value="selected.geometry"></opensilex-GeometryView>
+
       <div v-for="(v, index) in typeProperties" v-bind:key="index">
         <div class="static-field">
           <span class="field-view-title">{{v.definition.name}}:</span>

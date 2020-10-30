@@ -89,6 +89,7 @@ public class GeospatialDAO {
         final WKTReader reader = new WKTReader();
         org.locationtech.jts.geom.Geometry geom = reader.read(wktString);
         final GeoJsonWriter writer = new GeoJsonWriter();
+        writer.setEncodeCRS(false);
         String geoJSON = writer.write(geom);
         return geoJsonToGeometry(ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class));
     }

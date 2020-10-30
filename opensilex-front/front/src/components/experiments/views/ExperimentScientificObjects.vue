@@ -27,11 +27,11 @@
               :customColumns="customColumns"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
+            <!-- &nbsp;
             <opensilex-CreateButton
               @click="exportCSV()"
               label="ExperimentScientificObjects.export-csv"
-            ></opensilex-CreateButton
-            >&nbsp;
+            ></opensilex-CreateButton> -->
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -108,7 +108,11 @@
                 :itemLoadingMethod="getParentsByURI"
               ></opensilex-SelectForm>
 
-              <!-- TODO add geometry input -->
+              <opensilex-GeometryForm
+                :value.sync="form.geometry"
+                label="component.common.geometry"
+                helpMessage="component.common.geometry-help"
+              ></opensilex-GeometryForm>
             </template>
           </opensilex-ModalForm>
         </b-card>
@@ -351,6 +355,7 @@ export default class ExperimentScientificObjects extends Vue {
         uri: form.uri,
         name: form.name,
         type: form.type,
+        geometry: form.geometry,
         experiment: this.uri,
         relations: definedRelations,
       })
@@ -394,6 +399,7 @@ export default class ExperimentScientificObjects extends Vue {
         uri: form.uri,
         name: form.name,
         type: form.type,
+        geometry: form.geometry,
         experiment: this.uri,
         relations: definedRelations,
       })

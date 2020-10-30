@@ -12,11 +12,13 @@ import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongoCmdOptionsBuilder;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.MongoCmdOptions;
+import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.await;
 import org.bson.Document;
@@ -37,9 +39,11 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     public static void initMongo() throws IOException {
         MongodStarter runtime = MongodStarter.getDefaultInstance();
         int nodePort = 28018;
-        mongoExec = runtime.prepare(new MongodConfigBuilder().version(Version.Main.V4_0)
-                .withLaunchArgument("--replSet", "rs0")
-                .cmdOptions(new MongoCmdOptionsBuilder().useNoJournal(false).build())
+        Map<String, String> args = new HashMap<>();
+        args.put("--replSet", "rs0");
+        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
+                .args(args)
+                .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
                 .net(new Net("127.0.0.1", nodePort, false)).build());
         mongod = mongoExec.start();
 

@@ -46,6 +46,8 @@
             "species":"Espèces",
             "period":"Période",
             "year":"Année",
+            "geometry": "Geometrie",
+            "geometry-help": "Coordonnées géospatiales au format WKT",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -560,7 +562,8 @@
         "url": "Le champ {_field_} doit être une URL valide",
         "required_if": "Le champ {_field_} est obligatoire",
         "emailOrUrl": "Le champ {_field_} doit être une URL ou une adresse email valide",
-        "decimal": "Le champ {_field_} doit contenir une valeur décimale"
+        "decimal": "Le champ {_field_} doit contenir une valeur décimale",
+        "wkt": "Le champ {_field_} doit être au format WKT"
     },
     "datatypes": {
         "boolean": "booléen",

@@ -141,6 +141,8 @@ import IconForm from './common/forms/IconForm.vue'
 components["opensilex-IconForm"] = IconForm;
 import DateTimeForm from './common/forms/DateTimeForm.vue'
 components["opensilex-DateTimeForm"] = DateTimeForm;
+import GeometryForm from './common/forms/GeometryForm.vue'
+components["opensilex-GeometryForm"] = GeometryForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
@@ -171,7 +173,8 @@ import BooleanView from './common/views/BooleanView.vue'
 components["opensilex-BooleanView"] = BooleanView;
 import IconView from './common/views/IconView.vue'
 components["opensilex-IconView"] = IconView;
-
+import GeometryView from './common/views/GeometryView.vue'
+components["opensilex-GeometryView"] = GeometryView;
 
 import UriView from './common/views/UriView.vue'
 components["opensilex-UriView"] = UriView;

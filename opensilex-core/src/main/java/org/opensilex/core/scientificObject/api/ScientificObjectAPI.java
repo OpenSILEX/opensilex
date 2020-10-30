@@ -466,7 +466,7 @@ public class ScientificObjectAPI {
 
                     List<GeospatialModel> geospacialModels = new ArrayList<>();
                     geometries.forEach((rowIndex, geometry) -> {
-                        SPARQLResourceModel object = objects.get(rowIndex);
+                        SPARQLResourceModel object = objects.get(rowIndex - 1);
                         GeospatialModel geospatialModel = new GeospatialModel();
                         geospatialModel.setUri(object.getUri());
                         geospatialModel.setType(object.getType());
@@ -480,9 +480,8 @@ public class ScientificObjectAPI {
                     session.commitTransaction();
 
                 } catch (Exception ex) {
-                    sparql.rollbackTransaction();
                     session.abortTransaction();
-                    throw ex;
+                    sparql.rollbackTransaction(ex);
                 } finally {
                     mongoClient.close();
                 }
@@ -670,7 +669,7 @@ public class ScientificObjectAPI {
                     Geometry geometry = GeospatialDAO.wktToGeometry(wktGeometry);
                     geometries.put(cell.getRowIndex(), geometry);
                 } catch (JsonProcessingException | ParseException ex) {
-                    csvErrors.addInvalidURIError(cell);
+                    csvErrors.addInvalidValueError(cell);
                 }
             }
         });

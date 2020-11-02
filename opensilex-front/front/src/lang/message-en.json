@@ -589,13 +589,6 @@
                     "variable": " Add a variable"
                 }
             }
-        },
-        "geometry": {
-            "label": "Geometry",
-            "add-button": "Input annotation",
-            "add": "Create metadata",
-            "update": "Update metadata",
-            "uri": "Geometry URI"
         }
     },
     "credential-groups": {

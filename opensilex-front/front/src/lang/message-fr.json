@@ -496,13 +496,6 @@
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
-        },
-        "geometry": {
-            "label": "Géométrie",
-            "add-button": "Saisir une géometrie",
-            "add": "Créer une annotation",
-            "update": "Mettre à jour annotation",
-            "uri": "URI de Géométrie"
         }
     },
     "credential-groups": {

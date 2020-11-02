@@ -69,7 +69,7 @@ export default class GermplasmCreate extends Vue {
   $store: any;
   germplasmTypes: any = [];
   selectedType: string = null;
-  tabulatorRefresh = 0;;
+  tabulatorRefresh = 0;
 
   @Ref("helpModal") readonly helpModal!: any;
   @Ref("germplasmTable") readonly germplasmTable!: any;

@@ -126,7 +126,6 @@ export default class GeometryView extends Vue {
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
     this.loadNameExperiment();
-    console.log("Loading form view...");
 
     this.service = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
@@ -231,9 +230,19 @@ Vue.use(VueLayers, {
 });
 </script>
 
-<!--<i18n>-->
-<!--    en:-->
-<!--    GeometryView:-->
-<!--    fr:-->
-<!--    GeometryView:-->
-<!--</i18n>-->
+<i18n>
+    en:
+     MapView:
+      label: Geometry
+      add-button: Input annotation
+      add: Create metadata
+      update: Update metadata
+      uri: Geometry URI
+    fr:
+     MapView:
+      label: Géométrie
+      add-button: Saisir une géometrie
+      add: Créer une annotation
+      update: Mettre à jour annotation
+      uri: URI de Géométrie
+</i18n>

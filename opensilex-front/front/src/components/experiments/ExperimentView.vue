@@ -33,7 +33,7 @@
         <opensilex-ExperimentDetail v-if="isDetailsTab()" :uri="uri"></opensilex-ExperimentDetail>
         <opensilex-ExperimentScientificObjects v-else-if="isScientificObjectsTab()" :uri="uri"></opensilex-ExperimentScientificObjects>
         <opensilex-ExperimentData v-else-if="isDataTab()" :uri="uri"></opensilex-ExperimentData>
-        <opensilex-GeometryView :uri="uri" v-else-if="isMap()"></opensilex-GeometryView>
+        <opensilex-MapView :uri="uri" v-else-if="isMap()"></opensilex-MapView>
       </template>
     </opensilex-PageContent>
   </div>

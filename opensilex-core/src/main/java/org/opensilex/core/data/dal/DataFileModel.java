@@ -7,14 +7,10 @@
 package org.opensilex.core.data.dal;
 
 import java.net.URI;
-import java.time.ZonedDateTime;
-import java.util.List;
 import javax.jdo.annotations.Index;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.query.BooleanExpression;
-import org.opensilex.core.provenance.dal.QProvenanceModel;
-import org.opensilex.nosql.model.NoSQLModel;
 
 /**
  * DataFileModel

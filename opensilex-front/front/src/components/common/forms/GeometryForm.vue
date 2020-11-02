@@ -11,7 +11,6 @@
         :id="field.id"
         :value="stringValue"
         @update="updateValue($event)"
-        @change="change"
         :disabled="disabled"
         type="text"
         :required="isRequired"

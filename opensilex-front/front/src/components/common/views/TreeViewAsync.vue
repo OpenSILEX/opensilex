@@ -1,5 +1,10 @@
 <template>
-  <sl-vue-tree ref="asyncTree" v-model="nodeList" @select="selectItem" @toggle="toggle">
+  <sl-vue-tree
+    ref="asyncTree"
+    v-model="nodeList"
+    @select="selectItem"
+    @toggle="toggle"
+  >
     <template slot="toggle" slot-scope="{ node }">
       <span class="toggle-icon" v-if="!node.isLeaf">
         <opensilex-Icon v-if="node.isExpanded" icon="fa#chevron-down" />
@@ -20,21 +25,31 @@
 
         <span
           class="async-tree-action"
-          v-if="node.children.length > 0 && node.data.childCount > 0  && node.data.childCount > node.children.length"
+          v-if="
+            node.children.length > 0 &&
+            node.data.childCount > 0 &&
+            node.data.childCount > node.children.length
+          "
         >
-          ({{node.data.typeLabel}} - {{node.children.length}}/{{node.data.childCount}}
+          ({{ node.data.typeLabel }} - {{ node.children.length }}/{{
+            node.data.childCount
+          }}
           <span>
             -
-            <a href="#" @click.prevent="loadMoreChildren(node)">{{$t('TreeViewAsync.load-more')}}</a>
-          </span>)
+            <a href="#" @click.prevent="loadMoreChildren(node)">{{
+              $t("TreeViewAsync.load-more")
+            }}</a> </span
+          >)
         </span>
-        <span class="async-tree-action" v-else>&nbsp;({{node.data.typeLabel}})</span>
+        <span class="async-tree-action" v-else
+          >&nbsp;({{ node.data.typeLabel }})</span
+        >
 
         <b-button-group v-if="!noButtons" class="tree-button-group" size="sm">
           <slot name="buttons" v-bind:node="node"></slot>
         </b-button-group>
       </span>
-      <span ref="load" v-else>{{$t('TreeViewAsync.loading-more')}}</span>
+      <span ref="load" v-else>{{ $t("TreeViewAsync.loading-more") }}</span>
     </template>
   </sl-vue-tree>
 </template>
@@ -54,12 +69,12 @@ export default class TreeViewAsync extends Vue {
   noButtons: boolean;
 
   @Prop({
-    default: () => []
+    default: () => [],
   })
   searchMethod: Function;
 
   @Prop({
-    default: 10
+    default: 10,
   })
   pageSize: number;
 
@@ -80,15 +95,15 @@ export default class TreeViewAsync extends Vue {
 
   mounted() {
     let self = this;
-    this.observer = new IntersectionObserver(function([
-      { isIntersecting, target }
+    this.observer = new IntersectionObserver(function ([
+      { isIntersecting, target },
     ]) {
       let t: any = target;
       if (isIntersecting) {
         const ul = t.offsetParent;
         const scrollTop = t.offsetParent.scrollTop;
         self.page = self.page + 1;
-        self.searchMethod(undefined, self.page, self.pageSize).then(http => {
+        self.searchMethod(undefined, self.page, self.pageSize).then((http) => {
           self.nodeList.pop();
           self.updateTreeNodes(http);
           self.$nextTick().then(() => {
@@ -117,7 +132,7 @@ export default class TreeViewAsync extends Vue {
   }
 
   refresh() {
-    this.searchMethod(undefined, 0, this.pageSize).then(http => {
+    this.searchMethod(undefined, 0, this.pageSize).then((http) => {
       this.nodeList = [];
       this.updateTreeNodes(http);
     });
@@ -129,12 +144,12 @@ export default class TreeViewAsync extends Vue {
       let soNode = {
         title: soDTO.name,
         data: soDTO,
-        isLeaf: soDTO.childCount == 0,
+        isLeaf: soDTO.childCount == null || soDTO.childCount == 0,
         children: [],
         isExpanded: false,
         isSelected: false,
         isDraggable: false,
-        isSelectable: true
+        isSelectable: true,
       };
       this.nodeList.push(soNode);
     }
@@ -149,7 +164,7 @@ export default class TreeViewAsync extends Vue {
         isExpanded: false,
         isSelected: false,
         isDraggable: false,
-        isSelectable: false
+        isSelectable: false,
       });
     }
   }
@@ -164,7 +179,7 @@ export default class TreeViewAsync extends Vue {
 
     if (root.children.length < node.data.childCount) {
       let page = Math.round(root.children.length / this.pageSize);
-      this.searchMethod(nodeURI, page, this.pageSize).then(http => {
+      this.searchMethod(nodeURI, page, this.pageSize).then((http) => {
         let childrenNodes = [];
         for (let i in http.response.result) {
           let soDTO = http.response.result[i];
@@ -177,7 +192,7 @@ export default class TreeViewAsync extends Vue {
             isExpanded: false,
             isSelected: false,
             isDraggable: false,
-            isSelectable: true
+            isSelectable: true,
           };
           childrenNodes.push(soNode);
         }

@@ -194,7 +194,7 @@ public class GeospatialDAO {
         return mapGeo;
     }
 
-    public HashMap<String, Geometry> getGeometryByExperiment(URI experimentURI) {
+    public HashMap<String, Geometry> getGeometryByGraph(URI experimentURI) {
         if (experimentURI != null) {
             FindIterable<GeospatialModel> modelList = geometryCollection.find(new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI)));
 

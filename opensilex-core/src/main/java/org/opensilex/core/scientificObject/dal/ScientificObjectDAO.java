@@ -6,21 +6,17 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -42,12 +38,9 @@ public class ScientificObjectDAO {
     public ScientificObjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
-
-    public List<ScientificObjectModel> searchByURIs(URI experimentURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(experimentURI, currentUser);
-
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+    
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
+        Node experimentGraph = SPARQLDeserializers.nodeURI(contextURI);
 
         List<URI> uniqueObjectsUri = objectsURI.stream()
                 .distinct()
@@ -55,11 +48,8 @@ public class ScientificObjectDAO {
         return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
     }
 
-    public ListWithPagination<ScientificObjectModel> searchChildrenByExperiment(URI experimentURI, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(experimentURI, currentUser);
-
-        Node experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
+    public ListWithPagination<ScientificObjectModel> searchChildrenByContext(URI contextURI, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+        Node experimentGraph = SPARQLDeserializers.nodeURI(contextURI);
         return sparql.searchWithPagination(
                 experimentGraph,
                 ScientificObjectModel.class,
@@ -77,34 +67,20 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(URI experimentURI, String pattern, URI rdfType, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
-        Node experimentGraph = null;
+    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, URI rdfType, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+        Node contextURI = null;
         Expr graphFilter = null;
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        if (experimentURI != null) {
-            xpDAO.validateExperimentAccess(experimentURI, currentUser);
-            experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        } else if (!currentUser.isAdmin()) {
-            Set<URI> allowedExperimentURIs = xpDAO.getUserExperiments(currentUser);
-            List<URI> selectedExperimentURIs = allowedExperimentURIs.stream().filter((URI xpURI) -> {
-                if (experimentURI == null) {
-                    return true;
-                }
-                return SPARQLDeserializers.compareURIs(xpURI, experimentURI);
-            }).collect(Collectors.toList());;
-            if (selectedExperimentURIs.size() == 0) {
-                return new ListWithPagination<ScientificObjectModel>(new ArrayList<>());
-            } else if (selectedExperimentURIs.size() == 1) {
-                experimentGraph = SPARQLDeserializers.nodeURI(selectedExperimentURIs.get(0));
-            } else {
-                experimentGraph = makeVar("?__graph");
-                graphFilter = SPARQLQueryHelper.inURIFilter("__graph", selectedExperimentURIs);
-            }
+        
+        if (contextURIs.size() == 1) {
+            contextURI = SPARQLDeserializers.nodeURI(contextURIs.get(0));
+        } else if (contextURIs.size() > 1) {
+            contextURI = makeVar("?__graph");
+            graphFilter = SPARQLQueryHelper.inURIFilter("__graph", contextURIs);
         }
 
         final Expr finalGraphFilter = graphFilter;
         return sparql.searchWithPagination(
-                experimentGraph,
+                contextURI,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
                 (select) -> {
@@ -126,42 +102,16 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public List<ScientificObjectModel> searchAll(URI experimentURI, URI rdfType, URI parentURI, UserModel currentUser) throws Exception {
-        Node experimentGraph = null;
-        Expr graphFilter = null;
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        if (experimentURI != null) {
-            xpDAO.validateExperimentAccess(experimentURI, currentUser);
-            experimentGraph = SPARQLDeserializers.nodeURI(experimentURI);
-        } else if (!currentUser.isAdmin()) {
-            Set<URI> allowedExperimentURIs = xpDAO.getUserExperiments(currentUser);
-            List<URI> selectedExperimentURIs = allowedExperimentURIs.stream().filter((URI xpURI) -> {
-                if (experimentURI == null) {
-                    return true;
-                }
-                return SPARQLDeserializers.compareURIs(xpURI, experimentURI);
-            }).collect(Collectors.toList());;
-            if (selectedExperimentURIs.size() == 0) {
-                return new ArrayList<>();
-            } else if (selectedExperimentURIs.size() == 1) {
-                experimentGraph = SPARQLDeserializers.nodeURI(selectedExperimentURIs.get(0));
-            } else {
-                experimentGraph = makeVar("?__graph");
-                graphFilter = SPARQLQueryHelper.inURIFilter("__graph", selectedExperimentURIs);
-            }
-        }
-
-        final Expr finalGraphFilter = graphFilter;
+    public List<ScientificObjectModel> searchAll(URI contextURI, URI rdfType, URI parentURI, UserModel currentUser) throws Exception {
+        Node context = SPARQLDeserializers.nodeURI(contextURI);
+        
         return sparql.search(
-                experimentGraph,
+                context,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
                 (select) -> {
                     if (rdfType != null) {
                         select.addWhere(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType));
-                    }
-                    if (finalGraphFilter != null) {
-                        select.addFilter(finalGraphFilter);
                     }
                     if (parentURI != null) {
                         select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
@@ -170,34 +120,34 @@ public class ScientificObjectDAO {
         );
     }
 
-    public URI create(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public URI create(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
 
-        SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
+        SPARQLResourceModel object = initObject(contextURI, soType, name, relations, currentUser);
 
         if (objectURI == null) {
-            ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(xpURI);
+            ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(contextURI);
             int retry = 0;
-            objectURI = uriGenerator.generateURI(xpURI.toString(), name, retry);
-            while (sparql.uriExists(SPARQLDeserializers.nodeURI(xpURI), objectURI)) {
+            objectURI = uriGenerator.generateURI(contextURI.toString(), name, retry);
+            while (sparql.uriExists(SPARQLDeserializers.nodeURI(contextURI), objectURI)) {
                 retry++;
-                objectURI = uriGenerator.generateURI(xpURI.toString(), name, retry);
+                objectURI = uriGenerator.generateURI(contextURI.toString(), name, retry);
             }
         }
         object.setUri(objectURI);
 
-        sparql.create(SPARQLDeserializers.nodeURI(xpURI), object);
+        sparql.create(SPARQLDeserializers.nodeURI(contextURI), object);
 
         return object.getUri();
     }
 
-    public URI update(URI xpURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
-        SPARQLResourceModel object = initObject(xpURI, soType, name, relations, currentUser);
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+        SPARQLResourceModel object = initObject(contextURI, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
-        Node xpGraphNode = SPARQLDeserializers.nodeURI(xpURI);
+        Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         List<URI> childrenURIs = sparql.searchURIs(
-                xpGraphNode,
+                graphNode,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
                 (select) -> {
@@ -205,10 +155,10 @@ public class ScientificObjectDAO {
                 });
         try {
             sparql.startTransaction();
-            sparql.deleteByURI(xpGraphNode, objectURI);
-            sparql.create(xpGraphNode, object);
+            sparql.deleteByURI(graphNode, objectURI);
+            sparql.create(graphNode, object);
             if (childrenURIs.size() > 0) {
-                sparql.insertPrimitive(xpGraphNode, childrenURIs, Oeso.isPartOf, objectURI);
+                sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -218,10 +168,7 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
-    private SPARQLResourceModel initObject(URI xpURI, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpURI, currentUser);
-
+    private SPARQLResourceModel initObject(URI contextURI, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ExperimentalObject.getURI()), currentUser.getLanguage());
 
@@ -230,28 +177,22 @@ public class ScientificObjectDAO {
 
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
-                if (!ontologyDAO.validateObjectValue(xpURI, model, relation.getProperty(), relation.getValue(), object)) {
+                if (!ontologyDAO.validateObjectValue(contextURI, model, relation.getProperty(), relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
         }
 
-        object.addRelation(xpURI, new URI(RDFS.label.getURI()), String.class, name);
+        object.addRelation(contextURI, new URI(RDFS.label.getURI()), String.class, name);
 
         return object;
     }
 
-    public ExperimentalObjectModel getByURIAndExperiment(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpURI, currentUser);
-
-        return sparql.getByURI(SPARQLDeserializers.nodeURI(xpURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
+    public ExperimentalObjectModel geObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
     }
 
     public void delete(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpURI, currentUser);
-
         sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
     }
 }

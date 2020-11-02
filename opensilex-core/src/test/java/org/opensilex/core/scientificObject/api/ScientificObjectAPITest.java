@@ -82,7 +82,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         dto.setName("SO " + soCount++);
         dto.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
-        dto.setExperiment(experiment);
+        dto.setContext(experiment);
 
         return dto;
     }

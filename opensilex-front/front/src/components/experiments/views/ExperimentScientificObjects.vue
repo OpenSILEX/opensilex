@@ -1,6 +1,32 @@
 <template>
   <div>
     <div class="row">
+      <div class="col-md-12">
+        <opensilex-SearchFilterField
+          @clear="resetSearch()"
+          @search="refresh()"
+          label="component.factor.list.filter.label"
+        >
+          <template v-slot:filters>
+            <opensilex-FilterField>
+              <b-form-group>
+                <label for="name">{{
+                  $t("component.factor.list.filter.name")
+                }}</label>
+                <opensilex-StringFilter
+                  id="name"
+                  :filter.sync="filters.name"
+                  placeholder="component.factor.name-placeholder"
+                ></opensilex-StringFilter>
+              </b-form-group>
+            </opensilex-FilterField>
+
+
+          </template>
+        </opensilex-SearchFilterField>
+      </div>
+    </div>
+    <div class="row">
       <div class="col-md-6">
         <b-card>
           <div class="button-zone">
@@ -35,7 +61,6 @@
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
-            :nodes.sync="nodes"
             :searchMethod="searchMethod"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
           >
@@ -168,6 +193,10 @@ export default class ExperimentScientificObjects extends Vue {
 
   public nodes = [];
 
+  public filters = {
+    name: "",
+  };
+
   public selected = null;
 
   @Ref("facilitySelector") readonly facilitySelector!: any;
@@ -180,6 +209,18 @@ export default class ExperimentScientificObjects extends Vue {
     );
 
     this.refresh();
+  }
+
+  resetSearch() {
+    this.resetFilters();
+    this.refresh();
+  }
+
+  resetFilters() {
+    this.filters = {
+      name: "",
+    };
+    // Only if search and reset button are use in list
   }
 
   refresh() {
@@ -221,12 +262,56 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   searchMethod(nodeURI, page, pageSize) {
-    return this.soService.getScientificObjectsChildren(
-      this.uri,
-      nodeURI,
-      page,
-      pageSize
-    );
+    if (this.filters.name == "") {
+      return this.soService.getScientificObjectsChildren(
+        this.uri,
+        nodeURI,
+        page,
+        pageSize
+      );
+    } else {
+      return this.soService.searchScientificObjects(
+        this.uri,
+        this.filters.name,
+        undefined,
+        undefined,
+        page,
+        pageSize
+      );
+    }
+  }
+
+  searchScientificObjects() {
+    console.error(this.filters.name);
+    this.soService
+      .searchScientificObjects(
+        this.uri,
+        this.filters.name,
+        undefined,
+        undefined,
+        0,
+        20
+      )
+      .then((http) => {
+        let nodeList = [];
+        for (let soDTO of http.response.result) {
+          let soNode = {
+            title: soDTO.name,
+            data: soDTO,
+            isLeaf: [],
+            children: [],
+            isExpanded: true,
+            isSelected: false,
+            isDraggable: false,
+            isSelectable: true,
+          };
+
+          nodeList.push(soNode);
+        }
+
+        this.nodes = nodeList;
+        this.selected = null;
+      });
   }
 
   searchParents(query, page, pageSize) {
@@ -356,7 +441,7 @@ export default class ExperimentScientificObjects extends Vue {
         name: form.name,
         type: form.type,
         geometry: form.geometry,
-        experiment: this.uri,
+        context: this.uri,
         relations: definedRelations,
       })
       .then((http) => {
@@ -400,7 +485,7 @@ export default class ExperimentScientificObjects extends Vue {
         name: form.name,
         type: form.type,
         geometry: form.geometry,
-        experiment: this.uri,
+        context: this.uri,
         relations: definedRelations,
       })
       .then((http) => {

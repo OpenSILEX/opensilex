@@ -221,7 +221,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         verificationOfCorrectInsertion(geospatial2.getGeometry(), geospatial2.getUri(), type, geospatial2.getGraph());
 
         // returns all the geometries of the experiment, returns a HashMap<String, Geometry>.
-        HashMap<String, Geometry> geometryByUrisWithoutUriExperience = geospatialDAO.getGeometryByExperiment(new URI("test-exp:ZA17"));
+        HashMap<String, Geometry> geometryByUrisWithoutUriExperience = geospatialDAO.getGeometryByGraph(new URI("test-exp:ZA17"));
         TestCase.assertNotNull(geometryByUrisWithoutUriExperience);
     }
 

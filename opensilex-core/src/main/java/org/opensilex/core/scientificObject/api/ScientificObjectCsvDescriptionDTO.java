@@ -13,18 +13,18 @@ import java.net.URI;
  */
 public class ScientificObjectCsvDescriptionDTO {
 
-    private URI experiment;
+    private URI context;
 
     private URI type;
 
     private String validationToken;
-    
-    public URI getExperiment() {
-        return experiment;
+
+    public URI getContext() {
+        return context;
     }
 
-    public void setExperiment(URI experiment) {
-        this.experiment = experiment;
+    public void setContext(URI context) {
+        this.context = context;
     }
 
     public URI getType() {
@@ -42,5 +42,5 @@ public class ScientificObjectCsvDescriptionDTO {
     public void setValidationToken(String validationToken) {
         this.validationToken = validationToken;
     }
-    
+
 }

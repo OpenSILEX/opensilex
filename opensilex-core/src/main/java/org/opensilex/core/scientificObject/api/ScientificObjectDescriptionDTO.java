@@ -19,16 +19,16 @@ import org.opensilex.core.ontology.api.RDFObjectDTO;
  */
 public class ScientificObjectDescriptionDTO extends RDFObjectDTO {
 
-    private URI experiment;
+    private URI context;
 
-    public URI getExperiment() {
-        return experiment;
+    public URI getContext() {
+        return context;
     }
 
-    public void setExperiment(URI experiment) {
-        this.experiment = experiment;
+    public void setContext(URI context) {
+        this.context = context;
     }
-
+    
     private String name;
 
     public String getName() {

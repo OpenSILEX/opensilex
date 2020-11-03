@@ -49,8 +49,8 @@
         "vue-tour": "1.5.0",
         "vuejs-datepicker": "^1.6.2",
         "vuejs-logger": "1.10.2",
-        "vuelayers": "^0.11.26",
         "weekstart": "^1.0.1",
+        "vuelayers": "0.11.28",
         "wkt": "^0.1.1"
     },
     "devDependencies": {

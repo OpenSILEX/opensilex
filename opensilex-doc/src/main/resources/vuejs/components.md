@@ -23,6 +23,7 @@ OpenSilex Vue.JS components
     - [CSV file input](#csv-file-input)
     - [File input form field](#file-input-form-field)
     - [Tags input form field](#tags-input-form-field)
+    - [Datetime input form field](#datetime-input-form-field)
   - [Forms containers](#forms-containers)
     - [Modal form](#modal-form)
     - [Wizard form](#wizard-form)
@@ -501,6 +502,60 @@ variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4
       variant="primary"
    ></opensilex-FileInputForm>
 ```
+
+
+### Datetime input form field 
+
+**Identifier**: opensilex-DateTimeForm
+
+
+**Description**: Component used to display a datetime input field.
+
+Based on vue-datetime component (https://github.com/mariomka/vue-datetime).
+
+**Events:**
+
+ID | Parameter | Description
+--- | --- | ---
+input | - | Event called after input
+close | - | Event called after pickup close
+
+**Properties:**
+
+Inherited properties of [Generic form field](#generic-form-field)
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+value | string | *-* | Input field value (generally used with "sync" flag)
+label | string | *-* | Translation key of the input form label
+helpMessage | string | *-* | Optional translation key for tooltip help message
+disabled | boolean | *false* | Flag to determine if form field is disabled or not
+required | boolean | *false* | Flag to determine if form field is required
+variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/)
+
+Overloaded properties of vue-datetime
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+type | string | datetime | Picker type: date, datetime or time.
+value-zone | string | local | Time zone for the value.
+zone | string | local | Time zone for the picker.
+format | string | dd-MMM-yyyy HH:mm ZZ | Input date format. Luxon presets or tokens. ([Moment formatting with tokens](https://moment.github.io/luxon/docs/manual/formatting.html#formatting-with-tokens--strings-for-cthulhu-))
+
+
+
+
+* In template :
+  
+```html
+   <opensilex-DateTimeForm
+      :value.sync="form.date"
+      label="Form.date"
+      helpMessage="Form.date-help"
+      :required="true"
+   ></opensilex-FileInputForm>
+```
+
 
 ## Forms containers
 

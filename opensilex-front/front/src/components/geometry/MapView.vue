@@ -4,13 +4,13 @@
       <h1>{{ nameExperiment }}</h1>
     </div>
     <div v-if="endReceipt" id="selectionMode">
-      {{ $t('credential.geometry.instruction') }}
+      {{ $t("credential.geometry.instruction") }}
       <vl-map
-          :load-tiles-while-animating="true"
-          :load-tiles-while-interacting="true"
-          data-projection="EPSG:4326"
-          style="height: 400px"
-          @created="mapCreated"
+        :load-tiles-while-animating="true"
+        :load-tiles-while-interacting="true"
+        data-projection="EPSG:4326"
+        style="height: 400px"
+        @created="mapCreated"
       >
         <vl-view ref="mapView" :rotation.sync="rotation"></vl-view>
 
@@ -22,11 +22,11 @@
           <vl-layer-vector>
             <vl-source-vector ref="vectorSource">
               <vl-feature
-                  v-for="feature in features"
-                  :key="feature.id"
-                  :properties="feature.properties"
+                v-for="feature in features"
+                :key="feature.id"
+                :properties="feature.properties"
               >
-                <vl-geom-polygon :coordinates="feature.geometry.coordinates"/>
+                <vl-geom-polygon :coordinates="feature.geometry.coordinates" />
               </vl-feature>
             </vl-source-vector>
           </vl-layer-vector>
@@ -34,19 +34,19 @@
 
         <!-- to make the selection -->
         <vl-interaction-select
-            id="select"
-            ref="selectInteraction"
-            :features.sync="selectedFeatures"
+          id="select"
+          ref="selectInteraction"
+          :features.sync="selectedFeatures"
         />
       </vl-map>
 
       <div id="selectedTable">
         <b-table
-            v-if="selectedFeatures.length !== 0"
-            :fields="fieldsSelected"
-            :items="selectedFeatures"
-            hover
-            striped
+          v-if="selectedFeatures.length !== 0"
+          :fields="fieldsSelected"
+          :items="selectedFeatures"
+          hover
+          striped
         >
         </b-table>
       </div>
@@ -55,21 +55,19 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueLayers from "vuelayers";
-import "vuelayers/lib/style.css"; // needs css-loader
-import {DragBox} from "ol/interaction";
-import {platformModifierKeyOnly} from "ol/events/condition";
+import { DragBox } from "ol/interaction";
+import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 import {
   ExperimentGetDTO,
   ExperimentsService,
   ScientificObjectNodeDTO,
-  ScientificObjectsService
-} from 'opensilex-core/index';
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import HttpResponse, {OpenSilexResponse} from 'opensilex-core/HttpResponse';
+  ScientificObjectsService,
+} from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class GeometryView extends Vue {
@@ -85,18 +83,18 @@ export default class GeometryView extends Vue {
     {
       key: "properties.name",
       label: "name",
-      sortable: true
+      sortable: true,
     },
     {
       key: "properties.uri",
       label: "uri",
-      sortable: true
+      sortable: true,
     },
     {
       key: "properties.type",
       label: "type",
-      sortable: true
-    }
+      sortable: true,
+    },
   ];
   selectedFeatures: any[] = [];
   nodes = [];
@@ -113,13 +111,9 @@ export default class GeometryView extends Vue {
     return this.$store.state.credentials;
   }
 
-  static async asyncInit($opensilex: OpenSilexVuePlugin) {
-    await $opensilex.loadModule("opensilex-core");
-  }
-
   data() {
     return {
-      rotation: 0
+      rotation: 0,
     };
   }
 
@@ -128,19 +122,24 @@ export default class GeometryView extends Vue {
     this.loadNameExperiment();
 
     this.service = this.$opensilex.getService(
-        "opensilex.ScientificObjectsService"
+      "opensilex.ScientificObjectsService"
     );
-    this.service.searchScientificObjectsWithGeometryListByUris(
-        this.$store.state.experiment,
-    ).then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
+    this.service
+      .searchScientificObjectsWithGeometryListByUris(
+        this.$store.state.experiment
+      )
+      .then(
+        (
+          http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>
+        ) => {
           const res = http.response.result as any;
-          res.forEach(element => {
+          res.forEach((element) => {
             if (element.geometry != null) {
               this.featureInsert(
-                  element.uri,
-                  element.geometry,
-                  element.name,
-                  element.type
+                element.uri,
+                element.geometry,
+                element.name,
+                element.type
               );
             }
           });
@@ -148,7 +147,8 @@ export default class GeometryView extends Vue {
             this.definesCenter();
           }
         }
-    ).catch(this.$opensilex.errorHandler);
+      )
+      .catch(this.$opensilex.errorHandler);
     this.endReceipt = true;
   }
 
@@ -183,22 +183,23 @@ export default class GeometryView extends Vue {
       extent[1] -= 50;
       extent[2] += 50;
       extent[3] += 50;
-      this.mapView.$view.fit(extent)
-    }, 1000)
+      this.mapView.$view.fit(extent);
+    }, 1000);
   }
 
   loadNameExperiment() {
     let service: ExperimentsService = this.$opensilex.getService(
-        "opensilex.ExperimentsService"
+      "opensilex.ExperimentsService"
     );
 
-    service.getExperiment(this.$store.state.experiment)
-        .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
-          this.nameExperiment = http.response.result.label;
-        })
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
+    service
+      .getExperiment(this.$store.state.experiment)
+      .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+        this.nameExperiment = http.response.result.label;
+      })
+      .catch((error) => {
+        this.$opensilex.errorHandler(error);
+      });
   }
 
   select(value) {
@@ -219,14 +220,14 @@ export default class GeometryView extends Vue {
         name: name,
         type: type,
       },
-      geometry: geoJsonObject
+      geometry: geoJsonObject,
     });
   }
 }
 
 // all input/output coordinates, GeoJSON features in EPSG:4326 projection
 Vue.use(VueLayers, {
-  dataProjection: "EPSG:4326"
+  dataProjection: "EPSG:4326",
 });
 </script>
 

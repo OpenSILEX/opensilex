@@ -144,6 +144,11 @@ Vue.component('GlobalEvents', GlobalEvents)
 import VuePapaParse from "vue-papa-parse";
 Vue.use(VuePapaParse);
 
+//Initialize Vue Datetime
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
+Vue.component('datetime', Datetime);
+
 import vSelect from "vue-select";
 vSelect.props.components.default = () => ({
   Deselect: {

@@ -22,6 +22,7 @@
         "d3": "6.2.0",
         "icon-kit": "^1.0.0",
         "jwt-decode": "3.0.0",
+        "luxon": "^1.25.0",
         "moment": "^2.24.0",
         "preval.macro": "5.0.0",
         "sass-loader": "10.0.3",
@@ -49,6 +50,7 @@
         "vuejs-datepicker": "^1.6.2",
         "vuejs-logger": "1.10.2",
         "vuelayers": "^0.11.26",
+        "weekstart": "^1.0.1",
         "wkt": "^0.1.1"
     },
     "devDependencies": {

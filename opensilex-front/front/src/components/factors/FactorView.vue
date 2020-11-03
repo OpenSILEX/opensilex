@@ -31,6 +31,7 @@
         <opensilex-FactorDetails
           v-if="isDetailsTab()"
           @onUpdate="loadFactor(uri)"
+          @onDelete="deleteFactor(uri)"
           :factor="factor"
         ></opensilex-FactorDetails>
         <opensilex-AssociatedExperiments
@@ -93,6 +94,9 @@ export default class FactorView extends Vue {
           .then((http: HttpResponse<OpenSilexResponse<any>>) => {
             let uri = http.response.result;
             console.debug("Updated factor", uri);
+            this.$router.push({
+              path: "/factor/details/" + encodeURIComponent(uri),
+            });
           });
       });
     } else {
@@ -101,8 +105,40 @@ export default class FactorView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("Updated factor", uri);
+          this.$router.push({
+            path: "/factor/details/" + encodeURIComponent(uri),
+          });
         });
     }
+  }
+
+  deleteFactor(uri: string) {
+    console.debug("check Associated factor " + uri);
+    let isAssociated = this.$opensilex
+      .getService("opensilex.FactorsService")
+      .getFactorAssciatedExperiments(uri)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        if (http.response.metadata.pagination.totalCount > 0) {
+          this.$opensilex.showErrorToast(
+            this.$i18n.t("component.factor.isAssociatedTo")
+          );
+        } else {
+          console.debug("deleteFactor " + uri);
+          this.service
+            .deleteFactor(uri)
+            .then(() => {
+              let message =
+                this.$i18n.t("component.factor.label") +
+                " " +
+                uri +
+                " " +
+                this.$i18n.t("component.common.success.delete-success-message");
+              this.$opensilex.showSuccessToast(message);
+              this.$router.go(-1);
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
+      });
   }
 
   created() {

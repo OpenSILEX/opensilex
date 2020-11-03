@@ -19,6 +19,14 @@
                 label="component.skos.update"
                 @click="skosReferences.show()"
               ></opensilex-InteroperabilityButton>
+              <opensilex-DeleteButton
+                v-if="
+                  user.hasCredential(credentials.CREDENTIAL_FACTOR_DELETE_ID)
+                "
+                :small="true"
+                label="component.common.list.buttons.delete"
+                @click="$emit('onDelete')"
+              ></opensilex-DeleteButton>
             </div>
           </template>
           <template v-slot:body>

@@ -164,6 +164,15 @@ vSelect.props.components.default = () => ({
 });
 
 Vue.component("v-select", vSelect);
+//Initialize Highcharts & Highstocks
+import HighchartsVue from 'highcharts-vue'
+import Highcharts from 'highcharts'
+import stockInit from 'highcharts/modules/stock'
+import exportingInit from 'highcharts/modules/exporting'
+
+Vue.use(HighchartsVue);
+stockInit(Highcharts);
+exportingInit(Highcharts);
 
 import VueLayers from 'vuelayers'
 // Vue.component("vuelayers", VueLayers);
@@ -431,7 +440,7 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
 
 $opensilex.loadModules([
   "opensilex-security",
-  "opensilex-core",
+  "opensilex-core"
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");

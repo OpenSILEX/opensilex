@@ -131,7 +131,8 @@
             "backToDashboard": "Return to the dashboard",
             "data": {
                 "label": "Data",
-                "images": "Images"
+                "images": "Images",
+                "visualization":"Visualization"
             },
             "experiments": "Experiments",
             "variables": "Variables",
@@ -673,6 +674,7 @@
                     "label": "ik-aperture"
                 },
                 "experiments": "ik-layers",
+                "image": "ik-bar-chart-line",
                 "installations": "ik-globe",
                 "infrastructure": "ik-globe",
                 "projects": "ik-folder",

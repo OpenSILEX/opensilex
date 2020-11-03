@@ -3,11 +3,11 @@
 
     <div class="card">
 
-      <div v-if="isSelectable && tableRef" class="card-header row clearfix">
+      <div v-if="isSelectable && tableRef &&!maximumSelectedRows" class="card-header row clearfix">
         <div class="col col-sm-6">
           <slot name="titleSelectableTable">
-            <h3 class="d-inline mr-1"><opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" /> {{$t(labelNumberOfSelectedRow)}}</h3>                                    
-            <span class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
+             <h3 class="d-inline mr-1"><opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" /> {{$t(labelNumberOfSelectedRow)}}</h3>                                    
+             <span class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
           </slot>
         </div>
         <div class="col col-sm-3">
@@ -15,7 +15,7 @@
         </div>
         <div class="col col-sm-3">
           <slot name="secondActionsSelectableTable"></slot>
-        </div>                               
+        </div>
       </div>
 
       <b-table
@@ -25,6 +25,7 @@
         small
         responsive
         :selectable="isSelectable"
+        :select-mode="selectMode"
         primary-key="uri"
         :busy="isSearching"
         :sort-by.sync="sortBy"
@@ -32,30 +33,31 @@
         :items="loadData"
         :fields="fields"
         sort-icon-left
-        @row-selected="onRowSelected"
+        @row-selected="onRowSelected($event)"
+        @row-clicked="onSelected($event)"	
+
       >
         <template v-for="(field, index) in fields" v-slot:[getHeadTemplateName(field.key)]="data">
           <span v-if="!field.isSelect" :key="index">{{$t(data.label)}}</span>
 
           <label v-else :key="index" class="custom-control custom-checkbox m-0">
-              <input type="checkbox" 
-                  :value="true" 
-                  class="custom-control-input select_all_child"
-                  v-model="selectAll"
-                  @change="onSelectAll()">
-              <span class="custom-control-label">&nbsp;</span>
+            <input
+              v-if="!maximumSelectedRows"
+              type="checkbox"
+              :value="true"
+              class="custom-control-input select_all_child"
+              v-model="selectAll"
+              @change="onSelectAll()"/>
+            <span v-if="!maximumSelectedRows" class="custom-control-label">&nbsp;</span>
           </label>
-
         </template>
 
         <template v-for="(field, index) in fields" v-slot:[getCellTemplateName(field.key)]="data">
-
           <span v-if="!field.isSelect" :key="index">
             <slot :name="getCellTemplateName(field.key)" v-bind:data="data">{{data.item[field.key]}}</slot>
           </span>
 
           <span v-else :key="index" class="checkbox"></span>
-
         </template>
 
         <template v-slot:row-details="data">
@@ -68,11 +70,8 @@
         :per-page="pageSize"
         @change="tableRef.refresh()"
       ></b-pagination>
-
     </div>
-  
   </opensilex-Overlay>
-
 </template>
 
 <script lang="ts">
@@ -85,7 +84,6 @@ export default class TableAsyncView extends Vue {
   $opensilex: any;
   $route: any;
   $store: any;
-
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
@@ -119,13 +117,22 @@ export default class TableAsyncView extends Vue {
   })
   isSelectable;
 
+  @Prop({
+    default: "multi"
+  })
+  selectMode;
+
   @Prop()
   labelNumberOfSelectedRow;
 
   @Prop()
   iconNumberOfSelectedRow;
 
-  numberOfSelectedRows = 0;
+  numberOfSelectedRows;
+  selectedRowIndex;
+
+  @Prop()
+  maximumSelectedRows;
 
   currentPage: number = 1;
   pageSize: number;
@@ -133,14 +140,14 @@ export default class TableAsyncView extends Vue {
   sortBy;
   sortDesc = false;
   isSearching = false;
-  
+
   selectAll = false;
 
   created() {
-    if(this.isSelectable) {
+    if (this.isSelectable) {
       this.fields.unshift({
-          key: "select",
-          isSelect: true
+        key: "select",
+        isSelect: true
       });
     }
 
@@ -176,20 +183,39 @@ export default class TableAsyncView extends Vue {
   }
 
   onSelectAll() {
-    if(this.selectAll) {
+    if (this.selectAll) {
       this.tableRef.selectAllRows();
     } else {
       this.tableRef.clearSelected();
     }
   }
 
-  onRowSelected() {
-    this.numberOfSelectedRows = this.tableRef.selectedRows.filter(value => value).length;
+  onSelected(item){
+    this.numberOfSelectedRows = this.tableRef.selectedRows.filter(value => value).length +1;
+    if( this.numberOfSelectedRows>this.maximumSelectedRows){
+       const idx = this.tableRef.sortedItems.findIndex(it => item == it);
+        if (idx >= 0) {
+           this.selectedRowIndex=idx;
+        }
+    }
+  }
 
-    if(this.numberOfSelectedRows == this.pageSize) {
+  onRowSelected(items) {
+    if (this.numberOfSelectedRows == this.pageSize) {
       this.selectAll = true;
     } else {
       this.selectAll = false;
+    }
+     if (this.maximumSelectedRows&& this.maximumSelectedRows>1&&this.numberOfSelectedRows===this.maximumSelectedRows+1) {
+        this.tableRef.unselectRow(this.selectedRowIndex);
+    }
+    this.$emit("row-selected", this.numberOfSelectedRows);
+  }
+
+  onItemUnselected(item) { 
+    const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    if (idx >= 0) {
+      this.tableRef.unselectRow(idx);
     }
   }
 
@@ -200,8 +226,8 @@ export default class TableAsyncView extends Vue {
 
   getSelected() {
     let results = new Array();
-    for(let i=0; i<this.tableRef.selectedRows.length; i++) {
-      if(this.tableRef.selectedRows[i]) {
+    for (let i = 0; i < this.tableRef.selectedRows.length; i++) {
+      if (this.tableRef.selectedRows[i]) {
         results.push(this.tableRef.sortedItems[i]);
       }
     }
@@ -265,7 +291,6 @@ export default class TableAsyncView extends Vue {
 </script>
 
 <style scoped lang="scss">
-
 table.b-table-selectable tbody tr td span {
   line-height: 24px;
   text-align: center;
@@ -277,9 +302,10 @@ table.b-table-selectable tbody tr td span {
 table.b-table-selectable tbody tr td span.checkbox,
 .custom-control.custom-checkbox {
   top: -4px;
+  line-height: unset;
 }
 
-.modal .custom-control-label:after, 
+.modal .custom-control-label:after,
 .modal .custom-control-label:before {
   left: 0rem;
 }
@@ -290,7 +316,7 @@ table.b-table-selectable tbody tr td span.checkbox,
 
 .modal table.b-table-selectable tbody tr td span.checkbox:after,
 .modal table.b-table-selectable tbody tr td span.checkbox:before {
-  left: .75rem;
+  left: 0.75rem;
   width: 1rem;
   height: 1rem;
   content: "";
@@ -299,7 +325,7 @@ table.b-table-selectable tbody tr td span.checkbox,
 table.b-table-selectable tbody tr td span.checkbox:after,
 table.b-table-selectable tbody tr td span.checkbox:before {
   position: absolute;
-  top: .25rem;
+  top: 0.25rem;
   left: 0;
   display: block;
   width: 1rem;
@@ -324,8 +350,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
   background-image: none;
   content: "\e83f";
   line-height: 16px;
-  font-family: 'iconkit';
+  font-family: "iconkit";
   color: #fff;
 }
-
 </style>

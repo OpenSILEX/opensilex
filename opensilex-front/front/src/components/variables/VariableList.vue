@@ -53,92 +53,116 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import {
-    VariablesService
-} from "opensilex-core/index";
+import { VariablesService } from "opensilex-core/index";
 
 @Component
 export default class VariableList extends Vue {
-    $opensilex: any;
-    $service: VariablesService;
-    $store: any;
-    $route: any;
+  $opensilex: any;
+  $service: VariablesService;
+  $store: any;
+  $route: any;
 
-    get user() {
-        return this.$store.state.user;
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+  @Prop({
+    default: false
+  })
+  isSelectable;
+
+  @Prop({
+    default: false
+  })
+  noActions;
+
+  @Prop()
+  maximumSelectedRows;
+
+  private nameFilter: any = "";
+
+  @Ref("tableRef") readonly tableRef!: any;
+
+  updateFilters() {
+    this.$opensilex.updateURLParameter("name", this.nameFilter, "");
+    this.refresh();
+  }
+
+  resetSearch() {
+    this.nameFilter = "";
+    this.$opensilex.updateURLParameter("name", undefined, undefined);
+    this.refresh();
+  }
+
+  refresh() {
+    this.tableRef.refresh();
+  }
+  getSelected() {
+    return this.tableRef.getSelected();
+  }
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
+  }
+  searchVariables(options) {
+    return this.$service.searchVariables(
+      this.nameFilter,
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
+    );
+  }
+
+  created() {
+    let query: any = this.$route.query;
+    if (query.name) {
+      this.nameFilter = decodeURIComponent(query.name);
     }
-
-    get credentials() {
-        return this.$store.state.credentials;
-    }
-
-    private nameFilter: any = "";
-
-    updateFilters() {
-        this.$opensilex.updateURLParameter("name", this.nameFilter, "");
-        this.refresh();
-    }
-
-    resetSearch() {
-        this.nameFilter = "";
-        this.$opensilex.updateURLParameter("name",undefined,undefined);
-        this.refresh();
-    }
-
-
-    @Ref("tableRef") readonly tableRef!: any;
-
-    refresh() {
-        this.tableRef.refresh();
-    }
-
-    searchVariables(options) {
-        return this.$service.searchVariables(this.nameFilter, options.orderBy, options.currentPage, options.pageSize);
-    }
-
-    created() {
-        let query: any = this.$route.query;
-        if (query.name) {
-            this.nameFilter = decodeURIComponent(query.name);
-        }
-        this.$opensilex.disableLoader();
-        this.$service = this.$opensilex.getService("opensilex.VariablesService");
-    }
-
-    fields = [
-        {
-            key: "name",
-            label: "component.common.name",
-            sortable: true
-        },
-        {
-            key: "_entity_name",
-            label: "VariableView.entity",
-            sortable: true
-        },
-        {
-            key: "_quality_name",
-            label: "VariableView.quality",
-            sortable: true
-        },
-        {
-            key: "_method_name",
-            label: "VariableView.method",
-            sortable: true
-        },
-        {
-            key: "_unit_name",
-            label: "VariableView.unit",
-            sortable: true
-        },
-        {
-            label: "component.common.actions",
-            key: "actions"
-        }
+    this.$opensilex.disableLoader();
+    this.$service = this.$opensilex.getService("opensilex.VariablesService");
+  }
+  get fields() {
+    let tableFields = [
+      {
+        key: "name",
+        label: "component.common.name",
+        sortable: true
+      },
+      {
+        key: "_entity_name",
+        label: "VariableView.entity",
+        sortable: true
+      },
+      {
+        key: "_quality_name",
+        label: "VariableView.quality",
+        sortable: true
+      },
+      {
+        key: "_method_name",
+        label: "VariableView.method",
+        sortable: true
+      },
+      {
+        key: "_unit_name",
+        label: "VariableView.unit",
+        sortable: true
+      }
     ];
+    if (!this.noActions) {
+      tableFields.push({
+        key: "actions",
+        label: "component.common.actions",
+        sortable: false
+      });
+    }
 
+    return tableFields;
+  }
 }
 </script>
 

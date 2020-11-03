@@ -12,15 +12,17 @@
           v-if="isModalSearch"
           class="multiselect-popup"
           :multiple="true"
-          :openOnClick="false"
+          :openOnClick="true"
           :searchable="false"
-          :clearable="clearable"
+          :clearable="false"
           valueFormat="object"
           v-model="selection"
           :placeholder="$t(placeholder)"
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
+          @deselect="searchModal.unSelect($event)"
+          @open="showModal"
         >
           <template v-slot:option-label="{node}">
             <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
@@ -110,6 +112,7 @@
         v-if="isModalSearch"
         :is="modalComponent"
         ref="searchModal"
+        :maximumSelectedRows="maximumSelectedItems"
         @onValidate="updateValues"
       ></component>
     </template>
@@ -117,7 +120,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
+import { Component, Prop, PropSync, Watch,Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
@@ -129,6 +132,8 @@ import AsyncComputedProp from "vue-async-computed-decorator";
 export default class SelectForm extends Vue {
   $opensilex: any;
   currentValue;
+
+  @Ref("searchModal") readonly searchModal!: any;
 
   @PropSync("selected")
   selection;
@@ -228,6 +233,9 @@ export default class SelectForm extends Vue {
     default: false
   })
   searchNested: boolean;
+
+  @Prop()
+  maximumSelectedItems;
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -443,6 +451,7 @@ export default class SelectForm extends Vue {
   }
 
   debounceSearch;
+  
 
   debounce(func, wait, immediate?): Function {
     var timeout;

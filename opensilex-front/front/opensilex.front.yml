@@ -77,9 +77,16 @@ menu:
       #       route:
       #         path: /users
       #         component: opensilex-UserView
+
   - id: data
     label: component.menu.data.label
-#    children:
+    children: 
+      - id: visualization
+        label: component.menu.data.visualization
+        route: 
+          path: /visualization
+          component: opensilex-VisuView
+          credentials: []
 #      - id: images
 #        label: component.menu.data.images
 #        route:

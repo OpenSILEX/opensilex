@@ -130,7 +130,8 @@
             "backToDashboard": "Revenir au tableau de bord",
             "data": {
                 "label": "Données",
-                "images": "Images"
+                "images": "Images",
+                "visualization":"Visualisation"
             },
             "experiments": "Expérimentations",
             "infrastructure": "Organisations",

@@ -391,6 +391,8 @@ import VariableForm from './variables/form/VariableForm.vue';
 components["opensilex-VariableForm"] = VariableForm;
 import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
+import VariableModalList from './variables/VariableModalList.vue';
+components["opensilex-VariableModalList"] = VariableModalList;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -437,6 +439,7 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 
 // PHIS
+//IMAGES
 import ImageList from './phis/images/ImageList.vue';
 components["opensilex-ImageList"] = ImageList;
 import ImageView from './phis/images/ImageView.vue';
@@ -475,5 +478,21 @@ components["opensilex-DocumentDetails"] = DocumentDetails;
 // Map
 import MapView from './geometry/MapView.vue';
 components["opensilex-MapView"] = MapView;
+//VIZUALISATION
+import VisuView from './visualization/VisuView.vue';
+components["opensilex-VisuView"] = VisuView;
+import VisuGraphic from './visualization/VisuGraphic.vue';
+components["opensilex-VisuGraphic"] = VisuGraphic;
+import VisuImages from './visualization/VisuImages.vue';
+components["opensilex-VisuImages"] = VisuImages;
+import VisuForm from './visualization/VisuForm.vue';
+components["opensilex-VisuForm"] = VisuForm;
+import VisuImageGrid from './visualization/VisuImageGrid.vue';
+components["opensilex-VisuImageGrid"] = VisuImageGrid;
+import VisuImageCarousel from './visualization/VisuImageCarousel.vue';
+components["opensilex-VisuImageCarousel"] = VisuImageCarousel;
+import VisuImageSingle from './visualization/VisuImageSingle.vue';
+components["opensilex-VisuImageSingle"] = VisuImageSingle;
+
 
 export default components;

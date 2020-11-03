@@ -25,13 +25,13 @@ public class ResetNodeModules {
     private final static Logger LOGGER = LoggerFactory.getLogger(ResetNodeModules.class);
 
     public static void main(String[] args) throws Exception {
-        start(OpenSilex.getDefaultBaseDirectory());
+        start(OpenSilex.getDefaultBaseDirectory(), false);
     }
 
     private static String nodeBin = "node";
     private static CountDownLatch countDownLatch;
 
-    public static void start(Path baseDirectory) throws Exception {
+    public static void start(Path baseDirectory, boolean reinstall) throws Exception {
 
         if (DevModule.isWindows()) {
             nodeBin += ".exe";
@@ -85,17 +85,19 @@ public class ResetNodeModules {
             }
         }
 
-        LOGGER.debug("Re-install front modules dependencies");
-        countDownLatch = new CountDownLatch(moduleToReinstall.size() + 1);
+        if (reinstall) {
+            LOGGER.debug("Re-install front modules dependencies");
+            countDownLatch = new CountDownLatch(moduleToReinstall.size() + 1);
 
-        createYarnInstallProcess(baseDirectory, baseDirectory.resolve("../"));
+            createYarnInstallProcess(baseDirectory, baseDirectory.resolve("../"));
 
-        for (String modulePath : moduleToReinstall) {
-            Path moduleDirectory = baseDirectory.resolve("../" + modulePath + "/front");
-            createYarnInstallProcess(baseDirectory, moduleDirectory);
+            for (String modulePath : moduleToReinstall) {
+                Path moduleDirectory = baseDirectory.resolve("../" + modulePath + "/front");
+                createYarnInstallProcess(baseDirectory, moduleDirectory);
+            }
+
+            countDownLatch.await();
         }
-
-        countDownLatch.await();
     }
 
     private static void yarnCleanCache(Path baseDirectory) throws IOException, InterruptedException {

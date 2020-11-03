@@ -161,8 +161,11 @@ vSelect.props.components.default = () => ({
 Vue.component("v-select", vSelect);
 
 import VueLayers from 'vuelayers'
-import 'vuelayers/lib/style.css' // needs css-loader
-Vue.component("vuelayers", VueLayers);
+// Vue.component("vuelayers", VueLayers);
+// all input/output coordinates, GeoJSON features in EPSG:4326 projection
+Vue.use(VueLayers, {
+  dataProjection: "EPSG:4326",
+});
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'

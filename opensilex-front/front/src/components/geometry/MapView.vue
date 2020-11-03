@@ -57,26 +57,23 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueLayers from "vuelayers";
 import { DragBox } from "ol/interaction";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 import {
   ExperimentGetDTO,
-  ExperimentsService,
   ScientificObjectNodeDTO,
-  ScientificObjectsService,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
-export default class GeometryView extends Vue {
+export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
   $opensilex: any;
   $store: any;
   el: "map";
-  service: ScientificObjectsService;
+  service: any;
   features: any[] = [];
   arrayPrefix: any[] = [];
   fieldsSelected = [
@@ -188,7 +185,7 @@ export default class GeometryView extends Vue {
   }
 
   loadNameExperiment() {
-    let service: ExperimentsService = this.$opensilex.getService(
+    let service = this.$opensilex.getService(
       "opensilex.ExperimentsService"
     );
 
@@ -225,10 +222,6 @@ export default class GeometryView extends Vue {
   }
 }
 
-// all input/output coordinates, GeoJSON features in EPSG:4326 projection
-Vue.use(VueLayers, {
-  dataProjection: "EPSG:4326",
-});
 </script>
 
 <i18n>

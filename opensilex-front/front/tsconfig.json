@@ -39,6 +39,9 @@
         "node_modules"
     ],
     "files": [
-        "./typings.d.ts"
+        "./typings.d.ts",
+        "../../opensilex-security/front/types/opensilex-security.d.ts",
+        "../../opensilex-core/front/types/opensilex-core.d.ts",
+        "../../opensilex-phis/front/types/opensilex-phis.d.ts"
     ]
 }

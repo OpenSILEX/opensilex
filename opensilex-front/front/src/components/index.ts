@@ -478,6 +478,7 @@ components["opensilex-DocumentDetails"] = DocumentDetails;
 // Map
 import MapView from './geometry/MapView.vue';
 components["opensilex-MapView"] = MapView;
+
 //VIZUALISATION
 import VisuView from './visualization/VisuView.vue';
 components["opensilex-VisuView"] = VisuView;

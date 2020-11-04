@@ -638,7 +638,7 @@ export default class VisuView extends Vue {
 <i18n>
 en:
   VisuView:
-    title: O.S. 's visualization in experimentation.    
+    title: Visualization   
     description: ..
     eventUpdate: Add an event
     annotationUpdate: Add annotation

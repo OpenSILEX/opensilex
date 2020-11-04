@@ -6,14 +6,14 @@
           <div class="card-header">
             <h3 class="mr-3">
               <opensilex-Icon icon="fa#bars" />
-              {{ $t('visuForm.search.title') }}
             </h3>
           </div>
 
           <div class="card-body row">
             <div class="filter-group col col-xl-6 col-sm-6 col-12">
-              <b-form-group id="sciobj-group-1" label="Scientific Objects" label-for="objectSearch">
+              <b-form-group id="sciobj-group-1" :label="$t('visuForm.search.scientificObject.label')" label-for="objectSearch">
                 <b-form-tags
+                  :placeholder="$t('visuForm.search.scientificObject.placeholder')"
                   input-id="tags-limit"
                   v-model="filter.concernedItems"
                   @input="updateScientificObjectsFilter"
@@ -217,6 +217,9 @@ en:
        variable:
           label: Variable (Max=2)
           placeholder: Search for a variable
+       scientificObject:
+          label: Scientific objects (URI)
+          placeholder: Enter scientific objects
        show-images: Show images
        show-events: Show events
        title-images: images
@@ -233,6 +236,9 @@ fr:
        variable:
           label: Variable (Max=2)
           placeholder: Saisir une variable
+       scientificObject:
+          label: Objets scientifiques (URI)
+          placeholder: Saisir des objets scientifiques
        show-images: Afficher les images
        show-events: Afficher les événements
        title-images: images

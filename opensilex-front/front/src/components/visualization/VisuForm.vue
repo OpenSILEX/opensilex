@@ -30,7 +30,7 @@
                   multiple="true"
                 ></opensilex-SelectForm>
               </b-form-group>
-              <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
+               <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
               <!--    <b-form-checkbox v-model="filter.showImages" switch>Images</b-form-checkbox>
               <b-form-checkbox v-model="filter.showEvents" switch>Evénements</b-form-checkbox>-->
             </div>

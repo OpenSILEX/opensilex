@@ -10,7 +10,11 @@ variables:
   # MAVEN CONFIG
   # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
   # when running from the command line.
-  MAVEN_CLI_OPTS: "--batch-mode --show-version "
+  # @see : https://books.sonatype.com/mvnref-book/reference/running-sect-options.html
+  # --batch-mode Run in non-interactive (batch) mode
+  # --show-version : Display version information WITHOUT stopping build
+  # -c : lax checksums
+  MAVEN_CLI_OPTS: "--batch-mode --show-version -c"
   MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   # DEFAULT SERVER MAVEN VERSION
@@ -34,7 +38,7 @@ variables:
   OPENSILEX_START_SERVER_OPTS: "server start --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME --DEBUG -d"
   OPENSILEX_RESET_ONTOLOGIES_OPTS: "sparql reset-ontologies --DEBUG"
   OPENSILEX_CONFIG_SERVER_OPTS: "--CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME"
-  
+
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   #CACHE
@@ -52,11 +56,10 @@ variables:
 # To keep cache across branches add 'key: "$CI_BUILD_JOB_NAME"'
 .cache_dependencies: &cache_dependencies
   cache:
-    key: "${CI_JOB_NAME}"
+    key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
       - $YARN_CACHE_FOLDER
       - $MAVEN_CACHE_FOLDER
-      #      - $NODE_CACHE
       - $EMBDED_MONGO_CACHE
 
 ########################
@@ -226,7 +229,7 @@ trigger:dataanalysis:deploy:test:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:
     - job: "opensilex:build"
-    
+
 # Trigger pipeline for data-analysis module deployment
 trigger:vitioeno:deploy:test:
   stage: deploy

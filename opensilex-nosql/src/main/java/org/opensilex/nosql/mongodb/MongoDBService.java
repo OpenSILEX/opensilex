@@ -12,9 +12,10 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,35 +25,61 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.utils.ListWithPagination;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
-
-    private final MongoDatabase db;
+    private final String dbName;
+    //private final URI baseURI;
     
-    public MongoDBService(MongoDBConfig config) {
+    public MongoDBService(MongoDBConfig config) throws OpenSilexModuleNotFoundException, URISyntaxException {
         super(config);
-        this.db = getMongoDBClient().getDatabase(config.database());
+        dbName = config.database();
+        //baseURI = getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
+    }
+    
+    public URI getBaseURI() throws OpenSilexModuleNotFoundException {
+        return getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
     }
     
     public MongoDBConfig getImplementedConfig() {
         return (MongoDBConfig) this.getConfig();
     }
     
-    public <T> T create(T instance, Class<T> instanceClass, String collectionName) {       
-        MongoCollection<T> collection = this.db.getCollection(collectionName, instanceClass);
-        collection.insertOne(instance);
-        return instance;
+    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
+        try (MongoClient client = getMongoDBClient()) {
+            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+            if (instance.getUri() == null){
+                generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+            }
+            collection.insertOne(instance);
+            client.close();
+        }        
     }
     
-    public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri)  {
-        Document filter = new Document("uri", uri);
-        MongoCollection collection = this.db.getCollection(collectionName, instanceClass);
-        return (T) collection.find(filter).first();
+    public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
+        try (MongoClient client = getMongoDBClient()) {
+            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+            T instance = (T) collection.find(eq("uri", uri)).first();
+            client.close();
+            if (instance == null) {
+                throw new NoSQLInvalidURIException(uri);
+            } else {
+                return instance;
+            }            
+        }
+    }
+    
+    public <T> boolean uriExists(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
+        T instance = findByURI(instanceClass, collectionName, uri);
+        return instance != null;
     }
     
     public <T> ListWithPagination<T> searchWithPagination(
@@ -62,20 +89,51 @@ public class MongoDBService extends BaseService {
             Integer page,
             Integer pageSize) {
         List<T> results = new ArrayList<T>();
-        MongoCollection collection = this.db.getCollection(collectionName, instanceClass);
-        long resultsNumber = collection.countDocuments(filter);
-        int total = (int) resultsNumber;
-        
-        if (total > 0) {
-            FindIterable<T> queryResult = collection.find(filter).skip(page * pageSize).limit(pageSize);
-                    
-            for (T res:queryResult) {
-                results.add(res);
+        try (MongoClient client = getMongoDBClient()) {
+            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+            long resultsNumber = collection.countDocuments(filter);
+            int total = (int) resultsNumber;
+
+            if (total > 0) {
+                FindIterable<T> queryResult = collection.find(filter).skip(page * pageSize).limit(pageSize);
+
+                for (T res:queryResult) {
+                    results.add(res);
+                }
+            }      
+            client.close();
+            return new ListWithPagination(results, page, pageSize, total);
+        }        
+    }
+    
+    public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException  {
+        try (MongoClient client = getMongoDBClient()) {
+            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+            try {
+                T instance = findByURI(instanceClass, collectionName, uri); 
+                if (instance == null) {
+                    throw new NoSQLInvalidURIException(uri);
+                }
+                collection.deleteOne(eq("uri", uri));
+            }  finally {  
+                client.close();
+            }            
+        }
+    }
+    
+    public <T extends MongoModel> void update(T newInstance, Class<T> instanceClass, String collectionName) throws NoSQLInvalidURIException {
+        try (MongoClient client = getMongoDBClient()) {
+            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+            try {
+                T instance = findByURI(instanceClass, collectionName, newInstance.getUri()); 
+                if (instance == null) {
+                    throw new NoSQLInvalidURIException(newInstance.getUri());
+                }
+                collection.findOneAndReplace(eq("uri", newInstance.getUri()), newInstance);
+            }  finally {   
+                client.close();
             }
         }
-        
-        
-        return new ListWithPagination(results, page, pageSize, total);
     }
 //
 //    public void delete(Class cls, Object key) throws NamingException;
@@ -136,5 +194,34 @@ public class MongoDBService extends BaseService {
                 .build();
         return MongoClients.create(clientSettings);
     }
+    
+    /**
+     * Method to generate a valid URI for the instance
+     *
+     * @param instance will be updated by a new generated URI
+     * @param checkUriExist necessary to check if URI already existing
+     * @throws Exception
+     */
+    private <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, String prefix, String collectionName) throws Exception {
+        URI uri = instance.getUri();
+
+        if (uri == null) {
+
+            int retry = 0;
+            String graphPrefix = getBaseURI().resolve(prefix).toString();
+            uri = instance.generateURI(graphPrefix, instance, retry);            
+            while (uriExists(instance.getClass(), collectionName, uri)) {
+                uri = instance.generateURI(graphPrefix, instance, retry++);
+            }
+            instance.setUri(uri);
+            
+       } else if (uriExists(instance.getClass(), collectionName, uri)) {
+            throw new NoSQLAlreadyExistingUriException(uri);
+        }
+    }
+    
+//    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, String prefix, String collectionName) throws Exception {
+//        generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+//    }
     
 }

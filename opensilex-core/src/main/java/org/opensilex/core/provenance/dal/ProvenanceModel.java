@@ -18,16 +18,15 @@ import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * Provenance model
  * @author Alice Boizet
  */
-public class ProvenanceModel {
-//    private final String baseURI = "id/provenance";
-//    private String[] URICompose;
-//    
-    URI uri;    
+public class ProvenanceModel extends MongoModel {
+    
+    //URI uri;    
     String label;
     String comment;
     List<URI> experiments;    
@@ -36,13 +35,13 @@ public class ProvenanceModel {
     
     List<AgentModel> agents;
 
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
+//    public URI getUri() {
+//        return uri;
+//    }
+//
+//    public void setUri(URI uri) {
+//        this.uri = uri;
+//    }
 
     public String getLabel() {
         return label;
@@ -84,11 +83,12 @@ public class ProvenanceModel {
         this.agents = agents;
     }
 
-//    public void setURICompose(String[] elt){
-//        this.URICompose = elt;
-//    }
-//    
-
+    @Override
+    public String[] getUriSegments(MongoModel instance) {
+        return new String[]{
+            this.getLabel()
+        };
+    }
     
     
 }

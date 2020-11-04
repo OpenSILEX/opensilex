@@ -6,26 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
-import com.mongodb.client.MongoCollection;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.jdo.JDOQLTypedQuery;
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
-import javax.jdo.query.BooleanExpression;
 import javax.naming.NamingException;
 import org.bson.Document;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -37,19 +21,20 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class ProvenanceDAO {
     
-   protected final MongoDBService nosql; 
+    public static final String PROVENANCE_COLLECTION_NAME = "provenance";
+    protected final MongoDBService nosql; 
     
     public ProvenanceDAO(MongoDBService nosql) {
         this.nosql = nosql;
     }  
 
-    public ProvenanceModel create(ProvenanceModel provenance) throws NamingException, URISyntaxException, Exception {
-        ProvenanceModel prov = nosql.create(provenance, ProvenanceModel.class, "provenance");
-        return prov;
+    public ProvenanceModel create(ProvenanceModel provenance) throws Exception {
+        nosql.create(provenance, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, "id/provenance");
+        return provenance;
     }
     
-    public ProvenanceModel get(URI uri) throws NamingException, IOException {
-        ProvenanceModel provenance = nosql.findByURI(ProvenanceModel.class, "provenance", uri);
+    public ProvenanceModel get(URI uri) throws NoSQLInvalidURIException {
+        ProvenanceModel provenance = nosql.findByURI(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
         return provenance;
     }
     
@@ -84,12 +69,19 @@ public class ProvenanceDAO {
             filter.put("agents.uri", agentURI);
         }      
         
-        ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, "provenance", filter, page, pageSize);
+        ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, page, pageSize);
         return provenances;        
            
     }
     
+    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
+        nosql.delete(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
+    }
     
+    public ProvenanceModel update(ProvenanceModel model) throws NoSQLInvalidURIException {
+        nosql.update(model, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME);
+        return model;
+    }
 //
 //    public boolean provenanceExists(URI uri) throws NamingException, IOException{  
 //        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
@@ -122,15 +114,6 @@ public class ProvenanceDAO {
 //        URICompose[0] = model.getLabel();
 //        model.setURICompose(URICompose);
 //    }
-//
-//    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
-//        nosql.delete(new ProvenanceModel(), uri);
-//    }
-//
-//    public ProvenanceModel update(ProvenanceModel model) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
-//        nosql.update(model);
-//        return model;
-//    }
-//
+
 
 }

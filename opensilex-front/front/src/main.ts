@@ -180,6 +180,8 @@ import VueLayers from 'vuelayers'
 Vue.use(VueLayers, {
   dataProjection: "EPSG:4326",
 });
+import ToggleButton from 'vue-js-toggle-button'
+Vue.use(ToggleButton);
 
 // Initialize i18n
 import VueI18n from 'vue-i18n'

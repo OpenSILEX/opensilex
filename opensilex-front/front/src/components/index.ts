@@ -482,6 +482,8 @@ components["opensilex-DocumentDetails"] = DocumentDetails;
 // Map
 import MapView from './geometry/MapView.vue';
 components["opensilex-MapView"] = MapView;
+import AreaForm from "./geometry/AreaForm.vue";
+components["opensilex-AreaForm"] = AreaForm;
 
 //VIZUALISATION
 import VisuView from './visualization/VisuView.vue';

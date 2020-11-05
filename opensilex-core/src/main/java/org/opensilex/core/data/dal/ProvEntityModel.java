@@ -8,17 +8,13 @@ package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.PersistenceCapable;
 
 /**
  * Entity model used in "prov:used"
  * @author Alice Boizet
  */
-@PersistenceCapable(embeddedOnly="true")
 public class ProvEntityModel {
     @JsonProperty("rdfType")
-    @Column(name="rdf:type")
     URI type;
     
     URI uri;

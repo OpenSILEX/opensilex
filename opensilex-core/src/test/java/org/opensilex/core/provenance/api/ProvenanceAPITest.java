@@ -17,6 +17,7 @@
 //import javax.ws.rs.client.WebTarget;
 //import javax.ws.rs.core.Response;
 //import static junit.framework.TestCase.assertEquals;
+//import org.bson.Document;
 //import static org.junit.Assert.assertFalse;
 //import static org.junit.Assert.assertNotNull;
 //import org.junit.Test;
@@ -55,7 +56,7 @@
 //        AgentModel agent = new AgentModel();
 //        agent.setType(new URI(Oeso.SensingDevice.toString()));
 //        agent.setUri(new URI("http://opensilex.org/sensor#s001"));
-//        Map settings = new HashMap();
+//        Document settings = new Document();
 //        settings.put("param", "value");
 //        agent.setSettings(settings);
 //        ArrayList agents = new ArrayList();

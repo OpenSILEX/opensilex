@@ -158,7 +158,7 @@ public class ProvenanceAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
-    public Response getProvenance(
+    public Response searchProvenance(
             @ApiParam(value = "label") @QueryParam("label") String label,
             @ApiParam(value = "experiment URI") @QueryParam("experiment URI") URI experiment,
             @ApiParam(value = "activity type") @QueryParam("activity type") URI activityType,

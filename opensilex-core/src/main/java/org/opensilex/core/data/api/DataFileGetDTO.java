@@ -83,15 +83,10 @@ public class DataFileGetDTO {
         DataFileGetDTO dto = new DataFileGetDTO();        
         dto.setUri(model.getUri());
         dto.setRdfType(model.getRdfType());
-        dto.setScientificObjects(model.getObject());
+        dto.setScientificObjects(model.getScientificObjects());
         dto.setDate(model.getDate().toString());        
         dto.setMetadata(model.getMetadata());   
-        
-        DataProvenanceModel provData = new DataProvenanceModel();
-        provData.setUri(model.getProvenanceURI());
-        provData.setSettings(model.getProvenanceSettings());
-        provData.setProvUsed(model.getProvUsed());
-        dto.setProvenance(provData);
+        dto.setProvenance(model.getProvenance());
         
         return dto;
     }

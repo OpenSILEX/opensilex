@@ -8,11 +8,14 @@ package org.opensilex.core.data.api;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import org.bson.Document;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
@@ -43,101 +46,106 @@ public class DataCreationDTO{
     private String date;
     
     @NotNull
-    private Object value;
+    private Double value;
     
     @Min(0)
     @Max(1)
     private Float confidence = null;
     
-    private Map metadata;
-       
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-    
-    public void setObject(List<ProvEntityModel> objects){
-        this.scientificObjects = objects;
-    }
-    
-    public void setVariable(URI variable){
-        this.variable = variable;
-    }
-    
-    public void setProvenance(DataProvenanceModel provenance){
-        this.provenance = provenance;
-    }
-    
-    public void setDate( String date){
-        this.date = date;
-    }
-       
-    public void setValue(Object value){
-        this.value = value;
-    }
-    
-    public void setConfidence(Float c){
-        this.confidence = c;
-    }
-    
+    private Document metadata;
+
     public URI getUri() {
         return uri;
     }
-    
-    public List<ProvEntityModel> getScientificObjects(){
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    public List<ProvEntityModel> getScientificObjects() {
         return scientificObjects;
     }
-    
-    /*public List<URI> getObjectsUri(){
-        List<URI> objectsURI = new ArrayList<>();
-        for(DataScientificObjectModel object:scientificObjects){
-            objectsURI.add(object.getUri());
-        }
-        return objectsURI;
-    }*/
-    
-    public URI getVariable(){
+
+    public void setScientificObjects(List<ProvEntityModel> scientificObjects) {
+        this.scientificObjects = scientificObjects;
+    }
+
+    public URI getVariable() {
         return variable;
     }
-    
-    public DataProvenanceModel getProvenance(){
+
+    public void setVariable(URI variable) {
+        this.variable = variable;
+    }
+
+    public DataProvenanceModel getProvenance() {
         return provenance;
     }
-    
-    public String getDate(){
+
+    public void setProvenance(DataProvenanceModel provenance) {
+        this.provenance = provenance;
+    }
+
+    public String getDate() {
         return date;
     }
-    
-    public Object getValue(){
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public Double getValue() {
         return value;
     }
 
-    public Float getConfidence(){
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    public Float getConfidence() {
         return confidence;
     }
 
-    public Map getMetadata() {
+    public void setConfidence(Float confidence) {
+        this.confidence = confidence;
+    }
+
+    public Document getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Map metadata) {
+    public void setMetadata(Document metadata) {
         this.metadata = metadata;
-    }
-      
+    }       
+
     public DataModel newModel() throws ParseException {
         DataModel model = new DataModel();
 
         model.setUri(getUri());        
-        model.setObject(getScientificObjects());
+        model.setScientificObjects(getScientificObjects());
         model.setVariable(getVariable());
-        model.setProvenanceURI(getProvenance().getUri());
-        model.setProvenanceSettings(getProvenance().getSettings());
-        model.setProvUsed(getProvenance().getProvUsed());
-        model.setDate(getDate());        
+        model.setProvenance(getProvenance());       
         model.setValue(getValue());        
         model.setConfidence(getConfidence());
         model.setMetadata(getMetadata());
         
-        return model;
+        if(getDate() != null){
+            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+            ZonedDateTime zdt = null;
+            for (DateFormat dateCheckFormat : formats) {
+                try { 
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                    zdt = ZonedDateTime.parse(date, dtf);
+                    break;
+                } catch (DateTimeParseException e) {
+                }                    
+            }
+            model.setDate(zdt);
+            model.setTimezone(zdt.getZone().toString());
+        }
         
-    }
+        return model;      
+        
+    }   
+    
 }

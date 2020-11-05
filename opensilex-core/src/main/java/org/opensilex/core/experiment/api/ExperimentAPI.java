@@ -371,28 +371,28 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
-    @GET
-    @Path("get-used-variables/{uri}")
-    @ApiOperation("get all variables related to an experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
-    })
-    public Response getUsedVariables(
-            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
-    ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpUri, currentUser);
-
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, currentUser.getLanguage());
-
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
-
-    }
+//    @GET
+//    @Path("get-used-variables/{uri}")
+//    @ApiOperation("get all variables related to an experiment")
+//    @ApiProtected
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+//    })
+//    public Response getUsedVariables(
+//            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+//    ) throws Exception {
+//        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+//        xpDAO.validateExperimentAccess(xpUri, currentUser);
+//
+//        DataDAOBack dao = new DataDAOBack(nosql, sparql, fs);
+//        List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, currentUser.getLanguage());
+//
+//        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+//        return new PaginatedListResponse<>(dtoList).getResponse();
+//
+//    }
 
     /**
      * Updates the factors linked to an experiment.

@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-import java.net.URI;
 import org.opensilex.core.data.dal.DataModel;
 
 /**

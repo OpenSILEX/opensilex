@@ -6,51 +6,25 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import javax.jdo.annotations.Cacheable;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Element;
-import javax.jdo.annotations.Embedded;
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
+import org.bson.Document;
 
 /**
  * Provenance model used in DataModel
  * @author Alice Boizet
  */
-@PersistenceCapable(embeddedOnly="true")
 public class DataProvenanceModel {
-    @Column(name="provenanceUri")
-    URI provenanceUri;
-    
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="uri", column="uri"),
-        @Persistent(name="type", column="rdf:type")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    @Column(name="prov:used")
-    @JsonProperty("provUsed")
-    @Cacheable("false")
-    List<ProvEntityModel> provUsed;
-    
-    @Column(name="settings")
-    @Persistent(defaultFetchGroup="true")    
-    Map settings; 
+    URI uri;
+    List<ProvEntityModel> provUsed; 
+    Document settings; 
 
     public URI getUri() {
-        return provenanceUri;
+        return uri;
     }
 
     public void setUri(URI uri) {
-        this.provenanceUri = uri;
+        this.uri = uri;
     }
 
     public List<ProvEntityModel> getProvUsed() {
@@ -61,11 +35,11 @@ public class DataProvenanceModel {
         this.provUsed = provUsed;
     }
 
-    public Map getSettings() {
+    public Document getSettings() {
         return settings;
     }
 
-    public void setSettings(Map settings) {
+    public void setSettings(Document settings) {
         this.settings = settings;
     }
     

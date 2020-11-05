@@ -112,18 +112,19 @@ import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import { VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
-export default class VariableView extends Vue {
+export default class VariablesView extends Vue {
 
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin
     $store: any;
     $route: any;
     $router: any;
     service: VariablesService;
 
     elementIndex: number = 0;
-    elementType: string = VariableView.VARIABLE_TYPE;
+    elementType: string = VariablesView.VARIABLE_TYPE;
 
     static VARIABLE_TYPE: string = "Variable";
     static ENTITY_TYPE: string = "Entity";
@@ -132,11 +133,11 @@ export default class VariableView extends Vue {
     static UNIT_TYPE:  string = "Unit";
 
     static elementTypes = [
-        VariableView.VARIABLE_TYPE,
-        VariableView.ENTITY_TYPE,
-        VariableView.QUALITY_TYPE,
-        VariableView.METHOD_TYPE,
-        VariableView.UNIT_TYPE
+        VariablesView.VARIABLE_TYPE,
+        VariablesView.ENTITY_TYPE,
+        VariablesView.QUALITY_TYPE,
+        VariablesView.METHOD_TYPE,
+        VariablesView.UNIT_TYPE
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
@@ -159,24 +160,24 @@ export default class VariableView extends Vue {
         // load variable list by default
         let query: any = this.$route.query;
         if(query && query.elementType){
-            let requestedTypeIdx = VariableView.elementTypes.findIndex(elem => elem == decodeURIComponent(query.elementType));
+            let requestedTypeIdx = VariablesView.elementTypes.findIndex(elem => elem == decodeURIComponent(query.elementType));
             this.updateType(requestedTypeIdx);
         }else{
-            let variableIdx = VariableView.elementTypes.findIndex(elem => elem == VariableView.VARIABLE_TYPE);
+            let variableIdx = VariablesView.elementTypes.findIndex(elem => elem == VariablesView.VARIABLE_TYPE);
             this.updateType(variableIdx);
         }
     }
 
     private updateType(tabIndex) {
 
-        if(tabIndex >= 0 && tabIndex < VariableView.elementTypes.length){
+        if(tabIndex >= 0 && tabIndex < VariablesView.elementTypes.length){
 
             this.elementIndex = tabIndex;
-            this.elementType = VariableView.elementTypes[this.elementIndex];
+            this.elementType = VariablesView.elementTypes[this.elementIndex];
             this.$opensilex.updateURLParameter("elementType",this.elementType);
             this.buttonTitle = "VariableView."+this.getButtonTitleTranslationSubKey();
 
-            if(this.elementType == VariableView.VARIABLE_TYPE){
+            if(this.elementType == VariablesView.VARIABLE_TYPE){
                 this.$opensilex.updateURLParameter("selected","");
                 if (this.variableList) {
                     this.variableList.refresh();
@@ -194,11 +195,11 @@ export default class VariableView extends Vue {
     }
 
     private loadVariableList() : boolean {
-        return this.elementType === VariableView.VARIABLE_TYPE;
+        return this.elementType === VariablesView.VARIABLE_TYPE;
     }
 
     private useGenericDetailsPage() : boolean{
-        return this.elementType != VariableView.UNIT_TYPE;
+        return this.elementType != VariablesView.UNIT_TYPE;
     }
 
     selected = {
@@ -231,19 +232,19 @@ export default class VariableView extends Vue {
 
     private getForm() {
         switch (this.elementType) {
-            case VariableView.VARIABLE_TYPE : {
+            case VariablesView.VARIABLE_TYPE : {
                 return this.variableCreate;
             }
-            case VariableView.ENTITY_TYPE : {
+            case VariablesView.ENTITY_TYPE : {
                 return this.entityForm;
             }
-            case VariableView.QUALITY_TYPE : {
+            case VariablesView.QUALITY_TYPE : {
                 return this.qualityForm;
             }
-            case VariableView.METHOD_TYPE: {
+            case VariablesView.METHOD_TYPE: {
                 return this.methodForm;
             }
-            case VariableView.UNIT_TYPE: {
+            case VariablesView.UNIT_TYPE: {
                 return this.unitForm;
             }
             default : {
@@ -254,19 +255,19 @@ export default class VariableView extends Vue {
 
     private getButtonTitleTranslationSubKey(): string {
         switch (this.elementType) {
-            case VariableView.VARIABLE_TYPE : {
+            case VariablesView.VARIABLE_TYPE : {
                 return "add-variable";
             }
-            case VariableView.ENTITY_TYPE : {
+            case VariablesView.ENTITY_TYPE : {
                 return "add-entity";
             }
-            case VariableView.QUALITY_TYPE : {
+            case VariablesView.QUALITY_TYPE : {
                 return "add-quality";
             }
-            case VariableView.METHOD_TYPE: {
+            case VariablesView.METHOD_TYPE: {
                 return "add-method";
             }
-            case VariableView.UNIT_TYPE: {
+            case VariablesView.UNIT_TYPE: {
                 return "add-unit";
             }
             default : {
@@ -313,7 +314,7 @@ export default class VariableView extends Vue {
 
     showVariableDetails(uri: any) {
         this.$store.commit("storeReturnPage", this.$router);
-        this.$router.push({path: "/variable/" + encodeURIComponent(uri)});
+        this.$router.push({path: "/variable/details/" + encodeURIComponent(uri)});
     }
 
     showVariableReferences(uri: string){
@@ -334,7 +335,8 @@ en:
     VariableView:
         name: The variable
         title: Variables
-        description : Manage and configure variables, entity, quality, method and units
+        type: Variable
+        description : Manage and configure variables, entities, characteristics, methods and units
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
@@ -349,7 +351,8 @@ fr:
     VariableView:
         name: La variable
         title: Variables
-        description : Gérer et configurer les variables, entités, qualités, méthodes et unités
+        type: Variable
+        description : Gérer et configurer les variables, entités, charactéristiques, méthodes et unités
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité

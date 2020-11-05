@@ -375,10 +375,13 @@ components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
-import VariableView from './variables/VariableView.vue';
-components["opensilex-VariableView"] = VariableView;
+import VariablesView from './variables/VariablesView.vue';
+components["opensilex-VariablesView"] = VariablesView;
 import VariableDetails from './variables/VariableDetails.vue';
 components["opensilex-VariableDetails"] = VariableDetails;
+import VariableView from './variables/views/VariableView.vue';
+components["opensilex-VariableView"] = VariableView;
+
 import VariableCreate from './variables/form/VariableCreate.vue';
 components["opensilex-VariableCreate"] = VariableCreate;
 import VariableForm from './variables/form/VariableForm.vue';

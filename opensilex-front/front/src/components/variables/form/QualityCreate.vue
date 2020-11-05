@@ -135,14 +135,14 @@
 <i18n>
 en:
     QualityForm:
-        name: The quality
+        name: The characteristic
         add: Add a characteristic
-        edit: Edit a quality
+        edit: Edit a characteristic
         name-placeholder: Height
 fr:
     QualityForm:
-        name: La qualité
+        name: La charactéristique
         add: Ajouter une charactéristique
-        edit: Éditer une qualité
+        edit: Éditer une charactéristique
         name-placeholder: Hauteur
 </i18n>

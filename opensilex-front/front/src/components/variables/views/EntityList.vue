@@ -35,7 +35,7 @@ import {Component, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import UnitCreate from "../form/UnitCreate.vue";
 import EntityCreate from "../form/EntityCreate.vue";
-import VariableView from "../VariableView.vue";
+import VariablesView from "../VariablesView.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import { VariablesService, NamedResourceDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
@@ -93,19 +93,19 @@ export default class EntityList extends Vue {
     searchElements(): Promise<HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>> {
 
         switch (this.type) {
-            // case VariableView.VARIABLE_TYPE: {
+            // case VariablesView.VARIABLE_TYPE: {
             //     return this.service.searchVariables(this.nameFilter,["name=asc"]);
             // }
-            case VariableView.ENTITY_TYPE: {
+            case VariablesView.ENTITY_TYPE: {
                 return this.service.searchEntities(this.nameFilter,["name=asc"]);
             }
-            case VariableView.QUALITY_TYPE: {
+            case VariablesView.QUALITY_TYPE: {
                 return this.service.searchQualities(this.nameFilter,["name=asc"]);
             }
-            case VariableView.METHOD_TYPE: {
+            case VariablesView.METHOD_TYPE: {
                 return this.service.searchMethods(this.nameFilter,["name=asc"]);
             }
-            case VariableView.UNIT_TYPE: {
+            case VariablesView.UNIT_TYPE: {
                 return this.service.searchUnits(this.nameFilter,["name=asc"]);
             }
             default: {
@@ -116,7 +116,7 @@ export default class EntityList extends Vue {
 
     refresh(uri?) {
 
-        if(this.type == VariableView.VARIABLE_TYPE){
+        if(this.type == VariablesView.VARIABLE_TYPE){
             return;
         }
 
@@ -186,16 +186,16 @@ export default class EntityList extends Vue {
     private getDetails(uri: string): Promise<HttpResponse<OpenSilexResponse>> {
 
         switch (this.type) {
-            case VariableView.ENTITY_TYPE : {
+            case VariablesView.ENTITY_TYPE : {
                 return this.service.getEntity(uri);
             }
-            case VariableView.QUALITY_TYPE : {
+            case VariablesView.QUALITY_TYPE : {
                 return this.service.getQuality(uri);
             }
-            case VariableView.METHOD_TYPE: {
+            case VariablesView.METHOD_TYPE: {
                 return this.service.getMethod(uri);
             }
-            case VariableView.UNIT_TYPE: {
+            case VariablesView.UNIT_TYPE: {
                 return this.service.getUnit(uri);
             }
             default : {
@@ -205,7 +205,7 @@ export default class EntityList extends Vue {
     }
 
     public displayNodeDetail(uri: string, forceRefresh?: boolean, appendNodeToNodeList?: boolean) {
-        if ((forceRefresh || this.selected == null || this.selected.uri != uri) && this.type != VariableView.VARIABLE_TYPE) {
+        if ((forceRefresh || this.selected == null || this.selected.uri != uri) && this.type != VariablesView.VARIABLE_TYPE) {
             return this.getDetails(uri)
                 .then((http: HttpResponse<OpenSilexResponse>) => {
                     if (appendNodeToNodeList) {
@@ -220,7 +220,7 @@ export default class EntityList extends Vue {
     }
 
     edit(uri) {
-        if(this.type != VariableView.VARIABLE_TYPE){
+        if(this.type != VariablesView.VARIABLE_TYPE){
             if(this.selected){
                 this.$emit("onEdit",this.selected);
             }else{

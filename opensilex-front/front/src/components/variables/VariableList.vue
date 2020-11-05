@@ -15,7 +15,7 @@
                         <opensilex-UriLink
                             :uri="data.item.uri"
                             :value="data.item.name"
-                            :to="{path: '/variable/'+ encodeURIComponent(data.item.uri)}"
+                            :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
                         ></opensilex-UriLink>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>

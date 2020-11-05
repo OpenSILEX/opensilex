@@ -92,7 +92,7 @@
             let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
             this.service.updateVariable(formattedVariable).then(() => {
-                this.$emit("onUpdate", formattedVariable.uri);
+                this.$emit("onUpdate", variable);
             }).catch(this.$opensilex.errorHandler);
         }
     }

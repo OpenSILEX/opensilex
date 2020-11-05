@@ -29,7 +29,7 @@ menu:
         label: component.menu.variables
         route:
           path: /variables
-          component: opensilex-VariableView
+          component: opensilex-VariablesView
       - id: factors
         label: component.menu.experimentalDesign.factors
         route:
@@ -142,10 +142,10 @@ routes:
     component: opensilex-InfrastructureFacilitiesTypes
     credentials:
       - is-admin
-  - path: /VariableCreate
-    component: opensilex-VariableCreate
-  - path: /variable/:uri
-    component: opensilex-VariableDetails
+  - path: /variable/details/:uri
+    component: opensilex-VariableView
+    credentials:
+      - variable-read
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
   - path: /project/documents/:uri

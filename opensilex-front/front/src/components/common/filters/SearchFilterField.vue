@@ -12,7 +12,7 @@
         <slot name="filters"></slot>
       </div>
 
-      <div class="card" v-if="showAdvancedSearch">
+      <div class="card" v-if="showAdvancedSearch" >
         <div class="card-header sub-header">
           <h3 class="mr-3">{{ $t(advancedSearchLabel) }}</h3>
           <div class="card-header-right">
@@ -24,17 +24,19 @@
             </div>
           </div>
         </div>
+        <div class="container">
         <div
           class="card-body advancedSearch row"
-          style="background-color: rgb(246, 248, 251);"
+          style="background-color: transparent;"
           v-bind:class="{ 'open': advancedSearchOpen}"
         >
           <slot name="advancedSearch"></slot>
         </div>
+        </div>
       </div>
     </div>
 
-    <div class="container-fluid button-group" v-if="withButton" v-bind:class="{ 'advancedSearchClosed': !advancedSearchOpen}">
+    <div class="container-fluid button-group advancedSearch" v-if="withButton">
       <div class="row">
         <div class="col-md-12 text-right">
           <slot name="clear">
@@ -113,7 +115,7 @@ export default class SearchFilterField extends Vue {
   padding-bottom: 0 !important;
 }
 
-.advancedSearchClosed {
+.advancedSearch {
   padding-top: 15px;
 }
 </style>

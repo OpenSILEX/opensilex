@@ -1,6 +1,4 @@
 .form-group {
-    margin-bottom: 1.25em;
-
     .form-control-lg {
         font-size: 1.25em;
     }
@@ -403,9 +401,6 @@ textarea.form-control {
 }
 .note-editor.note-frame.card {
     @include box-shadow(none);
-}
-.input-group {
-    margin-bottom: 1.25em;
 }
 $form-border-state: primary, warning, default, danger, success, inverse, info;
 $form-border-color: $primary, $warning, $default, $danger, $success, $inverse, $info;

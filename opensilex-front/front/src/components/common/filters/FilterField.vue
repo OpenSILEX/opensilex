@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-group col col-xl-3 col-sm-6 col-12" v-bind:class="{'col-xl-12 col-sm-12': fullWidth}" >
+  <div class="col col-xl-3 col-sm-6 col-12" v-bind:class="{'col-xl-12 col-sm-12': fullWidth}" >
     <slot></slot>
   </div>
 </template>

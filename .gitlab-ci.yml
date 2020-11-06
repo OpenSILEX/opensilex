@@ -42,7 +42,7 @@ variables:
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
   #CACHE
-  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
+  # YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.cache_yarn"
   NODE_CACHE: "$CI_PROJECT_DIR/.node"
   EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
@@ -58,7 +58,7 @@ variables:
   cache:
     key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
     paths:
-      - $YARN_CACHE_FOLDER
+      # - $YARN_CACHE_FOLDER
       - $MAVEN_CACHE_FOLDER
       - $EMBDED_MONGO_CACHE
 
@@ -78,7 +78,7 @@ variables:
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   artifacts:
@@ -269,7 +269,7 @@ update:nightly:builds:branch:
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:
@@ -322,7 +322,7 @@ pages:
   script:
     - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_CLI_OPTS
+    - mvn clean install $MAVEN_CLI_OPTS
     - cd $CI_PROJECT_DIR
     - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
     - mkdir public

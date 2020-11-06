@@ -393,7 +393,7 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
 
     }
-
+    
     /**
      * Updates the factors linked to an experiment.
      *

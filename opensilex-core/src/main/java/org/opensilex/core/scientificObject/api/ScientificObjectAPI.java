@@ -74,8 +74,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -85,10 +92,13 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  * @author Julien BONNEFONT
@@ -148,6 +158,42 @@ public class ScientificObjectAPI {
         List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("get-used-types/{contextURI}")
+    @ApiOperation("get all scientific object types associated to a given context")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return Species list", response = RDFClassDTO.class, responseContainer = "List")
+    })
+    public Response getUsedTypes(
+            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI
+    ) throws Exception {
+        validateContextAccess(contextURI);
+        
+        SelectBuilder select = new SelectBuilder();
+        
+        Node context = SPARQLDeserializers.nodeURI(contextURI);
+        select.addVar("uri");
+        select.addVar("label");
+        select.addGraph(context, "?uri", RDF.type, "?type");
+        select.addWhere("?type",Ontology.subClassAny, Oeso.ScientificObject);
+        select.addWhere("?uri", RDFS.label, "?label");
+        
+        List
+        sparql.executeSelectQuery(select, (row) -> {
+            try {
+                URI uri = new URI(row.getStringValue("uri"));
+                String label = row.getStringValue("label");
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        
+        return new PaginatedListResponse<>(types).getResponse();
     }
 
     @GET

@@ -41,7 +41,7 @@ module.exports = {
             .use('yaml')
             .loader('yaml-loader')
             .end()
-            
+
         // Add markdown file parsing
         config.module.rule('md')
             .test(/\.md$/)
@@ -51,7 +51,14 @@ module.exports = {
             .use('vue-markdown-loader')
             .loader('vue-markdown-loader/lib/markdown-compiler')
             .options({
-              raw: true
+                raw: true
             })
+
+        if (process.env.NODE_ENV === 'production') {
+            config.module.rule('vue').uses.delete('cache-loader');
+            config.module.rule('js').uses.delete('cache-loader');
+            config.module.rule('ts').uses.delete('cache-loader');
+            config.module.rule('tsx').uses.delete('cache-loader');
+        }
     }
 };

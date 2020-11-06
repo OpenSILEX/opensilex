@@ -20,6 +20,8 @@ import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -59,6 +61,9 @@ public class AreaAPI {
 
     public static final String CREDENTIAL_AREA_DELETE_LABEL_KEY = "credential.area.delete";
     private static final String CREDENTIAL_AREA_DELETE_ID = "area-delete";
+
+    @CurrentUser
+    UserModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -104,7 +109,7 @@ public class AreaAPI {
 
         try {
             sparql.startTransaction();
-            URI areaURI = dao.create(dto.getUri(), dto.getName(), dto.getType(), dto.getDescription());
+            URI areaURI = dao.create(dto.getUri(), dto.getName(), dto.getType(), dto.getDescription(), currentUser.getUri());
 
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
@@ -196,7 +201,7 @@ public class AreaAPI {
         session.startTransaction();
         try {
             sparql.startTransaction();
-            URI areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getType(), areaDTO.getDescription());
+            URI areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getType(), areaDTO.getDescription(), currentUser.getUri());
 
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);

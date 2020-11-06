@@ -227,9 +227,7 @@ export default class MapView extends Vue {
   showAreaDetails(areaUriResult: any) {
     areaUriResult.then(areaUri => {
       console.debug("showAreaDetails", areaUri);
-      this.$router.push({
-        path: "/experiment/map/" + encodeURIComponent(this.$store.state.experiment)
-      });
+      location.reload();
     });
   }
 
@@ -364,7 +362,7 @@ export default class MapView extends Vue {
       extent[2] += 50;
       extent[3] += 50;
       this.mapView.$view.fit(extent);
-    }, 1000);
+    }, 400);
   }
 
   loadNameExperiment() {

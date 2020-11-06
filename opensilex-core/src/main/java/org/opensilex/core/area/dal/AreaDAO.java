@@ -28,19 +28,20 @@ public class AreaDAO {
         this.sparql = sparql;
     }
 
-    public URI create(URI uri, String name, URI rdfType, String description) throws Exception {
-        AreaModel area = initArea(uri, name, rdfType, description);
+    public URI create(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
+        AreaModel area = initArea(uri, name, rdfType, description, user);
 
         sparql.create(area);
 
         return area.getUri();
     }
 
-    private AreaModel initArea(URI uri, String name, URI type, String description) throws URISyntaxException {
+    private AreaModel initArea(URI uri, String name, URI type, String description, URI user) throws URISyntaxException {
         AreaModel area = new AreaModel();
         area.setName(name);
         area.setType(type);
         area.setDescription(description);
+        area.setCreator(user);
 
         if (uri != null) {
             uri = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));
@@ -58,8 +59,8 @@ public class AreaDAO {
         sparql.delete(AreaModel.class, areaURI);
     }
 
-    public URI update(URI uri, String name, URI type, String description) throws Exception {
-        AreaModel area = initArea(uri, name, type, description);
+    public URI update(URI uri, String name, URI type, String description, URI user) throws Exception {
+        AreaModel area = initArea(uri, name, type, description, user);
 
         sparql.update(area);
 

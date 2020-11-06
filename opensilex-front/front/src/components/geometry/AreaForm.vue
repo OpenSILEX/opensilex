@@ -145,9 +145,9 @@
     <!--        label="AreaForm.selectFile"-->
     <!--    ></opensilex-FileInputForm>-->
 
-    <!-- comment -->
+    <!-- description -->
     <opensilex-TextAreaForm
-        :value.sync="form.comment"
+        :value.sync="form.description"
         helpMessage="AreaForm.comment-help"
         label="AreaForm.comment"
         placeholder="AreaForm.comment-placeholder"
@@ -192,7 +192,7 @@ export default class AreaForm extends Vue {
         // startDate: "",
         // endDate: "",
         // annotation: "",
-        comment: "",
+        description: "",
         // areaType: "",
         // trial: "",
         type: "",
@@ -290,7 +290,7 @@ export default class AreaForm extends Vue {
       // startDate: "",
       // endDate: "",
       // annotation: "",
-      comment: "",
+      description: "",
       // areaType: "",
       // trial: "",
       type: "",
@@ -329,14 +329,6 @@ export default class AreaForm extends Vue {
       form.type = form.optionAreaType;
     else
       form.type = "vocabulary:Zone";
-
-    // let author = {
-    //   "rdfType": null,
-    //   "relation": "http://purl.org/dc/terms/creator",
-    //   "value": this.user.email
-    // };
-    //
-    // form.properties.push(author);
 
     return this.$opensilex
         .getService("opensilex.AreaService")

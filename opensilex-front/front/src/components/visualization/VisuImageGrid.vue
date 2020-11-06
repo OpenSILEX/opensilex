@@ -7,19 +7,43 @@
       v-bind:key="index"
       :image="image"
       :index="index"
+      ref="visuImageSingle"
+      @imageIsHovered=" $emit('imageIsHovered', $event)"
+      @imageIsUnHovered=" $emit('imageIsUnHovered', $event)"
+      @imageIsDeleted="$emit('imageIsDeleted', $event)"
+      @imageIsClicked="$emit('imageIsClicked',$event)"
+
     ></opensilex-VisuImageSingle>
   </ul>
 </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop,Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class VisuImageGrid extends Vue {
   @Prop()
   images: any;
+
+  @Ref("visuImageSingle") readonly visuImageSingle!: any;
+
+  onImagePointMouseEnter(toSend){
+    if(this.visuImageSingle){
+       this.visuImageSingle.forEach(element => {
+       element.onImagePointMouseEnter(toSend);
+    });
+    }
+  }
+
+  onImagePointMouseOut(){
+    if(this.visuImageSingle){
+       this.visuImageSingle.forEach(element => {
+       element.onImagePointMouseOut();
+    });
+    }
+  }
 }
 </script>
 

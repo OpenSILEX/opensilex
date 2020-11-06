@@ -84,6 +84,8 @@ export default class VariableList extends Vue {
   @Prop()
   maximumSelectedRows;
 
+  @Prop()
+  iconNumberOfSelectedRow;
   private nameFilter: any = "";
 
   @Ref("tableRef") readonly tableRef!: any;
@@ -113,7 +115,7 @@ export default class VariableList extends Vue {
       this.nameFilter,
       options.orderBy,
       options.currentPage,
-      options.pageSize
+      4
     );
   }
 

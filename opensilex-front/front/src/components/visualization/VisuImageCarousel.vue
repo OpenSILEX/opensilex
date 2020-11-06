@@ -27,7 +27,6 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { EventBus } from "./event-bus";
 import { Image } from "./image";
 @Component
 export default class VisuImageCarousel extends Vue {
@@ -42,11 +41,7 @@ export default class VisuImageCarousel extends Vue {
   formatedDateValue: string = "";
 
   created() {
-    EventBus.$on("imageIsClicked", index => {
-      this.slide = index;
-      this.image=this.images[index].uri;
-      this.show = true;
-    });
+ 
   }
 
   getObjectType(image) {

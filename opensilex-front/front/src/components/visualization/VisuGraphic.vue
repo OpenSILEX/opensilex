@@ -66,7 +66,6 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { EventBus } from "./event-bus";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 
@@ -106,15 +105,14 @@ export default class VisuGraphic extends Vue {
 
   created() {
     this.InitHCTheme();
-
-    // this.onImagesHover();
-    EventBus.$on("visuViewIsClicked", () => {
-      if (this.contextMenuShow) {
-        this.contextMenuShow = false;
-      }
-    });
   }
 
+  closeContextMenu(){
+     if (this.contextMenuShow) {
+        this.contextMenuShow = false;
+      }
+  }
+  
   reload(series, variables, isMultipleVariable) {
     if (!this.showEvents) {
       this.chartOptionsValues.forEach(element => {
@@ -128,7 +126,6 @@ export default class VisuGraphic extends Vue {
     this.variables = variables;
     let chartOptionsValue = this.buildGraphic(series, isMultipleVariable);
     this.chartOptionsValues.push(chartOptionsValue);
-    this.onImagesHover();
   }
 
   flagsRightClick(e) {
@@ -277,14 +274,14 @@ export default class VisuGraphic extends Vue {
           },
           events: {
             click: function(e) {
-              //that.rightClick(e, this);
+             // that.rightClick(e, this);
             }
           },
           point: {
             events: {
               click: function(e) {
                 e.stopPropagation();
-                // that.rightClick(e, this);
+               that.rightClick(e, this);
               }
             }
           }
@@ -450,7 +447,7 @@ export default class VisuGraphic extends Vue {
 
   detailProvenanceClick() {
     this.contextMenuShow = false;
-    EventBus.$emit("detailProvenanceIsClicked", this.selectedProvenance);
+    this.$emit("detailProvenanceIsClicked", this.selectedProvenance);
   }
 
   beforeCreate() {}
@@ -465,18 +462,19 @@ export default class VisuGraphic extends Vue {
     return toReturn;
   }
 
-  onImagesHover() {
-    EventBus.$on("imageIsHovered", indexes => {
-      var chart = this.highchartsRef[0].chart;
+  onImageIsHovered(indexes){
+     var chart = this.highchartsRef[0].chart;
       chart.series[indexes.serie].data[indexes.point].setState("hover");
       chart.tooltip.refresh(chart.series[indexes.serie].data[indexes.point]);
-    });
-    EventBus.$on("imageIsUnHovered", indexes => {
+  }
+
+
+  onImageIsUnHovered(indexes){
       var chart = this.highchartsRef[0].chart;
       chart.series[indexes.serie].data[indexes.point].setState();
       chart.tooltip.hide();
-    });
   }
+
 
   InitHCTheme() {
     const themeffx = {

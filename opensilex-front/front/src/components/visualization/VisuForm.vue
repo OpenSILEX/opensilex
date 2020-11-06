@@ -11,27 +11,14 @@
 
           <div class="card-body row">
             <div class="filter-group col col-xl-6 col-sm-6 col-12">
-              <b-form-group id="sciobj-group-1" :label="$t('visuForm.search.scientificObject.label')" label-for="objectSearch">
-                <b-form-tags
-                  :placeholder="$t('visuForm.search.scientificObject.placeholder')"
-                  input-id="tags-limit"
-                  v-model="filter.concernedItems"
-                  @input="updateScientificObjectsFilter"
-                  remove-on-delete
-                ></b-form-tags>
-
-                <opensilex-SelectForm
-                  v-if="false"
-                  placeholder
-                  :selected.sync="filter.concernedItems"
-                  :conversionMethod="scientificObjectsGetListDTOToSelectNode"
-                  modalComponent="opensilex-ScientificObjectModalList"
-                  :isModalSearch="true"
-                  multiple="true"
-                ></opensilex-SelectForm>
-              </b-form-group>
-               <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
-              <!--    <b-form-checkbox v-model="filter.showImages" switch>Images</b-form-checkbox>
+              <opensilex-TagInputForm
+                :value.sync="filter.concernedItems"
+                label="visuForm.search.scientificObject.label"
+                @update="updateScientificObjectsFilter"
+                :required="true"
+              ></opensilex-TagInputForm>
+              <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
+              <!--     <b-form-checkbox v-model="filter.showImages" switch>Images</b-form-checkbox>
               <b-form-checkbox v-model="filter.showEvents" switch>Evénements</b-form-checkbox>-->
             </div>
             <div class="filter-group col col-xl-6 col-sm-6 col-12">
@@ -44,6 +31,7 @@
                 :isModalSearch="true"
                 :required="true"
                 :multiple="true"
+                :clearable="false"
                 :maximumSelectedItems="2"
               ></opensilex-SelectForm>
             </div>
@@ -168,12 +156,13 @@ export default class VisuForm extends Vue {
   }
 
   created() {
-    this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
+    this.variablesService = this.$opensilex.getService(
+      "opensilex.VariablesService"
+    );
     let query: any = this.$route.query;
     if (query.concernedItems) {
       this.filter.concernedItems = [query.concernedItems];
     }
-   
   }
 
   scientificObjectsGetListDTOToSelectNode(dto: any) {

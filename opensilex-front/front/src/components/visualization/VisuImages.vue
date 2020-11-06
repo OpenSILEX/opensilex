@@ -1,6 +1,14 @@
 <template>
   <div>
-    <opensilex-VisuImageGrid :key="key" :images="images"></opensilex-VisuImageGrid>
+    <opensilex-VisuImageGrid
+      ref="visuImageGrid"
+      :key="key"
+      :images="images"
+      @imageIsHovered=" $emit('imageIsHovered', $event)"
+      @imageIsUnHovered=" $emit('imageIsUnHovered', $event)"
+      @imageIsDeleted="$emit('imageIsDeleted', $event)"
+      @imageIsClicked="onImageIsClicked"
+    ></opensilex-VisuImageGrid>
     <b-modal id="modal-center" v-model="show" hide-footer centered no-fade size="sm">
       <b-carousel
         ref="myCarousel"
@@ -19,7 +27,6 @@
           <p>{{formatedDate(image.date)}}</p>
         </b-carousel-slide>
       </b-carousel>
-      
     </b-modal>
   </div>
 </template>
@@ -27,43 +34,48 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { EventBus } from "./event-bus";
 
 @Component
 export default class VisuImages extends Vue {
-  key=0; // fix VisuImageGrid reload
-  images=[];
+  key = 0; // fix VisuImageGrid reload
+  images = [];
   image: any;
   slide = 0;
   show: boolean = false;
-  showImages: boolean=true;
+  showImages: boolean = true;
   objectType: string = "";
   objectUri: string = "";
   formatedDateValue: string = "";
 
-  created() {
-    EventBus.$on("imageIsClicked", index => {
-      this.slide = index;
-      this.image = this.images[index].uri;
-      this.show = true;
-    });
-    EventBus.$on("imageIsDeleted", index => {
-      this.deleteImage(index);
+  @Ref("visuImageGrid") readonly visuImageGrid!: any;
 
-     });
+  onImagePointMouseEnter(toSend) {
+    this.visuImageGrid.onImagePointMouseEnter(toSend);
   }
-  
-  addImage(image){
+
+  onImagePointMouseOut() {
+    this.visuImageGrid.onImagePointMouseOut();
+  }
+
+  onImageIsDeleted(index) {
+    this.deleteImage(index);
+  }
+
+  onImageIsClicked(index) {
+    this.slide = index;
+    this.image = this.images[index].uri;
+    this.show = true;
+  }
+
+  addImage(image) {
     this.images.push(image);
   }
 
-  deleteImage(index){
-
-    let newArray=JSON.parse(JSON.stringify(this.images));
-    newArray.splice(index,1);
-    this.images=newArray;
-   this.key++;
-
+  deleteImage(index) {
+    let newArray = JSON.parse(JSON.stringify(this.images));
+    newArray.splice(index, 1);
+    this.images = newArray;
+    this.key++;
   }
 
   getObjectType(image) {
@@ -164,11 +176,11 @@ p {
   margin-left: 0px;
 }
 .images {
-    margin: 0;
-    padding: 0;
-    white-space: nowrap;
-    width:100%;
-   
-    overflow-x: auto;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  width: 100%;
+
+  overflow-x: auto;
 }
 </style>

@@ -6,6 +6,7 @@
         class="btn btn-secondary"
         v-on:click="hide(false)"
       >{{ $t('component.common.close') }}</button>
+
       <button
         type="button"
         class="btn btn-primary"
@@ -19,6 +20,8 @@
         :isSelectable="true"
         :noActions="true"
         :maximumSelectedRows="maximumSelectedRows"
+        labelNumberOfSelectedRow="chezpas"
+        iconNumberOfSelectedRow="fa#vials"
       ></opensilex-VariableList>
     </div>
   </b-modal>
@@ -30,9 +33,10 @@ import Vue from "vue";
 import VariableList from "./VariableList.vue";
 
 @Component
-export default class VariableModalList extends VariableList {
+export default class VariableModalList extends Vue {
   @Prop()
   maximumSelectedRows;
+
   @Ref("variableSelection") readonly variableSelection!: any;
 
   unSelect(row) {

@@ -12,9 +12,9 @@
           v-if="isModalSearch"
           class="multiselect-popup"
           :multiple="true"
-          :openOnClick="true"
+          :openOnClick="openOnClick"
           :searchable="false"
-          :clearable="false"
+          :clearable="clearable"
           valueFormat="object"
           v-model="selection"
           :placeholder="$t(placeholder)"
@@ -164,6 +164,11 @@ export default class SelectForm extends Vue {
     default: true
   })
   clearable;
+
+  @Prop({
+    default: true
+  })
+  openOnClick;
 
   @Prop({
     default: false

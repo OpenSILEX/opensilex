@@ -7,16 +7,20 @@
     ></opensilex-PageHeader>
 
     <b-collapse v-model="showSearchComponent" class="mt-2">
-      <opensilex-VisuForm @search="onSearch($event)"></opensilex-VisuForm>
+      <opensilex-VisuForm @search="onSearch"></opensilex-VisuForm>
     </b-collapse>
 
     <b-collapse v-model="showGraphicComponent" class="mt-2">
-      <opensilex-VisuImages ref="visuImages" v-if="showImages"></opensilex-VisuImages>
+      <opensilex-VisuImages 
+      ref="visuImages"
+       v-if="showImages"
+      @imageIsHovered="onImageIsHovered"
+      @imageIsUnHovered=" onImageIsUnHovered"
+         ></opensilex-VisuImages>
       <opensilex-VisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
         :showEvents="showEvents"
-        @imagePointClick="onImagePointClick($event)"
         @search="showSearchComponent=!showSearchComponent;showGraphicComponent=!showGraphicComponent;"
       ></opensilex-VisuGraphic>
     </b-collapse>
@@ -57,7 +61,6 @@ import {
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
-import { EventBus } from "./event-bus";
 import Vue from "vue";
 
 @Component
@@ -81,14 +84,28 @@ export default class VisuView extends Vue {
   showGraphicComponent: boolean = false;
   /* showEventFormComponent: boolean = false; */
   clickEvent() {
-    EventBus.$emit("visuViewIsClicked");
+    if(this.visuGraphic){
+        this.visuGraphic.closeContextMenu();
+    }
   }
+
+  onImageIsHovered(indexes){
+     if(this.visuGraphic){
+        this.visuGraphic.onImageIsHovered(indexes);
+    }
+
+  }
+  onImageIsUnHovered(indexes){
+     if(this.visuGraphic){
+        this.visuGraphic.onImageIsUnHovered(indexes);
+    }
+
+  }
+
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
    /*  this.eventsService = this.$opensilex.getService("opensilex.EventsService");
-    EventBus.$on("onImageAnnotate", uri => {
-      this.addAnnotationForm.showEditForm(uri);
-    }); */
+    */
 
     this.$opensilex.disableLoader();
    /*  this.showEventFormComponent = true; */
@@ -241,8 +258,6 @@ export default class VisuView extends Vue {
 
         if (values[1] !== undefined) {
           const cleanImageData = values[1];
-
-          //  const img=this.$opensilex.getResourceURI('images/logo-phis-highcharts.png');
           serie = {
             type: "flags",
             name: "images/" + concernedItem,
@@ -250,7 +265,6 @@ export default class VisuView extends Vue {
             onSeries: "A" + index,
             width: 8,
             height: 8,
-            // shape: "url("+img+")",
             shape: "circlepin",
             lineWidth: 1,
             point: {
@@ -261,12 +275,16 @@ export default class VisuView extends Vue {
                     imageIndex: e.target.index,
                     serieIndex: e.target.series.index
                   };
-                  EventBus.$emit("photoSerieMouseEnter", toSend);
+                  if( this.visuImages){
+                     this.visuImages.onImagePointMouseEnter(toSend);
+                  }
                   e.preventDefault();
                   return false;
                 },
                 mouseOut: e => {
-                  EventBus.$emit("photoSerieMouseOut");
+                   if( this.visuImages){
+                     this.visuImages.onImagePointMouseOut();
+                  }
                   e.preventDefault();
                   return false;
                 },
@@ -280,8 +298,11 @@ export default class VisuView extends Vue {
           };
 
           const imagePointClick = event => {
+
+            console.log("event.point");
+            console.log(event.point);
             const toReturn = {
-              time: event.point.x,
+              date: event.point.date,
               serieIndex: event.point.series.index,
               imageIndex: event.point.index,
               concernedItem: event.point.uri
@@ -417,13 +438,18 @@ export default class VisuView extends Vue {
 
   cleanImageData(data, concernedItem) {
     const cleanImageData = [];
+    console.log("data");
+    console.log(data);
     this.distinctDates(data).forEach(element => {
+        let stringDateWithoutUTC =
+        moment.parseZone(element).format("YYYYMMDD HHmmss") + "+00:00";
+      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
       cleanImageData.push({
-        x: moment(element)
-          .utc(true)
-          .valueOf(),
+        x: dateWithoutUTC,
         title: "I",
-        uri: concernedItem
+        uri: concernedItem,
+        date: element,
+        utc: moment.parseZone(element).format("Z")
       });
     });
     return cleanImageData;
@@ -444,22 +470,27 @@ export default class VisuView extends Vue {
   }
 
   onImagePointClick(point) {
-    const time = point.time;
-    const utcTime = this.timestampToUTC(time);
+    const time = point.date;/* 
+    const utcTimeStart = this.timestampToUTC(time);
+    const utcTimeEnd = this.timestampToUTC(time+1000); */
+    const endTime= moment(time).add(1, 's').format();
+    console.log("utcTime");
+    console.log(endTime);
     return this.dataService
       .getDataFileDescriptionsBySearch(
         "http://www.opensilex.org/vocabulary/oeso#Image",
         point.concernedItem,
         undefined,
-        utcTime,
-        utcTime,
+        time,
+        undefined, //wait for the service
         0,
         100
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
         const result = http.response.result as any;
         if (result && result.length > 0) {
-          const data = result.data as Array<DataFileGetDTO>;
+
+          const data = result as Array<DataFileGetDTO>;
           this.imagesFilter(data, point);
         }
       })

@@ -42,7 +42,6 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { EventBus } from "./event-bus";
 import { Image } from "./image";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
@@ -64,16 +63,47 @@ export default class VisuImageSingle extends Vue {
   objectAlias: string = "";
   formatedDateValue: string = "";
 
+
+  imageHover() {
+    this.$emit("imageIsHovered", {
+      serie: this.image.serieIndex,
+      point: this.image.imageIndex
+    });
+  }
+  imageUnHovered() {
+    this.$emit("imageIsUnHovered", {
+      serie: this.image.serieIndex,
+      point: this.image.imageIndex
+    });
+  }
+
+  imageClicked() {
+    this.$emit("imageIsClicked", this.index);
+  }
+
   imageDelete() {
-    EventBus.$emit("imageIsDeleted", this.index);
+    this.$emit("imageIsDeleted", this.index);
   }
 
   imageDetails() {
-    EventBus.$emit("onImageDetails", this.image.imageUri);
+    this.$emit("onImageDetails", this.image.imageUri);
   }
 
   imageAnnotate() {
-    EventBus.$emit("onImageAnnotate", this.image.imageUri);
+    this.$emit("onImageAnnotate", this.image.imageUri);
+  }
+
+  onImagePointMouseEnter(indexes) {
+    if (
+      this.image.serieIndex === indexes.serieIndex &&
+      this.image.imageIndex === indexes.imageIndex
+    ) {
+      this.showBorder = true;
+    }
+  }
+
+  onImagePointMouseOut() {
+    this.showBorder = false;
   }
 
   created() {
@@ -86,24 +116,14 @@ export default class VisuImageSingle extends Vue {
     } else {
       this.objectUri = this.image.objectUri;
     }
-    EventBus.$on("photoSerieMouseEnter", indexes => {
-      if (
-        this.image.serieIndex === indexes.serieIndex &&
-        this.image.imageIndex === indexes.imageIndex
-      ) {
-        this.showBorder = true;
-      }
-    });
-    EventBus.$on("photoSerieMouseOut", indexes => {
-      this.showBorder = false;
-    });
+  
   }
 
   mounted() {
     //this.getObjectAlias();
   }
 
- /*  getObjectAlias() {
+  /*  getObjectAlias() {
     let service: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
@@ -139,34 +159,18 @@ export default class VisuImageSingle extends Vue {
     };
     return newDate.toLocaleDateString("fr-FR", options);
   }
-  imageClicked() {
-    EventBus.$emit("imageIsClicked", this.index);
-  }
-  imageHover() {
-    EventBus.$emit("imageIsHovered", {
-      serie: this.image.serieIndex,
-      point: this.image.imageIndex
-    });
-  }
-  imageUnHovered() {
-    EventBus.$emit("imageIsUnHovered", {
-      serie: this.image.serieIndex,
-      point: this.image.imageIndex
-    });
-  }
+  
 }
 </script>
 
 <style scoped lang="scss">
 .card .card-body {
   padding: 0;
-
-  
 }
 .item {
-    display: inline-block;
-    width: 100px;
-    margin: 0 2px;
+  display: inline-block;
+  width: 100px;
+  margin: 0 2px;
 }
 
 .card {
@@ -175,7 +179,6 @@ export default class VisuImageSingle extends Vue {
 p {
   font-size: 9px;
   white-space: normal;
-  
 }
 .card-text {
   margin-bottom: 0;

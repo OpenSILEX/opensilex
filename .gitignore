@@ -12,3 +12,4 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-sixtine
 **/opensilex-data-analysis
 **/inrae-bigdatagrapes
+opensilex-front/front/yarn.lock

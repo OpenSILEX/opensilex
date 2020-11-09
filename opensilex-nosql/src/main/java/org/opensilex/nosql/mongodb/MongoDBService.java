@@ -29,6 +29,7 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.codec.ObjectCodec;
 import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.nosql.mongodb.codec.ZonedDateTimeCodec;
 import org.opensilex.service.BaseService;
@@ -221,7 +222,7 @@ public class MongoDBService extends BaseService {
 
         CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new URICodec(), new ZonedDateTimeCodec()),
+                CodecRegistries.fromCodecs(new URICodec(), new ZonedDateTimeCodec(), new ObjectCodec()),
                 CodecRegistries.fromProviders(
                         new GeoJsonCodecProvider(),
                         PojoCodecProvider.builder().register(URI.class).automatic(true).build()

@@ -46,7 +46,7 @@ public class DataCreationDTO{
     private String date;
     
     @NotNull
-    private Double value;
+    private Object value;
     
     @Min(0)
     @Max(1)
@@ -94,11 +94,11 @@ public class DataCreationDTO{
         this.date = date;
     }
 
-    public Double getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(Double value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 

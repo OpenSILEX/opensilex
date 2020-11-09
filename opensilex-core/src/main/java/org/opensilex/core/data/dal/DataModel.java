@@ -36,7 +36,7 @@ public class DataModel extends MongoModel {
     
     private String timezone;
 
-    private Double value;
+    private Object value;
     
     private Float confidence = null;
 
@@ -82,11 +82,11 @@ public class DataModel extends MongoModel {
         this.timezone = timezone;
     }
 
-    public Double getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(Double value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 

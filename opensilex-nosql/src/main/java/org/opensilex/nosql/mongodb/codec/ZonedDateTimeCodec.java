@@ -38,10 +38,14 @@ public class ZonedDateTimeCodec implements Codec<ZonedDateTime> {
 
     @Override
     public ZonedDateTime decode(BsonReader reader, DecoderContext decoderContext) {
-
-        long instant = reader.readDateTime();
-        ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(instant), ZoneId.of("UTC"));
-        return dateTime;
+        try {
+            long instant = reader.readDateTime();
+            ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(instant), ZoneId.of("UTC"));
+            return dateTime;
+        } catch (Exception e) {
+            LOGGER.warn("Exception while decoding zonedDateTime", e);
+            throw e;
+        }      
     }
 
 }

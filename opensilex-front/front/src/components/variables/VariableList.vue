@@ -9,10 +9,13 @@
         <opensilex-PageContent>
             <template v-slot>
                 <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchVariables" :fields="fields"
-                                          defaultSortBy="name">
+                                          defaultSortBy="name" :isSelectable="isSelectable"
+          :maximumSelectedRows="maximumSelectedRows"
+          :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
+                         v-if="!noActions"
                             :uri="data.item.uri"
                             :value="data.item.name"
                             :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"

@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api;
 
 import io.swagger.annotations.*;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -31,7 +32,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable")
@@ -227,5 +232,30 @@ public class VariableAPI {
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
+    @GET
+    @Path("datatypes")
+    @ApiOperation(
+            value = "Get datatypes available for a variable"
+    )
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Datatypes retrieved", response = VariableDatatypeDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatatypes() throws URISyntaxException {
+
+        List<VariableDatatypeDTO> variablesXsdTypes = new ArrayList<>();
+
+        variablesXsdTypes.add(new VariableDatatypeDTO(XSDDatatype.XSDboolean,"datatypes.boolean"));
+        variablesXsdTypes.add(new VariableDatatypeDTO(XSDDatatype.XSDdate,"datatypes.date"));
+        variablesXsdTypes.add(new VariableDatatypeDTO(XSDDatatype.XSDdecimal,"datatypes.decimal"));
+        variablesXsdTypes.add(new VariableDatatypeDTO(XSDDatatype.XSDinteger,"datatypes.number"));
+
+        return new PaginatedListResponse<>(variablesXsdTypes).getResponse();
+    }
+
+
 }
 

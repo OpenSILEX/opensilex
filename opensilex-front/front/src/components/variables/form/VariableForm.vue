@@ -222,6 +222,7 @@ import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
 import { NamedResourceDTO, EntityCreationDTO, QualityCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
 
 @Component
 export default class VariableForm extends Vue {
@@ -265,6 +266,7 @@ export default class VariableForm extends Vue {
         {component: "opensilex-TraitForm"}
     ]
 
+    datatypes: Array<any> = [];
     periodList: Array<any> = [];
     sampleList: Array<any> = [];
 
@@ -286,6 +288,8 @@ export default class VariableForm extends Vue {
                 label: this.$i18n.t("VariableForm.dimension-values." + sample)
             })
         }
+
+        this.loadDatatypes();
     }
 
     reset() {
@@ -518,17 +522,6 @@ export default class VariableForm extends Vue {
         return null;
     }
 
-    loadDataType(dataTypeUri: string){
-        if(! dataTypeUri){
-            return undefined;
-        }
-        let dataType = this.$opensilex.getDatatype(dataTypeUri);
-        return [{
-            id: dataType.uri,
-            label: dataType.labelKey.charAt(0).toUpperCase() + dataType.labelKey.slice(1)
-        }];
-    }
-
     getEmptyTraitForm(){
         return {
             traitUri: this.form.traitUri,
@@ -546,26 +539,25 @@ export default class VariableForm extends Vue {
         }
     }
 
-    get datatypes() {
-        let datatypeOptions = [];
-        for (let i in this.$opensilex.datatypes) {
-            let label: any = this.$t(this.$opensilex.datatypes[i].labelKey);
-            datatypeOptions.push({
-                id: this.$opensilex.datatypes[i].uri,
-                label: label.charAt(0).toUpperCase() + label.slice(1)
-            });
+    loadDataType(dataTypeUri: string){
+        if(! dataTypeUri){
+            return undefined;
         }
-        datatypeOptions.sort((a, b) => {
-            if(a.label < b.label){
-                return -1;
-            }
-            if(a.label > b.label){
-                return 1;
-            }
-            return 0;
-        });
+        let dataType = this.datatypes.find(dto => dto.uri == dataTypeUri);
+        return [dataType];
+    }
 
-        return datatypeOptions;
+    loadDatatypes(){
+
+        this.service.getDatatypes().then((http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>) => {
+            for (let dto of http.response.result) {
+                let label: any = this.$t(dto.labelKey);
+                this.datatypes.push({
+                    id: dto.uri,
+                    label: label.charAt(0).toUpperCase() + label.slice(1)
+                });
+            }
+        });
     }
 
     tutorial() {

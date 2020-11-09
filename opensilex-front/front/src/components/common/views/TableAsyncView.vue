@@ -1,13 +1,34 @@
 <template>
   <opensilex-Overlay :show="isSearching">
-
     <div class="card">
-
       <div v-if="isSelectable && tableRef &&!maximumSelectedRows" class="card-header row clearfix">
         <div class="col col-sm-6">
           <slot name="titleSelectableTable">
-             <h3 class="d-inline mr-1"><opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" /> {{$t(labelNumberOfSelectedRow)}}</h3>                                    
-             <span class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
+            <h3 class="d-inline mr-1">
+              <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
+              {{$t(labelNumberOfSelectedRow)}}
+            </h3>
+            <span class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
+          </slot>
+        </div>
+        <div class="col col-sm-3">
+          <slot name="firstActionsSelectableTable"></slot>
+        </div>
+        <div class="col col-sm-3">
+          <slot name="secondActionsSelectableTable"></slot>
+        </div>
+      </div>
+
+      <div v-if="isSelectable && tableRef && maximumSelectedRows" class="card-header row clearfix">
+        <div class="col col-sm-6">
+          <slot name="titleSelectableTable">
+            <h3 class="d-inline mr-1">
+              <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
+              {{$t(labelNumberOfSelectedRow)}}
+            </h3>
+            <span
+              :class="numberOfSelectedRows<maximumSelectedRows? 'badge badge-pill badge-info': 'badge badge-pill badge-warning'"
+            >{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span> 
           </slot>
         </div>
         <div class="col col-sm-3">
@@ -33,9 +54,9 @@
         :items="loadData"
         :fields="fields"
         sort-icon-left
-        @row-selected="onRowSelected($event)"
-        @row-clicked="onSelected($event)"	
-
+        @row-selected="onRowSelected"
+        @row-clicked="onRowClicked"
+        @refreshed="onRefreshed"
       >
         <template v-for="(field, index) in fields" v-slot:[getHeadTemplateName(field.key)]="data">
           <span v-if="!field.isSelect" :key="index">{{$t(data.label)}}</span>
@@ -47,7 +68,8 @@
               :value="true"
               class="custom-control-input select_all_child"
               v-model="selectAll"
-              @change="onSelectAll()"/>
+              @change="onSelectAll()"
+            />
             <span v-if="!maximumSelectedRows" class="custom-control-label">&nbsp;</span>
           </label>
         </template>
@@ -68,7 +90,7 @@
         v-model="currentPage"
         :total-rows="totalRow"
         :per-page="pageSize"
-        @change="tableRef.refresh()"
+        @change="pagination"
       ></b-pagination>
     </div>
   </opensilex-Overlay>
@@ -128,11 +150,14 @@ export default class TableAsyncView extends Vue {
   @Prop()
   iconNumberOfSelectedRow;
 
-  numberOfSelectedRows;
+  numberOfSelectedRows = 0;
   selectedRowIndex;
 
   @Prop()
   maximumSelectedRows;
+
+  items = [];
+  selectedItems = new Object();
 
   currentPage: number = 1;
   pageSize: number;
@@ -140,7 +165,6 @@ export default class TableAsyncView extends Vue {
   sortBy;
   sortDesc = false;
   isSearching = false;
-
   selectAll = false;
 
   created() {
@@ -150,7 +174,6 @@ export default class TableAsyncView extends Vue {
         isSelect: true
       });
     }
-
     if (this.useQueryParams) {
       let query: any = this.$route.query;
 
@@ -190,53 +213,115 @@ export default class TableAsyncView extends Vue {
     }
   }
 
-  onSelected(item){
-    this.numberOfSelectedRows = this.tableRef.selectedRows.filter(value => value).length +1;
-    if( this.numberOfSelectedRows>this.maximumSelectedRows){
-       const idx = this.tableRef.sortedItems.findIndex(it => item == it);
-        if (idx >= 0) {
-           this.selectedRowIndex=idx;
-        }
+  countItems() {
+    let count = 0;
+    for (var key in this.selectedItems) {
+      if (key !== this.currentPage.toString()) {
+        count = count + this.selectedItems[key].length;
+      }
     }
+    return count;
   }
 
+  //first step
+  // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
+  onRowClicked(item) {
+    this.numberOfSelectedRows = this.countItems() + this.items.length + 1;
+   
+    if (
+      this.maximumSelectedRows &&
+      this.maximumSelectedRows > 1 &&
+      this.numberOfSelectedRows > this.maximumSelectedRows
+    ) {
+      this.selectedRowIndex = this.tableRef.sortedItems.findIndex(
+        it => item == it
+      );
+    }
+  }
+  //second step
+  // items = all selected items : if limit condition then unselect the item
   onRowSelected(items) {
     if (this.numberOfSelectedRows == this.pageSize) {
       this.selectAll = true;
     } else {
       this.selectAll = false;
     }
-     if (this.maximumSelectedRows&& this.maximumSelectedRows>1&&this.numberOfSelectedRows===this.maximumSelectedRows+1) {
-        this.tableRef.unselectRow(this.selectedRowIndex);
+    if (
+      this.maximumSelectedRows &&
+      this.maximumSelectedRows > 1 &&
+      this.numberOfSelectedRows > this.maximumSelectedRows
+    ) {
+      this.tableRef.unselectRow(this.selectedRowIndex);
+     
     }
+    this.items = items;
+    this.numberOfSelectedRows = this.countItems() + this.items.length;
     this.$emit("row-selected", this.numberOfSelectedRows);
   }
 
-  onItemUnselected(item) { 
-    const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
-    if (idx >= 0) {
-      this.tableRef.unselectRow(idx);
+  pagination() {
+    this.selectedItems[this.currentPage] = this.items;
+    this.tableRef.refresh();
+  }
+
+  onRefreshed() {
+    let that = this;
+    setTimeout(function() {
+      that.afterRefreshedItemsSelection();
+      that.numberOfSelectedRows = that.countItems() + that.items.length;
+    }, 100); 
+  }
+
+  afterRefreshedItemsSelection() {
+    if (this.selectedItems[this.currentPage]) {
+      this.selectedItems[this.currentPage].forEach(element => {
+        let index = this.tableRef.sortedItems.findIndex(
+          it => element.uri == it.uri
+        );
+        if (index >= 0) {
+          this.tableRef.selectRow(index);
+        }
+      });
     }
   }
 
-  refresh() {
-    this.currentPage = 1;
-    this.tableRef.refresh();
+  //from outside the component
+  onItemUnselected(item) {
+   
+    const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    if (idx >= 0) {
+      //unselect from actual page
+      this.tableRef.unselectRow(idx);
+    } else {
+      for (var key in this.selectedItems) {
+        // or unselect from selecteditems array
+        if (key !== this.currentPage.toString()) {
+          this.selectedItems[key].forEach((element, index) => {
+            const ind = this.tableRef.sortedItems.findIndex(
+              it => element == it
+            );
+            if (ind >= 0) {
+              this.selectedItems[key].splice(index, 1);
+            }
+          });
+        }
+      }
+    }
   }
 
   getSelected() {
     let results = new Array();
-    for (let i = 0; i < this.tableRef.selectedRows.length; i++) {
-      if (this.tableRef.selectedRows[i]) {
-        results.push(this.tableRef.sortedItems[i]);
-      }
+    this.selectedItems[this.currentPage] = this.items;
+    for (var key in this.selectedItems) {
+      this.selectedItems[key].forEach(element => {
+        results.push(element);
+      });
     }
     return results;
   }
 
   loadData() {
     this.selectAll = false;
-
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -267,7 +352,6 @@ export default class TableAsyncView extends Vue {
 
     this.$opensilex.disableLoader();
     this.isSearching = true;
-
     return this.searchMethod({
       orderBy: orderBy,
       currentPage: this.currentPage - 1,
@@ -276,10 +360,8 @@ export default class TableAsyncView extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.pageSize = http.response.metadata.pagination.pageSize;
-
         this.isSearching = false;
         this.$opensilex.enableLoader();
-
         return http.response.result;
       })
       .catch(error => {

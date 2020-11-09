@@ -20,7 +20,6 @@
         :isSelectable="true"
         :noActions="true"
         :maximumSelectedRows="maximumSelectedRows"
-        labelNumberOfSelectedRow="chezpas"
         iconNumberOfSelectedRow="fa#vials"
       ></opensilex-VariableList>
     </div>

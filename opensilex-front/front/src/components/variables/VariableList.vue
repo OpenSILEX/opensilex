@@ -115,7 +115,7 @@ export default class VariableList extends Vue {
       this.nameFilter,
       options.orderBy,
       options.currentPage,
-      options.pageSize
+      4
     );
   }
 
@@ -132,27 +132,27 @@ export default class VariableList extends Vue {
       {
         key: "name",
         label: "component.common.name",
-        sortable: true
+        sortable: false
       },
       {
         key: "_entity_name",
         label: "VariableView.entity",
-        sortable: true
+        sortable: false
       },
       {
         key: "_quality_name",
         label: "VariableView.quality",
-        sortable: true
+        sortable: false
       },
       {
         key: "_method_name",
         label: "VariableView.method",
-        sortable: true
+        sortable: false
       },
       {
         key: "_unit_name",
         label: "VariableView.unit",
-        sortable: true
+        sortable: false
       }
     ];
     if (!this.noActions) {

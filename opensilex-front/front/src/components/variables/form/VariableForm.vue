@@ -170,7 +170,7 @@
                         label="OntologyPropertyForm.data-type"
                         :required="false"
                         :selected.sync="form.dataType"
-                        :options="datatypes"
+                        :options="datatypesNodes"
                         :itemLoadingMethod="loadDataType"
                         helpMessage="VariableForm.datatype-help"
                         placeholder="VariableForm.datatype-placeholder"
@@ -266,7 +266,8 @@ export default class VariableForm extends Vue {
         {component: "opensilex-TraitForm"}
     ]
 
-    datatypes: Array<any> = [];
+    datatypes: Array<VariableDatatypeDTO> = [];
+    datatypesNodes: Array<any> = [];
     periodList: Array<any> = [];
     sampleList: Array<any> = [];
 
@@ -539,25 +540,43 @@ export default class VariableForm extends Vue {
         }
     }
 
+    loadDatatypes(){
+
+        if(this.datatypes.length == 0){
+            this.service.getDatatypes().then((http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>) => {
+                this.datatypes = http.response.result;
+                this.updateDatatypeNodes();
+            });
+        }else{
+            this.updateDatatypeNodes();
+        }
+    }
+
+    updateDatatypeNodes(){
+        this.datatypesNodes = [];
+        for (let dto of this.datatypes) {
+            let label: any = this.$t(dto.labelKey);
+            this.datatypesNodes.push({
+                id: dto.uri,
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+    }
+
     loadDataType(dataTypeUri: string){
         if(! dataTypeUri){
             return undefined;
         }
-        let dataType = this.datatypes.find(dto => dto.uri == dataTypeUri);
+        let dataType = this.datatypesNodes.find(datatypeNode => datatypeNode.id == dataTypeUri);
         return [dataType];
     }
 
-    loadDatatypes(){
-
-        this.service.getDatatypes().then((http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>) => {
-            for (let dto of http.response.result) {
-                let label: any = this.$t(dto.labelKey);
-                this.datatypes.push({
-                    id: dto.uri,
-                    label: label.charAt(0).toUpperCase() + label.slice(1)
-                });
-            }
-        });
+    private langUnwatcher;
+    mounted() {
+        this.langUnwatcher = this.$store.watch(
+            () => this.$store.getters.language,
+            () => this.loadDatatypes()
+        );
     }
 
     tutorial() {

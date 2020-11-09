@@ -35,16 +35,33 @@ import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
+    
     public final String dbName;
+    public MongoClient mongoClient;
+    public ClientSession session;
     //private final URI baseURI;
     
     public MongoDBService(MongoDBConfig config) throws OpenSilexModuleNotFoundException, URISyntaxException {
         super(config);
         dbName = config.database();
         //baseURI = getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
+    }
+    
+    @Override
+    public void startup() {
+        mongoClient = getMongoDBClient();
+        session = mongoClient.startSession();
+    }
+    
+    @Override
+    public void shutdown() {
+        mongoClient.close();
     }
     
     public URI getBaseURI() throws OpenSilexModuleNotFoundException {
@@ -55,16 +72,38 @@ public class MongoDBService extends BaseService {
         return (MongoDBConfig) this.getConfig();
     }
     
+    private int transactionLevel = 0;
+    public void startTransaction() {
+        if (transactionLevel == 0) {
+            LOGGER.debug("MONGO TRANSACTION START");
+            session.startTransaction();
+        }
+        transactionLevel++;
+    }
+
+    public void commitTransaction() {
+        transactionLevel--;
+        if (transactionLevel == 0) {
+            LOGGER.debug("MONGO TRANSACTION COMMIT");
+            session.commitTransaction();
+        }
+    }
+
+    public void rollbackTransaction() throws Exception {
+        if (transactionLevel != 0) {
+            LOGGER.error("MONGO TRANSACTION ROLLBACK");
+            transactionLevel = 0;
+            session.abortTransaction();
+        }
+    }
+    
+    
     public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
         if (instance.getUri() == null){
                 generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
-        }
-        
-        try (MongoClient client = getMongoDBClient()) {
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
-            collection.insertOne(instance);
-            //client.close();
         }        
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        collection.insertOne(instance);    
     }
     
     public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
@@ -75,33 +114,30 @@ public class MongoDBService extends BaseService {
             }
         }
         
-        try (MongoClient client = getMongoDBClient()) {
-            ClientSession session = client.startSession();
-            session.startTransaction();
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        session.startTransaction();
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
             
-            try {
-                collection.insertMany(session, instances);
-                session.commitTransaction();
-            } catch (Exception exception) {
-                session.abortTransaction();
-                throw exception;
-            } finally {
-                session.close();
-            }
-        }        
+        try {
+            collection.insertMany(session, instances);
+            session.commitTransaction();
+        } catch (Exception exception) {
+            session.abortTransaction();
+            throw exception;
+        } finally {
+            session.close();
+        }
+    
     }
     
     public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
-        try (MongoClient client = getMongoDBClient()) {
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
-            T instance = (T) collection.find(eq("uri", uri)).first();
-            if (instance == null) {
-                throw new NoSQLInvalidURIException(uri);
-            } else {
-                return instance;
-            }            
-        }
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        T instance = (T) collection.find(eq("uri", uri)).first();
+        if (instance == null) {
+            throw new NoSQLInvalidURIException(uri);
+        } else {
+            return instance;
+        }            
+        
     }
     
     public <T> boolean uriExists(Class<T> instanceClass, String collectionName, URI uri) {
@@ -120,44 +156,38 @@ public class MongoDBService extends BaseService {
             Integer page,
             Integer pageSize) {
         List<T> results = new ArrayList<T>();
-        try (MongoClient client = getMongoDBClient()) {
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
-            long resultsNumber = collection.countDocuments(filter);
-            int total = (int) resultsNumber;
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        long resultsNumber = collection.countDocuments(filter);
+        int total = (int) resultsNumber;
 
-            if (total > 0) {
-                FindIterable<T> queryResult = collection.find(filter).skip(page * pageSize).limit(pageSize);
+        if (total > 0) {
+            FindIterable<T> queryResult = collection.find(filter).skip(page * pageSize).limit(pageSize);
 
-                for (T res:queryResult) {
-                    results.add(res);
-                }
-            }      
-            
-            return new ListWithPagination(results, page, pageSize, total);
-        }        
+            for (T res:queryResult) {
+                results.add(res);
+            }
+        }      
+
+        return new ListWithPagination(results, page, pageSize, total);
+                
     }
     
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException  {
-        try (MongoClient client = getMongoDBClient()) {
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
-            T instance = findByURI(instanceClass, collectionName, uri); 
-            if (instance == null) {
-                throw new NoSQLInvalidURIException(uri);
-            }
-            collection.deleteOne(eq("uri", uri));
-            
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        T instance = findByURI(instanceClass, collectionName, uri); 
+        if (instance == null) {
+            throw new NoSQLInvalidURIException(uri);
         }
+        collection.deleteOne(eq("uri", uri));     
     }
     
     public <T extends MongoModel> void update(T newInstance, Class<T> instanceClass, String collectionName) throws NoSQLInvalidURIException {
-        try (MongoClient client = getMongoDBClient()) {
-            MongoCollection<T> collection = client.getDatabase(dbName).getCollection(collectionName, instanceClass);
-            T instance = findByURI(instanceClass, collectionName, newInstance.getUri()); 
-            if (instance == null) {
-                throw new NoSQLInvalidURIException(newInstance.getUri());
-            }
-            collection.findOneAndReplace(eq("uri", newInstance.getUri()), newInstance);
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
+        T instance = findByURI(instanceClass, collectionName, newInstance.getUri()); 
+        if (instance == null) {
+            throw new NoSQLInvalidURIException(newInstance.getUri());
         }
+        collection.findOneAndReplace(eq("uri", newInstance.getUri()), newInstance);
     }
 
     public final MongoClient getMongoDBClient() {

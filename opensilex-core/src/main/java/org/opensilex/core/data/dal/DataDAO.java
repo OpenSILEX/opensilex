@@ -55,24 +55,38 @@ public class DataDAO {
         this.fs = fs;
     }
     
-    public void createIndexes() {
-        try (MongoClient client = nosql.getMongoDBClient()) {
-            IndexOptions indexOptions = new IndexOptions().unique(true);
-            
-            MongoCollection dataCollection = client.getDatabase(nosql.dbName)
-                    .getCollection(DATA_COLLECTION_NAME, DataModel.class);            
-            dataCollection.createIndex(Indexes.ascending("uri"), indexOptions);
-            dataCollection.createIndex(Indexes.ascending("variable","provenance","scientificObjects","date"), indexOptions);
-            
-            MongoCollection fileCollection = client.getDatabase(nosql.dbName)
-                    .getCollection(FILE_COLLECTION_NAME, DataModel.class);            
-            fileCollection.createIndex(Indexes.ascending("uri"), indexOptions);
-            fileCollection.createIndex(Indexes.ascending("provenance","scientificObjects","date"), indexOptions);            
-        }
+    public void createIndexes() {        
+        IndexOptions indexOptions = new IndexOptions().unique(true);
+
+        MongoCollection dataCollection = nosql.mongoClient.getDatabase(nosql.dbName)
+                .getCollection(DATA_COLLECTION_NAME, DataModel.class);            
+        dataCollection.createIndex(Indexes.ascending("uri"), indexOptions);
+        dataCollection.createIndex(Indexes.ascending("variable","provenance","scientificObjects","date"), indexOptions);
+
+        MongoCollection fileCollection = nosql.mongoClient.getDatabase(nosql.dbName)
+                .getCollection(FILE_COLLECTION_NAME, DataModel.class);            
+        fileCollection.createIndex(Indexes.ascending("uri"), indexOptions);
+        fileCollection.createIndex(Indexes.ascending("provenance","scientificObjects","date"), indexOptions);           
+        
     }
    
     public DataModel create(DataModel instance) throws Exception {
         nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
+        return instance;
+    }
+    
+    public StringDataModel create(StringDataModel instance) throws Exception {
+        nosql.create(instance, StringDataModel.class, DATA_COLLECTION_NAME, "id/data");
+        return instance;
+    }
+    
+    public IntDataModel create(IntDataModel instance) throws Exception {
+        nosql.create(instance, IntDataModel.class, DATA_COLLECTION_NAME, "id/data");
+        return instance;
+    }
+    
+    public DoubleDataModel create(DoubleDataModel instance) throws Exception {
+        nosql.create(instance, DoubleDataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instance;
     }
 

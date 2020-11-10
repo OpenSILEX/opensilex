@@ -61,7 +61,7 @@
         <template v-for="(field, index) in fields" v-slot:[getHeadTemplateName(field.key)]="data">
           <span v-if="!field.isSelect" :key="index">{{$t(data.label)}}</span>
 
-          <label v-else :key="index" class="custom-control custom-checkbox m-0">
+        <!--   <label v-else :key="index" class="custom-control custom-checkbox m-0">
             <input
               v-if="!maximumSelectedRows"
               type="checkbox"
@@ -71,7 +71,7 @@
               @change="onSelectAll()"
             />
             <span v-if="!maximumSelectedRows" class="custom-control-label">&nbsp;</span>
-          </label>
+          </label> -->
         </template>
 
         <template v-for="(field, index) in fields" v-slot:[getCellTemplateName(field.key)]="data">
@@ -205,44 +205,18 @@ export default class TableAsyncView extends Vue {
     return "cell(" + key + ")";
   }
 
-  onSelectAll() {
-    if (this.selectAll) {
-      this.tableRef.selectAllRows();
-    } else {
-      this.tableRef.clearSelected();
-    }
-  }
-
-  countItems() {
-    let count = 0;
-    for (var key in this.selectedItems) {
-      if (key !== this.currentPage.toString()) {
-        count = count + this.selectedItems[key].length;
-      }
-    }
-    return count;
-  }
-
   //first step
   // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
   onRowClicked(item) {
 
-    console.log("onRowClicked");
-  console.log( item);
-  console.log( this.items);
     const idx = this.items.findIndex(it => item.uri === it.uri);
     if (idx >= 0) {
       this.items.splice(idx, 1);
     } else {
       this.items.push(item);
     }
-    console.log("idx");
-    console.log(idx);
     this.numberOfSelectedRows = this.items.length;
 
-    console.log("after onRowClicked");
-    console.log(this.items);
-    console.log(this.numberOfSelectedRows);
     if (
       this.maximumSelectedRows &&
       this.maximumSelectedRows > 1 &&
@@ -257,34 +231,21 @@ export default class TableAsyncView extends Vue {
   //second step
   // items = all selected items : if limit condition then unselect the item
   onRowSelected(items) {
-    if (this.numberOfSelectedRows == this.pageSize) {
-      this.selectAll = true;
-    } else {
-      this.selectAll = false;
-    }
+   
     if (
       this.maximumSelectedRows &&
       this.maximumSelectedRows > 1 &&
       this.numberOfSelectedRows > this.maximumSelectedRows
     ) {
       this.tableRef.unselectRow(this.selectedRowIndex);
-      console.log(this.selectedRowIndex);
-      console.log(this.selectedItems);
       const idx = this.items.findIndex(it => this.selectedItems == it);
       this.items.splice(idx, 1);
-       console.log(this.items);
     }
-    //this.items = items;
-
-    //  this.selectedItems[this.currentPage] = this.items;
-
     this.numberOfSelectedRows = this.items.length;
-
     this.$emit("row-selected", this.numberOfSelectedRows);
   }
 
   pagination() {
-    //  this.selectedItems[this.currentPage] = this.items;
     this.tableRef.refresh();
   }
 
@@ -292,21 +253,10 @@ export default class TableAsyncView extends Vue {
     let that = this;
     setTimeout(function() {
       that.afterRefreshedItemsSelection();
-      //  that.numberOfSelectedRows = that.countItems() + that.items.length;
-    }, 1);
+    }, 1); //do it after real table refreshed
   }
 
   afterRefreshedItemsSelection() {
-    /*  if (this.selectedItems[this.currentPage]) {
-      this.selectedItems[this.currentPage].forEach(element => {
-        let index = this.tableRef.sortedItems.findIndex(
-          it => element.uri == it.uri
-        );
-        if (index >= 0) {
-          this.tableRef.selectRow(index);
-        }
-      });
-    } */
     this.items.forEach(element => {
       let index = this.tableRef.sortedItems.findIndex(
         it => element.uri == it.uri
@@ -320,57 +270,20 @@ export default class TableAsyncView extends Vue {
   //from outside the component
   onItemUnselected(item) {
     const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
-    console.log(item);
 
     if (idx >= 0) {
-      //unselect from actual page
       this.tableRef.unselectRow(idx);
-    } else {
-      /* 
-    console.log("unselect in array");
-
-      for (var key in this.selectedItems) {
-        // or unselect from selecteditems array
-        if (key !== this.currentPage.toString()) {
-
-          console.log("this.selectedItems");
-          console.log(this.selectedItems);
-          console.log("this.selectedItems[key]");
-          console.log(this.selectedItems[key][0]);
-          this.selectedItems[key].forEach((element, index) => {
-          
-            if (element.uri===item.id) {
-              
-              console.log("heeee");
-              console.log(index);
-              
-              console.log(this.selectedItems);
-              this.selectedItems.set(key,this.selectedItems[key].splice(index,1));
-              console.log(this.selectedItems);
-            }
-          });
-        }
-      } */
-    }
+    } 
     const index = this.items.findIndex(it => item.id == it.uri);
     this.items.splice(index, 1);
     this.numberOfSelectedRows = this.items.length;
-    //  this.numberOfSelectedRows = this.countItems() + this.items.length;
   }
 
   getSelected() {
-    /*  let results = new Array();
-    this.items = this.items;
-    for (var key in this.selectedItems) {
-      this.selectedItems[key].forEach(element => {
-        results.push(element);
-      });
-    } */
     return this.items;
   }
 
   loadData() {
-    this.selectAll = false;
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";

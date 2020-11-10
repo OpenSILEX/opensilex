@@ -15,8 +15,11 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -41,6 +44,9 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
@@ -119,7 +125,7 @@ public class DataAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         DataModel model = dto.newModel();
         
-        ErrorResponse error = null; //dao.valid(model);
+        ErrorResponse error = dao.valid(model);
                 
         if (error != null) {
             return error.getResponse();
@@ -147,43 +153,53 @@ public class DataAPI {
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         
-//        Set<URI> variablesURI = new HashSet<>();
-//        Set<URI> objectsURI = new HashSet<>();
-//        Set<String> provenances= new HashSet<>();
-//        for(DataCreationDTO dto : dtoList ){
-//            variablesURI.add(dto.getVariable());
-//            if (dto.getScientificObjects() != null) {
-//                for(ProvEntityModel object: dto.getScientificObjects())
-//                    objectsURI.add(object.getUri());
-//            }            
-//            provenances.add(dto.getProvenance().getUri().toString());
-//        }
+        Set<URI> variablesURI = new HashSet<>();
+        Set<URI> objectsURI = new HashSet<>();
+        Set<URI> provenances= new HashSet<>();
+        for(DataCreationDTO dto : dtoList ){
+            variablesURI.add(dto.getVariable());
+            if (dto.getScientificObjects() != null) {
+                for(ProvEntityModel object: dto.getScientificObjects())
+                    objectsURI.add(object.getUri());
+            }            
+            provenances.add(dto.getProvenance().getUri());
+        }
         
-        ErrorResponse error = null;//dao.validList(variablesURI, objectsURI, provenances);
+        ErrorResponse error = dao.validList(variablesURI, objectsURI, provenances);
         if (error != null) {
             return error.getResponse();
         } else {
             List<DataModel> dataList = new ArrayList();
             for(DataCreationDTO dto : dtoList ){            
                 DataModel model = dto.newModel();
-                //dao.prepareURI(model);
                 dataList.add(model);
-        }
-            try{
+            }
+            Set<URI> variablesList = dao.checkVariableDataTypes(dataList);
+            if (!variablesList.isEmpty()) {
+                return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong value format",
+                                "variable URIs: " + variablesList.toString()
+                    ).getResponse();
+            } else {
+                try{
                 dataList = (List<DataModel>) dao.createAll(dataList);
-            }catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
-                    ERROR_MAX_SIZE_SET + String.valueOf(1000)).getResponse();
+                } catch(NoSQLTooLargeSetException ex) {
+                    return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
+                        ERROR_MAX_SIZE_SET + String.valueOf(1000)).getResponse();
+                }
+                List<URI> createdResources = new ArrayList<>();
+                for (DataModel data : dataList){
+                    createdResources.add(data.getUri());
+                }
+
+                return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+                
             }
-            List<URI> createdResources = new ArrayList<>();
-            for (DataModel data : dataList){
-                createdResources.add(data.getUri());
-            }
-            
-            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();//PaginatedListResponse(Response.Status.CREATED,createdResources).getResponse();//PaginatedListResponse<>(dataList).getResponse();
         }
-        
     }
+        
+    
     
     @GET
     @Path("get/{uri}")
@@ -408,69 +424,69 @@ public class DataAPI {
      * }
      * }
      */
-//    @POST
-//    @Path("filepaths/create")
-//    @ApiOperation(value = "Post data about existing files")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ObjectUriResponse.class)})
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response postDataFilePaths(
-//            @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<DataFilePathCreationDTO> dtoList,
-//            @Context HttpServletRequest context
-//    ) throws Exception {
-//        DataDAO dao = new DataDAO(nosql, sparql, fs);
-//        
-//        Set<URI> objectsURI = new HashSet<>();
-//        Set<String> provenances= new HashSet<>();
-//        for(DataFilePathCreationDTO dto : dtoList ){ 
-//            if (dto.getScientificObjects() != null) {
-//                for (ProvEntityModel obj:dto.getScientificObjects()) {
-//                    objectsURI.add(obj.getUri());
-//                } 
-//            }                        
-//            provenances.add(dto.getProvenance().getUri().toString());
-//        }
-//        
-//        ErrorResponse error = dao.validList(new HashSet(), objectsURI, provenances);
-//        if (error != null) {
-//            return error.getResponse();
-//        } else {
-//            List<DataModel> dataList = new ArrayList();
-//            for(DataFilePathCreationDTO dto : dtoList ){            
-//                DataFileModel model = dto.newModel();
-//                // get the the absolute file path according to the fileStorageDirectory
-//                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));
-//                
-//
-//                if (!fs.exist(absoluteFilePath)) {
-//                    return new ErrorResponse(
-//                                Response.Status.BAD_REQUEST,
-//                                "File not found",
-//                                absoluteFilePath.toString()
-//                    ).getResponse();
-//                }
-//
-//                model.setPath(absoluteFilePath.toString());
-//                model.setFilename(absoluteFilePath.getFileName().toString());
-//                dataList.add(model);
-//        }
-//            try {
-//                dataList = (List<DataModel>) dao.createAll(dataList);
-//            }catch(NoSQLTooLargeSetException ex){
-//                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
-//                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
-//            }
-//            List<URI> createdResources = new ArrayList<>();
-//            for (DataModel data : dataList){
-//                createdResources.add(data.getUri());
-//            }
-//            
-//            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
-//        }     
-//
-//    }
+    @POST
+    @Path("filepaths/create")
+    @ApiOperation(value = "Post data about existing files")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ObjectUriResponse.class)})
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postDataFilePaths(
+            @ApiParam(value = "Metadata of the file", required = true) @NotNull @Valid List<DataFilePathCreationDTO> dtoList,
+            @Context HttpServletRequest context
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        
+        Set<URI> objectsURI = new HashSet<>();
+        Set<URI> provenances= new HashSet<>();
+        for(DataFilePathCreationDTO dto : dtoList ){ 
+            if (dto.getScientificObjects() != null) {
+                for (ProvEntityModel obj:dto.getScientificObjects()) {
+                    objectsURI.add(obj.getUri());
+                } 
+            }                        
+            provenances.add(dto.getProvenance().getUri());
+        }
+        
+        ErrorResponse error = dao.validList(new HashSet(), objectsURI, provenances);
+        if (error != null) {
+            return error.getResponse();
+        } else {
+            List<DataModel> dataList = new ArrayList();
+            for(DataFilePathCreationDTO dto : dtoList ){            
+                DataFileModel model = dto.newModel();
+                // get the the absolute file path according to the fileStorageDirectory
+                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));
+                
+
+                if (!fs.exist(absoluteFilePath)) {
+                    return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "File not found",
+                                absoluteFilePath.toString()
+                    ).getResponse();
+                }
+
+                model.setPath(absoluteFilePath.toString());
+                model.setFilename(absoluteFilePath.getFileName().toString());
+                dataList.add(model);
+        }
+            try {
+                dataList = (List<DataModel>) dao.createAll(dataList);
+            }catch(NoSQLTooLargeSetException ex){
+                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
+            }
+            List<URI> createdResources = new ArrayList<>();
+            for (DataModel data : dataList){
+                createdResources.add(data.getUri());
+            }
+            
+            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+        }     
+
+    }
     
     /**
      * Returns the content of the file corresponding to the URI given.
@@ -701,5 +717,6 @@ public class DataAPI {
             return new ErrorResponse(e).getResponse();
         }
         
-    }
+    }    
+
 }

@@ -9,16 +9,19 @@ package org.opensilex.nosql.mongodb;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +29,7 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -46,18 +50,19 @@ public class MongoDBService extends BaseService {
     public final String dbName;
     public MongoClient mongoClient;
     public ClientSession session;
-    //private final URI baseURI;
+    public int SIZE_MAX = 10000;
+    private URI baseURI;
     
-    public MongoDBService(MongoDBConfig config) throws OpenSilexModuleNotFoundException, URISyntaxException {
+    public MongoDBService(MongoDBConfig config) {
         super(config);
         dbName = config.database();
-        //baseURI = getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
     }
     
     @Override
-    public void startup() {
+    public void startup() throws OpenSilexModuleNotFoundException {
         mongoClient = getMongoDBClient();
         session = mongoClient.startSession();
+        baseURI = getBaseURI();
     }
     
     @Override
@@ -96,8 +101,7 @@ public class MongoDBService extends BaseService {
             transactionLevel = 0;
             session.abortTransaction();
         }
-    }
-    
+    }    
     
     public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
         if (instance.getUri() == null){
@@ -149,6 +153,19 @@ public class MongoDBService extends BaseService {
             return false;
         } 
     }
+        
+    public Set<URI> getMissingUrisFromCollection(String collectionName, Set<URI> uris) {
+        Document listFilter = new Document();
+        listFilter.append("$in", uris);
+        Document filter = new Document();
+        filter.append("uri",listFilter);        
+                
+        Set foundedURIs = distinct("uri", URI.class, collectionName, filter);
+
+        uris.removeAll(foundedURIs);
+        return uris;
+        
+    }
     
     public <T> ListWithPagination<T> searchWithPagination(
             Class<T> instanceClass, 
@@ -173,6 +190,24 @@ public class MongoDBService extends BaseService {
                 
     }
     
+    public <T> Set<T> distinct(
+            String field,
+            Class<T> resultClass, 
+            String collectionName,
+            Document filter) {        
+
+        Set<T> results = new HashSet<>();
+        MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, resultClass);
+
+        DistinctIterable<T> queryResult = collection.distinct(field, filter, resultClass);
+
+        for (T res:queryResult) {
+            results.add(res);
+        }
+
+        return results;                
+    }
+        
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException  {
         MongoCollection<T> collection = mongoClient.getDatabase(dbName).getCollection(collectionName, instanceClass);
         T instance = findByURI(instanceClass, collectionName, uri); 
@@ -251,7 +286,7 @@ public class MongoDBService extends BaseService {
         if (uri == null) {
 
             int retry = 0;
-            String graphPrefix = getBaseURI().resolve(prefix).toString();
+            String graphPrefix = baseURI.resolve(prefix).toString();
             uri = instance.generateURI(graphPrefix, instance, retry);            
             while (uriExists(instance.getClass(), collectionName, uri)) {
                 uri = instance.generateURI(graphPrefix, instance, retry++);

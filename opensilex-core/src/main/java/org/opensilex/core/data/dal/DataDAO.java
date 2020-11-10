@@ -6,10 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.mongodb.client.DistinctIterable;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.Projections;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -19,17 +22,34 @@ import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.naming.NamingException;
+import javax.ws.rs.core.Response;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.impl.XSDDateType;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -87,45 +107,58 @@ public class DataDAO {
     }
 
     
-//    public ErrorResponse valid(DataModel data) throws SPARQLException, NamingException, IOException, Exception{
-//        //check variables uri
-//        if (data.getVariable() != null) {
-//            if (!sparql.uriExists(VariableModel.class, data.getVariable())) {
-//                return new ErrorResponse(
-//                                Response.Status.BAD_REQUEST,
-//                                "wrong variable uri",
-//                                "Variable "+data.getVariable()+" doesn't exist"
-//                    );
-//            }
-//        }
-//        //check objects uri
-//        if (data.getScientificObjects() != null) {
-//            if (!data.getScientificObjects().isEmpty()) {
-//                List<URI> objects = new ArrayList<>();
-//                data.getScientificObjects().forEach(object -> {
-//                    objects.add(object.getUri());
-//                });
-//                if (!sparql.uriListExists(ScientificObjectModel.class, objects )) {
-//                    return new ErrorResponse(
-//                                    Response.Status.BAD_REQUEST,
-//                                    "wrong object uri",
-//                                    "A given object uri doesn't exist " + objects.toString()
-//                        );
-//                }
-//            }
-//        }
-//        //check provenance uri
-////        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-////        if (!provDAO.provenanceExists(data.getProvenanceURI())) {
-////            return new ErrorResponse(
-////                            Response.Status.BAD_REQUEST,
-////                            "wrong provenance uri",
-////                            "Provenance "+ data.getProvenanceURI() +" doesn't exist"
-////                );
-////        }
-//        
-//        return null;
-//    }
+    public ErrorResponse valid(DataModel data) throws SPARQLException, Exception {
+        if (data.getVariable() != null) {
+            VariableDAO dao = new VariableDAO(sparql);
+            VariableModel variable = dao.get(data.getVariable());
+
+            if (variable == null) {
+                return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong variable uri",
+                                "Variable " + data.getVariable() +" doesn't exist"
+                    );
+            } else {
+                URI dataType = variable.getDataType();
+                if (!checkTypeCoherence(dataType, data.getValue())) {
+                    return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong value format",
+                                "Variable dataType: " + dataType.toString() 
+                   );
+                }
+            }
+            
+        }
+
+        //check objects uri
+        if (data.getScientificObjects() != null) {
+            if (!data.getScientificObjects().isEmpty()) {
+                List<URI> objects = new ArrayList<>();
+                data.getScientificObjects().forEach(object -> {
+                    objects.add(object.getUri());
+                });
+                if (!sparql.uriListExists(ScientificObjectModel.class, objects )) {
+                    return new ErrorResponse(
+                                    Response.Status.BAD_REQUEST,
+                                    "wrong object uri",
+                                    "The object " + objects.toString() + " doesn't exist " 
+                        );
+                }
+            }
+        }
+        //check provenance uri
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
+            return new ErrorResponse(
+                            Response.Status.BAD_REQUEST,
+                            "wrong provenance uri",
+                            "Provenance "+ data.getProvenance().getUri() +" doesn't exist"
+                );
+        }
+        
+        return null;
+    }    
 
     public ListWithPagination<DataModel> search(
             UserModel user,
@@ -182,44 +215,45 @@ public class DataDAO {
     public void delete(URI uri) throws NoSQLInvalidURIException {
         nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
     }
-//
-//    public ErrorResponse validList(Set<URI> variables, Set<URI> objects, Set<String> provenances) throws Exception {
-//
-//        //check variables uri
-//        if (!variables.isEmpty()) {
-//            if (!sparql.uriListExists(VariableModel.class, variables)) {
-//                return new ErrorResponse(
-//                                Response.Status.BAD_REQUEST,
-//                                "wrong variable uri",
-//                                "A given variety uri doesn't exist"
-//                    );
-//            }
-//        }
-//
-//        //check objects uri
-//        if (!objects.isEmpty()) {
-//            if (!sparql.uriListExists(ScientificObjectModel.class, objects)) {
-//                return new ErrorResponse(
-//                        Response.Status.BAD_REQUEST,
-//                        "wrong object uri",
-//                        "A given object uri doesn't exist"
-//                );
-//            }
-//        }
+    
 
-        //check provenance uri
-//        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-//        if (!provDAO.provenanceListExists(provenances)) {
-//            return new ErrorResponse(
-//                    Response.Status.BAD_REQUEST,
-//                    "wrong provenance uri",
-//                    "A given provenance uri doesn't exist"
-//            );
-//        }
 
-//        return null;
-//
-//    }
+    public ErrorResponse validList(Set<URI> variables, Set<URI> objects, Set<URI> provenances) throws Exception {
+        //check variables uri
+        if (!variables.isEmpty()) {
+            if (!sparql.uriListExists(VariableModel.class, variables)) {
+                return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong variable uri",
+                                "A given variable uri doesn't exist"
+                    );
+            }
+        }
+
+        //check objects uri
+        if (!objects.isEmpty()) {
+            if (!sparql.uriListExists(ScientificObjectModel.class, objects)) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "wrong object uri",
+                        "A given object uri doesn't exist"
+                );
+            }
+        }
+
+        //check provenances uri
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        if (!provDAO.provenanceListExists(provenances)) {
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "wrong provenance uri",
+                    "At least one provenance uri doesn't exist"
+            );
+        }
+
+        return null;
+
+    }
 
     public ZonedDateTime convertDateTime(String strDate) {
         DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
@@ -235,47 +269,27 @@ public class DataDAO {
         return zdt;
     }
 
-//    public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
-//        List<URI> provenances = getProvenancesByExperiment(xpUri);
-//        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
-//            Query<DataModel> query = pm.newQuery(DataModel.class);
-//            query.setResult("DISTINCT variable");
-//
-//            if (provenances.size() > 0) {
-//                String filter = "";
-//                for (URI provenanceURI : provenances) {
-//                    filter = filter + "provenanceURI == \"" + provenanceURI.toString() + "\" || ";
-//                }
-//                filter = filter.substring(0, filter.length() - 4);
-//
-//                if (!filter.trim().isEmpty()) {
-//                    query.setFilter(filter);
-//                }
-////                query.compile();
-////                String s = query.toString();
-//                List variableURIs = query.executeResultList();
-//
-//                return sparql.getListByURIs(VariableModel.class, variableURIs, language);
-//            } else {
-//                return new ArrayList<>();
-//            }
-//        }
+    public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
+        Set<URI> provenances = getProvenancesByExperiment(xpUri); 
+        if (provenances.size() > 0) {
+            Document listFilter = new Document();
+            listFilter.append("$in", provenances);
+            Document filter = new Document();
+            filter.append("provenance.uri",listFilter);
 
-//    }
+            Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+ 
+            return sparql.getListByURIs(VariableModel.class, variableURIs, language);
+        } else {
+            return new ArrayList<>();
+        }
+    }
 
-//    public List<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
-//        try (PersistenceManager pm = nosql.getPersistentConnectionManager()) {
-//            Query<ProvenanceModel> query = pm.newQuery(ProvenanceModel.class);
-//            query.setResult("DISTINCT uri");
-//
-//            String filter = "experiments.contains(exp) && exp.uri == '" + xpUri.toString() + "'";
-//
-//            query.setFilter(filter);
-//            List provenancesURIs = query.executeResultList();
-//
-//            return provenancesURIs;
-//        }
-//    }
+    public Set<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
+        Document filter = new Document();       
+        filter.append("experiments", xpUri);
+        return nosql.distinct("uri", URI.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, filter);        
+    }
 
     public <T extends DataFileModel> void createFile(DataFileModel model, File file) throws URISyntaxException, Exception {
         //generate URI
@@ -332,6 +346,58 @@ public class DataDAO {
         
         return files;
             
+    }
+
+    public Set<URI> checkVariableDataTypes(List<DataModel> datas) throws Exception {
+        VariableDAO dao = new VariableDAO(sparql);
+        Set<URI> variables = new HashSet<>();
+        Map<URI, URI> variableTypes = new HashMap();
+        for (DataModel data:datas) {
+            URI variableUri = data.getVariable();
+            if (!variableTypes.containsKey(variableUri)) {                
+                VariableModel variable = dao.get(data.getVariable());
+                variableTypes.put(variableUri,variable.getDataType());
+            }
+            URI dataType = variableTypes.get(variableUri);
+            if (!checkTypeCoherence(dataType, data.getValue()))  {
+                variables.add(variableUri);
+            }
+        }
+        return variables;
+    }
+    
+    private Boolean checkTypeCoherence(URI dataType, Object value) {
+        Boolean checkCoherence = true;
+        
+        switch (dataType.toString()) {
+            case "xsd:integer":
+                if (!(value instanceof Integer)) {
+                    checkCoherence = false;
+                }   break;
+            case "xsd:decimal":
+                if (!(value instanceof Double)) {
+                    checkCoherence = false;
+                }   break;
+            case "xsd:boolean":
+                if (!(value instanceof Double)) {
+                    checkCoherence = false;
+                }   break;
+            case "xsd:date":
+                if (!(value instanceof String)) {
+                    checkCoherence = false;
+                }   break;
+            case "xsd:datetime":
+                if (!(value instanceof String)) {
+                    checkCoherence = false;
+                }   break;
+            case "xsd:string":
+                if (!(value instanceof String)) {
+                    checkCoherence = false;
+                }   break;
+            default:
+                break;
+        }
+        return checkCoherence;
     }
     
 }

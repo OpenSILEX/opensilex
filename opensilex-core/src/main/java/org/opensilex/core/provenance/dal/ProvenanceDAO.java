@@ -8,6 +8,7 @@ package org.opensilex.core.provenance.dal;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Set;
 import javax.naming.NamingException;
 import org.bson.Document;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
@@ -82,38 +83,19 @@ public class ProvenanceDAO {
         nosql.update(model, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME);
         return model;
     }
-//
-//    public boolean provenanceExists(URI uri) throws NamingException, IOException{  
-//        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-//            try (JDOQLTypedQuery<ProvenanceModel> tq = persistenceManager.newJDOQLTypedQuery(ProvenanceModel.class)) {
-//                QProvenanceModel cand = QProvenanceModel.candidate();
-//                BooleanExpression expr = null;
-//                expr = cand.uri.eq(uri);
-//                Object res = tq.filter(expr).executeUnique();
-//                
-//                return res != null;
-//            }
-//        }
-//    }
-//    
-//    public boolean provenanceListExists(Collection<String> uriList) throws NamingException, IOException{  
-//        //if at least one provenance doesn't exist, return false;
-//        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-//            Query q = persistenceManager.newQuery(ProvenanceModel.class);
-//            q.setFilter(" :uris.contains(uri)");
-//            q.setParameters(uriList);
-//            List<ProvenanceModel> results = q.executeList();
-//            return results.size() == uriList.size();            
-//        }
-//    }
-//
-    
-//        
-//    public void prepareURI(ProvenanceModel model) throws Exception{
-//        String[] URICompose = new String[1];
-//        URICompose[0] = model.getLabel();
-//        model.setURICompose(URICompose);
-//    }
 
+    public boolean provenanceExists(URI uri) throws NamingException, IOException{  
+        return nosql.uriExists(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
+    }
+    
+    public boolean provenanceListExists(Set<URI> uris) throws NamingException, IOException{  
+        Document listFilter = new Document();
+        listFilter.append("$in", uris);
+        Document filter = new Document();
+        filter.append("uri",listFilter);        
+                
+        Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
+        return (foundedURIs.size() == uris.size());
+    }
 
 }

@@ -28,7 +28,7 @@
             </h3>
             <span
               :class="numberOfSelectedRows<maximumSelectedRows? 'badge badge-pill badge-info': 'badge badge-pill badge-warning'"
-            >{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span> 
+            >{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
           </slot>
         </div>
         <div class="col col-sm-3">
@@ -157,7 +157,7 @@ export default class TableAsyncView extends Vue {
   maximumSelectedRows;
 
   items = [];
-  selectedItems = new Object();
+  selectedItems;
 
   currentPage: number = 1;
   pageSize: number;
@@ -226,8 +226,23 @@ export default class TableAsyncView extends Vue {
   //first step
   // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
   onRowClicked(item) {
-    this.numberOfSelectedRows = this.countItems() + this.items.length + 1;
-   
+
+    console.log("onRowClicked");
+  console.log( item);
+  console.log( this.items);
+    const idx = this.items.findIndex(it => item.uri === it.uri);
+    if (idx >= 0) {
+      this.items.splice(idx, 1);
+    } else {
+      this.items.push(item);
+    }
+    console.log("idx");
+    console.log(idx);
+    this.numberOfSelectedRows = this.items.length;
+
+    console.log("after onRowClicked");
+    console.log(this.items);
+    console.log(this.numberOfSelectedRows);
     if (
       this.maximumSelectedRows &&
       this.maximumSelectedRows > 1 &&
@@ -236,6 +251,7 @@ export default class TableAsyncView extends Vue {
       this.selectedRowIndex = this.tableRef.sortedItems.findIndex(
         it => item == it
       );
+      this.selectedItems = item;
     }
   }
   //second step
@@ -252,15 +268,23 @@ export default class TableAsyncView extends Vue {
       this.numberOfSelectedRows > this.maximumSelectedRows
     ) {
       this.tableRef.unselectRow(this.selectedRowIndex);
-     
+      console.log(this.selectedRowIndex);
+      console.log(this.selectedItems);
+      const idx = this.items.findIndex(it => this.selectedItems == it);
+      this.items.splice(idx, 1);
+       console.log(this.items);
     }
-    this.items = items;
-    this.numberOfSelectedRows = this.countItems() + this.items.length;
+    //this.items = items;
+
+    //  this.selectedItems[this.currentPage] = this.items;
+
+    this.numberOfSelectedRows = this.items.length;
+
     this.$emit("row-selected", this.numberOfSelectedRows);
   }
 
   pagination() {
-    this.selectedItems[this.currentPage] = this.items;
+    //  this.selectedItems[this.currentPage] = this.items;
     this.tableRef.refresh();
   }
 
@@ -268,12 +292,12 @@ export default class TableAsyncView extends Vue {
     let that = this;
     setTimeout(function() {
       that.afterRefreshedItemsSelection();
-      that.numberOfSelectedRows = that.countItems() + that.items.length;
-    }, 100); 
+      //  that.numberOfSelectedRows = that.countItems() + that.items.length;
+    }, 1);
   }
 
   afterRefreshedItemsSelection() {
-    if (this.selectedItems[this.currentPage]) {
+    /*  if (this.selectedItems[this.currentPage]) {
       this.selectedItems[this.currentPage].forEach(element => {
         let index = this.tableRef.sortedItems.findIndex(
           it => element.uri == it.uri
@@ -282,42 +306,67 @@ export default class TableAsyncView extends Vue {
           this.tableRef.selectRow(index);
         }
       });
-    }
+    } */
+    this.items.forEach(element => {
+      let index = this.tableRef.sortedItems.findIndex(
+        it => element.uri == it.uri
+      );
+      if (index >= 0) {
+        this.tableRef.selectRow(index);
+      }
+    });
   }
 
   //from outside the component
   onItemUnselected(item) {
-   
     const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    console.log(item);
+
     if (idx >= 0) {
       //unselect from actual page
       this.tableRef.unselectRow(idx);
     } else {
+      /* 
+    console.log("unselect in array");
+
       for (var key in this.selectedItems) {
         // or unselect from selecteditems array
         if (key !== this.currentPage.toString()) {
+
+          console.log("this.selectedItems");
+          console.log(this.selectedItems);
+          console.log("this.selectedItems[key]");
+          console.log(this.selectedItems[key][0]);
           this.selectedItems[key].forEach((element, index) => {
-            const ind = this.tableRef.sortedItems.findIndex(
-              it => element == it
-            );
-            if (ind >= 0) {
-              this.selectedItems[key].splice(index, 1);
+          
+            if (element.uri===item.id) {
+              
+              console.log("heeee");
+              console.log(index);
+              
+              console.log(this.selectedItems);
+              this.selectedItems.set(key,this.selectedItems[key].splice(index,1));
+              console.log(this.selectedItems);
             }
           });
         }
-      }
+      } */
     }
+    const index = this.items.findIndex(it => item.id == it.uri);
+    this.items.splice(index, 1);
+    this.numberOfSelectedRows = this.items.length;
+    //  this.numberOfSelectedRows = this.countItems() + this.items.length;
   }
 
   getSelected() {
-    let results = new Array();
-    this.selectedItems[this.currentPage] = this.items;
+    /*  let results = new Array();
+    this.items = this.items;
     for (var key in this.selectedItems) {
       this.selectedItems[key].forEach(element => {
         results.push(element);
       });
-    }
-    return results;
+    } */
+    return this.items;
   }
 
   loadData() {

@@ -135,27 +135,27 @@ export default class VariableList extends Vue {
       {
         key: "name",
         label: "component.common.name",
-        sortable: false
+        sortable: true
       },
       {
         key: "_entity_name",
         label: "VariableView.entity",
-        sortable: false
+        sortable: true
       },
       {
         key: "_quality_name",
         label: "VariableView.quality",
-        sortable: false
+        sortable: true
       },
       {
         key: "_method_name",
         label: "VariableView.method",
-        sortable: false
+        sortable: true
       },
       {
         key: "_unit_name",
         label: "VariableView.unit",
-        sortable: false
+        sortable: true
       }
     ];
     if (!this.noActions) {

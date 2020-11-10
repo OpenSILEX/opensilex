@@ -75,21 +75,6 @@ public class DataDAO {
         return instance;
     }
     
-    public StringDataModel create(StringDataModel instance) throws Exception {
-        nosql.create(instance, StringDataModel.class, DATA_COLLECTION_NAME, "id/data");
-        return instance;
-    }
-    
-    public IntDataModel create(IntDataModel instance) throws Exception {
-        nosql.create(instance, IntDataModel.class, DATA_COLLECTION_NAME, "id/data");
-        return instance;
-    }
-    
-    public DoubleDataModel create(DoubleDataModel instance) throws Exception {
-        nosql.create(instance, DoubleDataModel.class, DATA_COLLECTION_NAME, "id/data");
-        return instance;
-    }
-
     public Object createAll(List<DataModel> instances) throws Exception {
         createIndexes();
         nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, "id/data");

@@ -88,10 +88,19 @@
 
         <template v-if="endReceipt && !editingMode">
           <vl-layer-vector>
-            <vl-source-vector
-                ref="vectorSource"
-                :features.sync="features"
-                @update:features="defineCenter">
+            <vl-source-vector ref="vectorSource">
+              <vl-feature
+                  v-for="feature in features"
+                  :key="feature.id"
+                  :properties="feature.properties"
+              >
+                <vl-geom-polygon v-if="feature.geometry.type === 'Polygon'"
+                                 :coordinates="feature.geometry.coordinates"/>
+                <vl-geom-point v-if="feature.geometry.type === 'Point'" :coordinates="feature.geometry.coordinates"/>
+                <vl-geom-circle v-if="feature.geometry.type === 'Circle'" :coordinates="feature.geometry.coordinates"/>
+                <vl-geom-line-string v-if="feature.geometry.type === 'LineString'"
+                                     :coordinates="feature.geometry.coordinates"/>
+              </vl-feature>
             </vl-source-vector>
           </vl-layer-vector>
           <Area :features-area="featuresArea"/>
@@ -357,12 +366,17 @@ export default class MapView extends Vue {
   definesCenter() {
     setTimeout(() => {
       let extent = this.vectorSource.$source.getExtent();
-      extent[0] -= 50;
-      extent[1] -= 50;
-      extent[2] += 50;
-      extent[3] += 50;
-      this.mapView.$view.fit(extent);
-    }, 400);
+
+      if (extent[0] != Infinity) {
+        extent[0] -= 50;
+        extent[1] -= 50;
+        extent[2] += 50;
+        extent[3] += 50;
+        this.mapView.$view.fit(extent);
+      } else {
+        this.definesCenter();
+      }
+    }, 200);
   }
 
   loadNameExperiment() {
@@ -388,18 +402,18 @@ export default class MapView extends Vue {
     let geoJsonObject;
     if (geometry.geometry.type == "GeometryCollection") {
       geoJsonObject = geometry.geometry.geometries[0];
-    } else if (geometry.geometry.type == "Polygon") {
+    } else {
       geoJsonObject = geometry.geometry;
     }
 
     if (type.indexOf("Area") === -1) {
-      this.features.push({
-        type: "Feature",
-        properties: {
-          uri: uri,
-          name: name,
-          type: type,
-        },
+    this.features.push({
+      type: "Feature",
+      properties: {
+        uri: uri,
+        name: name,
+        type: type,
+      },
         geometry: geoJsonObject,
       });
     } else {
@@ -412,10 +426,10 @@ export default class MapView extends Vue {
           comment: comment,
           author: author
         },
-        geometry: geoJsonObject,
-      });
-    }
+      geometry: geoJsonObject,
+    });
   }
+}
 }
 </script>
 

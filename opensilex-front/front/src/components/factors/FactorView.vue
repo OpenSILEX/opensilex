@@ -2,8 +2,8 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="fa#sun"
-      title="component.menu.experimentalDesign.factors"
-      :description="factor.name"
+      :title="factor.name"
+      description="component.menu.experimentalDesign.factors"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs="true" :returnButton="true">

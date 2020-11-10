@@ -175,6 +175,11 @@ input:invalid {
   border-color: #D00!important;
 }
 
+.vue-treeselect__label-container,
+.vue-treeselect__single-value {
+  text-transform: capitalize!important;
+}
+
 .form-group[required="required"] label.form-label:after {
   color: #D00;
   content: "*";

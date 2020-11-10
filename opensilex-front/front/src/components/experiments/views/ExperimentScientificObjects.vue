@@ -4,24 +4,65 @@
       <div class="col-md-12">
         <opensilex-SearchFilterField
           @clear="resetSearch()"
-          @search="refresh()"
-          label="component.factor.list.filter.label"
+          @search="unselectRefresh()"
         >
           <template v-slot:filters>
             <opensilex-FilterField>
               <b-form-group>
                 <label for="name">{{
-                  $t("component.factor.list.filter.name")
+                  $t("component.common.name")
                 }}</label>
                 <opensilex-StringFilter
                   id="name"
                   :filter.sync="filters.name"
-                  placeholder="component.factor.name-placeholder"
+                  placeholder="ExperimentScientificObjects.name-placeholder"
                 ></opensilex-StringFilter>
               </b-form-group>
             </opensilex-FilterField>
 
+            <opensilex-FilterField>
+              <b-form-group>
+                <label for="type">{{
+                  $t("ExperimentScientificObjects.objectType")
+                }}</label>
+                <opensilex-ScientificObjectTypeSelector
+                  id="type"
+                  :types.sync="filters.types"
+                  :multiple="true"
+                  :contextURI="uri"
+                ></opensilex-ScientificObjectTypeSelector>
+              </b-form-group>
+            </opensilex-FilterField>
 
+            <opensilex-FilterField>
+              <b-form-group>
+                <label for="parentFilter">{{
+                  $t("ExperimentScientificObjects.parent-label")
+                }}</label>
+                <opensilex-SelectForm
+                  id="parentFilter"
+                  :selected.sync="filters.parent"
+                  :multiple="false"
+                  :required="false"
+                  :searchMethod="searchParents"
+                ></opensilex-SelectForm>
+              </b-form-group>
+            </opensilex-FilterField>
+
+            <opensilex-FilterField>
+              <b-form-group>
+                <label for="factorLevels">{{
+                  $t("FactorLevelSelector.label")
+                }}</label>
+                <opensilex-FactorLevelSelector
+                  id="factorLevels"
+                  :factorLevels.sync="filters.factorLevels"
+                  :multiple="true"
+                  :required="false"
+                  :experimentURI="uri"
+                ></opensilex-FactorLevelSelector>
+              </b-form-group>
+            </opensilex-FilterField>
           </template>
         </opensilex-SearchFilterField>
       </div>
@@ -195,6 +236,9 @@ export default class ExperimentScientificObjects extends Vue {
 
   public filters = {
     name: "",
+    types: [],
+    parent: undefined,
+    factorLevels: []
   };
 
   public selected = null;
@@ -211,14 +255,39 @@ export default class ExperimentScientificObjects extends Vue {
     this.refresh();
   }
 
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      (lang) => {
+        this.refresh();
+        if (this.selected) {
+          this.displayScientificObjectDetails(this.selected.uri);
+        }
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
   resetSearch() {
     this.resetFilters();
+    this.refresh();
+  }
+
+  unselectRefresh() {
+    this.selected = null;
     this.refresh();
   }
 
   resetFilters() {
     this.filters = {
       name: "",
+      types: [],
+      parent: undefined,
+      factorLevels: []
     };
     // Only if search and reset button are use in list
   }
@@ -262,7 +331,12 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   searchMethod(nodeURI, page, pageSize) {
-    if (this.filters.name == "") {
+    if (
+      this.filters.name == "" &&
+      this.filters.types.length == 0 &&
+      this.filters.parent == undefined && 
+      this.filters.factorLevels.length == 0
+    ) {
       return this.soService.getScientificObjectsChildren(
         this.uri,
         nodeURI,
@@ -273,45 +347,13 @@ export default class ExperimentScientificObjects extends Vue {
       return this.soService.searchScientificObjects(
         this.uri,
         this.filters.name,
-        undefined,
-        undefined,
+        this.filters.types,
+        this.filters.parent,
+        this.filters.factorLevels,
         page,
         pageSize
       );
     }
-  }
-
-  searchScientificObjects() {
-    console.error(this.filters.name);
-    this.soService
-      .searchScientificObjects(
-        this.uri,
-        this.filters.name,
-        undefined,
-        undefined,
-        0,
-        20
-      )
-      .then((http) => {
-        let nodeList = [];
-        for (let soDTO of http.response.result) {
-          let soNode = {
-            title: soDTO.name,
-            data: soDTO,
-            isLeaf: [],
-            children: [],
-            isExpanded: true,
-            isSelected: false,
-            isDraggable: false,
-            isSelectable: true,
-          };
-
-          nodeList.push(soNode);
-        }
-
-        this.nodes = nodeList;
-        this.selected = null;
-      });
   }
 
   searchParents(query, page, pageSize) {
@@ -319,6 +361,7 @@ export default class ExperimentScientificObjects extends Vue {
       .searchScientificObjects(
         this.uri,
         query,
+        undefined,
         undefined,
         undefined,
         page,
@@ -551,6 +594,8 @@ en:
     export-csv: Export CSV
     geometry-label: Geometry
     geometry-comment: Geospacial coordinates
+    objectType: Object type
+    name-placeholder: Enter a name
 
 fr:
   ExperimentScientificObjects:
@@ -566,4 +611,6 @@ fr:
     export-csv: Exporter en CSV
     geometry-label: Géometrie
     geometry-comment: Coordonnées géospatialisées
+    objectType: Type d'objet
+    name-placeholder: Saisir un nom
 </i18n>

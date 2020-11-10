@@ -109,6 +109,8 @@ import AssociatedExperiments from './factors/AssociatedExperiments.vue';
 components["opensilex-AssociatedExperiments"] = AssociatedExperiments;
 import FactorModalList from './factors/FactorModalList.vue';
 components["opensilex-FactorModalList"] = FactorModalList;
+import FactorLevelSelector from './factors/FactorLevelSelector.vue';
+components["opensilex-FactorLevelSelector"] = FactorLevelSelector;
 
 // Geometry
 import GeometrySelector from './geometry/GeometrySelector.vue';
@@ -370,7 +372,8 @@ import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.v
 components["opensilex-ScientificObjectDetail"] = ScientificObjectDetail;
 import ScientificObjectTypes from './scientificObjects/ScientificObjectTypes.vue';
 components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
-
+import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTypeSelector.vue';
+components["opensilex-ScientificObjectTypeSelector"] = ScientificObjectTypeSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

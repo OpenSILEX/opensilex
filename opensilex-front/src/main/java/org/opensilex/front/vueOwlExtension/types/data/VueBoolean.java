@@ -5,8 +5,6 @@
  */
 package org.opensilex.front.vueOwlExtension.types.data;
 
-import java.net.URI;
-import java.util.List;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 

@@ -12,6 +12,9 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_OneOrMore1;
+import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -38,7 +41,7 @@ public class ScientificObjectDAO {
     public ScientificObjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
     }
-    
+
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
         Node experimentGraph = SPARQLDeserializers.nodeURI(contextURI);
 
@@ -67,10 +70,10 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, URI rdfType, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, List<URI> rdfTypes, URI parentURI, List<URI> factorLevels, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         Node contextURI = null;
         Expr graphFilter = null;
-        
+
         if (contextURIs.size() == 1) {
             contextURI = SPARQLDeserializers.nodeURI(contextURIs.get(0));
         } else if (contextURIs.size() > 1) {
@@ -87,14 +90,24 @@ public class ScientificObjectDAO {
                     if (pattern != null && !pattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, pattern));
                     }
-                    if (rdfType != null) {
-                        select.addWhere(makeVar(ScientificObjectModel.TYPE_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(rdfType));
+                    if (rdfTypes != null && rdfTypes.size() > 0) {
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.TYPE_FIELD, rdfTypes));
                     }
                     if (finalGraphFilter != null) {
                         select.addFilter(finalGraphFilter);
                     }
                     if (parentURI != null) {
-                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                        Path deepPartOf = new P_OneOrMore1(new P_Link(Oeso.isPartOf.asNode()));
+                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), deepPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                    }
+                    if (factorLevels != null && factorLevels.size() > 0) {
+                        if (contextURIs.size() == 1) {
+                            select.addGraph(SPARQLDeserializers.nodeURI(contextURIs.get(0)), makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, makeVar(ScientificObjectModel.FACTOR_LEVEL_FIELD));
+                        } else {
+                            select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, makeVar(ScientificObjectModel.FACTOR_LEVEL_FIELD));
+                        }
+
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.FACTOR_LEVEL_FIELD, factorLevels));
                     }
                 },
                 null,
@@ -104,7 +117,7 @@ public class ScientificObjectDAO {
 
     public List<ScientificObjectModel> searchAll(URI contextURI, URI rdfType, URI parentURI, UserModel currentUser) throws Exception {
         Node context = SPARQLDeserializers.nodeURI(contextURI);
-        
+
         return sparql.search(
                 context,
                 ScientificObjectModel.class,

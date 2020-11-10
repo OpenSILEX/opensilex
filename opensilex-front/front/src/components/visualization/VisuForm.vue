@@ -18,7 +18,7 @@
                 :required="true"
               ></opensilex-TagInputForm>
               <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
-              <!--     <b-form-checkbox v-model="filter.showImages" switch>Images</b-form-checkbox>
+              <!--    <b-form-checkbox v-model="filter.showImages" switch>Images</b-form-checkbox>
               <b-form-checkbox v-model="filter.showEvents" switch>Evénements</b-form-checkbox>-->
             </div>
             <div class="filter-group col col-xl-6 col-sm-6 col-12">

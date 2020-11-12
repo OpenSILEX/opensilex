@@ -156,8 +156,8 @@ export default class TableAsyncView extends Vue {
   @Prop()
   maximumSelectedRows;
 
-  items = [];
-  selectedItems;
+  selectedItems = [];
+  selectedItem;
 
   currentPage: number = 1;
   pageSize: number;
@@ -209,13 +209,13 @@ export default class TableAsyncView extends Vue {
   // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
   onRowClicked(item) {
 
-    const idx = this.items.findIndex(it => item.uri === it.uri);
+    const idx = this.selectedItems.findIndex(it => item.uri === it.uri);
     if (idx >= 0) {
-      this.items.splice(idx, 1);
+      this.selectedItems.splice(idx, 1);
     } else {
-      this.items.push(item);
+      this.selectedItems.push(item);
     }
-    this.numberOfSelectedRows = this.items.length;
+    this.numberOfSelectedRows = this.selectedItems.length;
 
     if (
       this.maximumSelectedRows &&
@@ -225,7 +225,7 @@ export default class TableAsyncView extends Vue {
       this.selectedRowIndex = this.tableRef.sortedItems.findIndex(
         it => item == it
       );
-      this.selectedItems = item;
+      this.selectedItem = item;
     }
   }
   //second step
@@ -238,10 +238,10 @@ export default class TableAsyncView extends Vue {
       this.numberOfSelectedRows > this.maximumSelectedRows
     ) {
       this.tableRef.unselectRow(this.selectedRowIndex);
-      const idx = this.items.findIndex(it => this.selectedItems == it);
-      this.items.splice(idx, 1);
+      const idx = this.selectedItems.findIndex(it => this.selectedItem == it);
+      this.selectedItems.splice(idx, 1);
     }
-    this.numberOfSelectedRows = this.items.length;
+    this.numberOfSelectedRows = this.selectedItems.length;
     this.$emit("row-selected", this.numberOfSelectedRows);
   }
 
@@ -257,7 +257,7 @@ export default class TableAsyncView extends Vue {
   }
 
   afterRefreshedItemsSelection() {
-    this.items.forEach(element => {
+    this.selectedItems.forEach(element => {
       let index = this.tableRef.sortedItems.findIndex(
         it => element.uri == it.uri
       );
@@ -274,13 +274,13 @@ export default class TableAsyncView extends Vue {
     if (idx >= 0) {
       this.tableRef.unselectRow(idx);
     } 
-    const index = this.items.findIndex(it => item.id == it.uri);
-    this.items.splice(index, 1);
-    this.numberOfSelectedRows = this.items.length;
+    const index = this.selectedItems.findIndex(it => item.id == it.uri);
+    this.selectedItems.splice(index, 1);
+    this.numberOfSelectedRows = this.selectedItems.length;
   }
 
   getSelected() {
-    return this.items;
+    return this.selectedItems;
   }
 
   loadData() {

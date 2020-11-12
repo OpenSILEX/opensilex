@@ -346,7 +346,7 @@ export default class VisuView extends Vue {
         this.form.startDate,
         this.form.endDate,
         0,
-        5000
+        1000000
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;

@@ -12,7 +12,10 @@
         <b-list-group-item href="#" @click="detailProvenanceClick">Details</b-list-group-item>
         <b-list-group-item href="#">Add annotation/confidence on data</b-list-group-item>
         <b-list-group-item href="#" @click="eventCreateClick">Add event on Scientific object</b-list-group-item>
-        <b-list-group-item href="#" @click="annotationCreateClick">Add annotation on Scientific object</b-list-group-item>
+        <b-list-group-item
+          href="#"
+          @click="annotationCreateClick"
+        >Add annotation on Scientific object</b-list-group-item>
       </b-list-group>
     </b-card>
 
@@ -38,10 +41,10 @@
               <span class="sr-only">Search</span>
             </template>
             <b-dropdown-item href="#" @click="fullscreen">
-               <opensilex-Icon icon="fa#expand" /> Fullscreen
+              <opensilex-Icon icon="fa#expand" />Fullscreen
             </b-dropdown-item>
-            <b-dropdown-item href="#"  @click="exportPNG">
-              <opensilex-Icon icon="fa#download" /> Download image
+            <b-dropdown-item href="#" @click="exportPNG">
+              <opensilex-Icon icon="fa#download" />Download image
             </b-dropdown-item>
           </b-dropdown>
         </div>
@@ -91,7 +94,7 @@ export default class VisuGraphic extends Vue {
   selectedValue;
   selectedOffset;
   variables;
-
+  selectedPointsCount = 0;
   @Prop()
   showEvents: boolean;
 
@@ -107,12 +110,12 @@ export default class VisuGraphic extends Vue {
     this.InitHCTheme();
   }
 
-  closeContextMenu(){
-     if (this.contextMenuShow) {
-        this.contextMenuShow = false;
-      }
+  closeContextMenu() {
+    if (this.contextMenuShow) {
+      this.contextMenuShow = false;
+    }
   }
-  
+
   reload(series, variables, isMultipleVariable) {
     if (!this.showEvents) {
       this.chartOptionsValues.forEach(element => {
@@ -162,7 +165,15 @@ export default class VisuGraphic extends Vue {
   }
 
   exportPNG() {
-    this.highchartsRef[0].chart.exportChart({ type: "image/jpg" });
+    if (this.selectedPointsCount < 1500) {
+      this.highchartsRef[0].chart.exportChart({ type: "image/jpg" });
+    } else {
+      this.$opensilex.showInfoToast(
+        "Too much points : " +
+          this.selectedPointsCount +
+          " Must be < 1500 points"
+      );
+    }
   }
 
   buildGraphic(value, isMultipleVariable) {
@@ -176,6 +187,14 @@ export default class VisuGraphic extends Vue {
           click: function(e) {
             var chart = that.highchartsRef[0].chart;
             chart.tooltip.hide(0);
+          },
+          render: function() {
+            that.selectedPointsCount = 0;
+            this.series.forEach(element => {
+              if (element.points && element.name !== "Navigator 1") {
+                that.selectedPointsCount += element.points.length;
+              }
+            });
           }
         }
       },
@@ -216,17 +235,23 @@ export default class VisuGraphic extends Vue {
         formatter: function() {
           let that: any = this;
           let points = that.points,
-            tooltipArray = ["<b>" +Highcharts.dateFormat("%Y-%m-%d %H:%M:%S", that.x)+ "</b>"]; //bottom tooltip
+            tooltipArray = [
+              "<b>" +
+                Highcharts.dateFormat("%Y-%m-%d %H:%M:%S", that.x) +
+                "</b>"
+            ]; //bottom tooltip
 
-          if (points) { //data points
+          if (points) {
+            //data points
             points.forEach(function(point, index) {
               tooltipArray.push(
-                point.point.provenanceUri + ": <b>" + point.y + "</b>" 
+                point.point.provenanceUri + ": <b>" + point.y + "</b>"
               );
             });
 
             return tooltipArray;
-          } else { //provenance point
+          } else {
+            //provenance point
             let point = that.point;
             if (point && point.eventUri) {
               return (
@@ -274,14 +299,14 @@ export default class VisuGraphic extends Vue {
           },
           events: {
             click: function(e) {
-             // that.rightClick(e, this);
+              // that.rightClick(e, this);
             }
           },
           point: {
             events: {
               click: function(e) {
                 e.stopPropagation();
-               that.rightClick(e, this);
+                that.rightClick(e, this);
               }
             }
           }
@@ -462,19 +487,17 @@ export default class VisuGraphic extends Vue {
     return toReturn;
   }
 
-  onImageIsHovered(indexes){
-     var chart = this.highchartsRef[0].chart;
-      chart.series[indexes.serie].data[indexes.point].setState("hover");
-      chart.tooltip.refresh(chart.series[indexes.serie].data[indexes.point]);
+  onImageIsHovered(indexes) {
+    var chart = this.highchartsRef[0].chart;
+    chart.series[indexes.serie].data[indexes.point].setState("hover");
+    chart.tooltip.refresh(chart.series[indexes.serie].data[indexes.point]);
   }
 
-
-  onImageIsUnHovered(indexes){
-      var chart = this.highchartsRef[0].chart;
-      chart.series[indexes.serie].data[indexes.point].setState();
-      chart.tooltip.hide();
+  onImageIsUnHovered(indexes) {
+    var chart = this.highchartsRef[0].chart;
+    chart.series[indexes.serie].data[indexes.point].setState();
+    chart.tooltip.hide();
   }
-
 
   InitHCTheme() {
     const themeffx = {

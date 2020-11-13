@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.area.dal;
 
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.ontology.Oeso;
@@ -52,6 +53,13 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
 
     GeoJsonObject geometry;
 
+    @SPARQLProperty(
+            ontology = DCTerms.class,
+            property = "creator",
+            required = true
+    )
+    URI author;
+
     public String getName() {
         return name;
     }
@@ -66,6 +74,14 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
 
     public void setType(URI type) {
         this.type = type;
+    }
+
+    public URI getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(URI author) {
+        this.author = author;
     }
 
     public String getDescription() {

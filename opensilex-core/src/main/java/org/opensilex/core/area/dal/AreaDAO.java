@@ -9,11 +9,14 @@
  */
 package org.opensilex.core.area.dal;
 
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Area DAO
@@ -65,5 +68,12 @@ public class AreaDAO {
         sparql.update(area);
 
         return area.getUri();
+    }
+
+    public List<AreaModel> searchByURIs(List<URI> areaURI, UserModel currentUser) throws Exception {
+        List<URI> uniqueAreasUri = areaURI.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        return sparql.getListByURIs(AreaModel.class, uniqueAreasUri, currentUser.getLanguage());
     }
 }

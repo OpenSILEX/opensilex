@@ -218,6 +218,35 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testSearchIntersectsArea() throws URISyntaxException {
+        List<Position> list = new LinkedList<>();
+        list.add(new Position(3.9691007137298584, 43.61097388438795));
+        list.add(new Position(3.974980115890503, 43.61097388438795));
+        list.add(new Position(3.974980115890503, 43.61408104569764));
+        list.add(new Position(3.9691007137298584, 43.61408104569764));
+        list.add(new Position(3.9691007137298584, 43.61097388438795));
+
+        Polygon geometry = new Polygon(list);
+
+        URI uri = new URI("http://opensilex/Geospatial/G_883");
+        Point geometry2 = new Point(new Position(3.97167246, 43.61328981));
+        URI type = new URI("vocabulary:FloodArea");
+
+        GeospatialModel geospatial = new GeospatialModel();
+        geospatial.setUri(uri);
+        geospatial.setType(type);
+        geospatial.setGeometry(geometry2);
+
+        geospatialDAO.create(geospatial);
+//        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, null);
+
+        // Creates a filter that matches all documents containing a field with geospatial data that intersects with the specified shape.
+        HashMap<String, Geometry> searchIntersectsArea = geospatialDAO.searchIntersectsArea(geometry);
+
+        TestCase.assertNotNull(searchIntersectsArea);
+    }
+
+    @Test
     public void testSearchIntersects() {
         List<Position> list = new LinkedList<>();
         list.add(new Position(3.97167246, 43.61328981));

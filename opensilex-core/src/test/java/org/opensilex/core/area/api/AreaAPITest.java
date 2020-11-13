@@ -143,4 +143,20 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
+
+    @Test
+    public void testSearchIntersectsArea() throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<AreaGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetSingleDTO>>() {
+        });
+        AreaGetSingleDTO soGetDetailDTO = getResponse.getResult();
+        assertNotNull(soGetDetailDTO);
+    }
 }

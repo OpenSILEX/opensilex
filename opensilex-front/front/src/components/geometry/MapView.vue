@@ -163,6 +163,8 @@ import * as olExt from "vuelayers/lib/ol-ext";
 import Area from "./AreaComponents.vue";
 import {ExperimentGetDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {transformExtent} from "vuelayers/src/ol-ext/proj";
+import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
 
 @Component({
   components: {Area}
@@ -218,6 +220,7 @@ export default class MapView extends Vue {
   private editingAreaPopUp: boolean = false;
   private endReceipt: boolean = false;
   private drawControls = [];
+  private coordinateExtent: any;
 
   get user() {
     return this.$store.state.user;
@@ -273,11 +276,10 @@ export default class MapView extends Vue {
               res.forEach((element) => {
                 if (element.geometry != null) {
                   element.geometry.properties = {
-                      uri:element.uri,
-                      name:
-                      element.name,
-                      type: element.type,
-                  comment: element.comment,
+                    uri: element.uri,
+                    name: element.name,
+                    type: element.type,
+                    comment: element.comment,
                     author: element.author,
                   }
                   this.features.push(element.geometry)
@@ -373,6 +375,8 @@ export default class MapView extends Vue {
         extent[2] += 50;
         extent[3] += 50;
         this.mapView.$view.fit(extent);
+
+        this.areaRecovery(extent);
       } else {
         this.definesCenter();
       }
@@ -398,38 +402,43 @@ export default class MapView extends Vue {
     this.$emit("select", value);
   }
 
-  private featureInsert(uri: string, geometry: any, name: any, type: any, comment ?: string, author ?: string) {
-    let geoJsonObject;
-    if (geometry.geometry.type == "GeometryCollection") {
-      geoJsonObject = geometry.geometry.geometries[0];
-    } else {
-      geoJsonObject = geometry.geometry;
-    }
+  private areaRecovery(extent) {
+    this.coordinateExtent = transformExtent(extent, "EPSG:3857", "EPSG:4326");
 
-    if (type.indexOf("Area") === -1) {
-    this.features.push({
-      type: "Feature",
-      properties: {
-        uri: uri,
-        name: name,
-        type: type,
-      },
-        geometry: geoJsonObject,
-      });
-    } else {
-      this.featuresArea.push({
-        type: "Feature",
-        properties: {
-          uri: uri,
-          name: name,
-          type: type,
-          comment: comment,
-          author: author
-        },
-      geometry: geoJsonObject,
-    });
+    let geometry = {
+      "type": "Polygon",
+      "coordinates": [[
+        [this.coordinateExtent[2], this.coordinateExtent[1]],
+        [this.coordinateExtent[0], this.coordinateExtent[1]],
+        [this.coordinateExtent[0], this.coordinateExtent[3]],
+        [this.coordinateExtent[2], this.coordinateExtent[3]],
+        [this.coordinateExtent[2], this.coordinateExtent[1]]
+      ]]
+    }
+    this.service = this.$opensilex.getService(
+        "opensilex.AreaService"
+    );
+    this.service
+        .searchIntersects(JSON.parse(JSON.stringify(geometry)))
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AreaGetSingleDTO>>>) => {
+              const res = http.response.result as any;
+              res.forEach((element) => {
+                if (element.geometry != null) {
+                  element.geometry.properties = {
+                    uri: element.uri,
+                    name: element.name,
+                    type: element.type,
+                    comment: element.comment,
+                    author: element.author,
+                  }
+                  this.featuresArea.push(element.geometry)
+                }
+              });
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
   }
-}
 }
 </script>
 

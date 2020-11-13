@@ -150,7 +150,7 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(contextURI, objectsURI);
-
+        mongoClient.close();
         List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -217,6 +217,7 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByGraph(contextURI);
+        mongoClient.close();
 
         // retrieving the uri list with geometries in the experiment
         List<URI> objectsURI = new LinkedList<>();

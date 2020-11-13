@@ -11,9 +11,11 @@
 package org.opensilex.core.area.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.model.geojson.Geometry;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -25,7 +27,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author Jean Philippe VERT
  */
-public class AreaGetSingleDTO {
+public class AreaGetSingleDTO extends RDFObjectDTO {
     /**
      * Area URI
      */
@@ -52,6 +54,11 @@ public class AreaGetSingleDTO {
     protected String comment;
 
     /**
+     * comment
+     */
+    protected URI author;
+
+    /**
      * Convert Area Model into Area DTO
      *
      * @param model         Area Model to convert
@@ -65,6 +72,7 @@ public class AreaGetSingleDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setType(model.getType());
+        dto.setAuthor(model.getAuthor());
 
         if (geometryByURI.getGeometry() != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
@@ -74,6 +82,37 @@ public class AreaGetSingleDTO {
             dto.setComment(model.getDescription());
         }
 
+        return dto;
+    }
+
+    public static AreaGetSingleDTO getDTOFromModel(AreaModel model) {
+        return fromModel(model);
+    }
+
+    private static AreaGetSingleDTO fromModel(AreaModel model) {
+        AreaGetSingleDTO dto = new AreaGetSingleDTO();
+
+        dto.setUri(model.getUri());
+        dto.setName(model.getName());
+        dto.setType(model.getType());
+        dto.setAuthor(model.getAuthor());
+
+        if (model.getDescription() != null) {
+            dto.setComment(model.getDescription());
+        }
+
+        return dto;
+    }
+
+    public static AreaGetSingleDTO getDTOFromModel(AreaModel model, Geometry geometryByURI) {
+        AreaGetSingleDTO dto = getDTOFromModel(model);
+        if (geometryByURI != null) {
+            try {
+                dto.setGeometry(geometryToGeoJson(geometryByURI));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
         return dto;
     }
 
@@ -115,5 +154,13 @@ public class AreaGetSingleDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public URI getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(URI author) {
+        this.author = author;
     }
 }

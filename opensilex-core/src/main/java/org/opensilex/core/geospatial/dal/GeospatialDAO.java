@@ -206,6 +206,17 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
+    public HashMap<String, Geometry> searchIntersectsArea(Geometry geometry) {
+        if (geometry != null) {
+        Document filter = new Document("type", "http://www.opensilex.org/vocabulary/oeso#FloodArea");
+            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(filter);
+
+            return createGeometryMap(geospatialFindIterable);
+        } else {
+            return null;
+        }
+    }
+
     public ListWithPagination<GeospatialModel> searchIntersects(URI type, Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
         if (type != null) {

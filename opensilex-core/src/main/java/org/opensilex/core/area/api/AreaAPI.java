@@ -11,7 +11,9 @@ package org.opensilex.core.area.api;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -22,11 +24,9 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -36,6 +36,13 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
 /**
  * Area API
@@ -114,7 +121,7 @@ public class AreaAPI {
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
             geospatialModel.setType(dto.getType());
-            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(dto.getGeometry()));
+            geospatialModel.setGeometry(geoJsonToGeometry(dto.getGeometry()));
             geoDAO.create(geospatialModel);
 
             sparql.commitTransaction();
@@ -206,7 +213,7 @@ public class AreaAPI {
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
             geospatialModel.setType(areaDTO.getType());
-            geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(areaDTO.getGeometry()));
+            geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
             geoDAO.update(geospatialModel, areaURI, null);
 
             sparql.commitTransaction();
@@ -267,5 +274,45 @@ public class AreaAPI {
         } finally {
             mongoClient.close();
         }
+    }
+
+    /**
+     * @param geometry geometry of the area
+     * @return Return list of area whose geometry corresponds to the Intersections
+     * @throws Exception the data is non-compliant or the uri already existing
+     */
+    @POST
+    @Path("search-intersects")
+    @ApiOperation("Get list of area whose geometry corresponds to the Intersections")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of area whose geometry corresponds to the Intersections", response = AreaGetSingleDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
+    })
+    public Response searchIntersects(
+            @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry
+    ) throws Exception {
+        MongoClient mongoClient = nosql.getMongoDBClient();
+        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+
+        HashMap<String, Geometry> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry));
+
+        mongoClient.close();
+
+        // retrieving the uri list with geometries in the intersects
+        List<URI> areasURI = new LinkedList<>();
+        for (Map.Entry<String, Geometry> entry : mapGeo.entrySet()) {
+            areasURI.add(new URI(entry.getKey()));
+        }
+
+        AreaDAO dao = new AreaDAO(sparql);
+        List<AreaModel> areaModels = dao.searchByURIs(areasURI, currentUser);
+
+        List<AreaGetSingleDTO> dtoList = areaModels.stream().map((model) -> AreaGetSingleDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 }

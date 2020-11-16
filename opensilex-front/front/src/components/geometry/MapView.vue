@@ -80,17 +80,27 @@ export default class MapView extends Vue {
     {
       key: "properties.name",
       label: "name",
-      sortable: true,
+      sortable: true
     },
     {
       key: "properties.uri",
       label: "uri",
-      sortable: true,
+      sortable: true
     },
     {
       key: "properties.type",
       label: "type",
-      sortable: true,
+      sortable: true
+    },
+    {
+      key: "properties.comment",
+      label: "comment",
+      sortable: true
+    },
+    {
+      key: "properties.author",
+      label: "author",
+      sortable: true
     },
   ];
   selectedFeatures: any[] = [];
@@ -132,21 +142,22 @@ export default class MapView extends Vue {
           const res = http.response.result as any;
           res.forEach((element) => {
             if (element.geometry != null) {
-              this.featureInsert(
-                element.uri,
-                element.geometry,
-                element.name,
-                element.type
-              );
+                  element.geometry.properties = {
+                    uri: element.uri,
+                    name: element.name,
+                    type: element.type,
+                    comment: element.comment,
+                    author: element.author,
+                  }
+                  this.features.push(element.geometry)
             }
           });
           if (res.length != 0) {
-            this.definesCenter();
+                this.endReceipt = true;
           }
         }
       )
       .catch(this.$opensilex.errorHandler);
-    this.endReceipt = true;
   }
 
   mapCreated(map) {
@@ -173,15 +184,13 @@ export default class MapView extends Vue {
     });
   }
 
-  definesCenter() {
-    setTimeout(() => {
+  defineCenter() {
       let extent = this.vectorSource.$source.getExtent();
       extent[0] -= 50;
       extent[1] -= 50;
       extent[2] += 50;
       extent[3] += 50;
       this.mapView.$view.fit(extent);
-    }, 1000);
   }
 
   loadNameExperiment() {
@@ -202,26 +211,7 @@ export default class MapView extends Vue {
   select(value) {
     this.$emit("select", value);
   }
-
-  private featureInsert(uri: string, geometry: any, name: any, type: any) {
-    let geoJsonObject;
-    if (geometry.geometry.type == "GeometryCollection") {
-      geoJsonObject = geometry.geometry.geometries[0];
-    } else if (geometry.geometry.type == "Polygon") {
-      geoJsonObject = geometry.geometry;
-    }
-    this.features.push({
-      type: "Feature",
-      properties: {
-        uri: uri,
-        name: name,
-        type: type,
-      },
-      geometry: geoJsonObject,
-    });
   }
-}
-
 </script>
 
 <i18n>
@@ -229,14 +219,14 @@ export default class MapView extends Vue {
      MapView:
       label: Geometry
       add-button: Input annotation
-      add: Create metadata
+        add: Create metadata  ?
       update: Update metadata
       uri: Geometry URI
     fr:
      MapView:
       label: Géométrie
       add-button: Saisir une géometrie
-      add: Créer une annotation
+        add: Créer une annotation ?
       update: Mettre à jour annotation
       uri: URI de Géométrie
 </i18n>

@@ -244,9 +244,6 @@ export default class AreaForm extends Vue {
             }
         )
         .catch(this.$opensilex.errorHandler);
-    optionsArea.forEach((id) => {
-      console.log(id);
-    });
 
     this.optionsArea = optionsArea;
   }

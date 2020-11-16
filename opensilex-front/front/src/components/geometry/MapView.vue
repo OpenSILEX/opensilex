@@ -79,6 +79,7 @@
           data-projection="EPSG:4326"
           style="height: 400px"
           @created="mapCreated"
+
       >
         <vl-view ref="mapView" :rotation.sync="rotation"></vl-view>
 
@@ -88,7 +89,7 @@
 
         <template v-if="endReceipt && !editingMode">
           <vl-layer-vector>
-            <vl-source-vector ref="vectorSource">
+            <vl-source-vector ref="vectorSource" @update:features="defineCenter">
               <vl-feature
                   v-for="feature in features"
                   :key="feature.id"
@@ -287,7 +288,6 @@ export default class MapView extends Vue {
               });
               if (res.length != 0) {
                 this.endReceipt = true;
-                this.endReceipt = true;
               }
             }
         )
@@ -365,22 +365,14 @@ export default class MapView extends Vue {
     return this.$i18n.t("MapView.label");
   }
 
-  definesCenter() {
-    setTimeout(() => {
-      let extent = this.vectorSource.$source.getExtent();
-
-      if (extent[0] != Infinity) {
-        extent[0] -= 50;
-        extent[1] -= 50;
-        extent[2] += 50;
-        extent[3] += 50;
-        this.mapView.$view.fit(extent);
-
-        this.areaRecovery(extent);
-      } else {
-        this.definesCenter();
-      }
-    }, 200);
+  defineCenter() {
+    let extent = this.vectorSource.$source.getExtent();
+    extent[0] -= 50;
+    extent[1] -= 50;
+    extent[2] += 50;
+    extent[3] += 50;
+    this.mapView.$view.fit(extent);
+    this.areaRecovery(extent);
   }
 
   loadNameExperiment() {

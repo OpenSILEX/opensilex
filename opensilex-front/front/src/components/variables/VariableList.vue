@@ -118,7 +118,7 @@ export default class VariableList extends Vue {
       this.nameFilter,
       options.orderBy,
       options.currentPage,
-      4
+      options.pageSize
     );
   }
 

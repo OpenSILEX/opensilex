@@ -44,7 +44,7 @@ public class AreaDAO {
         area.setName(name);
         area.setType(type);
         area.setDescription(description);
-        area.setCreator(user);
+        area.setAuthor(user);
 
         if (uri != null) {
             uri = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));

@@ -1,13 +1,3 @@
-<!--
-  -  ********************************************************************************
-  -                       .java
-  -   OpenSILEX
-  -   Copyright © INRAE 2020
-  -   Creation date: October 08, 2020
-  -   Contact: vincent.migot@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
-  -   *******************************************************************************
-  -->
-
 <template>
   <vl-layer-vector>
     <vl-source-vector ref="vectorSourceArea">

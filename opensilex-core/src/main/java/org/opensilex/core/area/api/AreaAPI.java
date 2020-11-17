@@ -298,7 +298,7 @@ public class AreaAPI {
         MongoClient mongoClient = nosql.getMongoDBClient();
         GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
 
-        HashMap<String, Geometry> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry));
+        HashMap<String, Geometry> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry), currentUser, sparql);
 
         mongoClient.close();
 

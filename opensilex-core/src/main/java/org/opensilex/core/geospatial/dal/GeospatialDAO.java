@@ -30,13 +30,25 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.GeometryCollection;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -206,10 +218,21 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
-    public HashMap<String, Geometry> searchIntersectsArea(Geometry geometry) {
+    public HashMap<String, Geometry> searchIntersectsArea(Geometry geometry, UserModel currentUser, SPARQLService sparql) throws Exception {
         if (geometry != null) {
-        Document filter = new Document("type", "http://www.opensilex.org/vocabulary/oeso#FloodArea");
-            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(filter);
+            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+
+            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI("http://www.opensilex.org/vocabulary/oeso#PerenialArea"), ClassModel.class,
+                    currentUser,
+                    true,
+                    null);
+            List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);
+            List<String> ontologyAreaURI = new LinkedList<>();
+            ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI("vocabulary:Zone"));
+
+            resourceTreeDTOS.forEach(resourceTreeDTO -> ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString())));
+
+            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(Filters.in("type", ontologyAreaURI));
 
             return createGeometryMap(geospatialFindIterable);
         } else {
@@ -264,8 +287,8 @@ public class GeospatialDAO {
         return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
     }
 
-    public void createAll(List<GeospatialModel> geospacialModels) {
+    public void createAll(List<GeospatialModel> geospatialModels) {
         addIndex();
-        geometryCollection.insertMany(geospacialModels);
+        geometryCollection.insertMany(geospatialModels);
     }
 }

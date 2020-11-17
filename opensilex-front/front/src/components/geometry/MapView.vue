@@ -89,19 +89,10 @@
 
         <template v-if="endReceipt && !editingMode">
           <vl-layer-vector>
-            <vl-source-vector ref="vectorSource" @update:features="defineCenter">
-              <vl-feature
-                  v-for="feature in features"
-                  :key="feature.id"
-                  :properties="feature.properties"
-              >
-                <vl-geom-polygon v-if="feature.geometry.type === 'Polygon'"
-                                 :coordinates="feature.geometry.coordinates"/>
-                <vl-geom-point v-if="feature.geometry.type === 'Point'" :coordinates="feature.geometry.coordinates"/>
-                <vl-geom-circle v-if="feature.geometry.type === 'Circle'" :coordinates="feature.geometry.coordinates"/>
-                <vl-geom-line-string v-if="feature.geometry.type === 'LineString'"
-                                     :coordinates="feature.geometry.coordinates"/>
-              </vl-feature>
+            <vl-source-vector
+                ref="vectorSource"
+                :features.sync="features"
+                @update:features="defineCenter">
             </vl-source-vector>
           </vl-layer-vector>
           <Area :features-area="featuresArea"/>

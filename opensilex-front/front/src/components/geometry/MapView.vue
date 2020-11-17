@@ -79,7 +79,6 @@
           data-projection="EPSG:4326"
           style="height: 400px"
           @created="mapCreated"
-
       >
         <vl-view ref="mapView" :rotation.sync="rotation"></vl-view>
 
@@ -95,7 +94,13 @@
                 @update:features="defineCenter">
             </vl-source-vector>
           </vl-layer-vector>
-          <Area :features-area="featuresArea"/>
+          <vl-layer-vector>
+            <vl-source-vector ref="vectorSourceArea" :features.sync="featuresArea"></vl-source-vector>
+            <vl-style-box>
+              <vl-style-stroke color="green"></vl-style-stroke>
+              <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
+            </vl-style-box>
+          </vl-layer-vector>
         </template>
 
         <template v-if="endReceipt && editingMode">
@@ -108,7 +113,13 @@
                 <vl-style-fill color="rgba(255,255,255,0.5)"></vl-style-fill>
               </vl-style-box>
             </vl-layer-vector>
-            <Area :features-area="featuresArea"/>
+            <vl-layer-vector>
+              <vl-source-vector ref="vectorSourceArea" :features.sync="featuresArea"></vl-source-vector>
+              <vl-style-box>
+                <vl-style-stroke color="green"></vl-style-stroke>
+                <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
+              </vl-style-box>
+            </vl-layer-vector>
 
             <!-- Creating a new area -->
             <vl-interaction-draw
@@ -152,15 +163,12 @@ import Vue from "vue";
 import {DragBox} from "ol/interaction";
 import {platformModifierKeyOnly} from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
-import Area from "./AreaComponents.vue";
 import {ExperimentGetDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
 
-@Component({
-  components: {Area}
-})
+@Component
 export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
@@ -257,13 +265,8 @@ export default class MapView extends Vue {
         "opensilex.ScientificObjectsService"
     );
     this.service
-        .searchScientificObjectsWithGeometryListByUris(
-            this.$store.state.experiment
-        )
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>
-            ) => {
+        .searchScientificObjectsWithGeometryListByUris(this.$store.state.experiment)
+        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach((element) => {
                 if (element.geometry != null) {
@@ -307,20 +310,6 @@ export default class MapView extends Vue {
     dragBox.on("boxStart", () => {
       this.selectedFeatures = [];
     });
-  }
-
-  editGeometry(uri: any) {
-    console.debug("editArea" + uri);
-    console.log("test edit")
-    // this.service
-    //     .getScientificObjectsBySearch(0, 1, uri)
-    //     .then(
-    //         (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
-    //           console.log(http.response.result);
-    //           this.areaForm.showEditForm(http.response.result);
-    //         }
-    //     )
-    //     .catch(this.$opensilex.errorHandler);
   }
 
   loadDrawTypes() {
@@ -371,8 +360,7 @@ export default class MapView extends Vue {
         "opensilex.ExperimentsService"
     );
 
-    service
-        .getExperiment(this.$store.state.experiment)
+    service.getExperiment(this.$store.state.experiment)
         .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
           this.nameExperiment = http.response.result.label;
         })
@@ -403,8 +391,7 @@ export default class MapView extends Vue {
     );
     this.service
         .searchIntersects(JSON.parse(JSON.stringify(geometry)))
-        .then(
-            (http: HttpResponse<OpenSilexResponse<Array<AreaGetSingleDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetSingleDTO>>>) => {
               const res = http.response.result as any;
               res.forEach((element) => {
                 if (element.geometry != null) {

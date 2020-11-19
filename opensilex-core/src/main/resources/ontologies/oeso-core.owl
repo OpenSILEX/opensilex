@@ -1478,12 +1478,6 @@
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Area"/>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Document"/>

@@ -24,7 +24,7 @@
       </div>
     </div>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
-    <!--      {{ memorizesArea() && (this.$bvModal.show("eventArea")) }}-->
+    <!--      {{ this.$bvModal.show("eventArea") }}-->
     <!--      <b-modal-->
     <!--          :title="$t('component.area.eventArea')"-->
     <!--          centered-->
@@ -44,7 +44,6 @@
     <!--      </b-modal>-->
     <!--    </div>-->
     <div v-if="editingArea && editingMode">
-      {{ memorizesArea() }}
       <opensilex-PageActions>
         <template v-slot>
           <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
@@ -103,11 +102,17 @@
           </vl-layer-vector>
         </template>
 
-        <template v-if="endReceipt && editingMode">
+        <template v-if="editingMode">
           <div id="editionMode">
-            <vl-layer-vector v-if="features.length !== 0">
-              <vl-source-vector :features.sync="features" ident="the-source"></vl-source-vector>
-
+            <vl-layer-vector>
+              <vl-source-vector
+                  :features.sync="temporaryArea"
+                  ident="the-source"
+                  @update:features="memorizesArea">
+              </vl-source-vector>
+            </vl-layer-vector>
+            <vl-layer-vector>
+              <vl-source-vector :features.sync="features"></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="#ff3620"></vl-style-stroke>
                 <vl-style-fill color="rgba(255,255,255,0.5)"></vl-style-fill>
@@ -182,6 +187,7 @@ export default class MapView extends Vue {
   service: any;
   features: any[] = [];
   featuresArea: any[] = [];
+  temporaryArea: any[] = [];
   arrayPrefix: any[] = [];
   fieldsSelected = [
     {
@@ -244,11 +250,11 @@ export default class MapView extends Vue {
   }
 
   memorizesArea() {
-    this.$store.state.zone = this.features[this.features.length - 1];
+    this.$store.state.zone = this.temporaryArea[this.temporaryArea.length - 1];
   }
 
   deleteLastFieldNotValidated() {
-    this.features.splice(this.features.length - 1);
+    this.temporaryArea.splice(this.temporaryArea.length - 1);
   }
 
   showCreateForm() {

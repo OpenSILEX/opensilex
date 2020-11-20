@@ -68,7 +68,7 @@ You can also use this docker image: [eclipse/rdf4j-workbench](https://hub.docker
 Linux example command:
 
 ```
-sudo docker run -d eclipse/rdf4j-workbench:amd64-3.1.1
+sudo docker run -d eclipse/rdf4j-workbench:amd64-3.4.4
 ```
 
 ### GraphDB
@@ -199,6 +199,18 @@ file-system:
 
 big-data:
     nosql:
+        config:
+            connection:
+                config:
+                    # MongoDB server host
+                    host: localhost
+
+                    # MongoDB server port
+                    port: 27017
+
+                    # MongoDB database name
+                    database: opensilex
+
         # MongoDB connection configuration
         mongodb:
             # MongoDB server host
@@ -262,7 +274,6 @@ cd /home/opensilex/bin/<X.Y.Z>/
 java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml server start --host=<localhost> --port=<8666> --adminPort=<8888> [--daemon] 
 ```
 
-
 ### Stop server
 
 ```
@@ -270,99 +281,3 @@ cd /home/opensilex/bin/<X.Y.Z>/
 
 java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml server stop --host=<localhost> --adminPort=<8888>
 ```
-
-## Install PHP Interface
-
-### Install Apache and PHP
-
-```
-sudo apt update
-sudo apt install curl apache2 php libapache2-mod-php
-sudo systemctl restart apache2
-```
-
-### Get PHP application sources
-
-```
-cd /home/opensilex
-git clone https://github.com/OpenSILEX/phis-webapp.git
-cd phis-webapp
-git branch -a
-git tag -l
-git checkout tags/3.4.0-hybrid -b remotes/origin/hybrid
-```
-
-### Install Composer
-
-Please follow their [documentation](https://getcomposer.org/download/)
-
-It should be something like:
-
-```
-cd /home/opensilex/phis-webapp
-
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
-```
-
-### Install libraries
-
-```
-cd /home/opensilex/phis-webapp
-php composer.phar install --ignore-platform-reqs
-```
-
-### Give user permissions
-
-In this section we assume that your apache server is running with user in group `www-data`
-
-```
-echo "Add user opensilex to group www-data"
-sudo usermod -a -G www-data opensilex
-echo "Set group for all path to phis-webapp sources"
-sudo chgrp www-data /home
-sudo chgrp www-data /home/opensilex
-sudo chgrp -R www-data /home/opensilex/phis-webapp
-echo "Allow group to read and write file in phis-webapp directory"
-sudo chmod -R g+srw /home/opensilex/phis-webapp
-```
-
-### Set up Web app configuration
-
-You may have to change configuration file `/home/opensilex/phis-webapp/config/config.php`
-
-Set the `$hostname` variable to adjust it to your configuration
-
-You also may have to change host and port configuration in file `/home/opensilex/phis-webapp/config/web_services.php`
-
-```
-define('WS_PHIS_PATH', 'http://localhost:8666/rest/');
-define('WS_PHIS_PATH_DOC', 'http://localhost:8666/api-docs');
-define('WS_PHIS_APP_PATH', 'http://localhost:8666/app/');
-```
-
-### Set up Apache configuration
-
-For a simple setup, just create a symbolic link to sources folder
-
-```
-sudo ln -s /home/opensilex/phis-webapp /var/www/html/
-sudo chown opensilex:www-data /var/www/html/phis-webapp
-```
-
-For a more complexe setup please follow [Apache HTTP Server documentation](http://httpd.apache.org/docs/current/)
-
-You can also setup HTTPS for Apache by example using [Let's Encrypt](https://letsencrypt.org/fr/)
-
-## Check OpenSILEX Interface
-
-Normally you should now be able to access to OpenSILEX interfaces with the following URL (adjusted to your setup):
-
-- Website: http://localhost/phis-webapp
-- Web services API: http://localhost:8666/api-docs
-
-You should be able to connect with the admin user you create previously.
-
-If not, please check that your OpenSILEX server is running and your PHP configuration.

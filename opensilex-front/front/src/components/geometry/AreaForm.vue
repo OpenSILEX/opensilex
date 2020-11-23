@@ -304,22 +304,6 @@ export default class AreaForm extends Vue {
     this.form.uri = uri;
   }
 
-  createGeometry() {
-    return new Promise((resolve, reject) => {
-      return this.$emit("onCreate", this.form, result => {
-        if (result instanceof Promise) {
-          return result
-              .then(uri => {
-                return uri;
-              })
-              .catch(reject);
-        } else {
-          return resolve(result);
-        }
-      });
-    });
-  }
-
   create(form) {
     form.geometry = this.$store.state.zone.geometry;
     if (form.optionAreaType !== null)
@@ -334,6 +318,7 @@ export default class AreaForm extends Vue {
           let uri = http.response.metadata.datafiles[0];
           console.debug("Area of Geometry created", uri);
           form.uri = uri;
+          return uri;
         })
         .catch(error => {
           if (error.status == 409) {
@@ -365,7 +350,6 @@ en:
     label: Area
     add-button: Input metadata
     deleteLastAreaNotValidatedButton: Delete the last non-validated area
-    add: Draw an area
     update: Update a perennial zone
     uri: Area URI
     comment: comment
@@ -395,7 +379,6 @@ fr:
     label: Zone
     add-button: Saisir métadonnée
     deleteLastAreaNotValidatedButton: Supprimer la dernier zone non validé
-    add: Dessiner une zone
     update: Mettre à jour une zone pérenne
     uri: URI de Zone
     comment: description

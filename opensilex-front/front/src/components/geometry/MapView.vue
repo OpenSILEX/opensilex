@@ -3,25 +3,11 @@
     <div>
       <h1>{{ nameExperiment }}</h1>
     </div>
-    <div id="editing" class="row">
-      <h6>{{ $t("MapView.add") }}</h6>
-      <toggle-button
-          v-model="editingMode"
-          :labels="{checked: $t('component.common.yes'), unchecked: $t('component.common.no')}"
-          :value="false"
-      />
-      <div v-if="editingMode">
-        {{ $t('Area.choiceTypeGeometriesDrawn') }}
-        <div class="col-lg-2">
-          <opensilex-SelectForm
-              :clearable="false"
-              :multiple="false"
-              :options="drawControls"
-              :selected.sync="drawType"
-              @select="select"
-          ></opensilex-SelectForm>
-        </div>
-      </div>
+    <div id="editing" class="row" v-if="!editingMode">
+      <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
+                              label="MapView.add-area-button"
+                              @click="editingMode=true"
+      ></opensilex-CreateButton>
     </div>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
@@ -51,11 +37,6 @@
                                   label="MapView.add-button"
                                   @click="areaForm.showCreateForm()"
           ></opensilex-CreateButton>
-          <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                                  :small="false"
-                                  label="MapView.deleteLastAreaNotValidatedButton"
-                                  @click="deleteLastFieldNotValidated()"
-          ></opensilex-DeleteButton>
         </template>
       </opensilex-PageActions>
     </div>
@@ -144,6 +125,7 @@
         <vl-interaction-select
             id="select"
             ref="selectInteraction"
+            v-if="!editingMode"
             :features.sync="selectedFeatures"
         />
       </vl-map>
@@ -223,7 +205,7 @@ export default class MapView extends Vue {
   private editingArea: boolean = false;
   private editingAreaPopUp: boolean = false;
   private endReceipt: boolean = false;
-  private drawControls = [];
+  // private drawControls = [];
   private coordinateExtent: any;
 
   get user() {
@@ -241,10 +223,27 @@ export default class MapView extends Vue {
   }
 
   showAreaDetails(areaUriResult: any) {
+    this.editingMode = false;
     areaUriResult.then(areaUri => {
       console.debug("showAreaDetails", areaUri);
-      location.reload();
-    });
+      this.$opensilex.getService("opensilex.AreaService")
+      .getByURI(areaUri)
+          .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+                const res = http.response.result as any;
+                  if (res.geometry != null) {
+                    res.geometry.properties = {
+                      uri: res.uri,
+                      name: res.name,
+                      type: res.type,
+                      comment: res.comment,
+                    }
+                    this.featuresArea.push(res.geometry)
+                  }
+              }
+          )
+          .catch(this.$opensilex.errorHandler);
+     });
+    this.deleteLastFieldNotValidated();
   }
 
   memorizesArea() {
@@ -262,7 +261,7 @@ export default class MapView extends Vue {
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
     this.loadNameExperiment();
-    this.loadDrawTypes();
+    // this.loadDrawTypes();
     // this.loadNamespaces();
 
     this.service = this.$opensilex.getService(
@@ -279,7 +278,6 @@ export default class MapView extends Vue {
                     name: element.name,
                     type: element.type,
                     comment: element.comment,
-                    author: element.author,
                   }
                   this.features.push(element.geometry)
                 }
@@ -316,30 +314,30 @@ export default class MapView extends Vue {
     });
   }
 
-  loadDrawTypes() {
-    this.drawControls = [
-      {
-        id: 'point',
-        label: this.$i18n.t("Area.point")
-      },
-      {
-        id: 'line-string',
-        label: this.$i18n.t("Area.line-string")
-      },
-      {
-        id: 'polygon',
-        label: this.$i18n.t("Area.polygon")
-      },
-      {
-        id: 'circle',
-        label: this.$i18n.t("Area.circle")
-      },
-      {
-        id: 'undefined',
-        label: this.$i18n.t("Area.stop")
-      }
-    ];
-  }
+  // loadDrawTypes() {
+  //   this.drawControls = [
+  //     {
+  //       id: 'point',
+  //       label: this.$i18n.t("Area.point")
+  //     },
+  //     {
+  //       id: 'line-string',
+  //       label: this.$i18n.t("Area.line-string")
+  //     },
+  //     {
+  //       id: 'polygon',
+  //       label: this.$i18n.t("Area.polygon")
+  //     },
+  //     {
+  //       id: 'circle',
+  //       label: this.$i18n.t("Area.circle")
+  //     },
+  //     {
+  //       id: 'undefined',
+  //       label: this.$i18n.t("Area.stop")
+  //     }
+  //   ];
+  // }
 
   successMessageArea() {
     // this.$bvModal.hide("eventAnnotation");
@@ -404,7 +402,6 @@ export default class MapView extends Vue {
                     name: element.name,
                     type: element.type,
                     comment: element.comment,
-                    author: element.author,
                   }
                   this.featuresArea.push(element.geometry)
                 }
@@ -435,15 +432,15 @@ export default class MapView extends Vue {
       MapView:
         label: Geometry
         add-button: Input annotation
-        add: Create metadata  ?
+        add-area-button: Area
+        add: Create metadata
         update: Update metadata
         uri: Geometry URI
-        deleteLastAreaNotValidatedButton: Delete the last non-validated area
       Area:
         editing: Yes
         selection: No
         choiceTypeGeometriesDrawn: Choice type geometries to be drawn
-        add: Draw an area
+        add: Description of the area
         update: Update a perennial zone
         point: Point
         line-string: LineString
@@ -453,16 +450,16 @@ export default class MapView extends Vue {
     fr:
       MapView:
         label: Géométrie
-        add-button: Saisir une géometrie
-        add: Créer une annotation ?
+        add-button: Zone
+        add-area-button: Zone
+        add: Créer une annotation
         update: Mettre à jour annotation
         uri: URI de Géométrie
-        deleteLastAreaNotValidatedButton: Supprimer la dernier zone non validé
       Area:
         editing: Oui
         selection: Non
         choiceTypeGeometriesDrawn: Choix du type de géométrie à dessiner
-        add: Dessiner une zone
+        add: Description de la zone
         update: Mettre à jour une zone pérenne
         point: Point
         line-string: LineString

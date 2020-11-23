@@ -404,11 +404,16 @@ public class ExperimentDAO {
         select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
+        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
+        select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
+        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+        
         select.addFilter(SPARQLQueryHelper.or(
                 inGroup,
                 hasScientificSupervisor,
                 hasTechnicalSupervisor,
-                isPublic
+                isPublic,
+                isCreator
         ));
     }
 

@@ -58,6 +58,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -122,7 +123,7 @@ public class GermplasmAPI {
     private SPARQLService sparql;
 
     @Inject
-    NoSQLService nosql;
+    private MongoDBService nosql;
 
     @CurrentUser
     UserModel currentUser;

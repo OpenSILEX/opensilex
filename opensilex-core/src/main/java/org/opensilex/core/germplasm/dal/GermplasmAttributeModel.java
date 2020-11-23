@@ -1,28 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          GermplasmAttributeModel.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
 import java.net.URI;
 import java.util.Map;
-import javax.jdo.annotations.Convert;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.persistence.Id;
 
 /**
  *
- * @author boizetal
+ * @author Alice Boizet
  */
-@PersistenceCapable(table = "germplasmAttributes")
 public class GermplasmAttributeModel {
-    @Convert(URIStringConverter.class)
-    @Id
     URI uri;
     
-    @Persistent(defaultFetchGroup="true")
     Map<String, String> attribute;
 
     public URI getUri() {

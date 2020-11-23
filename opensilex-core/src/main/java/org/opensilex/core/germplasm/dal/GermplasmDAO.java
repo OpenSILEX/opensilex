@@ -8,19 +8,15 @@ package org.opensilex.core.germplasm.dal;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.io.IOException;
+import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Filters.eq;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.jdo.JDOQLTypedQuery;
-import javax.jdo.PersistenceManager;
-import javax.jdo.query.BooleanExpression;
-import javax.naming.NamingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -34,7 +30,8 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.service.NoSQLService;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -46,7 +43,6 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import static org.opensilex.sparql.utils.Ontology.subClassAny;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
@@ -62,26 +58,53 @@ public class GermplasmDAO {
             .build();
 
     protected final SPARQLService sparql;
-    protected final NoSQLService nosql;
+    protected final MongoDBService nosql;
+    
+    public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttributes";
 
-    public GermplasmDAO(SPARQLService sparql, NoSQLService nosql) {
+    public GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
     }
+    
+    public MongoCollection getAttributesCollection() {
+        return nosql.db.getCollection(ATTRIBUTES_COLLECTION_NAME, GermplasmAttributeModel.class);        
+    }
 
-//    public GermplasmModel create(GermplasmModel instance) throws Exception {
-//        sparql.create(instance);
-//        return instance;
-//    }
     public GermplasmModel update(GermplasmModel germplasm) throws Exception {
-        sparql.update(germplasm);
-        if (germplasm.getAttributes() != null) {
-            GermplasmAttributeModel model = new GermplasmAttributeModel();
-            model.setUri(germplasm.getUri());
-            model.setAttribute(germplasm.getAttributes());
-            addAttributes(model);
-        }
+        GermplasmAttributeModel storedAttributes = getStoredAttributes(germplasm.getUri());
+        
+        if (germplasm.getAttributes() == null && storedAttributes == null) {
+            sparql.update(germplasm);
+        } else {      
+            nosql.startTransaction();
+            sparql.startTransaction();
+            sparql.update(germplasm); 
+            MongoCollection collection = getAttributesCollection();
+
+            try {  
+                if (germplasm.getAttributes() != null) {
+                    GermplasmAttributeModel model = new GermplasmAttributeModel();
+                    model.setUri(germplasm.getUri());
+                    model.setAttribute(germplasm.getAttributes());
+                    if (storedAttributes != null) {                    
+                        collection.findOneAndReplace(nosql.session, eq("uri", germplasm.getUri()), model);
+                    } else {
+                        collection.insertOne(nosql.session, model);
+                    }
+                } else {
+                    collection.findOneAndDelete(nosql.session, eq("uri", germplasm.getUri()));   
+                }
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+            
+        } 
         return germplasm;
+
     }
 
     public boolean labelExistsCaseSensitive(String label, URI rdfType) throws Exception {
@@ -143,18 +166,41 @@ public class GermplasmDAO {
     }
 
     public GermplasmModel create(GermplasmModel germplasm, UserModel user) throws Exception {
-        sparql.create(germplasm);
+        if (germplasm.getAttributes() != null) {
+            
+            nosql.startTransaction(); 
+            sparql.startTransaction();    
+            try {                    
+                sparql.create(germplasm);
+                GermplasmAttributeModel model = new GermplasmAttributeModel();
+                model.setUri(germplasm.getUri());
+                model.setAttribute(germplasm.getAttributes());
+                MongoCollection collection = getAttributesCollection();
+                collection.insertOne(nosql.session, model);
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+        } else {
+            sparql.create(germplasm);
+        }
+
         return germplasm;
+
     }
 
     public GermplasmModel get(URI uri, UserModel user) throws Exception {
         GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, user.getLanguage());
-        GermplasmModel germplasmWithAttr = null;
         if (germplasm != null) {
-            germplasmWithAttr = getAttributesByURI(germplasm);
+            GermplasmAttributeModel storedAttributes = getStoredAttributes(germplasm.getUri());
+            if (storedAttributes != null) {
+                germplasm.setAttributes(storedAttributes.getAttribute());
+            }            
         }
+        return germplasm;
 
-        return germplasmWithAttr;
     }
 
     public ListWithPagination<GermplasmModel> search(
@@ -360,8 +406,23 @@ public class GermplasmDAO {
     }
 
     public void delete(URI uri) throws Exception {
-        sparql.delete(GermplasmModel.class, uri);
-        deleteAttributes(uri);
+        GermplasmAttributeModel attributes = getStoredAttributes(uri);
+        if (attributes != null) {            
+            nosql.startTransaction();   
+            sparql.startTransaction(); 
+            try {                       
+                sparql.delete(GermplasmModel.class, uri);
+                MongoCollection collection = getAttributesCollection();
+                collection.findOneAndDelete(nosql.session, eq("uri", uri));    
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+        } else {
+            sparql.delete(GermplasmModel.class, uri);
+        }
     }
 
     public boolean hasRelation(URI uri, Property ontologyRelation) throws SPARQLException {
@@ -454,6 +515,16 @@ public class GermplasmDAO {
         
     }
 
+    private GermplasmAttributeModel getStoredAttributes(URI uri) {
+        GermplasmAttributeModel storedAttributes = null;
+        try {
+            storedAttributes = nosql.findByURI(GermplasmAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, uri);
+        } catch (NoSQLInvalidURIException e) {            
+        }
+        return storedAttributes;
+
+    }
+
     private static class Key {
 
         final URI rdfType;
@@ -485,77 +556,6 @@ public class GermplasmDAO {
                 return false;
             }
             return true;
-        }
-    }
-
-    private URI addAttributes(GermplasmAttributeModel model) throws NamingException, URISyntaxException, IOException {
-        Boolean exist = existingAttributes(model.getUri());
-        URI uri = new URI(SPARQLDeserializers.getExpandedURI(model.uri.toString()));
-        model.setUri(uri);
-        if (!exist) {
-            nosql.create(model);
-        } else {
-            deleteAttributes(uri);
-            nosql.create(model);
-        }
-
-        return model.getUri();
-    }
-
-    private GermplasmModel getAttributesByURI(GermplasmModel model) throws NamingException, IOException, URISyntaxException {
-        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-
-            try (JDOQLTypedQuery<GermplasmAttributeModel> tq = persistenceManager.newJDOQLTypedQuery(GermplasmAttributeModel.class)) {
-                QGermplasmAttributeModel cand = QGermplasmAttributeModel.candidate();
-
-                URI uri = new URI(SPARQLDeserializers.getExpandedURI(model.getUri().toString()));
-                BooleanExpression expr = cand.uri.eq(uri);
-
-                GermplasmAttributeModel result = tq.filter(expr).executeUnique();
-
-                if (result != null) {
-                    model.setAttributes(result.attribute);
-                }
-
-                return model;
-            }
-        }
-    }
-
-    private Boolean existingAttributes(URI germplasmURI) throws URISyntaxException, IOException, NamingException {
-        Boolean exist = false;
-        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-
-            try (JDOQLTypedQuery<GermplasmAttributeModel> tq = persistenceManager.newJDOQLTypedQuery(GermplasmAttributeModel.class)) {
-                QGermplasmAttributeModel cand = QGermplasmAttributeModel.candidate();
-
-                URI uri = new URI(SPARQLDeserializers.getExpandedURI(germplasmURI.toString()));
-                BooleanExpression expr = cand.uri.eq(uri);
-
-                GermplasmAttributeModel result = tq.filter(expr).executeUnique();
-
-                if (result != null) {
-                    exist = true;
-                }
-
-                return exist;
-            }
-
-        }
-    }
-
-    private void deleteAttributes(URI uri) throws NamingException, IOException, URISyntaxException {
-        try (PersistenceManager persistenceManager = nosql.getPersistentConnectionManager()) {
-            try (JDOQLTypedQuery<GermplasmAttributeModel> tq = persistenceManager.newJDOQLTypedQuery(GermplasmAttributeModel.class)) {
-                QGermplasmAttributeModel cand = QGermplasmAttributeModel.candidate();
-                URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));
-                BooleanExpression expr = cand.uri.eq(expandedURI);
-
-                GermplasmAttributeModel attribute = tq.filter(expr).executeUnique();
-                if (attribute != null) {
-                    persistenceManager.deletePersistent(attribute);
-                }
-            }
         }
     }
 

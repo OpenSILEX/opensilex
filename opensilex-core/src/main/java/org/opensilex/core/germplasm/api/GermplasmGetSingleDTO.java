@@ -6,8 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 

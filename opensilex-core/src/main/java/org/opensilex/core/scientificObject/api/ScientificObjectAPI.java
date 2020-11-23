@@ -38,7 +38,6 @@ import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -93,6 +92,7 @@ import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
@@ -126,7 +126,7 @@ public class ScientificObjectAPI {
     private SPARQLService sparql;
 
     @Inject
-    private NoSQLService nosql;
+    private MongoDBService nosql;
 
     @POST
     @Path("get-by-uris/{contextURI}")

@@ -542,7 +542,7 @@ export default class ExperimentScientificObjects extends Vue {
       "/core/scientific-object/csv-validate",
       {
         description: {
-          experiment: this.uri,
+          context: this.uri,
           type: objectType,
         },
         file: csvFile,
@@ -555,7 +555,7 @@ export default class ExperimentScientificObjects extends Vue {
       "/core/scientific-object/csv-import",
       {
         description: {
-          experiment: this.uri,
+          context: this.uri,
           type: objectType,
           validationToken: validationToken,
         },

@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import java.net.URI;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -13,8 +14,10 @@ import java.net.URI;
  */
 public class ScientificObjectCsvDescriptionDTO {
 
+    @NotNull
     private URI context;
 
+    @NotNull
     private URI type;
 
     private String validationToken;

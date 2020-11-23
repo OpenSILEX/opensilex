@@ -154,8 +154,16 @@
             :fields="fieldsSelected"
             :items="selectedFeatures"
             hover
+            sort-icon-left
             striped
         >
+          <template v-slot:cell(name)="data">
+            <opensilex-UriLink
+                :uri="data.item.properties.uri"
+                :value="data.item.properties.name"
+                :to="{path: encodeURIComponent(data.item.properties.uri)}"
+            ></opensilex-UriLink>
+          </template>
         </b-table>
       </div>
     </div>
@@ -191,13 +199,8 @@ export default class MapView extends Vue {
   arrayPrefix: any[] = [];
   fieldsSelected = [
     {
-      key: "properties.name",
+      key: "name",
       label: "name",
-      sortable: true
-    },
-    {
-      key: "properties.uri",
-      label: "uri",
       sortable: true
     },
     {
@@ -209,12 +212,7 @@ export default class MapView extends Vue {
       key: "properties.comment",
       label: "comment",
       sortable: true
-    },
-    {
-      key: "properties.author",
-      label: "author",
-      sortable: true
-    },
+    }
   ];
   selectedFeatures: any[] = [];
   nodes = [];
@@ -415,6 +413,20 @@ export default class MapView extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
   }
+
+  // getByUriScientificObject() {
+  //   let objectURI = []
+  //   this.selectedFeatures.forEach(item => {
+  //     objectURI.push(item.properties.uri)
+  //   });
+  //
+  //   return this.$opensilex
+  //       .getService("opensilex.ScientificObjectsService")
+  //       .getScientificObjectsListByUris(
+  //           this.$store.state.experiment,
+  //           objectURI
+  //       );
+  // }
 }
 </script>
 

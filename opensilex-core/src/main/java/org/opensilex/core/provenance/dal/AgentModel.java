@@ -8,23 +8,17 @@ package org.opensilex.core.provenance.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import java.util.Map;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PersistenceCapable;
+import org.bson.Document;
 
 /**
  * Agent model
  * @author Alice Boizet
  */
-@PersistenceCapable(embeddedOnly="true")
 public class AgentModel {    
     @JsonProperty("rdfType")
-    @Column(name="rdf:type")
     URI type;
 
-    @Persistent(defaultFetchGroup="true")
-    Map settings; 
+    Document settings; 
     
     URI uri;
 
@@ -36,11 +30,11 @@ public class AgentModel {
         this.type = type;
     }
 
-    public Map getSettings() {
+    public Document getSettings() {
         return settings;
     }
 
-    public void setSettings(Map settings) {
+    public void setSettings(Document settings) {
         this.settings = settings;
     }
 

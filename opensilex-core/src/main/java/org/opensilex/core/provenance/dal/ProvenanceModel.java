@@ -18,70 +18,37 @@ import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * Provenance model
  * @author Alice Boizet
  */
-@PersistenceCapable(table = "provenance")
-public class ProvenanceModel implements NoSQLModel{
-    @NotPersistent
-    private final String baseURI = "id/provenance";
-    @NotPersistent
-    private String[] URICompose;
+public class ProvenanceModel extends MongoModel {
     
-    @PrimaryKey
-    URI uri;    
-    String label;
+    //URI uri;    
+    String name;
     String comment;
+    List<URI> experiments;    
     
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="uri", column="uri")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    List<ExperimentProvModel> experiments;    
-    
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="type", column="rdf:type"),
-        @Persistent(name="startedAtTime", column="startedAtTime"),
-        @Persistent(name="endedAtTime", column="endedAtTime"),
-        @Persistent(name="settings", column="settings")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    @Column(name="prov:Activity")
     List<ActivityModel> activity;
     
-    @Element(embeddedMapping={
-    @Embedded(members={
-        @Persistent(name="uri", column="uri"),
-        @Persistent(name="type", column="rdf:type"),
-        @Persistent(name="settings", column="settings")})
-    })
-    @Join(column="uri")
-    @Persistent(defaultFetchGroup="true")
-    @Column(name="prov:Agent")
     List<AgentModel> agents;
 
-    @Override
-    public URI getUri() {
-        return uri;
+//    public URI getUri() {
+//        return uri;
+//    }
+//
+//    public void setUri(URI uri) {
+//        this.uri = uri;
+//    }
+
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -92,11 +59,11 @@ public class ProvenanceModel implements NoSQLModel{
         this.comment = comment;
     }
 
-    public List<ExperimentProvModel> getExperiments() {
+    public List<URI> getExperiments() {
         return experiments;
     }
 
-    public void setExperiments(List<ExperimentProvModel> experiments) {
+    public void setExperiments(List<URI> experiments) {
         this.experiments = experiments;
     }
     
@@ -116,59 +83,12 @@ public class ProvenanceModel implements NoSQLModel{
         this.agents = agents;
     }
 
-    public void setURICompose(String[] elt){
-        this.URICompose = elt;
+    @Override
+    public String[] getUriSegments(MongoModel instance) {
+        return new String[]{
+            this.getName()
+        };
     }
     
-    @Override
-    public String getGraphPrefix() {
-        return baseURI;
-    }
-
-    @Override
-    public <T extends NoSQLModel> T update(T instance) {
-        ProvenanceModel newInstance =  new ProvenanceModel();
-        ProvenanceModel updateInstance = (ProvenanceModel) instance;
-
-        newInstance.setUri(instance.getUri());
-        if(updateInstance.getLabel() !=  null)
-            newInstance.setLabel(updateInstance.getLabel());
-        else
-            newInstance.setLabel(label);
-
-        if(updateInstance.getComment() != null)
-            newInstance.setComment(updateInstance.getComment());
-        else
-            newInstance.setComment(comment);
-
-        if(updateInstance.getExperiments()!=  null)
-            newInstance.setExperiments(updateInstance.getExperiments());
-        else
-            newInstance.setExperiments(experiments);
-
-        if(updateInstance.getActivity() !=  null)
-            newInstance.setActivity(updateInstance.getActivity());
-        else
-            newInstance.setActivity(activity);
-
-        if(updateInstance.getAgents() !=  null)
-            newInstance.setAgents(updateInstance.getAgents());
-        else
-            newInstance.setAgents(agents);
-
-        return (T) newInstance;
-    }
-
-    @Override
-    public BooleanExpression getURIExpr(URI uri) {
-        QProvenanceModel candidate = QProvenanceModel.candidate();
-        return candidate.uri.eq(uri);
-    }
-
-    @Override
-    public String[] getUriSegments(NoSQLModel instance) {
-        String[] lab = {this.label};
-        return lab;
-    }
     
 }

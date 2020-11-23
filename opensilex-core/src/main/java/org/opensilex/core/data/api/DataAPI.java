@@ -6,6 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoWriteException;
+import com.mongodb.bulk.BulkWriteError;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -14,6 +18,11 @@ import io.swagger.annotations.ApiResponses;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,10 +54,9 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -59,6 +67,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -92,9 +101,10 @@ public class DataAPI {
     
     public static final String ERROR_SIZE_SET = "Too large set";
     public static final String ERROR_MAX_SIZE_SET = "Set are limited to";
+    public static final int SIZE_MAX = 20000;
 
     @Inject
-    private DataNucleusService nosql;
+    private MongoDBService nosql;
     
     @Inject
     private SPARQLService sparql;
@@ -128,9 +138,25 @@ public class DataAPI {
         if (error != null) {
             return error.getResponse();
         } else {
-            //dao.prepareURI(model);
-            model = (DataModel) dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            ArrayList<DataModel> dataList = new ArrayList();
+            dataList.add(model);
+            Set<URI> variablesList = dao.checkVariableDataTypes(dataList);
+            if (!variablesList.isEmpty()) {
+                return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong value format",
+                                "variable dataType doesn't correspond to the value format"
+                    ).getResponse();
+                
+            } else {
+                try {
+                    model = (DataModel) dao.create(model);
+                    return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+                } catch (MongoWriteException duplicateKey) {
+                    return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateKey.getMessage())
+                        .getResponse();
+                }
+            }
         }
     }
     
@@ -153,41 +179,62 @@ public class DataAPI {
         
         Set<URI> variablesURI = new HashSet<>();
         Set<URI> objectsURI = new HashSet<>();
-        Set<String> provenances= new HashSet<>();
+        Set<URI> provenancesURI= new HashSet<>();
         for(DataCreationDTO dto : dtoList ){
             variablesURI.add(dto.getVariable());
             if (dto.getScientificObjects() != null) {
-                for(ProvEntityModel object: dto.getScientificObjects())
-                    objectsURI.add(object.getUri());
+                objectsURI.addAll(dto.getScientificObjects());
             }            
-            provenances.add(dto.getProvenance().getUri().toString());
+            provenancesURI.add(dto.getProvenance().getUri());
         }
         
-        ErrorResponse error = dao.validList(variablesURI, objectsURI, provenances);
+        ErrorResponse error = dao.validList(variablesURI, objectsURI, provenancesURI);
         if (error != null) {
             return error.getResponse();
         } else {
             List<DataModel> dataList = new ArrayList();
             for(DataCreationDTO dto : dtoList ){            
                 DataModel model = dto.newModel();
-                //dao.prepareURI(model);
                 dataList.add(model);
-        }
-            try{
-                dataList = (List<DataModel>) dao.createAll(dataList);
-            }catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
-                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
             }
-            List<URI> createdResources = new ArrayList<>();
-            for (DataModel data : dataList){
-                createdResources.add(data.getUri());
+            Set<URI> variablesList = dao.checkVariableDataTypes(dataList);
+            if (!variablesList.isEmpty()) {
+                return new ErrorResponse(
+                                Response.Status.BAD_REQUEST,
+                                "wrong value format",
+                                "variable URIs: " + variablesList.toString()
+                    ).getResponse();
+            } else {
+                try{
+                    dataList = (List<DataModel>) dao.createAll(dataList);
+                    List<URI> createdResources = new ArrayList<>();
+                    for (DataModel data : dataList){
+                        createdResources.add(data.getUri());
+                    }
+                    return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+                
+                } catch(NoSQLTooLargeSetException ex) {
+                    return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
+                        ERROR_MAX_SIZE_SET + String.valueOf(SIZE_MAX)).getResponse();
+                    
+                } catch (MongoBulkWriteException duplicateError) {
+                    List<DataCreationDTO> datas = new ArrayList();
+                    List<BulkWriteError> errors = duplicateError.getWriteErrors();
+                    for (int i=0 ; i < errors.size() ; i++) {
+                        int index = errors.get(i).getIndex();
+                        datas.add(dtoList.get(index));
+                    }                    
+                    ObjectMapper mapper = new ObjectMapper();
+                    String json = mapper.writeValueAsString(datas);
+                    
+                    return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
+                    .getResponse();
+                }
             }
-            
-            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();//PaginatedListResponse(Response.Status.CREATED,createdResources).getResponse();//PaginatedListResponse<>(dataList).getResponse();
         }
-        
     }
+        
+    
     
     @GET
     @Path("get/{uri}")
@@ -202,14 +249,17 @@ public class DataAPI {
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         DataDAO dao = new DataDAO(nosql,sparql, fs);
-        DataModel model = dao.get(uri);
-
-        if (model != null) {
+        
+        try {
+            DataModel model = dao.get(uri);
             return new SingleObjectResponse<>(DataGetDTO.fromModel(model)).getResponse();
-        } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Data not found",
-                    "Unknown data URI: " + uri.toString()).getResponse();
+        } catch (NoSQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown Data URI", e.getMessage())
+                    .getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
         }
+        
     }
     
     @GET
@@ -233,14 +283,34 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+        LocalDateTime utcStartDate = null;
+        LocalDateTime utcEndDate = null;
+        for (DateFormat dateCheckFormat : formats) {
+            try { 
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                if (startDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(startDate, dtf);
+                    utcStartDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                if (endDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(endDate, dtf);
+                    utcEndDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                
+                break;
+            } catch (DateTimeParseException e) {
+            }                    
+        }
+        
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 //uri,
                 objectUri,
                 variableUri,
                 provenanceUri,
-                startDate,
-                endDate,
+                utcStartDate,
+                utcEndDate,
                 page,
                 pageSize
         );
@@ -293,13 +363,10 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try{
-            DataDAO dao = new DataDAO(nosql, sparql, fs);
-            DataModel model = dto.newModel();
-            
-            if(!nosql.existByURI(model, uri)) throw new NoSQLInvalidURIException(uri);
-            model.setUri(uri);
-            model = (DataModel) dao.update(model);
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataModel model = dto.newModel();    
+        try{        
+            dao.update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
         }catch (NoSQLInvalidURIException e){
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Data URI", e.getMessage()).getResponse();
@@ -325,36 +392,34 @@ public class DataAPI {
             @ApiParam("Data description") @Valid DataUpdateDTO dto
             //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try{
-            DataDAO dao = new DataDAO(nosql, sparql, fs);
-            DataModel model = dto.newModel();
-            ErrorResponse error = dao.valid(model);
-                
-            if (error != null) {
-                return error.getResponse();
-            } else {
-            
-                if(!nosql.existByURI(model, dto.getUri())) throw new NoSQLInvalidURIException(dto.getUri());
-
-                model = (DataModel) dao.update(model);
-                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-            }
-        }catch (NoSQLInvalidURIException e){
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Data URI", e.getMessage()).getResponse();
-        }catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
         
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataModel model = dto.newModel();
+        ErrorResponse error = dao.valid(model);
+
+        if (error != null) {
+            return error.getResponse();
+        } else {
+            try {
+                dao.update(model);
+                return new SingleObjectResponse<>(DataGetDTO.fromModel(model)).getResponse();
+            } catch (NoSQLInvalidURIException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown Data URI", e.getMessage())
+                        .getResponse();
+            }catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }        
     }
     
     /**
-     * Saves data file with its metadata and use MULTIPART_FORM_DATA for it.fileContentDisposition parameter is automatically created from submitted file.
-     * No example could be provided for this kind of MediaType
+     * Saves data file with its metadata and use MULTIPART_FORM_DATA for it.fileContentDisposition parameter is automatically created from submitted file.No example could be provided for this kind of MediaType
      *
      * @param dto
      * @param file
      * @param fileContentDisposition
      * @return the insertion result.
+     * @throws java.lang.Exception
      */
     @POST
     @Path("file/create")
@@ -378,10 +443,14 @@ public class DataAPI {
         if (error != null) { 
             return error.getResponse();
         } else {
-            
-            model.setFilename(fileContentDisposition.getFileName());
-            dao.createFile(model, file);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            try {
+                model.setFilename(fileContentDisposition.getFileName());
+                dao.insertFile(model, file);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (MongoWriteException duplicateKey) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "Duplicate Data", duplicateKey.getMessage())
+                    .getResponse();
+            }
         }
         
     }
@@ -427,21 +496,17 @@ public class DataAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         
         Set<URI> objectsURI = new HashSet<>();
-        Set<String> provenances= new HashSet<>();
+        Set<URI> provenancesURI= new HashSet<>();
         for(DataFilePathCreationDTO dto : dtoList ){ 
-            if (dto.getScientificObjects() != null) {
-                for (ProvEntityModel obj:dto.getScientificObjects()) {
-                    objectsURI.add(obj.getUri());
-                } 
-            }                        
-            provenances.add(dto.getProvenance().getUri().toString());
+            objectsURI.addAll(dto.getScientificObjects());
+            provenancesURI.add(dto.getProvenance().getUri());                   
         }
         
-        ErrorResponse error = dao.validList(new HashSet(), objectsURI, provenances);
+        ErrorResponse error = dao.validList(new HashSet(), objectsURI, provenancesURI);
         if (error != null) {
             return error.getResponse();
         } else {
-            List<DataModel> dataList = new ArrayList();
+            List<DataFileModel> dataList = new ArrayList();
             for(DataFilePathCreationDTO dto : dtoList ){            
                 DataFileModel model = dto.newModel();
                 // get the the absolute file path according to the fileStorageDirectory
@@ -459,19 +524,21 @@ public class DataAPI {
                 model.setPath(absoluteFilePath.toString());
                 model.setFilename(absoluteFilePath.getFileName().toString());
                 dataList.add(model);
-        }
-            try {
-                dataList = (List<DataModel>) dao.createAll(dataList);
-            }catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
-                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
-            }
-            List<URI> createdResources = new ArrayList<>();
-            for (DataModel data : dataList){
-                createdResources.add(data.getUri());
             }
             
-            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+            try {
+                dataList = (List<DataFileModel>) dao.createAllFiles(dataList);
+                List<URI> createdResources = new ArrayList<>();
+                for (DataModel data : dataList){
+                    createdResources.add(data.getUri());
+                }            
+                return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+                
+            } catch(NoSQLTooLargeSetException ex){
+                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
+            }                
+            
         }     
 
     }
@@ -479,7 +546,7 @@ public class DataAPI {
     /**
      * Returns the content of the file corresponding to the URI given.
      *
-     * @param fileUri the {@link URI} of the file to download
+     * @param uri
      * @param response
      * @return The file content or null with a 404 status if it doesn't exists
      */
@@ -500,9 +567,6 @@ public class DataAPI {
             DataDAO dao = new DataDAO(nosql, sparql, fs);
 
             DataFileModel description = dao.getFile(uri);
-            if (description == null) {
-                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
-            }
 
             java.nio.file.Path filePath = Paths.get(description.getPath());
             byte[] fileContent = fs.readFileAsByteArray(filePath);
@@ -513,7 +577,11 @@ public class DataAPI {
             return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
                     .build();
-
+            
+        } catch (NoSQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown file URI", e.getMessage())
+                    .getResponse();
+            
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
         }
@@ -522,7 +590,7 @@ public class DataAPI {
     /**
      * This service returns the description of a file corresponding to the URI given.
      *
-     * @param fileUri
+     * @param uri
      * @return the file description
      * @throws java.lang.Exception
      * @example {
@@ -551,21 +619,20 @@ public class DataAPI {
             @ApiParam(value = "Search by fileUri", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-
-        DataFileModel description = dao.getFile(uri);
-
-        if (description != null) {
+        
+        try {
+            DataFileModel description = dao.getFile(uri);
             return new SingleObjectResponse<>(DataFileGetDTO.fromModel(description)).getResponse();
-        } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Data not found",
-                    "Unknown data URI: " + uri.toString()).getResponse();
+        } catch (NoSQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown file URI", e.getMessage())
+                    .getResponse();
         }
     }
     
     /**
      * Returns a thumbnail based on the content of the file corresponding to the URI given.The given URI must link to a picture.
      *
-     * @param fileUri      the {@link URI} of the file to download
+     * @param uri      the {@link URI} of the file to download
      * @param scaledHeight the height of the thumbnail to return
      * @param scaledWidth  the width of the thumbnail to return
      * @param response
@@ -588,22 +655,23 @@ public class DataAPI {
             @Context HttpServletResponse response) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-
-        DataFileModel description = dao.getFile(uri);
-        if (description == null) {
-            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
-        }
-
-        byte[] imageData = ImageResizer.getInstance().resize(
+        
+        try {
+            DataFileModel description = dao.getFile(uri);
+                    byte[] imageData = ImageResizer.getInstance().resize(
                 fs.readFileAsByteArray(Paths.get(description.getPath())),
                 scaledWidth,
                 scaledHeight
-        );
+            );
 
-        return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                .build();
-
+            return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+                    .build();
+            
+        } catch (NoSQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown file URI", e.getMessage())
+                    .getResponse();
+        }
     }
     
     /**
@@ -652,13 +720,33 @@ public class DataAPI {
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         
+        DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+        LocalDateTime utcStartDate = null;
+        LocalDateTime utcEndDate = null;
+        for (DateFormat dateCheckFormat : formats) {
+            try { 
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                if (startDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(startDate, dtf);
+                    utcStartDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                if (endDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(endDate, dtf);
+                    utcEndDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                
+                break;
+            } catch (DateTimeParseException e) {
+            }                    
+        }
+        
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
                 //uri,
                 objectUri,
                 provenanceUri,
-                startDate,
-                endDate,
+                utcStartDate,
+                utcEndDate,
                 page,
                 pageSize
         );
@@ -685,25 +773,38 @@ public class DataAPI {
             @ApiParam("DataFile description") @Valid DataFileUpdateDTO dto
             //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        try{
-            DataDAO dao = new DataDAO(nosql, sparql, fs);
-            DataFileModel model = dto.newModel();
-            ErrorResponse error = dao.valid(model);
-                
-            if (error != null) {
-                return error.getResponse();
-            } else {
-            
-                if(!nosql.existByURI(model, dto.getUri())) throw new NoSQLInvalidURIException(dto.getUri());
-
-                model = (DataFileModel) dao.update(model);
-                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
-            }
-        }catch (NoSQLInvalidURIException e){
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Data URI", e.getMessage()).getResponse();
-        }catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
-        }
         
-    }
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+               
+        DataFileModel model = dto.newModel();
+        ErrorResponse error = dao.valid(model);
+
+        if (error != null) {
+            return error.getResponse();
+        } else {
+            // get the the absolute file path according to the fileStorageDirectory
+            java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));                
+
+            if (!fs.exist(absoluteFilePath)) {
+                return new ErrorResponse(
+                            Response.Status.BAD_REQUEST,
+                            "File not found",
+                            absoluteFilePath.toString()
+                ).getResponse();
+            }
+
+            model.setPath(absoluteFilePath.toString());
+            model.setFilename(absoluteFilePath.getFileName().toString());   
+            
+            try {
+                dao.updateFile(model);
+                return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();            
+            }catch (NoSQLInvalidURIException e){
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown File URI", e.getMessage()).getResponse();
+            }catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+    }    
+
 }

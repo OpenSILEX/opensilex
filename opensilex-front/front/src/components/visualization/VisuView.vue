@@ -504,14 +504,13 @@ export default class VisuView extends Vue {
         //else add same image many times as far as they are concerned items
         const image: Image = {
           imageUri: element.uri,
-          objectType: concernedItem.rdfType,
           uri:
             this.$opensilex.getBaseAPI() +
             "/data/file/thumbnail" +
             encodeURIComponent(element.uri) +
             "?scaledHeight=800",
           type: element.rdfType,
-          objectUri: concernedItem.uri,
+          objectUri: concernedItem,
           date: element.date,
           provenanceUri: element.provenance.uri,
           imageIndex: point.imageIndex,

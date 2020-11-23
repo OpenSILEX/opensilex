@@ -7,27 +7,13 @@
 package org.opensilex.core.data.dal;
 
 import java.net.URI;
-import java.time.ZonedDateTime;
-import java.util.List;
-import javax.jdo.annotations.Index;
-import javax.jdo.annotations.NotPersistent;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.query.BooleanExpression;
-import org.opensilex.core.provenance.dal.QProvenanceModel;
-import org.opensilex.nosql.model.NoSQLModel;
 
 /**
  * DataFileModel
  * @author Alice Boizet
  */
 
-@PersistenceCapable(table = "File")
-@Index( name="fileUnicity", 
-            unique="true", 
-            members={"rdfType", "scientificObjects", "date"})
 public class DataFileModel extends DataModel {
-    @NotPersistent
-    private final String baseURI = "id/file";
     
     URI rdfType;
     String filename;
@@ -56,17 +42,5 @@ public class DataFileModel extends DataModel {
     public void setPath(String path) {
         this.path = path;
     }
-
-    @Override
-    public String getGraphPrefix() {
-        return baseURI;
-    }
-    
-    @Override
-    public BooleanExpression getURIExpr(URI uri) {
-        QDataFileModel candidate = QDataFileModel.candidate();
-        return candidate.uri.eq(uri);
-    }
-
         
 }

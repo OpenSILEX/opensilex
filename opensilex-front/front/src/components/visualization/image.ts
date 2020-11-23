@@ -5,7 +5,7 @@ export interface Image{
     type:string,
     date:string,
     objectUri:string,
-    objectType:string,
+    objectType?:string,
     objectAlias?:string,
     provenanceUri:string,
     imageIndex?:string,

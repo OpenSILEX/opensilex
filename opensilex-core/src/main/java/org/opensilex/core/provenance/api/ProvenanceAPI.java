@@ -38,9 +38,8 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
-import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -73,7 +72,7 @@ public class ProvenanceAPI {
     UserModel currentUser;
 
     @Inject
-    private DataNucleusService nosql;
+    private MongoDBService nosql;
 
     @Inject
     private SPARQLService sparql;
@@ -124,23 +123,26 @@ public class ProvenanceAPI {
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        ProvenanceModel provenance = dao.get(uri);
-
-        if (provenance != null) {
+        try {
+            ProvenanceModel provenance = dao.get(uri);
             return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
-        } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Provenance not found",
-                    "Unknown provenance URI: " + uri.toString()).getResponse();
+        } catch (NoSQLInvalidURIException e) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown Provenance URI", e.getMessage())
+                    .getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
         }
 
     }
 
     /**
-     * @param label
+     * @param name
      * @param experiment
      * @param activityType
      * @param agentURI
      * @param agentType
+     * @param page
+     * @param pageSize
      * @return
      * @throws java.lang.Exception
      */
@@ -155,8 +157,8 @@ public class ProvenanceAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
-    public Response getProvenance(
-            @ApiParam(value = "label") @QueryParam("label") String label,
+    public Response searchProvenance(
+            @ApiParam(value = "name") @QueryParam("name") String name,
             @ApiParam(value = "experiment URI") @QueryParam("experiment URI") URI experiment,
             @ApiParam(value = "activity type") @QueryParam("activity type") URI activityType,
             @ApiParam(value = "agent URI") @QueryParam("agent URI") URI agentURI,
@@ -166,9 +168,9 @@ public class ProvenanceAPI {
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        ListWithPagination<ProvenanceModel> resultList = dao.search(label, experiment, activityType, agentType, agentURI, page, pageSize);
+        ListWithPagination<ProvenanceModel> resultList = dao.search(name, experiment, activityType, agentType, agentURI, page, pageSize);
         
-// Convert paginated list to DTO
+        // Convert paginated list to DTO
         ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
                 ProvenanceGetDTO.class,
                 ProvenanceGetDTO::fromModel
@@ -216,13 +218,11 @@ public class ProvenanceAPI {
         } else {
             try {
                 dao.delete(uri);
-                return new ObjectUriResponse(uri).getResponse();
+                return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
             } catch (NoSQLInvalidURIException e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
                         .getResponse();
-            } catch (NamingException | NoSQLBadPersistenceManagerException e) {
-                return new ErrorResponse(e).getResponse();
             }
         }
     }
@@ -248,23 +248,13 @@ public class ProvenanceAPI {
         try {
             ProvenanceDAO dao = new ProvenanceDAO(nosql);
             ProvenanceModel newProvenance = dto.newModel();
-
-            ProvenanceModel storedProvenance = dao.get(dto.getUri());
-
-            if (storedProvenance == null) {
-                throw new NoSQLInvalidURIException(dto.getUri());
-            } else {
-                if (!newProvenance.getLabel().equals(storedProvenance.getLabel())) {
-                    throw new BadRequestException("The label can't be updated");
-                } else {
-                    newProvenance = dao.update(newProvenance);
-                }
-            }
+            newProvenance = dao.update(newProvenance);
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
-        } catch (NoSQLInvalidURIException | BadRequestException e) {
+        } catch (NoSQLInvalidURIException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
+                        .getResponse();
+        } catch (BadRequestException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "wrong provenance json", e.getMessage()).getResponse();
-        } catch (IOException | ParseException | NamingException | NoSQLBadPersistenceManagerException e) {
-            return new ErrorResponse(e).getResponse();
         }
     }
 }

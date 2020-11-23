@@ -28,7 +28,7 @@ public class ProvenanceGetDTO extends ProvenanceCreationDTO {
     public static ProvenanceGetDTO fromModel(ProvenanceModel model){
         ProvenanceGetDTO dto = new ProvenanceGetDTO();        
         dto.setUri(model.getUri());
-        dto.setLabel(model.getLabel());
+        dto.setName(model.getName());
         dto.setComment(model.getComment());
         dto.setExperiments(model.getExperiments());
         dto.setActivity(model.getActivity());

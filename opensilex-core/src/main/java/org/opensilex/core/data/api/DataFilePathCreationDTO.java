@@ -7,11 +7,14 @@
 package org.opensilex.core.data.api;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
-import java.text.ParseException;
-import javax.validation.constraints.NotNull;
-import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.server.rest.validation.DateFormat;
 
 /**
  *
@@ -27,21 +30,36 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
-    }
-    
+    }    
     
     @Override
     public DataFileModel newModel() throws ParseException {
         DataFileModel model = new DataFileModel();
-        model.setDate(getDate());
+        
         model.setMetadata(getMetadata());
-        model.setProvUsed(getProvenance().getProvUsed());
-        model.setProvenanceSettings(getProvenance().getSettings());
-        model.setProvenanceURI(getProvenance().getUri());
+        model.setProvenance(getProvenance());
         model.setRdfType(getRdfType());
-        model.setObject(getScientificObjects());
+        model.setScientificObjects(getScientificObjects());
         model.setUri(getUri());
         model.setPath(relativePath);
+        
+        if(getDate() != null){
+            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+            LocalDateTime dateTimeUTC = null;
+            String offset = null;
+            for (DateFormat dateCheckFormat : formats) {
+                try { 
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                    OffsetDateTime ost = OffsetDateTime.parse(getDate(), dtf);
+                    dateTimeUTC = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                    offset = ost.getOffset().toString();
+                    break;
+                } catch (DateTimeParseException e) {
+                }                    
+            }
+            model.setDate(dateTimeUTC);
+            model.setTimezone(offset);
+        }
         return model;
     }
     

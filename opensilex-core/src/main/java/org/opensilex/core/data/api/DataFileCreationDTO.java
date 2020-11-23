@@ -6,13 +6,19 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
+import org.bson.Document;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
@@ -24,16 +30,16 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Alice Boizet
  */
-public class DataFileCreationDTO{
+public class DataFileCreationDTO {
     
     @ValidURI
-    private URI uri;
+    protected URI uri;
        
     @ValidURI
     @NotNull
     private URI rdfType; 
     
-    private List<ProvEntityModel> scientificObjects;
+    private List<URI> scientificObjects;
     
     @NotNull
     private DataProvenanceModel provenance;
@@ -42,7 +48,7 @@ public class DataFileCreationDTO{
     @Date({DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ})
     private String date;
     
-    private Map metadata;
+    private Document metadata;
 
     public URI getUri() {
         return uri;
@@ -60,11 +66,11 @@ public class DataFileCreationDTO{
         this.rdfType = rdfType;
     }
 
-    public List<ProvEntityModel> getScientificObjects() {
+    public List<URI> getScientificObjects() {
         return scientificObjects;
     }
 
-    public void setScientificObjects(List<ProvEntityModel> scientificObjects) {
+    public void setScientificObjects(List<URI> scientificObjects) {
         this.scientificObjects = scientificObjects;
     }
 
@@ -84,25 +90,40 @@ public class DataFileCreationDTO{
         this.date = date;
     }
 
-    public Map getMetadata() {
+    public Document getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Map metadata) {
+    public void setMetadata(Document metadata) {
         this.metadata = metadata;
     }
       
     
     public DataFileModel newModel() throws ParseException {
         DataFileModel model = new DataFileModel();
-        model.setDate(date);
         model.setMetadata(metadata);
-        model.setProvUsed(provenance.getProvUsed());
-        model.setProvenanceSettings(provenance.getSettings());
-        model.setProvenanceURI(provenance.getUri());
+        model.setProvenance(provenance);
         model.setRdfType(rdfType);
-        model.setObject(scientificObjects);
+        model.setScientificObjects(scientificObjects);
         model.setUri(uri);
+        
+        if(date != null){
+            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+            LocalDateTime dateTimeUTC = null;
+            String offset = null;
+            for (DateFormat dateCheckFormat : formats) {
+                try { 
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                    OffsetDateTime ost = OffsetDateTime.parse(date, dtf);
+                    dateTimeUTC = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                    offset = ost.getOffset().toString();
+                    break;
+                } catch (DateTimeParseException e) {
+                }                    
+            }
+            model.setDate(dateTimeUTC);
+            model.setTimezone(offset);
+        }
         return model;
     }
     
@@ -111,9 +132,9 @@ public class DataFileCreationDTO{
      * Required because this data is received as @FormDataParam.
      * @param param
      * @return
-     * @throws IOException 
+     * @throws com.fasterxml.jackson.core.JsonProcessingException
      */
-    public static DataFileCreationDTO fromString(String param) throws IOException {
+    public static DataFileCreationDTO fromString(String param) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(param, DataFileCreationDTO.class);
     }

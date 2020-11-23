@@ -43,7 +43,7 @@ import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -81,7 +81,7 @@ public class ExperimentAPI {
     private SPARQLService sparql;
 
     @Inject
-    private DataNucleusService nosql;
+    private MongoDBService nosql;
     
     @Inject
     private FileStorageService fs;
@@ -385,7 +385,7 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-
+        
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, currentUser.getLanguage());
 

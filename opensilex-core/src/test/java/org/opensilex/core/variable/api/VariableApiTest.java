@@ -36,7 +36,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
     public String updatePath = path + "/update";
     public String deletePath = path + "/delete/{uri}";
 
-    private VariableCreationDTO getCreationDto() throws Exception {
+    public VariableCreationDTO getCreationDto() throws Exception {
 
         SPARQLService service = getSparqlService();
 

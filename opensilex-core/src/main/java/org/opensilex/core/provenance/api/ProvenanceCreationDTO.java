@@ -13,7 +13,6 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ExperimentProvModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -33,7 +32,7 @@ public class ProvenanceCreationDTO {
      * label
      */
     @NotNull
-    protected String label;
+    protected String name;
     
     /**
      * comment
@@ -43,7 +42,7 @@ public class ProvenanceCreationDTO {
     /**
      * experiments list
      */
-    protected List<ExperimentProvModel> experiments;
+    protected List<URI> experiments;
 
     /**
      * activity
@@ -64,13 +63,13 @@ public class ProvenanceCreationDTO {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
-    public String getLabel() {
-        return label;
+
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -81,14 +80,14 @@ public class ProvenanceCreationDTO {
         this.comment = comment;
     }
 
-    public List<ExperimentProvModel> getExperiments() {
+    public List<URI> getExperiments() {
         return experiments;
     }
 
-    public void setExperiments(List<ExperimentProvModel> experiments) {
+    public void setExperiments(List<URI> experiments) {
         this.experiments = experiments;
-    }   
-    
+    }
+
     public List<ActivityModel> getActivity() {
         return activity;
     }
@@ -108,7 +107,7 @@ public class ProvenanceCreationDTO {
     public ProvenanceModel newModel() throws ParseException {
         ProvenanceModel model = new ProvenanceModel();
         model.setUri(uri);
-        model.setLabel(label);
+        model.setName(name);
         model.setComment(comment);
         model.setExperiments(experiments);
         model.setActivity(activity);

@@ -39,17 +39,6 @@
     <!--        </b-button>-->
     <!--      </b-modal>-->
     <!--    </div>-->
-    <div v-if="editingArea && editingMode">
-      <opensilex-PageActions>
-        <template v-slot>
-          <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
-                                  :disabled="!editingArea"
-                                  label="MapView.add-button"
-                                  @click="areaForm.showCreateForm()"
-          ></opensilex-CreateButton>
-        </template>
-      </opensilex-PageActions>
-    </div>
     <opensilex-ModalForm
         ref="areaForm"
         :successMessage="successMessageArea"
@@ -257,12 +246,11 @@ export default class MapView extends Vue {
   }
 
   memorizesArea() {
-    this.$store.state.zone = this.temporaryArea.pop();
+    if (this.temporaryArea.length) {
+      this.$store.state.zone = this.temporaryArea.pop();
+      this.temporaryArea=[];
+    }
   }
-
-  // deleteLastFieldNotValidated() {
-  //   this.temporaryArea.splice(this.temporaryArea.length - 1);
-  // }
 
   showCreateForm() {
     this.areaForm.showCreateForm();
@@ -465,40 +453,18 @@ export default class MapView extends Vue {
         add-button: Input annotation
         add-area-button: Area
         selected-button: Return to selection mode
-        add: Create metadata
-        update: Update metadata
-        uri: Geometry URI
       Area:
         title: Area
-        editing: Yes
-        selection: No
-        choiceTypeGeometriesDrawn: Choice type geometries to be drawn
         add: Description of the area
         update: Update a perennial zone
-        point: Point
-        line-string: LineString
-        polygon: Polygon
-        circle: Circle
-        stop: Stop drawing
     fr:
       MapView:
         label: Géométrie
         add-button: Zone
         add-area-button: Zone
         selected-button: Retour au mode de sélection
-        add: Créer une annotation
-        update: Mettre à jour annotation
-        uri: URI de Géométrie
       Area:
         title: Zone
-        editing: Oui
-        selection: Non
-        choiceTypeGeometriesDrawn: Choix du type de géométrie à dessiner
         add: Description de la zone
         update: Mettre à jour une zone pérenne
-        point: Point
-        line-string: LineString
-        polygon: Polygone
-        circle: Cercle
-        stop: Arrêter de dessiner
 </i18n>

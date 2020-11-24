@@ -8,10 +8,16 @@
                               label="MapView.add-area-button"
                               @click="editingMode = true"
       ></opensilex-CreateButton>
+      <div v-if="selectedFeatures.length === 1 && selectedFeatures[0].properties.uri.includes('-area')">
+        <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
+                                label="MapView.add-area-button"
+                                @click="deleteArea(selectedFeatures[0].properties.uri)"
+        ></opensilex-DeleteButton>
+      </div>
     </div>
     <opensilex-InteroperabilityButton v-if="editingMode"
-                            label="MapView.selected-button"
-                            @click="editingMode = false"
+                                      label="MapView.selected-button"
+                                      @click="editingMode = false"
     ></opensilex-InteroperabilityButton>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
@@ -166,6 +172,7 @@ import {ExperimentGetDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
+import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
 @Component
 export default class MapView extends Vue {
@@ -414,6 +421,27 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
+  private deleteArea(uri) {
+    this.$opensilex.getService("opensilex.AreaService")
+        .deleteArea(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+          let message =
+              this.$i18n.t("Area.title") +
+              " " +
+              http.response.result +
+              " " +
+              this.$i18n.t("component.common.success.delete-success-message");
+          this.$opensilex.showSuccessToast(message);
+
+          for (let featuresAreaElement of this.featuresArea) {
+            if (featuresAreaElement.properties.uri == uri) {
+              this.featuresArea.splice(this.featuresArea.indexOf(featuresAreaElement), 1)
+            }
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
   // getByUriScientificObject() {
   //   let objectURI = []
   //   this.selectedFeatures.forEach(item => {
@@ -441,6 +469,7 @@ export default class MapView extends Vue {
         update: Update metadata
         uri: Geometry URI
       Area:
+        title: Area
         editing: Yes
         selection: No
         choiceTypeGeometriesDrawn: Choice type geometries to be drawn
@@ -461,6 +490,7 @@ export default class MapView extends Vue {
         update: Mettre à jour annotation
         uri: URI de Géométrie
       Area:
+        title: Zone
         editing: Oui
         selection: Non
         choiceTypeGeometriesDrawn: Choix du type de géométrie à dessiner

@@ -606,6 +606,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (newInstance.getType() == null) {
             newInstance.setType(oldInstance.getType());
         }
+        
+        if (oldInstance.getCreator() != null && newInstance.getCreator() == null) {
+            newInstance.setCreator(oldInstance.getCreator());
+        }
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Object oldFieldValue = classAnalizer.getFieldValue(field, oldInstance);

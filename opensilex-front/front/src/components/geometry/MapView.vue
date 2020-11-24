@@ -9,6 +9,10 @@
                               @click="editingMode = true"
       ></opensilex-CreateButton>
     </div>
+    <opensilex-InteroperabilityButton v-if="editingMode"
+                            label="MapView.selected-button"
+                            @click="editingMode = false"
+    ></opensilex-InteroperabilityButton>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
     <!--      <b-modal-->
@@ -432,6 +436,7 @@ export default class MapView extends Vue {
         label: Geometry
         add-button: Input annotation
         add-area-button: Area
+        selected-button: Return to selection mode
         add: Create metadata
         update: Update metadata
         uri: Geometry URI
@@ -451,6 +456,7 @@ export default class MapView extends Vue {
         label: Géométrie
         add-button: Zone
         add-area-button: Zone
+        selected-button: Retour au mode de sélection
         add: Créer une annotation
         update: Mettre à jour annotation
         uri: URI de Géométrie

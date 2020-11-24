@@ -6,40 +6,42 @@
 package org.opensilex.core.logs.dal;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.Map;
-import javax.jdo.annotations.PersistenceCapable;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import org.bson.Document;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  *
  * @author charlero
  */
-@PersistenceCapable(table = "logs")
-public class LogModel {
+ public class LogModel  extends MongoModel{
 
-    URI userUri;
+    private URI userUri;
 
-    String request;
+    private String request;
 
-    String remoteAdress;
+    private String remoteAdress;
 
-    Map<String, Object> queryParmeters;
+    private Document queryParmeters;
 
-    OffsetDateTime datetime;
-
-    public OffsetDateTime getDatetime() {
+    private LocalDateTime datetime;
+     
+    public LocalDateTime getDatetime() {
         return datetime;
     }
 
-    public void setDatetime(OffsetDateTime datetime) {
+    public void setDatetime(LocalDateTime datetime) {
         this.datetime = datetime;
     }
-
-    public Map<String, Object> getQueryParmeters() {
+ 
+    public Document getQueryParmeters() {
         return queryParmeters;
     }
 
-    public void setQueryParmeters(Map<String, Object> queryParmeters) {
+    public void setQueryParmeters(Document queryParmeters) {
         this.queryParmeters = queryParmeters;
     }
 
@@ -65,6 +67,17 @@ public class LogModel {
 
     public void setRemoteAdress(String remoteAdress) {
         this.remoteAdress = remoteAdress;
+    }
+    
+     @Override
+    public String[] getUriSegments(MongoModel instance) {
+        Instant instant = datetime.atZone(ZoneOffset.UTC).toInstant();
+
+         return new String[]{
+            Timestamp.from(instant).toString(),
+            userUri.toString(),
+            remoteAdress
+        };
     }
 
 }

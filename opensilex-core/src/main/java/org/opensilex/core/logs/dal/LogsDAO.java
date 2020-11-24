@@ -5,7 +5,8 @@
  */
 package org.opensilex.core.logs.dal;
 
-import org.opensilex.nosql.service.NoSQLService;
+import com.mongodb.MongoWriteException;
+import org.opensilex.nosql.mongodb.MongoDBService; 
 
 /**
  *
@@ -13,14 +14,17 @@ import org.opensilex.nosql.service.NoSQLService;
  */
 public class LogsDAO {
 
-    protected final NoSQLService nosql;
+    protected final MongoDBService nosql;
+    
+    public static final String LOGS_COLLECTION_NAME = "Logs";
 
-    public LogsDAO(NoSQLService nosql) {
+    public LogsDAO(MongoDBService nosql) {
         this.nosql = nosql;
     }
 
-    public void create(LogModel instance) throws Exception {
-        nosql.create(instance);
+    public LogModel create(LogModel instance)  throws Exception, MongoWriteException {
+        nosql.create(instance, LogModel.class, LOGS_COLLECTION_NAME, "id/logs"); 
+        return instance;
     }
 
 }

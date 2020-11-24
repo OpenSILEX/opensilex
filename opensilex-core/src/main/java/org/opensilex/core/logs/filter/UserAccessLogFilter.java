@@ -6,9 +6,7 @@
 package org.opensilex.core.logs.filter;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDateTime;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -17,10 +15,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
+import org.bson.Document;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
-import org.opensilex.nosql.service.NoSQLService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
     final static String MAP_FIELD_RESSOURCE_PATH = "ressourcePath";
 
     @Inject
-    NoSQLService nosql;
+    MongoDBService nosql;
 
     @Inject
     OpenSilex opensilex;
@@ -61,27 +60,26 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
             final UriInfo uriInfo = requestContext.getUriInfo();
             final String resourcePath = uriInfo.getPath();
             String httpMethod = servletRequest.getMethod();
-
+            LOGGER.warn(httpMethod);
             //3 . check if the path equals to data service and sub services
             if (resourcePath != null
+                    && resourcePath.contains("core/data")
                     && httpMethod.equals("GET")) {
                 MultivaluedMap<String, String> queryPathParameters = uriInfo.getQueryParameters();
                 try {
                     // 6. save data search query
                     LogsDAO logsDAO = new LogsDAO(nosql);
                     LogModel logModel = new LogModel();
-                    if (user != null && !user.isAnonymous()) { // TODO Remove verification
-                        logModel.setUserUri(user.getUri());
-                    }
+                    logModel.setUserUri(user.getUri());
                     logModel.setRemoteAdress(servletRequest.getRemoteAddr());
                     logModel.setRequest(resourcePath);
 
-                    Map<String, Object> queryParmeters = new HashMap<>();
+                    Document queryParmeters = new Document();
                     queryParmeters.put(MAP_FIELD_QUERY_PARAMETERS, queryPathParameters);
                     queryParmeters.put(MAP_FIELD_RESSOURCE_PATH, resourcePath);
 
                     logModel.setQueryParmeters(queryParmeters);
-                    logModel.setDatetime(OffsetDateTime.now());
+                    logModel.setDatetime(LocalDateTime.now());
                     logsDAO.create(logModel);
                 } catch (Exception ex) {
                     LOGGER.warn("Error while logging user access to service", ex);

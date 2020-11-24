@@ -6,7 +6,7 @@
     <div id="editing" class="row" v-if="!editingMode">
       <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
                               label="MapView.add-area-button"
-                              @click="editingMode=true"
+                              @click="editingMode = true"
       ></opensilex-CreateButton>
     </div>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
@@ -227,32 +227,31 @@ export default class MapView extends Vue {
     areaUriResult.then(areaUri => {
       console.debug("showAreaDetails", areaUri);
       this.$opensilex.getService("opensilex.AreaService")
-      .getByURI(areaUri)
+          .getByURI(areaUri)
           .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
                 const res = http.response.result as any;
-                  if (res.geometry != null) {
-                    res.geometry.properties = {
-                      uri: res.uri,
-                      name: res.name,
-                      type: res.type,
-                      comment: res.comment,
-                    }
-                    this.featuresArea.push(res.geometry)
+                if (res.geometry != null) {
+                  res.geometry.properties = {
+                    uri: res.uri,
+                    name: res.name,
+                    type: res.type,
+                    comment: res.comment,
                   }
+                  this.featuresArea.push(res.geometry)
+                }
               }
           )
           .catch(this.$opensilex.errorHandler);
-     });
-    this.deleteLastFieldNotValidated();
+    });
   }
 
   memorizesArea() {
-    this.$store.state.zone = this.temporaryArea[this.temporaryArea.length - 1];
+    this.$store.state.zone = this.temporaryArea.pop();
   }
 
-  deleteLastFieldNotValidated() {
-    this.temporaryArea.splice(this.temporaryArea.length - 1);
-  }
+  // deleteLastFieldNotValidated() {
+  //   this.temporaryArea.splice(this.temporaryArea.length - 1);
+  // }
 
   showCreateForm() {
     this.areaForm.showCreateForm();

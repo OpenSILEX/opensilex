@@ -23,8 +23,8 @@
               :searchMethod="searchData"
               :fields="fields"
             >
-              <template v-slot:cell(uri)="{}">
-                <opensilex-UriLink :uri="data.item.uri" :value="objects[data.item.uri]"></opensilex-UriLink>
+              <template v-slot:cell(uri)="{data}">
+                <opensilex-UriLink :uri="data.item.scientificObjects[0]" :value="objects[data.item.scientificObjects[0]]"></opensilex-UriLink>
               </template>
 
               <template v-slot:cell(date)="{data}">
@@ -130,7 +130,7 @@ export default class ExperimentData extends Vue {
         .then(http => {
           let objectToLoad = [];
           for (let i in http.response.result) {
-            let objectURI = http.response.result[i].uri;
+            let objectURI = http.response.result[i].scientificObjects[0];
             if (!this.objects[objectURI] && !objectToLoad.includes(objectURI)) {
               objectToLoad.push(objectURI);
             }

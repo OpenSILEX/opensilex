@@ -26,6 +26,7 @@
           label="component.experiment.startDate"
           type="date"
           :required="true"
+          vid="startDate"
         ></opensilex-InputForm>
       </div>
 
@@ -35,11 +36,12 @@
           :value.sync="experiment.endDate"
           label="component.experiment.endDate"
           type="date"
+          rules="dateDiff:@startDate"
         ></opensilex-InputForm>
       </div>
     </div>
 
-     <!-- Campaign 
+    <!-- Campaign
     <opensilex-InputForm
       :value.sync="experiment.campaign"
       label="component.experiment.campaign"
@@ -48,9 +50,16 @@
     ></opensilex-InputForm>
     -->
     <!-- Species -->
-    <opensilex-SpeciesSelector :required="true" :multiple="true" :species.sync="experiment.species"></opensilex-SpeciesSelector>
+    <opensilex-SpeciesSelector
+      :required="true"
+      :multiple="true"
+      :species.sync="experiment.species"
+    ></opensilex-SpeciesSelector>
     <!-- Factor -->
-    <opensilex-FactorSelector :multiple="true" :factors.sync="experiment.factors"></opensilex-FactorSelector>
+    <opensilex-FactorSelector
+      :multiple="true"
+      :factors.sync="experiment.factors"
+    ></opensilex-FactorSelector>
     <!-- Objective -->
     <opensilex-TextAreaForm
       :value.sync="experiment.objective"
@@ -76,7 +85,7 @@ import VueRouter from "vue-router";
 import {
   ExperimentCreationDTO,
   SpeciesService,
-  SpeciesDTO
+  SpeciesDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 

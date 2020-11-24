@@ -10,29 +10,43 @@
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"
-          :to="{path: '/experiment/details/' + encodeURIComponent(uri)}"
-        >{{ $t('ExperimentView.details') }}</b-nav-item>
+          :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
+          >{{ $t("ExperimentView.details") }}</b-nav-item
+        >
         <b-nav-item
           :active="isScientificObjectsTab()"
-          :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri)}"
-        >{{ $t('ExperimentView.scientific-objects') }}</b-nav-item>
-        <!--   <b-nav-item
-         :active="isDataTab()"
-         :to="{path: '/experiment/data/' + encodeURIComponent(uri)}"
-       >{{ $t('ExperimentView.data') }}</b-nav-item> -->
+          :to="{
+            path: '/experiment/scientific-objects/' + encodeURIComponent(uri),
+          }"
+          >{{ $t("ExperimentView.scientific-objects") }}</b-nav-item
+        >
         <b-nav-item
-            :active="isMap()"
-            :to="{path: '/experiment/map/'+ encodeURIComponent(uri)}"
-        >{{ $t('Map') }}
+          :active="isDataTab()"
+          :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
+          >{{ $t("ExperimentView.data") }}</b-nav-item
+        >
+        <b-nav-item
+          :active="isMap()"
+          :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
+          >{{ $t("Map") }}
         </b-nav-item>
       </template>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-ExperimentDetail v-if="isDetailsTab()" :uri="uri"></opensilex-ExperimentDetail>
-        <opensilex-ExperimentScientificObjects v-else-if="isScientificObjectsTab()" :uri="uri"></opensilex-ExperimentScientificObjects>
-        <opensilex-ExperimentData v-else-if="isDataTab()" :uri="uri"></opensilex-ExperimentData>
+        <opensilex-ExperimentDetail
+          v-if="isDetailsTab()"
+          :uri="uri"
+        ></opensilex-ExperimentDetail>
+        <opensilex-ExperimentScientificObjects
+          v-else-if="isScientificObjectsTab()"
+          :uri="uri"
+        ></opensilex-ExperimentScientificObjects>
+        <opensilex-ExperimentData
+          v-else-if="isDataTab()"
+          :uri="uri"
+        ></opensilex-ExperimentData>
         <opensilex-MapView :uri="uri" v-else-if="isMap()"></opensilex-MapView>
       </template>
     </opensilex-PageContent>
@@ -42,9 +56,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ExperimentsService,ExperimentGetDTO
-} from "opensilex-core/index";
+import { ExperimentsService, ExperimentGetDTO } from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
@@ -57,16 +69,16 @@ export default class ExperimentView extends Vue {
   name: string = "";
 
   created() {
-     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
-   
+    this.service = this.$opensilex.getService("opensilex.ExperimentsService");
+
     this.uri = decodeURIComponent(this.$route.params.uri);
-  if (this.uri) {
+    if (this.uri) {
       this.service
         .getExperiment(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
           this.name = http.response.result.label;
         })
-        .catch(error => {
+        .catch((error) => {
           this.$opensilex.errorHandler(error);
         });
     }

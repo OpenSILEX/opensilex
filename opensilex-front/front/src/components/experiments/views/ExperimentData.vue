@@ -24,8 +24,7 @@
               :fields="fields"
             >
               <template v-slot:cell(uri)="{}">
-                {{objects}}
-                <!-- <opensilex-UriLink :uri="data.item.uri" :value="objects[data.item.uri]"></opensilex-UriLink> -->
+                <opensilex-UriLink :uri="data.item.uri" :value="objects[data.item.uri]"></opensilex-UriLink>
               </template>
 
               <template v-slot:cell(date)="{data}">

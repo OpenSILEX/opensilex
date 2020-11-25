@@ -15,10 +15,10 @@
         ></opensilex-DeleteButton>
       </div>
     </div>
-    <opensilex-InteroperabilityButton v-if="editingMode"
-                                      label="MapView.selected-button"
-                                      @click="editingMode = false"
-    ></opensilex-InteroperabilityButton>
+    <opensilex-CreateButton v-if="editingMode"
+                            label="MapView.selected-button"
+                            @click="editingMode = false"
+    ></opensilex-CreateButton>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
     <!--      <b-modal-->
@@ -40,6 +40,7 @@
     <!--      </b-modal>-->
     <!--    </div>-->
     <opensilex-ModalForm
+        v-if="!errorGeometry"
         ref="areaForm"
         :successMessage="successMessageArea"
         component="opensilex-AreaForm"
@@ -201,6 +202,7 @@ export default class MapView extends Vue {
   private editingArea: boolean = false;
   private editingAreaPopUp: boolean = false;
   private endReceipt: boolean = false;
+  private errorGeometry: boolean = false;
   // private drawControls = [];
   private coordinateExtent: any;
 
@@ -244,7 +246,20 @@ export default class MapView extends Vue {
   memorizesArea() {
     if (this.temporaryArea.length) {
       this.$store.state.zone = this.temporaryArea.pop();
-      this.temporaryArea=[];
+
+      for (let element of this.$store.state.zone.geometry.coordinates[0]) {
+        if (element[0] < -180 || element[0] > 180) {
+          this.errorGeometry = true;
+          alert(this.$i18n.t("MapView.errorLongitude"));
+          return;
+        }
+        if (element[1] < -90 || element[1] > 90) {
+          this.errorGeometry = true;
+          alert(this.$i18n.t("MapView.errorLatitude"));
+          return;
+        }
+        this.errorGeometry = false;
+      }
     }
   }
 
@@ -449,6 +464,8 @@ export default class MapView extends Vue {
         add-button: Input annotation
         add-area-button: Area
         selected-button: Return to selection mode
+        errorLongitude: the longitude must be between -180 and 180
+        errorLatitude: the latitude must be between -90 and 90
       Area:
         title: Area
         add: Description of the area
@@ -459,6 +476,8 @@ export default class MapView extends Vue {
         add-button: Zone
         add-area-button: Zone
         selected-button: Retour au mode de sélection
+        errorLongitude: la longitude doit être comprise entre -180 et 180
+        errorLatitude: la latitude doit être comprise entre -90 et 90
       Area:
         title: Zone
         add: Description de la zone

@@ -2,15 +2,6 @@
 # yarn lockfile v1
 
 
-" highcharts-custom-events@3.0.0":
-  name highcharts-custom-events
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/highcharts-custom-events/-/highcharts-custom-events-3.0.0.tgz#24364203cf4b15f501b1eefc4d7fe7f1ccb10e9a"
-  integrity sha512-dirkl3+sYMCWCiDgHhv5QWAAugAi3fZscWiFC5kqbpIdrKXGJ3uXvm9MXujSHvmjZv1yp55K2UiMK+AC2/whQg==
-  dependencies:
-    gulp-jsmin "^0.1.5"
-    highcharts ">=5.0.9"
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.8.3":
   version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
@@ -5051,6 +5042,14 @@ hex-color-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==
+
+highcharts-custom-events@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/highcharts-custom-events/-/highcharts-custom-events-3.0.0.tgz#24364203cf4b15f501b1eefc4d7fe7f1ccb10e9a"
+  integrity sha512-dirkl3+sYMCWCiDgHhv5QWAAugAi3fZscWiFC5kqbpIdrKXGJ3uXvm9MXujSHvmjZv1yp55K2UiMK+AC2/whQg==
+  dependencies:
+    gulp-jsmin "^0.1.5"
+    highcharts ">=5.0.9"
 
 highcharts-vue@^1.3.5:
   version "1.3.5"

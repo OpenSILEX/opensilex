@@ -346,11 +346,6 @@ P {
 <i18n>
 en:
   AreaForm:
-    author: Author
-    label: Area
-    add-button: Input metadata
-    deleteLastAreaNotValidatedButton: Delete the last non-validated area
-    update: Update a perennial zone
     uri: Area URI
     comment: comment
     comment-help: Description associated with this geometry (protocol quantity)
@@ -364,22 +359,12 @@ en:
     confidential: Confidential
     confidential-help: The data is confidential
     trial: Trial
-    eventAnnotation: Would you like to annotate ?
-    no: no
-    problem: Problem
-    management: Management
     or: Or
     problemDate: problem (end date starts before start date)
-    choiceTypeGeometriesDrawn: Choice type geometries to be drawn
     areaType: type
 
 fr:
   AreaForm:
-    author: Auteur
-    label: Zone
-    add-button: Saisir métadonnée
-    deleteLastAreaNotValidatedButton: Supprimer la dernier zone non validé
-    update: Mettre à jour une zone pérenne
     uri: URI de Zone
     comment: description
     comment-help: Description associée à cette géométrie (protocole quantité)
@@ -393,12 +378,7 @@ fr:
     confidential: Confidentiel
     confidential-help: Les données sont confidentielles
     trial: Essai
-    eventAnnotation: Voulez-vous annoter ?
-    no: non
-    problem: Problème
-    management: Gestion
     or: Ou
     problemDate: problème (la date de fin commence avant la date de début)
-    choiceTypeGeometriesDrawn: Choix du type de géométrie à dessiner
     areaType: type
 </i18n>

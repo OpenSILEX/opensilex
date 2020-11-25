@@ -108,7 +108,7 @@
 
             <!-- Creating a new area -->
             <vl-interaction-draw
-                :type=drawType
+                type="Polygon"
                 source="the-source"
                 @drawend="(editingArea = true) && (editingAreaPopUp = true) && (areaForm.showCreateForm())"
             >
@@ -167,8 +167,6 @@ import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
-  @Ref("modalRef") readonly modalRef!: any;
-  @Ref("geometryForm") readonly geometryForm!: any;
   @Ref("areaForm") readonly areaForm!: any;
 
   $opensilex: any;
@@ -178,7 +176,6 @@ export default class MapView extends Vue {
   features: any[] = [];
   featuresArea: any[] = [];
   temporaryArea: any[] = [];
-  arrayPrefix: any[] = [];
   fieldsSelected = [
     {
       key: "name",
@@ -200,7 +197,6 @@ export default class MapView extends Vue {
   nodes = [];
 
   private nameExperiment: string = "";
-  private drawType: string = "Polygon";
   private editingMode: boolean = false;
   private editingArea: boolean = false;
   private editingAreaPopUp: boolean = false;

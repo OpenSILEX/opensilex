@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import { User } from './User'
 import VueRouter from 'vue-router';
 import { FrontConfigDTO } from '../lib';
-import { Menu } from '../models/Menu';
+import { Menu } from './Menu';
 import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import { AuthenticationService } from 'opensilex-security/index';
@@ -130,8 +130,9 @@ let store = new Vuex.Store({
       CREDENTIAL_GERMPLASM_MODIFICATION_ID: "germplasm-modification",
       CREDENTIAL_GERMPLASM_DELETE_ID: "germplasm-delete",
       CREDENTIAL_DOCUMENT_MODIFICATION_ID: "document-modification",
-      CREDENTIAL_DOCUMENT_DELETE_ID: "document-delete"
-
+      CREDENTIAL_DOCUMENT_DELETE_ID: "document-delete",
+      CREDENTIAL_AREA_MODIFICATION_ID: "area-modification",
+      CREDENTIAL_AREA_DELETE_ID: "area-delete"
     }
   },
   getters: {

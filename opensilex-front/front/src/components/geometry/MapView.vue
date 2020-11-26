@@ -8,8 +8,8 @@
                               label="MapView.add-area-button"
                               @click="editingMode = true"
       ></opensilex-CreateButton>
-      <div v-if="selectedFeatures.length === 1 && selectedFeatures[0].properties.uri.includes('-area')">
-        <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
+      <div v-if="user.admin === true && selectedFeatures.length === 1 && selectedFeatures[0].properties.uri.includes('-area')">
+        <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
                                 label="MapView.add-area-button"
                                 @click="deleteArea(selectedFeatures[0].properties.uri)"
         ></opensilex-DeleteButton>

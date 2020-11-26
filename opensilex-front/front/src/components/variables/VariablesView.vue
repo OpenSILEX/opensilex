@@ -17,7 +17,17 @@
                         <b-tab :title="$t('VariableView.unit')" ></b-tab>
                     </b-tabs>
                 </div>
+
                 <div class="col-lg-5">
+                    <opensilex-HelpButton
+                            @click="helpModal.show()"
+                            label="component.common.help-button"
+                    ></opensilex-HelpButton>
+                    <b-modal ref="helpModal" size="xl" hide-header ok-only>
+                        <opensilex-VariableHelp></opensilex-VariableHelp>
+                    </b-modal>
+
+
                     <opensilex-CreateButton
                         v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         @click="showCreateForm"
@@ -71,13 +81,13 @@
             <div class="row">
                 <div class="col-md-6">
                     <!-- Element list -->
-                    <opensilex-EntityList
+                    <opensilex-VariableStructureList
                         v-if="! loadVariableList() "
-                        ref="entityTree"
+                        ref="variableStructureList"
                         @onSelect="updateSelected"
                         @onEdit="showEditForm"
                         :_type.sync="this.elementType"
-                    ></opensilex-EntityList>
+                    ></opensilex-VariableStructureList>
                 </div>
 
                 <div class="col-md-6">
@@ -102,12 +112,10 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import EntityList from "./views/EntityList.vue";
+import VariableStructureList from "./views/VariableStructureList.vue";
 import EntityCreate from "./form/EntityCreate.vue";
 import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
-import QualityCreate from "./form/QualityCreate.vue";
-import MethodCreate from "./form/MethodCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import { VariablesService } from "opensilex-core/index";
@@ -141,7 +149,6 @@ export default class VariablesView extends Vue {
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
-
     @Ref("entityForm") readonly entityForm!: EntityCreate;
     @Ref("qualityForm") readonly qualityForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
@@ -150,7 +157,9 @@ export default class VariablesView extends Vue {
     @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
     @Ref("variableList") readonly variableList!: VariableList;
-    @Ref("entityTree") readonly entityTree!: EntityList;
+    @Ref("variableStructureList") readonly variableStructureList!: VariableStructureList;
+
+    @Ref("helpModal") readonly helpModal!: any;
 
     buttonTitle;
 
@@ -183,11 +192,11 @@ export default class VariablesView extends Vue {
                     this.variableList.refresh();
                 }
             }else{
-                if(this.entityTree){
+                if(this.variableStructureList){
                     // update entity list with the new elementType value
                     this.$nextTick(() => {
                         this.$opensilex.updateURLParameter("name", "");
-                        this.entityTree.refresh();
+                        this.variableStructureList.refresh();
                     });
                 }
             }
@@ -227,7 +236,7 @@ export default class VariablesView extends Vue {
     }
 
     refresh(uri? : string) {
-        this.entityTree.refresh(uri);
+        this.variableStructureList.refresh(uri);
     }
 
     private getForm() {

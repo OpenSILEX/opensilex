@@ -386,6 +386,8 @@ import VariableDetails from './variables/VariableDetails.vue';
 components["opensilex-VariableDetails"] = VariableDetails;
 import VariableView from './variables/views/VariableView.vue';
 components["opensilex-VariableView"] = VariableView;
+import VariableHelp from './variables/views/VariableHelp.vue';
+components["opensilex-VariableHelp"] = VariableHelp;
 
 import VariableCreate from './variables/form/VariableCreate.vue';
 components["opensilex-VariableCreate"] = VariableCreate;
@@ -403,8 +405,8 @@ import EntityCreate from './variables/form/EntityCreate.vue';
 components["opensilex-EntityCreate"] = EntityCreate;
 import EntityExternalReferencesForm from './variables/form/EntityExternalReferencesForm.vue';
 components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
-import EntityList from './variables/views/EntityList.vue';
-components["opensilex-EntityList"] = EntityList;
+import VariableStructureList from './variables/views/VariableStructureList.vue';
+components["opensilex-VariableStructureList"] = VariableStructureList;
 import EntityDetails from './variables/views/EntityDetails.vue';
 components["opensilex-EntityDetails"] = EntityDetails;
 

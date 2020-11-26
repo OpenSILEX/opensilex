@@ -547,7 +547,7 @@
             "delete": "Suppression des germplasm"
         },
         "geometry": {
-            "instruction": "Utilisez Alt+Shift+Drag pour faire pivoter la carte. Utilisez Ctrl+Clic+Glisser pour sélectionner plusieurs éléments."
+            "instruction": "Utilisez Alt+Shift+Drag pour faire <b>pivoter</b> la carte. Utilisez Ctrl+Clic+Glisser pour <b>sélectionner plusieurs éléments</b>."
         },
         "scientific-objects": {
             "modification": "Ajout / Modification des objets scientifiques",

@@ -1,24 +1,25 @@
 <template>
   <div id="map">
-    <div>
-      <h1>{{ nameExperiment }}</h1>
-    </div>
-    <div id="editing" class="row" v-if="!editingMode">
+    <div v-if="!editingMode" id="editing">
       <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
                               label="MapView.add-area-button"
                               @click="editingMode = true"
       ></opensilex-CreateButton>
       <div v-if="user.admin === true && selectedFeatures.length === 1 && selectedFeatures[0].properties.uri.includes('-area')">
         <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                                label="MapView.add-area-button"
+                                label="MapView.delete-area-button"
                                 @click="deleteArea(selectedFeatures[0].properties.uri)"
         ></opensilex-DeleteButton>
       </div>
     </div>
-    <opensilex-CreateButton v-if="editingMode"
-                            label="MapView.selected-button"
-                            @click="editingMode = false"
-    ></opensilex-CreateButton>
+    <opensilex-Button
+        v-if="editingMode"
+        :small="false"
+        icon=""
+        label="MapView.selected-button"
+        variant="secondary"
+        @click="editingMode = false"
+    ></opensilex-Button>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
     <!--      <b-modal-->
@@ -52,7 +53,9 @@
     ></opensilex-ModalForm>
 
     <div id="selectionMode">
-      {{ $t('credential.geometry.instruction') }}
+      <p class="alert-info">
+        <span v-html="$t('credential.geometry.instruction')"></span>
+      </p>
       <vl-map
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
@@ -109,9 +112,9 @@
 
             <!-- Creating a new area -->
             <vl-interaction-draw
-                type="Polygon"
-                source="the-source"
                 v-if="editingMode"
+                source="the-source"
+                type="Polygon"
                 @drawend="(editingArea = true) && (editingAreaPopUp = true) && (areaForm.showCreateForm())"
             >
               <vl-style-box>
@@ -124,9 +127,9 @@
 
         <!-- to make the selection -->
         <vl-interaction-select
+            v-if="!editingMode"
             id="select"
             ref="selectInteraction"
-            v-if="!editingMode"
             :features.sync="selectedFeatures"
         />
       </vl-map>
@@ -142,9 +145,9 @@
         >
           <template v-slot:cell(name)="data">
             <opensilex-UriLink
+                :to="{path: encodeURIComponent(data.item.properties.uri)}"
                 :uri="data.item.properties.uri"
                 :value="data.item.properties.name"
-                :to="{path: encodeURIComponent(data.item.properties.uri)}"
             ></opensilex-UriLink>
           </template>
         </b-table>
@@ -159,7 +162,7 @@ import Vue from "vue";
 import {DragBox} from "ol/interaction";
 import {platformModifierKeyOnly} from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
-import {ExperimentGetDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
+import {ScientificObjectNodeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
@@ -198,7 +201,6 @@ export default class MapView extends Vue {
   selectedFeatures: any[] = [];
   nodes = [];
 
-  private nameExperiment: string = "";
   private editingMode: boolean = false;
   private editingArea: boolean = false;
   private editingAreaPopUp: boolean = false;
@@ -270,7 +272,6 @@ export default class MapView extends Vue {
 
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
-    this.loadNameExperiment();
     // this.loadDrawTypes();
     // this.loadNamespaces();
 
@@ -367,20 +368,6 @@ export default class MapView extends Vue {
     this.areaRecovery(extent);
   }
 
-  loadNameExperiment() {
-    let service = this.$opensilex.getService(
-        "opensilex.ExperimentsService"
-    );
-
-    service.getExperiment(this.$store.state.experiment)
-        .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
-          this.nameExperiment = http.response.result.label;
-        })
-        .catch((error) => {
-          this.$opensilex.errorHandler(error);
-        });
-  }
-
   select(value) {
     this.$emit("select", value);
   }
@@ -458,13 +445,20 @@ export default class MapView extends Vue {
 }
 </script>
 
+<style lang="scss" scoped>
+p {
+  font-size: 115%;
+}
+</style>
+
 <i18n>
     en:
       MapView:
         label: Geometry
-        add-button: Input annotation
-        add-area-button: Area
-        selected-button: Return to selection mode
+        add-button: Add metadata
+        add-area-button: Add an area
+        delete-area-button: Delete an area
+        selected-button: Exit creation mode
         errorLongitude: the longitude must be between -180 and 180
         errorLatitude: the latitude must be between -90 and 90
       Area:
@@ -474,9 +468,10 @@ export default class MapView extends Vue {
     fr:
       MapView:
         label: Géométrie
-        add-button: Zone
-        add-area-button: Zone
-        selected-button: Retour au mode de sélection
+        add-button: Ajouter des métadonnées
+        add-area-button: Ajouter une zone
+        delete-area-button: Supprimer une zone
+        selected-button: Sortir du mode création
         errorLongitude: la longitude doit être comprise entre -180 et 180
         errorLatitude: la latitude doit être comprise entre -90 et 90
       Area:

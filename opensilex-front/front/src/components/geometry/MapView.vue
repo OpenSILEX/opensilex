@@ -83,7 +83,7 @@
           </vl-layer-vector>
         </template>
 
-        <template v-if="editingMode">
+        <template v-on="editingMode">
           <div id="editionMode">
             <vl-layer-vector>
               <vl-source-vector
@@ -111,6 +111,7 @@
             <vl-interaction-draw
                 type="Polygon"
                 source="the-source"
+                v-if="editingMode"
                 @drawend="(editingArea = true) && (editingAreaPopUp = true) && (areaForm.showCreateForm())"
             >
               <vl-style-box>

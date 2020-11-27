@@ -290,10 +290,8 @@ extend("dateDiff", {
     if (startDate === null) {
       return true;
     }
-    return moment(value, "YYYY-MM-DD").diff(moment(startDate, "YYYY-MM-DD")) > 0;
-  },
-  message:
-    "The difference between date"
+    return moment(value, "YYYY-MM-DD").diff(moment(startDate, "YYYY-MM-DD")) >= 0;
+  }
 });
 
 import { parse } from "wkt";

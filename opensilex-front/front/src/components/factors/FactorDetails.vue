@@ -64,25 +64,20 @@
       <b-col>
         <opensilex-Card label="component.factor.details.factorLevels" icon>
           <template v-slot:body>
-            <b-table
+            <opensilex-TableView
               v-if="factor.factorLevels.length != 0"
-              striped
-              hover
-              small
-              responsive
-              sort-icon-left
               :items="factor.factorLevels"
               :fields="factorLevelFields"
+              :globalFilterField="true"
             >
-              <template v-slot:head(uri)="data">{{ $t(data.label) }}</template>
-              <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
-              <template v-slot:head(category)="data">{{
-                $t(data.label)
-              }}</template>
-              <template v-slot:head(comment)="data">{{
-                $t(data.label)
-              }}</template>
-            </b-table>
+              <template v-slot:cell(name)="{ data }">
+                <opensilex-UriLink
+                  :uri="data.item.uri"
+                  :value="data.item.name"
+                ></opensilex-UriLink>
+              </template>
+            </opensilex-TableView>
+
             <p v-else>
               <strong>{{
                 $t("component.factor.details.no-factorLevels-provided")
@@ -166,11 +161,6 @@ export default class FactorDetails extends Vue {
   factor: any;
 
   factorLevelFields: any[] = [
-    {
-      key: "uri",
-      label: "component.factorLevel.uri",
-      sortable: false,
-    },
     {
       key: "name",
       label: "component.factorLevel.name",

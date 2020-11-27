@@ -29,6 +29,8 @@ OpenSilex Vue.JS components
     - [Wizard form](#wizard-form)
   - [View component](#view-component)
     - [Uri link](#uri-link)
+    - [TableView](#tableview)
+    - [TableAsyncView](#tableasyncview)
 
 ## Icons
 
@@ -676,3 +678,46 @@ click | *uri* | Event called after click on copy icon.
          ></opensilex-UriLink>
       </template>
 ```
+
+### TableView
+
+Identifier: **opensilex-TableView**
+
+Description:
+
+Component used to display a list of element without 
+calling the webservice API.
+See [TableViewAsync](#tableasyncview) for API and asynchronous data.
+
+Properties:
+
+ID | Type | Default value | Description
+--- | --- | --- | ---
+fields | array | *-* | b-table fields format
+items | array | [] | b-table items format 
+
+Events:
+
+ 
+* In template :
+
+```html 
+  <opensilex-TableView 
+      :items="items"
+      :fields="fields"
+   >
+      // Example when formatting uri cell 
+      // with a name value
+      <template v-slot:cell(name)="{ data }">
+         <opensilex-UriLink
+         :uri="data.item.uri"
+         :value="data.item.name"
+         ></opensilex-UriLink>
+      </template>
+   </opensilex-TableView>
+```
+
+
+### TableAsyncView
+
+// TODO

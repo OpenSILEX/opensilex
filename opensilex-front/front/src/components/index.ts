@@ -190,6 +190,8 @@ import TreeView from './common/views/TreeView.vue'
 components["opensilex-TreeView"] = TreeView;
 import TreeViewAsync from './common/views/TreeViewAsync.vue'
 components["opensilex-TreeViewAsync"] = TreeViewAsync;
+import TableView from './common/views/TableView.vue'
+components["opensilex-TableView"] = TableView; 
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'

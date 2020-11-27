@@ -1,25 +1,20 @@
 <template>
   <div id="map">
-    <div v-if="!editingMode" id="editing">
+    <div v-if="!editingMode" id="selected">
       <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
                               label="MapView.add-area-button"
                               @click="editingMode = true"
       ></opensilex-CreateButton>
-      <div v-if="user.admin === true && selectedFeatures.length === 1 && selectedFeatures[0].properties.uri.includes('-area')">
-        <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                                label="MapView.delete-area-button"
-                                @click="deleteArea(selectedFeatures[0].properties.uri)"
-        ></opensilex-DeleteButton>
-      </div>
     </div>
-    <opensilex-Button
-        v-if="editingMode"
-        :small="false"
-        icon=""
-        label="MapView.selected-button"
-        variant="secondary"
-        @click="editingMode = false"
-    ></opensilex-Button>
+    <div v-if="editingMode" id="editing">
+      <opensilex-Button
+          :small="false"
+          icon=""
+          label="MapView.selected-button"
+          variant="secondary"
+          @click="editingMode = false"
+      ></opensilex-Button>
+    </div>
     <!--    <div v-if="editingAreaPopUp && editingMode">-->
     <!--      {{ this.$bvModal.show("eventArea") }}-->
     <!--      <b-modal-->
@@ -150,6 +145,17 @@
                 :value="data.item.properties.name"
             ></opensilex-UriLink>
           </template>
+
+          <template v-slot:cell(actions)="data">
+            <b-button-group size="sm">
+              <div v-if="user.admin === true && data.item.properties.uri.includes('-area')">
+                <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
+                                        label="MapView.delete-area-button"
+                                        @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
+                ></opensilex-DeleteButton>
+              </div>
+            </b-button-group>
+          </template>
         </b-table>
       </div>
     </div>
@@ -196,6 +202,10 @@ export default class MapView extends Vue {
       key: "properties.comment",
       label: "comment",
       sortable: true
+    },
+    {
+      key: "actions",
+      label: "actions"
     }
   ];
   selectedFeatures: any[] = [];
@@ -448,6 +458,10 @@ export default class MapView extends Vue {
 <style lang="scss" scoped>
 p {
   font-size: 115%;
+}
+
+#editing {
+  background-color: #50b924;
 }
 </style>
 

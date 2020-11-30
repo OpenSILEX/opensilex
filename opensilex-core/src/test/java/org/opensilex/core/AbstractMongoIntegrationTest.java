@@ -18,8 +18,11 @@ import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.awaitility.Awaitility.await;
 import org.bson.Document;
 import org.junit.BeforeClass;
@@ -41,8 +44,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
         MongodStarter runtime = MongodStarter.getDefaultInstance();
         int nodePort = 28018;
         Map<String, String> args = new HashMap<>();
-        String replicaName = "rs" + replicaCount;
-        replicaCount++;
+        String replicaName = "rs0";
         args.put("--replSet", replicaName);
         mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
                 .args(args)
@@ -60,9 +62,11 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
             config.put("members", members);
 
             adminDatabase.runCommand(new Document("replSetInitiate", config));
-            
-//            Document result = adminDatabase.runCommand(new Document("replSetGetStatus", "1"));
-//            System.out.println("MONGODB REPLICA SET: " + result);
+
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException ex) {
+            }
         }
     }
 

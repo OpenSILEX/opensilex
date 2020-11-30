@@ -151,7 +151,7 @@ public class SPARQLDeserializers {
             }
             final ParameterizedType type = ((ParameterizedType) t);
             if (type.getRawType().getTypeName().equals(target.getTypeName())) {
-                return Class.forName(type.getActualTypeArguments()[paramIndex].getTypeName());
+                return Class.forName(type.getActualTypeArguments()[paramIndex].getTypeName(), true, OpenSilex.getClassLoader());
             }
         }
         for (final Class<?> parent : root.getInterfaces()) {

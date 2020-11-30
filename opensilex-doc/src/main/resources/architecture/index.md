@@ -292,7 +292,7 @@ For more information on this module see [documentation](./sparql.md)
 
 This module provide `services` to interact with NoSQL databases.
 
-This module use an existing ORM-like library for NoSQL databases [DataNucleus](http://www.datanucleus.org/)
+It actually only implements MongoDB drivers
 
 For more information on this module see [documentation](./nosql.md)
 
@@ -300,14 +300,12 @@ For more information on this module see [documentation](./nosql.md)
 +-------------- opensilex-nosql - NoSQLModule ----------------+
 +                                                             +
 +  +---------------------- SERVICES -----------------------+  +
-+  + NoSQLService:                                         +  +
-+  +   declare NoSQLConnection service connection          +  +
-+  + NoSQLConnection:                                      +  +
-+  +   provide MongoDBConnection implementation            +  +
++  + MongoDBService:                                       +  +
++  +   provide access to MongoDB database                  +  +
 +  +-------------------------------------------------------+  +
 +                              ↓                              +
 +  +---------------------- LIBRARIES ----------------------+  +
-+  + Integrate DataNucleus library                         +  +
++  + Integrate MongoDB driver                              +  +
 +  +-------------------------------------------------------+  +
 +                                                             +
 +-------------------------------------------------------------+

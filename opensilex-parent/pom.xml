@@ -68,14 +68,7 @@
         <maven.resolver.provider.version>3.6.3</maven.resolver.provider.version>
         <rdf4j.version>3.4.3</rdf4j.version>
         <jena.query.builder.version>3.16.0</jena.query.builder.version>
-        <data.nucleus.version>5.2.4</data.nucleus.version>
-        <data.nucleus.api.jdo.version>5.2.4</data.nucleus.api.jdo.version>
-        <data.nucleus.jdo.version>3.2.0-m13</data.nucleus.jdo.version>
-        <datanucleus-jdo-query.version>5.0.9</datanucleus-jdo-query.version>
-        <data.nucleus.jta.version>5.10.6.Final</data.nucleus.jta.version>
-        <data.nucleus.mongodb.version>5.2.0-release</data.nucleus.mongodb.version>
-        <data.nucleus.accessplatform.mongodb.version>5.2.5</data.nucleus.accessplatform.mongodb.version>
-        <data.nucleus.maven.plugin.version>5.2.1</data.nucleus.maven.plugin.version>
+        <mongodb.version>4.1.1</mongodb.version>
         <bytebuddy.version>1.10.17</bytebuddy.version>
         <java.jwt.version>3.11.0</java.jwt.version>
         <picocli.version>4.5.2</picocli.version>
@@ -108,7 +101,6 @@
         <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
         <maven.install.plugin.version>3.0.0-M1</maven.install.plugin.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <maven.processor.plugin.version>3.3.3</maven.processor.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M2</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
@@ -133,6 +125,7 @@
         <maven.pmd.plugin.version>3.13.0</maven.pmd.plugin.version>
         <maven.surefire.report.plugin.version>3.0.0-M3</maven.surefire.report.plugin.version>
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
+        <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
         <logstash-logback-encoder>6.4</logstash-logback-encoder>
     </properties>
@@ -469,7 +462,7 @@
             <artifactId>javax.mail</artifactId>
             <version>${javax.mail.version}</version>
         </dependency>
-        
+
         <!--Logger--> 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -532,8 +525,13 @@
             <version>${awaitability.version}</version>
             <scope>test</scope>
         </dependency>
-
-
+        
+        <!--MongoDB drivers--> 
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${mongodb.version}</version>
+        </dependency> 
     </dependencies>
 
     <build>
@@ -939,87 +937,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
-            <!-- Run annotation processors on src/main/java sources -->
-            <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
-                <version>${maven.processor.plugin.version}</version>
-                
-                <dependencies>
-                    <!--DataNucleus - Big data object mapping--> 
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-core</artifactId>
-                        <version>${data.nucleus.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>javax.jdo</artifactId>
-                        <version>${data.nucleus.jdo.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-api-jdo</artifactId>
-                        <version>${data.nucleus.api.jdo.version}</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-jdo-query -->
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-jdo-query</artifactId>
-                        <version>${datanucleus-jdo-query.version}</version>
-                    </dependency>
-                    <!--DataNucleus - MongoDB driver --> 
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-mongodb</artifactId>
-                        <version>${data.nucleus.mongodb.version}</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.datanucleus/datanucleus-accessplatform-jdo-mongodb -->
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
-                        <version>${data.nucleus.accessplatform.mongodb.version}</version>
-                        <type>pom</type>
-                    </dependency>
-
-        
-                    <!--DataNucleus - JTA Transaction--> 
-                    <dependency>
-                        <groupId>org.jboss.narayana.jta</groupId>
-                        <artifactId>narayana-jta</artifactId>
-                        <version>${data.nucleus.jta.version}</version>
-                    </dependency>
-                </dependencies>
-                
-                <executions>
-                    <execution>
-                        <id>process</id>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <processors>
-                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
-                            </processors>
-                        </configuration>
-                    </execution> 
-                    <execution>
-                        <id>process-test</id>
-                        <goals>
-                            <goal>process-test</goal>
-                        </goals>
-                        <phase>generate-test-sources</phase>
-                        <configuration>
-                            <processors>
-                                <processor>org.datanucleus.jdo.query.JDOQueryProcessor</processor>
-                            </processors>
-                            <outputDirectory>target/generated-test-sources/apt-test</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             
             <!--check minimal maven version--> 
             <plugin>
@@ -1202,49 +1119,6 @@
                                     </includes>
                                 </fileset>
                             </filesets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--datanucleus-maven-plugin-enhance--> 
-            <plugin>
-                <groupId>org.datanucleus</groupId>
-                <artifactId>datanucleus-maven-plugin</artifactId>
-                <version>${data.nucleus.maven.plugin.version}</version>
-                <configuration>
-                    <api>JDO</api>
-                    <!--<fork>false</fork>-->
-                    <log4jConfiguration>${project.basedir}/../opensilex-main/src/main/resources/log4j.properties</log4jConfiguration>
-                    <verbose>false</verbose>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.datanucleus</groupId>
-                        <artifactId>datanucleus-accessplatform-jdo-mongodb</artifactId>
-                        <version>${data.nucleus.accessplatform.mongodb.version}</version>
-                        <type>pom</type>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>enhance</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>enhance</goal>
-                        </goals>
-                        <configuration>
-                            <targetDirectory>${project.build.outputDirectory}</targetDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>process-test-classes</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>enhance</goal>
-                        </goals>
-                        <configuration>
-                            <targetDirectory>${project.build.testOutputDirectory}</targetDirectory>
-                            <metadataDirectory>${project.build.testOutputDirectory}</metadataDirectory>
                         </configuration>
                     </execution>
                 </executions>

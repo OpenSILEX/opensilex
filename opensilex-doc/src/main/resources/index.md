@@ -66,7 +66,6 @@ Every OpenSILEX developper or contributor is welcomed to enrich this repository 
 ### Apache Tomcat
 ### Eclipse Jersey
 ### Apache Jena
-### DataNucleus
 ### Logback
 ### JUnit
 

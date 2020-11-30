@@ -7,32 +7,23 @@
 package org.opensilex.core.provenance.dal;
 
 import java.net.URI;
-import javax.jdo.query.BooleanExpression;
-import org.opensilex.nosql.model.NoSQLModel;
-import javax.jdo.annotations.NotPersistent;
 import java.util.List;
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Element;
-import javax.jdo.annotations.Embedded;
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * Provenance model
+ *
  * @author Alice Boizet
  */
 public class ProvenanceModel extends MongoModel {
-    
+
     //URI uri;    
     String name;
     String comment;
-    List<URI> experiments;    
-    
+    List<URI> experiments;
+
     List<ActivityModel> activity;
-    
+
     List<AgentModel> agents;
 
 //    public URI getUri() {
@@ -42,7 +33,6 @@ public class ProvenanceModel extends MongoModel {
 //    public void setUri(URI uri) {
 //        this.uri = uri;
 //    }
-
     public String getName() {
         return name;
     }
@@ -66,7 +56,7 @@ public class ProvenanceModel extends MongoModel {
     public void setExperiments(List<URI> experiments) {
         this.experiments = experiments;
     }
-    
+
     public List<ActivityModel> getActivity() {
         return activity;
     }
@@ -74,7 +64,7 @@ public class ProvenanceModel extends MongoModel {
     public void setActivity(List<ActivityModel> activity) {
         this.activity = activity;
     }
-        
+
     public List<AgentModel> getAgents() {
         return agents;
     }
@@ -89,6 +79,5 @@ public class ProvenanceModel extends MongoModel {
             this.getName()
         };
     }
-    
-    
+
 }

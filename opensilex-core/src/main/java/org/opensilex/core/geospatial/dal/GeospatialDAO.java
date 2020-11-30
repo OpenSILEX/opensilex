@@ -45,6 +45,7 @@ import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 /**
  * Geospatial DAO
@@ -53,10 +54,10 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
  */
 public class GeospatialDAO {
 
-    final MongoCollection<GeospatialModel> geometryCollection;
+    private final MongoCollection<GeospatialModel> geometryCollection;
 
-    public GeospatialDAO(MongoClient mongoClient) {
-        MongoDatabase db = mongoClient.getDatabase("opensilex");
+    public GeospatialDAO(MongoDBService nosql) {
+        MongoDatabase db = nosql.getDatabase();
         String nameCollection = "Geospatial";
         geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
     }

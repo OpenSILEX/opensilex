@@ -14,8 +14,9 @@ import org.opensilex.nosql.utils.ClassURIGenerator;
  * @author Alice Boizet
  */
 public class MongoModel implements ClassURIGenerator<MongoModel> {
-    protected URI baseURI; 
-    protected URI uri;    
+
+    protected URI baseURI;
+    protected URI uri;
 
     public URI getUri() {
         return uri;
@@ -24,10 +25,10 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-    
+
     @Override
     public String[] getUriSegments(MongoModel instance) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

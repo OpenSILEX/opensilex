@@ -147,8 +147,7 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         List<ScientificObjectModel> scientificObjects = dao.searchByURIs(contextURI, objectsURI, currentUser);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(contextURI, objectsURI);
 
@@ -215,8 +214,7 @@ public class ScientificObjectAPI {
 
         validateContextAccess(contextURI);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByGraph(contextURI);
 
@@ -322,8 +320,7 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         ExperimentalObjectModel model = dao.geObjectByURI(objectURI, contextURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -335,7 +332,6 @@ public class ScientificObjectAPI {
             response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         }
 
-        mongoClient.close();
         return response;
     }
 
@@ -366,13 +362,11 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
             URI soURI = dao.create(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
             if (descriptionDto.getGeometry() != null) {
@@ -382,9 +376,9 @@ public class ScientificObjectAPI {
                 geospatialModel.setGraph(contextURI);
                 geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
                 geoDAO.create(geospatialModel);
-                session.commitTransaction();
+                nosql.commitTransaction();
             } else {
-                session.abortTransaction();
+                nosql.rollbackTransaction();
             }
 
             sparql.commitTransaction();
@@ -392,10 +386,8 @@ public class ScientificObjectAPI {
             return new ObjectUriResponse(Response.Status.CREATED, soURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
-        } finally {
-            mongoClient.close();
         }
     }
 
@@ -424,13 +416,12 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
+
             URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
             if (descriptionDto.getGeometry() != null) {
@@ -445,15 +436,13 @@ public class ScientificObjectAPI {
             }
 
             sparql.commitTransaction();
-            session.commitTransaction();
+            nosql.commitTransaction();
 
             return new ObjectUriResponse(soURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
-        } finally {
-            mongoClient.close();
         }
     }
 
@@ -486,26 +475,22 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
             dao.delete(contextURI, objURI, currentUser);
             geoDAO.delete(objURI, contextURI);
 
             sparql.commitTransaction();
-            session.commitTransaction();
+            nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.OK, objURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
-        } finally {
-            mongoClient.close();
         }
     }
 
@@ -557,13 +542,11 @@ public class ScientificObjectAPI {
         if (!errors.hasErrors()) {
             Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(GEOMETRY_COLUMN_ID);
             if (geometries != null && geometries.size() > 0) {
-                MongoClient mongoClient = nosql.getMongoDBClient();
-                GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+                GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-                ClientSession session = mongoClient.startSession();
-                session.startTransaction();
+                nosql.startTransaction();
+                sparql.startTransaction();
                 try {
-                    sparql.startTransaction();
                     List<SPARQLResourceModel> objects = errors.getObjects();
                     sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
@@ -580,13 +563,11 @@ public class ScientificObjectAPI {
 
                     geoDAO.createAll(geospacialModels);
                     sparql.commitTransaction();
-                    session.commitTransaction();
+                    nosql.commitTransaction();
 
                 } catch (Exception ex) {
-                    session.abortTransaction();
+                    nosql.rollbackTransaction();
                     sparql.rollbackTransaction(ex);
-                } finally {
-                    mongoClient.close();
                 }
             } else {
 

@@ -159,10 +159,10 @@ public class ProvenanceAPI {
     })
     public Response searchProvenance(
             @ApiParam(value = "name") @QueryParam("name") String name,
-            @ApiParam(value = "experiment URI") @QueryParam("experiment URI") URI experiment,
-            @ApiParam(value = "activity type") @QueryParam("activity type") URI activityType,
-            @ApiParam(value = "agent URI") @QueryParam("agent URI") URI agentURI,
-            @ApiParam(value = "agent type") @QueryParam("agent type") URI agentType,
+            @ApiParam(value = "experiment URI") @QueryParam("experimentURI") URI experiment,
+            @ApiParam(value = "activity type") @QueryParam("activityType") URI activityType,
+            @ApiParam(value = "agent URI") @QueryParam("agentURI") URI agentURI,
+            @ApiParam(value = "agent type") @QueryParam("agentType") URI agentType,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

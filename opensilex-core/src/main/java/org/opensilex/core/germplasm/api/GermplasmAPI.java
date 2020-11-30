@@ -9,7 +9,6 @@
  */
 package org.opensilex.core.germplasm.api;
 
-import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -22,18 +21,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -47,19 +43,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.service.NoSQLService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -407,7 +398,7 @@ public class GermplasmAPI {
         // Return paginated list of factor DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     /**
      *
      * @param germplasmSearchDTO
@@ -429,7 +420,7 @@ public class GermplasmAPI {
     })
     public Response exportGermplasm(
             @ApiParam("Germplasm search form") GermplasmSearchDTO germplasmSearchDTO
-            ) throws Exception {
+    ) throws Exception {
 
         // Search germplasm with germplasm DAO
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
@@ -448,25 +439,27 @@ public class GermplasmAPI {
 
         // Convert list to DTO
         List<GermplasmGetExportDTO> resultDTOList = new ArrayList<>();
-        for (GermplasmModel germplasm:resultList) {
+        for (GermplasmModel germplasm : resultList) {
             GermplasmGetExportDTO dto = GermplasmGetExportDTO.fromModel(germplasm);
             resultDTOList.add(dto);
         }
-        
+
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
-        
+
         Builder csvSchemaBuilder = CsvSchema.builder();
-	JsonNode firstObject = jsonTree.elements().next();
-        firstObject.fieldNames().forEachRemaining(fieldName -> {csvSchemaBuilder.addColumn(fieldName);} );
-	CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        JsonNode firstObject = jsonTree.elements().next();
+        firstObject.fieldNames().forEachRemaining(fieldName -> {
+            csvSchemaBuilder.addColumn(fieldName);
+        });
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
         StringWriter str = new StringWriter();
-        
+
         CsvMapper csvMapper = new CsvMapper();
-	csvMapper.writerFor(JsonNode.class)
-	  .with(csvSchema)
-	  .writeValue(str, jsonTree);
-        
+        csvMapper.writerFor(JsonNode.class)
+                .with(csvSchema)
+                .writeValue(str, jsonTree);
+
         LocalDate date = LocalDate.now();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         String fileName = "export_germplasm" + dtf.format(date);
@@ -474,7 +467,7 @@ public class GermplasmAPI {
         return Response.ok(str.toString(), MediaType.TEXT_PLAIN_TYPE)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
-        
+
     }
 
     /**
@@ -503,9 +496,9 @@ public class GermplasmAPI {
             GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
             if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
                 return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "The germplasm is a species",
-                    "You can't update a species"
+                        Response.Status.BAD_REQUEST,
+                        "The germplasm is a species",
+                        "You can't update a species"
                 ).getResponse();
             }
             ErrorResponse error = check(germplasmDTO, germplasmDAO, true);
@@ -610,18 +603,18 @@ public class GermplasmAPI {
                     "wrong rdfType: " + germplasmDTO.getType().toString()
             );
         }
-        
+
         //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
         if (germplasmDTO.getSpecies() != null) {
-           if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getSpecies())) {
+            if (!sparql.uriExists(new URI(Oeso.Species.getURI()), germplasmDTO.getSpecies())) {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't exist in the database",
                         "unknown species : " + germplasmDTO.getSpecies().toString()
                 );
-            } 
+            }
         }
-         
+
         if (germplasmDTO.getVariety() != null) {
             if (!sparql.uriExists(new URI(Oeso.Variety.getURI()), germplasmDTO.getVariety())) {
                 return new ErrorResponse(
@@ -631,7 +624,7 @@ public class GermplasmAPI {
                 );
             }
         }
-        
+
         if (germplasmDTO.getAccession() != null) {
             if (!sparql.uriExists(new URI(Oeso.Accession.getURI()), germplasmDTO.getAccession())) {
                 return new ErrorResponse(
@@ -639,9 +632,9 @@ public class GermplasmAPI {
                         "The given accession doesn't exist in the database",
                         "unknown accession : " + germplasmDTO.getAccession().toString()
                 );
-            }        
+            }
         }
-        
+
         // check that fromAccession, fromVariety or fromSpecies are given
         boolean missingLink = true;
         String message = new String();
@@ -650,7 +643,7 @@ public class GermplasmAPI {
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Variety.getURI())) {
             message = "fromSpecies";
             if (germplasmDTO.getSpecies() != null) {
-                missingLink = false;               
+                missingLink = false;
             }
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Accession.getURI())) {
             message = "fromVariety or fromSpecies";
@@ -660,7 +653,7 @@ public class GermplasmAPI {
         } else {
             message = "fromAccession, fromVariety or fromSpecies";
             if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null || germplasmDTO.getAccession() != null) {
-                missingLink = false;                
+                missingLink = false;
             }
         }
 

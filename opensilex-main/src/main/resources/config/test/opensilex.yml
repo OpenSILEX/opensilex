@@ -7,24 +7,6 @@ ontologies:
         implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         
 big-data:
-    # No SQL data source (NoSQLService)
-    nosql:
-      # Service implementation class for: nosql (NoSQLService)
-      implementation: org.opensilex.nosql.datanucleus.DataNucleusService
-      config:
-        # Datanucleus connection to database (DataNucleusServiceConnection)
-        connection:
-          # Service implementation class for: connection (DataNucleusServiceConnection)
-          implementation: org.opensilex.nosql.datanucleus.mongo.MongoDBConnection
-          config:
-            # MongoDB main host (String)
-            host: 127.0.0.1
-            # MongoDB main host port (int)
-            port: 28018
-            # MongoDB database (String)
-            database: test    
-
-
     mongodb:
         config:
           # MongoDB main host (String)

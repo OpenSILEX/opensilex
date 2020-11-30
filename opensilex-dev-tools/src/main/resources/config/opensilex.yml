@@ -14,13 +14,6 @@ file-system:
             basePath: ../../opensilex-data
 
 big-data:
-    nosql:
-        config:
-            connection:
-                config:
-                    host: localhost
-                    port: 8668
-                    database: opensilex
     mongodb:
         config:
             host: localhost

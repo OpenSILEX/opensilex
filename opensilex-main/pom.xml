@@ -16,7 +16,6 @@
  - A security system based on Users, Groups and Profiles
  - A Swagger UI interface to access web-services API
  - A SPARQL object model system based on annotations
- - A big data object model system based on annotations using DataNucleus library
  - Base classes for unit and integration test
  This module build create a Shade Jar including all core dependencies.
  For more information see: https://maven.apache.org/plugins/maven-shade-plugin/
@@ -239,4 +238,3 @@
         </plugins>
     </build>
 </project>
-

@@ -103,7 +103,7 @@ public class EnvironmentMeasureDAO extends MongoDAO<EnvironmentMeasure> {
         BasicDBObject query = prepareSearchQuery();
         
         // Return the document count
-        return (int)environmentMeasureVariableCollection.count(query);
+        return (int)environmentMeasureVariableCollection.countDocuments(query);
     }
 
     /**

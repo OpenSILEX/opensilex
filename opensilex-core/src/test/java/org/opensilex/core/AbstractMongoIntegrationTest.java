@@ -6,8 +6,8 @@
 package org.opensilex.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -34,32 +34,36 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     private static MongodExecutable mongoExec;
     private static MongodProcess mongod;
+    private static int replicaCount = 0;
 
     @BeforeClass
     public static void initMongo() throws IOException {
         MongodStarter runtime = MongodStarter.getDefaultInstance();
         int nodePort = 28018;
         Map<String, String> args = new HashMap<>();
-        args.put("--replSet", "rs0");
+        String replicaName = "rs" + replicaCount;
+        replicaCount++;
+        args.put("--replSet", replicaName);
         mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
                 .args(args)
                 .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
                 .net(new Net("127.0.0.1", nodePort, false)).build());
         mongod = mongoExec.start();
 
-        MongoClient mongo = new MongoClient(new ServerAddress("127.0.0.1", nodePort));
+        try (MongoClient mongo = MongoClients.create("mongodb://127.0.0.1:" + nodePort)) {
+            MongoDatabase adminDatabase = mongo.getDatabase("admin");
 
-        MongoDatabase adminDatabase = mongo.getDatabase("admin");
+            Document config = new Document("_id", replicaName);
+            BasicDBList members = new BasicDBList();
+            members.add(new Document("_id", 0)
+                    .append("host", "localhost:" + nodePort));
+            config.put("members", members);
 
-        Document config = new Document("_id", "rs0");
-        BasicDBList members = new BasicDBList();
-        members.add(new Document("_id", 0)
-                .append("host", "localhost:" + nodePort));
-        config.put("members", members);
-
-        adminDatabase.runCommand(new Document("replSetInitiate", config));
-
-        mongo.close();
+            adminDatabase.runCommand(new Document("replSetInitiate", config));
+            
+//            Document result = adminDatabase.runCommand(new Document("replSetGetStatus", "1"));
+//            System.out.println("MONGODB REPLICA SET: " + result);
+        }
     }
 
     @AfterClass

@@ -6,13 +6,13 @@
 package org.opensilex.nosql;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class NoSQLModule extends OpenSilexModule {
     @Override
     public void check() throws Exception {
         MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
-        MongoClient mongo = getMongoClient(config);
+        MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
         MongoCollection<Document> c = db.getCollection("test");
@@ -76,28 +76,4 @@ public class NoSQLModule extends OpenSilexModule {
 
         mongo.close();
     }
-
-    private static MongoClient getMongoClient(MongoDBConfig config) {
-        String host = config.host();
-        int port = config.port();
-        String user = config.username();
-        String password = config.password();
-        String authdb = config.authDB();
-        String url = "mongodb://";
-
-        if (!user.equals("") && !password.equals("")) {
-            url += user + ":" + password + "@";
-        }
-
-        url += host + ":" + port + "/";
-
-        if (!authdb.equals("")) {
-            url += "?authSource=" + authdb;
-        }
-
-        MongoClient mongo = new MongoClient(new MongoClientURI(url));
-
-        return mongo;
-    }
-
 }

@@ -495,7 +495,7 @@ public class ConfigProxyHandler implements InvocationHandler {
                 return null;
             }
         } else {
-            return Class.forName(className);
+            return Class.forName(className, true, OpenSilex.getClassLoader());
         }
     }
 

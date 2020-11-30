@@ -15,7 +15,7 @@ import org.opensilex.service.ServiceConfig;
  *
  * @author Vincent Migot
  */
-public interface MongoDBConfig extends ServiceConfig {
+    public interface MongoDBConfig extends ServiceConfig {
 
     @ConfigDescription(
             value = "MongoDB main host",

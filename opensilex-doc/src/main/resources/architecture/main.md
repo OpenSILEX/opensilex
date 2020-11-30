@@ -23,7 +23,7 @@ OpenSilex main module provide following features:
 
 Other following features are provided by built-in modules and won't be covered in this document:
 - SPARQL support with a custom ORM-like using [Apache Jena library](https://jena.apache.org/) and annotations
-- MongoDB support with [DataNucleus ORM-like](http://www.datanucleus.org/)
+- MongoDB support
 - Extensible [Vue.js](https://vuejs.org/) web application
 - Security API  (TODO: add link to internal doc)
 - Core concepts & API for modeling scientific experiments (TODO: add link to internal doc)
@@ -577,13 +577,12 @@ Simple abstraction layer to access to any file storage system.
 - Default Service class: org.opensilex.fs.FileStorageService
 - Default Service class constructor parameter: org.opensilex.fs.LocalFileSystemConnection
 
-### Service `nosql` (In development)
+### Service `mongodb`
 
-Abstraction layer around datanucleus ORM-like for various NoSQL databases types.
+Access to MongoDB database.
 
 - Module: NoSQLModule
-- Default Service class: org.opensilex.nosql.service.NoSQLService
-- Default Service class constructor parameter: org.opensilex.nosql.mongodb.MongoDBConnection
+- Default Service class: org.opensilex.nosql.service.MongoDBService
 - MongoDB configuration ID: mongodb
 - MongoDB configuration class: org.opensilex.nosql.mongodb.MongoDBConfig
 

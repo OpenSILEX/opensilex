@@ -111,14 +111,14 @@ export default class UriLink extends Vue {
 
 .uri {
   display: inline-flex;
-  max-width: 300px;
+  max-width: 400px;
   padding-right: 30px;
   position: relative;
 }
 
 .uri > span {
   display: inline-block;
-  max-width: 270px;
+  max-width: 370px;
   word-break: keep-all;
   text-overflow: ellipsis;
   overflow: hidden;

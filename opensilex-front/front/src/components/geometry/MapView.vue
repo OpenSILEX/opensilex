@@ -47,10 +47,10 @@
         @onCreate="showAreaDetails"
     ></opensilex-ModalForm>
 
-    <div id="selectionMode">
-      <p class="alert-info">
-        <span v-html="$t('credential.geometry.instruction')"></span>
-      </p>
+    <p class="alert-info">
+      <span v-html="$t('credential.geometry.instruction')"></span>
+    </p>
+    <div id="mapPoster" :style="editingMode ? 'border: 2mm solid #50b924;' : 'border-color: #ffffff;'">
       <vl-map
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
@@ -128,36 +128,39 @@
             :features.sync="selectedFeatures"
         />
       </vl-map>
+    </div>
 
-      <div id="selectedTable">
-        <b-table
-            v-if="selectedFeatures.length !== 0"
-            :fields="fieldsSelected"
-            :items="selectedFeatures"
-            hover
-            sort-icon-left
-            striped
-        >
-          <template v-slot:cell(name)="data">
-            <opensilex-UriLink
-                :to="{path: encodeURIComponent(data.item.properties.uri)}"
-                :uri="data.item.properties.uri"
-                :value="data.item.properties.name"
-            ></opensilex-UriLink>
-          </template>
+    <div id="selectedTable">
+      <opensilex-TableView
+          v-if="selectedFeatures.length !== 0"
+          :fields="fieldsSelected"
+          :items="selectedFeatures">
+        <template v-slot:cell(name)="{data}">
+          <opensilex-UriLink
+              :uri="data.item.properties.uri"
+              :value="data.item.properties.name"
+          ></opensilex-UriLink>
+        </template>
 
-          <template v-slot:cell(actions)="data">
-            <b-button-group size="sm">
-              <div v-if="user.admin === true && data.item.properties.uri.includes('-area')">
-                <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                                        label="MapView.delete-area-button"
-                                        @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
-                ></opensilex-DeleteButton>
-              </div>
-            </b-button-group>
-          </template>
-        </b-table>
-      </div>
+        <template v-slot:cell(type)="{data}">
+          {{ data.item.properties.type }}
+        </template>
+
+        <template v-slot:cell(comment)="{data}">
+          {{ data.item.properties.comment }}
+        </template>
+
+        <template v-slot:cell(actions)="{data}">
+          <b-button-group size="sm">
+            <div v-if="user.admin === true && data.item.properties.uri.includes('-area')">
+              <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
+                                      label="MapView.delete-area-button"
+                                      @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
+              ></opensilex-DeleteButton>
+            </div>
+          </b-button-group>
+        </template>
+      </opensilex-TableView>
     </div>
   </div>
 </template>
@@ -190,17 +193,17 @@ export default class MapView extends Vue {
   fieldsSelected = [
     {
       key: "name",
-      label: "name",
+      label: "MapView.name",
       sortable: true
     },
     {
-      key: "properties.type",
+      key: "type",
       label: "type",
       sortable: true
     },
     {
-      key: "properties.comment",
-      label: "comment",
+      key: "comment",
+      label: "MapView.comment",
       sortable: true
     },
     {
@@ -459,15 +462,13 @@ export default class MapView extends Vue {
 p {
   font-size: 115%;
 }
-
-#editing {
-  background-color: #50b924;
-}
 </style>
 
 <i18n>
     en:
       MapView:
+        name: name
+        comment: comment
         label: Geometry
         add-button: Add metadata
         add-area-button: Add an area
@@ -481,6 +482,8 @@ p {
         update: Update a perennial zone
     fr:
       MapView:
+        name: nom
+        comment: commentaire
         label: Géométrie
         add-button: Ajouter des métadonnées
         add-area-button: Ajouter une zone

@@ -9,6 +9,7 @@ package org.opensilex.nosql.mongodb;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
@@ -114,23 +115,22 @@ public class MongoDBService extends BaseService {
             transactionLevel = 0;
             session.abortTransaction();
         }
-    }
 
-    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception, MongoWriteException {
-        if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
-        }
+    }
+    
+    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
+        if (instance.getUri() == null){
+                generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+        }        
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
             collection.insertOne(instance);
-        } catch (MongoWriteException exception) {
-            throw exception;
         } catch (Exception error) {
             throw error;
         }
     }
-
-    public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix) throws Exception, MongoBulkWriteException {
+                
+    public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix) throws Exception {   
         //LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         for (T instance : instances) {
             if (instance.getUri() == null) {
@@ -144,9 +144,6 @@ public class MongoDBService extends BaseService {
         try {
             collection.insertMany(session, instances);
             commitTransaction();
-        } catch (MongoBulkWriteException exception) {
-            rollbackTransaction();
-            throw exception;
         } catch (Exception exception) {
             rollbackTransaction();
             throw exception;

@@ -77,7 +77,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         dataDTO.setProvenance(provenance);
         dataDTO.setVariable(variable);
         //dataDTO.setScientificObjects(scientificObjects);
-        dataDTO.setValue(5);
+        dataDTO.setValue(5.56);
         dataDTO.setDate(date);
                 
         return dataDTO;        
@@ -91,7 +91,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());        
     }
     
-    //@Test
+    @Test
     public void testListCreate() throws Exception {
         
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
@@ -108,7 +108,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setValue(10);
+        dto.setValue(10.2);
         
         // check update ok
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);

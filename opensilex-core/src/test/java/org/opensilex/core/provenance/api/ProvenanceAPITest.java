@@ -66,7 +66,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         return provDTO;        
     }    
     
-    //@Test
+    @Test
     public void testCreate() throws Exception {
         
         // create provenance
@@ -75,7 +75,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());        
     }
     
-    //@Test
+    @Test
     public void testUpdate() throws Exception {
 
         // create the provenance
@@ -118,7 +118,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
-    //@Test
+    @Test
     public void testGetByUri() throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath), getCreationProvDTO());
@@ -135,7 +135,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertNotNull(provGetDto);
     }
     
-    //@Test
+    @Test
     public void testSearch() throws Exception {
 
         ProvenanceCreationDTO creationDTO = getCreationProvDTO();

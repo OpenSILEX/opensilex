@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import org.opensilex.core.exception.DataTypeException;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.core.Response;
 import org.bson.Document;
+import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -87,6 +89,9 @@ public class DataDAO {
     }
 
     public DataModel create(DataModel instance) throws Exception, MongoWriteException {
+        List<DataModel> dataList = new ArrayList();
+        dataList.add(instance);
+        checkVariableDataTypes(dataList);
         nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instance;
     }
@@ -98,6 +103,7 @@ public class DataDAO {
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
         createIndexes();
+        checkVariableDataTypes(instances);
         nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instances;
     }
@@ -171,7 +177,7 @@ public class DataDAO {
             UserModel user,
             URI objectUri,
             URI variableUri,
-            URI provenanceUri,
+            List<URI> provenances,
             LocalDateTime startDate,
             LocalDateTime endDate,
             Integer page,
@@ -187,8 +193,11 @@ public class DataDAO {
             filter.put("variable", variableUri);
         }
 
-        if (provenanceUri != null) {
-            filter.put("provenance.uri", provenanceUri);
+        if (!provenances.isEmpty()) {
+            Document inFilter = new Document();
+            
+            inFilter.put("$in", provenances);
+            filter.put("provenance.uri", inFilter);
         }
 
         if (startDate != null) {
@@ -357,7 +366,7 @@ public class DataDAO {
 
     }
 
-    public Set<URI> checkVariableDataTypes(List<DataModel> datas) throws Exception {
+    public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
         Set<URI> variables = new HashSet<>();
         Map<URI, URI> variableTypes = new HashMap();
@@ -367,16 +376,20 @@ public class DataDAO {
                 URI variableUri = data.getVariable();
                 if (!variableTypes.containsKey(variableUri)) {
                     VariableModel variable = dao.get(data.getVariable());
-                    variableTypes.put(variableUri, variable.getDataType());
+                    if (variable.getDataType() == null) {
+                        throw new NoVariableDataTypeException(variableUri);
+                    } else {
+                        variableTypes.put(variableUri,variable.getDataType());
+                    }                    
                 }
                 URI dataType = variableTypes.get(variableUri);
-                if (!checkTypeCoherence(dataType, data.getValue())) {
-                    variables.add(variableUri);
+                
+                if (!checkTypeCoherence(dataType, data.getValue()))  {
+                    throw new DataTypeException(variableUri, data.getValue(), dataType);
                 }
 
             }
         }
-        return variables;
     }
 
     private Boolean checkTypeCoherence(URI dataType, Object value) {
@@ -420,6 +433,7 @@ public class DataDAO {
                     break;
             }
         }
+
         return checkCoherence;
     }
 

@@ -8,6 +8,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoCommandException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.bulk.BulkWriteError;
 import io.swagger.annotations.Api;
@@ -16,6 +17,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.File;
+import static java.lang.Double.NaN;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -54,6 +56,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -140,23 +143,21 @@ public class DataAPI {
         } else {
             ArrayList<DataModel> dataList = new ArrayList();
             dataList.add(model);
-            Set<URI> variablesList = dao.checkVariableDataTypes(dataList);
-            if (!variablesList.isEmpty()) {
-                return new ErrorResponse(
-                                Response.Status.BAD_REQUEST,
-                                "wrong value format",
-                                "variable dataType doesn't correspond to the value format"
-                    ).getResponse();
-                
-            } else {
-                try {
-                    model = (DataModel) dao.create(model);
-                    return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-                } catch (MongoWriteException duplicateKey) {
-                    return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateKey.getMessage())
-                        .getResponse();
+            
+            try {                
+                model = (DataModel) dao.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            } catch (DataTypeException typeException) {
+                String errorMessage = typeException.getMessage();
+                if (typeException.getValue().equals("NaN")) {
+                    errorMessage = errorMessage + "NaN can only be used for decimals";
                 }
-            }
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR" ,
+                    errorMessage).getResponse();                            
+            } catch (MongoWriteException duplicateKey) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", duplicateKey.getMessage())
+                    .getResponse();
+            }            
         }
     }
     
@@ -197,39 +198,43 @@ public class DataAPI {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-            Set<URI> variablesList = dao.checkVariableDataTypes(dataList);
-            if (!variablesList.isEmpty()) {
-                return new ErrorResponse(
-                                Response.Status.BAD_REQUEST,
-                                "wrong value format",
-                                "variable URIs: " + variablesList.toString()
-                    ).getResponse();
-            } else {
-                try{
-                    dataList = (List<DataModel>) dao.createAll(dataList);
-                    List<URI> createdResources = new ArrayList<>();
-                    for (DataModel data : dataList){
-                        createdResources.add(data.getUri());
-                    }
-                    return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
-                
-                } catch(NoSQLTooLargeSetException ex) {
-                    return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
-                        ERROR_MAX_SIZE_SET + String.valueOf(SIZE_MAX)).getResponse();
-                    
-                } catch (MongoBulkWriteException duplicateError) {
-                    List<DataCreationDTO> datas = new ArrayList();
-                    List<BulkWriteError> errors = duplicateError.getWriteErrors();
-                    for (int i=0 ; i < errors.size() ; i++) {
-                        int index = errors.get(i).getIndex();
-                        datas.add(dtoList.get(index));
-                    }                    
-                    ObjectMapper mapper = new ObjectMapper();
-                    String json = mapper.writeValueAsString(datas);
-                    
-                    return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
-                    .getResponse();
+
+            try{
+                dataList = (List<DataModel>) dao.createAll(dataList);
+                List<URI> createdResources = new ArrayList<>();
+                for (DataModel data : dataList){
+                    createdResources.add(data.getUri());
                 }
+                return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+
+            } catch(NoSQLTooLargeSetException ex) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(SIZE_MAX)).getResponse();
+                
+            } catch (DataTypeException typeException) {
+                String errorMessage = typeException.getMessage();
+                if (typeException.getValue().toString().equals("NaN")) {
+                    errorMessage = errorMessage + " (NaN can only be used for decimals)";
+                }                    
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR" ,
+                    errorMessage).getResponse();   
+                
+            } catch (MongoBulkWriteException duplicateError) {
+                List<DataCreationDTO> datas = new ArrayList();
+                List<BulkWriteError> errors = duplicateError.getWriteErrors();
+                for (int i=0 ; i < errors.size() ; i++) {
+                    int index = errors.get(i).getIndex();
+                    datas.add(dtoList.get(index));
+                }                    
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(datas);
+
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
+                .getResponse();
+            
+            } catch (MongoCommandException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
+                .getResponse();
             }
         }
     }
@@ -303,12 +308,14 @@ public class DataAPI {
             }                    
         }
         
+        List<URI> provenances = new ArrayList();
+        provenances.add(provenanceUri);
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 //uri,
                 objectUri,
                 variableUri,
-                provenanceUri,
+                provenances,
                 utcStartDate,
                 utcEndDate,
                 page,
@@ -534,9 +541,34 @@ public class DataAPI {
                 }            
                 return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
                 
-            } catch(NoSQLTooLargeSetException ex){
-                return new ErrorResponse(Response.Status.BAD_REQUEST,ERROR_SIZE_SET,
-                    ERROR_MAX_SIZE_SET + String.valueOf(nosql.SIZE_MAX)).getResponse();
+            } catch(NoSQLTooLargeSetException ex) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, ERROR_SIZE_SET,
+                    ERROR_MAX_SIZE_SET + String.valueOf(SIZE_MAX)).getResponse();
+                
+            } catch (DataTypeException typeException) {
+                String errorMessage = typeException.getMessage();
+                if (typeException.getValue().toString().equals("NaN")) {
+                    errorMessage = errorMessage + " (NaN can only be used for decimals)";
+                }                    
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR" ,
+                    errorMessage).getResponse();   
+                
+            } catch (MongoBulkWriteException duplicateError) {
+                List<DataFilePathCreationDTO> datas = new ArrayList();
+                List<BulkWriteError> errors = duplicateError.getWriteErrors();
+                for (int i=0 ; i < errors.size() ; i++) {
+                    int index = errors.get(i).getIndex();
+                    datas.add(dtoList.get(index));
+                }                    
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(datas);
+
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
+                .getResponse();
+            
+            } catch (MongoCommandException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
+                .getResponse();
             }                
             
         }     

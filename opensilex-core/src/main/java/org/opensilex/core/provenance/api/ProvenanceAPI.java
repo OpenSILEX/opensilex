@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.validation.Valid;
@@ -197,12 +199,14 @@ public class ProvenanceAPI {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
 
         //check if the provenance can be deleted (not linked to data)
+        List<URI> provenances = new ArrayList();
+        provenances.add(uri);
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         ListWithPagination<DataModel> resultList = dataDAO.search(
                 currentUser,
                 null,
                 null,
-                uri,
+                provenances,
                 null,
                 null,
                 0,

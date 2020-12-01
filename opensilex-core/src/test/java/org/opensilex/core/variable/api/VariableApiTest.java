@@ -77,6 +77,7 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         variableDto.setTraitUri(new URI("http://purl.obolibrary.org/obo/TO_0002644"));
         variableDto.setTraitName("dry matter digestibility");
         variableDto.setTimeInterval("minutes");
+        variableDto.setDataType(new URI("xsd:decimal"));
 
         return variableDto;
     }

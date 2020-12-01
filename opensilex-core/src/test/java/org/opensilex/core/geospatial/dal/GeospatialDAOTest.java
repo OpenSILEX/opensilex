@@ -13,22 +13,20 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
-import java.io.IOException;
 import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import org.junit.BeforeClass;
-import org.opensilex.nosql.mongodb.MongoDBService;
 
 /**
  * @author Jean Philippe VERT
@@ -43,7 +41,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
     }
 
     @BeforeClass
-    public static void initDAO() throws IOException {
+    public static void initDAO() {
         MongoDBService service = getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
         geospatialDAO = new GeospatialDAO(service);
     }

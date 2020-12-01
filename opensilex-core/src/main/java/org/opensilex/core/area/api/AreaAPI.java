@@ -9,8 +9,6 @@
  */
 package org.opensilex.core.area.api;
 
-import com.mongodb.client.ClientSession;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
@@ -18,7 +16,7 @@ import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.nosql.datanucleus.DataNucleusService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -76,7 +74,7 @@ public class AreaAPI {
     private SPARQLService sparql;
 
     @Inject
-    private DataNucleusService nosql;
+    private MongoDBService nosql;
 
     /**
      * Create a Area
@@ -108,11 +106,8 @@ public class AreaAPI {
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
-
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        nosql.startTransaction();
 
         try {
             sparql.startTransaction();
@@ -125,15 +120,13 @@ public class AreaAPI {
             geoDAO.create(geospatialModel);
 
             sparql.commitTransaction();
-            session.commitTransaction();
+            nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
-        } finally {
-            mongoClient.close();
         }
     }
 
@@ -161,14 +154,11 @@ public class AreaAPI {
     ) throws Exception {
         // Get area from DAO by URI
         AreaDAO areaDAO = new AreaDAO(sparql);
-
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         AreaModel model = areaDAO.getByURI(uri);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(uri, null);
 
-        mongoClient.close();
         // Check if area is found
         if (model != null) {
             return new SingleObjectResponse<>(AreaGetSingleDTO.fromModel(model, geometryByURI)).getResponse();
@@ -200,12 +190,9 @@ public class AreaAPI {
     ) throws Exception {
 
         AreaDAO dao = new AreaDAO(sparql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
-
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        nosql.startTransaction();
         try {
             sparql.startTransaction();
             URI areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getType(), areaDTO.getDescription(), currentUser.getUri());
@@ -217,14 +204,12 @@ public class AreaAPI {
             geoDAO.update(geospatialModel, areaURI, null);
 
             sparql.commitTransaction();
-            session.commitTransaction();
-
-            mongoClient.close();
+            nosql.commitTransaction();
 
             return new ObjectUriResponse(areaURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
         }
     }
@@ -252,27 +237,22 @@ public class AreaAPI {
             @ApiParam(value = "Area URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI areaURI
     ) throws Exception {
         AreaDAO dao = new AreaDAO(sparql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
-
-        ClientSession session = mongoClient.startSession();
-        session.startTransaction();
+        nosql.startTransaction();
         try {
             sparql.startTransaction();
             dao.delete(areaURI);
             geoDAO.delete(areaURI, null);
 
             sparql.commitTransaction();
-            session.commitTransaction();
+            nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.OK, areaURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            session.abortTransaction();
+            nosql.rollbackTransaction();
             throw ex;
-        } finally {
-            mongoClient.close();
         }
     }
 
@@ -295,12 +275,9 @@ public class AreaAPI {
     public Response searchIntersects(
             @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry
     ) throws Exception {
-        MongoClient mongoClient = nosql.getMongoDBClient();
-        GeospatialDAO geoDAO = new GeospatialDAO(mongoClient);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry), currentUser, sparql);
-
-        mongoClient.close();
 
         // retrieving the uri list with geometries in the intersects
         List<URI> areasURI = new LinkedList<>();

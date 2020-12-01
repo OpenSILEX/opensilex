@@ -7,8 +7,6 @@ package org.opensilex.core.scientificObject.api;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.ClientSession;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -150,7 +148,6 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(contextURI, objectsURI);
-        mongoClient.close();
         List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
@@ -217,7 +214,6 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByGraph(contextURI);
-        mongoClient.close();
 
         // retrieving the uri list with geometries in the experiment
         List<URI> objectsURI = new LinkedList<>();
@@ -619,7 +615,7 @@ public class ScientificObjectAPI {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        List<String> customColumns = new ArrayList();
+        List<String> customColumns = new ArrayList<>();
         customColumns.add(GEOMETRY_COLUMN_ID);
 
         BiFunction<String, SPARQLResourceModel, String> customValueGenerator = (columnID, value) -> {
@@ -766,7 +762,7 @@ public class ScientificObjectAPI {
             }
         });
 
-        List<String> customColumns = new ArrayList();
+        List<String> customColumns = new ArrayList<>();
         customColumns.add(GEOMETRY_COLUMN_ID);
 
         Map<Integer, Geometry> geometries = new HashMap<>();

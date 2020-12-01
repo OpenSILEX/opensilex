@@ -1,7 +1,7 @@
 <template>
   <div id="map">
     <div v-if="!editingMode" id="selected">
-      <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID)"
+      <opensilex-CreateButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
                               label="MapView.add-area-button"
                               @click="editingMode = true"
       ></opensilex-CreateButton>
@@ -152,7 +152,7 @@
 
         <template v-slot:cell(actions)="{data}">
           <b-button-group size="sm">
-            <div v-if="user.admin === true && data.item.properties.uri.includes('-area')">
+            <div v-if="user.admin === true && (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
               <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
                                       label="MapView.delete-area-button"
                                       @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
@@ -176,6 +176,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -194,17 +195,14 @@ export default class MapView extends Vue {
     {
       key: "name",
       label: "MapView.name",
-      sortable: true
     },
     {
       key: "type",
       label: "type",
-      sortable: true
     },
     {
       key: "comment",
       label: "MapView.comment",
-      sortable: true
     },
     {
       key: "actions",
@@ -221,6 +219,7 @@ export default class MapView extends Vue {
   private errorGeometry: boolean = false;
   // private drawControls = [];
   private coordinateExtent: any;
+  private typeLabel: { uri: String; name: String }[] = [];
 
   get user() {
     return this.$store.state.user;
@@ -248,7 +247,7 @@ export default class MapView extends Vue {
                   res.geometry.properties = {
                     uri: res.uri,
                     name: res.name,
-                    type: res.type,
+                    type: this.nameType(res.type),
                     comment: res.comment,
                   }
                   this.featuresArea.push(res.geometry)
@@ -285,6 +284,7 @@ export default class MapView extends Vue {
 
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
+    this.retrievesNameOfType()
     // this.loadDrawTypes();
     // this.loadNamespaces();
 
@@ -300,7 +300,7 @@ export default class MapView extends Vue {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
-                    type: element.type,
+                    type: this.nameType(element.type),
                     comment: element.comment,
                   }
                   this.features.push(element.geometry)
@@ -312,30 +312,6 @@ export default class MapView extends Vue {
             }
         )
         .catch(this.$opensilex.errorHandler);
-  }
-
-  mapCreated(map) {
-    // a DragBox interaction used to select features by drawing boxes
-    const dragBox = new DragBox({
-      condition: platformModifierKeyOnly,
-      onBoxEnd: () => {
-        // features that intersect the box are selected
-        const extent = dragBox.getGeometry().getExtent();
-        const source = (this.$refs.vectorSource as any).$source;
-
-        source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
-          feature = olExt.writeGeoJsonFeature(feature);
-          this.selectedFeatures.push(feature);
-        });
-      },
-    });
-
-    map.$map.addInteraction(dragBox);
-
-    // clear selection when drawing a new box and when clicking on the map
-    dragBox.on("boxStart", () => {
-      this.selectedFeatures = [];
-    });
   }
 
   // loadDrawTypes() {
@@ -363,6 +339,30 @@ export default class MapView extends Vue {
   //   ];
   // }
 
+  mapCreated(map) {
+    // a DragBox interaction used to select features by drawing boxes
+    const dragBox = new DragBox({
+      condition: platformModifierKeyOnly,
+      onBoxEnd: () => {
+        // features that intersect the box are selected
+        const extent = dragBox.getGeometry().getExtent();
+        const source = (this.$refs.vectorSource as any).$source;
+
+        source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
+          feature = olExt.writeGeoJsonFeature(feature);
+          this.selectedFeatures.push(feature);
+        });
+      },
+    });
+
+    map.$map.addInteraction(dragBox);
+
+    // clear selection when drawing a new box and when clicking on the map
+    dragBox.on("boxStart", () => {
+      this.selectedFeatures = [];
+    });
+  }
+
   successMessageArea() {
     // this.$bvModal.hide("eventAnnotation");
     // this.editingAreaPopUp = false;
@@ -383,6 +383,48 @@ export default class MapView extends Vue {
 
   select(value) {
     this.$emit("select", value);
+  }
+
+  retrievesNameOfType() {
+    let typeLabel: { uri: String; name: String }[] = [];
+
+    this.service = this.$opensilex.getService(
+        "opensilex.OntologyService"
+    );
+
+    this.service.getSubClassesOf(
+        "http://www.opensilex.org/vocabulary/oeso#ScientificObject",
+        true
+    )
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+              const res = http.response.result;
+              res.forEach(({name, uri}) => {
+                typeLabel.push({uri: uri, name: name});
+              });
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
+
+    if (this.user.locale == "en")
+      typeLabel.push({uri: "vocabulary:Zone", name: "Area"});
+    else if (this.user.locale == "fr")
+      typeLabel.push({uri: "vocabulary:Zone", name: "Zone"});
+    this.service.getSubClassesOf(
+        "http://www.opensilex.org/vocabulary/oeso#PerenialArea",
+        true
+    )
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+              const res = http.response.result;
+              res.forEach(({name, uri}) => {
+                typeLabel.push({uri: uri, name: name});
+              });
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
+
+    this.typeLabel = typeLabel;
   }
 
   private areaRecovery(extent) {
@@ -410,7 +452,7 @@ export default class MapView extends Vue {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
-                    type: element.type,
+                    type: this.nameType(element.type),
                     comment: element.comment,
                   }
                   this.featuresArea.push(element.geometry)
@@ -442,7 +484,14 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  // getByUriScientificObject() {
+  private nameType(uriType) {
+    for (let typeLabelElement of this.typeLabel) {
+      if (typeLabelElement.uri == uriType)
+        return typeLabelElement.name;
+    }
+  }
+
+// getByUriScientificObject() {
   //   let objectURI = []
   //   this.selectedFeatures.forEach(item => {
   //     objectURI.push(item.properties.uri)
@@ -461,6 +510,7 @@ export default class MapView extends Vue {
 <style lang="scss" scoped>
 p {
   font-size: 115%;
+  margin-top: 1em;
 }
 </style>
 

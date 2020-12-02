@@ -236,25 +236,30 @@ export default class MapView extends Vue {
   }
 
   showAreaDetails(areaUriResult: any) {
-    this.editingMode = false;
     areaUriResult.then(areaUri => {
-      console.debug("showAreaDetails", areaUri);
-      this.$opensilex.getService("opensilex.AreaService")
-          .getByURI(areaUri)
-          .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
-                const res = http.response.result as any;
-                if (res.geometry != null) {
-                  res.geometry.properties = {
-                    uri: res.uri,
-                    name: res.name,
-                    type: this.nameType(res.type),
-                    comment: res.comment,
+      if (areaUri != undefined) {
+        this.editingMode = false;
+        this.editingArea = false;
+        // this.$bvModal.hide("eventAnnotation");
+        // this.editingAreaPopUp = false;
+        console.debug("showAreaDetails", areaUri);
+        this.$opensilex.getService("opensilex.AreaService")
+            .getByURI(areaUri)
+            .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+                  const res = http.response.result as any;
+                  if (res.geometry != null) {
+                    res.geometry.properties = {
+                      uri: res.uri,
+                      name: res.name,
+                      type: this.nameType(res.type),
+                      comment: res.comment,
+                    }
+                    this.featuresArea.push(res.geometry)
                   }
-                  this.featuresArea.push(res.geometry)
                 }
-              }
-          )
-          .catch(this.$opensilex.errorHandler);
+            )
+            .catch(this.$opensilex.errorHandler);
+      }
     });
   }
 
@@ -364,11 +369,7 @@ export default class MapView extends Vue {
   }
 
   successMessageArea() {
-    // this.$bvModal.hide("eventAnnotation");
-    // this.editingAreaPopUp = false;
-    this.editingArea = false;
-
-    return this.$i18n.t("MapView.label");
+      return this.$i18n.t("MapView.label");
   }
 
   defineCenter() {

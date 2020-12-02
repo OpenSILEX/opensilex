@@ -1,7 +1,7 @@
 <template>
   <b-modal
     ref="modalRef"
-    :class="(modalSize == 'full' ? 'full-screen-modal-form' : '')"
+    :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
     :size="modalSize"
     :static="true"
@@ -127,7 +127,7 @@ export default class ModalForm extends Vue {
         }
         submitResult
           .then(result => {
-            if (result !== false) {
+            if (result !== false && result !== undefined) {
               this.creationOrUpdateMessage();
             }
             this.$nextTick(() => {

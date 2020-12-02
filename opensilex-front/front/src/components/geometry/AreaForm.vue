@@ -344,41 +344,41 @@ P {
 </style>
 
 <i18n>
-en:
-  AreaForm:
-    uri: Area URI
-    comment: comment
-    comment-help: Description associated with this geometry (protocol quantity)
-    comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
-    area: annotation
-    area-help: Annotation associated with this geometry
-    area-placeholder: Description of the nature of the event.
-    eventArea: Event area
-    perennialArea: Perennial area
-    selectFile: Select a file
-    confidential: Confidential
-    confidential-help: The data is confidential
-    trial: Trial
-    or: Or
-    problemDate: problem (end date starts before start date)
-    areaType: type
+  en:
+    AreaForm:
+      uri: Area URI
+      comment: comment
+      comment-help: Description associated with this geometry (protocol quantity)
+      comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+      area: annotation
+      area-help: Annotation associated with this geometry
+      area-placeholder: Description of the nature of the event.
+      eventArea: Event area
+      perennialArea: Perennial area
+      selectFile: Select a file
+      confidential: Confidential
+      confidential-help: The data is confidential
+      trial: Trial
+      or: Or
+      problemDate: problem (end date starts before start date)
+      areaType: type
 
-fr:
-  AreaForm:
-    uri: URI de Zone
-    comment: description
-    comment-help: Description associée à cette géométrie (protocole quantité)
-    comment-placeholder : Protocole n°1289 - Apport d'eau de 5 ml/jour.
-    area: Annotation
-    area-help: Zone associée à cette géométrie
-    area-placeholder: Description de la nature de l'événement.
-    eventArea: Zone d'événements
-    perennialArea: Zone pérenne
-    selectFile: Sélectionner un fichier
-    confidential: Confidentiel
-    confidential-help: Les données sont confidentielles
-    trial: Essai
-    or: Ou
-    problemDate: problème (la date de fin commence avant la date de début)
-    areaType: type
+  fr:
+    AreaForm:
+      uri: URI de Zone
+      comment: description
+      comment-help: Description associée à cette géométrie (protocole quantité)
+      comment-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+      area: Annotation
+      area-help: Zone associée à cette géométrie
+      area-placeholder: Description de la nature de l'événement.
+      eventArea: Zone d'événements
+      perennialArea: Zone pérenne
+      selectFile: Sélectionner un fichier
+      confidential: Confidentiel
+      confidential-help: Les données sont confidentielles
+      trial: Essai
+      or: Ou
+      problemDate: problème (la date de fin commence avant la date de début)
+      areaType: type
 </i18n>

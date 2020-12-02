@@ -7,6 +7,7 @@ package org.opensilex.core.variable.api;
  */
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
@@ -15,6 +16,7 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.QualityModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 
@@ -154,7 +156,15 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
         dto.setLongName(model.getLongName());
         dto.setTimeInterval(model.getTimeInterval());
         dto.setSamplingInterval(model.getSamplingInterval());
-        dto.setDataType(model.getDataType());
+
+        URI dataType = model.getDataType();
+        if(dataType != null){
+            try {
+                dto.setDataType(new URI(SPARQLDeserializers.getExpandedURI(dataType)));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         dto.setTraitUri(model.getTraitUri());
         dto.setTraitName(model.getTraitName());

@@ -56,19 +56,19 @@
                 <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
                     <template v-slot:body>
                         <opensilex-UriView title="VariableView.entity" v-if="variable.entity"
-                                           :value="variable.entity.name" :uri="getEntityPageUrl()"
+                                           :value="variable.entity.name" :uri="variable.entity.uri"
                                            :url="getEntityPageUrl()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.quality" v-if="variable.quality"
-                                           :value="variable.quality.name" :uri="getQualityPageUrl()"
+                                           :value="variable.quality.name" :uri="variable.quality.uri"
                                            :url="getQualityPageUrl()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.method" v-if="variable.method"
-                                           :value="variable.method.name" :uri="getMethodPageUrl()"
+                                           :value="variable.method.name" :uri="variable.method.uri"
                                            :url="getMethodPageUrl()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.unit" v-if="variable.unit"
-                                           :value="variable.unit.name" :uri="getUnitPageUrl()"
+                                           :value="variable.unit.name" :uri="variable.unit.uri"
                                            :url="getUnitPageUrl()">
                         </opensilex-UriView>
                     </template>

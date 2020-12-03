@@ -63,7 +63,14 @@
             }
             this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
                 this.$emit("onCreate", http.response.result.toString());
-            }).catch(this.$opensilex.errorHandler);
+            }).catch((error) => {
+                if (error.status == 409) {
+                    console.error("Variable already exists", error);
+                    this.$opensilex.errorHandler(error,"Variable "+variable.uri+" : "+this.$i18n.t("VariableForm.already-exist"));
+                } else {
+                    this.$opensilex.errorHandler(error);
+                }
+            });
         }
 
         successMessage(variable : VariableCreationDTO){
@@ -80,10 +87,18 @@
             if(formattedVariable.dataType && formattedVariable.dataType.uri){
                 formattedVariable.dataType = formattedVariable.dataType.uri
             }
-            formattedVariable.entity = formattedVariable.entity.uri ? formattedVariable.entity.uri : formattedVariable.entity;
-            formattedVariable.quality = formattedVariable.quality.uri ? formattedVariable.quality.uri : formattedVariable.quality;
-            formattedVariable.method = formattedVariable.method.uri ? formattedVariable.method.uri : formattedVariable.method;
-            formattedVariable.unit = formattedVariable.unit.uri ? formattedVariable.unit.uri : formattedVariable.unit;
+            if(formattedVariable.entity && formattedVariable.entity.uri){
+                formattedVariable.entity = formattedVariable.entity.uri;
+            }
+            if(formattedVariable.quality && formattedVariable.quality.uri){
+                formattedVariable.quality = formattedVariable.quality.uri;
+            }
+            if(formattedVariable.method && formattedVariable.method.uri){
+                formattedVariable.method = formattedVariable.method.uri;
+            }
+            if(formattedVariable.unit && formattedVariable.unit.uri){
+                formattedVariable.unit = formattedVariable.unit.uri;
+            }
 
             return formattedVariable;
         }
@@ -152,6 +167,7 @@ en:
             km: Kilometer
             field: Field
             region: Region
+        already-exist: the variable already exist
 
 fr:
     VariableForm:
@@ -202,5 +218,7 @@ fr:
             km: Kilomètre
             field: Champ
             region: Région
+        already-exist: la variable existe déjà
+
 </i18n>
 

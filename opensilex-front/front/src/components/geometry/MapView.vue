@@ -52,6 +52,7 @@
     </p>
     <div id="mapPoster" :style="editingMode ? 'border: 2mm solid #50b924;' : 'border-color: #ffffff;'">
       <vl-map
+          :default-controls="mapControls"
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
           data-projection="EPSG:4326"
@@ -177,6 +178,7 @@ import {transformExtent} from "vuelayers/src/ol-ext/proj";
 import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+import {defaults, ScaleLine} from 'ol/control'
 
 @Component
 export default class MapView extends Vue {
@@ -232,6 +234,9 @@ export default class MapView extends Vue {
   data() {
     return {
       rotation: 0,
+      mapControls: defaults().extend([
+        new ScaleLine(),
+      ]),
     };
   }
 
@@ -369,7 +374,7 @@ export default class MapView extends Vue {
   }
 
   successMessageArea() {
-      return this.$i18n.t("MapView.label");
+    return this.$i18n.t("MapView.label");
   }
 
   defineCenter() {

@@ -41,7 +41,7 @@ import { VariablesService, NamedResourceDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
-export default class EntityList extends Vue {
+export default class VariableStructureList extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $store: any;
     $route: any;

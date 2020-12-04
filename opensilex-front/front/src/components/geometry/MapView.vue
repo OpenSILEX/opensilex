@@ -50,7 +50,7 @@
     <p class="alert-info">
       <span v-html="$t('credential.geometry.instruction')"></span>
     </p>
-    <div id="mapPoster" :style="editingMode ? 'border: 2mm solid #50b924;' : 'border-color: #ffffff;'">
+    <div id="mapPoster" :style="editingMode ? 'border: 2mm solid #00FF7F;' : 'border-color: #ffffff;'">
       <vl-map
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
@@ -65,7 +65,7 @@
           <vl-source-osm></vl-source-osm>
         </vl-layer-tile>
 
-        <template v-if="endReceipt && !editingMode">
+        <template v-if="endReceipt">
           <vl-layer-vector>
             <vl-source-vector
                 ref="vectorSource"
@@ -90,20 +90,6 @@
                   ident="the-source"
                   @update:features="memorizesArea">
               </vl-source-vector>
-            </vl-layer-vector>
-            <vl-layer-vector>
-              <vl-source-vector :features.sync="features"></vl-source-vector>
-              <vl-style-box>
-                <vl-style-stroke color="#ff3620"></vl-style-stroke>
-                <vl-style-fill color="rgba(255,255,255,0.5)"></vl-style-fill>
-              </vl-style-box>
-            </vl-layer-vector>
-            <vl-layer-vector>
-              <vl-source-vector ref="vectorSourceArea" :features.sync="featuresArea"></vl-source-vector>
-              <vl-style-box>
-                <vl-style-stroke color="green"></vl-style-stroke>
-                <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
-              </vl-style-box>
             </vl-layer-vector>
 
             <!-- Creating a new area -->
@@ -527,7 +513,7 @@ p {
         comment: comment
         label: Geometry
         add-button: Add metadata
-        add-area-button: Add an area
+        add-area-button: Add area
         delete-area-button: Delete an area
         selected-button: Exit creation mode
         errorLongitude: the longitude must be between -180 and 180

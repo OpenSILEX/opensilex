@@ -50,7 +50,7 @@
     <p class="alert-info">
       <span v-html="$t('credential.geometry.instruction')"></span>
     </p>
-    <div id="mapPoster" :style="editingMode ? 'border: 2mm solid #00FF7F;' : 'border-color: #ffffff;'">
+    <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : 'text-white border border-white'">
       <vl-map
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
@@ -130,7 +130,7 @@
         </template>
 
         <template v-slot:cell(type)="{data}">
-          {{ data.item.properties.type }}
+          {{ nameType(data.item.properties.type) }}
         </template>
 
         <template v-slot:cell(comment)="{data}">
@@ -208,6 +208,7 @@ export default class MapView extends Vue {
   // private drawControls = [];
   private coordinateExtent: any;
   private typeLabel: { uri: String; name: String }[] = [];
+  private lang: string;
 
   get user() {
     return this.$store.state.user;
@@ -242,7 +243,7 @@ export default class MapView extends Vue {
                     res.geometry.properties = {
                       uri: res.uri,
                       name: res.name,
-                      type: this.nameType(res.type),
+                      type: res.type,
                       comment: res.comment,
                     }
                     this.featuresArea.push(res.geometry)
@@ -278,38 +279,6 @@ export default class MapView extends Vue {
     this.areaForm.showCreateForm();
   }
 
-  created() {
-    this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
-    this.retrievesNameOfType()
-    // this.loadDrawTypes();
-    // this.loadNamespaces();
-
-    this.service = this.$opensilex.getService(
-        "opensilex.ScientificObjectsService"
-    );
-    this.service
-        .searchScientificObjectsWithGeometryListByUris(this.$store.state.experiment)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-              const res = http.response.result as any;
-              res.forEach((element) => {
-                if (element.geometry != null) {
-                  element.geometry.properties = {
-                    uri: element.uri,
-                    name: element.name,
-                    type: this.nameType(element.type),
-                    comment: element.comment,
-                  }
-                  this.features.push(element.geometry)
-                }
-              });
-              if (res.length != 0) {
-                this.endReceipt = true;
-              }
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-  }
-
   // loadDrawTypes() {
   //   this.drawControls = [
   //     {
@@ -334,6 +303,38 @@ export default class MapView extends Vue {
   //     }
   //   ];
   // }
+
+  created() {
+    this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
+    this.retrievesNameOfType()
+    // this.loadDrawTypes();
+    // this.loadNamespaces();
+
+    this.service = this.$opensilex.getService(
+        "opensilex.ScientificObjectsService"
+    );
+    this.service
+        .searchScientificObjectsWithGeometryListByUris(this.$store.state.experiment)
+        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
+              const res = http.response.result as any;
+              res.forEach((element) => {
+                if (element.geometry != null) {
+                  element.geometry.properties = {
+                    uri: element.uri,
+                    name: element.name,
+                    type: element.type,
+                    comment: element.comment,
+                  }
+                  this.features.push(element.geometry)
+                }
+              });
+              if (res.length != 0) {
+                this.endReceipt = true;
+              }
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
+  }
 
   mapCreated(map) {
     // a DragBox interaction used to select features by drawing boxes
@@ -379,6 +380,7 @@ export default class MapView extends Vue {
 
   retrievesNameOfType() {
     let typeLabel: { uri: String; name: String }[] = [];
+    this.lang = this.user.locale;
 
     this.service = this.$opensilex.getService(
         "opensilex.OntologyService"
@@ -419,6 +421,17 @@ export default class MapView extends Vue {
     this.typeLabel = typeLabel;
   }
 
+  nameType(uriType) {
+    if (this.user.locale != this.lang) {
+      this.retrievesNameOfType();
+    }
+
+    for (let typeLabelElement of this.typeLabel) {
+      if (typeLabelElement.uri == uriType)
+        return typeLabelElement.name;
+    }
+  }
+
   private areaRecovery(extent) {
     this.coordinateExtent = transformExtent(extent, "EPSG:3857", "EPSG:4326");
 
@@ -444,7 +457,7 @@ export default class MapView extends Vue {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
-                    type: this.nameType(element.type),
+                    type: element.type,
                     comment: element.comment,
                   }
                   this.featuresArea.push(element.geometry)
@@ -476,13 +489,6 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  private nameType(uriType) {
-    for (let typeLabelElement of this.typeLabel) {
-      if (typeLabelElement.uri == uriType)
-        return typeLabelElement.name;
-    }
-  }
-
 // getByUriScientificObject() {
   //   let objectURI = []
   //   this.selectedFeatures.forEach(item => {
@@ -503,6 +509,11 @@ export default class MapView extends Vue {
 p {
   font-size: 115%;
   margin-top: 1em;
+}
+
+.border-secondary
+{
+  border-width: 2mm !important;
 }
 </style>
 

@@ -185,7 +185,7 @@ ontologies:
 
     # Triple store configuration
     sparql:
-        rdf4j:
+        config:
             # Connection URI to RDF4J or GraphDB instance (they use the same API)
             # please adjust it to your local installation
             serverURI: http://localhost:8080/rdf4j-server/

@@ -183,8 +183,33 @@ public class DataDAO {
             Integer page,
             Integer pageSize) {
 
-        Document filter = new Document();
+        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate);
 
+        ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, page, pageSize);
+
+        return datas;
+
+    }
+    
+    public List<DataModel> search(
+            UserModel user,
+            URI objectUri,
+            URI variableUri,
+            List<URI> provenances,
+            LocalDateTime startDate,
+            LocalDateTime endDate) {
+
+        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate);
+
+        List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter);
+
+        return datas;
+
+    }
+    
+    private Document searchFilter(URI objectUri, URI variableUri, List<URI> provenances, LocalDateTime startDate, LocalDateTime endDate) {
+        Document filter = new Document();
+        
         if (objectUri != null) {
             filter.put("scientificObjects", objectUri);
         }
@@ -211,12 +236,9 @@ public class DataDAO {
             less.put("$lte", endDate);
             filter.put("date", less);
         }
-
-        ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, page, pageSize);
-
-        return datas;
-
-    }
+        
+        return filter;
+    }    
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
         DataModel data = nosql.findByURI(DataModel.class, DATA_COLLECTION_NAME, uri);
@@ -337,7 +359,7 @@ public class DataDAO {
             int page,
             int pageSize) {
 
-        Document filter = new Document();
+        Document filter = searchFileFilter(objectUri, provenanceUri, startDate, endDate);
 
         if (objectUri != null) {
             filter.put("scientificObjects", objectUri);
@@ -364,6 +386,32 @@ public class DataDAO {
 
         return files;
 
+    }
+    
+    private Document searchFileFilter(URI objectUri, URI provenanceUri, LocalDateTime startDate, LocalDateTime endDate) {
+        Document filter = new Document();
+
+        if (objectUri != null) {
+            filter.put("scientificObjects", objectUri);
+        }
+
+        if (provenanceUri != null) {
+            filter.put("provenance.uri", provenanceUri);
+        }
+
+        if (startDate != null) {
+            Document greater = new Document();
+            greater.put("$gte", startDate);
+            filter.put("date", greater);
+        }
+
+        if (endDate != null) {
+            Document less = new Document();
+            less.put("$lte", endDate);
+            filter.put("date", less);
+        }
+        
+        return filter;
     }
 
     public void checkVariableDataTypes(List<DataModel> datas) throws Exception {

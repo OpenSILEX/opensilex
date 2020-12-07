@@ -7,10 +7,7 @@
 package org.opensilex.nosql.mongodb;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCommandException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
@@ -206,6 +203,23 @@ public class MongoDBService extends BaseService {
         }
 
         return new ListWithPagination(results, page, pageSize, total);
+
+    }
+    
+    public <T> List<T> search(
+            Class<T> instanceClass,
+            String collectionName,
+            Document filter) {
+        List<T> results = new ArrayList<T>();
+        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
+
+        FindIterable<T> queryResult = collection.find(filter);
+
+        for (T res : queryResult) {
+            results.add(res);
+        }        
+
+        return results;
 
     }
 

@@ -309,7 +309,10 @@ public class DataAPI {
         }
         
         List<URI> provenances = new ArrayList();
-        provenances.add(provenanceUri);
+        if (provenanceUri != null) {
+            provenances.add(provenanceUri);
+        }
+        
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 //uri,

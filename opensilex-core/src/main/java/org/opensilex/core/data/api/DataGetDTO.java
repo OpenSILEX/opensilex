@@ -22,16 +22,6 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 public class DataGetDTO extends DataCreationDTO {
     
-    private String timezone;
-
-    public String getTimezone() {
-        return timezone;
-    }
-
-    public void setTimezone(String timezone) {
-        this.timezone = timezone;
-    }    
-    
     @NotNull
     @ValidURI
     @Override

@@ -6,7 +6,7 @@ Auteur: Jean-Eudes Hollebecq - Opensilex (23/11/2020)
 
 Une variable c’est une série d’observations sur des individus.
 Il existe beaucoup de sujets à observer (**Entités**), caractéristiques à observer (**Quantités**/**Qualités**),
- façons d’y arriver (**Méthodes**), unités ou échelles pour mesurer ces résultats (**Unités**). 
+ façons d’y arriver (**Méthodes**), unités ou échelles pour exprimer ces résultats (**Unités**). 
  Ces quatres composants forment le modèle de variable.
  
 ### <span style="color:blue">**Nom précis**</span>
@@ -54,15 +54,16 @@ Un suffixe peut être ajouté pour préciser davantage la mesure :
     - Un écart-type : on ajoute Std
     - D’un indice de confiance sur la qualité de la mesure : Flag
     
-<span style="color:red">**REMARQUE**</span>. : 
-<p>
-Il ne s’agit pas de variables calculées à partir de la série temporelle (moyenne), 
-mais d’une sortie capteur décrivant une hétérogénéité spatiale de l’entité, 
-ou une insuffisance capteur crééant une trop grande incertitude de mesure. <br>
-Ces autres variables (calcul de l’écart-type d’une variable, 
-composition de ses propres variables décrivant des conditions jugées inappropriées à une étude), 
-doivent rester dans les scripts d’analyse de données, et ne pas être entreposées dans la base PHIS.
-</p>
+    -  <span style="color:red">**REMARQUE**</span> : 
+        <p>
+        Il ne s’agit pas de variables calculées à partir de la série temporelle (moyenne), 
+        mais d’une sortie capteur décrivant une hétérogénéité spatiale de l’entité, 
+        ou une insuffisance capteur crééant une trop grande incertitude de mesure. <br>
+        Ces autres variables (calcul de l’écart-type d’une variable, 
+        composition de ses propres variables décrivant des conditions jugées inappropriées à une étude), 
+        doivent rester dans les scripts d’analyse de données, et ne pas être entreposées dans la base PHIS.
+        </p>
+        
 
 
 **`Méthode`**: la méthode utilisée pour obtenir l’observation de l’entité, on trouve notamment :
@@ -88,7 +89,7 @@ doivent rester dans les scripts d’analyse de données, et ne pas être entrepo
     - PhysicalModel (Radiative Transfer Model Inversion)
     - EmpiricalModel
 
- <span style="color:red">**REMARQUE**</span>. : Il est chaudement recommandé de créer de nouvelles méthodes 
+ <span style="color:red">**REMARQUE**</span> : Il est chaudement recommandé de créer de nouvelles méthodes 
  pour expliquer votre façon de faire  et ainsi avoir le plus de détails possible.
 
 **`Unité`**: l’unité utilisée pour exprimer la mesure. On préfèrera les lettres minuscules, 
@@ -119,5 +120,5 @@ Il est aussi recommandé d’utiliser un nom abrégé, qui sera plus adapté lor
 Ce nom abrégé peut contenir uniquement le trait (Entité + caractéristique), 
 au risque d’entrer en conflict avec d’autres variables mesurant le même trait, dans d’autres unités, ou méthodes. 
 Ce nom abrégé peut aussi abréger les composantes en un nom compréhensible mais raccourci. <br>
-Exemple : Canopy_InclinationAngle_PhysicalModel_Degree → Can_IncAng_PhyMod_deg_
+Exemple : Canopy_InclinationAngle_PhysicalModel_Degree → Can_IncAng_PhyMod_deg
 </p>

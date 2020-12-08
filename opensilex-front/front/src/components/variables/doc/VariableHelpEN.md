@@ -53,13 +53,13 @@ A suffix is added when necessary to indicate more precisely the measure:
     - `Std`: for Standard Deviation
     - `Flag`: for indicating classes of measurement quality
     
-<span style="color:red">**NOTA BENE**</span>. : 
-<p>
-This is not a computation of the « mean » variable, but another output of the sensor describing 
-the spatial heterogeneity of the entity or some unsuitables conditions leading to possibly false measurement. <br>
-The computed variables over the time series ( maximum of temperature of the day, etc) 
-are meant to stay withing the data analysis scripts and not stored in the database. 
-</p>
+    - <span style="color:red">**NOTA BENE**</span> : 
+        <p>
+        This is not a computation of the « mean » variable, but another output of the sensor describing 
+        the spatial heterogeneity of the entity or some unsuitables conditions leading to possibly false measurement. <br>
+        The computed variables over the time series ( maximum of temperature of the day, etc) 
+        are meant to stay withing the data analysis scripts and not stored in the database. 
+        </p>
 
 **`Method`**: the method used to estimate the variable, i.e. the value of the trait. You can find some existing methods here :
 
@@ -94,7 +94,7 @@ are meant to stay withing the data analysis scripts and not stored in the databa
     - Radiothermometer
     - DirectMeasurement (thermocouple)
 
- <span style="color:red">**NOTA BENE**</span>. : Addition of new methods is much welcome to explain your way to proceed 
+ <span style="color:red">**NOTA BENE**</span> : Addition of new methods is much welcome to explain your way to proceed 
  and thus have as much details as possible.
 
 **`Unit `**: the unit used to measure the trait. The abbreviations are made to be consistent with the current use. 
@@ -120,5 +120,5 @@ For conveniance purpose a short name is given as well, by default is only the tr
 It is used to label some graphs and to fit better in tables headers. <br>
 This short name can use abregated words as well, see for example :
 
-_Canopy_InclinationAngle_PhysicalModel_Degree → Can_IncAng_PhyMod_deg_
+_Canopy_InclinationAngle_PhysicalModel_Degree → Can_IncAng_PhyMod_deg
 </p>

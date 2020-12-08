@@ -84,7 +84,7 @@
 
         <template v-on="editingMode">
           <div id="editionMode">
-            <vl-layer-vector>
+            <vl-layer-vector :visible="false">
               <vl-source-vector
                   :features.sync="temporaryArea"
                   ident="the-source"

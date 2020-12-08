@@ -47,7 +47,10 @@
           v-else-if="isDataTab()"
           :uri="uri"
         ></opensilex-ExperimentData>
-        <opensilex-MapView :uri="uri" v-else-if="isMap()"></opensilex-MapView>
+        <opensilex-MapView
+            v-else-if="isMap()"
+            :uri="uri"
+        ></opensilex-MapView>
       </template>
     </opensilex-PageContent>
   </div>

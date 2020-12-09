@@ -20,28 +20,6 @@
         ></opensilex-InputForm>
       </div>
     </div>
-    <!--    <div class="row">-->
-    <!--      <div class="col-lg-6">-->
-    <!--        &lt;!&ndash; selected area &ndash;&gt;-->
-    <!--        <opensilex-RadioGroupForm-->
-    <!--            :options="options"-->
-    <!--            :required="true"-->
-    <!--            :value.sync="form.areaType"-->
-    <!--            title="radioForm"-->
-    <!--        ></opensilex-RadioGroupForm>-->
-    <!--      </div>-->
-
-    <!--      <div class="col-lg-6" v-if="form.areaType === 'event'">-->
-    <!--        &lt;!&ndash; confidential &ndash;&gt;-->
-    <!--        <opensilex-CheckboxForm-->
-    <!--            :value.sync="form.isPublic"-->
-    <!--            helpMessage="AreaForm.comment-help"-->
-    <!--            title="AreaForm.confidential"-->
-    <!--        ></opensilex-CheckboxForm>-->
-    <!--      </div>-->
-    <!--    </div>-->
-
-    <!--    <div v-if="form.areaType === 'perennial'">-->
 
     <opensilex-SelectForm
         :label="$t('AreaForm.areaType')"
@@ -50,100 +28,6 @@
         :required="false"
         :selected.sync="form.optionAreaType"
     ></opensilex-SelectForm>
-
-    <!--    </div>-->
-
-    <!--    <div v-if="form.areaType === 'event'">-->
-    <!--      &lt;!&ndash; trial &ndash;&gt;-->
-    <!--      <opensilex-InputForm-->
-    <!--          :required="true"-->
-    <!--          :value.sync="form.trial"-->
-    <!--          disabled-->
-    <!--          label="AreaForm.trial"-->
-    <!--          type="text"-->
-    <!--      ></opensilex-InputForm>-->
-
-    <!--      <div class="row">-->
-    <!--        <div class="col-lg-6">-->
-    <!--          &lt;!&ndash; eventType &ndash;&gt;-->
-    <!--          <opensilex-EventType-->
-    <!--              :required="true"-->
-    <!--              :type.sync="form.eventType"-->
-    <!--          ></opensilex-EventType>-->
-    <!--        </div>-->
-
-    <!--        <div class="col-lg-6">-->
-    <!--          &lt;!&ndash; subject &ndash;&gt;-->
-    <!--          <opensilex-Subject-->
-    <!--              :baseType="$opensilex.Oeso.EXPERIMENT_TYPE_URI"-->
-    <!--              :required="true"-->
-    <!--              :type.sync="form.subject"-->
-    <!--          ></opensilex-Subject>-->
-    <!--        </div>-->
-    <!--      </div>-->
-
-    <!--      &lt;!&ndash; period &ndash;&gt;-->
-    <!--      <div class="row">-->
-    <!--        &lt;!&ndash; start date &ndash;&gt;-->
-    <!--        <div class="col-lg-2">-->
-    <!--          <opensilex-InputForm-->
-    <!--              :max="form.endDate"-->
-    <!--              :required="true"-->
-    <!--              :value.sync="form.startDate"-->
-    <!--              label="component.common.startDate"-->
-    <!--              type="date"-->
-    <!--          ></opensilex-InputForm>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; end date &ndash;&gt;-->
-    <!--        <div class="col-lg-2">-->
-    <!--          <opensilex-InputForm-->
-    <!--              :min="form.startDate"-->
-    <!--              :value.sync="form.endDate"-->
-    <!--              label="component.common.endDate"-->
-    <!--              type="date"-->
-    <!--          ></opensilex-InputForm>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; or &ndash;&gt;-->
-    <!--        <div class="col-lg-3">-->
-    <!--          <p>{{ $t('AreaForm.or') }}</p>-->
-    <!--          {{ calculatesDifferenceDate(form.startDate, form.endDate) }}-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; duration &ndash;&gt;-->
-    <!--        <div class="col-lg-2">-->
-    <!--          <opensilex-InputForm-->
-    <!--              :value.sync="form.duration"-->
-    <!--              label="component.common.duration"-->
-    <!--              type="number"-->
-    <!--          ></opensilex-InputForm>-->
-    <!--        </div>-->
-
-    <!--        &lt;!&ndash; units of time &ndash;&gt;-->
-    <!--        <div class="col-lg-2">-->
-    <!--          <opensilex-UnitsOfTime-->
-    <!--              :value.sync="form.unitsTime"-->
-    <!--              label="component.common.unitsTime"-->
-    <!--          ></opensilex-UnitsOfTime>-->
-
-    <!--        </div>-->
-    <!--      </div>-->
-
-    <!--      &lt;!&ndash; annotation &ndash;&gt;-->
-    <!--      <opensilex-TextAreaForm-->
-    <!--          :value.sync="form.annotation"-->
-    <!--          helpMessage="AreaForm.area-help"-->
-    <!--          label="AreaForm.area"-->
-    <!--          placeholder="AreaForm.area-placeholder"-->
-    <!--      ></opensilex-TextAreaForm>-->
-    <!--    </div>-->
-
-    <!-- file input -->
-    <!--    <opensilex-FileInputForm-->
-    <!--        :file.sync="form.file"-->
-    <!--        label="AreaForm.selectFile"-->
-    <!--    ></opensilex-FileInputForm>-->
 
     <!-- description -->
     <opensilex-TextAreaForm
@@ -161,6 +45,7 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class AreaForm extends Vue {
@@ -185,16 +70,8 @@ export default class AreaForm extends Vue {
         uri: null,
         name: null,
         subject: null,
-        // unitsTime: null,
-        // file: null,
         optionAreaType: null,
-        // duration: 0,
-        // startDate: "",
-        // endDate: "",
-        // annotation: "",
         description: "",
-        // areaType: "",
-        // trial: "",
         type: "",
         geometry: [],
         properties: [],
@@ -206,13 +83,6 @@ export default class AreaForm extends Vue {
     }
   })
   form;
-  // options: { text: string; value: string }[] = [
-  //   // eventArea
-  //   {text: 'AreaForm.eventArea', value: 'event'},
-  //
-  //   // perennialArea
-  //   {text: 'AreaForm.perennialArea', value: 'perennial'},
-  // ];
 
   get user() {
     return this.$store.state.user;
@@ -231,10 +101,7 @@ export default class AreaForm extends Vue {
 
     let optionsArea: { label: string; id: string }[] = [];
 
-    this.service.getSubClassesOf(
-        "http://www.opensilex.org/vocabulary/oeso#PerenialArea",
-        true
-    )
+    this.service.getSubClassesOf(Oeso.PERENNIAL_AREA, true)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
@@ -252,23 +119,6 @@ export default class AreaForm extends Vue {
     this.uriGenerated = true;
   }
 
-  // // Calculates the difference between the start date and the end date
-  // calculatesDifferenceDate(startDate, endDate) {
-  //   let date1 = new Date(startDate);
-  //   let date2 = new Date(endDate);
-  //   // difference in hours
-  //   let time_diff = date2.getTime() - date1.getTime();
-  //
-  //   // difference in days
-  //   let days_Diff = time_diff / (1000 * 3600 * 24) + 1;
-  //   // display the difference
-  //   this.form.duration = days_Diff;
-  //   this.form.unitsTime = "days";
-  //
-  //   if (days_Diff < 0)
-  //     alert(this.$t('AreaForm.problemDate'));
-  // }
-
   getEmptyForm() {
     let names = {};
     let lang = this.languageCode;
@@ -280,16 +130,8 @@ export default class AreaForm extends Vue {
       uri: null,
       name: null,
       subject: null,
-      // unitsTime: null,
-      // file: null,
       optionAreaType: null,
-      // duration: 0,
-      // startDate: "",
-      // endDate: "",
-      // annotation: "",
       description: "",
-      // areaType: "",
-      // trial: "",
       type: "",
       geometry: [],
       properties: [],
@@ -336,8 +178,6 @@ export default class AreaForm extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4";
-
 P {
   text-align: center;
 }

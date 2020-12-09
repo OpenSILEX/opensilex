@@ -10,11 +10,9 @@
 package org.opensilex.core.area.dal;
 
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,27 +29,12 @@ public class AreaDAO {
         this.sparql = sparql;
     }
 
-    public URI create(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
-        AreaModel area = initArea(uri, name, rdfType, description, user);
+    public URI create(URI uri, String name, URI type, String description, URI user) throws Exception {
+        AreaModel area = new AreaModel(uri, name, type, description, user);
 
         sparql.create(area);
 
         return area.getUri();
-    }
-
-    private AreaModel initArea(URI uri, String name, URI type, String description, URI user) throws URISyntaxException {
-        AreaModel area = new AreaModel();
-        area.setName(name);
-        area.setType(type);
-        area.setDescription(description);
-        area.setAuthor(user);
-
-        if (uri != null) {
-            uri = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));
-            area.setUri(uri);
-        }
-
-        return area;
     }
 
     public AreaModel getByURI(URI instanceURI) throws Exception {
@@ -63,8 +46,7 @@ public class AreaDAO {
     }
 
     public URI update(URI uri, String name, URI type, String description, URI user) throws Exception {
-        AreaModel area = initArea(uri, name, type, description, user);
-
+        AreaModel area = new AreaModel(uri, name, type, description, user);
         sparql.update(area);
 
         return area.getUri();

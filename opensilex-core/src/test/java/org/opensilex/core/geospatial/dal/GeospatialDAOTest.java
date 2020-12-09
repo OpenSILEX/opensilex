@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.geospatial.dal;
 
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
@@ -30,6 +31,7 @@ import java.util.List;
 
 /**
  * @author Jean Philippe VERT
+ * @author Vincent MIGOT
  */
 public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
@@ -91,6 +93,48 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreate() throws URISyntaxException {
         GeospatialModel geospatial = getGeospatialModel("Point", new URI("http://opensilex/Geospatial/G_991"), false);
+
+        geospatialDAO.create(geospatial);
+
+        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
+    }
+
+    @Test(expected = MongoWriteException.class)
+    public void testCreateWrongGeometriesHourglass() throws URISyntaxException {
+        List<Position> list = new LinkedList<>();
+        list.add(new Position(-8.7890625, 55.178867663281984));
+        list.add(new Position(72.7734375, 54.16243396806779));
+        list.add(new Position(-41.8359375, -17.978733095556155));
+        list.add(new Position(84.375, -17.308687886770024));
+        list.add(new Position(-8.7890625, 55.178867663281984));
+        Geometry geometry = new Polygon(list);
+
+        URI type = new URI("vocabulary:WindyArea");
+        URI graph = new URI("test-exp:mau17-pg/2");
+
+        GeospatialModel geospatial = new GeospatialModel();
+        geospatial.setUri(new URI("http://opensilex/Geospatial/G_791"));
+        geospatial.setType(type);
+        geospatial.setGraph(graph);
+        geospatial.setGeometry(geometry);
+
+        geospatialDAO.create(geospatial);
+
+        verificationOfCorrectInsertion(geospatial.getGeometry(), geospatial.getUri(), type, geospatial.getGraph());
+    }
+
+    @Test(expected = MongoWriteException.class)
+    public void testCreateWrongGeometries() throws URISyntaxException {
+        Geometry geometry = new Point(new Position(233.97167246, 43.61328981));
+
+        URI type = new URI("vocabulary:WindyArea");
+        URI graph = new URI("test-exp:mau17-pg/2");
+
+        GeospatialModel geospatial = new GeospatialModel();
+        geospatial.setUri(new URI("http://opensilex/Geospatial/G_792"));
+        geospatial.setType(type);
+        geospatial.setGraph(graph);
+        geospatial.setGeometry(geometry);
 
         geospatialDAO.create(geospatial);
 

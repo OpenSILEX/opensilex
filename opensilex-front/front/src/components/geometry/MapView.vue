@@ -15,26 +15,6 @@
           @click="editingMode = false"
       ></opensilex-Button>
     </div>
-    <!--    <div v-if="editingAreaPopUp && editingMode">-->
-    <!--      {{ this.$bvModal.show("eventArea") }}-->
-    <!--      <b-modal-->
-    <!--          :title="$t('component.area.eventArea')"-->
-    <!--          centered-->
-    <!--          hide-footer-->
-    <!--          id="eventArea"-->
-    <!--      >-->
-    <!--        <opensilex-CreateButton-->
-    <!--            @click="(areaForm.showCreateForm())"-->
-    <!--            label="component.area.add-button"-->
-    <!--            v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"-->
-    <!--        ></opensilex-CreateButton>-->
-    <!--        <b-button-->
-    <!--            @click="editingAreaPopUp = false"-->
-    <!--            variant="warning"-->
-    <!--        >{{ $t('component.area.no') }}-->
-    <!--        </b-button>-->
-    <!--      </b-modal>-->
-    <!--    </div>-->
     <opensilex-ModalForm
         v-if="!errorGeometry"
         ref="areaForm"
@@ -50,7 +30,7 @@
     <p class="alert-info">
       <span v-html="$t('credential.geometry.instruction')"></span>
     </p>
-    <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : 'text-white border border-white'">
+    <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
       <vl-map
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
@@ -97,7 +77,7 @@
                 v-if="editingMode"
                 source="the-source"
                 type="Polygon"
-                @drawend="(editingArea = true) && (editingAreaPopUp = true) && (areaForm.showCreateForm())"
+                @drawend="areaForm.showCreateForm()"
             >
               <vl-style-box>
                 <vl-style-stroke color="blue"></vl-style-stroke>
@@ -165,6 +145,7 @@ import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from 'ol/control'
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class MapView extends Vue {
@@ -201,11 +182,8 @@ export default class MapView extends Vue {
   nodes = [];
 
   private editingMode: boolean = false;
-  private editingArea: boolean = false;
-  private editingAreaPopUp: boolean = false;
   private endReceipt: boolean = false;
   private errorGeometry: boolean = false;
-  // private drawControls = [];
   private coordinateExtent: any;
   private typeLabel: { uri: String; name: String }[] = [];
   private lang: string;
@@ -231,9 +209,6 @@ export default class MapView extends Vue {
     areaUriResult.then(areaUri => {
       if (areaUri != undefined) {
         this.editingMode = false;
-        this.editingArea = false;
-        // this.$bvModal.hide("eventAnnotation");
-        // this.editingAreaPopUp = false;
         console.debug("showAreaDetails", areaUri);
         this.$opensilex.getService("opensilex.AreaService")
             .getByURI(areaUri)
@@ -279,36 +254,9 @@ export default class MapView extends Vue {
     this.areaForm.showCreateForm();
   }
 
-  // loadDrawTypes() {
-  //   this.drawControls = [
-  //     {
-  //       id: 'point',
-  //       label: this.$i18n.t("Area.point")
-  //     },
-  //     {
-  //       id: 'line-string',
-  //       label: this.$i18n.t("Area.line-string")
-  //     },
-  //     {
-  //       id: 'polygon',
-  //       label: this.$i18n.t("Area.polygon")
-  //     },
-  //     {
-  //       id: 'circle',
-  //       label: this.$i18n.t("Area.circle")
-  //     },
-  //     {
-  //       id: 'undefined',
-  //       label: this.$i18n.t("Area.stop")
-  //     }
-  //   ];
-  // }
-
   created() {
     this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
     this.retrievesNameOfType()
-    // this.loadDrawTypes();
-    // this.loadNamespaces();
 
     this.service = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
@@ -386,10 +334,7 @@ export default class MapView extends Vue {
         "opensilex.OntologyService"
     );
 
-    this.service.getSubClassesOf(
-        "http://www.opensilex.org/vocabulary/oeso#ScientificObject",
-        true
-    )
+    this.service.getSubClassesOf(Oeso.SCIENTIFIC_OBJECT_TYPE_URI, true)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
@@ -404,10 +349,7 @@ export default class MapView extends Vue {
       typeLabel.push({uri: "vocabulary:Zone", name: "Area"});
     else if (this.user.locale == "fr")
       typeLabel.push({uri: "vocabulary:Zone", name: "Zone"});
-    this.service.getSubClassesOf(
-        "http://www.opensilex.org/vocabulary/oeso#PerenialArea",
-        true
-    )
+    this.service.getSubClassesOf(Oeso.PERENNIAL_AREA, true)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
@@ -488,20 +430,6 @@ export default class MapView extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
   }
-
-// getByUriScientificObject() {
-  //   let objectURI = []
-  //   this.selectedFeatures.forEach(item => {
-  //     objectURI.push(item.properties.uri)
-  //   });
-  //
-  //   return this.$opensilex
-  //       .getService("opensilex.ScientificObjectsService")
-  //       .getScientificObjectsListByUris(
-  //           this.$store.state.experiment,
-  //           objectURI
-  //       );
-  // }
 }
 </script>
 
@@ -511,8 +439,7 @@ p {
   margin-top: 1em;
 }
 
-.border-secondary
-{
+.border-secondary {
   border-width: 2mm !important;
 }
 </style>

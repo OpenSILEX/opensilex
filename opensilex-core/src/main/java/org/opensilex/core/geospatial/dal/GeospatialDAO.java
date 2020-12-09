@@ -34,6 +34,7 @@ import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -216,7 +217,7 @@ public class GeospatialDAO {
         if (geometry != null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI("http://www.opensilex.org/vocabulary/oeso#PerenialArea"), ClassModel.class,
+            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.PerennialArea.getURI()), ClassModel.class,
                     currentUser,
                     true,
                     null);
@@ -226,7 +227,7 @@ public class GeospatialDAO {
 
             resourceTreeDTOS.forEach(resourceTreeDTO -> ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString())));
 
-            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(Filters.in("type", ontologyAreaURI));
+            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.in("type", ontologyAreaURI)).filter(Filters.geoIntersects("geometry", geometry));
 
             return createGeometryMap(geospatialFindIterable);
         } else {

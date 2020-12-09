@@ -58,9 +58,6 @@ public class AreaAPI {
     public static final String CREDENTIAL_AREA_GROUP_ID = "Area";
     public static final String CREDENTIAL_AREA_GROUP_LABEL_KEY = "credential-groups.area";
 
-    public static final String CREDENTIAL_AREA_READ_ID = "area-read";
-    public static final String CREDENTIAL_AREA_READ_LABEL_KEY = "credential.area.read";
-
     public static final String CREDENTIAL_AREA_MODIFICATION_ID = "area-modification";
     public static final String CREDENTIAL_AREA_MODIFICATION_LABEL_KEY = "credential.area.modification";
 
@@ -89,8 +86,8 @@ public class AreaAPI {
     @ApiOperation("Create a Area")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_AREA_READ_ID,
-            credentialLabelKey = CREDENTIAL_AREA_READ_LABEL_KEY
+            credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_AREA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -107,10 +104,10 @@ public class AreaAPI {
         AreaDAO dao = new AreaDAO(sparql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        nosql.startTransaction();
 
+        nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
             URI areaURI = dao.create(dto.getUri(), dto.getName(), dto.getType(), dto.getDescription(), currentUser.getUri());
 
             GeospatialModel geospatialModel = new GeospatialModel();
@@ -139,10 +136,6 @@ public class AreaAPI {
     @Path("get/{uri}")
     @ApiOperation("Get a area by its URI")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_AREA_READ_ID,
-            credentialLabelKey = CREDENTIAL_AREA_READ_LABEL_KEY
-    )
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return profile", response = AreaGetSingleDTO.class),
@@ -193,8 +186,8 @@ public class AreaAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
             URI areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getType(), areaDTO.getDescription(), currentUser.getUri());
 
             GeospatialModel geospatialModel = new GeospatialModel();
@@ -240,8 +233,8 @@ public class AreaAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         nosql.startTransaction();
+        sparql.startTransaction();
         try {
-            sparql.startTransaction();
             dao.delete(areaURI);
             geoDAO.delete(areaURI, null);
 

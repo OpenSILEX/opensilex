@@ -17,7 +17,8 @@ let ontologies = {
     METHOD_TYPE_URI: OESO_URI +"#Method",
     UNIT_TYPE_URI: OESO_URI +"#Unit",
     DOCUMENT_TYPE_URI: OESO_URI + "#Document",
-    CONCERNS: OESO_URI + "#concerns"
+    CONCERNS: OESO_URI + "#concerns",
+    PERENNIAL_AREA: OESO_URI + "#PerenialArea"
 
 };
 

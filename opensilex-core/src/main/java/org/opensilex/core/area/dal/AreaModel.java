@@ -16,11 +16,13 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Area Model
@@ -59,6 +61,21 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
             required = true
     )
     URI author;
+
+    public AreaModel() {
+    }
+
+    public AreaModel(URI uri, String name, URI type, String description, URI author) throws URISyntaxException {
+        this.setName(name);
+        this.setType(type);
+        this.setDescription(description);
+        this.setAuthor(author);
+
+        if (uri != null) {
+            uri = new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));
+            this.setUri(uri);
+        }
+    }
 
     public String getName() {
         return name;

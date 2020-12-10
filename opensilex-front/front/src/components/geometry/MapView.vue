@@ -375,6 +375,11 @@ export default class MapView extends Vue {
   }
 
   private areaRecovery(extent) {
+    extent[0] -= 450;
+    extent[1] -= 100;
+    extent[2] += 450;
+    extent[3] += 100;
+
     this.coordinateExtent = transformExtent(extent, "EPSG:3857", "EPSG:4326");
 
     let geometry = {

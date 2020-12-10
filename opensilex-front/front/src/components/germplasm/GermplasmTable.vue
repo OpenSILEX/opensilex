@@ -210,6 +210,7 @@ export default class GermplasmTable extends Vue {
         // }] 
       };
     let synonymCol = {title:this.$t('GermplasmTable.synonyms'), field:"synonyms", visible:true, editor:true};
+    let subtaxaCol = {title:this.$t('GermplasmTable.subtaxa'), field:"subtaxa", visible:true, editor:true};
     let speciesCol = {title:this.$t('GermplasmTable.fromSpecies') + '<span class="requiredOnCondition">*</span>', field:"species", visible:true, editor:true};
     let varietyCol = {title:this.$t('GermplasmTable.fromVariety') + '<span class="requiredOnCondition">*</span>', field:"variety", visible:true, editor:true};
     let accessionCol = {title:this.$t('GermplasmTable.fromAccession') + '<span class="requiredOnCondition">*</span>', field:"accession", visible:true, editor:true}
@@ -223,10 +224,10 @@ export default class GermplasmTable extends Vue {
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Variety'))  {
       let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"code", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeVar,  speciesCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeVar,  speciesCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Accession')) {
       let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"code", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeAcc, speciesCol, varietyCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]        
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeAcc, speciesCol, varietyCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]        
     } else {
       let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
@@ -372,14 +373,14 @@ export default class GermplasmTable extends Vue {
         form.species = dataToInsert[idx].species;
       }
       if (
-        dataToInsert[idx].fromVariety != null &&
-        dataToInsert[idx].fromVariety != ""
+        dataToInsert[idx].variety != null &&
+        dataToInsert[idx].variety != ""
       ) {
         form.variety = dataToInsert[idx].variety;
       }
       if (
-        dataToInsert[idx].fromAccession != null &&
-        dataToInsert[idx].fromAccession != ""
+        dataToInsert[idx].accession != null &&
+        dataToInsert[idx].accession != ""
       ) {
         form.accession = dataToInsert[idx].accession;
       }
@@ -410,6 +411,15 @@ export default class GermplasmTable extends Vue {
         dataToInsert[idx].synonyms != ""
       ) {
         let stringSynonyms = dataToInsert[idx].synonyms;
+        form.synonyms = stringSynonyms.split("|");
+      }
+
+
+      if (
+        dataToInsert[idx].subtaxa != null &&
+        dataToInsert[idx].subtaxa != ""
+      ) {
+        let stringSynonyms = dataToInsert[idx].subtaxa;
         form.synonyms = stringSynonyms.split("|");
       }
 
@@ -651,8 +661,9 @@ en:
     varietyCode: Variety Code
     lotNumber: LotNumber
     synonyms: Synonyms
+    subtaxa: Subtaxa
     addColumn: Add column
-    infoSynonyms: To add several synonyms, use | as separator
+    infoSynonyms: To add several synonyms or subtaxa, use | as separator
     infoAttributes: To add additional information, you can add columns
     infoLot: You have to fill species, variety or accession
     infoAccession: You have to fill at least species or variety
@@ -694,8 +705,9 @@ fr:
     varietyCode: Code Variété
     lotNumber: Code Lot
     synonyms: Synonymes
+    subtaxa : Subtaxa
     addColumn: Ajouter colonne
-    infoSynonyms: Pour ajouter plusieurs synonyms, utilisez | comme séparateur
+    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
     infoAccession: Vous devez renseigner l'espèce ou la variété

@@ -30,6 +30,16 @@
 
     <!-- synonyms -->
     <opensilex-TagInputForm
+      v-if= 'form.type.endsWith("Accession") || form.type.endsWith("Variety")'
+      :value.sync="form.synonyms"
+      label="GermplasmForm.subtaxa"
+      helpMessage="GermplasmForm.subtaxa-help"
+      variant="primary"
+    ></opensilex-TagInputForm>
+
+    <!-- synonyms -->
+    <opensilex-TagInputForm
+      v-else
       :value.sync="form.synonyms"
       label="GermplasmForm.synonyms"
       helpMessage="GermplasmForm.synonyms-help"
@@ -246,6 +256,8 @@ en:
     year-help: Year when the ressource has been produced
     synonyms: Synonyms
     synonyms-help: Fill with a synonym and press Enter
+    subtaxa: Subtaxa
+    subtaxa-help: Fill with a subtaxa and press Enter
     code: Code
     code-help: The code of the germplasm
 
@@ -271,6 +283,8 @@ fr:
     year-help: Year when the ressource has been produced
     synonyms: Synonymes
     synonyms-help: Entrer un synonyme et appuyer sur Entrée
+    subtaxa: Subtaxa
+    subtaxa-help: Entrer un subtaxa et appuyer sur Entrée
     code: Code
     code-help: Code de la ressource génétique
 </i18n>

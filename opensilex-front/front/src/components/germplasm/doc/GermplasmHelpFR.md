@@ -17,7 +17,7 @@ Selon le type de ressource sélectionné, le tableau d'insertion sera différent
 - Le nom est obligatoire pour tout type de ressource
 - Si l'URI n'est pas renseigné, alors il sera généré automatiquement. C'est l'URI qui sert d'identifiant unique dans la base.
 - Tous les autres champs exceptés URI de l'espèce, URI de la variété, URI de l'accession sont facultatifs
-- Pour ajouter plusieurs synonymes, utilisez | comme séparateur
+- Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
 - Vous pouvez ajouter des attributs en cliquant sur le bouton *Ajouter Colonne*. (Ces attributs sont là à titre d'information, ils ne pourront pas être utilisés pour filtrer par exemple.)
 
 **Création d'espèce**  

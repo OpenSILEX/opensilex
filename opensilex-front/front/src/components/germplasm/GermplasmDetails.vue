@@ -32,7 +32,12 @@
               <opensilex-StringView label="GermplasmDetails.rdfType" :value="germplasm.typeLabel"></opensilex-StringView>
               <opensilex-StringView label="GermplasmDetails.name" :value="germplasm.name"></opensilex-StringView>
               <opensilex-StringView
-                v-if="germplasm.synonyms.length>0"
+                v-if="germplasm.synonyms.length>0 && (germplasm.type.endsWith('Accession') || germplasm.type.endsWith('Variety'))"
+                label="GermplasmDetails.subtaxa"
+                :value="germplasm.synonyms.toString()"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                v-if="germplasm.synonyms.length>0 && !germplasm.type.endsWith('Accession') && !germplasm.type.endsWith('Variety')"
                 label="GermplasmDetails.synonyms"
                 :value="germplasm.synonyms.toString()"
               ></opensilex-StringView>
@@ -303,6 +308,7 @@ en:
     additionalInfo: Additional information
     attribute: Attribute
     value: Value
+    subtaxa: Subtaxa
 
 fr:
   GermplasmDetails:
@@ -326,4 +332,5 @@ fr:
     additionalInfo: Informations supplémentaires
     attribute: Attribut
     value: Valeur
+    subtaxa: Subtaxa
 </i18n>

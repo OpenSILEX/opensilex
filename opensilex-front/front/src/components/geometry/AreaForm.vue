@@ -16,6 +16,7 @@
             :required="true"
             :value.sync="form.name"
             label="component.experiment.label"
+            placeholder="AreaForm.name-placeholder"
             type="text"
         ></opensilex-InputForm>
       </div>
@@ -32,9 +33,9 @@
     <!-- description -->
     <opensilex-TextAreaForm
         :value.sync="form.description"
-        helpMessage="AreaForm.comment-help"
-        label="AreaForm.comment"
-        placeholder="AreaForm.comment-placeholder"
+        helpMessage="AreaForm.description-help"
+        label="AreaForm.description"
+        placeholder="AreaForm.description-placeholder"
     ></opensilex-TextAreaForm>
   </b-form>
 </template>
@@ -151,7 +152,7 @@ export default class AreaForm extends Vue {
     if (form.optionAreaType !== null)
       form.type = form.optionAreaType;
     else
-      form.type = "vocabulary:Zone";
+      form.type = Oeso.AREA;
 
     return this.$opensilex
         .getService("opensilex.AreaService")
@@ -187,9 +188,10 @@ P {
   en:
     AreaForm:
       uri: Area URI
-      comment: comment
-      comment-help: Description associated with this geometry (protocol quantity)
-      comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+      description: description
+      description-help: Description associated with this geometry (protocol quantity)
+      description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+      name-placeholder: Limestone Mineral Zone, Southern Clay Zone, ...
       area: annotation
       area-help: Annotation associated with this geometry
       area-placeholder: Description of the nature of the event.
@@ -206,9 +208,10 @@ P {
   fr:
     AreaForm:
       uri: URI de Zone
-      comment: description
-      comment-help: Description associée à cette géométrie (protocole quantité)
-      comment-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+      description: description
+      description-help: Description associée à cette géométrie (protocole quantité)
+      description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+      name-placeholder: Zone minérale calcaire, zone argileuse méridionale, ...
       area: Annotation
       area-help: Zone associée à cette géométrie
       area-placeholder: Description de la nature de l'événement.

@@ -28,7 +28,7 @@
     ></opensilex-ModalForm>
 
     <p class="alert-info">
-      <span v-html="$t('credential.geometry.instruction')"></span>
+      <span v-if="!editingMode" v-html="$t('credential.geometry.instruction')"></span>
     </p>
     <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
       <vl-map
@@ -113,13 +113,14 @@
           {{ nameType(data.item.properties.type) }}
         </template>
 
-        <template v-slot:cell(comment)="{data}">
-          {{ data.item.properties.comment }}
+        <template v-slot:cell(description)="{data}">
+          {{ data.item.properties.description }}
         </template>
 
         <template v-slot:cell(actions)="{data}">
           <b-button-group size="sm">
-            <div v-if="user.admin === true && (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
+            <div
+                v-if="user.admin === true && (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
               <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
                                       label="MapView.delete-area-button"
                                       @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
@@ -146,6 +147,7 @@ import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from 'ol/control'
 import Oeso from "../../ontologies/Oeso";
+import {RDFClassDTO} from "opensilex-core/model/rDFClassDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -170,8 +172,8 @@ export default class MapView extends Vue {
       label: "type",
     },
     {
-      key: "comment",
-      label: "MapView.comment",
+      key: "description",
+      label: "MapView.description",
     },
     {
       key: "actions",
@@ -219,7 +221,7 @@ export default class MapView extends Vue {
                       uri: res.uri,
                       name: res.name,
                       type: res.type,
-                      comment: res.comment,
+                      description: res.description,
                     }
                     this.featuresArea.push(res.geometry)
                   }
@@ -271,7 +273,7 @@ export default class MapView extends Vue {
                     uri: element.uri,
                     name: element.name,
                     type: element.type,
-                    comment: element.comment,
+                    description: element.description,
                   }
                   this.features.push(element.geometry)
                 }
@@ -335,8 +337,7 @@ export default class MapView extends Vue {
     );
 
     this.service.getSubClassesOf(Oeso.SCIENTIFIC_OBJECT_TYPE_URI, true)
-        .then(
-            (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
               res.forEach(({name, uri}) => {
                 typeLabel.push({uri: uri, name: name});
@@ -345,13 +346,16 @@ export default class MapView extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
 
-    if (this.user.locale == "en")
-      typeLabel.push({uri: "vocabulary:Zone", name: "Area"});
-    else if (this.user.locale == "fr")
-      typeLabel.push({uri: "vocabulary:Zone", name: "Zone"});
+    this.service.getClass(Oeso.AREA)
+        .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
+              const res = http.response.result;
+              typeLabel.push({uri: res.uri, name: res.label});
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
+
     this.service.getSubClassesOf(Oeso.PERENNIAL_AREA, true)
-        .then(
-            (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
               res.forEach(({name, uri}) => {
                 typeLabel.push({uri: uri, name: name});
@@ -405,7 +409,7 @@ export default class MapView extends Vue {
                     uri: element.uri,
                     name: element.name,
                     type: element.type,
-                    comment: element.comment,
+                    description: element.description,
                   }
                   this.featuresArea.push(element.geometry)
                 }
@@ -450,34 +454,35 @@ p {
 </style>
 
 <i18n>
-    en:
-      MapView:
-        name: name
-        comment: comment
-        label: Geometry
-        add-button: Add metadata
-        add-area-button: Add area
-        delete-area-button: Delete an area
-        selected-button: Exit creation mode
-        errorLongitude: the longitude must be between -180 and 180
-        errorLatitude: the latitude must be between -90 and 90
-      Area:
-        title: Area
-        add: Description of the area
-        update: Update a perennial zone
-    fr:
-      MapView:
-        name: nom
-        comment: commentaire
-        label: Géométrie
-        add-button: Ajouter des métadonnées
-        add-area-button: Ajouter une zone
-        delete-area-button: Supprimer une zone
-        selected-button: Sortir du mode création
-        errorLongitude: la longitude doit être comprise entre -180 et 180
-        errorLatitude: la latitude doit être comprise entre -90 et 90
-      Area:
-        title: Zone
-        add: Description de la zone
-        update: Mettre à jour une zone pérenne
+en:
+  MapView:
+    name: name
+    description: description
+    label: Geometry
+    add-button: Add metadata
+    add-area-button: Add area
+    delete-area-button: Delete an area
+    selected-button: Exit creation mode
+    errorLongitude: the longitude must be between -180 and 180
+    errorLatitude: the latitude must be between -90 and 90
+  Area:
+    title: Area
+    add: Description of the area
+    update: Update a perennial zone
+fr:
+  MapView:
+    name: nom
+    description: description
+    label: Géométrie
+    add-button: Ajouter des métadonnées
+    add-area-button: Ajouter une zone
+    delete-area-button: Supprimer une zone
+    selected-button: Sortir du mode création
+    errorLongitude: la longitude doit être comprise entre -180 et 180
+    errorLatitude: la latitude doit être comprise entre -90 et 90
+  Area:
+    title: Zone
+    add: Description de la zone
+    update: Mettre à jour une zone pérenne
+
 </i18n>

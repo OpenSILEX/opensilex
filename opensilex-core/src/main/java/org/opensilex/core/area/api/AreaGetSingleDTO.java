@@ -49,12 +49,12 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
     protected GeoJsonObject geometry;
 
     /**
-     * comment
+     * description
      */
-    protected String comment;
+    protected String description;
 
     /**
-     * comment
+     * author
      */
     protected URI author;
 
@@ -79,7 +79,7 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         }
 
         if (model.getDescription() != null) {
-            dto.setComment(model.getDescription());
+            dto.setDescription(model.getDescription());
         }
 
         return dto;
@@ -98,7 +98,7 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         dto.setAuthor(model.getAuthor());
 
         if (model.getDescription() != null) {
-            dto.setComment(model.getDescription());
+            dto.setDescription(model.getDescription());
         }
 
         return dto;
@@ -148,12 +148,12 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         this.geometry = geometry;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public URI getAuthor() {

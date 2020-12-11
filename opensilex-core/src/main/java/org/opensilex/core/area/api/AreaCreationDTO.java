@@ -53,7 +53,7 @@ public class AreaCreationDTO {
     protected GeoJsonObject geometry;
 
     /**
-     * Comment
+     * description
      */
     @ApiModelProperty(value = "comment")
     protected String description;

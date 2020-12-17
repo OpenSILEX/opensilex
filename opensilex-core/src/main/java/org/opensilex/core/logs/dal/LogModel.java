@@ -25,7 +25,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 
     private String remoteAdress;
 
-    private Document queryParmeters;
+    private Document queryParameters;
 
     private LocalDateTime datetime;
      
@@ -37,12 +37,12 @@ import org.opensilex.nosql.mongodb.MongoModel;
         this.datetime = datetime;
     }
  
-    public Document getQueryParmeters() {
-        return queryParmeters;
+    public Document getQueryParameters() {
+        return queryParameters;
     }
 
-    public void setQueryParmeters(Document queryParmeters) {
-        this.queryParmeters = queryParmeters;
+    public void setQueryParameters(Document queryParmeters) {
+        this.queryParameters = queryParmeters;
     }
 
     public URI getUserUri() {

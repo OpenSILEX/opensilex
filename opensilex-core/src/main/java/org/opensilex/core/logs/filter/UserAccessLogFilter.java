@@ -7,6 +7,8 @@ package org.opensilex.core.logs.filter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -73,12 +75,11 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
                     logModel.setUserUri(user.getUri());
                     logModel.setRemoteAdress(servletRequest.getRemoteAddr());
                     logModel.setRequest(resourcePath);
-
-                    Document queryParmeters = new Document();
-                    queryParmeters.put(MAP_FIELD_QUERY_PARAMETERS, queryPathParameters);
-                    queryParmeters.put(MAP_FIELD_RESSOURCE_PATH, resourcePath);
-
-                    logModel.setQueryParmeters(queryParmeters);
+                    Document queryParams = new Document();
+                    for (String key: queryPathParameters.keySet()) {
+                        queryParams.put(key, queryPathParameters.get(key));
+                    }
+                    logModel.setQueryParameters(queryParams);
                     logModel.setDatetime(LocalDateTime.now());
                     logsDAO.create(logModel);
                 } catch (Exception ex) {

@@ -31,6 +31,7 @@
         <opensilex-FactorDetails
           v-if="isDetailsTab()"
           @onUpdate="loadFactor(uri)"
+          @onUpdateReferences="callUpdateFactorService"
           @onDelete="deleteFactor(uri)"
           :factor="factor"
         ></opensilex-FactorDetails>

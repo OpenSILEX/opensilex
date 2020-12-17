@@ -91,7 +91,7 @@
     <opensilex-ExternalReferencesModalForm
       ref="skosReferences"
       :references.sync="factor"
-      @onUpdate="update"
+      @onUpdate="updateReferences"
     ></opensilex-ExternalReferencesModalForm>
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
@@ -175,6 +175,10 @@ export default class FactorDetails extends Vue {
 
   update() {
     this.$emit("onUpdate");
+  }
+
+  updateReferences() {
+    this.$emit("onUpdateReferences", this.factor);
   }
 
   successMessage(factor) {

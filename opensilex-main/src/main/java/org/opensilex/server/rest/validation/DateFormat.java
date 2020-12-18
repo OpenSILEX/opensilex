@@ -47,6 +47,11 @@ public enum DateFormat {
         public String toString(){
             return "yyyy-MM-dd'T'HH:mm:ss.SSSXXXX";
         }
+    },
+    YMDTHMSMSGTZ {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ss.SSSz";
+        }
     };
-    
 }

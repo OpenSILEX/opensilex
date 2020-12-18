@@ -27,28 +27,47 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Size;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
+import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.infrastructure.api.InfrastructureFacilityGetDTO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.ErrorDTO;
+import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -425,5 +444,94 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         xpDao.updateWithFactors(xpUri, factors, currentUser);
         return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
+    }
+    
+    @GET
+    @Path("{uri}/data")
+    @ApiOperation("Search data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response searchExperimentDataList(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("objectUri") URI objectUri,
+            @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variableUri") URI variableUri,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenanceUri") URI provenanceUri,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("startDate") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("endDate") String endDate,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
+        LocalDateTime utcStartDate = null;
+        LocalDateTime utcEndDate = null;
+        for (DateFormat dateCheckFormat : formats) {
+            try { 
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
+                if (startDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(startDate, dtf);
+                    utcStartDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                if (endDate != null) {
+                    OffsetDateTime ost = OffsetDateTime.parse(endDate, dtf);
+                    utcEndDate = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+                }
+                
+                break;
+            } catch (DateTimeParseException e) {
+            }                    
+        }
+        
+              // test exp
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+
+        xpDAO.validateExperimentAccess(xpUri, currentUser);
+
+        // test prov
+        List<URI> provenancesArrayList  = new ArrayList<>();
+         
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        if (provenanceUri != null) {
+            try {
+                provDAO.get(provenanceUri);
+                provenancesArrayList = new ArrayList<>(Arrays.asList(provenanceUri));
+            } catch (NoSQLInvalidURIException e) {
+                throw new NotFoundURIException("Provenance URI not found: ", provenanceUri);
+
+            }
+        } else {
+            
+            Set<URI> provenancesByExperiment = dao.getProvenancesByExperiment(xpUri);
+            if(provenancesByExperiment.size() > 0){
+                provenancesArrayList = new ArrayList<>(provenancesByExperiment); 
+            }
+           
+        } 
+        
+        if(provenancesArrayList.isEmpty()){
+            ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<>(new ArrayList<>());
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+        
+        ListWithPagination<DataModel> resultList = dao.search(
+                currentUser,
+                //uri,
+                objectUri,
+                variableUri,
+                provenancesArrayList,
+                utcStartDate,
+                utcEndDate,
+                page,
+                pageSize
+        );
+               
+        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::fromModel);
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

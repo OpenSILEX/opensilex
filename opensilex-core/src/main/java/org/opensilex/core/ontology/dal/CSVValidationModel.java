@@ -120,7 +120,7 @@ public class CSVValidationModel {
         missingHeaders.addAll(headers);
     }
 
-    void addInvalidHeaderURI(int i, String invalidURI) {
+    public void addInvalidHeaderURI(int i, String invalidURI) {
         invalidHeaderURIs.put(i, invalidURI);
     }
 

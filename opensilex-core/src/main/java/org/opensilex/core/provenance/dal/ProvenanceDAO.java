@@ -54,6 +54,9 @@ public class ProvenanceDAO {
         if (name != null) {
             Document regexFilter = new Document();
             regexFilter.put("$regex", ".*" + Pattern.quote(name) + ".*" );
+            // Case ignore
+            regexFilter.put("$options", "i" );
+
             //regexFilter.put("$options", "i");
             filter.put("name", regexFilter);
         }

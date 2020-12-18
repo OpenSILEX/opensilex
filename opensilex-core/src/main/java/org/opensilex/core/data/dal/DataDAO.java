@@ -28,8 +28,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.BooleanUtils;
 import org.bson.Document;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.ontology.Oeso;
@@ -89,9 +91,6 @@ public class DataDAO {
     }
 
     public DataModel create(DataModel instance) throws Exception, MongoWriteException {
-        List<DataModel> dataList = new ArrayList();
-        dataList.add(instance);
-        checkVariableDataTypes(dataList);
         nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instance;
     }
@@ -102,11 +101,10 @@ public class DataDAO {
     }
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
-        createIndexes();
-        checkVariableDataTypes(instances);
+        createIndexes(); 
         nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instances;
-    }
+    } 
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();
@@ -122,55 +120,6 @@ public class DataDAO {
     public DataFileModel updateFile(DataFileModel instance) throws NoSQLInvalidURIException {
         nosql.update(instance, DataFileModel.class, FILE_COLLECTION_NAME);
         return instance;
-    }
-
-    public ErrorResponse valid(DataModel data) throws SPARQLException, Exception {
-        if (data.getVariable() != null) {
-            VariableDAO dao = new VariableDAO(sparql);
-            VariableModel variable = dao.get(data.getVariable());
-
-            if (variable == null) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "wrong variable uri",
-                        "Variable " + data.getVariable() + " doesn't exist"
-                );
-            } else {
-                URI dataType = variable.getDataType();
-                if (!checkTypeCoherence(dataType, data.getValue())) {
-                    return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong value format",
-                            "Variable dataType: " + dataType.toString()
-                    );
-                }
-            }
-
-        }
-
-        //check objects uri
-        if (data.getScientificObjects() != null) {
-            if (!data.getScientificObjects().isEmpty()) {
-                if (!sparql.uriListExists(ScientificObjectModel.class, data.getScientificObjects())) {
-                    return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "wrong object uri",
-                            "At least one scientific object doesn't exist exist"
-                    );
-                }
-            }
-        }
-        //check provenance uri
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "wrong provenance uri",
-                    "Provenance " + data.getProvenance().getUri() + " doesn't exist"
-            );
-        }
-
-        return null;
     }
 
     public ListWithPagination<DataModel> search(
@@ -412,77 +361,5 @@ public class DataDAO {
         }
         
         return filter;
-    }
-
-    public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
-        Set<URI> variables = new HashSet<>();
-        Map<URI, URI> variableTypes = new HashMap();
-
-        for (DataModel data : datas) {
-            if (data.getValue() != "NA") {
-                URI variableUri = data.getVariable();
-                if (!variableTypes.containsKey(variableUri)) {
-                    VariableModel variable = dao.get(data.getVariable());
-                    if (variable.getDataType() == null) {
-                        throw new NoVariableDataTypeException(variableUri);
-                    } else {
-                        variableTypes.put(variableUri,variable.getDataType());
-                    }                    
-                }
-                URI dataType = variableTypes.get(variableUri);
-                
-                if (!checkTypeCoherence(dataType, data.getValue()))  {
-                    throw new DataTypeException(variableUri, data.getValue(), dataType);
-                }
-
-            }
-        }
-    }
-
-    private Boolean checkTypeCoherence(URI dataType, Object value) {
-        Boolean checkCoherence = false;
-        if (dataType == null) {
-            checkCoherence = true;
-
-        } else {
-            switch (dataType.toString()) {
-                case "xsd:integer":
-                    if ((value instanceof Integer)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:decimal":
-                    if ((value instanceof Double)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:boolean":
-                    if ((value instanceof Boolean)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:date":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:datetime":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:string":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return checkCoherence;
-    }
-
+    } 
 }

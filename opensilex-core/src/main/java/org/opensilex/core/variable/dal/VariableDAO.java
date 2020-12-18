@@ -165,5 +165,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         );
     }
 
+     public List<VariableModel> getList(List<URI> uris) throws Exception {
+        return sparql.getListByURIs(VariableModel.class, uris, null);
+    }
 }
 

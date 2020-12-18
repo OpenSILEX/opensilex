@@ -8,6 +8,7 @@ package org.opensilex.core.scientificObject.dal;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -23,6 +24,7 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -207,5 +209,60 @@ public class ScientificObjectDAO {
 
     public void delete(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {
         sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
+    }
+
+    public ExperimentalObjectModel getByNameAndContext(URI contextUri, String objectName) throws Exception {
+        Node experimentGraph = SPARQLDeserializers.nodeURI(contextUri);
+
+        ListWithPagination<ExperimentalObjectModel> searchWithPagination = sparql.searchWithPagination(
+                experimentGraph,
+                ExperimentalObjectModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendStrictNameFilter(select, objectName);
+                }, 0, 1
+        );
+        if (searchWithPagination.getList().isEmpty()) {
+            return null;
+        }
+
+        return searchWithPagination.getList().get(0);
+    }
+
+    public ExperimentalObjectModel getObjectURINameByNameAndContext(URI contextUri, String objectName) throws Exception {
+        Node experimentGraph = SPARQLDeserializers.nodeURI(contextUri);
+
+        ListWithPagination<SPARQLNamedResourceModel> searchWithPagination = sparql.searchWithPagination(
+                experimentGraph,
+                SPARQLNamedResourceModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendStrictNameFilter(select, objectName);
+                }, 0, 1
+        );
+        if (searchWithPagination.getList().isEmpty()) {
+            return null;
+        }
+        ExperimentalObjectModel experimentalObjectModel = new ExperimentalObjectModel();
+        experimentalObjectModel.setName(searchWithPagination.getList().get(0).getName());;
+        experimentalObjectModel.setUri(searchWithPagination.getList().get(0).getUri());
+
+        return experimentalObjectModel;
+    }
+
+    public ExperimentalObjectModel getObjectURINameByURI(URI objectURI, URI contextURI) throws Exception {
+        SPARQLNamedResourceModel ObjectURIName = sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), SPARQLNamedResourceModel.class, objectURI, null);
+        ExperimentalObjectModel experimentalObjectModel = new ExperimentalObjectModel();
+        experimentalObjectModel.setName(ObjectURIName.getName());;
+        experimentalObjectModel.setUri(ObjectURIName.getUri());
+        return experimentalObjectModel;
+    }
+
+    private void appendStrictNameFilter(SelectBuilder select, String name) throws Exception {
+        select.addFilter(SPARQLQueryHelper.eq(ExperimentalObjectModel.NAME_FIELD, name.trim()));
+    }
+
+    public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, null);
     }
 }

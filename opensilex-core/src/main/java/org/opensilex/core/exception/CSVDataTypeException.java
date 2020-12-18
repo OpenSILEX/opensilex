@@ -7,31 +7,35 @@
 package org.opensilex.core.exception;
 
 import java.net.URI;
+import org.opensilex.core.ontology.dal.CSVCell;
 
 /**
  *
  * @author Alice Boizet
  */
-public class DataTypeException extends Exception {
-    protected final URI variable;
-    protected final Object value;
-    protected final URI dataType;
-    protected final Integer dataIndex; 
+public class CSVDataTypeException extends Exception {
+    private final URI variable;
+    private final Object value;
+    private final URI dataType;
+    private final Integer dataIndex; 
+    private final CSVCell csvCell; 
 
-    public DataTypeException(URI variable, Object value, URI dataType) {
-        super("The dataType defined on the variable "+ variable.toString() + " is " + dataType.toString() + " and doesn't correspond to the value format: " + value.toString());
-        this.variable = variable;
-        this.value = value;         
-        this.dataType = dataType;
-        this.dataIndex = null;  
-    }
     
-    public DataTypeException(URI variable, Object value, URI dataType, int dataIndex) {
+     public CSVDataTypeException(URI variable, Object value, URI dataType, int dataIndex) {
         super("The dataType defined on the variable "+ variable.toString() + " is " + dataType.toString() + " and doesn't correspond to the value format: " + value.toString());
         this.variable = variable;
         this.value = value;         
         this.dataType = dataType;
         this.dataIndex = dataIndex; 
+        this.csvCell = null;
+    }
+     public CSVDataTypeException(URI variable, Object value, URI dataType, int dataIndex, CSVCell csvCell) {
+        super("The dataType defined on the variable "+ variable.toString() + " is " + dataType.toString() + " and doesn't correspond to the value format: " + value.toString());
+        this.variable = variable;
+        this.value = value;         
+        this.dataType = dataType;
+        this.dataIndex = dataIndex; 
+        this.csvCell = csvCell;
     }
 
     public URI getVariable() {
@@ -49,4 +53,10 @@ public class DataTypeException extends Exception {
     public Integer getDataIndex() {
         return dataIndex;
     }
+
+    public CSVCell getCsvCell() {
+        return csvCell;
+    }
+    
+    
 }

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.server.response.ErrorDTO;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path("/core/variable")
@@ -256,6 +257,45 @@ public class VariableAPI {
         return new PaginatedListResponse<>(variablesXsdTypes).getResponse();
     }
 
+ /**
+     * * Return a list of variables corresponding to the given URIs
+     *
+     * @param uris list of variables uri
+     * @return Corresponding list of variables
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @GET
+    @Path("uris")
+    @ApiOperation("Get a list of variables by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getVariablesByURIs(
+            @ApiParam(value = "Variables URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        VariableDAO dao = new VariableDAO(sparql);
+        List<VariableModel> models = dao.getList(uris);
 
+        if (!models.isEmpty()) {
+            List<VariableGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(VariableGetDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Variables not found",
+                    "Unknown variable URIs"
+            ).getResponse();
+        }
+    }
 }
 

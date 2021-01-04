@@ -345,10 +345,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      * @param objectFieldName the field name
      * @return the name of the SPARQL variable which represent the object field name
-     * @see SPARQLClassQueryBuilder#getObjectNameVarName()
+     * @see SPARQLClassQueryBuilder#getObjectNameVarName(String) ()
      */
     public static String getObjectNameVarName(String objectFieldName) {
         return SPARQLClassQueryBuilder.getObjectNameVarName(objectFieldName);
+    }
+
+    /**
+     * @param objectFieldName the field name
+     * @return the name of the default SPARQL variable which represent the object field name
+     * @see SPARQLClassQueryBuilder#getObjectDefaultNameVarName(String) ()
+     */
+    public static String getObjectDefaultNameVarName(String objectFieldName) {
+        return SPARQLClassQueryBuilder.getObjectDefaultNameVarName(objectFieldName);
     }
 
     public ExprVar getURIFieldExprVar() {

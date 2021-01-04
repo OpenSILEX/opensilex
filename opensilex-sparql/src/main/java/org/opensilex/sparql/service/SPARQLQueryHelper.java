@@ -7,8 +7,7 @@ package org.opensilex.sparql.service;
 
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -20,6 +19,9 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
 import org.apache.jena.sparql.expr.E_LessThanOrEqual;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -27,9 +29,10 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.time.LocalDate;
 import java.util.*;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-import org.apache.jena.arq.querybuilder.Converters;
+import org.opensilex.utils.OrderBy;
 
 /**
  * @author Vincent MIGOT
@@ -394,4 +397,74 @@ public class SPARQLQueryHelper {
     public static Var makeVar(Object o) {
         return Converters.makeVar(o);
     }
+
+    /**
+     * Get or create a {@link ElementGroup} which is affected to the given graph into the selectBuilder
+     * @param rootElementGroup the {@link ElementGroup} on which get or create the {@link ElementGroup} associated to the given graph
+     * @param graph the graph to find or create
+     * @return the founded {@link ElementGroup} if it exists, else create and return a new {@link ElementGroup} into the given graph
+     */
+    public static ElementGroup getSelectOrCreateGraphElementGroup(ElementGroup rootElementGroup, Node graph){
+
+        Objects.requireNonNull(rootElementGroup);
+        Objects.requireNonNull(graph);
+
+        for(Element element : rootElementGroup.getElements()){
+
+            if( ! (element instanceof ElementNamedGraph)){
+                continue;
+            }
+            ElementNamedGraph elementNamedGraph = (ElementNamedGraph) element;
+            if( ! elementNamedGraph.getGraphNameNode().equals(graph)){
+                continue;
+            }
+
+            Element elementGroup = elementNamedGraph.getElement();
+            if(elementGroup instanceof ElementGroup){
+                return (ElementGroup) elementGroup;
+            }
+        }
+
+        ElementGroup elementGroup = new ElementGroup();
+        rootElementGroup.addElement(new ElementNamedGraph(graph,elementGroup));
+
+        return elementGroup;
+    }
+
+    /**
+     * Utility function used to compute specific ordering on some field.
+     *
+     * @param initialOrderByList the initial list
+     * @param orderByListWithoutCustomOrders the new list which contains all elements from initialOrderByList without {@link OrderBy}
+     * which have {@link OrderBy#getFieldName()} contained into the specificExprMapping
+     * @param specificOrderMap
+     * the new list which contains custom couple ({@link Expr},{@link Order}) which could be applied
+     * to {@link SelectBuilder#addOrderBy(Expr)} method
+     * @param specificExprMapping the association between {@link OrderBy#getFieldName()} and the {@link Function} which return a Stream of {@link Expr}
+     *
+     */
+    public static void computeCustomOrderByList(List<OrderBy> initialOrderByList,
+                                          List<OrderBy> orderByListWithoutCustomOrders,
+                                          Map<Expr, Order> specificOrderMap,
+                                          Map<String, Function<String, Stream<Expr>>> specificExprMapping) {
+
+        Objects.requireNonNull(initialOrderByList);
+        Objects.requireNonNull(orderByListWithoutCustomOrders);
+        Objects.requireNonNull(specificOrderMap);
+        Objects.requireNonNull(specificExprMapping);
+
+        for (OrderBy orderBy : initialOrderByList) {
+            String fieldName = orderBy.getFieldName();
+
+            if (!specificExprMapping.containsKey(fieldName)) {
+                orderByListWithoutCustomOrders.add(orderBy);
+            } else {
+                Stream<Expr> orderByExprs = specificExprMapping.get(fieldName).apply(fieldName);
+                orderByExprs.forEach(orderByExpr ->
+                        specificOrderMap.put(orderByExpr, orderBy.getOrder())
+                );
+            }
+        }
+    }
+
 }

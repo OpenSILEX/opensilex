@@ -3,11 +3,12 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.scientificObject.api;
+package org.opensilex.core.scientificbject.api;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
+
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

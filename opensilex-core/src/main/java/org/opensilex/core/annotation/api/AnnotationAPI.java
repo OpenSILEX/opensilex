@@ -139,28 +139,6 @@ public class AnnotationAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
-//    @DELETE
-//    @Path("deleteAll")
-//    @ApiProtected(adminOnly = true)
-//    @ApiCredential(
-//        credentialId = CREDENTIAL_ANNOTATION_DELETE_ID,
-//        credentialLabelKey = CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Annotations deleted", response = SingleObjectResponse.class),
-//        @ApiResponse(code = 404, message = "Annotations graph not found", response = ErrorResponse.class)
-//    })
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response deleteAllAnnotations() throws Exception {
-//
-//        URI annotationGraphUri = new URI(
-//            new URIDeserializer().getNode(sparql.getDefaultGraphURI(AnnotationModel.class).toString()).getURI()
-//        );
-//        sparql.clearGraph(annotationGraphUri);
-//        return new ObjectUriResponse(Response.Status.OK,annotationGraphUri).getResponse();
-//    }
-
     @GET
     @Path("get/{uri}")
     @ApiOperation("Get an annotation")
@@ -190,7 +168,7 @@ public class AnnotationAPI {
     }
 
     @GET
-    @Path("search/motivations")
+    @Path("motivations/search")
     @ApiOperation("Search motivations")
     @ApiProtected
     @ApiCredential(

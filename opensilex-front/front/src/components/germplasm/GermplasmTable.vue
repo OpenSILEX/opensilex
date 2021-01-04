@@ -24,7 +24,7 @@
         name="template.csv">
         {{$t('GermplasmTable.downloadTemplate')}}
       </downloadCsv>
-      <opensilex-CSVInputFile v-on:updated="uploaded">         
+      <opensilex-CSVInputFile v-on:updated="uploaded" delimiterOption=",">         
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('GermplasmTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('GermplasmTable.addRow')}}</b-button>

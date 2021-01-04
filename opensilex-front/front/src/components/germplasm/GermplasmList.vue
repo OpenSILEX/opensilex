@@ -272,7 +272,7 @@ export default class GermplasmList extends Vue {
       {
         key: "name",
         label: "GermplasmList.name",
-        sortable: true
+        sortable: false
       },
       {
         key: "typeLabel",

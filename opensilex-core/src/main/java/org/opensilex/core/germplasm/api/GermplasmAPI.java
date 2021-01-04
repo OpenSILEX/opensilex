@@ -218,6 +218,47 @@ public class GermplasmAPI {
     }
 
     /**
+     * * Return a list of germplasms corresponding to the given URIs
+     *
+     * @param uris list of germplasms uri
+     * @return Corresponding list of germplasms
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @GET
+    @Path("get-by-uris")
+    @ApiOperation("Get a list of germplasms by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factors list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getGermplasmsByURI(
+            @ApiParam(value = "Germplasms URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        List<GermplasmModel> models = germplasmDAO.getList(uris);
+
+        if (!models.isEmpty()) {
+            List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(GermplasmGetAllDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Germplasms not found",
+                    "Unknown germplasm URIs"
+            ).getResponse();
+        }
+    }
+
+    /**
      *
      * @param uri
      * @param orderByList

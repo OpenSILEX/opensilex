@@ -31,6 +31,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -204,6 +205,10 @@ public class GermplasmDAO {
         }
         return germplasm;
 
+    }
+
+    public List<GermplasmModel> getList(List<URI> uris) throws Exception {
+        return sparql.getListByURIs(GermplasmModel.class, uris, null);
     }
 
     public ListWithPagination<GermplasmModel> search(

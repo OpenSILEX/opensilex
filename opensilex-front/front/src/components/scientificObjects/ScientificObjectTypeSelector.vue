@@ -41,18 +41,31 @@ export default class ScientificObjectTypeSelector extends Vue {
   }
 
   loadTypes(typesURI) {
-    return this.$opensilex
-      .getService("opensilex.ScientificObjectsService")
-      .getUsedTypes(this.contextURI)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ListItemDTO>>>) => {
-         return  http.response.result;
-      });
+    if (
+      this.contextURI == null ||
+      this.contextURI == "" ||
+      this.contextURI == undefined
+    ) {
+      return this.$opensilex
+        .getService("opensilex.ScientificObjectsService")
+        .getUsedTypes()
+        .then((http: HttpResponse<OpenSilexResponse<Array<ListItemDTO>>>) => {
+          return http.response.result;
+        });
+    } else {
+      return this.$opensilex
+        .getService("opensilex.ScientificObjectsService")
+        .getUsedTypes(this.contextURI)
+        .then((http: HttpResponse<OpenSilexResponse<Array<ListItemDTO>>>) => {
+          return http.response.result;
+        });
+    }
   }
 
   typeToSelectNode(dto: ListItemDTO) {
     return {
       label: dto.label,
-      id: dto.uri,
+      id: dto.uri
     };
   }
 

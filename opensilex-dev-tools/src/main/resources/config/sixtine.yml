@@ -24,13 +24,11 @@ file-system:
 #                images: irod
     
 big-data:
-    nosql:
+    mongodb:
         config:
-            connection:
-                config:
-                    host: localhost
-                    port: 8668
-                    database: opensilex
+            host: localhost
+            port: 8668
+            database: opensilex
 
 front:
     theme: inrae-sixtine#sixtine
@@ -47,7 +45,6 @@ front:
         - actuators
         - sensors
         - equipments
-        - scientificObjects
         - installations
         - data
         - dashboard

@@ -165,7 +165,7 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("get-used-types/{contextURI}")
+    @Path("get-used-types")
     @ApiOperation("get all scientific object types associated to a given context")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -174,7 +174,7 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
     })
     public Response getUsedTypes(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI
+            @ApiParam(value = "Context URI", example = "http://example.com/") @QueryParam("contextURI") @ValidURI URI contextURI
     ) throws Exception {
         validateContextAccess(contextURI);
 
@@ -195,7 +195,7 @@ public class ScientificObjectAPI {
 
         select.addVar("?type ?label");
         select.setDistinct(true);
-        select.addWhere("?type", Ontology.subClassAny, Oeso.ScientificObject);
+        select.addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject);
         select.addWhere("?type", RDFS.label, "?label");
         select.addFilter(SPARQLQueryHelper.langFilter("label", currentUser.getLanguage()));
 
@@ -290,7 +290,9 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdfTypes") @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Parent URI", example = "http://example.com/") @QueryParam("parentURI") @ValidURI URI parentURI,
-            @ApiParam(value = "Factor levels URI", example = "vocabulary:Plant") @QueryParam("factorLevels") @ValidURI List<URI> factorLevels,
+            @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
+            @ApiParam(value = "Factors URI", example = "vocabulary:Irrigation") @QueryParam("factors") @ValidURI List<URI> factors,
+            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factorLevels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -313,7 +315,7 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURIs, pattern, rdfTypes, parentURI, factorLevels, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURIs, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
 

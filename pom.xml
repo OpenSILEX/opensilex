@@ -50,7 +50,7 @@
         <module>opensilex-brapi</module>
         
         <!-- Extension modules -->
-        <!--<module>inrae-sixtine</module>-->
+        <module>inrae-sixtine</module>
             
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
@@ -134,11 +134,11 @@
         </dependency>
         
         <!--Other extension modules must be declared as dependencies-->
-        <!--        <dependency>
+        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>
-        </dependency> -->
+        </dependency> 
     </dependencies>
       
     <build>

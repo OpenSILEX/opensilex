@@ -13,6 +13,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_OneOrMore1;
@@ -73,7 +74,7 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, List<URI> rdfTypes, URI parentURI, List<URI> factorLevels, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factors, List<URI> factorLevels, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         Node contextURI = null;
         Expr graphFilter = null;
 
@@ -103,6 +104,22 @@ public class ScientificObjectDAO {
                         Path deepPartOf = new P_OneOrMore1(new P_Link(Oeso.isPartOf.asNode()));
                         select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), deepPartOf, SPARQLDeserializers.nodeURI(parentURI));
                     }
+
+                    if (factors != null && factors.size() > 0) {
+                        Var factorLevelVar = makeVar("__factorLevel");
+                        Var factorVar = makeVar("__factor");
+                        if (contextURIs.size() == 1) {
+                            Node contextNode = SPARQLDeserializers.nodeURI(contextURIs.get(0));
+                            select.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
+                            select.addGraph(contextNode, factorLevelVar, Oeso.hasFactorLevel, factorVar);
+                        } else {
+                            select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
+                            select.addWhere(factorLevelVar, Oeso.hasFactor, factorVar);
+                        }
+
+                        select.addFilter(SPARQLQueryHelper.inURIFilter("__factor", factors));
+                    }
+
                     if (factorLevels != null && factorLevels.size() > 0) {
                         if (contextURIs.size() == 1) {
                             select.addGraph(SPARQLDeserializers.nodeURI(contextURIs.get(0)), makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, makeVar(ScientificObjectModel.FACTOR_LEVEL_FIELD));
@@ -111,6 +128,9 @@ public class ScientificObjectDAO {
                         }
 
                         select.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.FACTOR_LEVEL_FIELD, factorLevels));
+                    }
+                    if (germplasm != null) {
+                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm));
                     }
                 },
                 null,

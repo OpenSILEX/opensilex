@@ -481,7 +481,12 @@ export default class SelectForm extends Vue {
         .then((http) => {
           let list = http.response.result;
           self.totalCount = http.response.metadata.pagination.totalCount;
-          self.resultCount = list.length;
+          if (http.response.size && http.response.size != list.length) {
+            self.resultCount = http.response.size;
+          } else {
+            self.resultCount = list.length;
+          }
+          
           let nodeList = [];
           list.forEach((item) => {
             nodeList.push(self.conversionMethod(item));

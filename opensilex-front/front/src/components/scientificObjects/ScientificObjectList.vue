@@ -10,89 +10,47 @@
       @search="refresh()"
       @clear="reset()"
       label="ScientificObjectsList.filter.label"
-      advancedSearchLabel="ScientificObjectsList.advancedSearch"
       :showAdvancedSearch="true"
     >
       <template v-slot:filters>
+        <!-- Name -->
+        <opensilex-FilterField>
+          <label for="name">{{$t('component.common.name')}}</label>
+          <opensilex-StringFilter
+            id="name"
+            :filter.sync="filter.name"
+            placeholder="ScientificObjectList.name-placeholder"
+          ></opensilex-StringFilter>
+        </opensilex-FilterField>
         <!-- Experiments -->
         <opensilex-FilterField>
-          <opensilex-SelectForm
-            label="ScientificObjectsList.filter.experiments"
-            placeholder="ScientificObjectsList.placeholder.experiments"
-            :selected.sync="filter.experiments"
-            :conversionMethod="experimentGetListDTOToSelectNode"
-            modalComponent="opensilex-ExperimentModalList"
-            :isModalSearch="true"
-          ></opensilex-SelectForm>
+          <opensilex-ExperimentSelector
+            label="GermplasmList.filter.experiment"
+            :multiple="false"
+            :experiments.sync="filter.experiment"
+          ></opensilex-ExperimentSelector>
         </opensilex-FilterField>
 
-        <!-- URI -->
         <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="filter.label"
-            label="ScientificObjectsList.filter.uri"
-            type="text"
-            placeholder="ScientificObjectsList.placeholder.uri"
-          ></opensilex-InputForm>
+          <label for="type">{{ $t("component.common.type") }}</label>
+          <opensilex-ScientificObjectTypeSelector
+            id="type"
+            :types.sync="filter.types"
+            :multiple="true"
+          ></opensilex-ScientificObjectTypeSelector>
         </opensilex-FilterField>
       </template>
 
       <template v-slot:advancedSearch>
-        <div class="row">
-          <!-- Germplasm -->
-          <opensilex-FilterField>
-            <opensilex-SelectForm
-              label="ScientificObjectsList.filter.germplasm"
-              placeholder="ScientificObjectsList.placeholder.germplasm"
-              :selected.sync="filter.germplasm"
-              :conversionMethod="germplasmGetDTOToSelectNode"
-              modalComponent="opensilex-GermplasmModalList"
-              :isModalSearch="true"
-            ></opensilex-SelectForm>
-          </opensilex-FilterField>
+        <!-- Germplasm -->
+        <opensilex-FilterField>
+          <opensilex-GermplasmSelector :multiple="false" :germplasm.sync="filter.germplasm"></opensilex-GermplasmSelector>
+        </opensilex-FilterField>
 
-          <!-- Position -->
-          <opensilex-FilterField>
-            <opensilex-SelectForm
-              label="ScientificObjectsList.filter.position"
-              placeholder="ScientificObjectsList.placeholder.position"
-              :selected.sync="filter.positions"
-              :conversionMethod="featureToSelectNode"
-              modalComponent="opensilex-GeometrySelector"
-              :isModalSearch="true"
-            ></opensilex-SelectForm>
-          </opensilex-FilterField>
-
-          <!-- Dates -->
-          <opensilex-FilterField>
-            <opensilex-DateRangePickerForm
-              :value.sync="filter.dates"
-              label="ScientificObjectsList.filter.dates"
-            ></opensilex-DateRangePickerForm>
-          </opensilex-FilterField>
-
-          <!-- Factors -->
-          <opensilex-FilterField>
-            <opensilex-SelectForm
-              label="ScientificObjectsList.filter.factors"
-              placeholder="ScientificObjectsList.placeholder.factors"
-              :selected.sync="filter.factors"
-              :conversionMethod="factorGetDTOToSelectNode"
-              modalComponent="opensilex-FactorModalList"
-              :isModalSearch="true"
-            ></opensilex-SelectForm>
-          </opensilex-FilterField>
-
-          <!-- isPartOf -->
-          <div class="filter-group col col-xl-3 col-sm-6 col-12">
-            <opensilex-InputForm
-              :value.sync="filter.isPartOf"
-              label="ScientificObjectsList.filter.isPartOf"
-              type="text"
-              placeholder="ScientificObjectsList.placeholder.isPartOf"
-            ></opensilex-InputForm>
-          </div>
-        </div>
+        <!-- Factors -->
+        <opensilex-FilterField>
+          <opensilex-FactorSelector :multiple="true" :factors.sync="filter.factors"></opensilex-FactorSelector>
+        </opensilex-FilterField>
       </template>
     </opensilex-SearchFilterField>
 
@@ -103,27 +61,14 @@
           :searchMethod="searchScientificObject"
           :fields="fields"
           defaultSortBy="label"
-          :isSelectable="true"
+          :isSelectable="false"
           labelNumberOfSelectedRow="ScientificObjectsList.selected"
           iconNumberOfSelectedRow="ik#ik-target"
         >
-          <template v-slot:firstActionsSelectableTable>
-            <div
-              v-if="tableRef.getSelected().length > 0"
-              class="card-options d-inline-block"
-            >
-              <a
-                href="data.html"
-                class="btn btn-icon btn-outline-primary"
-                title="Voir les données"
-                ><i class="ik ik ik-bar-chart-line-"></i
-              ></a>
-            </div>
-          </template>
-
           <template v-slot:cell(uri)="{ data }">
             <opensilex-UriLink
               :uri="data.item.uri"
+              :value="data.item.name"
               :to="{ path: '/experiment/' + encodeURIComponent(data.item.uri) }"
             ></opensilex-UriLink>
           </template>
@@ -133,8 +78,9 @@
               href="data.html"
               class="btn btn-icon btn-row-action btn-outline-primary"
               title="Visualiser les données de cet objet scientifique"
-              ><i class="ik ik-bar-chart-line-"></i
-            ></a>
+            >
+              <i class="ik ik-bar-chart-line-"></i>
+            </a>
           </template>
         </opensilex-TableAsyncView>
       </template>
@@ -161,41 +107,14 @@ import {
   ResourceTreeDTO,
   ExperimentGetListDTO,
   OntologyService,
+  ScientificObjectsService
 } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, {
   OpenSilexResponse,
   MetadataDTO,
-  PaginationDTO,
+  PaginationDTO
 } from "../../lib/HttpResponse";
-
-class ScientificObjectFilter {
-  experiments = [];
-  germplasm = [];
-  positions = [];
-  uri = undefined;
-  isPartOf = undefined;
-  hasVariety = [];
-  campaigns = [];
-  factors = [];
-  dates = undefined;
-
-  constructor() {
-    this.reset();
-  }
-
-  reset() {
-    this.experiments = [];
-    this.germplasm = [];
-    this.positions = [];
-    this.uri = undefined;
-    this.isPartOf = undefined;
-    this.hasVariety = [];
-    this.campaigns = [];
-    this.factors = [];
-    this.dates = undefined;
-  }
-}
 
 @Component
 export default class ScientificObjectList extends Vue {
@@ -208,50 +127,55 @@ export default class ScientificObjectList extends Vue {
   fields = [
     {
       key: "uri",
-      label: "ScientificObjectsList.column.uri",
-      sortable: true,
+      label: "component.common.name",
+      sortable: true
     },
     {
-      key: "label",
-      label: "ScientificObjectsList.column.alias",
-      sortable: true,
-    },
-    {
-      key: "type",
-      label: "ScientificObjectsList.column.type",
-      sortable: true,
-    },
-    {
-      key: "parents",
-      label: "ScientificObjectsList.column.parents",
-    },
-    {
-      key: "experiments",
-      label: "ScientificObjectsList.column.experiments",
-    },
-    {
-      key: "actions",
-      label: "ScientificObjectsList.column.actions",
-    },
+      key: "typeLabel",
+      label: "component.common.type",
+      sortable: true
+    }
   ];
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.tableRef.update();
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
 
   experimentsByScientificObject: Map<String, Array<ExperimentGetDTO>> = new Map<
     String,
     Array<ExperimentGetDTO>
   >();
 
-  filter = new ScientificObjectFilter();
-
-  static async asyncInit($opensilex) {
-    // await $opensilex.loadModule("opensilex-phis");
-  }
+  filter = {
+    name: "",
+    experiment: undefined,
+    germplasm: undefined,
+    factors: [],
+    types: []
+  };
 
   get user() {
     return this.$store.state.user;
   }
 
   reset() {
-    this.filter.reset();
+    this.filter = {
+      name: "",
+      experiment: undefined,
+      germplasm: undefined,
+      factors: [],
+      types: []
+    };
     this.refresh();
   }
 
@@ -260,100 +184,20 @@ export default class ScientificObjectList extends Vue {
   }
 
   searchScientificObject(options) {
-    let experiment = undefined;
-    let uri = undefined;
-    let germplasm_URI = undefined;
-
-    if (this.filter.experiments && this.filter.experiments.length > 0) {
-      experiment = this.filter.experiments[0].id;
-    }
-
-    if (this.filter.uri && this.filter.uri.length > 0) {
-      uri = this.filter.uri;
-    }
-
-    if (this.filter.germplasm && this.filter.germplasm.length > 0) {
-      germplasm_URI = this.filter.germplasm[0].id;
-    }
-
-    return Promise.resolve([]);
-    // let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService("opensilex-phis.ScientificObjectsService");
-    // return scientificObjectsService.getScientificObjectsBySearch(
-    //     options.pageSize,
-    //     options.currentPage,
-    //     uri,
-    //     experiment,
-    //     undefined,
-    //     germplasm_URI,
-    //     true
-    // ).then(http => {
-    //     let result = {
-    //         response: {
-    //             metadata: null,
-    //             result: null
-    //         }
-    //     };
-    //     result.response.metadata = http.response.metadata;
-    //     let data:any = http.response.result;
-    //     result.response.result = data.data;
-
-    //     return result;
-    // });
-  }
-
-  experimentGetListDTOToSelectNode(dto: ExperimentGetListDTO) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name,
-      };
-    }
-    return null;
-  }
-
-  factorGetDTOToSelectNode(dto: FactorGetDTO) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name,
-      };
-    }
-    return null;
-  }
-
-  germplasmGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.label,
-      };
-    }
-    return null;
-  }
-
-  loadSpecies() {
-    return this.$opensilex
-      .getService("opensilex.SpeciesService")
-      .getAllSpecies()
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
-          http.response.result
-      );
-  }
-
-  speciesToSelectNode(dto: SpeciesDTO) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
-  }
-
-  featureToSelectNode(feature) {
-    return {
-      id: feature.id,
-      label: feature.geometry.type,
-      //label: feature.geometry.coordinates
-    };
+    let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
+    return scientificObjectsService.searchScientificObjects(
+      this.filter.experiment ? this.filter.experiment : undefined, // contextURI?: string,
+      this.filter.name, // pattern?: string,
+      this.filter.types, // rdfTypes?: Array<string>,
+      undefined, // parentURI?: string,
+      this.filter.germplasm ? this.filter.germplasm : undefined,
+      this.filter.factors, // factors?: Array<string>,
+      undefined, // factorLevels?: Array<string>,
+      options.currentPage, // page?: number,
+      options.pageSize // pageSize?: number
+    );
   }
 }
 </script>
@@ -364,7 +208,8 @@ export default class ScientificObjectList extends Vue {
 <i18n>
 
 en:
-  ScientificObjectsList:
+  ScientificObjectList:
+    name-placeholder: Enter name
     selected: Selected Scientific Objects
     description: Manage and configure scientific objects
     advancedSearch: Advanced search
@@ -396,7 +241,8 @@ en:
       factors: Filter by Factors
       dates: Filter by Dates
 fr:
-  ScientificObjectsList:
+  ScientificObjectList:
+    name-placeholder: Saisir un nom
     selected: Objets Scientifiques Sélectionnés
     description: Gérer et configurer les objets scientifiques
     advancedSearch: Recherche avancée

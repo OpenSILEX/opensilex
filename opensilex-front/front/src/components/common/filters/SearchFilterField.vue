@@ -14,18 +14,17 @@
       </div>
 
       <div class="card" v-if="showAdvancedSearch" >
-        <div class="card-header sub-header">
+        <div class="card-header sub-header" v-on:click="toogleAdvancedSearch($event)">
           <h3 class="mr-3">{{ $t(advancedSearchLabel) }}</h3>
           <div class="card-header-right">
             <div class="card-option">
               <li>
-                <i v-if="!advancedSearchOpen" class="ik minimize-card ik-plus" v-on:click="toogleAdvancedSearch($event)"></i>
-                <i v-if="advancedSearchOpen" class="ik minimize-card ik-minus" v-on:click="toogleAdvancedSearch($event)"></i>
+                <i v-if="!advancedSearchOpen" class="ik minimize-card ik-plus"></i>
+                <i v-if="advancedSearchOpen" class="ik minimize-card ik-minus"></i>
               </li>
             </div>
           </div>
         </div>
-        <div class="container">
         <div
           class="card-body advancedSearch row"
           style="background-color: transparent;"
@@ -33,11 +32,10 @@
         >
           <slot name="advancedSearch"></slot>
         </div>
-        </div>
       </div>
     </div>
 
-    <div class="container-fluid button-group advancedSearch" v-if="withButton">
+    <div class="container-fluid button-group" v-if="withButton" v-bind:class="{ 'withAdvancedSearch': showAdvancedSearch}">
       <div class="row">
         <div class="col-md-12 text-right">
           <slot name="clear">
@@ -131,6 +129,15 @@ export default class SearchFilterField extends Vue {
 
 .advancedSearch {
   padding-top: 15px;
+}
+
+.sub-header:hover {
+  cursor: pointer;
+  background-color: #EEEEEE;
+}
+
+.button-group.withAdvancedSearch {
+  padding-top: 0;
 }
 </style>
 

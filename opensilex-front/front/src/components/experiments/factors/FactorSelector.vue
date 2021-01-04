@@ -19,7 +19,7 @@
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {
-  OpenSilexResponse,
+  OpenSilexResponse
 } from "opensilex-security/HttpResponse";
 import {
   FactorsService,
@@ -38,7 +38,7 @@ export default class FactorSelector extends Vue {
   factorsURI;
 
   @Prop({
-    default: "component.menu.experimentalDesign.factors",
+    default: "component.menu.experimentalDesign.factors"
   })
   label;
 
@@ -123,6 +123,7 @@ export default class FactorSelector extends Vue {
         let factorsByCategoryNode = this.transformFactorListByCategoryInNodes(
           factorMapByCategory
         );
+        http.response.size = http.response.result.length;
         http.response.result = factorsByCategoryNode;
         return http;
       });
@@ -130,7 +131,6 @@ export default class FactorSelector extends Vue {
 
   sortFactorListByCategory(factorList): Map<string, any[]> {
     let factorMapByCategory: Map<string, any[]> = new Map();
-    console.debug(factorList.length, factorList);
     for (let index = 0; index < factorList.length; index++) {
       let factor: FactorGetDTO = factorList[index];
       if (factor.category == null) {
@@ -159,12 +159,12 @@ export default class FactorSelector extends Vue {
             ? this.$i18n.t(this.unclassifiedId)
             : this.categories[category],
         isDefaultExpanded: true,
-        children: [],
+        children: []
       };
       for (let factor of factors) {
         let factorNode = {
           id: factor.uri,
-          label: factor.name + " <" + factor.uri + ">",
+          label: factor.name + " <" + factor.uri + ">"
         };
         categoryNode.children.push(factorNode);
       }
@@ -177,7 +177,7 @@ export default class FactorSelector extends Vue {
   factorToSelectNode(dto: FactorGetDTO) {
     return {
       id: dto.uri,
-      label: dto.name + " <" + dto.uri + ">",
+      label: dto.name + " <" + dto.uri + ">"
     };
   }
   select(value) {

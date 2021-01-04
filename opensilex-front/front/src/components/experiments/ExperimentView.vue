@@ -1,108 +1,167 @@
 <template>
-  <div v-if="uri" class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-layers"
-      :title="name"
-      description="component.experiment.view.title"
-    ></opensilex-PageHeader>
+    <div v-if="uri" class="container-fluid">
+        <opensilex-PageHeader
+                icon="ik#ik-layers"
+                :title="name"
+                description="component.experiment.view.title"
+        ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true">
-      <template v-slot>
-        <b-nav-item
-          :active="isDetailsTab()"
-          :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
-          >{{ $t("ExperimentView.details") }}</b-nav-item
-        >
-        <b-nav-item
-          :active="isScientificObjectsTab()"
-          :to="{
-            path: '/experiment/scientific-objects/' + encodeURIComponent(uri),
-          }"
-          >{{ $t("ExperimentView.scientific-objects") }}</b-nav-item
-        >
-        <b-nav-item
-          :active="isDataTab()"
-          :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
-          >{{ $t("ExperimentView.data") }}</b-nav-item
-        >
-        <b-nav-item
-          :active="isMap()"
-          :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
-          >{{ $t("Map") }}
-        </b-nav-item>
-      </template>
-    </opensilex-PageActions>
+        <opensilex-PageActions :tabs="true" :returnButton="true">
+            <template v-slot>
+                <b-nav-item
+                        :active="isDetailsTab()"
+                        :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
+                >{{ $t("ExperimentView.details") }}
+                </b-nav-item
+                >
+                <b-nav-item
+                        :active="isScientificObjectsTab()"
+                        :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri),}"
+                >{{ $t("ExperimentView.scientific-objects") }}
+                </b-nav-item
+                >
+                <b-nav-item
+                        :active="isDataTab()"
+                        :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
+                >{{ $t("ExperimentView.data") }}
+                </b-nav-item
+                >
+                <b-nav-item
+                        :active="isMap()"
+                        :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
+                >{{ $t("Map") }}
+                </b-nav-item>
 
-    <opensilex-PageContent>
-      <template v-slot>
-        <opensilex-ExperimentDetail
-          v-if="isDetailsTab()"
-          :uri="uri"
-        ></opensilex-ExperimentDetail>
-        <opensilex-ExperimentScientificObjects
-          v-else-if="isScientificObjectsTab()"
-          :uri="uri"
-        ></opensilex-ExperimentScientificObjects>
-        <opensilex-ExperimentData
-          v-else-if="isDataTab()"
-          :uri="uri"
-        ></opensilex-ExperimentData>
-        <opensilex-MapView
-            v-else-if="isMap()"
-            :uri="uri"
-        ></opensilex-MapView>
-      </template>
-    </opensilex-PageContent>
-  </div>
+                <b-nav-item
+                        :active="isAnnotationTab()"
+                        :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
+                >{{ $t("Annotation.list-title") }}
+                </b-nav-item>
+
+                <opensilex-Button
+                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                        label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
+                        @click="annotationModalForm.showCreateForm()"
+                ></opensilex-Button>
+
+                <opensilex-AnnotationModalForm
+                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                        ref="annotationModalForm"
+                        :target="uri"
+                        @onCreate="updateAnnotations"
+                        @onUpdate="updateAnnotations"
+                ></opensilex-AnnotationModalForm>
+
+            </template>
+        </opensilex-PageActions>
+
+        <opensilex-PageContent>
+            <template v-slot>
+                <opensilex-ExperimentDetail
+                        v-if="isDetailsTab()"
+                        :uri="uri"
+                ></opensilex-ExperimentDetail>
+                <opensilex-ExperimentScientificObjects
+                        v-else-if="isScientificObjectsTab()"
+                        :uri="uri"
+                ></opensilex-ExperimentScientificObjects>
+                <opensilex-ExperimentData
+                        v-else-if="isDataTab()"
+                        :uri="uri"
+                ></opensilex-ExperimentData>
+
+                <opensilex-MapView
+                        :uri="uri"
+                        v-else-if="isMap()">
+                </opensilex-MapView>
+
+                <opensilex-AnnotationList
+                        v-else-if="isAnnotationTab()"
+                        ref="annotationList"
+                        :target="uri"
+                        :displayTargetColumn="false"
+                        :enableActions="true"
+                        :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+                        :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+                        @onEdit="annotationModalForm.showEditForm($event)"
+                ></opensilex-AnnotationList>
+
+            </template>
+        </opensilex-PageContent>
+    </div>
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
-import { ExperimentsService, ExperimentGetDTO } from "opensilex-core/index";
+    import {Component, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import {ExperimentsService, ExperimentGetDTO} from "opensilex-core/index";
 
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-@Component
-export default class ExperimentView extends Vue {
-  $route: any;
+    import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
+    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 
-  $opensilex: any;
-  service: ExperimentsService;
-  uri = null;
-  name: string = "";
+    @Component
+    export default class ExperimentView extends Vue {
+        $route: any;
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.ExperimentsService");
+        $opensilex: any;
+        service: ExperimentsService;
+        uri = null;
+        name: string = "";
 
-    this.uri = decodeURIComponent(this.$route.params.uri);
-    if (this.uri) {
-      this.service
-        .getExperiment(this.uri)
-        .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
-          this.name = http.response.result.label;
-        })
-        .catch((error) => {
-          this.$opensilex.errorHandler(error);
-        });
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
+        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+
+        created() {
+            this.service = this.$opensilex.getService("opensilex.ExperimentsService");
+
+            this.uri = decodeURIComponent(this.$route.params.uri);
+            if (this.uri) {
+                this.service
+                    .getExperiment(this.uri)
+                    .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
+                        this.name = http.response.result.label;
+                    })
+                    .catch((error) => {
+                        this.$opensilex.errorHandler(error);
+                    });
+            }
+        }
+
+        get user() {
+            return this.$store.state.user;
+        }
+
+        get credentials() {
+            return this.$store.state.credentials;
+        }
+
+        isDetailsTab() {
+            return this.$route.path.startsWith("/experiment/details/");
+        }
+
+        isMap() {
+            return this.$route.path.startsWith("/experiment/map/");
+        }
+
+        isScientificObjectsTab() {
+            return this.$route.path.startsWith("/experiment/scientific-objects/");
+        }
+
+        isDataTab() {
+            return this.$route.path.startsWith("/experiment/data/");
+        }
+
+        isAnnotationTab() {
+            return this.$route.path.startsWith("/experiment/annotations/");
+        }
+
+        updateAnnotations() {
+            this.$nextTick(() => {
+                this.annotationList.refresh();
+            });
+        }
     }
-  }
-
-  isDetailsTab() {
-    return this.$route.path.startsWith("/experiment/details/");
-  }
-
-  isMap() {
-    return this.$route.path.startsWith("/experiment/map/");
-  }
-
-  isScientificObjectsTab() {
-    return this.$route.path.startsWith("/experiment/scientific-objects/");
-  }
-
-  isDataTab() {
-    return this.$route.path.startsWith("/experiment/data/");
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -110,14 +169,14 @@ export default class ExperimentView extends Vue {
 
 <i18n>
 en:
-  ExperimentView:
-    details: Details
-    scientific-objects: Scientific objects
-    data: Data
+    ExperimentView:
+        details: Details
+        scientific-objects: Scientific objects
+        data: Data
 
 fr:
-  ExperimentView:
-    details: Détail
-    scientific-objects: Objets scientifiques
-    data: Data
+    ExperimentView:
+        details: Détail
+        scientific-objects: Objets scientifiques
+        data: Data
 </i18n>

@@ -133,6 +133,7 @@ menu:
           credentials:
             - is-admin
 routes:
+  -
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
   - path: /experiment/scientific-objects/:uri
@@ -141,6 +142,9 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/map/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/annotations/:uri
+    component: opensilex-ExperimentView
+
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
     credentials:
@@ -149,19 +153,30 @@ routes:
     component: opensilex-InfrastructureFacilitiesTypes
     credentials:
       - is-admin
+      -
   - path: /variable/details/:uri
     component: opensilex-VariableView
     credentials: []
+  - path: /variable/annotations/:uri
+    component: opensilex-VariableView
+
   - path: /project/details/:uri
     component: opensilex-ProjectDetails
   - path: /project/documents/:uri
     component: opensilex-ProjectDetails
+  - path: /project/annotations/:uri
+    component: opensilex-ProjectDetails
+
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
     credentials: [germplasm-modification]
   - path: /germplasm/:uri
     component: opensilex-GermplasmDetails
     credentials: []
+  - path: /germplasm/annotations/:uri
+    component: opensilex-GermplasmDetails
+
+
   - path: /factor/create
     component: opensilex-FactorForm
     credentials:
@@ -171,6 +186,9 @@ routes:
   - path: /factor/experiments/:uri
     component: opensilex-FactorView
     credentials: []
+  - path: /factor/annotations/:uri
+    component: opensilex-FactorView
+
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
     credentials: []

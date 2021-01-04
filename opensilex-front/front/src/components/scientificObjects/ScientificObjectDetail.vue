@@ -1,123 +1,212 @@
 <template>
-  <b-card v-if="selected && selected.uri">
-    <template v-slot:header>
-      <h3>
-        <!-- <opensilex-Icon icon="ik#ik-clipboard" /> -->
-        {{$t("ScientificObjectDetail.title")}}
-      </h3>
-    </template>
-    <div>
-      <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
-      <!-- Name -->
-      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
+    <b-card v-if="selected && selected.uri">
 
-      <!-- Type -->
-      <opensilex-GeometryView v-if="selected.geometry" label="component.common.geometry" :value="selected.geometry"></opensilex-GeometryView>
+        <b-tabs content-class="mt-3" :value=tabsIndex @input="updateTabs">
+            <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
+            <b-tab :title="$t('Documents')"></b-tab>
+            <b-tab :title="$t('Annotation.list-title')"></b-tab>
+            <b-tab :title="$t('Event.list-title')"></b-tab>
+        </b-tabs>
+        <!--    <template v-slot:header>-->
+        <!--      <h3>-->
+        <!--        &lt;!&ndash; <opensilex-Icon icon="ik#ik-clipboard" /> &ndash;&gt;-->
+        <!--        {{$t("ScientificObjectDetail.title")}}-->
+        <!--      </h3>-->
+        <!--    </template>-->
+        <div v-if="loadDetails()">
+            <!-- URI -->
+            <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+            <!-- Name -->
+            <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
+            <!-- Type -->
+            <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
 
-      <div v-for="(v, index) in typeProperties" v-bind:key="index">
-        <div class="static-field">
-          <span class="field-view-title">{{v.definition.name}}:</span>
-          <component
-            v-if="!v.definition.isList"
-            :is="v.definition.viewComponent"
-            :value="v.property"
-          ></component>
-          <ul v-else>
-            <br />
-            <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-              <component :is="v.definition.viewComponent" :value="prop"></component>
-            </li>
-          </ul>
+            <!-- Type -->
+            <opensilex-GeometryView v-if="selected.geometry" label="component.common.geometry" :value="selected.geometry"></opensilex-GeometryView>
+
+            <div v-for="(v, index) in typeProperties" v-bind:key="index">
+                <div class="static-field">
+                    <span class="field-view-title">{{v.definition.name}}:</span>
+                    <component
+                            v-if="!v.definition.isList"
+                            :is="v.definition.viewComponent"
+                            :value="v.property"
+                    ></component>
+                    <ul v-else>
+                        <br />
+                        <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
+                            <component :is="v.definition.viewComponent" :value="prop"></component>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </b-card>
+
+        <opensilex-AnnotationList
+                v-if="isAnnotationTab()"
+                ref="annotationList"
+                :target="selected.uri"
+                :enableActions="true"
+                :columnsToDisplay="new Set(['creator','motivation','created'])"
+                :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+                :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+                @onEdit="annotationModalForm.showEditForm($event)"
+        ></opensilex-AnnotationList>
+
+        <opensilex-Button
+                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
+                @click="annotationModalForm.showCreateForm()"
+        ></opensilex-Button>
+
+        <opensilex-AnnotationModalForm
+                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                ref="annotationModalForm"
+                :target="selected.uri"
+                @onCreate="updateAnnotations"
+                @onUpdate="updateAnnotations"
+        ></opensilex-AnnotationModalForm>
+
+    </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
-import Vue from "vue";
+    import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+    import Vue from "vue";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
+    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 
-@Component
-export default class ScientificObjectDetail extends Vue {
-  $opensilex: any;
+    @Component
+    export default class ScientificObjectDetail extends Vue {
+        $opensilex: any;
 
-  @Prop()
-  selected;
+        @Prop()
+        selected;
 
-  typeProperties = [];
+        typeProperties = [];
 
-  mounted() {
-    if (this.selected) {
-      this.onSelectionChange();
-    }
-  }
+        static DETAILS_TAB = "Details";
+        static DOCUMENTS_TAB = "Documents";
+        static ANNOTATIONS_TAB = "Annotations";
+        static EVENTS_TAB = "Events";
 
-  @Watch("selected")
-  onSelectionChange() {
-    this.typeProperties = [];
-
-    let valueByProperties = {};
-
-    for (let i in this.selected.relations) {
-      let relation = this.selected.relations[i];
-      if (
-        valueByProperties[relation.property] &&
-        !Array.isArray(valueByProperties[relation.property])
-      ) {
-        valueByProperties[relation.property] = [
-          valueByProperties[relation.property]
+        static tabsValues = [
+            ScientificObjectDetail.DETAILS_TAB,
+            ScientificObjectDetail.DOCUMENTS_TAB,
+            ScientificObjectDetail.ANNOTATIONS_TAB,
+            ScientificObjectDetail.EVENTS_TAB
         ];
-      }
 
-      if (Array.isArray(valueByProperties[relation.property])) {
-        valueByProperties[relation.property].push(relation.value);
-      } else {
-        valueByProperties[relation.property] = relation.value;
-      }
-    }
+        tabsIndex: number = 0;
+        tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
 
-    return this.$opensilex
-      .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(this.selected.type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
-      .then(http => {
-        let classModel: any = http.response.result;
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
+        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
-        this.loadProperties(classModel.dataProperties, valueByProperties);
-        this.loadProperties(classModel.objectProperties, valueByProperties);
-      });
-  }
-
-  loadProperties(properties, valueByProperties) {
-    for (let i in properties) {
-      let property = properties[i];
-      if (valueByProperties[property.property]) {
-        if (
-          property.isList &&
-          !Array.isArray(valueByProperties[property.property])
-        ) {
-          this.typeProperties.push({
-            definition: property,
-            property: [valueByProperties[property.property]]
-          });
-        } else {
-          this.typeProperties.push({
-            definition: property,
-            property: valueByProperties[property.property]
-          });
+        mounted() {
+            if (this.selected) {
+                this.onSelectionChange();
+            }
         }
-      } else if (property.isList) {
-        this.typeProperties.push({
-          definition: property,
-          property: []
-        });
-      }
+
+        get user() {
+            return this.$store.state.user;
+        }
+
+        get credentials() {
+            return this.$store.state.credentials;
+        }
+
+
+        @Watch("selected")
+        onSelectionChange() {
+            this.typeProperties = [];
+
+            let valueByProperties = {};
+
+            for (let i in this.selected.relations) {
+                let relation = this.selected.relations[i];
+                if (
+                    valueByProperties[relation.property] &&
+                    !Array.isArray(valueByProperties[relation.property])
+                ) {
+                    valueByProperties[relation.property] = [
+                        valueByProperties[relation.property]
+                    ];
+                }
+
+                if (Array.isArray(valueByProperties[relation.property])) {
+                    valueByProperties[relation.property].push(relation.value);
+                } else {
+                    valueByProperties[relation.property] = relation.value;
+                }
+            }
+
+            return this.$opensilex
+                .getService("opensilex.VueJsOntologyExtensionService")
+                .getClassProperties(this.selected.type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
+                .then(http => {
+                    let classModel: any = http.response.result;
+
+                    this.loadProperties(classModel.dataProperties, valueByProperties);
+                    this.loadProperties(classModel.objectProperties, valueByProperties);
+                });
+        }
+
+        loadProperties(properties, valueByProperties) {
+            for (let i in properties) {
+                let property = properties[i];
+                if (valueByProperties[property.property]) {
+                    if (
+                        property.isList &&
+                        !Array.isArray(valueByProperties[property.property])
+                    ) {
+                        this.typeProperties.push({
+                            definition: property,
+                            property: [valueByProperties[property.property]]
+                        });
+                    } else {
+                        this.typeProperties.push({
+                            definition: property,
+                            property: valueByProperties[property.property]
+                        });
+                    }
+                } else if (property.isList) {
+                    this.typeProperties.push({
+                        definition: property,
+                        property: []
+                    });
+                }
+            }
+        }
+
+        private loadDetails() : boolean {
+            return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
+        }
+
+        private isAnnotationTab() : boolean {
+            return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
+        }
+
+        private loadEvents() : boolean {
+            return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
+        }
+
+        private updateTabs(tabIndex) {
+
+            if(tabIndex >= 0 && tabIndex < ScientificObjectDetail.tabsValues.length){
+                this.tabsIndex = tabIndex;
+                this.tabsValue = ScientificObjectDetail.tabsValues[tabIndex];
+            }
+        }
+
+        updateAnnotations() {
+            this.$nextTick(() => {
+                this.annotationList.refresh();
+            });
+        }
+
     }
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -126,10 +215,10 @@ export default class ScientificObjectDetail extends Vue {
 
 <i18n>
 en:
-  ScientificObjectDetail:
-    title: Detail
+    ScientificObjectDetail:
+        title: Detail
 
 fr:
-  ScientificObjectDetail:
-    title: Détail
+    ScientificObjectDetail:
+        title: Détail
 </i18n>

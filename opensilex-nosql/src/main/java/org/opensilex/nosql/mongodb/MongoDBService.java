@@ -67,7 +67,9 @@ public class MongoDBService extends BaseService {
 
     @Override
     public void shutdown() {
-        mongoClient.close();
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
     }
 
     public URI getBaseURI() throws OpenSilexModuleNotFoundException {
@@ -81,11 +83,10 @@ public class MongoDBService extends BaseService {
     public MongoDatabase getDatabase() {
         return this.db;
     }
-    
+
     public ClientSession getSession() {
         return this.session;
     }
-    
 
     private int transactionLevel = 0;
 

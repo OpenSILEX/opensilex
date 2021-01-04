@@ -58,7 +58,7 @@
         <jersey.version>2.32</jersey.version>
         <tomcat.version>9.0.39</tomcat.version>
         <hibernate.validator.version>6.1.6.Final</hibernate.validator.version>
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.12.0</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <jts.version>1.17.1</jts.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
@@ -69,7 +69,7 @@
         <rdf4j.version>3.4.3</rdf4j.version>
         <jena.query.builder.version>3.16.0</jena.query.builder.version>
         <mongodb.version>4.1.1</mongodb.version>
-        <bytebuddy.version>1.10.17</bytebuddy.version>
+        <bytebuddy.version>1.10.18</bytebuddy.version>
         <java.jwt.version>3.11.0</java.jwt.version>
         <picocli.version>4.5.2</picocli.version>
         <bcript.version>0.9.0</bcript.version>
@@ -85,14 +85,14 @@
         <javax.activation.api.version>1.2.0</javax.activation.api.version>
         <reflections.version>0.9.12</reflections.version>
         <httpclient.version>4.5.13</httpclient.version>
-        <httpcore.version>4.4.13</httpcore.version>
+        <httpcore.version>4.4.14</httpcore.version>
         <cdi.api.version>2.0.SP1</cdi.api.version>
         <javaee.web.api.version>8.0.1</javaee.web.api.version>
-        <apache.tika.version>1.24.1</apache.tika.version>
+        <apache.tika.version>1.25</apache.tika.version>
         
         <!-- test only dependencies version -->
         <junit.version>4.13.1</junit.version>
-        <mockito.version>3.6.0</mockito.version>
+        <mockito.version>3.6.28</mockito.version>
         <embed.mongo.version>3.0.0</embed.mongo.version>
         <awaitability.version>4.0.3</awaitability.version>
         
@@ -127,7 +127,7 @@
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
-        <logstash-logback-encoder>6.4</logstash-logback-encoder>
+        <logstash-logback-encoder>6.5</logstash-logback-encoder>
     </properties>
 
     <dependencyManagement>

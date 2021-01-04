@@ -20,12 +20,12 @@ import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
-  OpenSilexResponse,
+  OpenSilexResponse
 } from "opensilex-security/HttpResponse";
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO,
+  FactorSearchDTO
 } from "opensilex-core/index";
 
 import { ASYNC_SEARCH } from "@riophae/vue-treeselect";
@@ -41,7 +41,7 @@ export default class FactorSelector extends Vue {
   factorsURI;
 
   @Prop({
-    default: "component.menu.experimentalDesign.factors",
+    default: "component.menu.experimentalDesign.factors"
   })
   label;
 
@@ -50,7 +50,7 @@ export default class FactorSelector extends Vue {
 
   filter: FactorSearchDTO = {
     name: "",
-    uri: null,
+    uri: null
   };
 
   factorCategoriesMap: Map<
@@ -76,17 +76,19 @@ export default class FactorSelector extends Vue {
   }
 
   loadOptions(query, page, pageSize) {
-
     this.filter.name = query;
     this.filter.uri = query;
     return this.$opensilex
       .getService("opensilex.FactorsService")
       .searchFactors(null, page, pageSize, this.filter)
-      .then((http) => {
-        let factorMapByCategory = this.sortFactorListByCategory(http.response.result);
+      .then(http => {
+        let factorMapByCategory = this.sortFactorListByCategory(
+          http.response.result
+        );
         let factorsByCategoryNode = this.transformFactorListByCategoryInNodes(
           factorMapByCategory
         );
+        http.response.size = http.response.result.length;
         http.response.result = factorsByCategoryNode;
         return http;
       });
@@ -94,11 +96,12 @@ export default class FactorSelector extends Vue {
 
   sortFactorListByCategory(factorList): Map<string, any[]> {
     let factorMapByCategory: Map<string, any[]> = new Map();
-    console.debug(factorList.length, factorList);
     for (let index = 0; index < factorList.length; index++) {
       let factor: FactorGetDTO = factorList[index];
       if (factor.category == null) {
-        factorMapByCategory[FactorCategory.otherId] = [];
+        if (!factorMapByCategory[FactorCategory.otherId]) {
+          factorMapByCategory[FactorCategory.otherId] = [];
+        }
         factorMapByCategory[FactorCategory.otherId].push(factor);
       } else {
         if (!(factor.category in factorMapByCategory)) {
@@ -123,12 +126,12 @@ export default class FactorSelector extends Vue {
             ? this.$i18n.t(FactorCategory.otherLabel)
             : this.$i18n.t(this.factorCategoriesMap[category]),
         isDefaultExpanded: true,
-        children: [],
+        children: []
       };
       for (let factor of factors) {
         let factorNode = {
           id: factor.uri,
-          label: factor.name + " <" + factor.uri + ">",
+          label: factor.name + " <" + factor.uri + ">"
         };
         categoryNode.children.push(factorNode);
       }
@@ -141,7 +144,7 @@ export default class FactorSelector extends Vue {
   factorToSelectNode(dto: FactorGetDTO) {
     return {
       id: dto.uri,
-      label: dto.name + " <" + dto.uri + ">",
+      label: dto.name + " <" + dto.uri + ">"
     };
   }
   select(value) {

@@ -46,11 +46,11 @@ menu:
         route:
           path: /documents
           component: opensilex-DocumentView
-      #  - id: scientificObjects
-      #    label: component.menu.scientificObjects
-      #    route:
-      #      path: /scientific-objects
-      #      component: opensilex-ScientificObjectList
+      - id: scientificObjects
+        label: component.menu.scientificObjects
+        route:
+          path: /scientific-objects
+          component: opensilex-ScientificObjectList
       # - id: equipments
       #   label: component.menu.equipments.label
       #   route:

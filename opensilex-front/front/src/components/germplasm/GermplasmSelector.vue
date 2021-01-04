@@ -2,11 +2,12 @@
   <opensilex-SelectForm
     ref="selectForm"
     :label="label"
-    :selected.sync="speciesURI"
+    :selected.sync="germplasmURI"
     :multiple="multiple"
     :required="required"
     :searchMethod="loadOptions"
-    :itemLoadingMethod="loadGermplasms"    
+    :itemLoadingMethod="loadGermplasms"
+    :conversionMethod="convertGermplasmDTO"
     :placeholder="placeholder"
     @clear="$emit('clear')"
     @select="select"
@@ -21,7 +22,7 @@ import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
   OpenSilexResponse
 } from "opensilex-security/HttpResponse";
-import { SpeciesDTO } from "opensilex-core/index";
+import { SpeciesDTO, GermplasmGetSingleDTO } from "opensilex-core/index";
 
 @Component
 export default class GermplasmSelector extends Vue {
@@ -31,7 +32,7 @@ export default class GermplasmSelector extends Vue {
   service: SecurityService;
 
   @PropSync("germplasm")
-  speciesURI;
+  germplasmURI;
 
   @Prop({
     default: "GermplasmView.title"
@@ -49,43 +50,48 @@ export default class GermplasmSelector extends Vue {
   @Prop()
   multiple;
 
-  @Prop()
-  experimentURI;
-
   @Ref("selectForm") readonly selectForm!: any;
 
-  loadGermplasms(factorsURI) {
+  loadGermplasms(germplasmURIs) {
     return this.$opensilex
-      .getService("opensilex.FactorsService")
-      .getFactorsByURI(factorsURI)
+      .getService("opensilex.GermplasmService")
+      .getGermplasmsByURI(germplasmURIs)
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) =>
+        (http: HttpResponse<OpenSilexResponse<Array<GermplasmGetSingleDTO>>>) =>
           http.response.result
       )
-      .then((result: any[]) => {
-        let nodeList = [];
-        for (let factor of result) {
-          nodeList.push(this.factorToSelectNode(factor));
-        }
-        return nodeList;
-      });
   }
 
   loadOptions(query, page, pageSize) {
-
-    this.filter.name = query;
-    this.filter.uri = query;
     return this.$opensilex
-      .getService("opensilex.FactorsService")
-      .searchFactors(null, page, pageSize, this.filter)
-      .then((http) => {
-        let factorMapByCategory = this.sortFactorListByCategory(http.response.result);
-        let factorsByCategoryNode = this.transformFactorListByCategoryInNodes(
-          factorMapByCategory
-        );
-        http.response.result = factorsByCategoryNode;
-        return http;
-      });
+      .getService("opensilex.GermplasmService")
+      .searchGermplasmList(
+        undefined, //uri?: string
+        undefined, //type?: string
+        query, // name: string
+        undefined, //species?: string
+        undefined, //variety?: string
+        undefined, //accession?: string
+        undefined, //institute?: string
+        undefined, //productionYear?: number
+        undefined, //experiment?: string
+        undefined, //orderBy?: Array<string>
+        page, //page?: number
+        pageSize //pageSize?
+      )
+  }
+
+  convertGermplasmDTO(germplasm) {
+    let label = germplasm.name + " (" + germplasm.typeLabel;
+    if (germplasm.species != null) {
+      label += " - " + germplasm.speciesLabel;
+    }
+    label += ")";
+
+    return {
+      id: germplasm.uri,
+      label: label
+    }
   }
 
   select(value) {

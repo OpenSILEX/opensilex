@@ -61,8 +61,6 @@
     cursor: pointer;
 }
 
-
-
 .table-responsive a:visited.btn-outline-danger,
 .table-responsive a.btn-outline-danger {
     color: #dc3545;
@@ -229,10 +227,4 @@ table.asd__month-table td {
 
 table.b-table-selectable thead tr th:first-child {
     width: 45px;
-}
-
-@media(max-width: 1023px) {
-    .app-sidebar {
-        display: none;
-    }
 }

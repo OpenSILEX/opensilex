@@ -2,16 +2,15 @@
   <div>
     <div class="row">
       <div class="col-md-12">
-        <opensilex-SearchFilterField
-          @clear="resetSearch()"
-          @search="unselectRefresh()"
-        >
+        <opensilex-SearchFilterField @clear="resetSearch()" @search="unselectRefresh()">
           <template v-slot:filters>
             <opensilex-FilterField>
               <b-form-group>
-                <label for="name">{{
+                <label for="name">
+                  {{
                   $t("component.common.name")
-                }}</label>
+                  }}
+                </label>
                 <opensilex-StringFilter
                   id="name"
                   :filter.sync="filters.name"
@@ -22,9 +21,11 @@
 
             <opensilex-FilterField>
               <b-form-group>
-                <label for="type">{{
+                <label for="type">
+                  {{
                   $t("ExperimentScientificObjects.objectType")
-                }}</label>
+                  }}
+                </label>
                 <opensilex-ScientificObjectTypeSelector
                   id="type"
                   :types.sync="filters.types"
@@ -36,9 +37,11 @@
 
             <opensilex-FilterField>
               <b-form-group>
-                <label for="parentFilter">{{
+                <label for="parentFilter">
+                  {{
                   $t("ExperimentScientificObjects.parent-label")
-                }}</label>
+                  }}
+                </label>
                 <opensilex-SelectForm
                   id="parentFilter"
                   :selected.sync="filters.parent"
@@ -51,9 +54,11 @@
 
             <opensilex-FilterField>
               <b-form-group>
-                <label for="factorLevels">{{
+                <label for="factorLevels">
+                  {{
                   $t("FactorLevelSelector.label")
-                }}</label>
+                  }}
+                </label>
                 <opensilex-FactorLevelSelector
                   id="factorLevels"
                   :factorLevels.sync="filters.factorLevels"
@@ -79,8 +84,7 @@
               "
               @click="createScientificObject()"
               label="ExperimentScientificObjects.create-scientific-object"
-            ></opensilex-CreateButton
-            >&nbsp;
+            ></opensilex-CreateButton>&nbsp;
             <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
             <opensilex-OntologyCsvImporter
               v-if="
@@ -98,7 +102,7 @@
             <opensilex-CreateButton
               @click="exportCSV()"
               label="ExperimentScientificObjects.export-csv"
-            ></opensilex-CreateButton> -->
+            ></opensilex-CreateButton>-->
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -107,10 +111,8 @@
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
-                <opensilex-Icon
-                  :icon="$opensilex.getRDFIcon(node.data.type)"
-                /> </span
-              >&nbsp;
+                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+              </span>&nbsp;
               <span>{{ node.title }}</span>
             </template>
 
@@ -184,10 +186,7 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail
-          v-if="selected"
-          :selected="selected"
-        />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
       </div>
     </div>
   </div>
@@ -219,8 +218,8 @@ export default class ExperimentScientificObjects extends Vue {
         type: "WKT",
         comment: this.$t("ExperimentScientificObjects.geometry-comment"),
         isRequired: false,
-        isList: false,
-      },
+        isList: false
+      }
     ];
   }
 
@@ -259,7 +258,7 @@ export default class ExperimentScientificObjects extends Vue {
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      (lang) => {
+      lang => {
         this.refresh();
         if (this.selected) {
           this.displayScientificObjectDetails(this.selected.uri);
@@ -308,7 +307,7 @@ export default class ExperimentScientificObjects extends Vue {
 
     this.soService
       .getScientificObjectsChildren(this.uri, nodeURI)
-      .then((http) => {
+      .then(http => {
         let childrenNodes = [];
         for (let i in http.response.result) {
           let soDTO = http.response.result[i];
@@ -321,7 +320,7 @@ export default class ExperimentScientificObjects extends Vue {
             isExpanded: true,
             isSelected: false,
             isDraggable: false,
-            isSelectable: true,
+            isSelectable: true
           };
           childrenNodes.push(soNode);
         }
@@ -334,7 +333,7 @@ export default class ExperimentScientificObjects extends Vue {
     if (
       this.filters.name == "" &&
       this.filters.types.length == 0 &&
-      this.filters.parent == undefined && 
+      this.filters.parent == undefined &&
       this.filters.factorLevels.length == 0
     ) {
       return this.soService.getScientificObjectsChildren(
@@ -349,6 +348,8 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.name,
         this.filters.types,
         this.filters.parent,
+        undefined,
+        undefined,
         this.filters.factorLevels,
         page,
         pageSize
@@ -364,15 +365,17 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
+        undefined,
         page,
         pageSize
       )
-      .then((http) => {
+      .then(http => {
         let nodeList = [];
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")",
+            label: so.name + " (" + so.typeLabel + ")"
           });
         }
         http.response.result = nodeList;
@@ -383,12 +386,12 @@ export default class ExperimentScientificObjects extends Vue {
   getParentsByURI(soURIs) {
     return this.soService
       .getScientificObjectsListByUris(this.uri, soURIs)
-      .then((http) => {
+      .then(http => {
         let nodeList = [];
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")",
+            label: so.name + " (" + so.typeLabel + ")"
           });
         }
         return nodeList;
@@ -399,13 +402,13 @@ export default class ExperimentScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri,
+        experimentURI: this.uri
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.soService
       .getScientificObjectDetail(this.uri, node.data.uri)
-      .then((http) => {
+      .then(http => {
         let form: any = http.response.result;
 
         this.parentURI = form.parent;
@@ -418,7 +421,7 @@ export default class ExperimentScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri,
+        experimentURI: this.uri
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
@@ -441,7 +444,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetails(nodeUri: any) {
-    this.soService.getScientificObjectDetail(this.uri, nodeUri).then((http) => {
+    this.soService.getScientificObjectDetail(this.uri, nodeUri).then(http => {
       this.selected = http.response.result;
     });
   }
@@ -449,7 +452,7 @@ export default class ExperimentScientificObjects extends Vue {
   public deleteScientificObject(node: any) {
     this.soService
       .deleteScientificObject(this.uri, node.data.uri)
-      .then((http) => {
+      .then(http => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
@@ -469,7 +472,7 @@ export default class ExperimentScientificObjects extends Vue {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j],
+              value: relation.value[j]
             });
           }
         } else {
@@ -485,9 +488,9 @@ export default class ExperimentScientificObjects extends Vue {
         type: form.type,
         geometry: form.geometry,
         context: this.uri,
-        relations: definedRelations,
+        relations: definedRelations
       })
-      .then((http) => {
+      .then(http => {
         this.refresh();
       });
   }
@@ -506,7 +509,7 @@ export default class ExperimentScientificObjects extends Vue {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j],
+              value: relation.value[j]
             });
           }
         } else {
@@ -518,7 +521,7 @@ export default class ExperimentScientificObjects extends Vue {
     if (!parentSet && form.parent != null) {
       definedRelations.push({
         property: "vocabulary:isPartOf",
-        value: form.parent,
+        value: form.parent
       });
     }
 
@@ -529,9 +532,9 @@ export default class ExperimentScientificObjects extends Vue {
         type: form.type,
         geometry: form.geometry,
         context: this.uri,
-        relations: definedRelations,
+        relations: definedRelations
       })
-      .then((http) => {
+      .then(http => {
         this.refresh();
         this.displayScientificObjectDetails(form.uri);
       });
@@ -543,9 +546,9 @@ export default class ExperimentScientificObjects extends Vue {
       {
         description: {
           context: this.uri,
-          type: objectType,
+          type: objectType
         },
-        file: csvFile,
+        file: csvFile
       }
     );
   }
@@ -557,9 +560,9 @@ export default class ExperimentScientificObjects extends Vue {
         description: {
           context: this.uri,
           type: objectType,
-          validationToken: validationToken,
+          validationToken: validationToken
         },
-        file: csvFile,
+        file: csvFile
       }
     );
   }

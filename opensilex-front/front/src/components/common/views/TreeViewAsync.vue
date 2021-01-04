@@ -155,7 +155,8 @@ export default class TreeViewAsync extends Vue {
     }
 
     let count = http.response.metadata.pagination.totalCount;
-    if (count > this.nodeList.length) {
+    let isEmpty = !Array.isArray(http.response.result) || http.response.result.length == 0;
+    if (!isEmpty && count > this.nodeList.length) {
       this.nodeList.push({
         title: "Loading more",
         data: null,

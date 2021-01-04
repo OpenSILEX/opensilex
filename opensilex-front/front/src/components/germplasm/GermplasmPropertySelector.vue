@@ -1,11 +1,11 @@
 <template>
   <div>
-    <opensilex-SpeciesSelector
+    <opensilex-GermplasmSelector
       :required="property.isRequired"
-      :multiple="false"
-      :species.sync="internalValue"
+      :multiple="property.isList"
+      :germplasm.sync="internalValue"
       :experimentURI="context.experimentURI"
-    ></opensilex-SpeciesSelector>
+    ></opensilex-GermplasmSelector>
   </div>
 </template>
 

@@ -502,4 +502,13 @@ import VisuImageSingle from './visualization/VisuImageSingle.vue';
 components["opensilex-VisuImageSingle"] = VisuImageSingle;
 
 
+// ANNOTATIONS
+import AnnotationModalForm from './annotations/form/AnnotationModalForm.vue';
+components["opensilex-AnnotationModalForm"] = AnnotationModalForm;
+import AnnotationForm from './annotations/form/AnnotationForm.vue';
+components["opensilex-AnnotationForm"] = AnnotationForm;
+import AnnotationList from './annotations/list/AnnotationList.vue';
+components["opensilex-AnnotationList"] = AnnotationList;
+
+
 export default components;

@@ -254,6 +254,10 @@ export default class TableAsyncView extends Vue {
     this.tableRef.refresh();
   }
 
+  update() {
+    this.tableRef.refresh();
+  }
+
 
   onRefreshed() {
     let that = this;

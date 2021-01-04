@@ -47,7 +47,7 @@
         <module>opensilex-phis</module>        
         
         <!-- Extension modules -->
-        <module>inrae-sixtine</module>
+        <!--<module>inrae-sixtine</module>-->
             
         <!-- Development module -->
         <module>opensilex-dev-tools</module>

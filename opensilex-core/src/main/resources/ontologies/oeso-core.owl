@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
-     xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
-     xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#">
+         xml:base="http://www.opensilex.org/vocabulary/oeso"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xml="http://www.w3.org/XML/1998/namespace"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+         xmlns:terms="http://purl.org/dc/terms/"
+         xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+         xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
+         xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
         <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
@@ -26,12 +26,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Annotation properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Annotation properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -91,12 +91,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Datatypes
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -114,12 +114,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Object Properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -432,12 +432,12 @@
 
 
     <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+   ///////////////////////////////////////////////////////////////////////////////////////
+   //
+   // Data properties
+   //
+   ///////////////////////////////////////////////////////////////////////////////////////
+    -->
 
     
 
@@ -507,8 +507,14 @@
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasCreationDate -->
 
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasCreationDate"/>
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasDestructionDate -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDestructionDate"/>
+    
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding"/>
@@ -634,7 +640,7 @@
     // Classes
     //
     ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+    -->
 
     
 
@@ -996,6 +1002,12 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>        
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
@@ -1013,6 +1025,20 @@
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasCreationDate"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDestructionDate"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -1269,7 +1295,7 @@
     // Individuals
     //
     ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+    -->
 
 
 
@@ -1670,7 +1696,7 @@
     // Annotations
     //
     ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+    -->
 
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/">
         <terms:publisher rdf:resource="http://purl.org/dc/aboutdcmi#DCMI"/>
@@ -1842,6 +1868,14 @@
         <rdfs:label xml:lang="en">Name</rdfs:label>
         <rdfs:label xml:lang="fr">Nom</rdfs:label>
     </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasCreationDate">
+        <rdfs:label xml:lang="en">Creation date</rdfs:label>
+        <rdfs:label xml:lang="fr">Date de création</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDestructionDate">
+        <rdfs:label xml:lang="en">Destruction date</rdfs:label>
+        <rdfs:label xml:lang="fr">Date de destruction</rdfs:label>
+    </rdf:Description>        
 </rdf:RDF>
 
 

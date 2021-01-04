@@ -216,10 +216,6 @@
             return tableFields;
         }
 
-        editAnnotation(annotation) {
-            // this.create.showEditForm(annotation);
-        }
-
         deleteAnnotation(uri: string) {
             this.$service.deleteAnnotation(uri).then(() => {
                 this.$nextTick(() => {

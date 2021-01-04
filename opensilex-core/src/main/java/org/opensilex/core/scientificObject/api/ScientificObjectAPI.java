@@ -72,6 +72,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -87,8 +88,9 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
+import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
@@ -178,11 +180,21 @@ public class ScientificObjectAPI {
 
         SelectBuilder select = new SelectBuilder();
 
-        Node context = SPARQLDeserializers.nodeURI(contextURI);
+        if (contextURI != null) {
+            validateContextAccess(contextURI);
+            Node context = SPARQLDeserializers.nodeURI(contextURI);
+            select.addGraph(context, "?uri", RDF.type, "?type");
+        } else if (!currentUser.isAdmin()) {
+            ExperimentDAO xpDO = new ExperimentDAO(sparql);
+            Set<URI> graphFilterURIs = xpDO.getUserExperiments(currentUser);
+            InfrastructureDAO infraDO = new InfrastructureDAO(sparql);
+            graphFilterURIs.addAll(infraDO.getUserInfrastructures(currentUser));
+            select.addGraph("?g", "?uri", RDF.type, "?type");
+            select.addFilter(SPARQLQueryHelper.inURIFilter("?g", graphFilterURIs));
+        }
 
         select.addVar("?type ?label");
         select.setDistinct(true);
-        select.addGraph(context, "?uri", RDF.type, "?type");
         select.addWhere("?type", Ontology.subClassAny, Oeso.ScientificObject);
         select.addWhere("?type", RDFS.label, "?label");
         select.addFilter(SPARQLQueryHelper.langFilter("label", currentUser.getLanguage()));
@@ -283,19 +295,21 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        InfrastructureDAO infraDAO = new InfrastructureDAO(sparql);
 
         List<URI> contextURIs = new ArrayList<>();
 
         if (contextURI != null) {
             if (sparql.uriExists(ExperimentModel.class, contextURI)) {
                 xpDAO.validateExperimentAccess(contextURI, currentUser);
-                contextURIs = new ArrayList<>();
                 contextURIs.add(contextURI);
             } else if (sparql.uriExists(InfrastructureModel.class, contextURI)) {
-
+                infraDAO.validateInfrastructureAccess(contextURI, currentUser);
+                contextURIs.add(contextURI);
             }
         } else if (!currentUser.isAdmin()) {
             contextURIs.addAll(xpDAO.getUserExperiments(currentUser));
+            contextURIs.addAll(infraDAO.getUserInfrastructures(currentUser));
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);

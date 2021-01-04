@@ -137,7 +137,8 @@ public class Oeso {
     public static final Resource ExperimentalObject = Ontology.resource(NS, "ExperimentalObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
     public static final Resource ScientificObjectClass = Ontology.resource(NS, "ScientificObjectClass");
-    public static final Property isScientificObjectManagedClass = Ontology.property(NS, "isScientificObjectManagedClass");
+    public static final Property hasCreationDate = Ontology.property(NS, "hasCreationDate");
+    public static final Property hasDestructionDate = Ontology.property(NS, "hasDestructionDate");
 
     // ---- AREA ----
     public static final Resource Area = Ontology.resource(NS, "Area");

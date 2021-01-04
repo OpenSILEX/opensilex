@@ -73,7 +73,9 @@ public class MongoDBService extends BaseService {
 
     @Override
     public void shutdown() {
-        mongoClient.close();
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
     }
 
     public URI getBaseURI() throws OpenSilexModuleNotFoundException {

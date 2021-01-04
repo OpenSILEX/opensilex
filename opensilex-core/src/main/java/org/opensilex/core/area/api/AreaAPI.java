@@ -83,7 +83,7 @@ public class AreaAPI {
      */
     @POST
     @Path("create")
-    @ApiOperation("Create a Area")
+    @ApiOperation("Create an Area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
@@ -92,7 +92,7 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a area", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create an area", response = ObjectUriResponse.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
@@ -134,11 +134,11 @@ public class AreaAPI {
      */
     @GET
     @Path("get/{uri}")
-    @ApiOperation("Get a area by its URI")
+    @ApiOperation("Get an area by its URI")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return profile", response = AreaGetSingleDTO.class),
+            @ApiResponse(code = 200, message = "Return area", response = AreaGetSingleDTO.class),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
     })
@@ -167,7 +167,7 @@ public class AreaAPI {
 
     @PUT
     @Path("update")
-    @ApiOperation("Update a area")
+    @ApiOperation("Update an area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
@@ -214,7 +214,7 @@ public class AreaAPI {
      */
     @DELETE
     @Path("delete/{uri}")
-    @ApiOperation("Delete a area")
+    @ApiOperation("Delete an area")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_AREA_DELETE_ID,
@@ -255,7 +255,7 @@ public class AreaAPI {
      * @throws Exception the data is non-compliant or the uri already existing
      */
     @POST
-    @Path("search-intersects")
+    @Path("searchIntersects")
     @ApiOperation("Get list of area whose geometry corresponds to the Intersections")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -281,7 +281,7 @@ public class AreaAPI {
         AreaDAO dao = new AreaDAO(sparql);
         List<AreaModel> areaModels = dao.searchByURIs(areasURI, currentUser);
 
-        List<AreaGetSingleDTO> dtoList = areaModels.stream().map((model) -> AreaGetSingleDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
+        List<AreaGetSingleDTO> dtoList = areaModels.stream().map((model) -> AreaGetSingleDTO.fromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

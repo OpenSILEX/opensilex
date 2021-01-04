@@ -67,29 +67,16 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
      */
     @NotNull
     public static AreaGetSingleDTO fromModel(@NotNull AreaModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
-        AreaGetSingleDTO dto = new AreaGetSingleDTO();
-
-        dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setType(model.getType());
-        dto.setAuthor(model.getAuthor());
+        AreaGetSingleDTO dto = dtoWithoutGemetry(model);
 
         if (geometryByURI.getGeometry() != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }
 
-        if (model.getDescription() != null) {
-            dto.setDescription(model.getDescription());
-        }
-
         return dto;
     }
 
-    public static AreaGetSingleDTO getDTOFromModel(AreaModel model) {
-        return fromModel(model);
-    }
-
-    private static AreaGetSingleDTO fromModel(AreaModel model) {
+    private static AreaGetSingleDTO dtoWithoutGemetry(AreaModel model) {
         AreaGetSingleDTO dto = new AreaGetSingleDTO();
 
         dto.setUri(model.getUri());
@@ -100,12 +87,12 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         if (model.getDescription() != null) {
             dto.setDescription(model.getDescription());
         }
-
         return dto;
     }
 
-    public static AreaGetSingleDTO getDTOFromModel(AreaModel model, Geometry geometryByURI) {
-        AreaGetSingleDTO dto = getDTOFromModel(model);
+    public static AreaGetSingleDTO fromModel(AreaModel model, Geometry geometryByURI) {
+        AreaGetSingleDTO dto = dtoWithoutGemetry(model);
+
         if (geometryByURI != null) {
             try {
                 dto.setGeometry(geometryToGeoJson(geometryByURI));

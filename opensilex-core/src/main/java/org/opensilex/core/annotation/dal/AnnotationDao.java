@@ -134,7 +134,7 @@ public class AnnotationDao {
                                                       Integer pageSize) throws Exception {
 
 
-        // use a specific ordering for motivation : use the motivation name intead of the motivation URI which is used by default
+        // use a specific ordering for motivation : use the motivation name instead of the motivation URI which is used by default
 
         List<OrderBy> defaultOrderByList = new LinkedList<>();
         Map<Expr, Order> specificOrderMap = new HashMap<>();
@@ -155,9 +155,13 @@ public class AnnotationDao {
                 AnnotationModel.class,
                 lang,
                 selectBuilder -> {
-                    // get element group specific to the annotation graph
+
+                    // Get element group specific to the annotation graph
+                    // this is needed in order to handle filtering on multi-valued attribute 'targets', because all filtering must be applied into the same clause
+                    // Initially this attribute is not present into the SelectBuilder (the sparql service don't fetch multi-valued property during the search call)
+
                     ElementGroup rootElementGroup = selectBuilder.getWhereHandler().getClause();
-                    ElementGroup annotationGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,annotationGraph);
+                    ElementGroup annotationGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,annotationGraph);
 
                     appendTargetFilter(annotationGraphGroupElem, target);
                     appendBodyValueFilter(annotationGraphGroupElem, bodyValuePattern);

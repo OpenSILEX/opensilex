@@ -26,23 +26,32 @@ import java.util.List;
  * @author Renaud COLIN
  */
 @ApiModel
-public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
+public class AnnotationCreationDTO {
 
+    protected URI uri;
     protected String bodyValue;
     protected List<URI> targets;
     protected URI motivation;
     protected URI creator;
 
-    @ValidURI
-    @Override
+
+    @ApiModelProperty(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     @ApiModelProperty(required = true, example = "The pest attack lasted 20 minutes")
     @Required
     public String getBodyValue() {
         return bodyValue;
+    }
+
+    public void setBodyValue(String bodyValue) {
+        this.bodyValue = bodyValue;
     }
 
     @NotEmpty
@@ -52,29 +61,16 @@ public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
         return targets;
     }
 
+    public void setTargets(List<URI> targets) {
+        this.targets = targets;
+    }
+
+
     @NotNull
     @ValidURI
     @ApiModelProperty(required = true)
     public URI getMotivation() {
         return motivation;
-    }
-
-    @ApiModelProperty(hidden = true)
-    public void setCreator(URI creator) {
-        this.creator = creator;
-    }
-
-    @Override
-    public AnnotationModel newModelInstance() {
-        return new AnnotationModel();
-    }
-
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
-    }
-
-    public void setTargets(List<URI> targets) {
-        this.targets = targets;
     }
 
     public void setMotivation(URI motivation) {
@@ -85,18 +81,25 @@ public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
         return creator;
     }
 
+    @ApiModelProperty(hidden = true)
+    public void setCreator(URI creator) {
+        this.creator = creator;
+    }
 
-    @Override
-    public void toModel(AnnotationModel model) {
-        super.toModel(model);
+
+    public AnnotationModel newModel() {
+
+        AnnotationModel model = new AnnotationModel();
+
+        model.setUri(uri);
         model.setBodyValue(bodyValue);
         model.setCreated(LocalDate.now());
         model.setTargets(targets);
 
-        if (motivation != null) {
-            MotivationModel motivationModel = new MotivationModel();
-            motivationModel.setUri(motivation);
-            model.setMotivation(motivationModel);
-        }
+        MotivationModel motivationModel = new MotivationModel();
+        motivationModel.setUri(motivation);
+        model.setMotivation(motivationModel);
+
+        return model;
     }
 }

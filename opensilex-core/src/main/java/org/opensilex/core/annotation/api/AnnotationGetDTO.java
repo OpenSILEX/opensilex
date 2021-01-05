@@ -21,45 +21,37 @@ import java.util.List;
  * @author Renaud COLIN
  */
 @ApiModel
-public class AnnotationGetDTO extends ResourceDTO<AnnotationModel> {
+public class AnnotationGetDTO {
 
+    protected URI uri;
     protected String bodyValue;
     protected List<URI> targets;
-    protected URI motivation;
-    protected String motivationName;
+    protected MotivationGetDTO motivation;
     protected URI creator;
     protected LocalDate created;
 
+    public AnnotationGetDTO() {
+    }
+
+    public AnnotationGetDTO(AnnotationModel model) {
+        uri = model.getUri();
+
+        bodyValue = model.getBodyValue();
+        targets = model.getTargets();
+        created = model.getCreated();
+        creator = model.getCreator();
+
+        MotivationModel motivationModel = model.getMotivation();
+        motivation = new MotivationGetDTO(motivationModel);
+    }
+
     @ApiModelProperty(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
-    @Override
     public URI getUri() {
         return uri;
     }
 
-    @ApiModelProperty(hidden = true)
-    @Override
-    public URI getType() {
-        return type;
-    }
-
-    // don't allow to set a specific annotation type
-    @ApiModelProperty(hidden = true)
-    @Override
-    public void setType(URI type) {
-
-    }
-
-    @Override
-    @ApiModelProperty(hidden = true)
-    public String getTypeLabel() {
-        return super.getTypeLabel();
-    }
-
-    // don't allow to set a specific type label
-    @Override
-    @ApiModelProperty(hidden = true)
-    public void setTypeLabel(String typeLabel) {
-
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     @ApiModelProperty(value = "Content of the annotation", example = "The pest attack lasted 20 minutes")
@@ -99,43 +91,12 @@ public class AnnotationGetDTO extends ResourceDTO<AnnotationModel> {
         this.creator = creator;
     }
 
-    @ApiModelProperty(value = "URI of the annotation motivation", example = "http://www.w3.org/ns/oa#describing")
-    public URI getMotivation() {
+
+    public MotivationGetDTO getMotivation() {
         return motivation;
     }
 
-    public void setMotivation(URI motivation) {
+    public void setMotivation(MotivationGetDTO motivation) {
         this.motivation = motivation;
     }
-
-    @ApiModelProperty(value = "Name of the annotation motivation", example = "describing")
-    public String getMotivationName() {
-        return motivationName;
-    }
-
-    public void setMotivationName(String motivationName) {
-        this.motivationName = motivationName;
-    }
-
-    @Override
-    public AnnotationModel newModelInstance() {
-        return new AnnotationModel();
-    }
-
-
-    @Override
-    public void fromModel(AnnotationModel model) {
-
-        super.fromModel(model);
-        
-        bodyValue = model.getBodyValue();
-        targets = model.getTargets();
-        created = model.getCreated();
-        creator = model.getCreator();
-
-        MotivationModel motivationModel = model.getMotivation();
-        motivation = motivationModel.getUri();
-        motivationName = motivationModel.getName();
-    }
-
 }

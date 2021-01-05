@@ -49,7 +49,7 @@
             </template>
 
             <template v-slot:cell(motivation)="{data}">
-                {{ data.item.motivationName}}
+                {{ data.item.motivation.name}}
             </template>
 
             <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">

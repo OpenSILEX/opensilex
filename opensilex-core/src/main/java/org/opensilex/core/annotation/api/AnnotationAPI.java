@@ -162,8 +162,7 @@ public class AnnotationAPI {
             throw new NotFoundURIException(uri);
         }
 
-        AnnotationGetDTO dto = new AnnotationGetDTO();
-        dto.fromModel(model);
+        AnnotationGetDTO dto = new AnnotationGetDTO(model);
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
@@ -176,7 +175,7 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return motivation list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return motivation list", response = MotivationGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -197,7 +196,11 @@ public class AnnotationAPI {
                 pageSize
         );
 
-        return new NamedResourcePaginatedListResponse<>(resultList).getResponse();
+        ListWithPagination<MotivationGetDTO> resultDTOList = resultList.convert(
+                MotivationGetDTO.class,
+                MotivationGetDTO::new
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     @GET
@@ -238,11 +241,7 @@ public class AnnotationAPI {
 
         ListWithPagination<AnnotationGetDTO> resultDTOList = resultList.convert(
                 AnnotationGetDTO.class,
-                model -> {
-                    AnnotationGetDTO dto = new AnnotationGetDTO();
-                    dto.fromModel(model);
-                    return dto;
-                }
+                AnnotationGetDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
 

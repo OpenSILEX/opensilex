@@ -86,35 +86,3 @@ export default class AnnotationModalForm extends Vue {
 }
 
 </script>
-
-<style scoped lang="scss">
-</style>
-
-<i18n>
-en:
-    Annotation:
-        name: The annotation
-        add: Add annotation
-        edit: Edit annotation
-        motivation: Motivation
-        motivation-placeholder: Select a motivation
-        motivation-help: Intent or motivation for the creation of the Annotation.
-        body-value: Description
-        creator: Creator
-        created: Created
-        target: Target
-        list-title: Annotations
-fr:
-    Annotation:
-        name: L'annotation
-        add: Ajouter une annotation
-        edit: Éditer une annotation
-        motivation: Motivation
-        motivation-placeholder: Selectionnez une motivation
-        motivation-help: "Intention ou motivation guidant la création de l'annotation"
-        body-value: Description
-        created: Créée le
-        creator: Créateur
-        target: Cible
-        list-title: Annotations
-</i18n>

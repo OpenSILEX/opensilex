@@ -73,13 +73,13 @@
                     <opensilex-EditButton
                             v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
                             @click="$emit('onEdit', data.item)"
-                            label="AnnotationForm.edit"
+                            label="Annotation.edit"
                             :small="true"
                     ></opensilex-EditButton>
                     <opensilex-DeleteButton
                             v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
                             @click="deleteAnnotation(data.item.uri)"
-                            label="AnnotationForm.delete"
+                            label="Annotation.delete"
                             :small="true"
                     ></opensilex-DeleteButton>
                 </b-button-group>
@@ -229,5 +229,33 @@
 </script>
 
 
-<style scoped lang="scss">
-</style>
+<i18n>
+en:
+    Annotation:
+        name: The annotation
+        add: Add annotation
+        edit: Edit annotation
+        delete: Delete annotation
+        motivation: Motivation
+        motivation-placeholder: Select a motivation
+        motivation-help: Intent or motivation for the creation of the Annotation.
+        body-value: Description
+        creator: Creator
+        created: Created
+        target: Target
+        list-title: Annotations
+fr:
+    Annotation:
+        name: L'annotation
+        add: Ajouter une annotation
+        edit: Éditer l'annotation
+        delete: Supprimer l'annotation
+        motivation: Motivation
+        motivation-placeholder: Selectionnez une motivation
+        motivation-help: "Intention ou motivation guidant la création de l'annotation"
+        body-value: Description
+        created: Créée le
+        creator: Créateur
+        target: Cible
+        list-title: Annotations
+</i18n>

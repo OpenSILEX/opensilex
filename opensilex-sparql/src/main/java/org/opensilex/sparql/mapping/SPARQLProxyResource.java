@@ -30,14 +30,21 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
     @Override
     protected T loadData() throws Exception {
         T data = null;
-        try {
-            data = service.loadByURI(type, uri, lang);
-        } catch (SPARQLMultipleObjectException ex) {
-        }
-        if (data == null) {
+        if (graph != null) {
             data = service.loadByURI(graph, type, uri, lang);
+            if (data == null) {
+                try {
+                    data = service.loadByURI(type, uri, lang);
+                } catch (SPARQLMultipleObjectException ex) {
+                }
+            }
+        } else {
+            data = service.loadByURI(type, uri, lang);
         }
 
+//        if (data == null) {
+//            data = service.loadByURI(graph, type, uri, lang);
+//        }
         return data;
     }
 

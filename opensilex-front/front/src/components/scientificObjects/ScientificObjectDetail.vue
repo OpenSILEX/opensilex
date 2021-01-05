@@ -15,7 +15,11 @@
       <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
 
       <!-- Type -->
-      <opensilex-GeometryView v-if="selected.geometry" label="component.common.geometry" :value="selected.geometry"></opensilex-GeometryView>
+      <opensilex-GeometryView
+        v-if="selected.geometry"
+        label="component.common.geometry"
+        :value="selected.geometry"
+      ></opensilex-GeometryView>
 
       <div v-for="(v, index) in typeProperties" v-bind:key="index">
         <div class="static-field">
@@ -82,7 +86,10 @@ export default class ScientificObjectDetail extends Vue {
 
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(this.selected.type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
+      .getClassProperties(
+        this.selected.type,
+        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+      )
       .then(http => {
         let classModel: any = http.response.result;
 

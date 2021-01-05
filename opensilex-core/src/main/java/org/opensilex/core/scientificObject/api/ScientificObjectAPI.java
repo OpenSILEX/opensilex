@@ -8,7 +8,6 @@ package org.opensilex.core.scientificObject.api;
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -170,6 +169,7 @@ public class ScientificObjectAPI {
     public Response getUsedTypes(
             @ApiParam(value = "Context URI", example = "http://example.com/") @QueryParam("contextURI") @ValidURI URI contextURI
     ) throws Exception {
+
         validateContextAccess(contextURI);
 
         SelectBuilder select = new SelectBuilder();
@@ -338,7 +338,7 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        ExperimentalObjectModel model = dao.geObjectByURI(objectURI, contextURI, currentUser);
+        ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
 
         Response response;
@@ -349,6 +349,48 @@ public class ScientificObjectAPI {
         }
 
         return response;
+    }
+
+    @GET
+    @Path("get-detail-by-context/{objURI}")
+    @ApiOperation("Get scientific object detail, for all existing context, global, experiment, ...")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given context and object URI", response = ScientificObjectDetailByContextDTO.class)
+    })
+    public Response getScientificObjectDetailByContext(
+            @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
+            @PathParam("objURI") URI objectURI
+    ) throws Exception {
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
+        List<URI> contexts = dao.getObjectContexts(objectURI);
+
+        List<ScientificObjectDetailByContextDTO> dtoList = new ArrayList<>();
+        for (URI contextURI : contexts) {
+            ScientificObjectContextModel context = getContext(contextURI);
+
+            if (context != null) {
+                ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
+                GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
+                if (model != null) {
+                    ScientificObjectDetailByContextDTO dto = ScientificObjectDetailByContextDTO.getDTOFromModel(model, context, geometryByURI);
+                    dtoList.add(dto);
+                }
+            }
+        }
+
+        if (dtoList.size() == 0) {
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Scientific object not found",
+                    "Unknown scientific object URI: " + objectURI.toString()).getResponse();
+        } else {
+            return new PaginatedListResponse<>(dtoList).getResponse();
+        }
     }
 
     @POST
@@ -372,7 +414,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         URI contextURI = descriptionDto.getContext();
-        validateContextAccess(descriptionDto.getContext());
+        validateContextAccess(contextURI);
 
         URI soType = descriptionDto.getType();
 
@@ -810,9 +852,44 @@ public class ScientificObjectAPI {
 
             xpDAO.validateExperimentAccess(contextURI, currentUser);
         } else if (sparql.uriExists(InfrastructureModel.class, contextURI)) {
+            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql);
 
+            infraDAO.validateInfrastructureAccess(contextURI, currentUser);
         }
+    }
 
+    private ScientificObjectContextModel getContext(URI contextURI) throws Exception {
+        if (sparql.uriExists(ExperimentModel.class, contextURI)) {
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+
+            try {
+                ExperimentModel xp = xpDAO.get(contextURI, currentUser);
+                ScientificObjectContextModel context = new ScientificObjectContextModel();
+                context.setContext(xp.getUri());
+                context.setContextLabel(xp.getLabel());
+                context.setContextType(xp.getType());
+                context.setContextTypeLabel(xp.getTypeLabel().getDefaultValue());
+                return context;
+            } catch (Exception ex) {
+                return null;
+            }
+        } else if (sparql.uriExists(InfrastructureModel.class, contextURI)) {
+            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql);
+
+            try {
+                InfrastructureModel infra = infraDAO.get(contextURI, currentUser);
+                ScientificObjectContextModel context = new ScientificObjectContextModel();
+                context.setContext(infra.getUri());
+                context.setContextLabel(infra.getName());
+                context.setContextType(infra.getType());
+                context.setContextTypeLabel(infra.getTypeLabel().getDefaultValue());
+                return context;
+            } catch (Exception ex) {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     private static String generateCSVValidationToken(URI experiementURI) throws NoSuchAlgorithmException, IOException {

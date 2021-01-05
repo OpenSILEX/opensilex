@@ -387,6 +387,8 @@ import ScientificObjectTypes from './scientificObjects/ScientificObjectTypes.vue
 components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
 import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTypeSelector.vue';
 components["opensilex-ScientificObjectTypeSelector"] = ScientificObjectTypeSelector;
+import ScientificObjectDetailView from './scientificObjects/ScientificObjectDetailView.vue';
+components["opensilex-ScientificObjectDetailView"] = ScientificObjectDetailView;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

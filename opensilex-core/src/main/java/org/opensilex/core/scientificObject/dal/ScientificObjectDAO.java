@@ -18,6 +18,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_OneOrMore1;
 import org.apache.jena.sparql.path.Path;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -25,14 +26,17 @@ import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.ThrowingConsumer;
 
 /**
  *
@@ -63,10 +67,15 @@ public class ScientificObjectDAO {
                 currentUser.getLanguage(),
                 (select) -> {
                     if (parentURI != null) {
-                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                        select.addGraph(SPARQLDeserializers.nodeURI(contextURI), makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
                     } else {
-                        Triple parentTriple = new Triple(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf.asNode(), makeVar("parentURI"));
-                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(parentTriple)));
+                        WhereBuilder whereFilter = new WhereBuilder().addGraph(
+                                SPARQLDeserializers.nodeURI(contextURI),
+                                makeVar(ScientificObjectModel.URI_FIELD),
+                                Oeso.isPartOf.asNode(),
+                                makeVar("parentURI")
+                        );
+                        select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(whereFilter));
                     }
                 },
                 null,
@@ -224,8 +233,27 @@ public class ScientificObjectDAO {
         return object;
     }
 
-    public ExperimentalObjectModel geObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
+    public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
         return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
+    }
+    
+    public List<URI> getObjectContexts(URI objectURI) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        Node uri = SPARQLDeserializers.nodeURI(objectURI);
+        Var graphVar = makeVar("graph");
+        Var typeVar = makeVar("type");
+        select.setDistinct(true);
+        select.addVar(graphVar);
+        select.addGraph(graphVar, uri, RDF.type, typeVar);
+        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
+        
+        List<URI> resultList = new ArrayList<>();
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
+            resultList.add(uriDeserializer.fromString((result.getStringValue("graph"))));
+        }, Exception.class));        
+        
+        return resultList;
     }
 
     public void delete(URI xpURI, URI objectURI, UserModel currentUser) throws Exception {

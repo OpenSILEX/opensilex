@@ -207,6 +207,10 @@ routes:
   - path: /devices/create
     component: opensilex-DeviceCreate
     credentials: [device-modification]
+    
+  - path: /scientific-objects/details/:uri
+    component: opensilex-ScientificObjectDetailView
+    credentials: []
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

@@ -94,7 +94,7 @@ public class ExperimentDAO {
 
     public ExperimentModel get(URI xpUri, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
-        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, null);
+        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
         return xp;
     }
 

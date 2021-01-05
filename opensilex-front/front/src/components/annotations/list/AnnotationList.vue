@@ -123,8 +123,12 @@
         @Prop({default: true})
         displayTargetColumn: boolean;
 
-        @Prop({default: new Set(["uri","motivation","bodyValue","creator","created"])})
+        @Prop({default: AnnotationList.getDefaultColumns})
         columnsToDisplay: Set<string>;
+
+        static getDefaultColumns(){
+            return new Set(["uri","motivation","bodyValue","creator","created"]);
+        }
 
         get user() {
             return this.$store.state.user;

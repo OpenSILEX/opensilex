@@ -133,7 +133,7 @@ menu:
           credentials:
             - is-admin
 routes:
-  -
+
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
   - path: /experiment/scientific-objects/:uri
@@ -153,7 +153,7 @@ routes:
     component: opensilex-InfrastructureFacilitiesTypes
     credentials:
       - is-admin
-      -
+
   - path: /variable/details/:uri
     component: opensilex-VariableView
     credentials: []
@@ -175,7 +175,6 @@ routes:
     credentials: []
   - path: /germplasm/annotations/:uri
     component: opensilex-GermplasmDetails
-
 
   - path: /factor/create
     component: opensilex-FactorForm

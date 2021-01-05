@@ -12,18 +12,41 @@
                         class="ml-3"
                         :active="isDetailsTab()"
                         :to="{ path: '/factor/details/' + encodeURIComponent(uri) }"
-                >{{ $t("component.common.details-label") }}</b-nav-item
+                >{{ $t("component.common.details-label") }}
+                </b-nav-item
                 >
                 <b-nav-item
                         :active="isExperimentTab()"
                         :to="{ path: '/factor/experiments/' + encodeURIComponent(uri) }"
-                >{{ $t("component.common.details.experiment") }}</b-nav-item
+                >{{ $t("component.common.details.experiment") }}
+                </b-nav-item
                 >
+
+                <b-nav-item
+                        class="ml-3"
+                        :active="isAnnotationTab()"
+                        :to="{ path: '/factor/annotations/' + encodeURIComponent(uri) }"
+                >{{ $t("Annotation.list-title") }}
+                </b-nav-item>
                 <!-- <b-nav-item
                   :active="false"
                   :disabled="true"
                   :to="{path: '/factor/document/' + encodeURIComponent(uri)}"
                 >{{ $t('component.common.details.document') }}</b-nav-item> -->
+
+                <opensilex-Button
+                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+                        label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
+                        @click="annotationModalForm.showCreateForm()"
+                ></opensilex-Button>
+
+                <opensilex-AnnotationModalForm
+                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+                        ref="annotationModalForm"
+                        :target="uri"
+                        @onCreate="updateAnnotations"
+                        @onUpdate="updateAnnotations"
+                ></opensilex-AnnotationModalForm>
             </template>
         </opensilex-PageActions>
         <opensilex-PageContent>
@@ -39,6 +62,18 @@
                         v-else-if="isExperimentTab()"
                         :uri="uri"
                 ></opensilex-AssociatedExperiments>
+
+                <opensilex-AnnotationList
+                        v-else-if="isAnnotationTab()"
+                        ref="annotationList"
+                        :target="uri"
+                        :displayTargetColumn="false"
+                        :enableActions="true"
+                        :modificationCredentialId="credentials.CREDENTIAL_FACTOR_MODIFICATION_ID"
+                        :deleteCredentialId="credentials.CREDENTIAL_FACTOR_DELETE_ID"
+                        @onEdit="annotationModalForm.showEditForm($event)"
+                ></opensilex-AnnotationList>
+
             </template>
         </opensilex-PageContent>
     </div>
@@ -47,13 +82,14 @@
 <script lang="ts">
     import { Component, Ref } from "vue-property-decorator";
     import Vue from "vue";
-    import VueRouter from "vue-router";
     import {
         FactorDetailsGetDTO,
         FactorUpdateDTO,
         FactorsService,
     } from "opensilex-core/index";
     import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
 
     @Component
     export default class FactorView extends Vue {
@@ -77,6 +113,10 @@
             narrower: [],
             factorLevels: [],
         };
+
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
+        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+
 
         get user() {
             return this.$store.state.user;
@@ -164,6 +204,17 @@
         isExperimentTab() {
             return this.$route.path.startsWith("/factor/experiments/");
         }
+
+        isAnnotationTab() {
+            return this.$route.path.startsWith("/factor/annotations/");
+        }
+
+        updateAnnotations() {
+            this.$nextTick(() => {
+                this.annotationList.refresh();
+            });
+        }
+
     }
 </script>
 

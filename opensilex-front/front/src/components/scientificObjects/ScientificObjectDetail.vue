@@ -14,33 +14,38 @@
         <!--      </h3>-->
         <!--    </template>-->
         <div v-if="loadDetails()">
-            <!-- URI -->
-            <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
-            <!-- Name -->
-            <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
-            <!-- Type -->
-            <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
+      <!-- URI -->
+ <!-- URI -->
+      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+      <!-- Name -->
+      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
+      <!-- Type -->
+      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
 
-            <!-- Type -->
-            <opensilex-GeometryView v-if="selected.geometry" label="component.common.geometry" :value="selected.geometry"></opensilex-GeometryView>
+      <!-- Type -->
+      <opensilex-GeometryView
+        v-if="selected.geometry"
+        label="component.common.geometry"
+        :value="selected.geometry"
+      ></opensilex-GeometryView>
 
-            <div v-for="(v, index) in typeProperties" v-bind:key="index">
-                <div class="static-field">
-                    <span class="field-view-title">{{v.definition.name}}:</span>
-                    <component
-                            v-if="!v.definition.isList"
-                            :is="v.definition.viewComponent"
-                            :value="v.property"
-                    ></component>
-                    <ul v-else>
-                        <br />
-                        <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-                            <component :is="v.definition.viewComponent" :value="prop"></component>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+      <div v-for="(v, index) in typeProperties" v-bind:key="index">
+        <div class="static-field">
+          <span class="field-view-title">{{v.definition.name}}:</span>
+          <component
+            v-if="!v.definition.isList"
+            :is="v.definition.viewComponent"
+            :value="v.property"
+          ></component>
+          <ul v-else>
+            <br />
+            <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
+              <component :is="v.definition.viewComponent" :value="prop"></component>
+            </li>
+          </ul>
         </div>
+            </div>
+     
 
         <opensilex-AnnotationList
                 v-if="isAnnotationTab()"
@@ -63,139 +68,142 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop, Ref, Watch } from "vue-property-decorator";
-    import Vue from "vue";
-    import AnnotationList from "../annotations/list/AnnotationList.vue";
-    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import Vue from "vue";
+import AnnotationList from "../annotations/list/AnnotationList.vue";
+import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 
-    @Component
-    export default class ScientificObjectDetail extends Vue {
-        $opensilex: any;
+@Component
+export default class ScientificObjectDetail extends Vue {
+  $opensilex: any;
 
-        @Prop()
-        selected;
+  @Prop()
+  selected;
 
-        typeProperties = [];
+  typeProperties = [];
 
-        static DETAILS_TAB = "Details";
-        static DOCUMENTS_TAB = "Documents";
-        static ANNOTATIONS_TAB = "Annotations";
-        static EVENTS_TAB = "Events";
+  static DETAILS_TAB = "Details";
+  static DOCUMENTS_TAB = "Documents";
+  static ANNOTATIONS_TAB = "Annotations";
+  static EVENTS_TAB = "Events";
 
-        static tabsValues = [
-            ScientificObjectDetail.DETAILS_TAB,
-            ScientificObjectDetail.DOCUMENTS_TAB,
-            ScientificObjectDetail.ANNOTATIONS_TAB,
-            ScientificObjectDetail.EVENTS_TAB
-        ];
+  static tabsValues = [
+    ScientificObjectDetail.DETAILS_TAB,
+    ScientificObjectDetail.DOCUMENTS_TAB,
+    ScientificObjectDetail.ANNOTATIONS_TAB,
+    ScientificObjectDetail.EVENTS_TAB,
+  ];
 
-        tabsIndex: number = 0;
-        tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
+  tabsIndex: number = 0;
+  tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
 
-        @Ref("annotationList") readonly annotationList!: AnnotationList;
+  @Ref("annotationList") readonly annotationList!: AnnotationList;
+  @Ref("annotationModalForm")
+  readonly annotationModalForm!: AnnotationModalForm;
 
-        mounted() {
-            if (this.selected) {
-                this.onSelectionChange();
-            }
-        }
-
-        get user() {
-            return this.$store.state.user;
-        }
-
-        get credentials() {
-            return this.$store.state.credentials;
-        }
-
-
-        @Watch("selected")
-        onSelectionChange() {
-            this.typeProperties = [];
-
-            let valueByProperties = {};
-
-            for (let i in this.selected.relations) {
-                let relation = this.selected.relations[i];
-                if (
-                    valueByProperties[relation.property] &&
-                    !Array.isArray(valueByProperties[relation.property])
-                ) {
-                    valueByProperties[relation.property] = [
-                        valueByProperties[relation.property]
-                    ];
-                }
-
-                if (Array.isArray(valueByProperties[relation.property])) {
-                    valueByProperties[relation.property].push(relation.value);
-                } else {
-                    valueByProperties[relation.property] = relation.value;
-                }
-            }
-
-            return this.$opensilex
-                .getService("opensilex.VueJsOntologyExtensionService")
-                .getClassProperties(this.selected.type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
-                .then(http => {
-                    let classModel: any = http.response.result;
-
-                    this.loadProperties(classModel.dataProperties, valueByProperties);
-                    this.loadProperties(classModel.objectProperties, valueByProperties);
-                });
-        }
-
-        loadProperties(properties, valueByProperties) {
-            for (let i in properties) {
-                let property = properties[i];
-                if (valueByProperties[property.property]) {
-                    if (
-                        property.isList &&
-                        !Array.isArray(valueByProperties[property.property])
-                    ) {
-                        this.typeProperties.push({
-                            definition: property,
-                            property: [valueByProperties[property.property]]
-                        });
-                    } else {
-                        this.typeProperties.push({
-                            definition: property,
-                            property: valueByProperties[property.property]
-                        });
-                    }
-                } else if (property.isList) {
-                    this.typeProperties.push({
-                        definition: property,
-                        property: []
-                    });
-                }
-            }
-        }
-
-        private loadDetails() : boolean {
-            return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
-        }
-
-        private isAnnotationTab() : boolean {
-            return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
-        }
-
-        private loadEvents() : boolean {
-            return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
-        }
-
-        private updateTabs(tabIndex) {
-
-            if(tabIndex >= 0 && tabIndex < ScientificObjectDetail.tabsValues.length){
-                this.tabsIndex = tabIndex;
-                this.tabsValue = ScientificObjectDetail.tabsValues[tabIndex];
-            }
-        }
-
-        private isDocumentTab() : boolean {
-            return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
-        }
-
+  mounted() {
+    if (this.selected) {
+      this.onSelectionChange();
     }
+  }
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  @Watch("selected")
+  onSelectionChange() {
+    this.typeProperties = [];
+
+    let valueByProperties = {};
+
+    for (let i in this.selected.relations) {
+      let relation = this.selected.relations[i];
+      if (
+        valueByProperties[relation.property] &&
+        !Array.isArray(valueByProperties[relation.property])
+      ) {
+        valueByProperties[relation.property] = [
+          valueByProperties[relation.property],
+        ];
+      }
+
+      if (Array.isArray(valueByProperties[relation.property])) {
+        valueByProperties[relation.property].push(relation.value);
+      } else {
+        valueByProperties[relation.property] = relation.value;
+      }
+    }
+
+    return this.$opensilex
+      .getService("opensilex.VueJsOntologyExtensionService")
+      .getClassProperties(
+        this.selected.type,
+        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+      )
+      .then((http) => {
+        let classModel: any = http.response.result;
+
+        this.loadProperties(classModel.dataProperties, valueByProperties);
+        this.loadProperties(classModel.objectProperties, valueByProperties);
+      });
+  }
+
+  loadProperties(properties, valueByProperties) {
+    for (let i in properties) {
+      let property = properties[i];
+      if (valueByProperties[property.property]) {
+        if (
+          property.isList &&
+          !Array.isArray(valueByProperties[property.property])
+        ) {
+          this.typeProperties.push({
+            definition: property,
+            property: [valueByProperties[property.property]],
+          });
+        } else {
+          this.typeProperties.push({
+            definition: property,
+            property: valueByProperties[property.property],
+          });
+        }
+      }
+    }
+  }
+
+  private loadDetails(): boolean {
+    return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
+  }
+
+  private isAnnotationTab(): boolean {
+    return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
+  }
+
+  private loadEvents(): boolean {
+    return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
+  }
+
+  private isDocumentTab(): boolean {
+    return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
+  }
+
+  private updateTabs(tabIndex) {
+    if (tabIndex >= 0 && tabIndex < ScientificObjectDetail.tabsValues.length) {
+      this.tabsIndex = tabIndex;
+      this.tabsValue = ScientificObjectDetail.tabsValues[tabIndex];
+    }
+  }
+
+  updateAnnotations() {
+    this.$nextTick(() => {
+      this.annotationList.refresh();
+    });
+  }
+}
 </script>
 
 <style scoped lang="scss">

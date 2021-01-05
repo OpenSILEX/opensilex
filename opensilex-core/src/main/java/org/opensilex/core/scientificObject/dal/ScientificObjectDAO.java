@@ -283,6 +283,25 @@ public class ScientificObjectDAO {
     public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
         return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
     }
+    
+    public List<URI> getObjectContexts(URI objectURI) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        Node uri = SPARQLDeserializers.nodeURI(objectURI);
+        Var graphVar = makeVar("graph");
+        Var typeVar = makeVar("type");
+        select.setDistinct(true);
+        select.addVar(graphVar);
+        select.addGraph(graphVar, uri, RDF.type, typeVar);
+        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
+        
+        List<URI> resultList = new ArrayList<>();
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
+            resultList.add(uriDeserializer.fromString((result.getStringValue("graph"))));
+        }, Exception.class));        
+        
+        return resultList;
+    }
 
     public List<URI> getObjectContexts(URI objectURI) throws Exception {
         SelectBuilder select = new SelectBuilder();

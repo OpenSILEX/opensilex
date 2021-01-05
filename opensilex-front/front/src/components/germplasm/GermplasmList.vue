@@ -87,7 +87,7 @@
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/germplasm/'+ encodeURIComponent(data.item.uri)}"
+          :to="{path: '/germplasm/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
 

@@ -170,7 +170,7 @@ routes:
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
     credentials: [germplasm-modification]
-  - path: /germplasm/:uri
+  - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
     credentials: []
   - path: /germplasm/annotations/:uri

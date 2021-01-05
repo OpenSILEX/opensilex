@@ -169,6 +169,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
                 Class<? extends SPARQLResourceModel> fieldType = (Class<? extends SPARQLResourceModel>) field.getType();
                 Node propertyGraph = graph;
+
                 if (classAnalizer.isReverseRelation(field)) {
                     propertyGraph = mapperIndex.getForClass(fieldType).getDefaultGraph();
                 }
@@ -178,16 +179,26 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
                     String name = result.getStringValue(fieldNameVar);
 
-                    if (StringUtils.isEmpty(name)) {
+                    // try to build a proxy object including name with the SPARQL builder variable binding name
+                    if (! StringUtils.isEmpty(name)) {
+                        proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
+                    }else{
+                        // try to build a proxy object including name with an another SPARQL builder variable binding name
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
+
+                        if(! StringUtils.isEmpty(name)){
+                            proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
+                        }else{
+                            proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
+                        }
                     }
-                    proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
                 } else {
                     proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
                 }
                 setter.invoke(instance, proxy.getInstance());
             }
         }
+
 
         for (Field field : classAnalizer.getLabelPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
@@ -251,6 +262,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public URI getDefaultGraphURI() {
         if (classAnalizer.getGraphSuffix() != null) {
             try {
+                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
+                if(graphSuffixUri.isAbsolute()){
+                    return graphSuffixUri;
+                }
                 String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraphSuffix()).toString();
                 return new URI(classGraphURI);
             } catch (Exception ex) {

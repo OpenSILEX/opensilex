@@ -32,7 +32,6 @@ public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
     protected List<URI> targets;
     protected URI motivation;
     protected URI creator;
-    protected LocalDate created;
 
     @ValidURI
     @Override
@@ -51,10 +50,6 @@ public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
     @ApiModelProperty(required = true)
     public List<URI> getTargets() {
         return targets;
-    }
-
-    public LocalDate getCreated() {
-        return created;
     }
 
     @NotNull
@@ -90,20 +85,12 @@ public class AnnotationCreationDTO extends ResourceDTO<AnnotationModel> {
         return creator;
     }
 
-    public void setCreated(LocalDate created) {
-        this.created = created;
-    }
 
     @Override
     public void toModel(AnnotationModel model) {
         super.toModel(model);
         model.setBodyValue(bodyValue);
-
-        if(created == null){
-            model.setCreated(LocalDate.now());
-        }else{
-            model.setCreated(created);
-        }
+        model.setCreated(LocalDate.now());
         model.setTargets(targets);
 
         if (motivation != null) {

@@ -44,7 +44,6 @@
                 <opensilex-UriLink
                         :uri="data.item.uri"
                         :value="data.item.uri"
-                        :to="{path: '/annotation/details/'+ encodeURIComponent(data.item.uri)}"
                 ></opensilex-UriLink>
             </template>
 

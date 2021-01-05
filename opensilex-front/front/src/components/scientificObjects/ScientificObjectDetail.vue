@@ -5,7 +5,7 @@
             <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
             <b-tab :title="$t('Documents')"></b-tab>
             <b-tab :title="$t('Annotation.list-title')"></b-tab>
-            <b-tab :title="$t('Event.list-title')"></b-tab>
+<!--            <b-tab :title="$t('Event.list-title')"></b-tab>-->
         </b-tabs>
         <!--    <template v-slot:header>-->
         <!--      <h3>-->

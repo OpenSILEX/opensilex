@@ -55,7 +55,8 @@
         "vuejs-logger": "1.10.2",
         "weekstart": "^1.0.1",
         "vuelayers": "0.11.30",
-        "wkt": "^0.1.1"
+        "wkt": "^0.1.1",
+        "@turf/turf": "5.1.6"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "4.5.8",

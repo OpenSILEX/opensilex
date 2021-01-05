@@ -106,6 +106,7 @@
           <opensilex-UriLink
               :uri="data.item.properties.uri"
               :value="data.item.properties.name"
+              :noExternalLink="true"
           ></opensilex-UriLink>
         </template>
 
@@ -148,6 +149,8 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from 'ol/control'
 import Oeso from "../../ontologies/Oeso";
 import {RDFClassDTO} from "opensilex-core/model/rDFClassDTO";
+import * as turf from "@turf/turf";
+import MultiPolygon from "ol/geom/MultiPolygon";
 
 @Component
 export default class MapView extends Vue {
@@ -235,6 +238,24 @@ export default class MapView extends Vue {
   memorizesArea() {
     if (this.temporaryArea.length) {
       this.$store.state.zone = this.temporaryArea.pop();
+
+      let feature = this.$store.state.zone;
+
+      if (feature.geometry.type === "Polygon") {
+        let kinkedPoly = turf.polygon(feature.geometry.coordinates);
+        let unKinkedPoly = turf.unkinkPolygon(kinkedPoly);
+
+        if (unKinkedPoly.features.length > 1) {
+          let coordinates = [];
+
+          unKinkedPoly.features.forEach(item => {
+            coordinates.push(item.geometry.coordinates);
+          });
+
+          this.$store.state.zone.geometry.type = "MultiPolygon";
+          this.$store.state.zone.geometry.coordinates = coordinates;
+        }
+      }
 
       for (let element of this.$store.state.zone.geometry.coordinates[0]) {
         if (element[0] < -180 || element[0] > 180) {

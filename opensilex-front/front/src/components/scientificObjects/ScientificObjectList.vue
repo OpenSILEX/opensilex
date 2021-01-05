@@ -9,7 +9,7 @@
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
-      label="ScientificObjectsList.filter.label"
+      label="ScientificObjectList.filter.label"
       :showAdvancedSearch="true"
     >
       <template v-slot:filters>

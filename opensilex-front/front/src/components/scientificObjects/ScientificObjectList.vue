@@ -3,13 +3,13 @@
     <opensilex-PageHeader
       icon="ik#ik-target"
       title="component.menu.scientificObjects"
-      description="ScientificObjectsList.description"
+      description="ScientificObjectList.description"
     ></opensilex-PageHeader>
 
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
-      label="ScientificObjectsList.filter.label"
+      label="ScientificObjectList.filter.label"
       :showAdvancedSearch="true"
     >
       <template v-slot:filters>
@@ -62,14 +62,14 @@
           :fields="fields"
           defaultSortBy="label"
           :isSelectable="false"
-          labelNumberOfSelectedRow="ScientificObjectsList.selected"
+          labelNumberOfSelectedRow="ScientificObjectList.selected"
           iconNumberOfSelectedRow="ik#ik-target"
         >
           <template v-slot:cell(uri)="{ data }">
             <opensilex-UriLink
               :uri="data.item.uri"
               :value="data.item.name"
-              :to="{ path: '/experiment/' + encodeURIComponent(data.item.uri) }"
+              :to="{ path: '/scientific-objects/details/' + encodeURIComponent(data.item.uri) }"
             ></opensilex-UriLink>
           </template>
 

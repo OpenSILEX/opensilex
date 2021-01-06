@@ -30,14 +30,17 @@
       ></opensilex-GeometryView>
 
       <div v-for="(v, index) in typeProperties" v-bind:key="index">
-        <div class="static-field">
+        <div class="static-field" v-if="!v.definition.isList">
           <span class="field-view-title">{{v.definition.name}}:</span>
           <component
-            v-if="!v.definition.isList"
+            
             :is="v.definition.viewComponent"
             :value="v.property"
           ></component>
-          <ul v-else>
+        </div>
+        <div class="static-field"  v-else-if="v.property && v.property.length > 0">
+           <span class="field-view-title">{{v.definition.name}}:</span>
+                    <ul>
             <br />
             <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
               <component :is="v.definition.viewComponent" :value="prop"></component>

@@ -9,6 +9,8 @@
  */
 package org.opensilex.core.area.api;
 
+import com.mongodb.MongoException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
@@ -63,6 +65,7 @@ public class AreaAPI {
 
     public static final String CREDENTIAL_AREA_DELETE_LABEL_KEY = "credential.area.delete";
     private static final String CREDENTIAL_AREA_DELETE_ID = "area-delete";
+    public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
 
     @CurrentUser
     UserModel currentUser;
@@ -120,6 +123,14 @@ public class AreaAPI {
             nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
+        } catch (MongoWriteException mongoWriteException) {
+            try {
+                sparql.rollbackTransaction(mongoWriteException);
+                nosql.rollbackTransaction();
+            } catch (Exception e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoWriteException).getResponse();
+            }
+            throw mongoWriteException;
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
             nosql.rollbackTransaction();
@@ -200,6 +211,14 @@ public class AreaAPI {
             nosql.commitTransaction();
 
             return new ObjectUriResponse(areaURI).getResponse();
+        } catch (MongoException mongoException) {
+            try {
+                sparql.rollbackTransaction(mongoException);
+                nosql.rollbackTransaction();
+            } catch (Exception e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
+            }
+            throw mongoException;
         } catch (Exception ex) {
             sparql.rollbackTransaction();
             nosql.rollbackTransaction();

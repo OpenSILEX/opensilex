@@ -489,7 +489,7 @@ en:
   Area:
     title: Area
     add: Description of the area
-    update: Update a perennial zone
+    update: Update a perennial area
 fr:
   MapView:
     name: nom

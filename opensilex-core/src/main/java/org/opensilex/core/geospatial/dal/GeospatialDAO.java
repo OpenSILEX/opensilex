@@ -10,6 +10,7 @@
 package org.opensilex.core.geospatial.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -120,7 +121,7 @@ public class GeospatialDAO {
         return writer.write(geom);
     }
 
-    public GeospatialModel create(GeospatialModel instanceGeospatial) {
+    public GeospatialModel create(GeospatialModel instanceGeospatial) throws MongoWriteException {
         if (instanceGeospatial.getGeometry() != null) {
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
             addIndex();
@@ -146,7 +147,7 @@ public class GeospatialDAO {
         geometryCollection.createIndex(indexGeometry);
     }
 
-    public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph) {
+    public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph) throws MongoWriteException {
         if (geospatial.getGeometry() != null) {
             Document filter = getFilter(uri, graph);
 

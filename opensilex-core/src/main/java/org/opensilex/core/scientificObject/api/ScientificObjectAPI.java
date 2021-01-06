@@ -7,6 +7,8 @@ package org.opensilex.core.scientificObject.api;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.MongoException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -116,6 +118,7 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_LABEL_KEY = "credential.scientific-objects.delete";
 
     public static final String GEOMETRY_COLUMN_ID = "geometry";
+    public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
 
     @CurrentUser
     UserModel currentUser;
@@ -133,7 +136,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs corresponding to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsListByUris(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI,
@@ -203,7 +206,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs with geometry corresponding to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI
@@ -236,7 +239,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given context URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the given context URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI,
@@ -261,7 +264,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objetcs children corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjects(
             @ApiParam(value = "Context URI", example = "http://example.com/") @QueryParam("contextURI") final URI contextURI,
@@ -381,6 +384,14 @@ public class ScientificObjectAPI {
             sparql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, soURI).getResponse();
+        } catch (MongoWriteException mongoWriteException) {
+            try {
+                sparql.rollbackTransaction(mongoWriteException);
+                nosql.rollbackTransaction();
+            } catch (Exception e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoWriteException).getResponse();
+            }
+            throw mongoWriteException;
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
             nosql.rollbackTransaction();
@@ -436,6 +447,14 @@ public class ScientificObjectAPI {
             nosql.commitTransaction();
 
             return new ObjectUriResponse(soURI).getResponse();
+        } catch (MongoException mongoException) {
+            try {
+                sparql.rollbackTransaction(mongoException);
+                nosql.rollbackTransaction();
+            } catch (Exception e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
+            }
+            throw mongoException;
         } catch (Exception ex) {
             sparql.rollbackTransaction();
             nosql.rollbackTransaction();
@@ -493,7 +512,7 @@ public class ScientificObjectAPI {
 
     @POST
     @Path("csv-import")
-    @ApiOperation(value = "Import a CSV file for the given experiement URI and scientific object type.")
+    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
     })
@@ -641,13 +660,13 @@ public class ScientificObjectAPI {
 
         String csvName = "scientific-object-export.csv";
         return Response.ok(csvContent, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachement; filename=\"" + csvName + "\"")
+                .header("Content-Disposition", "attachment; filename=\"" + csvName + "\"")
                 .build();
     }
 
     @POST
     @Path("csv-validate")
-    @ApiOperation(value = "Validate a CSV file for the given experiement URI and scientific object type.")
+    @ApiOperation(value = "Validate a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
     })

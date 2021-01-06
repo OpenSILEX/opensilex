@@ -25,8 +25,11 @@
       responsive
       sort-icon-left
       sort-by="typeLabel"
+      :selectable="isSelectable"
+      selectMode="single"
       :items="selected.facilities"
       :fields="fields"
+      @row-selected="$emit('rowSelected', $event)"
     >
       <template v-slot:head(name)="data">{{$t(data.label)}}</template>
       <template v-slot:head(typeLabel)="data">{{$t(data.label)}}</template>
@@ -104,6 +107,11 @@ export default class InfrastructureFacilitiesView extends Vue {
   @Prop()
   private selected: InfrastructureGetDTO;
 
+  @Prop({
+    default: false
+  })
+  isSelectable;
+  
   fields = [
     {
       key: "name",

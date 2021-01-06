@@ -36,6 +36,11 @@
       </template>
 
       <template v-slot:buttons="{ node }">
+        <opensilex-DetailButton
+          @click="showDetail(node.data.uri)"
+          label="InfrastructureTree.edit"
+          :small="true"
+        ></opensilex-DetailButton>        
         <opensilex-EditButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="editInfrastructure(node.data.uri)"
@@ -218,6 +223,10 @@ export default class InfrastructureTree extends Vue {
   }
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
+
+  showDetail(uri) {
+    this.$router.push({ path: '/infrastructures/details/' + encodeURIComponent(uri) });
+  }
 
   parentURI;
   createInfrastructure(parentURI?) {

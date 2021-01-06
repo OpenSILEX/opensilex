@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="!disabled">
     <opensilex-SelectForm
       :label="label"
       :selected.sync="internalValue"
@@ -44,9 +44,12 @@ export default class FactorLevelSelector extends Vue {
   @Prop()
   experimentURI;
 
+  disabled = false;
+
   loadFactorLevels() {
     if (this.experimentURI) {
-      return this.$opensilex
+      return new Promise((resolve, reject) => {
+        this.$opensilex
         .getService("opensilex.ExperimentsService")
         .getAvailableFactors(this.experimentURI)
         .then(http => {
@@ -71,8 +74,17 @@ export default class FactorLevelSelector extends Vue {
               factorNodes.push(factorNode);
             }
           }
-          return factorNodes;
+          resolve(factorNodes);
+        })
+        .catch(error => {
+          if (error.status == 404) {
+            this.disabled = true;
+          } else {
+            reject(error);
+          }
+          
         });
+      });
     } else {
       return Promise.resolve([]);
     }

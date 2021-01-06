@@ -80,7 +80,10 @@ import InfrastructureFacilityPropertyView from './infrastructures/Infrastructure
 components["opensilex-InfrastructureFacilityPropertyView"] = InfrastructureFacilityPropertyView;
 import InfrastructureFacilityPropertySelector from './infrastructures/InfrastructureFacilityPropertySelector.vue';
 components["opensilex-InfrastructureFacilityPropertySelector"] = InfrastructureFacilityPropertySelector;
-
+import InfrastructureDetailView from './infrastructures/InfrastructureDetailView.vue';
+components["opensilex-InfrastructureDetailView"] = InfrastructureDetailView;
+import InfrastructureDetailScientificObjects from './infrastructures/InfrastructureDetailScientificObjects.vue';
+components["opensilex-InfrastructureDetailScientificObjects"] = InfrastructureDetailScientificObjects;
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';

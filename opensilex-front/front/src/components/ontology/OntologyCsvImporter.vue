@@ -380,7 +380,6 @@ export default class OntologyCsvImporter extends Vue {
             });
 
             nameRow[customColumn.id] = customColumn.label;
-            console.error(customColumn);
             commentRow[customColumn.id] = this.getFieldDescription(
               customColumn,
               "\n"

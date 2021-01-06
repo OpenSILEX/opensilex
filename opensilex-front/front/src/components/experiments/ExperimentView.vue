@@ -71,9 +71,9 @@
                 ></opensilex-ExperimentData>
 
                 <opensilex-MapView
+                        v-else-if="isMap()"
                         :uri="uri"
-                        v-else-if="isMap()">
-                </opensilex-MapView>
+                ></opensilex-MapView>
 
                 <opensilex-AnnotationList
                         v-else-if="isAnnotationTab()"

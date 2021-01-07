@@ -192,6 +192,8 @@ public class Server extends Tomcat {
 
         Connector connector = getConnector();
 
+        connector.setMaxPostSize(-1);
+        
         // Allow tomcat to accept encoded slash
         connector.setEncodedSolidusHandling(EncodedSolidusHandling.DECODE.getValue());
 

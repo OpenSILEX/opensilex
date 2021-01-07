@@ -61,7 +61,7 @@
           :searchMethod="searchScientificObject"
           :fields="fields"
           defaultSortBy="label"
-          :isSelectable="false"
+          :isSelectable="true"
           labelNumberOfSelectedRow="ScientificObjectList.selected"
           iconNumberOfSelectedRow="ik#ik-target"
         >
@@ -195,6 +195,7 @@ export default class ScientificObjectList extends Vue {
       this.filter.germplasm ? this.filter.germplasm : undefined,
       this.filter.factors, // factors?: Array<string>,
       undefined, // factorLevels?: Array<string>,
+      undefined, // facility?: string,
       options.currentPage, // page?: number,
       options.pageSize // pageSize?: number
     );

@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_OneOrMore1;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -59,15 +59,15 @@ public class ScientificObjectDAO {
         return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
     }
 
-    public ListWithPagination<ScientificObjectModel> searchChildrenByContext(URI contextURI, URI parentURI, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
-        Node experimentGraph = SPARQLDeserializers.nodeURI(contextURI);
+    public ListWithPagination<ScientificObjectModel> searchChildrenByContext(URI contextURI, URI parentURI, URI facility, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+        Node contextGraph = SPARQLDeserializers.nodeURI(contextURI);
         return sparql.searchWithPagination(
-                experimentGraph,
+                contextGraph,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
                 (select) -> {
                     if (parentURI != null) {
-                        select.addGraph(SPARQLDeserializers.nodeURI(contextURI), makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+                        select.addGraph(contextGraph, makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
                     } else {
                         WhereBuilder whereFilter = new WhereBuilder().addGraph(
                                 SPARQLDeserializers.nodeURI(contextURI),
@@ -77,13 +77,32 @@ public class ScientificObjectDAO {
                         );
                         select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(whereFilter));
                     }
+                    
+                      if (facility != null) {
+                        Node facilityNode = SPARQLDeserializers.nodeURI(facility);
+                        Var directFacility = makeVar("__directFacility");
+                        Var parentLinkURI = makeVar("__parentLinkURI");
+                        Var parentFacility = makeVar("__parentFacility");
+                        Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
+                        
+                            WhereBuilder graphQuery = new WhereBuilder();
+                            graphQuery.addGraph(contextGraph, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFacility, directFacility);
+                            graphQuery.addGraph(contextGraph, makeVar(ScientificObjectModel.URI_FIELD), subPartOf, parentLinkURI);
+                            graphQuery.addGraph(contextGraph, parentLinkURI, Oeso.hasFacility, parentFacility);
+                            select.addOptional(graphQuery);
+
+                        select.addFilter(SPARQLQueryHelper.or(
+                                SPARQLQueryHelper.eq("__directFacility", facilityNode),
+                                SPARQLQueryHelper.eq("__parentFacility", facilityNode)
+                        ));
+                    }
                 },
                 null,
                 page,
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factors, List<URI> factorLevels, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(List<URI> contextURIs, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factors, List<URI> factorLevels, URI facility, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         Node contextURI = null;
         Expr graphFilter = null;
 
@@ -138,8 +157,36 @@ public class ScientificObjectDAO {
 
                         select.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.FACTOR_LEVEL_FIELD, factorLevels));
                     }
+
                     if (germplasm != null) {
                         select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm));
+                    }
+
+                    if (facility != null) {
+                        Node facilityNode = SPARQLDeserializers.nodeURI(facility);
+                        Var directFacility = makeVar("__directFacility");
+                        Var parentLinkURI = makeVar("__parentLinkURI");
+                        Var parentFacility = makeVar("__parentFacility");
+                        Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
+                        if (contextURIs.size() == 1) {
+                            Node contextNode = SPARQLDeserializers.nodeURI(contextURIs.get(0));
+                            WhereBuilder graphQuery = new WhereBuilder();
+                            graphQuery.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFacility, directFacility);
+                            graphQuery.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), subPartOf, parentLinkURI);
+                            graphQuery.addGraph(contextNode, parentLinkURI, Oeso.hasFacility, parentFacility);
+                            select.addOptional(graphQuery);
+                        } else {
+                            WhereBuilder graphQuery = new WhereBuilder();
+                            graphQuery.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFacility, directFacility);
+                            graphQuery.addWhere(makeVar(ScientificObjectModel.URI_FIELD), subPartOf, parentLinkURI);
+                            graphQuery.addWhere(parentLinkURI, Oeso.hasFacility, parentFacility);
+                            select.addOptional(graphQuery);
+                        }
+
+                        select.addFilter(SPARQLQueryHelper.or(
+                                SPARQLQueryHelper.eq("__directFacility", facilityNode),
+                                SPARQLQueryHelper.eq("__parentFacility", facilityNode)
+                        ));
                     }
                 },
                 null,
@@ -236,7 +283,7 @@ public class ScientificObjectDAO {
     public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
         return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
     }
-    
+
     public List<URI> getObjectContexts(URI objectURI) throws Exception {
         SelectBuilder select = new SelectBuilder();
         Node uri = SPARQLDeserializers.nodeURI(objectURI);
@@ -246,13 +293,13 @@ public class ScientificObjectDAO {
         select.addVar(graphVar);
         select.addGraph(graphVar, uri, RDF.type, typeVar);
         select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
-        
+
         List<URI> resultList = new ArrayList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         sparql.executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(uriDeserializer.fromString((result.getStringValue("graph"))));
-        }, Exception.class));        
-        
+        }, Exception.class));
+
         return resultList;
     }
 

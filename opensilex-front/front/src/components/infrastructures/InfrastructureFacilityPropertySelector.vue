@@ -44,9 +44,23 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
           let facilityNodes = [];
           for (let i in http.response.result) {
             let facility = http.response.result[i];
-             facilityNodes.push({
+            facilityNodes.push({
               id: facility.uri,
-              label: facility.name,
+              label: facility.name
+            });
+          }
+          return facilityNodes;
+        });
+    } else if (this.context && this.context.infrastructureURI) {
+      return this.$opensilex
+        .getService("opensilex.InfrastructuresService")
+        .getInfrastructure(this.context.infrastructureURI)
+        .then(http => {
+          let facilityNodes = [];
+          for (let facility of http.response.result.facilities) {
+            facilityNodes.push({
+              id: facility.uri,
+              label: facility.name
             });
           }
           return facilityNodes;

@@ -267,7 +267,12 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFacility -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
+    </owl:ObjectProperty>
     
 
 
@@ -1154,7 +1159,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>                
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -2051,6 +2057,10 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Matériel génétique</rdfs:label>
         <rdfs:label xml:lang="en">Germplasm</rdfs:label>
     </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility">
+        <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
+        <rdfs:label xml:lang="en">Facility</rdfs:label>
+    </rdf:Description>    
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf">
         <rdfs:label xml:lang="en">Parent URI</rdfs:label>
         <rdfs:label xml:lang="fr">URI du parent</rdfs:label>

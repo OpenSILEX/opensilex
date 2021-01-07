@@ -339,6 +339,7 @@ export default class ExperimentScientificObjects extends Vue {
       return this.soService.getScientificObjectsChildren(
         this.uri,
         nodeURI,
+        undefined,
         page,
         pageSize
       );
@@ -351,6 +352,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         undefined,
         this.filters.factorLevels,
+        undefined,
         page,
         pageSize
       );
@@ -362,6 +364,7 @@ export default class ExperimentScientificObjects extends Vue {
       .searchScientificObjects(
         this.uri,
         query,
+        undefined,
         undefined,
         undefined,
         undefined,

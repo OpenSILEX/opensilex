@@ -264,6 +264,7 @@ public class ScientificObjectAPI {
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI,
             @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parenturi") URI parentURI,
+            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -271,7 +272,7 @@ public class ScientificObjectAPI {
         validateContextAccess(contextURI);
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildrenByContext(contextURI, parentURI, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildrenByContext(contextURI, parentURI, facility, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = scientificObjects.convert(ScientificObjectNodeWithChildrenDTO.class, ScientificObjectNodeWithChildrenDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
@@ -294,6 +295,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
             @ApiParam(value = "Factors URI", example = "vocabulary:Irrigation") @QueryParam("factors") @ValidURI List<URI> factors,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factorLevels") @ValidURI List<URI> factorLevels,
+            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -316,7 +318,7 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURIs, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURIs, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, facility, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
 

@@ -90,11 +90,13 @@
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
+            :searchMethodRoot="searchMethodRoot"
+            :searchMethodRootChildren="searchMethodRootChildren"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
-                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+                <!-- <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" /> -->
               </span>&nbsp;
               <span>{{ node.title }}</span>
             </template>
@@ -102,8 +104,9 @@
             <template v-slot:buttons="{ node }">
               <opensilex-EditButton
                 v-if="
+                node.path.length > 1 && 
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
                   )
                 "
                 @click="editScientificObject(node)"
@@ -112,8 +115,9 @@
               ></opensilex-EditButton>
               <opensilex-AddChildButton
                 v-if="
+                node.path.length > 1 && 
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
                   )
                 "
                 @click="createScientificObject(node.data.uri)"
@@ -122,8 +126,9 @@
               ></opensilex-AddChildButton>
               <opensilex-DeleteButton
                 v-if="
+                node.path.length > 1 && 
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
                   )
                 "
                 @click="deleteScientificObject(node)"
@@ -318,22 +323,53 @@ export default class InfrastructureDetailScientificObjects extends Vue {
       });
   }
 
+  searchMethodRoot() {
+    return new Promise((resolve, reject) => {
+      this.infraService
+        .getInfrastructure(this.uri)
+        .then(http => {
+          let facilities = http.response.result.facilities;
+          resolve({
+            response: {
+              metadata: {
+                pagination: {
+                  totalCount: facilities.length
+                }
+              },
+              result: facilities
+            }
+          });
+        })
+        .catch(reject);
+    });
+  }
+
+  searchMethodRootChildren(nodeURI, page, pageSize) {
+    return this.soService.getScientificObjectsChildren(
+      this.uri,
+      undefined,
+      nodeURI,
+      page,
+      pageSize
+    );
+  }
+
   searchMethod(nodeURI, page, pageSize) {
     if (
       this.filters.name == "" &&
       this.filters.types.length == 0 &&
       this.filters.parent == undefined
     ) {
-        console.error("nodeURI", nodeURI);
       if (nodeURI) {
         return this.soService.getScientificObjectsChildren(
           this.uri,
           nodeURI,
+          undefined,
           page,
           pageSize
         );
       } else {
-          // TODO for each so, get parent facility
+        // TODO for each so, get parent facility
         return this.soService.getScientificObjectsChildren(
           this.uri,
           nodeURI,
@@ -350,6 +386,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
         page,
         pageSize
       );
@@ -361,6 +398,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
       .searchScientificObjects(
         this.uri,
         query,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -401,7 +439,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri
+        infrastructureURI: this.uri
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
@@ -420,7 +458,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
     this.soForm
       .getFormRef()
       .setContext({
-        experimentURI: this.uri
+        infrastructureURI: this.uri
       })
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 

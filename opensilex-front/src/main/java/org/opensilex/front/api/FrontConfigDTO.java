@@ -14,6 +14,9 @@ import javax.validation.constraints.NotNull;
 public class FrontConfigDTO {
 
     @NotNull
+    String pathPrefix;
+
+    @NotNull
     String homeComponent;
 
     @NotNull
@@ -40,6 +43,15 @@ public class FrontConfigDTO {
     String themeModule;
 
     String themeName;
+
+    @ApiModelProperty(value = "Application url path prefix", example = "app")
+    public String getPathPrefix() {
+        return pathPrefix;
+    }
+
+    public void setPathPrefix(String pathPrefix) {
+        this.pathPrefix = pathPrefix;
+    }
 
     @ApiModelProperty(value = "Home component identifier", example = "opensilex-DefaultHomeComponent")
     public String getHomeComponent() {

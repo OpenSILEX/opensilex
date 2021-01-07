@@ -62,6 +62,7 @@ let renewTokenOnEvent = function (event) {
 }
 
 let defaultConfig: FrontConfigDTO = {
+  pathPrefix: "app",
   homeComponent: "opensilex-front-ToDoComponent",
   notFoundComponent: "opensilex-front-ToDoComponent",
   headerComponent: "opensilex-front-ToDoComponent",
@@ -100,7 +101,7 @@ let store = new Vuex.Store({
   state: {
     user: User.ANONYMOUS(),
     loaderVisible: false,
-    openSilexRouter: new OpenSilexRouter(),
+    openSilexRouter: null,
     config: defaultConfig,
     menu: menu,
     menuVisible: true,
@@ -218,6 +219,7 @@ let store = new Vuex.Store({
     },
     setConfig(state, config: FrontConfigDTO) {
       state.config = config;
+      state.openSilexRouter = new OpenSilexRouter(config.pathPrefix);
       state.openSilexRouter.setConfig(config);
     },
     showLoader(state) {

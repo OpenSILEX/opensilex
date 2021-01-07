@@ -24,7 +24,7 @@ public interface ServerConfig {
             defaultString = "http://localhost:8666/"
     )
     public String publicURI();
-
+    
     @ConfigDescription(
             value = "Available application language list",
             defaultList = {OpenSilex.DEFAULT_LANGUAGE, "fr"}

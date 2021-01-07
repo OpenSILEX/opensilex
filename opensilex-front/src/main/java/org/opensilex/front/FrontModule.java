@@ -43,16 +43,33 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         return "front";
     }
 
+    public String getApplicationPathPrefix() {
+        String pathPrefix = ((FrontConfig) getConfig()).pathPrefix();
+        return pathPrefix;
+    }
+
     @Override
     public void initServer(org.opensilex.server.Server server) throws Exception {
         // Register front application
-        Context appContext = server.initApp("/app", "/", "/front", FrontModule.class);
+        String pathPrefix = getApplicationPathPrefix();
+        Context appContext = server.initApp("/" + pathPrefix, "/", "/front", FrontModule.class);
 
         // Disable JAR scanner for front application because it's not required
         appContext.setJarScanner(new IgnoreJarScanner());
 
         // Add rewrite rules for application
-        appContext.getPipeline().addValve(new RewriteValve());
+        RewriteValve valve = new RewriteValve();
+        appContext.getPipeline().addValve(valve);
+        valve.setConfiguration(
+                "RewriteCond %{REQUEST_URI} ^/$\n"
+                + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
+                + "RewriteCond %{REQUEST_URI} ^/index.html$\n"
+                + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
+                + "RewriteCond %{REQUEST_URI} ^/" + pathPrefix + "/.+\n"
+                + "RewriteRule .* /" + pathPrefix + "/ [R=301,L]"
+        );
+        
+        System.out.println(valve.getConfiguration());
     }
 
     @Override
@@ -72,6 +89,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
 
             FrontConfigDTO config = new FrontConfigDTO();
 
+            config.setPathPrefix(getApplicationPathPrefix());
             config.setHomeComponent(frontConfig.homeComponent());
             config.setNotFoundComponent(frontConfig.notFoundComponent());
             config.setHeaderComponent(frontConfig.headerComponent());

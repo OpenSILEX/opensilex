@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-    publicPath: "/app/",
+    publicPath: "./",
     devServer: {
         progress: false
     },

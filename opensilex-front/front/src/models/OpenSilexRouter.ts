@@ -9,7 +9,13 @@ export class OpenSilexRouter {
 
     private frontConfig: FrontConfigDTO;
     private menu: Array<MenuItemDTO> = [];
-    private router: any = this.createRouter(User.ANONYMOUS());
+    private router: any;
+    private pathPrefix: string
+    
+    constructor(pathPrefix: string) {
+        this.pathPrefix = pathPrefix;
+        this.router = this.createRouter(User.ANONYMOUS());
+    }
 
     public getMenu() {
         return this.menu;
@@ -23,11 +29,11 @@ export class OpenSilexRouter {
         return this.router;
     }
 
-    public createRouter(user: User) {
+    private createRouter(user: User) {
         let routes = this.computeMenuRoutes(user);
 
         this.router = new VueRouter({
-            base: '/app',
+            base: '/' + this.pathPrefix,
             mode: 'history',
             routes: routes
         })

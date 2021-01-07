@@ -25,3 +25,6 @@ phisws:
     
 #core:
 #    enableLogs: true
+#
+#front:
+#    pathPrefix: alternative-app-path

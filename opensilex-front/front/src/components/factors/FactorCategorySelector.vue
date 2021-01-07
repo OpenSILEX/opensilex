@@ -86,6 +86,7 @@ en:
         waterManagement: Water management
         chemical: Chemical
         bioticStress: Biotic stress
+        abioticStress: Abiotic stress
         soil: Soil
         nutrient: Nutrient
         atmospheric: Atmospheric
@@ -107,6 +108,7 @@ fr:
         waterManagement: Gestion de l'eau
         chemical: Chimique
         bioticStress: Stress biotique
+        abioticStress: Stress abiotique
         soil: Sol
         nutrient: Nutriments
         atmospheric: Atmosphérique

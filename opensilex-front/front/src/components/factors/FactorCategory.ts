@@ -9,6 +9,7 @@ export class FactorCategory {
         "waterManagement": "component.factor.select.waterManagement",
         "chemical": "component.factor.select.chemical",
         "bioticStress": "component.factor.select.bioticStress",
+        "abioticStress": "component.factor.select.abioticStress",
         "temperature": "component.factor.select.temperature",
         "soil": "component.factor.select.soil",
         "nutrient": "component.factor.select.nutrient",

@@ -366,12 +366,10 @@ export default class MapView extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
 
-    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI, true)
+    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI)
         .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
-              res.forEach(({name, uri}) => {
-                typeLabel.push({uri: uri, name: name});
-              });
+              this.extracted(res, typeLabel);
             }
         )
         .catch(this.$opensilex.errorHandler);
@@ -388,6 +386,15 @@ export default class MapView extends Vue {
       if (typeLabelElement.uri == uriType)
         return typeLabelElement.name;
     }
+  }
+
+  private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: String; name: String }[]) {
+    res.forEach(({name, uri, children}) => {
+      typeLabel.push({uri: uri, name: name});
+      if (children.length > 0) {
+        this.extracted(children, typeLabel)
+      }
+    });
   }
 
   private areaRecovery(extent) {

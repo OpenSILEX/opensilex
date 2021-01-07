@@ -792,7 +792,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Dataset</rdfs:label>
         <rdfs:label xml:lang="fr">Jeu de données</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
@@ -800,13 +800,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Document"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable -->
@@ -814,7 +814,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Entity -->
@@ -822,15 +822,17 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Entity">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    </owl:Class>
-    
+<!--     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EvenementialArea"> -->
+<!--         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/> -->
+<!--         <rdfs:label xml:lang="en">Evenemential area</rdfs:label> -->
+<!--         <rdfs:label xml:lang="fr">Zone événementielle</rdfs:label> -->
+<!--     </owl:Class> -->
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
@@ -855,19 +857,19 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalObject -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Factor -->
@@ -875,7 +877,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#FactorLevel -->
@@ -1000,7 +1002,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Plant Material Lot</rdfs:label>
         <rdfs:label xml:lang="fr">Lot de matériel végétal</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#PollutedArea -->
@@ -1008,7 +1010,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PollutedArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
@@ -1166,7 +1168,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Application Shiny</rdfs:label>
         <rdfs:label xml:lang="en">Shiny Application</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Species -->

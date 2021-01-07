@@ -22,13 +22,12 @@
       </div>
     </div>
 
-    <opensilex-SelectForm
-        :label="$t('AreaForm.areaType')"
-        :multiple="false"
-        :options="optionsArea"
-        :required="false"
-        :selected.sync="form.optionAreaType"
-    ></opensilex-SelectForm>
+    <!-- Type -->
+    <opensilex-TypeForm
+        :baseType="$opensilex.Oeso.AREA_TYPE_URI"
+        :placeholder="$t('AreaForm.form-type-placeholder')"
+        :type.sync="form.optionAreaType"
+    ></opensilex-TypeForm>
 
     <!-- description -->
     <opensilex-TextAreaForm
@@ -44,7 +43,6 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import Oeso from "../../ontologies/Oeso";
 
@@ -90,30 +88,7 @@ export default class AreaForm extends Vue {
   }
 
   get languageCode(): string {
-    this.loadTypesArea()
     return this.$opensilex.getLocalLangCode();
-  }
-
-  // retrieves zone subclasses in ontology
-  loadTypesArea() {
-    this.service = this.$opensilex.getService(
-        "opensilex.OntologyService"
-    );
-
-    let optionsArea: { label: string; id: string }[] = [];
-
-    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI, true)
-        .then(
-            (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-              const res = http.response.result;
-              res.forEach(({name, uri}) => {
-                optionsArea.push({id: uri, label: name});
-              });
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-
-    this.optionsArea = optionsArea;
   }
 
   reset() {
@@ -149,7 +124,7 @@ export default class AreaForm extends Vue {
 
   create(form) {
     form.geometry = this.$store.state.zone.geometry;
-    if (form.optionAreaType !== null)
+    if (form.optionAreaType != null)
       form.type = form.optionAreaType;
     else
       form.type = Oeso.AREA_TYPE_URI;
@@ -203,7 +178,7 @@ P {
       trial: Trial
       or: Or
       problemDate: problem (end date starts before start date)
-      areaType: type
+      form-type-placeholder: Please select a type
 
   fr:
     AreaForm:
@@ -223,5 +198,5 @@ P {
       trial: Essai
       or: Ou
       problemDate: problème (la date de fin commence avant la date de début)
-      areaType: type
+      form-type-placeholder: Veuillez sélectionner un type de zone
 </i18n>

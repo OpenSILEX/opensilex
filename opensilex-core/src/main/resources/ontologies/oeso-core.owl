@@ -210,7 +210,7 @@
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
     </owl:ObjectProperty>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasContact -->
@@ -764,6 +764,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ClayeyArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ClayeyArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Clayey area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone argileuse</rdfs:label>
+    </owl:Class>
+
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Compartment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Compartment">
@@ -825,16 +835,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
-
-<!--     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EvenementialArea"> -->
-<!--         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/> -->
-<!--         <rdfs:label xml:lang="en">Evenemential area</rdfs:label> -->
-<!--         <rdfs:label xml:lang="fr">Zone événementielle</rdfs:label> -->
-<!--     </owl:Class> -->
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
@@ -885,7 +885,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorLevel">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Field -->
@@ -905,13 +905,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Floodable area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Greenhouse -->
@@ -939,7 +939,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Infrastructure">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
@@ -947,7 +947,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
@@ -955,7 +955,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/security#Group"/>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InteractiveResource -->
@@ -966,7 +965,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Interactive Resource</rdfs:label>
         <rdfs:label xml:lang="fr">Ressource interactive</rdfs:label>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
@@ -974,7 +972,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
@@ -982,7 +980,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Multimedia -->
@@ -992,13 +989,12 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Multimedia</rdfs:label>
         <rdfs:label xml:lang="fr">Multimédia</rdfs:label>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
         <rdfs:label xml:lang="en">Plant Material Lot</rdfs:label>
         <rdfs:label xml:lang="fr">Lot de matériel végétal</rdfs:label>
     </owl:Class>
@@ -1018,7 +1014,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ProtectedStructure -->
@@ -1034,7 +1030,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Provenance"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Publication -->
@@ -1044,7 +1040,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Publication</rdfs:label>
         <rdfs:label xml:lang="fr">Publication</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Quality -->
@@ -1052,7 +1048,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Quality">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Report -->
@@ -1062,7 +1058,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Rapport de stage</rdfs:label>
         <rdfs:label xml:lang="en">Report</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
@@ -1070,7 +1066,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificDocument -->
@@ -1080,7 +1076,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Document Scientifique</rdfs:label>
         <rdfs:label xml:lang="en">Scientific Document</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
@@ -1115,7 +1111,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
@@ -1123,7 +1119,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
@@ -1131,7 +1127,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SensingDevice -->
@@ -1139,7 +1135,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
     </owl:Class>
-    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InteractiveResource"/>
+        <rdfs:label xml:lang="fr">Application Shiny</rdfs:label>
+        <rdfs:label xml:lang="en">Shiny Application</rdfs:label>
+    </owl:Class>
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Shed -->
@@ -1176,7 +1181,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#StructuralArea -->
@@ -1198,7 +1203,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Document Technique</rdfs:label>
         <rdfs:label xml:lang="en">Technical Document</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Unit -->
@@ -1220,7 +1225,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Variable -->
@@ -1256,7 +1261,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
@@ -1301,7 +1306,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
@@ -1309,7 +1314,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
@@ -1317,7 +1322,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
@@ -1325,7 +1330,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#WebSite -->
@@ -1335,7 +1339,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Site web</rdfs:label>
         <rdfs:label xml:lang="en">Web Site</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
@@ -1343,13 +1347,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
-    
+
 
 
     <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
 
     <owl:Class rdf:about="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    
+
 
 
     <!-- http://xmlns.com/foaf/0.1/Agent -->
@@ -1398,10 +1402,10 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
 
 
-    <!-- 
+
+    <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Individuals
@@ -1409,7 +1413,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/contributor -->
@@ -1423,7 +1427,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:label xml:lang="en">Contributor</rdfs:label>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/coverage -->
@@ -1438,7 +1442,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Coverage</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/creator -->
@@ -1453,7 +1457,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Creator</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/date -->
@@ -1468,13 +1472,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Date</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/description -->
 
     <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/description"/>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/format -->
@@ -1489,7 +1493,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Format</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/identifier -->
@@ -1504,7 +1508,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Identifier</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/language -->
@@ -1520,7 +1524,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:seeAlso rdf:resource="http://www.ietf.org/rfc/rfc4646.txt"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/publisher -->
@@ -1535,7 +1539,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Publisher</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/relation -->
@@ -1550,7 +1554,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Relation</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/rights -->
@@ -1565,13 +1569,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Rights</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/source -->
 
     <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/source"/>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/subject -->
@@ -1586,13 +1590,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Subject</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/title -->
 
     <owl:NamedIndividual rdf:about="http://purl.org/dc/elements/1.1/title"/>
-    
+
 
 
     <!-- http://purl.org/dc/elements/1.1/type -->
@@ -1607,184 +1611,182 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Type</rdfs:label>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
     </owl:NamedIndividual>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession"/>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Document"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable"/>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalObject -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Factor -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#FactorLevel -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorLevel"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Infrastructure -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Project"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Provenance"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Species -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Species"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFactorLevel -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>
-    
+
 
 
     <!-- http://www.w3.org/2000/01/rdf-schema#comment -->
 
     <owl:NamedIndividual rdf:about="http://www.w3.org/2000/01/rdf-schema#comment"/>
-    
+
 
 
     <!-- http://www.w3.org/2000/01/rdf-schema#label -->
 
     <owl:NamedIndividual rdf:about="http://www.w3.org/2000/01/rdf-schema#label"/>
-    
 
 
-    <!-- 
+
+    <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Annotations
@@ -1845,8 +1847,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-        <rdfs:label xml:lang="en">experiment</rdfs:label>
         <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
+        <rdfs:label xml:lang="en">experiment</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
         <rdfs:label xml:lang="en">experimental context</rdfs:label>

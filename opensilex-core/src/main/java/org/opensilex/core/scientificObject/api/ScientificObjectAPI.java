@@ -7,7 +7,6 @@ package org.opensilex.core.scientificObject.api;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
@@ -29,6 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
+import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -384,14 +384,14 @@ public class ScientificObjectAPI {
             sparql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, soURI).getResponse();
-        } catch (MongoWriteException mongoWriteException) {
+        } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
-                sparql.rollbackTransaction(mongoWriteException);
+                sparql.rollbackTransaction(mongoException);
                 nosql.rollbackTransaction();
             } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoWriteException).getResponse();
+                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
             }
-            throw mongoWriteException;
+            throw mongoException;
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
             nosql.rollbackTransaction();
@@ -447,7 +447,7 @@ public class ScientificObjectAPI {
             nosql.commitTransaction();
 
             return new ObjectUriResponse(soURI).getResponse();
-        } catch (MongoException mongoException) {
+        } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
                 sparql.rollbackTransaction(mongoException);
                 nosql.rollbackTransaction();

@@ -19,7 +19,10 @@ import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.server.ServerConfig;
+import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
@@ -44,8 +47,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     }
 
     public String getApplicationPathPrefix() {
-        String pathPrefix = ((FrontConfig) getConfig()).pathPrefix();
-        return pathPrefix;
+        try {
+            ServerConfig cfg = getOpenSilex().getModuleConfig(ServerModule.class, ServerConfig.class);
+            String pathPrefix = cfg.pathPrefix();
+            return pathPrefix;
+        } catch (OpenSilexModuleNotFoundException ex) {
+            return "app";
+        }
     }
 
     @Override
@@ -60,16 +68,6 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         // Add rewrite rules for application
         RewriteValve valve = new RewriteValve();
         appContext.getPipeline().addValve(valve);
-        valve.setConfiguration(
-                "RewriteCond %{REQUEST_URI} ^/$\n"
-                + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
-                + "RewriteCond %{REQUEST_URI} ^/index.html$\n"
-                + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
-                + "RewriteCond %{REQUEST_URI} ^/" + pathPrefix + "/.+\n"
-                + "RewriteRule .* /" + pathPrefix + "/ [R=301,L]"
-        );
-        
-        System.out.println(valve.getConfiguration());
     }
 
     @Override

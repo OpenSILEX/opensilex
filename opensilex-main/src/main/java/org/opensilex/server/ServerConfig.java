@@ -47,4 +47,9 @@ public interface ServerConfig {
     )
     public ApiCacheService cache();
 
+    @ConfigDescription(
+            value = "Application path prefix",
+            defaultString = "app"
+    )
+    String pathPrefix();
 }

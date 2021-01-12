@@ -67,9 +67,4 @@ public interface FrontConfig {
     )
     List<CustomMenuItem> customMenu();
 
-    @ConfigDescription(
-            value = "Application path prefix",
-            defaultString = "app"
-    )
-    String pathPrefix();
 }

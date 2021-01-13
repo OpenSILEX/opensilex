@@ -174,13 +174,15 @@
                             "class": "body-textarea required"
                         };
                         var metadataAreaValue = "";
-                        $.each(metadataInput.get(0).attributes, function (index, data) {
-                            if (data.nodeName != "class" && data.nodeName != "type" && data.nodeName != "value") {
-                                metadataAreaAttributes[data.nodeName] = data.value;
-                            } else if (data.nodeName == "value") {
-                                metadataAreaValue = data.value;
-                            }
-                        });
+                        if (metadataInput.get(0) && metadataInput.get(0).attributes) {
+                            $.each(metadataInput.get(0).attributes, function (index, data) {
+                                if (data.nodeName != "class" && data.nodeName != "type" && data.nodeName != "value") {
+                                    metadataAreaAttributes[data.nodeName] = data.value;
+                                } else if (data.nodeName == "value") {
+                                    metadataAreaValue = data.value;
+                                }
+                            });
+                        }
                         metadataInput.replaceWith($("<textarea>" + metadataAreaValue + "</textarea>", metadataAreaAttributes));
 
                         var metadataExample = $("#data_postDataFile_content .operation-params tr:first td:last");

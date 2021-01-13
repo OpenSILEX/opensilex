@@ -62,8 +62,12 @@ export default class OpenSilexVuePlugin {
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
             return resourceURI + "?filePath=" + encodeURIComponent(path);
         } else {
-            return "/" + this.config.pathPrefix + "/" + path;
+            return this.getURL(path);
         }
+    }
+
+    getURL(path: string): string {
+        return "/" + this.config.pathPrefix + "/" + path;
     }
 
     setConfig(config: FrontConfigDTO) {

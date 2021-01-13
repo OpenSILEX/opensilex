@@ -2,8 +2,15 @@ const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
+let publicPath = "/app";
+
+if (process.env.OPENSILEX_VUE_APP_PREFIX) {
+    console.log("READING process.env.OPENSILEX_VUE_APP_PREFIX: " + process.env.OPENSILEX_VUE_APP_PREFIX);
+    publicPath = "/" + process.env.OPENSILEX_VUE_APP_PREFIX;
+}
+
 module.exports = {
-    publicPath: "./",
+    publicPath: publicPath,
     devServer: {
         progress: false
     },

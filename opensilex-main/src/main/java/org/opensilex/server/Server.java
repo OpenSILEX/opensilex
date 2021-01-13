@@ -145,15 +145,17 @@ public class Server extends Tomcat {
         RewriteValve valve = new RewriteValve();
         appContext.getPipeline().addValve(valve);
 
-        String pathPrefix = getApplicationPathPrefix();
         try {
+            String pathPrefix = instance.getModuleConfig(ServerModule.class, ServerConfig.class).pathPrefix();
             valve.setConfiguration(
                     "RewriteCond %{REQUEST_URI} ^/$\n"
                     + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
                     + "RewriteCond %{REQUEST_URI} ^/index.html$\n"
                     + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
                     + "RewriteCond %{REQUEST_URI} ^/" + pathPrefix + "/.+\n"
-                    + "RewriteRule .* /" + pathPrefix + "/ [R=301,L]"
+                    + "RewriteRule .* /" + pathPrefix + "/ [R=301,L]\n"
+                    + "RewriteCond %{REQUEST_URI} ^/app/.+\n"
+                    + "RewriteRule ^/app/(.*)$ /" + pathPrefix + "/$1 [L]"
             );
         } catch (Exception ex) {
             LOGGER.error("Error while setting rewrite rules", ex);
@@ -372,15 +374,4 @@ public class Server extends Tomcat {
     private void enableUTF8(Connector connector) {
         connector.setURIEncoding("UTF-8");
     }
-
-    public String getApplicationPathPrefix() {
-        try {
-            ServerConfig cfg = instance.getModuleConfig(ServerModule.class, ServerConfig.class);
-            String pathPrefix = cfg.pathPrefix();
-            return pathPrefix;
-        } catch (OpenSilexModuleNotFoundException ex) {
-            return "app";
-        }
-    }
-
 }

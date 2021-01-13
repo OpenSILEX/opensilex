@@ -182,7 +182,7 @@ export default class VariableDetails extends Vue {
     }
 
     getEncodedUrlPage(elementType: string , uri : string) : string{
-        return  this.$opensilex.getResourceURI("variables/?elementType="+elementType +"&selected="+encodeURIComponent(uri));
+        return  this.$opensilex.getURL("variables/?elementType="+elementType +"&selected="+encodeURIComponent(uri));
     }
 
 

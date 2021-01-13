@@ -66,8 +66,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         appContext.setJarScanner(new IgnoreJarScanner());
 
         // Add rewrite rules for application
-        RewriteValve valve = new RewriteValve();
+        FrontRewriteValve valve = new FrontRewriteValve();
         appContext.getPipeline().addValve(valve);
+        valve.initRules();
     }
 
     @Override

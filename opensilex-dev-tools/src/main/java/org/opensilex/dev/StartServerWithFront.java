@@ -18,6 +18,8 @@ import org.opensilex.*;
 import org.opensilex.front.FrontModule;
 import org.opensilex.front.api.FrontAPI;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.server.ServerConfig;
+import org.opensilex.server.ServerModule;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +71,8 @@ public class StartServerWithFront {
 
         countDownLatch.await();
         LOGGER.debug("start front server");
-        Process frontProcess = createFrontServer();
+        String pathPrefix = opensilex.getModuleConfig(ServerModule.class, ServerConfig.class).pathPrefix();
+        Process frontProcess = createFrontServer(pathPrefix);
 
         // Add hook to clean node.js processes on shutdown
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -91,7 +94,7 @@ public class StartServerWithFront {
 
     }
 
-    private static Process createFrontServer() throws Exception {
+    private static Process createFrontServer(String pathPrefix) throws Exception {
         Path targetDirectory = baseDirectory.resolve("../opensilex-front/target/classes/front");
         if (!targetDirectory.toFile().exists()) {
             Files.createDirectories(targetDirectory);
@@ -109,7 +112,7 @@ public class StartServerWithFront {
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         frontBuilder.directory(baseDirectory.resolve("../opensilex-front/front").toFile());
         frontBuilder.inheritIO();
-
+        frontBuilder.environment().put("OPENSILEX_VUE_APP_PREFIX", pathPrefix);
         return frontBuilder.start();
     }
 

@@ -220,7 +220,7 @@ public class GeospatialDAO {
 
             SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class,
                     currentUser,
-                    false,
+                    true,
                     null);
             List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);
             List<String> ontologyAreaURI = new LinkedList<>();

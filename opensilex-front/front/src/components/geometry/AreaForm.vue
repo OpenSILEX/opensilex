@@ -26,7 +26,8 @@
     <opensilex-TypeForm
         :baseType="$opensilex.Oeso.AREA_TYPE_URI"
         :placeholder="$t('AreaForm.form-type-placeholder')"
-        :type.sync="form.optionAreaType"
+        :required="true"
+        :type.sync="form.type"
     ></opensilex-TypeForm>
 
     <!-- description -->
@@ -44,7 +45,6 @@ import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class AreaForm extends Vue {
@@ -69,9 +69,8 @@ export default class AreaForm extends Vue {
         uri: null,
         name: null,
         subject: null,
-        optionAreaType: null,
+        type: null,
         description: "",
-        type: "",
         geometry: [],
         properties: [],
         exactMatch: [],
@@ -106,9 +105,8 @@ export default class AreaForm extends Vue {
       uri: null,
       name: null,
       subject: null,
-      optionAreaType: null,
+      type: null,
       description: "",
-      type: "",
       geometry: [],
       properties: [],
       exactMatch: [],
@@ -124,10 +122,6 @@ export default class AreaForm extends Vue {
 
   create(form) {
     form.geometry = this.$store.state.zone.geometry;
-    if (form.optionAreaType != null)
-      form.type = form.optionAreaType;
-    else
-      form.type = Oeso.AREA_TYPE_URI;
 
     return this.$opensilex
         .getService("opensilex.AreaService")

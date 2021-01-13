@@ -39,7 +39,7 @@
           style="height: 400px"
           @created="mapCreated"
       >
-        <vl-view ref="mapView" :rotation.sync="rotation"></vl-view>
+        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation"></vl-view>
 
         <vl-layer-tile id="osm">
           <vl-source-osm></vl-source-osm>
@@ -366,7 +366,7 @@ export default class MapView extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
 
-    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI)
+    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI, true)
         .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
               this.extracted(res, typeLabel);

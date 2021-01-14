@@ -115,8 +115,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return ClassUtils.getGenericTypeFromClass(f.getClass());
     }
 
-    public T createInstance(Node graph, URI uri, String lang, SPARQLService service) throws Exception {
-        SPARQLProxyResource<T> proxy = new SPARQLProxyResource<>(mapperIndex, graph, uri, objectClass, lang, service);
+    public T createInstance(Node graph, URI uri, String lang, boolean useDefaultGraph, SPARQLService service) throws Exception {
+        SPARQLProxyResource<T> proxy = new SPARQLProxyResource<>(mapperIndex, graph, uri, objectClass, lang, useDefaultGraph, service);
         T instance = proxy.loadIfNeeded();
         if (instance != null) {
             return proxy.getInstance();
@@ -175,25 +175,26 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 }
 
                 SPARQLProxyResource<?> proxy;
+                boolean useDefaultGraph = classAnalizer.useDefaultGraph(field);
                 if (SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)) {
                     String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
                     String name = result.getStringValue(fieldNameVar);
 
                     // try to build a proxy object including name with the SPARQL builder variable binding name
                     if (! StringUtils.isEmpty(name)) {
-                        proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
+                        proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, false, service);
                     }else{
                         // try to build a proxy object including name with an another SPARQL builder variable binding name
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
 
                         if(! StringUtils.isEmpty(name)){
-                            proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, service);
+                            proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, useDefaultGraph, service);
                         }else{
-                            proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
+                            proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, useDefaultGraph, service);
                         }
                     }
                 } else {
-                    proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, service);
+                    proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, useDefaultGraph, service);
                 }
                 setter.invoke(instance, proxy.getInstance());
             }

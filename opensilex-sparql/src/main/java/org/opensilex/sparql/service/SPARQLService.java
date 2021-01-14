@@ -319,16 +319,20 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Class<T> objectClass, URI uri, String lang) throws Exception {
-        return getByURI(getDefaultGraph(objectClass), objectClass, uri, lang);
+        return getByURI(getDefaultGraph(objectClass), objectClass, uri, lang, true);
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Node graph, Class<T> objectClass, URI uri, String lang) throws Exception {
+         return getByURI(graph, objectClass, uri, lang, false);
+    }
+    
+    public <T extends SPARQLResourceModel> T getByURI(Node graph, Class<T> objectClass, URI uri, String lang, boolean useDefaultGraph) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
             lang = getDefaultLang();
         }
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        T instance = mapper.createInstance(graph, uri, lang, this);
+        T instance = mapper.createInstance(graph, uri, lang, useDefaultGraph, this);
         return instance;
     }
 

@@ -444,7 +444,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.soService
-      .getScientificObjectDetail(this.uri, node.data.uri)
+      .getScientificObjectDetail(node.data.uri, this.uri)
       .then(http => {
         let form: any = http.response.result;
 
@@ -481,7 +481,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetails(nodeUri: any) {
-    this.soService.getScientificObjectDetail(this.uri, nodeUri).then(http => {
+    this.soService.getScientificObjectDetail(nodeUri, this.uri).then(http => {
       this.selected = http.response.result;
     });
   }

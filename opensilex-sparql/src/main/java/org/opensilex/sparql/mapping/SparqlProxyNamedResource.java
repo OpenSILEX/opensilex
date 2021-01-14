@@ -17,14 +17,14 @@ class SparqlProxyNamedResource<T extends SPARQLNamedResourceModel<T>> extends SP
 
     protected final String name;
 
-    SparqlProxyNamedResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String name, String lang, SPARQLService service) throws Exception {
-        super(repository,graph,uri, type, lang, service);
+    SparqlProxyNamedResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String name, String lang, boolean useDefaultGraph, SPARQLService service) throws Exception {
+        super(repository, graph, uri, type, lang, useDefaultGraph, service);
         this.name = name;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if ("getName".equals(method.getName()) && method.getParameterCount() == 0 && name != null){
+        if ("getName".equals(method.getName()) && method.getParameterCount() == 0 && name != null) {
             return name;
         } else {
             return super.invoke(proxy, method, args);

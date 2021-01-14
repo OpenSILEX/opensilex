@@ -1,42 +1,32 @@
 <template>
-  <b-form>
-    <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="ScientificObjectForm.uri"
-      helpMessage="ScientificObjectForm.uri-help"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
+  <opensilex-ModalForm
+    ref="soForm"
+    component="opensilex-OntologyObjectForm"
+    createTitle="ExperimentScientificObjects.add"
+    editTitle="ExperimentScientificObjects.update"
+    modalSize="lg"
+    :createAction="callScientificObjectCreation"
+    :updateAction="callScientificObjectUpdate"
+    @onCreate="refresh()"
+    @onUpdate="refresh()"
+  >
+    <template v-slot:customFields="{ form }">
+      <opensilex-SelectForm
+        label="ExperimentScientificObjects.parent-label"
+        :selected.sync="form.parent"
+        :multiple="false"
+        :required="false"
+        :searchMethod="searchParents"
+        :itemLoadingMethod="getParentsByURI"
+      ></opensilex-SelectForm>
 
-    <!-- Label -->
-    <opensilex-InputForm
-      :value.sync="form.name"
-      label="ScientificObjectForm.label"
-      type="text"
-      :required="true"
-      placeholder="scientificObject.label-placeholder"
-    ></opensilex-InputForm>
-
-    <!-- Type -->
-    <opensilex-TypeForm
-      :type.sync="form.type"
-      :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-      :required="true"
-      @input="getAdditionalFields"
-      placeholder="scientificObject.form-type-placeholder"
-    ></opensilex-TypeForm>
-
-    <!-- <div v-for="(value, index) in propertyComponents" :key="index">{{value}}</div> -->
-
-    <component
-      v-for="(value, index) in propertyComponents"
-      :key="index"
-      v-bind:is="value.component"
-      :property="value.property"
-      :value.sync="v"
-    ></component>
-  </b-form>
+      <opensilex-GeometryForm
+        :value.sync="form.geometry"
+        label="component.common.geometry"
+        helpMessage="component.common.geometry-help"
+      ></opensilex-GeometryForm>
+    </template>
+  </opensilex-ModalForm>
 </template>
 
 <script lang="ts">
@@ -47,7 +37,8 @@ import VueRouter from "vue-router";
 import {
   ExperimentCreationDTO,
   SpeciesService,
-  SpeciesDTO
+  SpeciesDTO,
+  ScientificObjectsService
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
@@ -56,84 +47,110 @@ export default class ScientificObjectForm extends Vue {
   $opensilex: any;
   $store: any;
 
-  v = "";
-  @Prop()
-  editMode;
+  soService: ScientificObjectsService;
 
-  @Prop({ default: true })
-  uriGenerated;
+  @Ref("soForm") readonly soForm!: any;
 
-  @Ref("validatorRef") readonly validatorRef!: any;
-
-  get user() {
-    return this.$store.state.user;
+  created() {
+    this.soService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
   }
 
-  @Prop({
-    default: () => {
-      return {
-        uri: undefined,
-        type: undefined,
-        name: "",
-        factors: [],
-        germplasms: [],
-        relations: []
-      };
-    }
-  })
-  form;
+  createScientificObject() {
+    this.soForm
+      .getFormRef()
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
-  propertyComponents = [];
+    this.soForm.showCreateForm();
+  }
 
-  getAdditionalFields() {
-    let ontologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
+  editScientificObject(objectURI) {
+    this.soForm
+      .getFormRef()
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
-    return ontologyService
-      .getClasses([
-        this.form.type,
-        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-      ])
-      .then(http => {
-        let classModel = http.response.result[0];
-        let baseClassModel = http.response.result[1];
+    this.soService.getScientificObjectDetail(objectURI).then(http => {
+      let form: any = http.response.result;
+      this.soForm.showEditForm(form);
+    });
+  }
 
-        let managedURIs = [];
-        for (let i in baseClassModel.properties) {
-          let managedURI = baseClassModel.properties[i].uri;
-          managedURIs.push(managedURI);
-        }
-
-        this.propertyComponents = [];
-        for (let i in classModel.properties) {
-          let property = classModel.properties[i];
-          let typeComponent = this.$opensilex.getTypeComponent(
-            property.typeRestriction
-          );
-          if (managedURIs.indexOf(property.uri) < 0 && typeComponent) {
-            property.required = true;
-            this.propertyComponents.push({
-              property: property,
-              component: typeComponent.inputComponent
+  callScientificObjectCreation(form) {
+    let definedRelations = [];
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.property == "vocabulary:isPartOf") {
+        relation.value = form.parent;
+      }
+      if (relation.value != null) {
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j]
             });
           }
+        } else {
+          definedRelations.push(relation);
         }
+      }
+    }
 
-        // TODO display components
+    return this.soService
+      .createScientificObject({
+        uri: form.uri,
+        name: form.name,
+        type: form.type,
+        geometry: form.geometry,
+        relations: definedRelations
+      })
+      .then(http => {
+        // this.refresh();
       });
   }
 
-  reset() {
-    // TODO
-  }
+  callScientificObjectUpdate(form) {
+    let definedRelations = [];
+    let parentSet = false;
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.property == "vocabulary:isPartOf") {
+        relation.value = form.parent;
+        parentSet = true;
+      }
+      if (relation.value != null) {
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j]
+            });
+          }
+        } else {
+          definedRelations.push(relation);
+        }
+      }
+    }
 
-  create(form) {
-    // TODO
-  }
+    if (!parentSet && form.parent != null) {
+      definedRelations.push({
+        property: "vocabulary:isPartOf",
+        value: form.parent
+      });
+    }
 
-  update(form) {
-    // TODO
+    return this.soService
+      .updateScientificObject({
+        uri: form.uri,
+        name: form.name,
+        type: form.type,
+        geometry: form.geometry,
+        relations: definedRelations
+      })
+      .then(http => {
+        // this.refresh();
+      });
   }
 }
 </script>

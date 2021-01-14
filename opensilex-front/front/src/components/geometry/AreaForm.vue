@@ -45,6 +45,7 @@ import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
 @Component
 export default class AreaForm extends Vue {
@@ -92,6 +93,19 @@ export default class AreaForm extends Vue {
 
   reset() {
     this.uriGenerated = true;
+  }
+
+  update(form) {
+    return this.$opensilex
+        .getService("opensilex.AreaService")
+        .updateArea(form)
+        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+          let uri = http.response.result;
+          console.debug("Area updated", uri);
+
+          return uri;
+        })
+        .catch(this.$opensilex.errorHandler);
   }
 
   getEmptyForm() {

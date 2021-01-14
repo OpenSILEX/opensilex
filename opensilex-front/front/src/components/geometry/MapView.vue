@@ -25,6 +25,7 @@
         icon="fa#sun"
         modalSize="xl"
         @onCreate="showAreaDetails"
+        @onUpdate="callAreaUpdate"
     ></opensilex-ModalForm>
 
     <p class="alert-info">
@@ -101,7 +102,7 @@
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
           :fields="fieldsSelected"
-          :items="selectedFeatures">
+          :items.sync="selectedFeatures">
         <template v-slot:cell(name)="{data}">
           <opensilex-UriLink
               :uri="data.item.properties.uri"
@@ -120,8 +121,15 @@
 
         <template v-slot:cell(actions)="{data}">
           <b-button-group size="sm">
-            <div
-                v-if="user.admin === true && (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
+            <div v-if="user.admin === true &&
+                 (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
+              <opensilex-EditButton
+                  v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+                  :small="true"
+                  label="Area.update"
+                  @click="editArea(data.item.properties.uri)"
+              ></opensilex-EditButton>
+
               <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
                                       label="MapView.delete-area-button"
                                       @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
@@ -214,6 +222,31 @@ export default class MapView extends Vue {
       if (areaUri != undefined) {
         this.editingMode = false;
         console.debug("showAreaDetails", areaUri);
+        this.$opensilex.getService("opensilex.AreaService")
+            .getByURI(areaUri)
+            .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+                  const res = http.response.result as any;
+                  if (res.geometry != null) {
+                    res.geometry.properties = {
+                      uri: res.uri,
+                      name: res.name,
+                      type: res.type,
+                      description: res.description,
+                    }
+                    this.featuresArea.push(res.geometry)
+                  }
+                }
+            )
+            .catch(this.$opensilex.errorHandler);
+      }
+    });
+  }
+
+  callAreaUpdate(areaUriResult) {
+    areaUriResult.then(areaUri => {
+      if (areaUri != undefined) {
+        this.removeFromFeaturesArea(areaUri, this.featuresArea);
+
         this.$opensilex.getService("opensilex.AreaService")
             .getByURI(areaUri)
             .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
@@ -388,6 +421,14 @@ export default class MapView extends Vue {
     }
   }
 
+  private removeFromFeaturesArea(uri, features) {
+    features.forEach(item => {
+      if (item.properties.uri == uri) {
+        features.splice(features.indexOf(item), 1);
+      }
+    });
+  }
+
   private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: String; name: String }[]) {
     res.forEach(({name, uri, children}) => {
       typeLabel.push({uri: uri, name: name});
@@ -438,6 +479,16 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
+  private editArea(uri) {
+    this.removeFromFeaturesArea(uri, this.selectedFeatures);
+    this.$opensilex.getService("opensilex.AreaService")
+        .getByURI(uri)
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+          let form: any = http.response.result;
+          this.areaForm.showEditForm(form);
+        }).catch(this.$opensilex.errorHandler);
+  }
+
   private deleteArea(uri) {
     this.$opensilex.getService("opensilex.AreaService")
         .deleteArea(uri)
@@ -449,12 +500,7 @@ export default class MapView extends Vue {
               " " +
               this.$i18n.t("component.common.success.delete-success-message");
           this.$opensilex.showSuccessToast(message);
-
-          for (let featuresAreaElement of this.featuresArea) {
-            if (featuresAreaElement.properties.uri == uri) {
-              this.featuresArea.splice(this.featuresArea.indexOf(featuresAreaElement), 1)
-            }
-          }
+          this.removeFromFeaturesArea(uri, this.featuresArea);
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -480,14 +526,14 @@ en:
     label: Geometry
     add-button: Add metadata
     add-area-button: Add area
-    delete-area-button: Delete an area
+    delete-area-button: Delete area
     selected-button: Exit creation mode
     errorLongitude: the longitude must be between -180 and 180
     errorLatitude: the latitude must be between -90 and 90
   Area:
     title: Area
     add: Description of the area
-    update: Update a perennial area
+    update: Update Area
 fr:
   MapView:
     name: nom
@@ -495,13 +541,12 @@ fr:
     label: Géométrie
     add-button: Ajouter des métadonnées
     add-area-button: Ajouter une zone
-    delete-area-button: Supprimer une zone
+    delete-area-button: Supprimer la zone
     selected-button: Sortir du mode création
     errorLongitude: la longitude doit être comprise entre -180 et 180
     errorLatitude: la latitude doit être comprise entre -90 et 90
   Area:
     title: Zone
     add: Description de la zone
-    update: Mettre à jour une zone pérenne
-
+    update: Mise à jour de la zone
 </i18n>

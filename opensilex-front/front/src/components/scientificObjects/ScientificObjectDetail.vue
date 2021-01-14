@@ -1,21 +1,19 @@
 <template>
-    <b-card v-if="selected && selected.uri">
-
-        <b-tabs content-class="mt-3" :value=tabsIndex @input="updateTabs">
-            <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
-            <b-tab :title="$t('Documents')"></b-tab>
-            <b-tab :title="$t('Annotation.list-title')"></b-tab>
-<!--            <b-tab :title="$t('Event.list-title')"></b-tab>-->
-        </b-tabs>
-        <!--    <template v-slot:header>-->
-        <!--      <h3>-->
-        <!--        &lt;!&ndash; <opensilex-Icon icon="ik#ik-clipboard" /> &ndash;&gt;-->
-        <!--        {{$t("ScientificObjectDetail.title")}}-->
-        <!--      </h3>-->
-        <!--    </template>-->
-        <div v-if="loadDetails()">
+  <b-card v-if="selected && selected.uri">
+    <b-tabs content-class="mt-3" :value="tabsIndex" @input="updateTabs">
+      <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
+      <b-tab :title="$t('Documents')"></b-tab>
+      <b-tab :title="$t('Annotation.list-title')"></b-tab>
+      <!--            <b-tab :title="$t('Event.list-title')"></b-tab>-->
+    </b-tabs>
+    <!--    <template v-slot:header>-->
+    <!--      <h3>-->
+    <!--        &lt;!&ndash; <opensilex-Icon icon="ik#ik-clipboard" /> &ndash;&gt;-->
+    <!--        {{$t("ScientificObjectDetail.title")}}-->
+    <!--      </h3>-->
+    <!--    </template>-->
+    <div v-if="loadDetails()">
       <!-- URI -->
- <!-- URI -->
       <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
@@ -32,50 +30,48 @@
       <div v-for="(v, index) in typeProperties" v-bind:key="index">
         <div class="static-field" v-if="!v.definition.isList">
           <span class="field-view-title">{{v.definition.name}}:</span>
-          <component
-            
-            :is="v.definition.viewComponent"
-            :value="v.property"
-          ></component>
+          <component :is="v.definition.viewComponent" :value="v.property"></component>
         </div>
-        <div class="static-field"  v-else-if="v.property && v.property.length > 0">
-           <span class="field-view-title">{{v.definition.name}}:</span>
-                    <ul>
+        <div class="static-field" v-else-if="v.property && v.property.length > 0">
+          <span class="field-view-title">{{v.definition.name}}:</span>
+          <ul>
             <br />
             <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
               <component :is="v.definition.viewComponent" :value="prop"></component>
             </li>
           </ul>
         </div>
-            </div>
-     
+      </div>
+    </div>
 
-        <opensilex-AnnotationList
-                v-if="isAnnotationTab()"
-                ref="annotationList"
-                :target="selected.uri"
-                :enableActions="true"
-                :columnsToDisplay="new Set(['creator','motivation','created'])"
-                :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
-                :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-                @onEdit="annotationModalForm.showEditForm($event)"
-        ></opensilex-AnnotationList>
+    <opensilex-AnnotationList
+      v-if="isAnnotationTab()"
+      ref="annotationList"
+      :target="selected.uri"
+      :enableActions="true"
+      :columnsToDisplay="new Set(['creator','motivation','created'])"
+      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+      :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+      @onEdit="annotationModalForm.showEditForm($event)"
+    ></opensilex-AnnotationList>
 
-        <opensilex-Button
-                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-                @click="annotationModalForm.showCreateForm()"
-        ></opensilex-Button>
+    <opensilex-Button
+      v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      label="Annotation.add"
+      variant="primary"
+      :small="false"
+      icon="fa#edit"
+      @click="annotationModalForm.showCreateForm()"
+    ></opensilex-Button>
 
-        <opensilex-AnnotationModalForm
-                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                ref="annotationModalForm"
-                :target="selected.uri"
-                @onCreate="updateAnnotations"
-                @onUpdate="updateAnnotations"
-        ></opensilex-AnnotationModalForm>
-
-    </b-card>
+    <opensilex-AnnotationModalForm
+      v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      ref="annotationModalForm"
+      :target="selected.uri"
+      @onCreate="updateAnnotations"
+      @onUpdate="updateAnnotations"
+    ></opensilex-AnnotationModalForm>
+  </b-card>
 </template>
 
 <script lang="ts">
@@ -102,7 +98,7 @@ export default class ScientificObjectDetail extends Vue {
     ScientificObjectDetail.DETAILS_TAB,
     ScientificObjectDetail.DOCUMENTS_TAB,
     ScientificObjectDetail.ANNOTATIONS_TAB,
-    ScientificObjectDetail.EVENTS_TAB,
+    ScientificObjectDetail.EVENTS_TAB
   ];
 
   tabsIndex: number = 0;
@@ -139,7 +135,7 @@ export default class ScientificObjectDetail extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
+          valueByProperties[relation.property]
         ];
       }
 
@@ -174,12 +170,12 @@ export default class ScientificObjectDetail extends Vue {
         ) {
           this.typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]],
+            property: [valueByProperties[property.property]]
           });
         } else {
           this.typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property],
+            property: valueByProperties[property.property]
           });
         }
       }

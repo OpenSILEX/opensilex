@@ -56,6 +56,13 @@
 
     <opensilex-PageContent>
       <template v-slot>
+        <div>
+          <opensilex-CreateButton
+            @click="soForm.createScientificObject()"
+            label="ExperimentScientificObjects.create-scientific-object"
+          ></opensilex-CreateButton>&nbsp;
+          <opensilex-ScientificObjectForm ref="soForm"></opensilex-ScientificObjectForm>
+        </div>
         <opensilex-TableAsyncView
           ref="tableRef"
           :searchMethod="searchScientificObject"
@@ -72,15 +79,18 @@
               :to="{ path: '/scientific-objects/details/' + encodeURIComponent(data.item.uri) }"
             ></opensilex-UriLink>
           </template>
-
-          <template v-slot:cell(actions)>
-            <a
-              href="data.html"
-              class="btn btn-icon btn-row-action btn-outline-primary"
-              title="Visualiser les données de cet objet scientifique"
-            >
-              <i class="ik ik-bar-chart-line-"></i>
-            </a>
+          <template v-slot:row-details="{data}">
+            <div>DETAILS: {{objectDetails[data.item.uri]}}</div>
+          </template>
+          <template v-slot:cell(actions)="{data}">
+            <b-button-group size="sm">
+              <opensilex-DetailButton
+                @click="loadObjectDetail(data)"
+                label="component.common.details-label"
+                :detailVisible="data.detailsShowing"
+                :small="true"
+              ></opensilex-DetailButton>
+            </b-button-group>
           </template>
         </opensilex-TableAsyncView>
       </template>
@@ -107,7 +117,8 @@ import {
   ResourceTreeDTO,
   ExperimentGetListDTO,
   OntologyService,
-  ScientificObjectsService
+  ScientificObjectsService,
+  ScientificObjectDetailDTO
 } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, {
@@ -123,6 +134,7 @@ export default class ScientificObjectList extends Vue {
   $router: VueRouter;
 
   @Ref("tableRef") readonly tableRef!: any;
+  @Ref("soForm") readonly soForm!: any;
 
   fields = [
     {
@@ -134,6 +146,10 @@ export default class ScientificObjectList extends Vue {
       key: "typeLabel",
       label: "component.common.type",
       sortable: true
+    },
+    {
+      key: "actions",
+      label: "component.common.actions"
     }
   ];
 
@@ -199,6 +215,31 @@ export default class ScientificObjectList extends Vue {
       options.currentPage, // page?: number,
       options.pageSize // pageSize?: number
     );
+  }
+
+  private objectDetails = {};
+
+  loadObjectDetail(data) {
+    if (!data.detailsShowing) {
+      this.$opensilex.disableLoader();
+      let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
+        "opensilex.ScientificObjectsService"
+      );
+      scientificObjectsService
+        .getScientificObjectDetailByContext(data.item.uri)
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
+          ) => {
+            this.objectDetails[data.item.uri] = http.response.result;
+            data.toggleDetails();
+            this.$opensilex.enableLoader();
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
+    } else {
+      data.toggleDetails();
+    }
   }
 }
 </script>

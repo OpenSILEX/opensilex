@@ -8,7 +8,6 @@ package org.opensilex.sparql.mapping;
 import java.lang.reflect.Method;
 import java.net.URI;
 import org.apache.jena.graph.Node;
-import org.opensilex.sparql.exceptions.SPARQLMultipleObjectException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -18,33 +17,26 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> {
 
-    SPARQLProxyResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String lang, SPARQLService service) throws Exception {
+    SPARQLProxyResource(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Class<T> type, String lang, boolean useDefaultGraph, SPARQLService service) throws Exception {
         super(repository, graph, type, lang, service);
         this.uri = uri;
         this.mapper = repository.getForClass(type);
+        this.useDefaultGraph = useDefaultGraph;
     }
 
     protected final SPARQLClassObjectMapper<T> mapper;
     protected final URI uri;
+    protected final boolean useDefaultGraph;
 
     @Override
     protected T loadData() throws Exception {
         T data = null;
-        if (graph != null) {
+        if (graph != null && !this.useDefaultGraph) {
             data = service.loadByURI(graph, type, uri, lang);
-            if (data == null) {
-                try {
-                    data = service.loadByURI(type, uri, lang);
-                } catch (SPARQLMultipleObjectException ex) {
-                }
-            }
         } else {
             data = service.loadByURI(type, uri, lang);
         }
 
-//        if (data == null) {
-//            data = service.loadByURI(graph, type, uri, lang);
-//        }
         return data;
     }
 

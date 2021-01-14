@@ -40,10 +40,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     protected static final String path = "/core/scientific-object";
 
-    public static final String uriPath = path + "/get-detail/{xpuri}/{objuri}";
+    public static final String uriPath = path + "/get-detail";
     public static final String createPath = path + "/create";
     public static final String updatePath = path + "/update";
-    public static final String deletePath = path + "/delete/{xpURI}/{objURI}";
+    public static final String deletePath = path + "/delete";
     private int soCount = 1;
     private URI experiment;
 
@@ -109,8 +109,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     private Response getResponse(URI createdUri) throws Exception {
         WebTarget getDetailTarget = target(uriPath);
-        getDetailTarget = getDetailTarget.resolveTemplate("xpuri", experiment.toString());
-        getDetailTarget = getDetailTarget.resolveTemplate("objuri", createdUri.toString());
+        getDetailTarget = getDetailTarget.queryParam("contextURI", experiment.toString());
+        getDetailTarget = getDetailTarget.queryParam("objURI", createdUri.toString());
 
         return appendToken(getDetailTarget).get();
     }
@@ -161,8 +161,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // delete object and check if URI no longer exists
         WebTarget getDeleteByUriTarget = target(deletePath);
-        getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("xpURI", experiment.toString());
-        getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("objURI", uri);
+        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("contextURI", experiment.toString());
+        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("objURI", uri);
 
         final Response delResult = appendToken(getDeleteByUriTarget).delete();
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());

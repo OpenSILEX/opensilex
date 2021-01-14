@@ -91,6 +91,8 @@ final class SPARQLClassAnalyzer {
     private final Map<String, SPARQLProperty> annotationsByField = new HashMap<>();
     private final List<String> optionalFields = new ArrayList<>();
 
+    private final List<String> defaultGraphFields = new ArrayList<>();
+
     private final List<String> reverseRelationFields = new ArrayList<>();
 
     private final Map<String, Class<? extends SPARQLResourceModel>> cascadeDeleteClassesField = new HashMap<>();
@@ -340,6 +342,11 @@ final class SPARQLClassAnalyzer {
             optionalFields.add(field.getName());
         }
 
+        LOGGER.debug("Determine if field " + field.getName() + " is stored in default graph");
+        if (sProperty.useDefaultGraph()) {
+            defaultGraphFields.add(field.getName());
+        }
+
         LOGGER.debug("Determine if field " + field.getName() + " is a reversed property or not");
         if (sProperty.inverse()) {
             checkAllowedReverseField(field);
@@ -497,6 +504,10 @@ final class SPARQLClassAnalyzer {
 
     public boolean isReverseRelation(Field field) {
         return reverseRelationFields.contains(field.getName());
+    }
+
+    public boolean useDefaultGraph(Field field) {
+        return defaultGraphFields.contains(field.getName());
     }
 
     public void forEachDataProperty(BiConsumer<Field, Property> lambda) {

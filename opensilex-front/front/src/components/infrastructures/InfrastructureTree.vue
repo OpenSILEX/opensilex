@@ -36,11 +36,11 @@
       </template>
 
       <template v-slot:buttons="{ node }">
-        <opensilex-DetailButton
+        <!-- <opensilex-DetailButton
           @click="showDetail(node.data.uri)"
           label="InfrastructureTree.edit"
           :small="true"
-        ></opensilex-DetailButton>        
+        ></opensilex-DetailButton>         -->
         <opensilex-EditButton
           v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
           @click="editInfrastructure(node.data.uri)"

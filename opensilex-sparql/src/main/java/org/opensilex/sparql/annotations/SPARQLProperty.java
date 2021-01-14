@@ -37,4 +37,6 @@ public @interface SPARQLProperty {
     boolean cascadeDelete() default false;
     
     boolean autoUpdate() default false;
+    
+    boolean useDefaultGraph() default true;
 }

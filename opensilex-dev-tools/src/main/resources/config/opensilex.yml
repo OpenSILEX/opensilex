@@ -25,7 +25,5 @@ phisws:
     
 #core:
 #    enableLogs: true
-#
-#   # Application path prefix (String)
 #server:
-#    pathPrefix: sunagri
+#    pathPrefix: configurable-app-path

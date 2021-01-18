@@ -4,42 +4,42 @@
       <div v-if="globalFilterField">
         <div>
           <opensilex-StringFilter
-            :filter.sync="filter"
-            placeholder="TableView.filter.placeholder"
+              :filter.sync="filter"
+              placeholder="TableView.filter.placeholder"
           ></opensilex-StringFilter>
         </div>
       </div>
       <b-table
-        ref="tableRef"
-        :id="this.uuid"
-        striped
-        hover
-        small
-        responsive
-        primary-key="uri"
-        :per-page="pageSize"
-        :current-page="currentPage"
-        :filter="filter"
-        :items="items"
-        :fields="fields"
-        sort-icon-left
-        @filtered="onFiltered"
+          :id="this.uuid"
+          ref="tableRef"
+          :current-page="currentPage"
+          :fields="fields"
+          :filter="filter"
+          :items="items"
+          :per-page="pageSize"
+          hover
+          primary-key="uri"
+          responsive
+          small
+          sort-icon-left
+          striped
+          @filtered="onFiltered"
       >
         <template
-          v-for="(field, index) in fields"
-          v-slot:[getHeadTemplateName(field.key)]="data"
+            v-for="(field, index) in fields"
+            v-slot:[getHeadTemplateName(field.key)]="data"
         >
           <span v-if="!field.isSelect" :key="index">{{ $t(data.label) }}</span>
         </template>
 
         <template
-          v-for="(field, index) in fields"
-          v-slot:[getCellTemplateName(field.key)]="data"
+            v-for="(field, index) in fields"
+            v-slot:[getCellTemplateName(field.key)]="data"
         >
           <span v-if="!field.isSelect" :key="index">
             <slot :name="getCellTemplateName(field.key)" v-bind:data="data">{{
-              data.item[field.key]
-            }}</slot>
+                data.item[field.key]
+              }}</slot>
           </span>
 
           <span v-else :key="index" class="checkbox"></span>
@@ -50,10 +50,10 @@
         </template>
       </b-table>
       <b-pagination
-        v-model="currentPage"
-        :total-rows="totalRows"
-        :per-page="pageSize"
-        :aria-controls="this.uuid"
+          v-model="currentPage"
+          :aria-controls="this.uuid"
+          :per-page="pageSize"
+          :total-rows="(filter == null ? totalRows = data.length : totalRows)"
       ></b-pagination>
     </div>
   </div>
@@ -62,7 +62,6 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 let table_uuid = 0;
 
@@ -73,7 +72,7 @@ export default class TableView extends Vue {
   $store: any;
   @Ref("tableRef") readonly tableRef!: any;
 
-  @PropSync("items", { default: [] })
+  @PropSync("items", {default: []})
   data: any[];
 
   @Prop()
@@ -128,7 +127,7 @@ export default class TableView extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 table.b-table-selectable tbody tr td span {
   line-height: 24px;
   text-align: center;
@@ -195,12 +194,12 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 
 <i18n>
 en:
-  TableView: 
+  TableView:
     filter:
-       placeholder: Search in this table
-            
+      placeholder: Search in this table
+
 fr:
-  TableView: 
+  TableView:
     filter:
-       placeholder: Rechercher dans ce tableau
+      placeholder: Rechercher dans ce tableau
 </i18n>

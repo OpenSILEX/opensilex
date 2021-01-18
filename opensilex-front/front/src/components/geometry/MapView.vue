@@ -102,7 +102,7 @@
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
           :fields="fieldsSelected"
-          :items.sync="selectedFeatures">
+          :items="selectedFeatures">
         <template v-slot:cell(name)="{data}">
           <opensilex-UriLink
               :uri="data.item.properties.uri"

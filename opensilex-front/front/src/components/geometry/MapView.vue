@@ -40,7 +40,10 @@
           style="height: 400px"
           @created="mapCreated"
       >
-        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation"></vl-view>
+        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation"
+                 @update:rotation="areaRecovery"
+                 @update:zoom="areaRecovery">
+        </vl-view>
 
         <vl-layer-tile id="osm">
           <vl-source-osm></vl-source-osm>
@@ -374,7 +377,7 @@ export default class MapView extends Vue {
     extent[2] += 50;
     extent[3] += 50;
     this.mapView.$view.fit(extent);
-    this.areaRecovery(extent);
+    this.areaRecovery();
   }
 
   select(value) {
@@ -438,13 +441,8 @@ export default class MapView extends Vue {
     });
   }
 
-  private areaRecovery(extent) {
-    extent[0] -= 450;
-    extent[1] -= 100;
-    extent[2] += 450;
-    extent[3] += 100;
-
-    this.coordinateExtent = transformExtent(extent, "EPSG:3857", "EPSG:4326");
+  private areaRecovery() {
+    this.coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
 
     let geometry = {
       "type": "Polygon",
@@ -456,6 +454,8 @@ export default class MapView extends Vue {
         [this.coordinateExtent[2], this.coordinateExtent[1]]
       ]]
     }
+
+    this.featuresArea = [];
     this.service = this.$opensilex.getService(
         "opensilex.AreaService"
     );

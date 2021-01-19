@@ -741,6 +741,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:label xml:lang="fr">Actuateur</rdfs:label>
+        <rdfs:label xml:lang="en">Actuator</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument">
@@ -1229,6 +1239,25 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Shiny Application</rdfs:label>
     </owl:Class>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#SoftSensor -->
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoftSensor">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDevice"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#measures"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label xml:lang="fr">Capteur logiciel</rdfs:label>
+        <rdfs:label xml:lang="en">Soft sensor</rdfs:label>
+    </owl:Class>
+    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SoftSensor -->
@@ -1568,6 +1597,15 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     </owl:Class>
     
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Station -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Station">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:label xml:lang="en">Station</rdfs:label>
+        <rdfs:label xml:lang="fr">Station</rdfs:label>
+    </owl:Class>
+    
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Station -->
 
@@ -1858,7 +1896,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
     </owl:Class>
     
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#WebSite -->
 
@@ -2373,8 +2410,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Title</rdfs:label>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#title-006"/>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
     </rdf:Description>
@@ -2407,8 +2444,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">contexte expérimental</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
-        <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
         <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
+        <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
         <rdfs:comment xml:lang="fr">Un facteur d&apos;une expérience est une variable indépendante contrôlée; une variable dont les niveaux sont fixés par l&apos;expérimentateur.</rdfs:comment>

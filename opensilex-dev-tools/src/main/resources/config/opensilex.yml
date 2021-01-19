@@ -26,4 +26,4 @@ phisws:
 #core:
 #    enableLogs: true
 #server:
-#    pathPrefix: configurable-app-path
+#    pathPrefix: /sunagri

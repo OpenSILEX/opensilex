@@ -20,13 +20,16 @@ public class FrontRewriteValve extends RewriteValve {
         reader = new BufferedReader(new StringReader(getRewriteRules()));
         super.parse(reader);
     }
-    
+
     public void initRules() throws Exception {
         setConfiguration(getRewriteRules());
     }
-    
-    private static String getRewriteRules() {
-        return "RewriteCond %{REQUEST_PATH} !-f\n"
-                + "RewriteRule ^/(.*)$ /index.html [L]";
+
+    private String getRewriteRules() {
+        return "RewriteCond %{REQUEST_URI} ^.*/osfront/.+$\n"
+                + "RewriteRule (.*)/osfront/(.*)$ " + "/$2 [L,NE]\n"
+                + "RewriteCond %{REQUEST_PATH} !-f\n"
+                + "RewriteRule ^/(.*)$ /index.html [L,NE]";
+
     }
 }

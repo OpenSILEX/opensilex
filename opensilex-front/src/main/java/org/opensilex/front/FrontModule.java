@@ -13,7 +13,6 @@ import org.opensilex.front.config.MenuItem;
 import java.util.List;
 import java.util.Map;
 import org.apache.catalina.Context;
-import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.MenuItemDTO;
@@ -52,7 +51,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             String pathPrefix = cfg.pathPrefix();
             return pathPrefix;
         } catch (OpenSilexModuleNotFoundException ex) {
-            return "app";
+            return "";
         }
     }
 
@@ -60,7 +59,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     public void initServer(org.opensilex.server.Server server) throws Exception {
         // Register front application
         String pathPrefix = getApplicationPathPrefix();
-        Context appContext = server.initApp("/" + pathPrefix, "/", "/front", FrontModule.class);
+        Context appContext = server.initApp(pathPrefix + "/app", "/", "/front", FrontModule.class);
 
         // Disable JAR scanner for front application because it's not required
         appContext.setJarScanner(new IgnoreJarScanner());

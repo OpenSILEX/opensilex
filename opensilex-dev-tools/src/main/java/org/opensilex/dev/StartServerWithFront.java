@@ -112,7 +112,6 @@ public class StartServerWithFront {
         ProcessBuilder frontBuilder = new ProcessBuilder(args);
         frontBuilder.directory(baseDirectory.resolve("../opensilex-front/front").toFile());
         frontBuilder.inheritIO();
-        frontBuilder.environment().put("OPENSILEX_VUE_APP_PREFIX", pathPrefix);
         return frontBuilder.start();
     }
 

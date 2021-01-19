@@ -148,4 +148,14 @@ public class Oeso {
     // ---- DOCUMENTS ----
     public static final Resource Document = Ontology.resource(NS, "Document");
     public static final Property hasAuthor = Ontology.property(NS, "hasAuthor");
+    
+     // ---- DEVICES ----
+    public static final Resource Device = Ontology.resource(NS, "Device");
+    public static final Property hasBrand = Ontology.property(NS, "hasBrand");
+    public static final Property hasSerialNumber = Ontology.property(NS,"hasSerialNumber");
+    public static final Property hasModel = Ontology.property(NS,"hasModel");
+    public static final Property personInCharge = Ontology.property(NS,"personInCharge");
+    public static final Property obtained = Ontology.property(NS,"obtained");
+    public static final Property dateOfLastUse = Ontology.property(NS,"dateOfLastUse");
+
 }

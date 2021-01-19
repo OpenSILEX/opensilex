@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api;
 
 /**
  *
  * @author vince
  */
-class InfrastructureCreationDTO extends InfrastructureDTO {
-
+public class InfrastructureUpdateDTO extends InfrastructureCreationDTO {
+    
 }

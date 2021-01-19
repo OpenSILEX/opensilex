@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api;
 
 import java.net.URI;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 import org.opensilex.security.group.api.GroupDTO;
 
 /**

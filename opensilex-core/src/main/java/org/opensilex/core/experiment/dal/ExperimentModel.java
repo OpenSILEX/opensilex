@@ -18,7 +18,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;

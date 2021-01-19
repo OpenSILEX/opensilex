@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**

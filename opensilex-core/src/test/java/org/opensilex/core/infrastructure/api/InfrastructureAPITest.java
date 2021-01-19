@@ -4,7 +4,7 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +16,9 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+
+import org.opensilex.core.organisation.api.InfrastructureCreationDTO;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -29,13 +31,13 @@ import org.opensilex.sparql.response.ResourceTreeResponse;
  */
 public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/infrastructure";
+    protected String path = "/core/organisations";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = path + "/{uri}";
+    protected String searchPath = path ;
+    protected String createPath = path ;
+    protected String updatePath = path;
+    protected String deletePath = path + "/{uri}";
 
     private static int infraCount = 0;
 

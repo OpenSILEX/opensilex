@@ -9,58 +9,43 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  *
  * @author sammy
  */
+@JsonPropertyOrder({"uri","type","name","brand","constructorModel","serialNumber","personInCharge","dateOfPurchase","dateOfLastUse","relations"})
 public class DeviceDTO extends RDFObjectDTO {
-
-    @ApiModelProperty(value = "Device name", example = "Sensor_01", required = true)
-    protected String name;
     
-    @ApiModelProperty(value = "Device brand", example = "Campbell")
+    private String name;
+    
     protected String brand;
     
-    @ApiModelProperty(value = "Device model", example = "CS655")
     @JsonProperty("constructor_model")
     protected String constructorModel;
     
-    @ApiModelProperty(value = "Device serial number", example = "123456")
     @JsonProperty("serial_number")
     protected String serialNumber;
     
-    @ApiModelProperty(value = "Person in charge", example = "http://opensilex.dev/users#Firstname.Lastname")
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
-    @ApiModelProperty(value = "Device date of start-up", example = "2018-12-12")
-    @JsonProperty("start_up")
-    protected LocalDate startUp;
-
-    @ApiModelProperty(value = "Device date of removal", example = "2020-12-12")
-    @JsonProperty("removal")
-    protected LocalDate removal;
-
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
+    @JsonProperty("obtained")
+    protected String dateOfPurchase;
+    
+    @JsonProperty("date_of_last_use")
+    protected String dateOfLastUse;
+    
     @JsonProperty("rdf_type")
     protected URI type;
-    
-    @ApiModelProperty(value = "comment", example = "description")
-    @JsonProperty("description")
-    protected String description;
-    
+
     public String getName() {
         return name;
     }
@@ -85,12 +70,12 @@ public class DeviceDTO extends RDFObjectDTO {
         this.personInCharge = personInCharge;
     }
     
-    public void setStartUp(LocalDate startUp){
-        this.startUp = startUp;
+    public void setDateOfPurchase(String dateOfPurchase){
+        this.dateOfPurchase = dateOfPurchase;
     }
     
-    public void setRemoval(LocalDate removal){
-        this.removal = removal;
+    public void setDateOfLastUse(String dateOfLastUse){
+        this.dateOfLastUse = dateOfLastUse;
     }
     
     public String getBrand(){
@@ -109,24 +94,91 @@ public class DeviceDTO extends RDFObjectDTO {
         return personInCharge;
     }
     
-    public LocalDate getStartUp(){
-        return startUp;
+    public String getDateOfPurchase(){
+        return dateOfPurchase;
     }
     
-    public LocalDate getRemoval(){
-        return removal;
+    public String getDateOfLastUse(){
+        return dateOfLastUse;
     }
-    
-     public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }  
-    
     public DeviceModel newModelInstance() {
         return new DeviceModel();
     }
+
+    public void fromModel(DeviceModel model) {
+        setUri(model.getUri());
+        setType(model.getType());
+        setName(model.getName());
+        if (model.getBrand() != null) {
+            setBrand(model.getBrand());
+        }
+        
+        if(model.getModel() != null){
+            setConstructorModel(model.getModel());
+        }
+        
+        if(model.getSerialNumber() != null){
+            setSerialNumber(model.getSerialNumber());
+        }
+        
+        if(model.getPersonInCharge() != null){
+            setPersonInCharge(model.getPersonInCharge());
+        }
+        
+        if(model.getDateOfPurchase() != null){
+            setDateOfPurchase(model.getDateOfPurchase());
+        }
+        
+        if(model.getDateOfLastUse() != null){
+            setDateOfLastUse(model.getDateOfLastUse());
+        }
+        
+        List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
+        for (SPARQLModelRelation relation : model.getRelations()) {
+            relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
+        }
+        setRelations(relationsDTO);
+    }
+
+    public void toModel(DeviceModel model) {
+        model.setUri(getUri());
+        model.setType(getType());
+        model.setName(getName());
+        if (getBrand() != null) {
+            model.setBrand(getBrand());
+        }
+        
+        if(getConstructorModel() != null){
+            model.setModel(getConstructorModel());
+        }
+        
+        if(getSerialNumber() != null){
+            model.setSerialNumber(getSerialNumber());
+        }
+        
+        if(getPersonInCharge() != null){
+            model.setPersonInCharge(getPersonInCharge());
+        }
+        
+        if(getDateOfPurchase() != null){
+            model.setDateOfPurchase(getDateOfPurchase());
+        }
+
+        if(getDateOfLastUse() != null){
+            model.setDateOfLastUse(getDateOfLastUse());
+        }
+    }
     
+    public DeviceModel newModel() {
+        DeviceModel instance = newModelInstance();
+        toModel(instance);
+        return instance;
+    }
+    
+    public static DeviceDTO getDTOFromModel(DeviceModel model) {
+        DeviceDTO dto = new DeviceDTO();
+        dto.fromModel(model);
+
+        return dto;
+    }
 }

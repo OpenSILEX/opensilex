@@ -139,24 +139,33 @@ public class Server extends Tomcat {
         getHost().setAppBase(baseDir);
         getServer().setParentClassLoader(OpenSilex.getClassLoader());
 
+        String pathPrefix = "";
+        try {
+            pathPrefix = instance.getModuleConfig(ServerModule.class, ServerConfig.class).pathPrefix();
+        } catch (Exception ex) {
+            LOGGER.error("Error while loading path prefix", ex);
+        }
+
         // Load Swagger root application
-        Context appContext = initApp("", "/", "/webapp", getClass());
+        Context appContext = initApp("", pathPrefix.equals("") ? "/" : pathPrefix, "/webapp", getClass());
 
         RewriteValve valve = new RewriteValve();
         appContext.getPipeline().addValve(valve);
 
+        String rewritePrefix = pathPrefix + "/app/";
         try {
-            String pathPrefix = instance.getModuleConfig(ServerModule.class, ServerConfig.class).pathPrefix();
-            valve.setConfiguration(
-                    "RewriteCond %{REQUEST_URI} ^/$\n"
-                    + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
-                    + "RewriteCond %{REQUEST_URI} ^/index.html$\n"
-                    + "RewriteRule . /" + pathPrefix + "/ [R=301,L]\n"
-                    + "RewriteCond %{REQUEST_URI} ^/" + pathPrefix + "/.+\n"
-                    + "RewriteRule .* /" + pathPrefix + "/ [R=301,L]\n"
-                    + "RewriteCond %{REQUEST_URI} ^/app/.+\n"
-                    + "RewriteRule ^/app/(.*)$ /" + pathPrefix + "/$1 [L]"
-            );
+            String rewriteRules = "RewriteCond  %{REQUEST_URI} ^.*/webjars/.+$\n"
+                    + "RewriteRule .*/webjars/(.*)$ /webjars/$1 [L,NE]\n"
+                    + "RewriteMap uc org.opensilex.server.rest.RestRewriteMap\n"
+                    + "RewriteRule .*/rest/.* ${uc:%{REQUEST_URI}}\n"
+                    + "RewriteCond %{REQUEST_URI} ^/$\n"
+                    + "RewriteRule . " + rewritePrefix + " [R=301,L,NE]\n"
+                    + "RewriteCond %{REQUEST_URI} ^" + pathPrefix + "/?$\n"
+                    + "RewriteRule .* " + rewritePrefix + " [R=301,L,NE]\n"
+                    + "RewriteCond %{REQUEST_URI} ^" + rewritePrefix + ".+\n"
+                    + "RewriteRule ^" + rewritePrefix + "(.*)$ " + rewritePrefix + "$1 [L,NE]\n";
+            LOGGER.debug("Rewrite rules:\n" + rewriteRules);
+            valve.setConfiguration(rewriteRules);
         } catch (Exception ex) {
             LOGGER.error("Error while setting rewrite rules", ex);
         }

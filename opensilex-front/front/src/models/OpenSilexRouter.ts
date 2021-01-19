@@ -33,7 +33,7 @@ export class OpenSilexRouter {
         let routes = this.computeMenuRoutes(user);
 
         this.router = new VueRouter({
-            base: '/' + this.pathPrefix,
+            base: this.pathPrefix + "/app",
             mode: 'history',
             routes: routes
         })

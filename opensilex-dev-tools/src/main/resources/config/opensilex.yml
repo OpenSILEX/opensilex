@@ -35,3 +35,5 @@ phisws:
     
 #core:
 #    enableLogs: true
+#server:
+#    pathPrefix: /sunagri

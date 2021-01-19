@@ -48,8 +48,8 @@ public interface ServerConfig {
     public ApiCacheService cache();
 
     @ConfigDescription(
-            value = "Application path prefix",
-            defaultString = "app"
+            value = "Application path prefix, must start with '/' and do not end with '/' or be an empty string",
+            defaultString = ""
     )
     String pathPrefix();
 }

@@ -67,7 +67,7 @@ export default class OpenSilexVuePlugin {
     }
 
     getURL(path: string): string {
-        return "/" + this.config.pathPrefix + "/" + path;
+        return this.config.pathPrefix + "/app/" + path;
     }
 
     setConfig(config: FrontConfigDTO) {

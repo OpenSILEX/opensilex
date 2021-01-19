@@ -62,7 +62,7 @@ let renewTokenOnEvent = function (event) {
 }
 
 let defaultConfig: FrontConfigDTO = {
-  pathPrefix: "app",
+  pathPrefix: "/",
   homeComponent: "opensilex-front-ToDoComponent",
   notFoundComponent: "opensilex-front-ToDoComponent",
   headerComponent: "opensilex-front-ToDoComponent",

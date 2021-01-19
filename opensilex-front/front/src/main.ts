@@ -38,7 +38,7 @@ if (window["webpackHotUpdate"]) {
 
 console.debug("URL parameters", urlParams);
 
-// Initialise logger
+// Initialize logger
 console.log = console.log || function () { };
 console.warn = console.warn || console.log;
 console.error = console.error || console.log;
@@ -58,8 +58,8 @@ if (isDevMode) {
     'please edit opensilex-front/front/src/main.ts and update DEV_BASE_API_PATH constant'
   );
 } else {
-  let splitURI = window.location.href.split("/");
-  baseApi = splitURI[0] + "//" + splitURI[2] + "/rest"
+  let splitURI = window.location.href.split("/app");
+  baseApi = splitURI[0] + "/rest"
 }
 
 console.debug("Base API URI:", baseApi);

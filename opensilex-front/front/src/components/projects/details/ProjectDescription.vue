@@ -14,7 +14,7 @@
              
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-                @click="projectForm.showEditForm(project)"
+                @click="showEditForm"
                 label="component.project.update"
               ></opensilex-EditButton>
 
@@ -56,12 +56,12 @@
             <opensilex-StringView label="component.project.shortname" :value="project.shortname"></opensilex-StringView>
             <opensilex-TextView
               label="component.project.financialFunding"
-              :value="project.financialFunding"
+              :value="project.financial_funding"
             ></opensilex-TextView>
             <opensilex-UriView
               title="component.project.website"
-              :value="project.homePage"
-              :uri="project.homePage"
+              :value="project.website"
+              :uri="project.website"
             ></opensilex-UriView>
             <opensilex-UriListView
               label="component.project.relatedProjects"
@@ -209,6 +209,13 @@ export default class ProjectDescription extends Vue {
     this.loadProject();
   }
 
+   showEditForm() {
+        // make a deep copy of the variable in order to not change the current dto
+        // In case a field has been updated into the form without confirmation (by sending update to the server)
+        let projectDtoCopy = JSON.parse(JSON.stringify(this.project));
+        this.projectForm.showEditForm(projectDtoCopy);
+    }
+
   deleteProject(uri: string) {
     this.service
       .deleteProject(uri)
@@ -224,8 +231,8 @@ export default class ProjectDescription extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<ProjectGetDetailDTO>>) => {
         this.project = http.response.result;
         this.period = this.formatPeriod(
-          this.project.startDate,
-          this.project.endDate
+          this.project.start_date,
+          this.project.end_date
         );
         this.loadUsers();
         this.loadRelatedProject();
@@ -251,9 +258,9 @@ export default class ProjectDescription extends Vue {
   }
 
   loadRelatedProject() {
-    if (this.project.relatedProjects) {
+    if (this.project.related_projects) {
       this.relatedProjectsList = [];
-      this.project.relatedProjects.forEach(relatedProject => {
+      this.project.related_projects.forEach(relatedProject => {
         this.service
           .getProject(relatedProject)
           .then(
@@ -278,9 +285,9 @@ export default class ProjectDescription extends Vue {
       "opensilex.SecurityService"
     );
     this.scientificContactsList = [];
-    if (this.project.scientificContacts.length) {
+    if (this.project.scientific_contacts.length) {
       service
-        .getUsersByURI(this.project.scientificContacts)
+        .getUsersByURI(this.project.scientific_contacts)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.scientificContactsList = http.response.result.map(item => {
             return {
@@ -308,9 +315,9 @@ export default class ProjectDescription extends Vue {
         .catch(this.$opensilex.errorHandler);
     }
     this.administrativeContactsList = [];
-    if (this.project.administrativeContacts.length) {
+    if (this.project.administrative_contacts.length) {
       service
-        .getUsersByURI(this.project.administrativeContacts)
+        .getUsersByURI(this.project.administrative_contacts)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.administrativeContactsList = http.response.result.map(item => {
             return {
@@ -325,15 +332,15 @@ export default class ProjectDescription extends Vue {
   }
 
   isEnded(project) {
-    if (project.endDate) {
-      return moment(project.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    if (project.end_date) {
+      return moment(project.end_date, "YYYY-MM-DD").diff(moment()) < 0;
     }
 
     return false;
   }
 
   formatPeriod(startDateValue: string, endDateValue: string) {
-    let statDate = moment(startDateValue, "YYYY-MM-DD");
+    let startDate = moment(startDateValue, "YYYY-MM-DD");
     let endDate;
     let result = this.$opensilex.formatDate(startDateValue);
 
@@ -344,7 +351,7 @@ export default class ProjectDescription extends Vue {
       endDate = moment();
     }
 
-    let period = endDate.diff(statDate);
+    let period = endDate.diff(startDate);
     let duration = Math.floor(moment.duration(period).asMonths());
 
     result +=

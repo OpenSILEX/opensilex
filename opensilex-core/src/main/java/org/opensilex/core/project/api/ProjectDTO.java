@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.project.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.time.LocalDate;
@@ -18,36 +19,49 @@ import org.opensilex.server.rest.validation.Required;
  * @author Julien BONNEFONT A basic DTO class about an {@link ProjectModel}
  */
 public abstract class ProjectDTO {
-
+    
+    @JsonProperty("uri")
     protected URI uri;
 
+    @JsonProperty("name")
     protected String name;
 
+    @JsonProperty("shortname")
     protected String shortname;
 
-    protected String financialFunding;
-
-    protected String description;
-
-    protected String objective;
-
+    @JsonProperty("start_date")
     protected LocalDate startDate;
 
+    @JsonProperty("end_date")
     protected LocalDate endDate;
+    
+    @JsonProperty("description")
+    protected String description;
 
-    protected List<String> keywords = new ArrayList<>();
+    @JsonProperty("objective")
+    protected String objective;
+    
+    @JsonProperty("financial_funding")
+    protected String financialFunding;
 
+    @JsonProperty("website")
     protected URI homePage;
+    
+    @JsonProperty("related_projects")
+    protected List<URI> relatedProjects = new ArrayList<>();
 
-    protected List<URI> experiments = new ArrayList<>();
-
-    protected List<URI> administrativeContacts = new ArrayList<>();
-
+    @JsonProperty("coordinators")
     protected List<URI> coordinators = new ArrayList<>();
-
+    
+    @JsonProperty("scientific_contacts")
     protected List<URI> scientificContacts = new ArrayList<>();
 
-    protected List<URI> relatedProjects = new ArrayList<>();
+    @JsonProperty("administrative_contacts")
+    protected List<URI> administrativeContacts = new ArrayList<>();
+    
+    @JsonProperty("experiments")
+    protected List<URI> experiments = new ArrayList<>();
+
 
     public URI getUri() {
         return uri;
@@ -127,14 +141,6 @@ public abstract class ProjectDTO {
         return this;
     }
 
-    public List<String> getKeywords() {
-        return keywords;
-    }
-
-    public ProjectDTO setKeywords(List<String> keywords) {
-        this.keywords = keywords;
-        return this;
-    }
     @ApiModelProperty(example = "https://www.inrae.fr/dropsproject")
     public URI getHomePage() {
         return homePage;

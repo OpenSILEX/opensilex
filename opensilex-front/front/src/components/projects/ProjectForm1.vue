@@ -31,7 +31,7 @@
       <!-- Start Date -->
       <div class="col-lg-6">
         <opensilex-InputForm
-          :value.sync="form.startDate"
+          :value.sync="form.start_date"
           label="component.common.startDate"
           type="date"
           :required="true"
@@ -42,7 +42,7 @@
       <!-- End Date -->
       <div class="col-lg-6">
         <opensilex-InputForm
-          :value.sync="form.endDate"
+          :value.sync="form.end_date"
           label="component.common.endDate"
           type="date"
           rules="dateDiff:@startDate"
@@ -53,7 +53,7 @@
     <!-- Financial funding -->
 
     <opensilex-InputForm
-      :value.sync="form.financialFunding"
+      :value.sync="form.financial_funding"
       label="component.project.financialFunding"
       type="text"
       placeholder="component.project.form-financialFunding-placeholder"
@@ -62,7 +62,7 @@
     <!-- Website -->
 
     <opensilex-InputForm
-      :value.sync="form.homePage"
+      :value.sync="form.website"
       label="component.project.website"
       type="url"
       rules="url"

@@ -30,13 +30,6 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setName(name);
         model.setDescription(description);
         model.setObjective(objective);
-
-        List<String> keywordsList = new ArrayList<>(keywords.size());
-        keywords.forEach((String u) -> {
-            keywordsList.add(u);
-        });
-        model.setKeywords(keywordsList);
-
         model.setHomePage(homePage);
 
         List<UserModel> adminList = new ArrayList<>(administrativeContacts.size());

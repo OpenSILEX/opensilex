@@ -57,12 +57,12 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(startDate)="{ data }">
-        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+      <template v-slot:cell(start_date)="{ data }">
+        <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
       </template>
 
-      <template v-slot:cell(endDate)="{ data }">
-        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+      <template v-slot:cell(end_date)="{ data }">
+        <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
       </template>
 
       <template v-slot:cell(state)="{ data }">
@@ -162,17 +162,17 @@ export default class ProjectList extends Vue {
         sortable: true,
       },
       {
-        key: "startDate",
+        key: "start_date",
         label: "component.common.startDate",
         sortable: true,
       },
       {
-        key: "endDate",
+        key: "end_date",
         label: "component.common.endDate",
         sortable: true,
       },
       {
-        key: "financialFunding",
+        key: "financial_funding",
         label: "component.project.financialFunding",
         sortable: true,
       },
@@ -212,8 +212,8 @@ export default class ProjectList extends Vue {
   }
 
   isEnded(project) {
-    if (project.endDate) {
-      return moment(project.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    if (project.end_date) {
+      return moment(project.end_date, "YYYY-MM-DD").diff(moment()) < 0;
     }
     return false;
   }

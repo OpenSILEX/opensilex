@@ -6,12 +6,11 @@
     <opensilex-ProjectSelector
       label="component.project.relatedProjects"
       :multiple="true"
-      :projects.sync="form.relatedProjects"
+      :projects.sync="form.related_projects"
     ></opensilex-ProjectSelector>
 
     <!--Coordinators -->
     <opensilex-UserSelector
-      v-if="form.coordinators"
       label="component.project.coordinators"
       :users.sync="form.coordinators"
       :multiple="true"
@@ -19,17 +18,15 @@
 
     <!-- Scientific contacts -->
     <opensilex-UserSelector
-      v-if="form.scientificContacts"
       label="component.project.scientificContacts"
-      :users.sync="form.scientificContacts"
+      :users.sync="form.scientific_contacts"
       :multiple="true"
     ></opensilex-UserSelector>
 
     <!-- Administrative contacts -->
     <opensilex-UserSelector
-      v-if="form.administrativeContacts"
       label="component.project.administrativeContacts"
-      :users.sync="form.administrativeContacts"
+      :users.sync="form.administrative_contacts"
       :multiple="true"
     ></opensilex-UserSelector>
 

@@ -46,18 +46,17 @@ export default class ProjectForm extends Vue {
       uri: null,
       name: "",
       shortname: undefined,
-      financialFunding: undefined,
+      financial_funding: undefined,
       description: undefined,
       objective: undefined,
-      startDate: "",
-      endDate: undefined,
-      keywords: undefined,
-      homePage: undefined,
+      start_date: "",
+      end_date: undefined,
+      website: undefined,
       experiments: undefined,
-      administrativeContacts: [],
+      administrative_contacts: [],
       coordinators: [],
-      scientificContacts: [],
-      relatedProjects: []
+      scientific_contacts: [],
+      related_projects: []
     };
   }
 
@@ -70,6 +69,7 @@ export default class ProjectForm extends Vue {
   }
 
   create(form) {
+
     this.$opensilex
       .getService("opensilex.ProjectsService")
       .createProject(form)
@@ -93,6 +93,10 @@ export default class ProjectForm extends Vue {
   }
 
   update(form) {
+
+    if(form.website===""){
+      form.website=undefined;
+    }
     this.$opensilex
       .getService("opensilex.ProjectsService")
       .updateProject(form)

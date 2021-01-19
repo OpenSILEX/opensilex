@@ -76,7 +76,6 @@ public class ProjectDetailDTO extends AbstractVerifiedClass {
         description = project.getDescription();
         startDate = project.getStartDate().format(DateTimeFormatter.ISO_DATE);
         endDate = project.getEndDate().format(DateTimeFormatter.ISO_DATE);
-        keywords = project.getKeywords();
         if (project.getHomePage() != null) {
             homePage = project.getHomePage().toString();
         }

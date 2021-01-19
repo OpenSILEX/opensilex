@@ -71,11 +71,6 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
     private LocalDate endDate;
     public static final String END_DATE_FIELD = "endDate";
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasKeyword"
-    )
-    private List<String> keywords;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -165,14 +160,6 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
-    }
-
-    public List<String> getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(List<String> keywords) {
-        this.keywords = keywords;
     }
 
     public URI getHomePage() {

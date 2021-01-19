@@ -270,7 +270,6 @@ public class ProjectPutDTO extends AbstractVerifiedClass {
         project.setStartDate(LocalDate.parse(this.getStartDate()));
         project.setEndDate(LocalDate.parse(this.getEndDate()));
 
-        project.setKeywords(this.getKeywords());
         if (this.getHomePage() != null && !this.getHomePage().isEmpty()) {
             project.setHomePage(new URI(this.getHomePage()));
         }

@@ -46,8 +46,7 @@ public class ProjectGetDetailDTO extends ProjectDTO {
                 .setObjective(model.getObjective())
                 .setHomePage(model.getHomePage());
 
-        dto.setKeywords(model.getKeywords())
-                .setAdministrativeContacts(getUriList(model.getAdministrativeContacts()))
+        dto     .setAdministrativeContacts(getUriList(model.getAdministrativeContacts()))
                 .setCoordinators(getUriList(model.getCoordinators()))
                 .setScientificContacts(getUriList(model.getScientificContacts()))
                 .setRelatedProjects(getUriList(model.getRelatedProjects()));

@@ -31,13 +31,13 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/project";
+    protected String path = "/core/projects";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = path + "/{uri}";
+    protected String searchPath = path;
+    protected String createPath = path;
+    protected String updatePath = path;
+    protected String deletePath = path + "/{uri}";
 
     protected ProjectCreationDTO getCreationDTO() {
 
@@ -134,7 +134,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         Map<String, Object> params = new HashMap<String, Object>() {
             {
                 put("startDate", creationDTO.getStartDate());
-                put("label", creationDTO.getName());
+                put("name", creationDTO.getName());
                 put("uri", uri);
             }
         };

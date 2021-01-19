@@ -6,15 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
-import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+
 
 /**
  * @author sammy
@@ -22,10 +20,11 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Device",
-        graph = "set/devices",
+        graph = "set/device",
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
+    
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
@@ -66,30 +65,21 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "personInCharge"
     )
     URI personInCharge;
-    public static final String PERSON_IN_CHARGE_FIELD = "personInCharge";
+    public static final String PERSONINCHARGE_FIELD = "personInCharge";
     
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "startUp"
+            property = "obtained"
     )
-    LocalDate startUp;
-    public static final String STARTUP_FIELD = "startUp";
+    String dateOfPurchase;
+    public static final String DATEOFPURCHASE_FIELD = "dateOfPurchase";
     
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "removal"
+            property = "dateOfLastUse"
     )
-    LocalDate removal;
-    public static final String REMOVAL_FIELD = "removal";
-    
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    String description;
-    public static final String COMMENT_FIELD = "description";
-    
-    Map<String, String> attributes;
+    String dateOfLastUse;
+    public static final String DATEOFLASTUSE_FIELD = "dateOfLastUse";
     
     public String getBrand() {
         return brand;
@@ -123,35 +113,19 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
         this.personInCharge = personInCharge;
     }
     
-    public LocalDate getStartUp() {
-        return startUp;
+    public String getDateOfPurchase() {
+        return dateOfPurchase;
     }
 
-    public void setStartUp(LocalDate startUp) {
-        this.startUp = startUp;
+    public void setDateOfPurchase(String dateOfPurchase) {
+        this.dateOfPurchase = dateOfPurchase;
     }
     
-    public LocalDate getRemoval() {
-        return removal;
+    public String getDateOfLastUse() {
+        return dateOfLastUse;
     }
 
-    public void setRemoval(LocalDate removal) {
-        this.removal = removal;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public Map<String, String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setDateOfLastUse(String dateOfLastUse) {
+        this.dateOfLastUse = dateOfLastUse;
     }
 }

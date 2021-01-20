@@ -10,16 +10,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
     >
       <template v-slot>
-        <opensilex-CreateButton 
-          @click="goToDeviceCreate"
-          label="Device.add"
-        ></opensilex-CreateButton>
-
-        <opensilex-CreateButton
-          label="DeviceList.addDocument"
-          :small="false"
-          @click="deviceList.createDocument()"
-        ></opensilex-CreateButton>
+        <opensilex-CreateButton label="Device.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 
@@ -38,22 +29,16 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import { DevicesService, DeviceDTO} from "opensilex-core/index";
 import HttpResponse, {
   OpenSilexResponse
 } from "../../lib/HttpResponse";
 
-import { 
-  DevicesService, 
-  DeviceCreationDTO
-  } from "opensilex-core/index"
-import VueRouter from "vue-router";
-
 @Component
 export default class Device extends Vue {
   $opensilex: any;
-  $store: any;
-  $router: VueRouter;
   service: DevicesService;
+  $store: any;
 
   get user() {
     return this.$store.state.user;
@@ -64,29 +49,12 @@ export default class Device extends Vue {
   }
 
   @Ref("deviceList") readonly deviceList!: any;
-  @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceDetails") readonly deviceDetails!: any;
-  @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
-  created() {
+   created() {
+    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
-  goToDeviceCreate(){    
-    this.$store.commit("storeReturnPage", this.$router);
-    this.$router.push({ path: '/devices/create' });
-  }
-  
-  callCreateDeviceService(form: DeviceCreationDTO, done) {
-    done(
-      this.service
-        .createDevice(false,form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          this.deviceList.refresh();
-        })
-    );
-  }
 }
 </script>
 
@@ -104,9 +72,8 @@ en:
 fr:
   Device:
     title: device
-    description: Gestion des dispositifs
-    add: Ajouter un dispositif
-    addDocument: Ajout de document
-    update: Editer un dispositif
-    delete: Supprimer un dispositif
+    description: Gestion des devices
+    add: Ajouter un device
+    update: Editer un device
+    delete: Supprimer un device
 </i18n>

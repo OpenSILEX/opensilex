@@ -227,7 +227,7 @@ public class GeospatialDAO {
 
             resourceTreeDTOS.forEach(resourceTreeDTO -> ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString())));
 
-            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.in("type", ontologyAreaURI)).filter(Filters.geoIntersects("geometry", geometry));
+            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.in("rdfType", ontologyAreaURI)).filter(Filters.geoIntersects("geometry", geometry));
 
             return createGeometryMap(geospatialFindIterable);
         } else {
@@ -235,51 +235,51 @@ public class GeospatialDAO {
         }
     }
 
-    public ListWithPagination<GeospatialModel> searchIntersects(URI type, Geometry geometry, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchIntersects(URI rdfType, Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
-        if (type != null) {
-            filter = new Document("type", type);
+        if (rdfType != null) {
+            filter = new Document("rdfType", rdfType);
         }
 
-        // searches all documents containing a field with geospatial data that intersects the specified shape + filtering by type.
+        // searches all documents containing a field with geospatial data that intersects the specified shape + filtering by rdfType.
         FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(filter);
 
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
     public ListWithPagination<GeospatialModel> searchIntersects(GeospatialModel geometryI, Integer page, Integer pageSize) {
-        return searchIntersects(geometryI.getType(), geometryI.getGeometry(), page, pageSize);
+        return searchIntersects(geometryI.getRdfType(), geometryI.getGeometry(), page, pageSize);
     }
 
-    public ListWithPagination<GeospatialModel> searchWithin(URI type, Geometry geometry, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchWithin(URI rdfType, Geometry geometry, Integer page, Integer pageSize) {
         Document filter = null;
-        if (type != null) {
-            filter = new Document("type", type);
+        if (rdfType != null) {
+            filter = new Document("rdfType", rdfType);
         }
 
-        // search in all documents containing a field with geospatial data that is contained in the past form + filtering by type.
+        // search in all documents containing a field with geospatial data that is contained in the past form + filtering by rdfType.
         FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoWithin("geometry", geometry)).filter(filter);
 
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
     public ListWithPagination<GeospatialModel> searchWithin(GeospatialModel geometryI, Integer page, Integer pageSize) {
-        return searchWithin(geometryI.getType(), geometryI.getGeometry(), page, pageSize);
+        return searchWithin(geometryI.getRdfType(), geometryI.getGeometry(), page, pageSize);
     }
 
-    public ListWithPagination<GeospatialModel> searchNear(URI type, Point geometry, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
+    public ListWithPagination<GeospatialModel> searchNear(URI rdfType, Point geometry, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
         Document filter = null;
-        if (type != null) {
-            filter = new Document("type", type);
+        if (rdfType != null) {
+            filter = new Document("rdfType", rdfType);
         }
 
-        // searches for documents between the range of distance around the point + filtering by type.
+        // searches for documents between the range of distance around the point + filtering by rdfType.
         FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.nearSphere("geometry", geometry, maxDistanceMeters, minDistanceMeters)).filter(filter);
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 
     public ListWithPagination<GeospatialModel> searchNear(GeospatialModel geometryI, Double maxDistanceMeters, Double minDistanceMeters, Integer page, Integer pageSize) {
-        return searchNear(geometryI.getType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
+        return searchNear(geometryI.getRdfType(), (Point) geometryI.getGeometry(), maxDistanceMeters, minDistanceMeters, page, pageSize);
     }
 
     public void createAll(List<GeospatialModel> geospatialModels) {

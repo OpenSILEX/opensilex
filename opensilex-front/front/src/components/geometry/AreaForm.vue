@@ -22,12 +22,12 @@
       </div>
     </div>
 
-    <!-- Type -->
+    <!-- type -->
     <opensilex-TypeForm
         :baseType="$opensilex.Oeso.AREA_TYPE_URI"
-        :placeholder="$t('AreaForm.form-type-placeholder')"
+        :placeholder="$t('AreaForm.form-rdfType-placeholder')"
         :required="true"
-        :type.sync="form.type"
+        :type.sync="form.rdf_type"
     ></opensilex-TypeForm>
 
     <!-- description -->
@@ -70,7 +70,7 @@ export default class AreaForm extends Vue {
         uri: null,
         name: null,
         subject: null,
-        type: null,
+        rdf_type: null,
         description: "",
         geometry: [],
         properties: [],
@@ -119,7 +119,7 @@ export default class AreaForm extends Vue {
       uri: null,
       name: null,
       subject: null,
-      type: null,
+      rdf_type: null,
       description: "",
       geometry: [],
       properties: [],
@@ -168,43 +168,43 @@ P {
 </style>
 
 <i18n>
-  en:
-    AreaForm:
-      uri: Area URI
-      description: description
-      description-help: Description associated with this geometry (protocol quantity)
-      description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
-      name-placeholder: Limestone Mineral Zone, Southern Clay Zone, ...
-      area: annotation
-      area-help: Annotation associated with this geometry
-      area-placeholder: Description of the nature of the event.
-      eventArea: Event area
-      perennialArea: Perennial area
-      selectFile: Select a file
-      confidential: Confidential
-      confidential-help: The data is confidential
-      trial: Trial
-      or: Or
-      problemDate: problem (end date starts before start date)
-      form-type-placeholder: Please select a type
+en:
+  AreaForm:
+    uri: Area URI
+    description: description
+    description-help: Description associated with this geometry (protocol quantity)
+    description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+    name-placeholder: Limestone Mineral Zone, Southern Clay Zone, ...
+    area: annotation
+    area-help: Annotation associated with this geometry
+    area-placeholder: Description of the nature of the event.
+    eventArea: Event area
+    structuralArea: Structural area
+    selectFile: Select a file
+    confidential: Confidential
+    confidential-help: The data is confidential
+    trial: Trial
+    or: Or
+    problemDate: problem (end date starts before start date)
+    form-rdfType-placeholder: Please select a type
 
-  fr:
-    AreaForm:
-      uri: URI de Zone
-      description: description
-      description-help: Description associée à cette géométrie (protocole quantité)
-      description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
-      name-placeholder: Zone minérale calcaire, zone argileuse méridionale, ...
-      area: Annotation
-      area-help: Zone associée à cette géométrie
-      area-placeholder: Description de la nature de l'événement.
-      eventArea: Zone d'événements
-      perennialArea: Zone pérenne
-      selectFile: Sélectionner un fichier
-      confidential: Confidentiel
-      confidential-help: Les données sont confidentielles
-      trial: Essai
-      or: Ou
-      problemDate: problème (la date de fin commence avant la date de début)
-      form-type-placeholder: Veuillez sélectionner un type de zone
+fr:
+  AreaForm:
+    uri: URI de Zone
+    description: description
+    description-help: Description associée à cette géométrie (protocole quantité)
+    description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+    name-placeholder: Zone minérale calcaire, zone argileuse méridionale, ...
+    area: Annotation
+    area-help: Zone associée à cette géométrie
+    area-placeholder: Description de la nature de l'événement.
+    eventArea: Zone d'événements
+    structuralArea: Zone structurelle
+    selectFile: Sélectionner un fichier
+    confidential: Confidentiel
+    confidential-help: Les données sont confidentielles
+    trial: Essai
+    or: Ou
+    problemDate: problème (la date de fin commence avant la date de début)
+    form-rdfType-placeholder: Veuillez sélectionner un type de zone
 </i18n>

@@ -51,7 +51,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
     private void verificationOfCorrectInsertion(Geometry geometry, URI uri, URI type, URI graph) {
         GeospatialModel geometryByURI = geospatialDAO.getGeometryByURI(uri, graph);
         TestCase.assertTrue(SPARQLDeserializers.compareURIs(uri.toString(), geometryByURI.getUri().toString()));
-        TestCase.assertTrue(SPARQLDeserializers.compareURIs(type.toString(), geometryByURI.getType().toString()));
+        TestCase.assertTrue(SPARQLDeserializers.compareURIs(type.toString(), geometryByURI.getRdfType().toString()));
         TestCase.assertTrue(SPARQLDeserializers.compareURIs(graph.toString(), geometryByURI.getGraph().toString()));
         TestCase.assertEquals(geometry, geometryByURI.getGeometry());
     }
@@ -83,7 +83,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
         GeospatialModel geospatial = new GeospatialModel();
         geospatial.setUri(uri);
-        geospatial.setType(type);
+        geospatial.setRdfType(type);
         geospatial.setGraph(graph);
         geospatial.setGeometry(geometry);
 
@@ -114,7 +114,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
         GeospatialModel geospatial = new GeospatialModel();
         geospatial.setUri(new URI("http://opensilex/Geospatial/G_791"));
-        geospatial.setType(type);
+        geospatial.setRdfType(type);
         geospatial.setGraph(graph);
         geospatial.setGeometry(geometry);
 
@@ -132,7 +132,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
         GeospatialModel geospatial = new GeospatialModel();
         geospatial.setUri(new URI("http://opensilex/Geospatial/G_792"));
-        geospatial.setType(type);
+        geospatial.setRdfType(type);
         geospatial.setGraph(graph);
         geospatial.setGeometry(geometry);
 
@@ -186,12 +186,12 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         URI newGraph = new URI("test-exp:ZA17");
 
         geospatial.setUri(newUri);
-        geospatial.setType(new URI("http://www.opensilex.org/vocabulary/oeso#PollutedArea"));
+        geospatial.setRdfType(new URI("http://www.opensilex.org/vocabulary/oeso#PollutedArea"));
         geospatial.setGraph(newGraph);
         geospatial.setGeometry(new Point(new Position(4.9716721, 43.6)));
 
         geospatialDAO.update(geospatial, oldUri, oldGraph);
-        verificationOfCorrectInsertion(geospatial.getGeometry(), newUri, geospatial.getType(), newGraph);
+        verificationOfCorrectInsertion(geospatial.getGeometry(), newUri, geospatial.getRdfType(), newGraph);
 
         // we check that the old geometries are not in the database
         TestCase.assertNull(geospatialDAO.getGeometryByURI(oldUri, oldGraph));
@@ -279,7 +279,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
         GeospatialModel geospatial = new GeospatialModel();
         geospatial.setUri(uri);
-        geospatial.setType(type);
+        geospatial.setRdfType(type);
         geospatial.setGeometry(geometry2);
 
         geospatialDAO.create(geospatial);

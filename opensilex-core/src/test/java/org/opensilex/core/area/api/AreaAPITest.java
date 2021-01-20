@@ -36,10 +36,10 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     protected final String path = "/core/area";
 
-    protected final String uriPath = path + "/get/{uri}";
-    protected final String createPath = path + "/create";
-    protected final String updatePath = path + "/update";
-    protected final String deletePath = path + "/delete/{uri}";
+    protected final String uriPath = path + "/{uri}";
+    protected final String createPath = path;
+    protected final String updatePath = path;
+    protected final String deletePath = path + "/{uri}";
     private int soCount = 1;
 
     protected AreaCreationDTO getCreationDTO() throws Exception {
@@ -54,7 +54,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         Geometry geometry = new Polygon(list);
 
         dto.setName("Area " + soCount++);
-        dto.setType(new URI("vocabulary:WindyArea"));
+        dto.setRdfType(new URI("vocabulary:WindyArea"));
         dto.setGeometry(geometryToGeoJson(geometry));
 
         return dto;
@@ -80,7 +80,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         // update the area
         areaDTO.setUri(extractUriFromResponse(postResult));
         areaDTO.setName("new name");
-        areaDTO.setType(new URI("vocabulary:FloodableArea"));
+        areaDTO.setRdfType(new URI("vocabulary:FloodableArea"));
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         areaDTO.setGeometry(geometryToGeoJson(geometry));
 
@@ -98,7 +98,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
         // check that the object has been updated
         assertEquals(areaDTO.getName(), dtoFromApi.getName());
-        assertEquals(areaDTO.getType(), dtoFromApi.getType());
+        assertEquals(areaDTO.getRdfType(), dtoFromApi.getRdfType());
         assertEquals(areaDTO.getGeometry(), dtoFromApi.getGeometry());
     }
 
@@ -126,9 +126,9 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetSingleDTO>>() {
+        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         });
-        AreaGetSingleDTO soGetDetailDTO = getResponse.getResult();
+        AreaGetDTO soGetDetailDTO = getResponse.getResult();
         assertNotNull(soGetDetailDTO);
     }
 
@@ -154,9 +154,9 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<AreaGetSingleDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetSingleDTO>>() {
+        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
         });
-        AreaGetSingleDTO soGetDetailDTO = getResponse.getResult();
+        AreaGetDTO soGetDetailDTO = getResponse.getResult();
         assertNotNull(soGetDetailDTO);
     }
 }

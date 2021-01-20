@@ -29,8 +29,8 @@ public class AreaDAO {
         this.sparql = sparql;
     }
 
-    public URI create(URI uri, String name, URI type, String description, URI user) throws Exception {
-        AreaModel area = new AreaModel(uri, name, type, description, user);
+    public URI create(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
+        AreaModel area = new AreaModel(uri, name, rdfType, description, user);
 
         sparql.create(area);
 
@@ -45,8 +45,8 @@ public class AreaDAO {
         sparql.delete(AreaModel.class, areaURI);
     }
 
-    public URI update(URI uri, String name, URI type, String description, URI user) throws Exception {
-        AreaModel area = new AreaModel(uri, name, type, description, user);
+    public URI update(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
+        AreaModel area = new AreaModel(uri, name, rdfType, description, user);
         sparql.update(area);
 
         return area.getUri();

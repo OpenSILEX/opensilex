@@ -10,14 +10,14 @@
 
 package org.opensilex.core.area.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.ontology.api.RDFObjectDTO;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -27,7 +27,8 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author Jean Philippe VERT
  */
-public class AreaGetSingleDTO extends RDFObjectDTO {
+@JsonPropertyOrder({"uri", "rdf_type", "name", "description", "author", "geometry"})
+public class AreaGetDTO {
     /**
      * Area URI
      */
@@ -41,7 +42,8 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
     /**
      * Area Type : Area, WindyArea, etc
      */
-    protected URI type;
+    @JsonProperty("rdf_type")
+    protected URI rdfType;
 
     /**
      * geometry of the Area
@@ -65,9 +67,8 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
      * @param geometryByURI Geometry Model to convert
      * @return Corresponding user DTO
      */
-    @NotNull
-    public static AreaGetSingleDTO fromModel(@NotNull AreaModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
-        AreaGetSingleDTO dto = dtoWithoutGeometry(model);
+    public static AreaGetDTO fromModel(AreaModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
+        AreaGetDTO dto = dtoWithoutGeometry(model);
 
         if (geometryByURI.getGeometry() != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
@@ -76,12 +77,12 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         return dto;
     }
 
-    private static AreaGetSingleDTO dtoWithoutGeometry(AreaModel model) {
-        AreaGetSingleDTO dto = new AreaGetSingleDTO();
+    private static AreaGetDTO dtoWithoutGeometry(AreaModel model) {
+        AreaGetDTO dto = new AreaGetDTO();
 
         dto.setUri(model.getUri());
         dto.setName(model.getName());
-        dto.setType(model.getType());
+        dto.setRdfType(model.getType());
         dto.setAuthor(model.getAuthor());
 
         if (model.getDescription() != null) {
@@ -90,8 +91,8 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         return dto;
     }
 
-    public static AreaGetSingleDTO fromModel(AreaModel model, Geometry geometryByURI) {
-        AreaGetSingleDTO dto = dtoWithoutGeometry(model);
+    public static AreaGetDTO fromModel(AreaModel model, Geometry geometryByURI) {
+        AreaGetDTO dto = dtoWithoutGeometry(model);
 
         if (geometryByURI != null) {
             try {
@@ -119,12 +120,12 @@ public class AreaGetSingleDTO extends RDFObjectDTO {
         this.name = name;
     }
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public GeoJsonObject getGeometry() {

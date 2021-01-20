@@ -15,7 +15,6 @@ import org.geojson.GeoJsonObject;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
@@ -43,9 +42,6 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
             required = true
     )
     String name;
-
-    @SPARQLTypeRDF()
-    URI type;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -83,14 +79,6 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public URI getType() {
-        return type;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
     }
 
     public URI getAuthor() {

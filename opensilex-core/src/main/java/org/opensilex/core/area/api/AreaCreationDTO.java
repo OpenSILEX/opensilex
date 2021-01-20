@@ -9,6 +9,9 @@
  */
 package org.opensilex.core.area.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaModel;
@@ -23,6 +26,8 @@ import java.net.URI;
  *
  * @author Jean Philippe VERT
  */
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "name", "description", "geometry"})
 public class AreaCreationDTO {
     /**
      * Area URI
@@ -42,20 +47,21 @@ public class AreaCreationDTO {
      * Area Type : Area, WindyArea, etc
      */
     @NotNull
-    @ApiModelProperty(value = "type URI", example = "vocabulary:WindyArea")
-    protected URI type;
+    @JsonProperty("rdf_type")
+    @ApiModelProperty(value = "Area rdf_type", required = true, name = "rdf_type", example = "vocabulary:WindyArea")
+    protected URI rdfType;
 
     /**
      * geometry of the Area
      */
     @NotNull
-    @ApiModelProperty(value = "The geographical coordinates of the area", example = "{'type':'Polygon','coordinates':[[[3.97167246,43.61328981], [3.97171243,43.61332417],[3.9717427,43.61330558],[3.97170272,43.61327122], [3.97167246,43.61328981],[3.97167246,43.61328981]]]}")
+    @ApiModelProperty(value = "The geographical coordinates of the area", required = true)
     protected GeoJsonObject geometry;
 
     /**
      * description
      */
-    @ApiModelProperty(value = "comment")
+    @ApiModelProperty(value = "Description of the area", example = "Protocol n°1289 - Amount of water 5 ml/Days.")
     protected String description;
 
     public URI getUri() {
@@ -75,12 +81,12 @@ public class AreaCreationDTO {
         this.name = name;
     }
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public GeoJsonObject getGeometry() {
@@ -110,8 +116,8 @@ public class AreaCreationDTO {
             model.setName(name);
         }
 
-        if (type != null) {
-            model.setType(type);
+        if (rdfType != null) {
+            model.setType(rdfType);
         }
 
         if (geometry != null) {

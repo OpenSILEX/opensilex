@@ -372,7 +372,7 @@ public class ScientificObjectAPI {
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
                 geospatialModel.setUri(soURI);
-                geospatialModel.setType(soType);
+                geospatialModel.setRdfType(soType);
                 geospatialModel.setGraph(contextURI);
                 geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
                 geoDAO.create(geospatialModel);
@@ -435,7 +435,7 @@ public class ScientificObjectAPI {
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
                 geospatialModel.setUri(soURI);
-                geospatialModel.setType(soType);
+                geospatialModel.setRdfType(soType);
                 geospatialModel.setGraph(contextURI);
                 geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
                 geoDAO.update(geospatialModel, soURI, contextURI);
@@ -510,6 +510,12 @@ public class ScientificObjectAPI {
         }
     }
 
+    private static String generateCSVValidationToken(URI experimentURI) throws NoSuchAlgorithmException, IOException {
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put(CLAIM_CONTEXT_URI, experimentURI);
+        return TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, additionalClaims);
+    }
+
     @POST
     @Path("csv-import")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
@@ -566,18 +572,18 @@ public class ScientificObjectAPI {
                     List<SPARQLResourceModel> objects = errors.getObjects();
                     sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
-                    List<GeospatialModel> geospacialModels = new ArrayList<>();
+                    List<GeospatialModel> geospatialModels = new ArrayList<>();
                     geometries.forEach((rowIndex, geometry) -> {
                         SPARQLResourceModel object = objects.get(rowIndex - 1);
                         GeospatialModel geospatialModel = new GeospatialModel();
                         geospatialModel.setUri(object.getUri());
-                        geospatialModel.setType(object.getType());
+                        geospatialModel.setRdfType(object.getType());
                         geospatialModel.setGraph(graphURI);
                         geospatialModel.setGeometry(geometry);
-                        geospacialModels.add(geospatialModel);
+                        geospatialModels.add(geospatialModel);
                     });
 
-                    geoDAO.createAll(geospacialModels);
+                    geoDAO.createAll(geospatialModels);
                     sparql.commitTransaction();
                     nosql.commitTransaction();
 
@@ -595,73 +601,6 @@ public class ScientificObjectAPI {
         }
 
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
-    }
-
-    @GET
-    @Path("csv-export")
-    @ApiOperation(value = "Export a CSV file for the given context URI and scientific object type.")
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
-    })
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response exportCSV(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true)
-            @QueryParam("contextURI")
-            @ValidURI
-            @NotNull URI contextURI,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant", required = true)
-            @QueryParam("rdfType")
-            @ValidURI
-            @NotNull URI rdfType,
-            @ApiParam(value = "Parent URI", example = "http://example.com/")
-            @QueryParam("parentURI")
-            @ValidURI URI parentURI
-    ) throws Exception {
-
-        validateContextAccess(contextURI);
-
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-
-        List<ScientificObjectModel> objects = dao.searchAll(contextURI, rdfType, parentURI, currentUser);
-
-        Map<String, GeospatialModel> geospacialMap = new HashMap<>();
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-
-        List<String> customColumns = new ArrayList<>();
-        customColumns.add(GEOMETRY_COLUMN_ID);
-
-        BiFunction<String, SPARQLResourceModel, String> customValueGenerator = (columnID, value) -> {
-            if (columnID.equals(GEOMETRY_COLUMN_ID) && value != null) {
-                String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
-                if (geospacialMap.containsKey(uriString)) {
-                    GeospatialModel geoModel = geospacialMap.get(uriString);
-                    try {
-                        return GeospatialDAO.geometryToWkt(geoModel.getGeometry());
-                    } catch (JsonProcessingException | ParseException ex) {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        };
-        File csvFile = ontologyDAO.exportCSV(contextURI, rdfType, new URI(Oeso.ScientificObject.getURI()), objects, currentUser, customValueGenerator, customColumns);
-
-        byte[] csvContent = FileUtils.readFileToByteArray(csvFile);
-
-        String csvName = "scientific-object-export.csv";
-        return Response.ok(csvContent, MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", "attachment; filename=\"" + csvName + "\"")
-                .build();
     }
 
     @POST
@@ -815,10 +754,71 @@ public class ScientificObjectAPI {
 
     }
 
-    private static String generateCSVValidationToken(URI experiementURI) throws NoSuchAlgorithmException, IOException {
-        Map<String, Object> additionalClaims = new HashMap<>();
-        additionalClaims.put(CLAIM_CONTEXT_URI, experiementURI);
-        return TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, additionalClaims);
+    @GET
+    @Path("csv-export")
+    @ApiOperation(value = "Export a CSV file for the given context URI and scientific object type.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
+    })
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportCSV(
+            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true)
+            @QueryParam("contextURI")
+            @ValidURI
+            @NotNull URI contextURI,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant", required = true)
+            @QueryParam("rdfType")
+            @ValidURI
+            @NotNull URI rdfType,
+            @ApiParam(value = "Parent URI", example = "http://example.com/")
+            @QueryParam("parentURI")
+            @ValidURI URI parentURI
+    ) throws Exception {
+
+        validateContextAccess(contextURI);
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+
+        List<ScientificObjectModel> objects = dao.searchAll(contextURI, rdfType, parentURI, currentUser);
+
+        Map<String, GeospatialModel> geospatialMap = new HashMap<>();
+
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+
+        List<String> customColumns = new ArrayList<>();
+        customColumns.add(GEOMETRY_COLUMN_ID);
+
+        BiFunction<String, SPARQLResourceModel, String> customValueGenerator = (columnID, value) -> {
+            if (columnID.equals(GEOMETRY_COLUMN_ID) && value != null) {
+                String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
+                if (geospatialMap.containsKey(uriString)) {
+                    GeospatialModel geoModel = geospatialMap.get(uriString);
+                    try {
+                        return GeospatialDAO.geometryToWkt(geoModel.getGeometry());
+                    } catch (JsonProcessingException | ParseException ex) {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        };
+        File csvFile = ontologyDAO.exportCSV(contextURI, rdfType, new URI(Oeso.ScientificObject.getURI()), objects, currentUser, customValueGenerator, customColumns);
+
+        byte[] csvContent = FileUtils.readFileToByteArray(csvFile);
+
+        String csvName = "scientific-object-export.csv";
+        return Response.ok(csvContent, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + csvName + "\"")
+                .build();
     }
 
     private static Cache<String, CSVValidationModel> filesValidationCache;

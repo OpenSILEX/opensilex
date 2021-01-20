@@ -10,8 +10,9 @@
 package org.opensilex.core.geospatial.dal;
 
 import com.mongodb.client.model.geojson.Geometry;
-import java.net.URI;
 import org.opensilex.nosql.mongodb.MongoModel;
+
+import java.net.URI;
 
 /**
  * Geospatial Model
@@ -19,10 +20,8 @@ import org.opensilex.nosql.mongodb.MongoModel;
  * @author Jean Philippe VERT
  */
 public class GeospatialModel extends MongoModel {
-//    public static final String TYPE_FIELD = "type";
-//    public static final String NAME_VAR = "name";
     URI graph;
-    URI type;
+    URI rdfType;
     Geometry geometry;
 
     public URI getGraph() {
@@ -33,12 +32,12 @@ public class GeospatialModel extends MongoModel {
         this.graph = graph;
     }
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public Geometry getGeometry() {

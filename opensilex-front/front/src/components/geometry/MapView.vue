@@ -40,7 +40,7 @@
           style="height: 400px"
           @created="mapCreated"
       >
-        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation"
+        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation" :zoom="3"
                  @update:rotation="areaRecovery"
                  @update:zoom="areaRecovery">
         </vl-view>
@@ -108,9 +108,9 @@
           :items="selectedFeatures">
         <template v-slot:cell(name)="{data}">
           <opensilex-UriLink
+              :noExternalLink="true"
               :uri="data.item.properties.uri"
               :value="data.item.properties.name"
-              :noExternalLink="true"
           ></opensilex-UriLink>
         </template>
 
@@ -154,7 +154,7 @@ import * as olExt from "vuelayers/lib/ol-ext";
 import {ScientificObjectNodeDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
-import {AreaGetSingleDTO} from "opensilex-core/model/areaGetSingleDTO";
+import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from 'ol/control'
@@ -182,7 +182,7 @@ export default class MapView extends Vue {
     },
     {
       key: "type",
-      label: "type",
+      label: "MapView.type",
     },
     {
       key: "description",
@@ -227,13 +227,13 @@ export default class MapView extends Vue {
         console.debug("showAreaDetails", areaUri);
         this.$opensilex.getService("opensilex.AreaService")
             .getByURI(areaUri)
-            .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+            .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
                   const res = http.response.result as any;
                   if (res.geometry != null) {
                     res.geometry.properties = {
                       uri: res.uri,
                       name: res.name,
-                      type: res.type,
+                      type: res.rdf_type,
                       description: res.description,
                     }
                     this.featuresArea.push(res.geometry)
@@ -252,13 +252,13 @@ export default class MapView extends Vue {
 
         this.$opensilex.getService("opensilex.AreaService")
             .getByURI(areaUri)
-            .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+            .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
                   const res = http.response.result as any;
                   if (res.geometry != null) {
                     res.geometry.properties = {
                       uri: res.uri,
                       name: res.name,
-                      type: res.type,
+                      type: res.rdf_type,
                       description: res.description,
                     }
                     this.featuresArea.push(res.geometry)
@@ -272,6 +272,7 @@ export default class MapView extends Vue {
 
   memorizesArea() {
     if (this.temporaryArea.length) {
+      // Transfers geometry to the form using the $store
       this.$store.state.zone = this.temporaryArea.pop();
 
       let feature = this.$store.state.zone;
@@ -292,7 +293,7 @@ export default class MapView extends Vue {
         }
       }
 
-      for (let element of this.$store.state.zone.geometry.coordinates[0]) {
+      for (let element of feature.geometry.coordinates[0]) {
         if (element[0] < -180 || element[0] > 180) {
           this.errorGeometry = true;
           alert(this.$i18n.t("MapView.errorLongitude"));
@@ -313,14 +314,13 @@ export default class MapView extends Vue {
   }
 
   created() {
-    this.$store.state.experiment = decodeURIComponent(this.$route.params.uri);
+    let experiment = decodeURIComponent(this.$route.params.uri);
     this.retrievesNameOfType()
 
     this.service = this.$opensilex.getService(
         "opensilex.ScientificObjectsService"
     );
-    this.service
-        .searchScientificObjectsWithGeometryListByUris(this.$store.state.experiment)
+    this.service.searchScientificObjectsWithGeometryListByUris(experiment)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach((element) => {
@@ -377,7 +377,6 @@ export default class MapView extends Vue {
     extent[2] += 50;
     extent[3] += 50;
     this.mapView.$view.fit(extent);
-    this.areaRecovery();
   }
 
   select(value) {
@@ -426,7 +425,10 @@ export default class MapView extends Vue {
 
   private removeFromFeaturesArea(uri, features) {
     features.forEach(item => {
-      if (item.properties.uri == uri) {
+      const {uri: uriItem} = item.properties;
+      let regExp = /area:.+|area#.+/;
+
+      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
         features.splice(features.indexOf(item), 1);
       }
     });
@@ -461,29 +463,29 @@ export default class MapView extends Vue {
     );
     this.service
         .searchIntersects(JSON.parse(JSON.stringify(geometry)))
-        .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetSingleDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
               const res = http.response.result as any;
               res.forEach((element) => {
                 if (element.geometry != null) {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
-                    type: element.type,
+                    type: element.rdf_type,
                     description: element.description,
                   }
                   this.featuresArea.push(element.geometry)
                 }
               });
+              this.endReceipt = true;
             }
-        )
-        .catch(this.$opensilex.errorHandler);
+        ).catch(this.$opensilex.errorHandler);
   }
 
   private editArea(uri) {
     this.removeFromFeaturesArea(uri, this.selectedFeatures);
     this.$opensilex.getService("opensilex.AreaService")
         .getByURI(uri)
-        .then((http: HttpResponse<OpenSilexResponse<AreaGetSingleDTO>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           let form: any = http.response.result;
           this.areaForm.showEditForm(form);
         }).catch(this.$opensilex.errorHandler);
@@ -523,6 +525,7 @@ en:
   MapView:
     name: name
     description: description
+    type: type
     label: Geometry
     add-button: Add metadata
     add-area-button: Add area
@@ -538,6 +541,7 @@ fr:
   MapView:
     name: nom
     description: description
+    type: type
     label: Géométrie
     add-button: Ajouter des métadonnées
     add-area-button: Ajouter une zone
@@ -549,4 +553,9 @@ fr:
     title: Zone
     add: Description de la zone
     update: Mise à jour de la zone
+
+
+
+
+
 </i18n>

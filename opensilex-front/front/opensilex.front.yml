@@ -22,6 +22,11 @@ menu:
         route:
           path: /experiments
           component: opensilex-ExperimentListView
+      - id: devices
+        label: Devices
+        route:
+          path: /devices
+          component: opensilex-DeviceView
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:

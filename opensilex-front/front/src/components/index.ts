@@ -536,5 +536,10 @@ components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
 
+// DEVICES
+import DeviceView from './devices/DeviceView.vue';
+components["opensilex-DeviceView"] = DeviceView;
+import DeviceList from './devices/DeviceList.vue';
+components["opensilex-DeviceList"] = DeviceList;
 
 export default components;

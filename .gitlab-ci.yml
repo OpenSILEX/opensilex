@@ -368,16 +368,16 @@ test:alice:deploy:
 ##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-sammy:build:
+equipements:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "sammy"
+    - if: $CI_COMMIT_BRANCH == "equipements"
 
-test:sammy:deploy:
+test:equipements:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/anne"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/sammy"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4085
     OPENSILEX_JAR_PORT: 8085
@@ -386,10 +386,10 @@ test:sammy:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/sammy"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "sammy"
+    - if: $CI_COMMIT_BRANCH == "equipements"
       when: on_success
   needs:
-    - sammy:build
+    - equipements:build
 
 ###################################
 ##  ARNAUD-TEST-BUILD-DEPLOYMENT

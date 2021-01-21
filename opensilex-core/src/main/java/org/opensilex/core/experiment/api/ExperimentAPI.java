@@ -361,6 +361,24 @@ public class ExperimentAPI {
         List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
+    
+    @GET
+    @Path("get-all-facilities")
+    @ApiOperation("Return all facilities for current user")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    public Response getAllFacilities() throws Exception {
+        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        List<InfrastructureFacilityModel> facilities = xpDao.getAllFacilities(currentUser);
+
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
 
     @GET
     @Path("{uri}/available_facilities")

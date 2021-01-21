@@ -17,12 +17,12 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 public class VueDecimal implements VueOntologyDataType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return XSDDatatype.XSDdecimal.getURI();
     }
 
     @Override
-    public List<String> getUriAliases() {
+    public List<String> getTypeUriAliases() {
         return Arrays.asList(new String[]{
             XSDDatatype.XSDdouble.getURI(),
             XSDDatatype.XSDfloat.getURI()

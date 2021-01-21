@@ -1,5 +1,5 @@
 <template>
-    <opensilex-InputForm
+  <opensilex-InputForm
     :value.sync="internalValue"
     :label="property.name"
     type="number"
@@ -15,7 +15,7 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
 

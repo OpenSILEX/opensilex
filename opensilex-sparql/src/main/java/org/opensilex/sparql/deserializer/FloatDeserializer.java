@@ -17,6 +17,9 @@ public class FloatDeserializer implements SPARQLDeserializer<Float> {
 
     @Override
     public Float fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return Float.valueOf(value);
     }
 

@@ -16,7 +16,7 @@ public class VueDataTypeDTO {
 
     protected URI uri;
     protected URI shortUri;
-    protected String intputComponent;
+    protected String inputComponent;
     protected String viewComponent;
     protected String labelKey;
 
@@ -32,12 +32,12 @@ public class VueDataTypeDTO {
         return SPARQLDeserializers.formatURI(getUri());
     }
 
-    public String getIntputComponent() {
-        return intputComponent;
+    public String getInputComponent() {
+        return inputComponent;
     }
 
-    public void setIntputComponent(String intputComponent) {
-        this.intputComponent = intputComponent;
+    public void setInputComponent(String inputComponent) {
+        this.inputComponent = inputComponent;
     }
 
     public String getViewComponent() {

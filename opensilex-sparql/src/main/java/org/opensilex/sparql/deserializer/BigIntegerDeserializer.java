@@ -11,7 +11,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.NodeValueInteger;
 
-
 /**
  *
  * @author vincent
@@ -20,6 +19,9 @@ public class BigIntegerDeserializer implements SPARQLDeserializer<BigInteger> {
 
     @Override
     public BigInteger fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return new BigInteger(value);
     }
 
@@ -28,10 +30,10 @@ public class BigIntegerDeserializer implements SPARQLDeserializer<BigInteger> {
         NodeValue v = new NodeValueInteger((BigInteger) value);
         return v.asNode();
     }
-    
+
     @Override
     public XSDDatatype getDataType() {
         return XSDDatatype.XSDinteger;
     }
-    
+
 }

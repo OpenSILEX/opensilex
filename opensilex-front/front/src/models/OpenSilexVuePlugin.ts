@@ -978,9 +978,9 @@ export default class OpenSilexVuePlugin {
                 .then((http) => {
                     this.objectTypes = http.response.result;
                     for (let i in this.objectTypes) {
-                        let datatype = this.objectTypes[i];
-                        this.objectTypesByURI[datatype.uri] = datatype;
-                        this.objectTypesByURI[datatype.shortUri] = datatype;
+                        let objectType = this.objectTypes[i];
+                        this.objectTypesByURI[objectType.uri] = objectType;
+                        this.objectTypesByURI[objectType.shortUri] = objectType;
                     }
                     resolve();
                 })

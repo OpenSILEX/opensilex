@@ -23,7 +23,7 @@ public class VueDateTime implements VueOntologyDataType {
     }
     
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return XSDDatatype.XSDdateTime.getURI();
     }
 

@@ -1,41 +1,15 @@
 <template>
   <opensilex-Overlay :show="isSearching">
     <div class="card">
-      <div v-if="isSelectable && tableRef &&!maximumSelectedRows" class="card-header row clearfix">
-        <div class="col col-sm-6">
-          <slot name="titleSelectableTable">
+      <div v-if="isSelectable && tableRef" class="card-header row clearfix">
+        <div class="col col-sm-12">
             <h3 class="d-inline mr-1">
               <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
               {{$t(labelNumberOfSelectedRow)}}
             </h3>
-            <span class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
-          </slot>
-        </div>
-        <div class="col col-sm-3">
-          <slot name="firstActionsSelectableTable"></slot>
-        </div>
-        <div class="col col-sm-3">
-          <slot name="secondActionsSelectableTable"></slot>
-        </div>
-      </div>
-
-      <div v-if="isSelectable && tableRef && maximumSelectedRows" class="card-header row clearfix">
-        <div class="col col-sm-6">
-          <slot name="titleSelectableTable">
-            <h3 class="d-inline mr-1">
-              <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
-              {{$t(labelNumberOfSelectedRow)}}
-            </h3>
-            <span
-              :class="numberOfSelectedRows<maximumSelectedRows? 'badge badge-pill badge-info': 'badge badge-pill badge-warning'"
-            >{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
-          </slot>
-        </div>
-        <div class="col col-sm-3">
-          <slot name="firstActionsSelectableTable"></slot>
-        </div>
-        <div class="col col-sm-3">
-          <slot name="secondActionsSelectableTable"></slot>
+            <span v-if="!maximumSelectedRows" class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
+            <span v-else class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
+            <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows">></slot>
         </div>
       </div>
 
@@ -439,5 +413,10 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
   line-height: 16px;
   font-family: "iconkit";
   color: #fff;
+}
+
+.title-icon {
+  position:relative;
+  top: -5px;
 }
 </style>

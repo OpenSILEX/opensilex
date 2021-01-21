@@ -158,7 +158,7 @@ en:
         commentEN: English description
         commentFR: French description
         object-type-already-exists: Object type with same URI already exists
-        icon: Icon identifier
+        icon: Icon
 
 fr:
     OntologyClassForm:
@@ -168,5 +168,5 @@ fr:
         commentEN: Description anglaise
         commentFR: Description française
         object-type-already-exists: Un type d'objet existe déjà avec la même URI
-        icon: Identifiant de l'icône
+        icon: Icône
 </i18n>

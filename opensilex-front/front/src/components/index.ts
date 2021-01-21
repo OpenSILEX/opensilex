@@ -392,6 +392,8 @@ import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTy
 components["opensilex-ScientificObjectTypeSelector"] = ScientificObjectTypeSelector;
 import ScientificObjectDetailView from './scientificObjects/ScientificObjectDetailView.vue';
 components["opensilex-ScientificObjectDetailView"] = ScientificObjectDetailView;
+import ScientificObjectParentPropertySelector from './scientificObjects/ScientificObjectParentPropertySelector.vue';
+components["opensilex-ScientificObjectParentPropertySelector"] = ScientificObjectParentPropertySelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

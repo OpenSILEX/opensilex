@@ -326,6 +326,10 @@ configure({
   }
 });
 
+// Load vue draggable component
+import draggable from 'vuedraggable'
+Vue.component('draggable', draggable);
+
 // Enable Vue front plugin manager for OpenSilex API
 console.debug("Enable OpenSilex plugin...");
 let $opensilex = new OpenSilexVuePlugin(baseApi, store, i18n);

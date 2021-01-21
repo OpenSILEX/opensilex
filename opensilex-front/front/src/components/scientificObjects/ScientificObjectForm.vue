@@ -7,19 +7,10 @@
     modalSize="lg"
     :createAction="callScientificObjectCreation"
     :updateAction="callScientificObjectUpdate"
-    @onCreate="refresh()"
-    @onUpdate="refresh()"
+    @onCreate="$emit('refresh')"
+    @onUpdate="$emit('refresh')"
   >
     <template v-slot:customFields="{ form }">
-      <opensilex-SelectForm
-        label="ExperimentScientificObjects.parent-label"
-        :selected.sync="form.parent"
-        :multiple="false"
-        :required="false"
-        :searchMethod="searchParents"
-        :itemLoadingMethod="getParentsByURI"
-      ></opensilex-SelectForm>
-
       <opensilex-GeometryForm
         :value.sync="form.geometry"
         label="component.common.geometry"
@@ -38,7 +29,7 @@ import {
   ExperimentCreationDTO,
   SpeciesService,
   SpeciesDTO,
-  ScientificObjectsService
+  ScientificObjectsService,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
@@ -48,6 +39,11 @@ export default class ScientificObjectForm extends Vue {
   $store: any;
 
   soService: ScientificObjectsService;
+
+  @Prop({
+    default: () => {}
+  })
+  context;
 
   @Ref("soForm") readonly soForm!: any;
 
@@ -60,6 +56,7 @@ export default class ScientificObjectForm extends Vue {
   createScientificObject() {
     this.soForm
       .getFormRef()
+      .setContext(this.getContext())
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
     this.soForm.showCreateForm();
@@ -68,27 +65,39 @@ export default class ScientificObjectForm extends Vue {
   editScientificObject(objectURI) {
     this.soForm
       .getFormRef()
+      .setContext(this.getContext())
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
-    this.soService.getScientificObjectDetail(objectURI).then(http => {
+    this.soService.getScientificObjectDetail(objectURI, this.getContextURI()).then((http) => {
       let form: any = http.response.result;
       this.soForm.showEditForm(form);
     });
+  }
+
+  getContext() {
+    if (this.context) {
+      return this.context;
+    }
+    return {};
+  }
+
+  getContextURI() {
+    if (this.context && this.context.experimentURI) {
+      return this.context.experimentURI;
+    }
+    return undefined;
   }
 
   callScientificObjectCreation(form) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
-      if (relation.property == "vocabulary:isPartOf") {
-        relation.value = form.parent;
-      }
       if (relation.value != null) {
         if (Array.isArray(relation.value)) {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j]
+              value: relation.value[j],
             });
           }
         } else {
@@ -103,28 +112,21 @@ export default class ScientificObjectForm extends Vue {
         name: form.name,
         type: form.type,
         geometry: form.geometry,
-        relations: definedRelations
+        context: this.getContextURI(),
+        relations: definedRelations,
       })
-      .then(http => {
-        // this.refresh();
-      });
   }
 
   callScientificObjectUpdate(form) {
     let definedRelations = [];
-    let parentSet = false;
     for (let i in form.relations) {
       let relation = form.relations[i];
-      if (relation.property == "vocabulary:isPartOf") {
-        relation.value = form.parent;
-        parentSet = true;
-      }
       if (relation.value != null) {
         if (Array.isArray(relation.value)) {
           for (let j in relation.value) {
             definedRelations.push({
               property: relation.property,
-              value: relation.value[j]
+              value: relation.value[j],
             });
           }
         } else {
@@ -133,24 +135,15 @@ export default class ScientificObjectForm extends Vue {
       }
     }
 
-    if (!parentSet && form.parent != null) {
-      definedRelations.push({
-        property: "vocabulary:isPartOf",
-        value: form.parent
-      });
-    }
-
     return this.soService
       .updateScientificObject({
         uri: form.uri,
         name: form.name,
         type: form.type,
         geometry: form.geometry,
-        relations: definedRelations
+        context: this.getContextURI(),
+        relations: definedRelations,
       })
-      .then(http => {
-        // this.refresh();
-      });
   }
 }
 </script>

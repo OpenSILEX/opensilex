@@ -77,11 +77,12 @@ public class ScientificObjectDetailByContextDTO extends ScientificObjectDetailDT
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }
 
-        dto.setContext(context.getContext());
-        dto.setContextLabel(context.getContextLabel());
-        dto.setContextType(context.getContextType());
-        dto.setContextTypeLabel(context.getContextTypeLabel());
-
+        if (context != null) {
+            dto.setContext(context.getContext());
+            dto.setContextLabel(context.getContextLabel());
+            dto.setContextType(context.getContextType());
+            dto.setContextTypeLabel(context.getContextTypeLabel());
+        }
         return dto;
     }
 }

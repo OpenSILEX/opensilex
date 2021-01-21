@@ -17,6 +17,9 @@ public class LongDeserializer implements SPARQLDeserializer<Long> {
 
     @Override
     public Long fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return Long.valueOf(value);
     }
 

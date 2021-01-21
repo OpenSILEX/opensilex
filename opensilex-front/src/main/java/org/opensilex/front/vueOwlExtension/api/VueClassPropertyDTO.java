@@ -6,31 +6,34 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
+import java.util.Map;
 
 /**
  *
  * @author vmigot
  */
-public class VueClassPropertyDTO{
+public class VueClassPropertyDTO {
 
     protected URI property;
-    
+
     protected URI targetProperty;
-    
+
     protected String name;
-    
+
     protected String comment;
 
     protected String inputComponent;
 
+    protected Map<String, String> inputComponentsByProperty;
+
     protected String viewComponent;
-    
+
     protected boolean inherited;
-    
+
     protected boolean isList;
-    
+
     protected boolean isRequired;
-    
+
     protected boolean isCustom;
 
     public URI getProperty() {
@@ -48,7 +51,7 @@ public class VueClassPropertyDTO{
     public void setTargetProperty(URI targetProperty) {
         this.targetProperty = targetProperty;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -71,6 +74,14 @@ public class VueClassPropertyDTO{
 
     public void setInputComponent(String inputComponent) {
         this.inputComponent = inputComponent;
+    }
+
+    public Map<String, String> getInputComponentsByProperty() {
+        return inputComponentsByProperty;
+    }
+
+    public void setInputComponentsByProperty(Map<String, String> inputComponentsByProperty) {
+        this.inputComponentsByProperty = inputComponentsByProperty;
     }
 
     public String getViewComponent() {

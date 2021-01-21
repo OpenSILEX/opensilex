@@ -49,6 +49,13 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         return null;
     }
 
+    public static String getShortURI(String value) {
+        if (value == null || value.isEmpty() || prefixes == null) {
+            return value;
+        }
+        return prefixes.shortForm(value);
+    }
+
     public static String getExpandedURI(URI value) {
         if (value == null) {
             return null;

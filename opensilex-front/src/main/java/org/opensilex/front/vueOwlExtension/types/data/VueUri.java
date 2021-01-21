@@ -15,7 +15,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 public class VueUri implements VueOntologyDataType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return XSDDatatype.XSDanyURI.getURI();
     }
 

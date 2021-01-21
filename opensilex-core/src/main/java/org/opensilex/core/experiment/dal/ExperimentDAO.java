@@ -164,7 +164,7 @@ public class ExperimentDAO {
             Boolean isPublic,
             UserModel user,
             List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        LocalDate startDate ;
+        LocalDate startDate;
         LocalDate endDate;
         if (year != null) {
             String yearString = Integer.toString(year);
@@ -212,7 +212,6 @@ public class ExperimentDAO {
             select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACTORS_CATEGORIES_FIELD, factorCategories));
         }
     }
-
 
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
@@ -364,7 +363,7 @@ public class ExperimentDAO {
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
         select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
         Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
-        
+
         select.addFilter(SPARQLQueryHelper.or(
                 inGroup,
                 hasScientificSupervisor,
@@ -375,6 +374,7 @@ public class ExperimentDAO {
     }
 
     public void validateExperimentAccess(URI experimentURI, UserModel user) throws Exception {
+
         if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
             throw new NotFoundURIException("Experiment URI not found: ", experimentURI);
         }
@@ -461,6 +461,15 @@ public class ExperimentDAO {
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
             SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
         });
+    }
+
+    public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
+        return sparql.search(
+                InfrastructureFacilityModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendUserExperimentsFilter(select, user);
+                });
     }
 
 }

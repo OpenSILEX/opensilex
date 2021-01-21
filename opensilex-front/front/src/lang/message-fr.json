@@ -50,7 +50,7 @@
             "species":"Espèces",
             "period":"Période",
             "year":"Année",
-            "geometry": "Geometrie",
+            "geometry": "Coordonnées géospatiales",
             "geometry-help": "Coordonnées géospatiales au format WKT",
             "errors": {
                 "error-title": "Erreur",

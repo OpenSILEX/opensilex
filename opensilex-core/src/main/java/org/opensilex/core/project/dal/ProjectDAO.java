@@ -120,7 +120,7 @@ public class ProjectDAO {
     }
 
     public void create(List<ProjectModel> instances) throws Exception {
-        sparql.create(instances);
+        sparql.create(ProjectModel.class, instances);
     }
 
     public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding,  Integer year, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {

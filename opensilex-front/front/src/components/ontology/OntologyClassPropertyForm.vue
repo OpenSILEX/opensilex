@@ -64,11 +64,6 @@ export default class OntologyClassPropertyForm extends Vue {
     this.classURI = classURI;
   }
 
-  isObjectProperty = false;
-  setIsObjectProperty(isObjectProperty) {
-    this.isObjectProperty = isObjectProperty;
-  }
-
   get propertiesOptions() {
     return this.buildTreeListOptions(this.availableProperties, this.excludedProperties);
   }
@@ -78,8 +73,7 @@ export default class OntologyClassPropertyForm extends Vue {
       classURI: this.classURI,
       property: form.property,
       required: form.isRequired,
-      list: form.isList,
-      isObjectProperty: this.isObjectProperty
+      list: form.isList
     }
 
     return this.$opensilex
@@ -97,8 +91,7 @@ export default class OntologyClassPropertyForm extends Vue {
       classURI: this.classURI,
       property: form.property,
       required: form.isRequired,
-      list: form.isList,
-      isObjectProperty: this.isObjectProperty
+      list: form.isList
     }
 
     return this.$opensilex

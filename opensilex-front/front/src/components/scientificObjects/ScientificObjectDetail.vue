@@ -89,7 +89,7 @@ export default class ScientificObjectDetail extends Vue {
     ScientificObjectDetail.DETAILS_TAB,
     ScientificObjectDetail.DOCUMENTS_TAB,
     ScientificObjectDetail.ANNOTATIONS_TAB,
-    ScientificObjectDetail.EVENTS_TAB
+    ScientificObjectDetail.EVENTS_TAB,
   ];
 
   tabsIndex: number = 0;
@@ -126,7 +126,7 @@ export default class ScientificObjectDetail extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property]
+          valueByProperties[relation.property],
         ];
       }
 
@@ -148,6 +148,40 @@ export default class ScientificObjectDetail extends Vue {
 
         this.loadProperties(classModel.dataProperties, valueByProperties);
         this.loadProperties(classModel.objectProperties, valueByProperties);
+
+        let pOrder = classModel.propertiesOrder;
+        
+        this.typeProperties.sort((a, b) => {
+          let aProp = a.definition.property;
+          let bProp = b.definition.property;
+          if (aProp == bProp) {
+            return 0;
+          }
+
+          if (aProp == "rdfs:label") {
+            return -1;
+          }
+
+          if (bProp == "rdfs:label") {
+            return 1;
+          }
+
+          let aIndex = pOrder.indexOf(aProp);
+          let bIndex = pOrder.indexOf(bProp);
+          if (aIndex == -1) {
+            if (bIndex == -1) {
+              return aProp.localeCompare(bProp);
+            } else {
+              return -1;
+            }
+          } else {
+            if (bIndex == -1) {
+              return 1;
+            } else {
+              return aIndex - bIndex;
+            }
+          }
+        });
       });
   }
 
@@ -161,12 +195,12 @@ export default class ScientificObjectDetail extends Vue {
         ) {
           this.typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]]
+            property: [valueByProperties[property.property]],
           });
         } else {
           this.typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property]
+            property: valueByProperties[property.property],
           });
         }
       }

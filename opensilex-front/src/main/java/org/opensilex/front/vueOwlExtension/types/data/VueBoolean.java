@@ -15,7 +15,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 public class VueBoolean implements VueOntologyDataType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return XSDDatatype.XSDboolean.getURI();
     }
 

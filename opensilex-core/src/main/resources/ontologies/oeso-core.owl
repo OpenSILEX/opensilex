@@ -1179,7 +1179,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -2082,8 +2082,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
     </rdf:Description>    
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf">
-        <rdfs:label xml:lang="en">Parent URI</rdfs:label>
-        <rdfs:label xml:lang="fr">URI du parent</rdfs:label>
+        <rdfs:label xml:lang="en">Parent</rdfs:label>
+        <rdfs:label xml:lang="fr">Parent</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate">
         <rdfs:label xml:lang="en">start date</rdfs:label>

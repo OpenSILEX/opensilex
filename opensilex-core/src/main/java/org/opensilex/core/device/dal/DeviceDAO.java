@@ -85,10 +85,8 @@ public class DeviceDAO {
         if (year != null) {
             String yearString = Integer.toString(year);
             startDate = LocalDate.parse(yearString + "-01-01");
-            endDate = LocalDate.parse(yearString + "-12-31");
         }else {
             startDate=null;
-            endDate=null;
         }
         return sparql.searchWithPagination(
                 DeviceModel.class,
@@ -109,7 +107,7 @@ public class DeviceDAO {
                     if (snPattern != null && !snPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.SERIALNUMBER_FIELD, snPattern));
                     }
-                    if(date != null){
+                    if(startDate != null){
                         appendDateFilters(select, startDate);
                     }
                 },

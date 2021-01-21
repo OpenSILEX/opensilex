@@ -365,7 +365,7 @@ test:alice:deploy:
     - alice:build
 
 ###################################
-##  ANNE-TEST-SNAPSHOT-DEPLOYMENT
+##  EQUIPEMENT-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
 equipements:build:

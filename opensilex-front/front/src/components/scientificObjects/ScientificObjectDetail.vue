@@ -78,7 +78,14 @@ export default class ScientificObjectDetail extends Vue {
   @Prop()
   selected;
 
+  @Prop({
+    default: () => [],
+  })
+  objectByContext;
+
   typeProperties = [];
+  valueByProperties = {};
+  classModel = {};
 
   static DETAILS_TAB = "Details";
   static DOCUMENTS_TAB = "Documents";
@@ -116,11 +123,97 @@ export default class ScientificObjectDetail extends Vue {
   @Watch("selected")
   onSelectionChange() {
     this.typeProperties = [];
+    this.valueByProperties = {};
 
+    return this.$opensilex
+      .getService("opensilex.VueJsOntologyExtensionService")
+      .getClassProperties(
+        this.selected.type,
+        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+      )
+      .then((http) => {
+        this.classModel = http.response.result;
+        let valueByProperties = this.buildValueByProperties(
+          this.selected.relations
+        );
+        this.buildTypeProperties(this.typeProperties, valueByProperties);
+        this.valueByProperties = valueByProperties;
+      });
+  }
+
+  buildTypeProperties(typeProperties, valueByProperties) {
+    this.loadProperties(
+      typeProperties,
+      this.classModel.dataProperties,
+      valueByProperties
+    );
+    this.loadProperties(
+      typeProperties,
+      this.classModel.objectProperties,
+      valueByProperties
+    );
+
+    let pOrder = this.classModel.propertiesOrder;
+
+    typeProperties.sort((a, b) => {
+      let aProp = a.definition.property;
+      let bProp = b.definition.property;
+      if (aProp == bProp) {
+        return 0;
+      }
+
+      if (aProp == "rdfs:label") {
+        return -1;
+      }
+
+      if (bProp == "rdfs:label") {
+        return 1;
+      }
+
+      let aIndex = pOrder.indexOf(aProp);
+      let bIndex = pOrder.indexOf(bProp);
+      if (aIndex == -1) {
+        if (bIndex == -1) {
+          return aProp.localeCompare(bProp);
+        } else {
+          return -1;
+        }
+      } else {
+        if (bIndex == -1) {
+          return 1;
+        } else {
+          return aIndex - bIndex;
+        }
+      }
+    });
+  }
+
+  loadProperties(typeProperties, properties, valueByProperties) {
+    for (let i in properties) {
+      let property = properties[i];
+      if (valueByProperties[property.property]) {
+        if (
+          property.isList &&
+          !Array.isArray(valueByProperties[property.property])
+        ) {
+          typeProperties.push({
+            definition: property,
+            property: [valueByProperties[property.property]],
+          });
+        } else {
+          typeProperties.push({
+            definition: property,
+            property: valueByProperties[property.property],
+          });
+        }
+      }
+    }
+  }
+
+  buildValueByProperties(relationArray) {
     let valueByProperties = {};
-
-    for (let i in this.selected.relations) {
-      let relation = this.selected.relations[i];
+    for (let i in relationArray) {
+      let relation = relationArray[i];
       if (
         valueByProperties[relation.property] &&
         !Array.isArray(valueByProperties[relation.property])
@@ -137,72 +230,56 @@ export default class ScientificObjectDetail extends Vue {
       }
     }
 
-    return this.$opensilex
-      .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(
-        this.selected.type,
-        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-      )
-      .then((http) => {
-        let classModel: any = http.response.result;
-
-        this.loadProperties(classModel.dataProperties, valueByProperties);
-        this.loadProperties(classModel.objectProperties, valueByProperties);
-
-        let pOrder = classModel.propertiesOrder;
-        
-        this.typeProperties.sort((a, b) => {
-          let aProp = a.definition.property;
-          let bProp = b.definition.property;
-          if (aProp == bProp) {
-            return 0;
-          }
-
-          if (aProp == "rdfs:label") {
-            return -1;
-          }
-
-          if (bProp == "rdfs:label") {
-            return 1;
-          }
-
-          let aIndex = pOrder.indexOf(aProp);
-          let bIndex = pOrder.indexOf(bProp);
-          if (aIndex == -1) {
-            if (bIndex == -1) {
-              return aProp.localeCompare(bProp);
-            } else {
-              return -1;
-            }
-          } else {
-            if (bIndex == -1) {
-              return 1;
-            } else {
-              return aIndex - bIndex;
-            }
-          }
-        });
-      });
+    return valueByProperties;
   }
 
-  loadProperties(properties, valueByProperties) {
-    for (let i in properties) {
-      let property = properties[i];
-      if (valueByProperties[property.property]) {
+  getCustomTypeProperties(customObjet) {
+    let valueByProperties = this.buildValueByProperties(customObjet.relations);
+
+    for (let propUri in valueByProperties) {
+      if (this.valueByProperties[propUri]) {
         if (
-          property.isList &&
-          !Array.isArray(valueByProperties[property.property])
+          this.checkRelationValueEquality(
+            valueByProperties[propUri],
+            this.valueByProperties[propUri]
+          )
         ) {
-          this.typeProperties.push({
-            definition: property,
-            property: [valueByProperties[property.property]],
-          });
-        } else {
-          this.typeProperties.push({
-            definition: property,
-            property: valueByProperties[property.property],
-          });
+          delete valueByProperties[propUri];
         }
+      }
+    }
+    let typeProperties = [];
+    this.buildTypeProperties(typeProperties, valueByProperties);
+
+    return typeProperties;
+  }
+
+  checkRelationValueEquality(a, b) {
+    if (Array.isArray(a)) {
+      if (!Array.isArray(b)) {
+        return false;
+      } else {
+        if (a.length != b.length) {
+          return false;
+        } else {
+          let intersect = a.filter((x) => {
+            let hasMatch = false;
+            for (let y of b) {
+              if (this.checkRelationValueEquality(x, y)) {
+                hasMatch = true;
+                break;
+              }
+            }
+            return hasMatch;
+          });
+          return intersect.length == a.length;
+        }
+      }
+    } else {
+      if (Array.isArray(b)) {
+        return false;
+      } else {
+        return a == b;
       }
     }
   }

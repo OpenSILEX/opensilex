@@ -5,14 +5,7 @@
         <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
         <b-tab :title="$t('Documents')"></b-tab>
         <b-tab :title="$t('Annotation.list-title')"></b-tab>
-        <!--            <b-tab :title="$t('Event.list-title')"></b-tab>-->
       </b-tabs>
-      <!--    <template v-slot:header>-->
-      <!--      <h3>-->
-      <!--        &lt;!&ndash; <opensilex-Icon icon="ik#ik-clipboard" /> &ndash;&gt;-->
-      <!--        {{$t("ScientificObjectDetail.title")}}-->
-      <!--      </h3>-->
-      <!--    </template>-->
       <div v-if="loadDetails()">
         <!-- URI -->
         <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
@@ -99,44 +92,65 @@
         @onUpdate="updateAnnotations"
       ></opensilex-AnnotationModalForm>
     </b-card>
-    <b-card v-if="loadDetails()">
-      <template v-slot:header>
-        <h3>
-          <router-link
-            :to="{
-              path:
-                '/experiment/details/' + encodeURIComponent('dev-expe:za17'),
-            }"
-            >Expérimentation: ZA17</router-link
+    <div v-if="loadDetails()">
+      <b-card v-for="(value, index) in objectByContext" :key="index">
+        <template v-slot:header>
+          <h3>
+            <router-link
+              :to="{
+                path:
+                  '/experiment/details/' + encodeURIComponent(value.context),
+              }"
+              >{{ $t("component.experiment.view.title") }}:
+              {{ value.contextLabel }}</router-link
+            >
+          </h3>
+        </template>
+        <!-- Name -->
+        <opensilex-StringView
+          v-if="selected.name != value.name"
+          label="component.common.name"
+          :value="value.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          v-if="selected.type != value.type"
+          :type="value.type"
+          :typeLabel="value.typeLabel"
+        ></opensilex-TypeView>
+
+        <div
+          v-for="(v, index) in getCustomTypeProperties(value)"
+          v-bind:key="index"
+        >
+          <div class="static-field" v-if="!v.definition.isList">
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <component
+              :is="v.definition.viewComponent"
+              :value="v.property"
+            ></component>
+          </div>
+          <div
+            class="static-field"
+            v-else-if="v.property && v.property.length > 0"
           >
-        </h3>
-      </template>
-      <opensilex-StringView
-        label="Nom"
-        value="Nom plante alternatif"
-      ></opensilex-StringView>
-      <opensilex-StringView
-        label="Niveau de facteurs"
-        value="N+"
-      ></opensilex-StringView>
-    </b-card>
-    <b-card v-if="loadDetails()">
-      <template v-slot:header>
-        <h3>
-          <router-link
-            :to="{
-              path:
-                '/experiment/details/' + encodeURIComponent('dev-expe:xp-1'),
-            }"
-            >Expérimentation: XP 1</router-link
-          >
-        </h3>
-      </template>
-      <opensilex-StringView
-        label="Niveau de facteurs"
-        value="Irrigué"
-      ></opensilex-StringView>
-    </b-card>
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <ul>
+              <br />
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
+                <component
+                  :is="v.definition.viewComponent"
+                  :value="prop"
+                ></component>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </b-card>
+    </div>
   </div>
 </template>
 
@@ -153,7 +167,14 @@ export default class ScientificObjectDetail extends Vue {
   @Prop()
   selected;
 
+  @Prop({
+    default: () => [],
+  })
+  objectByContext;
+
   typeProperties = [];
+  valueByProperties = {};
+  classModel = {};
 
   static DETAILS_TAB = "Details";
   static DOCUMENTS_TAB = "Documents";
@@ -191,11 +212,97 @@ export default class ScientificObjectDetail extends Vue {
   @Watch("selected")
   onSelectionChange() {
     this.typeProperties = [];
+    this.valueByProperties = {};
 
+    return this.$opensilex
+      .getService("opensilex.VueJsOntologyExtensionService")
+      .getClassProperties(
+        this.selected.type,
+        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+      )
+      .then((http) => {
+        this.classModel = http.response.result;
+        let valueByProperties = this.buildValueByProperties(
+          this.selected.relations
+        );
+        this.buildTypeProperties(this.typeProperties, valueByProperties);
+        this.valueByProperties = valueByProperties;
+      });
+  }
+
+  buildTypeProperties(typeProperties, valueByProperties) {
+    this.loadProperties(
+      typeProperties,
+      this.classModel.dataProperties,
+      valueByProperties
+    );
+    this.loadProperties(
+      typeProperties,
+      this.classModel.objectProperties,
+      valueByProperties
+    );
+
+    let pOrder = this.classModel.propertiesOrder;
+
+    typeProperties.sort((a, b) => {
+      let aProp = a.definition.property;
+      let bProp = b.definition.property;
+      if (aProp == bProp) {
+        return 0;
+      }
+
+      if (aProp == "rdfs:label") {
+        return -1;
+      }
+
+      if (bProp == "rdfs:label") {
+        return 1;
+      }
+
+      let aIndex = pOrder.indexOf(aProp);
+      let bIndex = pOrder.indexOf(bProp);
+      if (aIndex == -1) {
+        if (bIndex == -1) {
+          return aProp.localeCompare(bProp);
+        } else {
+          return -1;
+        }
+      } else {
+        if (bIndex == -1) {
+          return 1;
+        } else {
+          return aIndex - bIndex;
+        }
+      }
+    });
+  }
+
+  loadProperties(typeProperties, properties, valueByProperties) {
+    for (let i in properties) {
+      let property = properties[i];
+      if (valueByProperties[property.property]) {
+        if (
+          property.isList &&
+          !Array.isArray(valueByProperties[property.property])
+        ) {
+          typeProperties.push({
+            definition: property,
+            property: [valueByProperties[property.property]],
+          });
+        } else {
+          typeProperties.push({
+            definition: property,
+            property: valueByProperties[property.property],
+          });
+        }
+      }
+    }
+  }
+
+  buildValueByProperties(relationArray) {
     let valueByProperties = {};
-
-    for (let i in this.selected.relations) {
-      let relation = this.selected.relations[i];
+    for (let i in relationArray) {
+      let relation = relationArray[i];
       if (
         valueByProperties[relation.property] &&
         !Array.isArray(valueByProperties[relation.property])
@@ -212,72 +319,56 @@ export default class ScientificObjectDetail extends Vue {
       }
     }
 
-    return this.$opensilex
-      .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(
-        this.selected.type,
-        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-      )
-      .then((http) => {
-        let classModel: any = http.response.result;
-
-        this.loadProperties(classModel.dataProperties, valueByProperties);
-        this.loadProperties(classModel.objectProperties, valueByProperties);
-
-        let pOrder = classModel.propertiesOrder;
-        
-        this.typeProperties.sort((a, b) => {
-          let aProp = a.definition.property;
-          let bProp = b.definition.property;
-          if (aProp == bProp) {
-            return 0;
-          }
-
-          if (aProp == "rdfs:label") {
-            return -1;
-          }
-
-          if (bProp == "rdfs:label") {
-            return 1;
-          }
-
-          let aIndex = pOrder.indexOf(aProp);
-          let bIndex = pOrder.indexOf(bProp);
-          if (aIndex == -1) {
-            if (bIndex == -1) {
-              return aProp.localeCompare(bProp);
-            } else {
-              return -1;
-            }
-          } else {
-            if (bIndex == -1) {
-              return 1;
-            } else {
-              return aIndex - bIndex;
-            }
-          }
-        });
-      });
+    return valueByProperties;
   }
 
-  loadProperties(properties, valueByProperties) {
-    for (let i in properties) {
-      let property = properties[i];
-      if (valueByProperties[property.property]) {
+  getCustomTypeProperties(customObjet) {
+    let valueByProperties = this.buildValueByProperties(customObjet.relations);
+
+    for (let propUri in valueByProperties) {
+      if (this.valueByProperties[propUri]) {
         if (
-          property.isList &&
-          !Array.isArray(valueByProperties[property.property])
+          this.checkRelationValueEquality(
+            valueByProperties[propUri],
+            this.valueByProperties[propUri]
+          )
         ) {
-          this.typeProperties.push({
-            definition: property,
-            property: [valueByProperties[property.property]],
-          });
-        } else {
-          this.typeProperties.push({
-            definition: property,
-            property: valueByProperties[property.property],
-          });
+          delete valueByProperties[propUri];
         }
+      }
+    }
+    let typeProperties = [];
+    this.buildTypeProperties(typeProperties, valueByProperties);
+
+    return typeProperties;
+  }
+
+  checkRelationValueEquality(a, b) {
+    if (Array.isArray(a)) {
+      if (!Array.isArray(b)) {
+        return false;
+      } else {
+        if (a.length != b.length) {
+          return false;
+        } else {
+          let intersect = a.filter((x) => {
+            let hasMatch = false;
+            for (let y of b) {
+              if (this.checkRelationValueEquality(x, y)) {
+                hasMatch = true;
+                break;
+              }
+            }
+            return hasMatch;
+          });
+          return intersect.length == a.length;
+        }
+      }
+    } else {
+      if (Array.isArray(b)) {
+        return false;
+      } else {
+        return a == b;
       }
     }
   }

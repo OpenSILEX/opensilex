@@ -6,7 +6,11 @@
       :description="selected ? selected.name : ''"
     ></opensilex-PageHeader>
 
-    <opensilex-ScientificObjectDetail v-if="selected" :selected="selected"></opensilex-ScientificObjectDetail>
+    <opensilex-ScientificObjectDetail
+      v-if="selected"
+      :selected="selected"
+      :objectByContext="objectByContext"
+    ></opensilex-ScientificObjectDetail>
   </div>
 </template>
 
@@ -20,6 +24,8 @@ export default class ScientificObjectDetailView extends Vue {
 
   selected = null;
 
+  objectByContext = [];
+
   uri;
 
   created() {
@@ -29,9 +35,18 @@ export default class ScientificObjectDetailView extends Vue {
 
     this.uri = decodeURIComponent(this.$route.params.uri);
     if (this.uri) {
-      service.getScientificObjectDetailByContext(this.uri).then(http => {
+      service.getScientificObjectDetailByContext(this.uri).then((http) => {
         if (http.response.result.length == 1) {
           this.selected = http.response.result[0];
+        } else {
+          this.objectByContext = [];
+          http.response.result.forEach((scientificObject) => {
+            if (scientificObject.context == null) {
+              this.selected = scientificObject;
+            } else {
+              this.objectByContext.push(scientificObject);
+            }
+          });
         }
       });
     }

@@ -198,6 +198,9 @@ routes:
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
     credentials: []
+
+  - path: /device/details/:uri
+    component: opensilex-DeviceDetails
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

@@ -6,28 +6,62 @@
       withButton="false"
     >
       <template v-slot:filters>
-        
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.namePattern')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.namePattern"
+            placeholder="DeviceList.filter.namePattern-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <opensilex-TypeForm
+            :type.sync="filter.rdf_type"
+            :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+            placeholder="DeviceList.filter.rdfType-placeholder"
+          ></opensilex-TypeForm>
+        </div>
+
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.obtained')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.obtained"
+            placeholder="DeviceList.filter.obtained-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+
       </template>
     </opensilex-SearchFilterField>
-<opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchDevices"
-      :fields="fields"
-      defaultSortBy="label"
-    >
-      <template v-slot:cell(uri)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"
-        :value="data.item.name"
-        ></opensilex-UriLink>
-      </template>
 
-      <template v-slot:row-details>
-      </template>
+    <opensilex-TableAsyncView
+          ref="tableRef"
+          :searchMethod="searchDevices"
+          :fields="fields"
+          defaultSortBy="label"
+          :isSelectable="true"
+          labelNumberOfSelectedRow="DeviceList.selected"
+        >
+          <template v-slot:cell(uri)="{data}">
+            <opensilex-UriLink :uri="data.item.uri"
+            :value="data.item.name"
+            :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
+            ></opensilex-UriLink>
+          </template>
 
-      <template v-slot:cell(actions)="{data}">
+          <template v-slot:row-details>
+          </template>
 
-      </template>
-    </opensilex-TableAsyncView>
+          <template v-slot:cell(actions)="{data}">
+            <b-button-group size="sm">
+              <opensilex-EditButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+                @click="editDevice(data.item.uri)"
+                label="DeviceList.update"
+                :small="true"
+              ></opensilex-EditButton>
+            </b-button-group>
+          </template>
+        </opensilex-TableAsyncView>
   </div>
 </template>
 
@@ -56,10 +90,14 @@ export default class DeviceList extends Vue {
   }
 
   filter = {
+    namePattern: undefined,
+    rdf_type: undefined
   };
 
   resetFilters() {
     this.filter = {
+      namePattern: undefined,
+      rdf_type: undefined
     };
     this.refresh();
   }
@@ -102,8 +140,8 @@ export default class DeviceList extends Vue {
 
   searchDevices(options) {
     return this.service.searchDevices(
-      undefined, //namePattern filter
-      undefined, // rdfTypes filter
+      this.filter.namePattern, // namePattern filter
+      this.filter.rdf_type, // rdfTypes filter
       undefined, // brandPattern filter
       undefined, // model filter
       undefined,
@@ -128,8 +166,16 @@ en:
     obtained: Obtained 
     update: Update Device
     delete: Delete Device
+    selected: Devices
+    facility: Facility
 
     filter:
+      namePattern: Name
+      namePattern-placeholder: Enter name
+      rdfType: Type
+      rdfType-placeholder: Select a device type
+      obtained: Obtained
+      obtained-placeholder: Enter date
 
 fr:
   DeviceList:
@@ -139,7 +185,14 @@ fr:
     obtained: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
+    selected: Dispositifs
+    facility: Facility
 
     filter:
-
+      namePattern: Nom
+      namePattern-placeholder: Entrez un nom
+      rdfType: Type
+      rdfType-placeholder: Selectionner un type de dispositif
+      obtained: Date d'obtention
+      obtained-placeholder: Entrer une date
 </i18n>

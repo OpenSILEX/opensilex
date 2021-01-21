@@ -6,7 +6,10 @@
 package org.opensilex.core.device.dal;
 
 import java.net.URI;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.sparql.expr.Expr;
 import java.util.List;
+import java.time.LocalDate;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.device.api.DeviceDTO;
 import org.opensilex.core.ontology.Oeso;
@@ -76,7 +79,17 @@ public class DeviceDAO {
         return device.getUri();
     }
     
-    public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, String brandPattern, String model, String snPattern, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, Integer year, String brandPattern, String model, String snPattern,  UserModel currentUser, Integer page, Integer pageSize) throws Exception {
+        LocalDate startDate ;
+        LocalDate endDate;
+        if (year != null) {
+            String yearString = Integer.toString(year);
+            startDate = LocalDate.parse(yearString + "-01-01");
+            endDate = LocalDate.parse(yearString + "-12-31");
+        }else {
+            startDate=null;
+            endDate=null;
+        }
         return sparql.searchWithPagination(
                 DeviceModel.class,
                 currentUser.getLanguage(),
@@ -96,11 +109,18 @@ public class DeviceDAO {
                     if (snPattern != null && !snPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.SERIALNUMBER_FIELD, snPattern));
                     }
-                    
+                    if(date != null){
+                        appendDateFilters(select, startDate);
+                    }
                 },
                 null,
                 page,
                 pageSize);
+    }
+
+    private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.OBTAINED_FIELD, Date,null,null);
+        select.addFilter(dateRangeExpr);
     }
     
     public URI update(URI deviceType, URI deviceURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {

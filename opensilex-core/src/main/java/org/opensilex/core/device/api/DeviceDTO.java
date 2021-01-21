@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -38,10 +39,10 @@ public class DeviceDTO extends RDFObjectDTO {
     protected URI personInCharge;
     
     @JsonProperty("obtained")
-    protected String dateOfPurchase;
+    protected LocalDate obtained;
     
     @JsonProperty("date_of_last_use")
-    protected String dateOfLastUse;
+    protected LocalDate dateOfLastUse;
     
     @JsonProperty("rdf_type")
     protected URI type;
@@ -70,11 +71,11 @@ public class DeviceDTO extends RDFObjectDTO {
         this.personInCharge = personInCharge;
     }
     
-    public void setDateOfPurchase(String dateOfPurchase){
-        this.dateOfPurchase = dateOfPurchase;
+    public void setObtained(LocalDate obtained){
+        this.obtained = obtained;
     }
     
-    public void setDateOfLastUse(String dateOfLastUse){
+    public void setDateOfLastUse(LocalDate dateOfLastUse){
         this.dateOfLastUse = dateOfLastUse;
     }
     
@@ -94,11 +95,11 @@ public class DeviceDTO extends RDFObjectDTO {
         return personInCharge;
     }
     
-    public String getDateOfPurchase(){
-        return dateOfPurchase;
+    public LocalDate getObtained(){
+        return obtained;
     }
     
-    public String getDateOfLastUse(){
+    public LocalDate getDateOfLastUse(){
         return dateOfLastUse;
     }
     public DeviceModel newModelInstance() {
@@ -125,8 +126,8 @@ public class DeviceDTO extends RDFObjectDTO {
             setPersonInCharge(model.getPersonInCharge());
         }
         
-        if(model.getDateOfPurchase() != null){
-            setDateOfPurchase(model.getDateOfPurchase());
+        if(model.getObtained() != null){
+            setObtained(model.getObtained());
         }
         
         if(model.getDateOfLastUse() != null){
@@ -160,8 +161,8 @@ public class DeviceDTO extends RDFObjectDTO {
             model.setPersonInCharge(getPersonInCharge());
         }
         
-        if(getDateOfPurchase() != null){
-            model.setDateOfPurchase(getDateOfPurchase());
+        if(getObtained() != null){
+            model.setObtained(getObtained());
         }
 
         if(getDateOfLastUse() != null){

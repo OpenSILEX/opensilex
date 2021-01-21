@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -73,7 +74,7 @@ public class DeviceAPI {
     private SPARQLService sparql;
     
     @POST
-    @Path("create")
+    //@Path("create")
     @ApiOperation("Create a device")
     @ApiProtected
     @ApiCredential(
@@ -102,7 +103,7 @@ public class DeviceAPI {
     }
     
     @GET
-    @Path("search")
+    //@Path("search")
     @ApiOperation("Search list of devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -113,14 +114,24 @@ public class DeviceAPI {
     public Response searchDevices(
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfTypes") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue(".*") @QueryParam("brandPattern") String brandPattern,
-            @ApiParam(value = "Model filter", example = ".*") @DefaultValue("") @QueryParam("model") String model,
+            @ApiParam(value = "Model filter", example = "") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue(".*") @QueryParam("serialNumberPattern") String snPattern,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql);
-        ListWithPagination<DeviceModel> devices = dao.search(namePattern, rdfTypes, brandPattern, model, snPattern, page, pageSize, currentUser);
+        ListWithPagination<DeviceModel> devices = dao.search(
+            namePattern,
+            rdfTypes,
+            year,
+            brandPattern,
+            model,
+            snPattern,
+            currentUser,
+            page,
+            pageSize);
 
         ListWithPagination<DeviceDTO> dtoList = devices.convert(DeviceDTO.class, DeviceDTO::getDTOFromModel);
 
@@ -128,7 +139,7 @@ public class DeviceAPI {
     }
     
     @GET
-    @Path("get/{uri}")
+    @Path("{uri}")
     @ApiOperation("Get device detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -156,7 +167,7 @@ public class DeviceAPI {
     }
     
     @PUT
-    @Path("update")
+    //@Path("update")
     @ApiOperation("Update a device")
     @ApiProtected
     @ApiCredential(
@@ -184,7 +195,7 @@ public class DeviceAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete a device")
     @ApiProtected
     @ApiCredential(

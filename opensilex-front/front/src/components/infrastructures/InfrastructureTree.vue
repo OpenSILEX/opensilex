@@ -29,7 +29,7 @@
     <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
       <template v-slot:node="{ node }">
         <span class="item-icon">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)" />
         </span>&nbsp;
         <strong v-if="node.data.selected">{{ node.title }}</strong>
         <span v-if="!node.data.selected">{{ node.title }}</span>
@@ -76,7 +76,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
@@ -90,7 +90,7 @@ export default class InfrastructureTree extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
-  service: InfrastructuresService;
+  service: OrganisationsService;
 
   get user() {
     return this.$store.state.user;
@@ -109,7 +109,7 @@ export default class InfrastructureTree extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex-core.InfrastructuresService"
+      "opensilex-core.OrganisationsService"
     );
 
     let query: any = this.$route.query;

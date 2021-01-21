@@ -33,12 +33,12 @@
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(name)="data">
-        <opensilex-Icon :icon="$opensilex.getRDFIcon(data.item.type)" />&nbsp;
+        <opensilex-Icon :icon="$opensilex.getRDFIcon(data.item.rdf_type)" />&nbsp;
         <span class="capitalize-first-letter">{{data.item.name}}</span>
       </template>
 
       <template v-slot:cell(typeLabel)="data">
-        <span class="capitalize-first-letter">{{data.item.typeLabel}}</span>
+        <span class="capitalize-first-letter">{{data.item.rdf_type_name}}</span>
       </template>
 
       <template v-slot:cell(actions)="data">
@@ -78,7 +78,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
@@ -123,7 +123,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   public deleteFacility(uri) {
     this.$opensilex
-      .getService("opensilex-core.InfrastructuresService")
+      .getService("opensilex-core.OrganisationsService")
       .deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -131,7 +131,7 @@ export default class InfrastructureFacilitiesView extends Vue {
   }
 
   setInfrastructure(form) {
-    form.infrastructure = this.selected.uri;
+    form.organisation = this.selected.uri;
   }
 }
 </script>

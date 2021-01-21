@@ -5,6 +5,10 @@
  */
 package org.opensilex.core.organisation.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
+import org.opensilex.core.organisation.api.team.InfrastructureTeamDTO;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +16,19 @@ import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 
+
 /**
- *
- * @author vince
+ * DTO representing JSON for getting organisation
+ * @author Alice Boizet
  */
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "children","groups", "facilities"})
 public class InfrastructureGetDTO extends InfrastructureDTO {
 
+    
     protected List<InfrastructureTeamDTO> groups;
 
+    
     protected List<InfrastructureFacilityGetDTO> facilities;
 
     public List<InfrastructureTeamDTO> getGroups() {

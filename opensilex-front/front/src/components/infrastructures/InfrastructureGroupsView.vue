@@ -100,7 +100,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
@@ -144,7 +144,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   public deleteGroup(uri) {
     this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .deleteInfrastructureTeam(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -153,7 +153,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   create(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .createInfrastructureTeam(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -174,7 +174,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   update(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .updateInfrastructureTeam(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -184,7 +184,7 @@ export default class InfrastructureGroupsView extends Vue {
   }
 
   setInfrastructure(form) {
-    form.infrastructure = this.selected.uri;
+    form.organisation = this.selected.uri;
   }
 }
 </script>

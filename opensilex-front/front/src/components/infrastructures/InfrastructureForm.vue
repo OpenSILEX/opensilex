@@ -19,7 +19,7 @@
 
     <!-- Type -->
     <opensilex-TypeForm
-      :type.sync="form.type"
+      :type.sync="form.rdf_type"
       :baseType="$opensilex.Oeso.INFRASTRUCTURE_TYPE_URI"
       :required="true"
       placeholder="InfrastructureForm.form-type-placeholder"
@@ -59,7 +59,7 @@ export default class InfrastructureForm extends Vue {
     default: () => {
       return {
         uri: null,
-        type: null,
+        rdf_type: null,
         name: "",
         parent: null
       };
@@ -71,7 +71,7 @@ export default class InfrastructureForm extends Vue {
     this.uriGenerated = true;
     if (this.parentInfrastructures == null) {
       this.$opensilex
-        .getService("opensilex-core.InfrastructuresService")
+        .getService("opensilex-core.OrganisationsService")
         .searchInfrastructuresTree()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
@@ -85,7 +85,7 @@ export default class InfrastructureForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      type: null,
+      rdf_type: null,
       name: "",
       parent: null
     };
@@ -108,7 +108,7 @@ export default class InfrastructureForm extends Vue {
 
   create(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .createInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -130,9 +130,9 @@ export default class InfrastructureForm extends Vue {
   }
 
   update(form) {
-    delete form.typeLabel;
+    delete form.rdf_type_name;
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .updateInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;

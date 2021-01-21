@@ -116,7 +116,7 @@ import {
   ProjectCreationDTO,
   InfrastructureGetDTO,
   ProjectsService,
-  InfrastructuresService,
+  OrganisationsService,
   SpeciesDTO,
   SpeciesService,
   FactorsService,
@@ -255,8 +255,8 @@ console.log(this.experiment);
   }
 
   loadInfrastructures() {
-    let service: InfrastructuresService = this.$opensilex.getService(
-      "opensilex.InfrastructuresService"
+    let service: OrganisationsService = this.$opensilex.getService(
+      "opensilex.OrganisationsService"
     );
     this.infrastructuresList = [];
 

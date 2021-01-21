@@ -18,7 +18,6 @@ import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 
-import org.opensilex.core.organisation.api.InfrastructureCreationDTO;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;

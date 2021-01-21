@@ -5,10 +5,16 @@
  */
 package org.opensilex.core.organisation.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
+
+
 /**
- *
- * @author vince
+ * DTO representing JSON for update organisation
+ * @author Alice Boizet
  */
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "children"})
 public class InfrastructureUpdateDTO extends InfrastructureCreationDTO {
     
 }

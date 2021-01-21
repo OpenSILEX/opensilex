@@ -83,7 +83,7 @@ public class FacitityAPI {
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure facility already exists", e.getMessage()).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Facility already exists", e.getMessage()).getResponse();
         }
     }
 
@@ -95,11 +95,11 @@ public class FacitityAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure facility retrieved", response = InfrastructureFacilityGetDTO.class),
-        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Facility retrieved", response = InfrastructureFacilityGetDTO.class),
+        @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructureFacility(
-            @ApiParam(value = "facility URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureFacilityModel model = dao.getFacility(uri, currentUser);
@@ -117,11 +117,11 @@ public class FacitityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure facility deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Facility deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructureFacility(
-            @ApiParam(value = "Infrastructure facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         dao.deleteFacility(uri, currentUser);
@@ -138,11 +138,11 @@ public class FacitityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure facility URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Return updated facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructureFacility(
-            @ApiParam("Infrastructure description")
+            @ApiParam("Facility description")
             @Valid InfrastructureFacilityUpdateDTO dto
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);

@@ -29,7 +29,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -37,11 +36,6 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_ID;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_DELETE_LABEL_KEY;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_GROUP_ID;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID;
-import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -78,7 +72,7 @@ public class InfrastructureAPI {
     UserModel currentUser;
 
     @POST
-    @ApiOperation("Create an infrastructure")
+    @ApiOperation("Create an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
@@ -87,12 +81,12 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an infrastructure", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "An infrastructure with the same URI already exists", response = ErrorResponse.class)
+        @ApiResponse(code = 201, message = "Create an organisation", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "An organisation with the same URI already exists", response = ErrorResponse.class)
     })
 
     public Response createInfrastructure(
-            @ApiParam("Infrastructure description") @Valid InfrastructureCreationDTO dto
+            @ApiParam("Organisation description") @Valid InfrastructureCreationDTO dto
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
@@ -103,23 +97,23 @@ public class InfrastructureAPI {
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure already exists", e.getMessage()).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Organisation already exists", e.getMessage()).getResponse();
         }
     }
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an experiment by URI")
+    @ApiOperation("Get an organisation ")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure retrieved", response = InfrastructureGetDTO.class),
-        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Organisation retrieved", response = InfrastructureGetDTO.class),
+        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructure(
-            @ApiParam(value = "Infrastructure URI", example = "http://opensilex.dev/infrastructures/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureModel model = dao.get(uri, currentUser);
@@ -128,7 +122,7 @@ public class InfrastructureAPI {
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an infrastructure")
+    @ApiOperation("Delete an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_DELETE_ID,
@@ -137,11 +131,11 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Organisation deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructure(
-            @ApiParam(value = "Infrastructure URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         dao.delete(uri, currentUser);
@@ -149,16 +143,16 @@ public class InfrastructureAPI {
     }
 
     @GET
-    @ApiOperation("Search infrastructures tree")
+    @ApiOperation("Search organisations")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of infrastructure tree", response = ResourceTreeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return organisations tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructuresTree(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of infrasctures URI limitations in the result") @QueryParam("infraURIs") List<URI> infraURIs
+            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> infraURIs
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
@@ -169,7 +163,7 @@ public class InfrastructureAPI {
     }
 
     @PUT
-    @ApiOperation("Update an infrastructure")
+    @ApiOperation("Update an organisation")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
@@ -178,11 +172,11 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure URI not found", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Return updated organisation", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructure(
-            @ApiParam("Infrastructure description")
+            @ApiParam("Organisation description")
             @Valid InfrastructureUpdateDTO dto
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
@@ -194,101 +188,4 @@ public class InfrastructureAPI {
     }
 
 
-    @POST
-    @Path("team/create")
-    @ApiOperation("Create an infrastructure team")
-    @ApiProtected
-    @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
-            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an infrastructure team", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "An infrastructure team with the same URI already exists", response = ErrorResponse.class)
-    })
-
-    public Response createInfrastructureTeam(
-            @ApiParam("Infrastructure team description") @Valid InfrastructureTeamDTO dto
-    ) throws Exception {
-        try {
-            InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureTeamModel model = dao.createTeam(dto.newModel(), currentUser);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-        } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure team already exists", e.getMessage()).getResponse();
-        }
-    }
-
-    @GET
-    @Path("team/get/{uri}")
-    @ApiOperation("Get an infrastructure team by URI")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure team retrieved", response = InfrastructureTeamDTO.class),
-        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
-    })
-    public Response getInfrastructureTeam(
-            @ApiParam(value = "Infrastructure team URI", example = "http://opensilex.dev/infrastructures/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureTeamModel model = dao.getTeam(uri, currentUser);
-        return new SingleObjectResponse<>(InfrastructureTeamDTO.getDTOFromModel(model)).getResponse();
-    }
-
-    @DELETE
-    @Path("team/delete/{uri}")
-    @ApiOperation("Delete an infrastructure team")
-    @ApiProtected
-    @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
-            credentialId = CREDENTIAL_GROUP_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Infrastructure team deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
-    })
-    public Response deleteInfrastructureTeam(
-            @ApiParam(value = "Infrastructure team URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
-    ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        dao.deleteTeam(uri, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-    }
-
-    @PUT
-    @Path("team/update")
-    @ApiOperation("Update an infrastructure team")
-    @ApiProtected
-    @ApiCredential(
-            groupId = CREDENTIAL_GROUP_GROUP_ID,
-            groupLabelKey = CREDENTIAL_GROUP_GROUP_ID,
-            credentialId = CREDENTIAL_GROUP_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated infrastructure uri", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Infrastructure team URI not found", response = ErrorResponse.class)
-    })
-    public Response updateInfrastructureTeam(
-            @ApiParam("Infrastructure team description")
-            @Valid InfrastructureTeamDTO dto
-    ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureTeamModel team = dao.updateTeam(dto.newModel(), currentUser);
-        Response response = new ObjectUriResponse(Response.Status.OK, team.getUri()).getResponse();
-        return response;
-    }
 }

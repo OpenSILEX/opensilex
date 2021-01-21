@@ -23,13 +23,13 @@ import Component from "vue-class-component";
         placeholder="ExperimentFacilitySelector.placeholder"
       >
         <template v-slot:option-label="{node}">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.type)" />&nbsp;
+          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.rdf_type)" />&nbsp;
           <span class="capitalize-first-letter">{{node.label}}</span>&nbsp;
           (
-          <span class="capitalize-first-letter">{{node.raw.typeLabel}}</span>)
+          <span class="capitalize-first-letter">{{node.raw.rdf_type_name}}</span>)
         </template>
         <template v-slot:value-label="{node}">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.type)" />&nbsp;
+          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.rdf_type_name)" />&nbsp;
           <span class="capitalize-first-letter">{{node.label}}</span>
         </template>
       </opensilex-SelectForm>
@@ -42,14 +42,14 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   ExperimentsService,
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO
 } from "opensilex-core/index";
 @Component
 export default class ExperimentFacilitySelector extends Vue {
   $opensilex: any;
   xpService: ExperimentsService;
-  infraService: InfrastructuresService;
+  infraService: OrganisationsService;
 
   @Ref("facilitySelector") readonly facilitySelector!: any;
 
@@ -74,7 +74,7 @@ export default class ExperimentFacilitySelector extends Vue {
     );
 
     this.infraService = this.$opensilex.getService(
-      "opensilex-core.InfrastructuresService"
+      "opensilex-core.OrganisationsService"
     );
 
     let availableFacilities;
@@ -169,8 +169,8 @@ export default class ExperimentFacilitySelector extends Vue {
         let facilityNode = {
           id: availableInfraFacility.uri,
           label: availableInfraFacility.name,
-          type: availableInfraFacility.type,
-          typeLabel: availableInfraFacility.typeLabel
+          type: availableInfraFacility.rdf_type,
+          typeLabel: availableInfraFacility.rdf_type_name
         };
 
         facilitiesTree.push(facilityNode);

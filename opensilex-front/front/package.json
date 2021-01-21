@@ -56,7 +56,7 @@
         "weekstart": "^1.0.1",
         "vuelayers": "0.11.30",
         "wkt": "^0.1.1",
-        "@turf/turf": "5.1.6"
+        "@turf/turf": "6.3.0"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "4.5.8",

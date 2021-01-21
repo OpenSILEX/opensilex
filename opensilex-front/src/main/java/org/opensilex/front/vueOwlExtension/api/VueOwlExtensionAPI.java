@@ -37,7 +37,6 @@ import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
-import org.opensilex.front.vueOwlExtension.dal.VueClassPropertyExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
@@ -125,7 +124,6 @@ public class VueOwlExtensionAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Update a RDF property", response = ObjectUriResponse.class)
     })
-
     public Response updateClass(
             @ApiParam("Class description") @Valid VueClassDTO dto
     ) throws Exception {
@@ -137,6 +135,25 @@ public class VueOwlExtensionAPI {
 
         dao.updateExtendedClass(classModel, classExtModel);
         return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
+    }
+
+    @PUT
+    @Path("properties-order")
+    @ApiOperation("Define properties order")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Define properties order", response = ObjectUriResponse.class)
+    })
+    public Response setClassPropertiesOrder(
+            @ApiParam(value = "Class uri", required = true) @QueryParam("classURI") @ValidURI @NotNull URI classURI,
+            @ApiParam("Array of properties") @ValidURI List<URI> properties
+    ) throws Exception {
+        VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
+
+        dao.setPropertiesOrder(classURI, properties, currentUser.getLanguage());
+        return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }
 
     @DELETE
@@ -220,10 +237,11 @@ public class VueOwlExtensionAPI {
             OwlRestrictionModel restriction = classDescription.getRestrictions().get(obj.getUri());
             pDTO.setIsList(restriction.isList());
             pDTO.setIsRequired(restriction.isRequired());
-            VueOntologyType vueType = VueOwlExtensionDAO.getVueType(obj.getTypeRestriction());
+            VueOntologyObjectType vueType = (VueOntologyObjectType) VueOwlExtensionDAO.getVueType(obj.getTypeRestriction());
             if (vueType != null) {
                 pDTO.setTargetProperty(obj.getTypeRestriction());
                 pDTO.setInputComponent(vueType.getInputComponent());
+                pDTO.setInputComponentsByProperty(vueType.getInputComponentsMap());
                 pDTO.setViewComponent(vueType.getViewComponent());
                 pDTO.setIsCustom(true);
             }
@@ -236,18 +254,9 @@ public class VueOwlExtensionAPI {
         }
         classProperties.setObjectProperties(objectProperties);
 
-        if (classExtension != null && classExtension.getProperties() != null) {
-            List<URI> propertiesOrderList = classExtension.getProperties().stream().sorted(
-                    (VueClassPropertyExtensionModel a, VueClassPropertyExtensionModel b) -> {
-                        return a.getHasDisplayOrder() - b.getHasDisplayOrder();
-                    }).map(
-                            (VueClassPropertyExtensionModel a) -> a.getToOwlProperty()
-                    ).collect(Collectors.toList());
+        VueOwlExtensionDAO daoExt = new VueOwlExtensionDAO(sparql);
 
-            classProperties.setPropertiesOrder(propertiesOrderList);
-        } else {
-            classProperties.setPropertiesOrder(new ArrayList<>());
-        }
+        classProperties.setPropertiesOrder(daoExt.getPropertiesOrder(rdfType, currentUser.getLanguage()));
 
         return new SingleObjectResponse<>(classProperties).getResponse();
     }
@@ -265,8 +274,8 @@ public class VueOwlExtensionAPI {
 
         for (VueOntologyDataType datatype : VueOwlExtensionDAO.getDataTypes()) {
             VueDataTypeDTO dto = new VueDataTypeDTO();
-            dto.setUri(new URI(datatype.getUri()));
-            dto.setIntputComponent(datatype.getInputComponent());
+            dto.setUri(new URI(datatype.getTypeUri()));
+            dto.setInputComponent(datatype.getInputComponent());
             dto.setViewComponent(datatype.getViewComponent());
             dto.setLabelKey(datatype.getLabelKey());
             datatypeDTOs.add(dto);
@@ -289,8 +298,9 @@ public class VueOwlExtensionAPI {
 
         for (VueOntologyObjectType objectType : VueOwlExtensionDAO.getObjectTypes()) {
             VueObjectTypeDTO dto = new VueObjectTypeDTO();
-            dto.setUri(new URI(objectType.getUri()));
-            dto.setIntputComponent(objectType.getInputComponent());
+            dto.setUri(new URI(objectType.getTypeUri()));
+             dto.setInputComponent(objectType.getInputComponent());
+            dto.setInputComponentsByProperty(objectType.getInputComponentsMap());
             dto.setViewComponent(objectType.getViewComponent());
 
             ClassModel objectClass = dao.getClassModel(dto.getUri(), null, currentUser.getLanguage());

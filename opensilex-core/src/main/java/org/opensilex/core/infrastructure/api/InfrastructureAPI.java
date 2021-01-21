@@ -11,7 +11,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -44,12 +46,14 @@ import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_GROUP_I
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID;
 import static org.opensilex.security.group.api.GroupAPI.CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 /**
  *
@@ -111,7 +115,7 @@ public class InfrastructureAPI {
 
     @GET
     @Path("get/{uri}")
-    @ApiOperation("Get an experiment by URI")
+    @ApiOperation("Get an infrastructure by URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -126,6 +130,33 @@ public class InfrastructureAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureModel model = dao.get(uri, currentUser);
         return new SingleObjectResponse<>(InfrastructureGetDTO.getDTOFromModel(model)).getResponse();
+    }
+
+    @GET
+    @Path("get-all")
+    @ApiOperation("Get all user available facilities")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Facilities retrieved", response = InfrastructureGetDTO.class, responseContainer = "List")
+    })
+    public Response getAllFacilities() throws Exception {
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        Set<URI> infras = dao.getUserInfrastructures(currentUser);
+        List<InfrastructureFacilityModel> facilities = sparql.search(InfrastructureFacilityModel.class, currentUser.getLanguage(), (select) -> {
+            if (infras != null && infras.size() > 0) {
+                SPARQLQueryHelper.inURIFilter(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras);
+            }
+        });
+        
+        List<InfrastructureFacilityGetDTO> dtos = new ArrayList<>(facilities.size());
+        for (InfrastructureFacilityModel facility : facilities) {
+            dtos.add(InfrastructureFacilityGetDTO.getDTOFromModel(facility));
+        }
+
+        return new PaginatedListResponse<>(dtos).getResponse();
     }
 
     @DELETE

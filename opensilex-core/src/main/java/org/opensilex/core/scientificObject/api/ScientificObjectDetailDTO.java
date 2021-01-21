@@ -16,10 +16,15 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  *
@@ -107,13 +112,26 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
         super.fromModel(model);
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
+
+        setFactorLevels(new ArrayList<>());
+        List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size() + 1);
+
+        RDFObjectRelationDTO isPartOfRelation = new RDFObjectRelationDTO();
+
         if (model.getParent() != null) {
             setParent(model.getParent().getUri());
             setParentLabel(model.getParent().getName());
+
+            URI isPartOfURI;
+            try {
+                isPartOfURI = SPARQLDeserializers.formatURI(new URI(Oeso.isPartOf.getURI()));
+                isPartOfRelation.setProperty(isPartOfURI);
+                isPartOfRelation.setValue(SPARQLDeserializers.formatURI(getParent()).toString());
+                relationsDTO.add(isPartOfRelation);
+            } catch (URISyntaxException ex) {
+            }
         }
 
-        setFactorLevels(new ArrayList<>());
-        List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
         for (SPARQLModelRelation relation : model.getRelations()) {
             relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
         }

@@ -72,8 +72,7 @@ class SPARQLClassQueryBuilder {
 
     /**
      * @param objectFieldName the field name
-     * @return the name of the SPARQL variable which represent the object field
-     * name
+     * @return the name of the SPARQL variable which represent the object field name
      * @see SPARQLNamedResourceModel#getName()
      */
     public static String getObjectNameVarName(String objectFieldName) {
@@ -270,17 +269,20 @@ class SPARQLClassQueryBuilder {
         for (SPARQLModelRelation relation : instance.getRelations()) {
 
             Class<?> valueType = relation.getType();
-            Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
+            String vString = relation.getValue();
+            if (vString != null && !vString.isEmpty()) {
+                Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
 
-            Triple triple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
+                Triple triple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
 
-            Node relationGraph = graph;
-            if (relation.getGraph() != null) {
-                relationGraph = SPARQLDeserializers.nodeURI(relation.getGraph());
+                Node relationGraph = graph;
+                if (relation.getGraph() != null) {
+                    relationGraph = SPARQLDeserializers.nodeURI(relation.getGraph());
+                }
+                create.addInsert(relationGraph, triple);
             }
-            create.addInsert(relationGraph, triple);
         }
-        
+
         return uriNode;
     }
 
@@ -302,18 +304,17 @@ class SPARQLClassQueryBuilder {
     }
 
     /**
-     * Add the WHERE clause into handler, depending if the given field is
-     * optional or not, according {@link #analyzer}
+     * Add the WHERE clause into handler, depending if the given field is optional or not, according {@link #analyzer}
      *
-     * @param select       the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
+     * @param select the root {@link SelectBuilder}, needed in order to create the {@link TriplePath} to add to the handler
      * @param uriFieldName name of the uri SPARQL variable
-     * @param property     the {@link Property} to add
-     * @param field        the property corresponding {@link Field}
+     * @param property the {@link Property} to add
+     * @param field the property corresponding {@link Field}
      * @see SPARQLClassAnalyzer#isOptional(Field)
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
-                                   Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
+            Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -380,10 +381,10 @@ class SPARQLClassQueryBuilder {
     }
 
     private void addObjectPropertyName(Field field,
-                                       AbstractQueryBuilder<?> select, Var propertyFieldVar, String lang,
-                                       Node graph,
-                                       WhereHandler handler,
-                                       Map<Node, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+            AbstractQueryBuilder<?> select, Var propertyFieldVar, String lang,
+            Node graph,
+            WhereHandler handler,
+            Map<Node, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
         String objFieldName = getObjectNameVarName(field.getName());
         WhereHandler objectNameOptionalHandler = new WhereHandler();
@@ -393,7 +394,6 @@ class SPARQLClassQueryBuilder {
             addLangFilter(objFieldName, lang, objectNameOptionalHandler);
         }
         handler.addOptional(objectNameOptionalHandler);
-
 
         String objDefaultFieldName = getObjectDefaultNameVarName(field.getName());
 
@@ -416,9 +416,8 @@ class SPARQLClassQueryBuilder {
 
     }
 
-
     private void addLangFilter(String fieldName, String lang,
-                               WhereHandler handler) {
+            WhereHandler handler) {
         Locale locale = Locale.forLanguageTag(lang);
         handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
     }
@@ -426,7 +425,7 @@ class SPARQLClassQueryBuilder {
     private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws Exception {
         Quad quad;
         Triple triple;
-        
+
         Node uriNode;
         if (blankNode) {
             uriNode = NodeFactory.createBlankNode();
@@ -434,7 +433,7 @@ class SPARQLClassQueryBuilder {
             URI uri = analyzer.getURI(instance);
             uriNode = SPARQLDeserializers.nodeURI(uri);
         }
-        
+
         if (instance.getType() == null) {
             instance.setType(new URI(analyzer.getRDFType().getURI()));
         }
@@ -569,7 +568,7 @@ class SPARQLClassQueryBuilder {
                 }
             }
         }
-        
+
         return uriNode;
     }
 

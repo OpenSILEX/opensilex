@@ -1,5 +1,6 @@
 <template>
     <opensilex-FactorLevelSelector
+      v-if="context && context.experimentURI"
       label="FactorLevelSelector.label"
       :factorLevels.sync="internalValue"
       :multiple="property.isList"

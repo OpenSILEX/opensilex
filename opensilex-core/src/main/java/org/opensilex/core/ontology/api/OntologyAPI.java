@@ -494,11 +494,12 @@ public class OntologyAPI {
             restriction.setMaxCardinality(1);
         }
 
-        if (dto.getIsObjectProperty()) {
+        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, currentUser);
+        if (dataProp == null) {
             URI objectRangeURI = dao.getObjectProperty(propertyURI, currentUser).getRange().getUri();
             restriction.setOnClass(objectRangeURI);
         } else {
-            URI dataRangeURI = dao.getDataProperty(propertyURI, currentUser).getRange();
+            URI dataRangeURI = dataProp.getRange();
             restriction.setOnDataRange(dataRangeURI);
         }
 

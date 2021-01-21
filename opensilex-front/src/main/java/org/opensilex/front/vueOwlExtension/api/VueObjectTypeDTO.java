@@ -6,6 +6,7 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import java.net.URI;
+import java.util.Map;
 import org.opensilex.core.ontology.api.RDFClassDTO;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
@@ -17,7 +18,8 @@ public class VueObjectTypeDTO {
 
     protected URI uri;
     protected URI shortUri;
-    protected String intputComponent;
+    protected String inputComponent;
+    protected Map<String, String> inputComponentsByProperty;
     protected String viewComponent;
     protected String label;
 
@@ -35,12 +37,20 @@ public class VueObjectTypeDTO {
         return SPARQLDeserializers.formatURI(getUri());
     }
 
-    public String getIntputComponent() {
-        return intputComponent;
+    public String getInputComponent() {
+        return inputComponent;
     }
 
-    public void setIntputComponent(String intputComponent) {
-        this.intputComponent = intputComponent;
+    public void setInputComponent(String inputComponent) {
+        this.inputComponent = inputComponent;
+    }
+
+    public Map<String, String> getInputComponentsByProperty() {
+        return inputComponentsByProperty;
+    }
+
+    public void setInputComponentsByProperty(Map<String, String> inputComponentsByProperty) {
+        this.inputComponentsByProperty = inputComponentsByProperty;
     }
 
     public String getViewComponent() {

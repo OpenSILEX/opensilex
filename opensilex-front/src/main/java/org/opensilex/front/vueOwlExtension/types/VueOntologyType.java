@@ -6,7 +6,11 @@
 package org.opensilex.front.vueOwlExtension.types;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  *
@@ -14,15 +18,16 @@ import java.util.List;
  */
 public interface VueOntologyType {
 
-    public String getUri();
+    public String getTypeUri();
 
-    public default List<String> getUriAliases() {
+    public default List<String> getTypeUriAliases() {
         return new ArrayList<>();
     }
 
     public String getInputComponent();
 
     public String getViewComponent();
+
 
     public default boolean isDisabled() {
         return false;

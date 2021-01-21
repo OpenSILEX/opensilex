@@ -6,6 +6,19 @@
       description="ScientificObjectList.description"
     ></opensilex-PageHeader>
 
+    <opensilex-PageActions>
+      <opensilex-CreateButton
+        @click="soForm.createScientificObject()"
+        label="ExperimentScientificObjects.create-scientific-object"
+      ></opensilex-CreateButton
+      >&nbsp;
+      <opensilex-ScientificObjectForm
+        ref="soForm"
+        @refresh="refresh"
+      ></opensilex-ScientificObjectForm>
+      <opensilex-CreateButton label="Import CSV"></opensilex-CreateButton>
+    </opensilex-PageActions>
+
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
@@ -15,7 +28,7 @@
       <template v-slot:filters>
         <!-- Name -->
         <opensilex-FilterField>
-          <label for="name">{{$t('component.common.name')}}</label>
+          <label for="name">{{ $t("component.common.name") }}</label>
           <opensilex-StringFilter
             id="name"
             :filter.sync="filter.name"
@@ -44,25 +57,24 @@
       <template v-slot:advancedSearch>
         <!-- Germplasm -->
         <opensilex-FilterField>
-          <opensilex-GermplasmSelector :multiple="false" :germplasm.sync="filter.germplasm"></opensilex-GermplasmSelector>
+          <opensilex-GermplasmSelector
+            :multiple="false"
+            :germplasm.sync="filter.germplasm"
+          ></opensilex-GermplasmSelector>
         </opensilex-FilterField>
 
         <!-- Factors -->
         <opensilex-FilterField>
-          <opensilex-FactorSelector :multiple="true" :factors.sync="filter.factors"></opensilex-FactorSelector>
+          <opensilex-FactorSelector
+            :multiple="true"
+            :factors.sync="filter.factors"
+          ></opensilex-FactorSelector>
         </opensilex-FilterField>
       </template>
     </opensilex-SearchFilterField>
 
     <opensilex-PageContent>
       <template v-slot>
-        <div>
-          <opensilex-CreateButton
-            @click="soForm.createScientificObject()"
-            label="ExperimentScientificObjects.create-scientific-object"
-          ></opensilex-CreateButton>&nbsp;
-          <opensilex-ScientificObjectForm ref="soForm"></opensilex-ScientificObjectForm>
-        </div>
         <opensilex-TableAsyncView
           ref="tableRef"
           :searchMethod="searchScientificObject"
@@ -72,17 +84,34 @@
           labelNumberOfSelectedRow="ScientificObjectList.selected"
           iconNumberOfSelectedRow="ik#ik-target"
         >
+          <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+            <opensilex-Button
+              :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
+              icon="none"
+              :small="false"
+              label="Export CSV"
+              :disabled="numberOfSelectedRows > 0"
+            ></opensilex-Button>
+          </template>
           <template v-slot:cell(uri)="{ data }">
             <opensilex-UriLink
               :uri="data.item.uri"
               :value="data.item.name"
-              :to="{ path: '/scientific-objects/details/' + encodeURIComponent(data.item.uri) }"
+              :to="{
+                path:
+                  '/scientific-objects/details/' +
+                  encodeURIComponent(data.item.uri),
+              }"
             ></opensilex-UriLink>
           </template>
-          <template v-slot:row-details="{data}">
-            <div>DETAILS: {{objectDetails[data.item.uri]}}</div>
+          <template v-slot:row-details>
+            <div>Expérimentation:</div>
+            <ul>
+              <li>ZA17</li>
+              <li>XP1</li>
+            </ul>
           </template>
-          <template v-slot:cell(actions)="{data}">
+          <template v-slot:cell(actions)="{ data }">
             <b-button-group size="sm">
               <opensilex-DetailButton
                 @click="loadObjectDetail(data)"
@@ -90,6 +119,15 @@
                 :detailVisible="data.detailsShowing"
                 :small="true"
               ></opensilex-DetailButton>
+              <opensilex-EditButton
+                @click="soForm.editScientificObject(data.item.uri)"
+                label="ExperimentScientificObjects.edit-scientific-object"
+                :small="true"
+              ></opensilex-EditButton>
+              <opensilex-DeleteButton
+                label="ExperimentScientificObjects.delete-scientific-object"
+                :small="true"
+              ></opensilex-DeleteButton>
             </b-button-group>
           </template>
         </opensilex-TableAsyncView>
@@ -118,13 +156,13 @@ import {
   ExperimentGetListDTO,
   OntologyService,
   ScientificObjectsService,
-  ScientificObjectDetailDTO
+  ScientificObjectDetailDTO,
 } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, {
   OpenSilexResponse,
   MetadataDTO,
-  PaginationDTO
+  PaginationDTO,
 } from "../../lib/HttpResponse";
 
 @Component
@@ -140,24 +178,24 @@ export default class ScientificObjectList extends Vue {
     {
       key: "uri",
       label: "component.common.name",
-      sortable: true
+      sortable: true,
     },
     {
       key: "typeLabel",
       label: "component.common.type",
-      sortable: true
+      sortable: true,
     },
     {
       key: "actions",
-      label: "component.common.actions"
-    }
+      label: "component.common.actions",
+    },
   ];
 
   private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      lang => {
+      (lang) => {
         this.tableRef.update();
       }
     );
@@ -177,7 +215,7 @@ export default class ScientificObjectList extends Vue {
     experiment: undefined,
     germplasm: undefined,
     factors: [],
-    types: []
+    types: [],
   };
 
   get user() {
@@ -190,7 +228,7 @@ export default class ScientificObjectList extends Vue {
       experiment: undefined,
       germplasm: undefined,
       factors: [],
-      types: []
+      types: [],
     };
     this.refresh();
   }

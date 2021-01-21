@@ -47,7 +47,7 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geometry",
+            "geometry": "Geospacial coordinates",
             "geometry-help": "Geospacial coordinates in WKT format",
             "errors": {
                 "error-title": "Error",

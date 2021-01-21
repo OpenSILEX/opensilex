@@ -12,9 +12,17 @@
         <slot name="filters"></slot>
       </div>
 
-      <div class="card" v-if="showAdvancedSearch" >
-        <div class="card-header sub-header" v-on:click="toogleAdvancedSearch($event)">
-          <h3 class="mr-3">{{ $t(advancedSearchLabel) }}</h3>
+      <div class="card" v-if="showAdvancedSearch">
+        <div
+          class="card-header sub-header advanceSearchBlock"
+          v-on:click="toogleAdvancedSearch($event)"
+        >
+          <!-- <i v-if="!advancedSearchOpen" class="ik minimize-card ik-plus"></i>
+          <i v-if="advancedSearchOpen" class="ik minimize-card ik-minus"></i>
+          <span>&nbsp;</span> -->
+          <h3 class="mr-3">
+            {{ $t(advancedSearchLabel) }}
+          </h3>
           <div class="card-header-right">
             <div class="card-option">
               <li>
@@ -26,22 +34,26 @@
         </div>
         <div
           class="card-body advancedSearch row"
-          style="background-color: transparent;"
-          v-bind:class="{ 'open': advancedSearchOpen}"
+          style="background-color: transparent"
+          v-bind:class="{ open: advancedSearchOpen }"
         >
           <slot name="advancedSearch"></slot>
         </div>
       </div>
     </div>
 
-    <div class="container-fluid button-group" v-if="withButton" v-bind:class="{ 'withAdvancedSearch': showAdvancedSearch}">
+    <div
+      class="container-fluid button-group"
+      v-if="withButton"
+      v-bind:class="{ withAdvancedSearch: showAdvancedSearch }"
+    >
       <div class="row">
         <div class="col-md-12 text-right">
           <slot name="clear">
             <opensilex-Button
               label="component.common.search.clear-button"
               icon="ik#ik-x"
-              @click="$emit('clear',$event)"
+              @click="$emit('clear', $event)"
               variant="light"
               class="mr-3"
               :small="false"
@@ -50,7 +62,7 @@
           <slot name="search">
             <opensilex-Button
               label="component.common.search.search-button"
-              @click="$emit('search',$event)"
+              @click="$emit('search', $event)"
               icon="ik#ik-search"
               variant="primary"
               :small="false"
@@ -68,7 +80,7 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
 
@@ -84,12 +96,12 @@ export default class SearchFilterField extends Vue {
   withButton: boolean;
 
   @Prop({
-    default: false
+    default: false,
   })
   showTitle;
 
   @Prop({
-    default: false
+    default: false,
   })
   showAdvancedSearch;
 
@@ -119,11 +131,16 @@ export default class SearchFilterField extends Vue {
 
 .sub-header:hover {
   cursor: pointer;
-  background-color: #EEEEEE;
+  background-color: #eeeeee;
 }
 
 .button-group.withAdvancedSearch {
   padding-top: 0;
+}
+
+.advanceSearchBlock {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
 }
 </style>
 

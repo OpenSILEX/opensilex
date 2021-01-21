@@ -2,14 +2,15 @@
   <div>
     <div class="row">
       <div class="col-md-12">
-        <opensilex-SearchFilterField @clear="resetSearch()" @search="unselectRefresh()">
+        <opensilex-SearchFilterField
+          @clear="resetSearch()"
+          @search="unselectRefresh()"
+        >
           <template v-slot:filters>
             <opensilex-FilterField>
               <b-form-group>
                 <label for="name">
-                  {{
-                  $t("component.common.name")
-                  }}
+                  {{ $t("component.common.name") }}
                 </label>
                 <opensilex-StringFilter
                   id="name"
@@ -22,9 +23,7 @@
             <opensilex-FilterField>
               <b-form-group>
                 <label for="type">
-                  {{
-                  $t("ExperimentScientificObjects.objectType")
-                  }}
+                  {{ $t("ExperimentScientificObjects.objectType") }}
                 </label>
                 <opensilex-ScientificObjectTypeSelector
                   id="type"
@@ -38,9 +37,7 @@
             <opensilex-FilterField>
               <b-form-group>
                 <label for="parentFilter">
-                  {{
-                  $t("ExperimentScientificObjects.parent-label")
-                  }}
+                  {{ $t("ExperimentScientificObjects.parent-label") }}
                 </label>
                 <opensilex-SelectForm
                   id="parentFilter"
@@ -55,9 +52,7 @@
             <opensilex-FilterField>
               <b-form-group>
                 <label for="factorLevels">
-                  {{
-                  $t("FactorLevelSelector.label")
-                  }}
+                  {{ $t("FactorLevelSelector.label") }}
                 </label>
                 <opensilex-FactorLevelSelector
                   id="factorLevels"
@@ -82,10 +77,10 @@
                   credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
                 )
               "
-              @click="createScientificObject()"
+              @click="soForm.createScientificObject()"
               label="ExperimentScientificObjects.create-scientific-object"
-            ></opensilex-CreateButton>&nbsp;
-            <!-- <opensilex-ExperimentFacilitySelector :uri="uri" @facilitiesUpdated="refresh"></opensilex-ExperimentFacilitySelector>&nbsp; -->
+            ></opensilex-CreateButton
+            >&nbsp;
             <opensilex-OntologyCsvImporter
               v-if="
                 user.hasCredential(
@@ -98,11 +93,6 @@
               :customColumns="customColumns"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
-            <!-- &nbsp;
-            <opensilex-CreateButton
-              @click="exportCSV()"
-              label="ExperimentScientificObjects.export-csv"
-            ></opensilex-CreateButton>-->
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -111,8 +101,10 @@
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
-                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
-              </span>&nbsp;
+                <opensilex-Icon
+                  :icon="$opensilex.getRDFIcon(node.data.type)"
+                /> </span
+              >&nbsp;
               <span>{{ node.title }}</span>
             </template>
 
@@ -123,20 +115,10 @@
                     credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
                   )
                 "
-                @click="editScientificObject(node)"
+                @click="soForm.editScientificObject(node.data.uri)"
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
-              <opensilex-AddChildButton
-                v-if="
-                  user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-                  )
-                "
-                @click="createScientificObject(node.data.uri)"
-                label="ExperimentScientificObjects.add-scientific-object-child"
-                :small="true"
-              ></opensilex-AddChildButton>
               <opensilex-DeleteButton
                 v-if="
                   user.hasCredential(
@@ -149,44 +131,24 @@
               ></opensilex-DeleteButton>
             </template>
           </opensilex-TreeViewAsync>
-          <opensilex-ModalForm
+          <opensilex-ScientificObjectForm
             v-if="
               user.hasCredential(
                 credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
               )
             "
             ref="soForm"
-            component="opensilex-OntologyObjectForm"
-            createTitle="ExperimentScientificObjects.add"
-            editTitle="ExperimentScientificObjects.update"
-            modalSize="lg"
-            :initForm="initForm"
-            :createAction="callScientificObjectCreation"
-            :updateAction="callScientificObjectUpdate"
-            @onCreate="refresh()"
-            @onUpdate="refresh()"
+            :context="{ experimentURI: this.uri }"
+            @refresh="refresh()"
           >
-            <template v-slot:customFields="{ form }">
-              <opensilex-SelectForm
-                label="ExperimentScientificObjects.parent-label"
-                :selected.sync="form.parent"
-                :multiple="false"
-                :required="false"
-                :searchMethod="searchParents"
-                :itemLoadingMethod="getParentsByURI"
-              ></opensilex-SelectForm>
-
-              <opensilex-GeometryForm
-                :value.sync="form.geometry"
-                label="component.common.geometry"
-                helpMessage="component.common.geometry-help"
-              ></opensilex-GeometryForm>
-            </template>
-          </opensilex-ModalForm>
+          </opensilex-ScientificObjectForm>
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
+        <opensilex-ScientificObjectDetail
+          v-if="selected"
+          :selected="selected"
+        />
       </div>
     </div>
   </div>
@@ -218,8 +180,8 @@ export default class ExperimentScientificObjects extends Vue {
         type: "WKT",
         comment: this.$t("ExperimentScientificObjects.geometry-comment"),
         isRequired: false,
-        isList: false
-      }
+        isList: false,
+      },
     ];
   }
 
@@ -237,7 +199,7 @@ export default class ExperimentScientificObjects extends Vue {
     name: "",
     types: [],
     parent: undefined,
-    factorLevels: []
+    factorLevels: [],
   };
 
   public selected = null;
@@ -258,7 +220,7 @@ export default class ExperimentScientificObjects extends Vue {
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      lang => {
+      (lang) => {
         this.refresh();
         if (this.selected) {
           this.displayScientificObjectDetails(this.selected.uri);
@@ -286,7 +248,7 @@ export default class ExperimentScientificObjects extends Vue {
       name: "",
       types: [],
       parent: undefined,
-      factorLevels: []
+      factorLevels: [],
     };
     // Only if search and reset button are use in list
   }
@@ -307,7 +269,7 @@ export default class ExperimentScientificObjects extends Vue {
 
     this.soService
       .getScientificObjectsChildren(this.uri, nodeURI)
-      .then(http => {
+      .then((http) => {
         let childrenNodes = [];
         for (let i in http.response.result) {
           let soDTO = http.response.result[i];
@@ -320,7 +282,7 @@ export default class ExperimentScientificObjects extends Vue {
             isExpanded: true,
             isSelected: false,
             isDraggable: false,
-            isSelectable: true
+            isSelectable: true,
           };
           childrenNodes.push(soNode);
         }
@@ -373,71 +335,17 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
       )
-      .then(http => {
+      .then((http) => {
         let nodeList = [];
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")"
+            label: so.name + " (" + so.typeLabel + ")",
           });
         }
         http.response.result = nodeList;
         return http;
       });
-  }
-
-  getParentsByURI(soURIs) {
-    return this.soService
-      .getScientificObjectsListByUris(this.uri, soURIs)
-      .then(http => {
-        let nodeList = [];
-        for (let so of http.response.result) {
-          nodeList.push({
-            id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")"
-          });
-        }
-        return nodeList;
-      });
-  }
-
-  editScientificObject(node) {
-    this.soForm
-      .getFormRef()
-      .setContext({
-        experimentURI: this.uri
-      })
-      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
-
-    this.soService
-      .getScientificObjectDetail(node.data.uri, this.uri)
-      .then(http => {
-        let form: any = http.response.result;
-
-        this.parentURI = form.parent;
-        this.soForm.showEditForm(form);
-      });
-  }
-
-  parentURI;
-  createScientificObject(parentURI?) {
-    this.soForm
-      .getFormRef()
-      .setContext({
-        experimentURI: this.uri
-      })
-      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
-
-    this.parentURI = parentURI;
-    this.soForm.showCreateForm();
-  }
-
-  initForm(form) {
-    if (this.parentURI) {
-      form.parent = this.parentURI;
-    }
-
-    return form;
   }
 
   public displayScientificObjectDetailsIfNew(nodeUri: any) {
@@ -447,7 +355,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetails(nodeUri: any) {
-    this.soService.getScientificObjectDetail(nodeUri, this.uri).then(http => {
+    this.soService.getScientificObjectDetail(nodeUri, this.uri).then((http) => {
       this.selected = http.response.result;
     });
   }
@@ -455,91 +363,11 @@ export default class ExperimentScientificObjects extends Vue {
   public deleteScientificObject(node: any) {
     this.soService
       .deleteScientificObject(this.uri, node.data.uri)
-      .then(http => {
+      .then((http) => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
         }
-      });
-  }
-
-  callScientificObjectCreation(form) {
-    let definedRelations = [];
-    for (let i in form.relations) {
-      let relation = form.relations[i];
-      if (relation.property == "vocabulary:isPartOf") {
-        relation.value = form.parent;
-      }
-      if (relation.value != null) {
-        if (Array.isArray(relation.value)) {
-          for (let j in relation.value) {
-            definedRelations.push({
-              property: relation.property,
-              value: relation.value[j]
-            });
-          }
-        } else {
-          definedRelations.push(relation);
-        }
-      }
-    }
-
-    return this.soService
-      .createScientificObject({
-        uri: form.uri,
-        name: form.name,
-        type: form.type,
-        geometry: form.geometry,
-        context: this.uri,
-        relations: definedRelations
-      })
-      .then(http => {
-        this.refresh();
-      });
-  }
-
-  callScientificObjectUpdate(form) {
-    let definedRelations = [];
-    let parentSet = false;
-    for (let i in form.relations) {
-      let relation = form.relations[i];
-      if (relation.property == "vocabulary:isPartOf") {
-        relation.value = form.parent;
-        parentSet = true;
-      }
-      if (relation.value != null) {
-        if (Array.isArray(relation.value)) {
-          for (let j in relation.value) {
-            definedRelations.push({
-              property: relation.property,
-              value: relation.value[j]
-            });
-          }
-        } else {
-          definedRelations.push(relation);
-        }
-      }
-    }
-
-    if (!parentSet && form.parent != null) {
-      definedRelations.push({
-        property: "vocabulary:isPartOf",
-        value: form.parent
-      });
-    }
-
-    return this.soService
-      .updateScientificObject({
-        uri: form.uri,
-        name: form.name,
-        type: form.type,
-        geometry: form.geometry,
-        context: this.uri,
-        relations: definedRelations
-      })
-      .then(http => {
-        this.refresh();
-        this.displayScientificObjectDetails(form.uri);
       });
   }
 
@@ -549,9 +377,9 @@ export default class ExperimentScientificObjects extends Vue {
       {
         description: {
           context: this.uri,
-          type: objectType
+          type: objectType,
         },
-        file: csvFile
+        file: csvFile,
       }
     );
   }
@@ -563,9 +391,9 @@ export default class ExperimentScientificObjects extends Vue {
         description: {
           context: this.uri,
           type: objectType,
-          validationToken: validationToken
+          validationToken: validationToken,
         },
-        file: csvFile
+        file: csvFile,
       }
     );
   }

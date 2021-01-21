@@ -435,14 +435,15 @@ public final class OntologyDAO {
     ) {
 
         OwlRestrictionModel restriction = model.getRestrictions().get(propertyURI);
-
+        boolean nullOrEmpty = (value == null || value.isEmpty());
         if (restriction != null) {
-            if (restriction.isRequired() && (value == null || value.isEmpty())) {
+            if (restriction.isRequired() && nullOrEmpty) {
                 return false;
             } else if (model.isDatatypePropertyRestriction(propertyURI)) {
                 try {
                     SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
-                    if (deserializer.validate(value)) {
+                 
+                    if (nullOrEmpty || deserializer.validate(value)) {
                         object.addRelation(graph, propertyURI, deserializer.getClassType(), value);
                         return true;
                     }

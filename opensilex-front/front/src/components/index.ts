@@ -194,7 +194,7 @@ components["opensilex-TreeView"] = TreeView;
 import TreeViewAsync from './common/views/TreeViewAsync.vue'
 components["opensilex-TreeViewAsync"] = TreeViewAsync;
 import TableView from './common/views/TableView.vue'
-components["opensilex-TableView"] = TableView; 
+components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
@@ -384,6 +384,8 @@ import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTy
 components["opensilex-ScientificObjectTypeSelector"] = ScientificObjectTypeSelector;
 import ScientificObjectDetailView from './scientificObjects/ScientificObjectDetailView.vue';
 components["opensilex-ScientificObjectDetailView"] = ScientificObjectDetailView;
+import ScientificObjectParentPropertySelector from './scientificObjects/ScientificObjectParentPropertySelector.vue';
+components["opensilex-ScientificObjectParentPropertySelector"] = ScientificObjectParentPropertySelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

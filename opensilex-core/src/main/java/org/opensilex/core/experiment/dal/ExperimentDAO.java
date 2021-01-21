@@ -107,8 +107,7 @@ public class ExperimentDAO {
     }
 
     /**
-     * Remove all URI from {@link ExperimentModel#getSensors()} method which
-     * don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
+     * Remove all URI from {@link ExperimentModel#getSensors()} method which don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
      *
      * @param xp the {@link ExperimentModel} to filter
      */
@@ -200,15 +199,15 @@ public class ExperimentDAO {
             Boolean isPublic,
             UserModel user,
             List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        LocalDate startDate ;
+        LocalDate startDate;
         LocalDate endDate;
         if (year != null) {
             String yearString = Integer.toString(year);
-             startDate = LocalDate.parse(yearString + "-01-01");
-             endDate = LocalDate.parse(yearString + "-12-31");
-        }else {
-            startDate=null;
-            endDate=null;
+            startDate = LocalDate.parse(yearString + "-01-01");
+            endDate = LocalDate.parse(yearString + "-12-31");
+        } else {
+            startDate = null;
+            endDate = null;
         }
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
@@ -245,14 +244,13 @@ public class ExperimentDAO {
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_FIELD, species);
         }
     }
-    
+
     private void appendFactorsFilter(SelectBuilder select, List<URI> factors) throws Exception {
         if (factors != null && !factors.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
             SPARQLQueryHelper.addWhereValues(select, ExperimentModel.FACTORS_FIELD, factors);
         }
     }
-
 
     private void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
@@ -407,7 +405,7 @@ public class ExperimentDAO {
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
         select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
         Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
-        
+
         select.addFilter(SPARQLQueryHelper.or(
                 inGroup,
                 hasScientificSupervisor,
@@ -418,6 +416,7 @@ public class ExperimentDAO {
     }
 
     public void validateExperimentAccess(URI experimentURI, UserModel user) throws Exception {
+
         if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
             throw new NotFoundURIException("Experiment URI not found: ", experimentURI);
         }
@@ -522,6 +521,15 @@ public class ExperimentDAO {
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
             SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
         });
+    }
+
+    public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
+        return sparql.search(
+                InfrastructureFacilityModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    appendUserExperimentsFilter(select, user);
+                });
     }
 
 }

@@ -17,7 +17,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 public class VueDate implements VueOntologyDataType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return XSDDatatype.XSDdate.getURI();
     }
 

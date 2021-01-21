@@ -22,7 +22,6 @@ public class OWLClassPropertyRestrictionDTO {
 
     private boolean list;
 
-    private boolean isObjectProperty;
 
     public URI getClassURI() {
         return classURI;
@@ -56,12 +55,4 @@ public class OWLClassPropertyRestrictionDTO {
         this.list = list;
     }
 
-    public boolean getIsObjectProperty() {
-        return isObjectProperty;
-    }
-
-    public void setIsObjectProperty(boolean isObjectProperty) {
-        this.isObjectProperty = isObjectProperty;
-    }
-    
 }

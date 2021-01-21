@@ -11,12 +11,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +88,7 @@ public class VueOwlExtensionDAO {
         ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader())
                 .forEach((type -> {
                     if (!type.isDisabled()) {
-                        typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getUri()), type);
+                        typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getTypeUri()), type);
                     }
                 }));
 
@@ -122,5 +125,64 @@ public class VueOwlExtensionDAO {
         }
 
         return typesByURI.get(SPARQLDeserializers.getExpandedURI(uri));
+    }
+
+    public void setPropertiesOrder(URI classURI, List<URI> propertiesURI, String lang) throws Exception {
+
+        ArrayList<String> extendedPropertiesString = new ArrayList<>();
+
+        for (URI propertyURI : propertiesURI) {
+            String propertyURIString = SPARQLDeserializers.getExpandedURI(propertyURI);
+            extendedPropertiesString.add(propertyURIString);
+        }
+
+        List<VueClassPropertyExtensionModel> models = new ArrayList<>();
+        for (String extendedProperty : extendedPropertiesString) {
+            VueClassPropertyExtensionModel model = new VueClassPropertyExtensionModel();
+            model.setFromOwlClass(classURI);
+            model.setToOwlProperty(new URI(extendedProperty));
+            model.setHasDisplayOrder(extendedPropertiesString.indexOf(extendedProperty));
+            models.add(model);
+        }
+
+        try {
+            sparql.startTransaction();
+
+            List<URI> existingProperties = sparql.searchURIs(VueClassPropertyExtensionModel.class, lang, (select) -> {
+                select.addFilter(SPARQLQueryHelper.eq(VueClassPropertyExtensionModel.OWL_CLASS_FIELD, classURI));
+            });
+            if (existingProperties.size() > 0) {
+                sparql.delete(VueClassPropertyExtensionModel.class, existingProperties);
+            }
+            if (models.size() > 0) {
+                sparql.create(VueClassPropertyExtensionModel.class, models);
+            }
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            sparql.rollbackTransaction(ex);
+        }
+    }
+
+    public List<URI> getPropertiesOrder(URI classURI, String lang) throws Exception {
+
+        List<VueClassPropertyExtensionModel> existingProperties = sparql.search(VueClassPropertyExtensionModel.class, lang, (select) -> {
+            select.addFilter(SPARQLQueryHelper.eq(VueClassPropertyExtensionModel.OWL_CLASS_FIELD, classURI));
+        });
+        return existingProperties.stream().sorted(
+                (VueClassPropertyExtensionModel a, VueClassPropertyExtensionModel b) -> {
+                    if (SPARQLDeserializers.compareURIs(a.getToOwlProperty(), b.getToOwlProperty())) {
+                        return 0;
+                    }
+                    if (SPARQLDeserializers.compareURIs(a.getToOwlProperty(), RDFS.label.getURI())) {
+                        return -1;
+                    }
+                    if (SPARQLDeserializers.compareURIs(b.getToOwlProperty(), RDFS.label.getURI())) {
+                        return 1;
+                    }
+                    return a.getHasDisplayOrder() - b.getHasDisplayOrder();
+                }).map(
+                        (VueClassPropertyExtensionModel a) -> a.getToOwlProperty()
+                ).collect(Collectors.toList());
+
     }
 }

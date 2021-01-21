@@ -5,28 +5,37 @@
  */
 package org.opensilex.front.vueOwlExtension.types.object;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 
 /**
  *
- * @author vmigot
+ * @author vince
  */
-public class VueFactorLevel implements VueOntologyObjectType {
+public class VueParent implements VueOntologyObjectType {
 
     @Override
     public String getTypeUri() {
-        return Oeso.FactorLevel.getURI();
+        return Oeso.ScientificObject.getURI();
     }
 
     @Override
     public String getInputComponent() {
-        return "opensilex-FactorLevelPropertySelector";
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getInputComponentsByProperty() {
+        Map<String, String> inputMap = new HashMap<>();
+        inputMap.put(Oeso.isPartOf.getURI(), "opensilex-ScientificObjectParentPropertySelector");
+        return inputMap;
     }
 
     @Override
     public String getViewComponent() {
-        return "opensilex-FactorLevelPropertyView";
+        return "opensilex-XSDUriView";
     }
 
 }

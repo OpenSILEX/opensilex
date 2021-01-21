@@ -15,7 +15,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 public class VueGermplasm implements VueOntologyObjectType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return Oeso.Germplasm.getURI();
     }
 

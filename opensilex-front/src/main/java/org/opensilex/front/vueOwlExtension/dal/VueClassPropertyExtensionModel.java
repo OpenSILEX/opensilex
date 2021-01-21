@@ -10,6 +10,7 @@ import java.net.URI;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.utils.ClassURIGenerator;
 
 /**
  *
@@ -21,7 +22,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
         graph = "opensilex-owl-extension",
         prefix = "oowl-ext"
 )
-public class VueClassPropertyExtensionModel extends SPARQLResourceModel {
+public class VueClassPropertyExtensionModel extends SPARQLResourceModel implements ClassURIGenerator<VueClassPropertyExtensionModel> {
 
     @SPARQLProperty(
             ontology = VueOwlExtension.class,
@@ -66,6 +67,14 @@ public class VueClassPropertyExtensionModel extends SPARQLResourceModel {
 
     public void setHasDisplayOrder(Integer hasDisplayOrder) {
         this.hasDisplayOrder = hasDisplayOrder;
+    }
+
+    @Override
+    public String[] getUriSegments(VueClassPropertyExtensionModel instance) {
+        return new String[] {
+            instance.getFromOwlClass().toString(),
+            instance.getToOwlProperty().toString(),
+        };
     }
   
 }

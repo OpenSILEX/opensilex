@@ -17,6 +17,9 @@ public class DoubleDeserializer implements SPARQLDeserializer<Double> {
 
     @Override
     public Double fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return Double.valueOf(value);
     }
 

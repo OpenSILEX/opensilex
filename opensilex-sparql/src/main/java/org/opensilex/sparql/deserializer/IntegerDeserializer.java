@@ -17,6 +17,9 @@ public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
 
     @Override
     public Integer fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return Integer.valueOf(value);
     }
 
@@ -30,4 +33,4 @@ public class IntegerDeserializer implements SPARQLDeserializer<Integer> {
         return XSDDatatype.XSDinteger;
     }
 
-}
+    }

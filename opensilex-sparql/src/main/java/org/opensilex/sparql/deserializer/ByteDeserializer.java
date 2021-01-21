@@ -17,6 +17,9 @@ public class ByteDeserializer implements SPARQLDeserializer<Byte> {
 
     @Override
     public Byte fromString(String value) throws Exception {
+        if (value.isEmpty()) {
+            return null;
+        }
         return Byte.valueOf(value);
     }
 

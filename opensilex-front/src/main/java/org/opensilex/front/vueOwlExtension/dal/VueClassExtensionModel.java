@@ -44,7 +44,7 @@ public class VueClassExtensionModel extends SPARQLResourceModel {
     protected List<VueClassPropertyExtensionModel> properties;
 
     public Boolean getIsAbstractClass() {
-        return isAbstractClass;
+        return isAbstractClass == null ? false : isAbstractClass;
     }
 
     public void setIsAbstractClass(Boolean isAbstractClass) {

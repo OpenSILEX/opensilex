@@ -15,7 +15,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 public class VueLongString implements VueOntologyDataType {
 
     @Override
-    public String getUri() {
+    public String getTypeUri() {
         return Oeso.longString.getURI();
     }
 

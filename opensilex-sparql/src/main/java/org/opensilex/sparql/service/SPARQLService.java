@@ -852,9 +852,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    public <T extends SPARQLResourceModel> void create(List<T> instances) throws Exception {
-        Class<? extends SPARQLResourceModel> genericType = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromClass(instances.getClass());
-        create(getDefaultGraph(genericType), instances);
+    public <T extends SPARQLResourceModel> void create(Class<T> clazz, List<T> instances) throws Exception {
+        create(getDefaultGraph(clazz), instances);
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances) throws Exception {

@@ -67,7 +67,7 @@ public class AnnotationDao {
     }
 
     public List<AnnotationModel> create(List<AnnotationModel> models) throws Exception {
-        sparql.create(models);
+        sparql.create(AnnotationModel.class, models);
         return models;
     }
 

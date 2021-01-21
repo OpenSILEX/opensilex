@@ -72,13 +72,10 @@ export default class ScientificObjectParentPropertySelector extends Vue {
   }
 
   getParentsByURI(soURIs) {
-    console.error("UU", soURIs, this.context);
     let contextURI = "null:null";
     if (this.context && this.context.experimentURI) {
       contextURI = this.context.experimentURI;
     }
-       console.error("HH", this.$opensilex
-      .getService("opensilex.ScientificObjectsService").getScientificObjectsListByUris);
     return this.$opensilex
       .getService("opensilex.ScientificObjectsService")
       .getScientificObjectsListByUris(contextURI, soURIs)

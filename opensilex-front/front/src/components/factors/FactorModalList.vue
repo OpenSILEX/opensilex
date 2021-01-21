@@ -42,7 +42,6 @@ export default class FactorModalList extends FactorList {
     modalRef.hide();
 
     if (validate) {
-      console.error(this.factorSelection.getSelected());
       this.$emit("onValidate", this.factorSelection.getSelected());
     }
   }

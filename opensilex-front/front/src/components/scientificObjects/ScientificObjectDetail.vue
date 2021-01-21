@@ -79,13 +79,13 @@ export default class ScientificObjectDetail extends Vue {
   selected;
 
   @Prop({
-    default: () => [],
+    default: () => []
   })
   objectByContext;
 
   typeProperties = [];
   valueByProperties = {};
-  classModel = {};
+  classModel: any = {};
 
   static DETAILS_TAB = "Details";
   static DOCUMENTS_TAB = "Documents";
@@ -96,7 +96,7 @@ export default class ScientificObjectDetail extends Vue {
     ScientificObjectDetail.DETAILS_TAB,
     ScientificObjectDetail.DOCUMENTS_TAB,
     ScientificObjectDetail.ANNOTATIONS_TAB,
-    ScientificObjectDetail.EVENTS_TAB,
+    ScientificObjectDetail.EVENTS_TAB
   ];
 
   tabsIndex: number = 0;
@@ -131,7 +131,7 @@ export default class ScientificObjectDetail extends Vue {
         this.selected.type,
         this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
       )
-      .then((http) => {
+      .then(http => {
         this.classModel = http.response.result;
         let valueByProperties = this.buildValueByProperties(
           this.selected.relations
@@ -198,12 +198,12 @@ export default class ScientificObjectDetail extends Vue {
         ) {
           typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]],
+            property: [valueByProperties[property.property]]
           });
         } else {
           typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property],
+            property: valueByProperties[property.property]
           });
         }
       }
@@ -219,7 +219,7 @@ export default class ScientificObjectDetail extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
+          valueByProperties[relation.property]
         ];
       }
 
@@ -262,7 +262,7 @@ export default class ScientificObjectDetail extends Vue {
         if (a.length != b.length) {
           return false;
         } else {
-          let intersect = a.filter((x) => {
+          let intersect = a.filter(x => {
             let hasMatch = false;
             for (let y of b) {
               if (this.checkRelationValueEquality(x, y)) {
@@ -323,8 +323,10 @@ export default class ScientificObjectDetail extends Vue {
 en:
     ScientificObjectDetail:
         title: Detail
+        generalInformation: Global informations
 
 fr:
     ScientificObjectDetail:
         title: Détail
+        generalInformation: Informations globales
 </i18n>

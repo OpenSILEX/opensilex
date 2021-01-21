@@ -167,7 +167,7 @@ export class {{classname}} {
 {{/formParams}}
 
 {{/hasFormParams}}
-        const response: Promise<HttpResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>> = this.httpClient.{{httpMethod}}(`${this.basePath}{{{path}}}{{#hasQueryParams}}?${queryParameters.join('&')}{{/hasQueryParams}}`{{#bodyParam}}, {{paramName}} {{/bodyParam}}{{#hasFormParams}}, body{{/hasFormParams}}, headers);
+        const response: Promise<HttpResponse<{{#returnType}}{{{returnType}}}{{#isResponseTypeFile}}|undefined{{/isResponseTypeFile}}{{/returnType}}{{^returnType}}any{{/returnType}}>> = this.httpClient.{{httpMethod}}(`${this.basePath}{{{path}}}{{#hasQueryParams}}${queryParameters.length > 0 ? '?' + queryParameters.join('&') : ''}{{/hasQueryParams}}`{{#bodyParam}}, {{paramName}} {{/bodyParam}}{{#hasFormParams}}, body{{/hasFormParams}}, headers);
         return response;
     }
 {{/hasFormParams}}      

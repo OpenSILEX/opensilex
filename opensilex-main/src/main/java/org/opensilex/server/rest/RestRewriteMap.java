@@ -32,6 +32,7 @@ public class RestRewriteMap implements RewriteMap {
             result = key;
         }
 
+        System.out.println("Rewrite:" + key + " --> " + result);
         return result;
 
     }

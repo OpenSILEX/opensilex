@@ -1,9 +1,17 @@
 <template>
   <span>
-    <router-link v-if="to" class="uri" :title="uri" :to="to" @focus.native="storePrevious" @click.native="storeReturnPage">
+    <router-link
+      v-if="to"
+      class="uri"
+      :title="uri"
+      :to="to"
+      @focus.native="storePrevious"
+      @click.native="storeReturnPage"
+    >
       <span>{{value || uri}}</span>
       &nbsp;
       <button
+        v-if="allowCopy"
         v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
@@ -15,6 +23,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
+        v-if="allowCopy"
         v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUrl')"
@@ -32,6 +41,7 @@
       <span>{{value || uri}}</span>
       &nbsp;
       <button
+        v-if="allowCopy"
         v-on:click.prevent.stop="copyURI(uri)"
         class="uri-copy"
         :title="$t('component.copyToClipboard.copyUri')"
@@ -68,7 +78,12 @@ export default class UriLink extends Vue {
   @Prop({
     default: false
   })
-  noExternalLink: boolean
+  noExternalLink: boolean;
+
+  @Prop({
+    default: true
+  })
+  allowCopy: boolean;
 
   get computeURL() {
     if (this.to) {
@@ -76,7 +91,8 @@ export default class UriLink extends Vue {
     } else if (this.url) {
       return this.url;
     } else if (this.uri) {
-      return !this.noExternalLink && (this.uri.startsWith("http://") || this.uri.startsWith("https://"))
+      return !this.noExternalLink &&
+        (this.uri.startsWith("http://") || this.uri.startsWith("https://"))
         ? this.uri
         : null;
     } else {

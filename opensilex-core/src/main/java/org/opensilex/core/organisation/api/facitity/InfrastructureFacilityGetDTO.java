@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModel;
 import java.net.URI;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -31,6 +32,7 @@ public class InfrastructureFacilityGetDTO extends NamedResourceDTO<Infrastructur
     @JsonProperty("organisation")
     protected URI infrastructure;
 
+    @Required
     public URI getInfrastructure() {
         return infrastructure;
     }

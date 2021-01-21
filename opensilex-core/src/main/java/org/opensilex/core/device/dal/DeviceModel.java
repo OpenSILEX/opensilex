@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
+import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
 import org.opensilex.core.ontology.Oeso;
@@ -71,14 +72,14 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             ontology = Oeso.class,
             property = "obtained"
     )
-    String dateOfPurchase;
-    public static final String DATEOFPURCHASE_FIELD = "dateOfPurchase";
+    LocalDate obtained;
+    public static final String OBTAINED_FIELD = "obtained";
     
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "dateOfLastUse"
     )
-    String dateOfLastUse;
+    LocalDate dateOfLastUse;
     public static final String DATEOFLASTUSE_FIELD = "dateOfLastUse";
     
     public String getBrand() {
@@ -113,19 +114,19 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
         this.personInCharge = personInCharge;
     }
     
-    public String getDateOfPurchase() {
-        return dateOfPurchase;
+    public LocalDate getObtained() {
+        return obtained;
     }
 
-    public void setDateOfPurchase(String dateOfPurchase) {
-        this.dateOfPurchase = dateOfPurchase;
+    public void setObtained(LocalDate obtained) {
+        this.obtained = obtained;
     }
     
-    public String getDateOfLastUse() {
+    public LocalDate getDateOfLastUse() {
         return dateOfLastUse;
     }
 
-    public void setDateOfLastUse(String dateOfLastUse) {
+    public void setDateOfLastUse(LocalDate dateOfLastUse) {
         this.dateOfLastUse = dateOfLastUse;
     }
 }

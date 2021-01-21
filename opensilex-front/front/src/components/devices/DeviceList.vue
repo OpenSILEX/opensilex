@@ -66,8 +66,8 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:row-details>
       </template>
+    </opensilex-SearchFilterField>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">

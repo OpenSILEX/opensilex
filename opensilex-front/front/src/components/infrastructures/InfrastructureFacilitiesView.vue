@@ -142,11 +142,11 @@ export default class InfrastructureFacilitiesView extends Vue {
 <i18n>
 en:
   InfrastructureFacilitiesView:
-    update: Update infrastructure facility
-    delete: Delete infrastructure facility
-    add: Add infrastructure facility
+    update: Update facility
+    delete: Delete facility
+    add: Add facility
     facilities: Facilities
-    infrastructure-facility-help: "Factilities correspond to the various fixed installations of an infrastructure.
+    infrastructure-facility-help: "Factilities correspond to the various fixed installations of an organization.
                                   These can be greenhouses, cadastral plots, culture chambers, ..."
 fr:
   InfrastructureFacilitiesView:
@@ -154,6 +154,6 @@ fr:
     delete: Supprimer l'installation technique
     add: Ajouter une installation technique
     facilities: Installations techniques
-    infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une infrastructure.
+    infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une organisation.
                                   Il peux s'agir de serres, parcelles cadastrales, chambres de culture, ..."
 </i18n>

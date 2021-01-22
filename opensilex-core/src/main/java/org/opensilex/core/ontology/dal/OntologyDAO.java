@@ -6,9 +6,10 @@
 package org.opensilex.core.ontology.dal;
 
 import com.opencsv.CSVReader;
-import java.io.File;
+import com.opencsv.CSVWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
@@ -34,6 +36,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -442,7 +446,7 @@ public final class OntologyDAO {
             } else if (model.isDatatypePropertyRestriction(propertyURI)) {
                 try {
                     SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
-                 
+
                     if (nullOrEmpty || deserializer.validate(value)) {
                         object.addRelation(graph, propertyURI, deserializer.getClassType(), value);
                         return true;
@@ -595,8 +599,128 @@ public final class OntologyDAO {
         return name;
     }
 
-    public File exportCSV(URI experimentURI, URI rdfType, URI uri, List<? extends SPARQLResourceModel> objects, UserModel currentUser, BiFunction<String, SPARQLResourceModel, String> customValueGenerator, List<String> customColumns) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static final String CSV_URI_KEY = "uri";
+    private static final String CSV_TYPE_KEY = "type";
+    private static final String CSV_NAME_KEY = "name";
+
+    public String exportCSV(List<? extends SPARQLNamedResourceModel> objects, String lang, BiFunction<String, SPARQLNamedResourceModel, String> customValueGenerator, List<String> customColumns) throws Exception {
+        List<String> columnsID = new ArrayList<>();
+        
+        List<Map<Integer, String>> rows = new ArrayList<>();
+        Map<String, List<Integer>> propertiesIndexes = new HashMap<>();
+
+        for (SPARQLNamedResourceModel object : objects) {
+            Map<Integer, String> row = new HashMap<>();
+
+            String typeURI = URIDeserializer.formatURI(object.getType()).toString();
+            row.put(0, URIDeserializer.formatURI(object.getUri()).toString());
+            row.put(1, typeURI);
+            row.put(2, object.getName());
+
+            int rowOffset = row.size();
+            
+            for (SPARQLModelRelation relation : object.getRelations()) {
+                Property property = relation.getProperty();
+                String propertyURIString = property.getURI();
+
+                int propertyIndex = columnsID.indexOf(propertyURIString);
+                if (propertyIndex < 0) {
+                    propertyIndex = columnsID.size();
+                    columnsID.add(propertyURIString);
+                }
+
+                propertyIndex += rowOffset;
+
+                if (!propertiesIndexes.containsKey(propertyURIString)) {
+                    List<Integer> indexes = new ArrayList<>();
+                    indexes.add(propertyIndex);
+                    propertiesIndexes.put(propertyURIString, indexes);
+                }
+
+                List<Integer> indexes = propertiesIndexes.get(propertyURIString);
+
+                Integer currentIndex = -1;
+                for (int i = 0; i < indexes.size(); i++) {
+                    if (!row.containsKey(indexes.get(i))) {
+                        currentIndex = indexes.get(i);
+                        break;
+                    }
+                }
+
+                if (currentIndex < 0) {
+                    propertyIndex = columnsID.size() + rowOffset;
+                    columnsID.add(propertyURIString);
+                    indexes.add(propertyIndex);
+                    currentIndex = propertyIndex;
+                }
+
+                // TODO convert value
+                row.put(currentIndex, relation.getValue());
+            }
+
+            rows.add(row);
+        }
+
+        columnsID.sort((id1, id2) -> {
+            return id1.compareTo(id2);
+        });
+
+        StringWriter strWriter = new StringWriter();
+        CSVWriter writer = new CSVWriter(strWriter,
+                lang.equals("fr") ? ';' : CSVWriter.DEFAULT_SEPARATOR,
+                CSVWriter.NO_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                CSVWriter.DEFAULT_LINE_END);
+
+        String[] headerArray = new String[columnsID.size() + 3];
+        headerArray[0] = CSV_URI_KEY;
+        headerArray[1] = CSV_TYPE_KEY;
+        headerArray[2] = CSV_NAME_KEY;
+
+        for (int i = 0; i < columnsID.size(); i++) {
+            headerArray[i + 3] = columnsID.get(i);
+        }
+        
+        for (int i = 0; i < columnsID.size(); i++) {
+            headerArray[i + 3] = columnsID.get(i);
+        }
+
+        writer.writeNext(headerArray);
+
+        for (Map<Integer, String> row : rows) {
+            String[] rowArray = new String[columnsID.size() + 3];
+            rowArray[0] = row.get(0);
+            rowArray[1] = row.get(1);
+            rowArray[2] = row.get(2);
+
+            int arrayIndex = 3;
+            String lastColumnId = "";
+            List<Integer> indexes = null;
+            int currentColumnIndex = 0;
+            for (String columnID : columnsID) {
+                if (!lastColumnId.equals(columnID)) {
+                    indexes = propertiesIndexes.get(columnID);
+                    currentColumnIndex = 0;
+                } else {
+                    currentColumnIndex++;
+                }
+                Integer rowIndex = indexes.get(currentColumnIndex);
+                if (row.containsKey(rowIndex)) {
+                    rowArray[arrayIndex] = row.get(rowIndex);
+                }
+                lastColumnId = columnID;
+                arrayIndex++;
+            }
+
+            writer.writeNext(rowArray);
+
+        }
+        writer.close();
+
+        strWriter.close();
+
+        return strWriter.toString();
+
     }
 
 }

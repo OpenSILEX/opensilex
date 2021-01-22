@@ -90,7 +90,8 @@
               icon="none"
               :small="false"
               label="Export CSV"
-              :disabled="numberOfSelectedRows > 0"
+              :disabled="numberOfSelectedRows == 0"
+              @click="exportCSV"
             ></opensilex-Button>
           </template>
           <template v-slot:cell(uri)="{ data }">
@@ -222,6 +223,10 @@ export default class ScientificObjectList extends Vue {
     return this.$store.state.user;
   }
 
+  get lang() {
+    return this.$store.state.lang;
+  }
+
   reset() {
     this.filter = {
       name: "",
@@ -278,6 +283,30 @@ export default class ScientificObjectList extends Vue {
     } else {
       data.toggleDetails();
     }
+  }
+
+  exportCSV() {
+    let path = "/core/scientific-object/export-csv";
+    let today = new Date();
+    let filename =
+      "export_scientific_objects_" +
+      today.getFullYear() +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0");
+
+    let objectURIs = [];
+    for (let select of this.tableRef.getSelected()) {
+      objectURIs.push(select.uri);
+    }
+    this.$opensilex.downloadFilefromPostService(
+      path,
+      filename,
+      "csv",
+      {
+        objectURIs: objectURIs,
+      },
+      this.lang
+    );
   }
 }
 </script>

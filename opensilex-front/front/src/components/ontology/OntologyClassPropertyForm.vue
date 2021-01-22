@@ -12,7 +12,7 @@
     <opensilex-CheckboxForm :value.sync="form.isRequired" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.isList" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm :value.sync="form.isList" :disabled="this.dataTypeProperties.indexOf(form.property) >= 0" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
   </b-form>
 </template>
 
@@ -51,12 +51,22 @@ export default class OntologyClassPropertyForm extends Vue {
 
   availableProperties = null;
   excludedProperties = [];
+  dataTypeProperties = [];
   setProperties(properties, excludedProperties) {
     this.availableProperties = properties;
+
     this.excludedProperties = [];
     excludedProperties.forEach(prop => {
       this.excludedProperties.push(prop.property);
     });
+
+    this.dataTypeProperties = [];
+    this.availableProperties.forEach(prop => {
+      if (prop.type == "owl:DatatypeProperty") {
+        this.dataTypeProperties.push(prop.uri);
+      }
+    });
+     
   }
 
   classURI = null;

@@ -94,8 +94,10 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
@@ -315,6 +317,8 @@ public class ScientificObjectAPI {
         } else if (!currentUser.isAdmin()) {
             contextURIs.addAll(xpDAO.getUserExperiments(currentUser));
             contextURIs.addAll(infraDAO.getUserInfrastructures(currentUser));
+        } else {
+            contextURIs.add(sparql.getDefaultGraphURI(ScientificObjectModel.class));
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
@@ -352,14 +356,11 @@ public class ScientificObjectAPI {
         ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
 
-        Response response;
-        if (model != null) {
-            response = new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
-        } else {
-            response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+        if (model == null) {
+            throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        return response;
+        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
     }
 
     @GET
@@ -395,8 +396,7 @@ public class ScientificObjectAPI {
         }
 
         if (dtoList.size() == 0) {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Scientific object not found",
-                    "Unknown scientific object URI: " + objectURI.toString()).getResponse();
+            throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         } else {
             return new PaginatedListResponse<>(dtoList).getResponse();
         }
@@ -687,11 +687,11 @@ public class ScientificObjectAPI {
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 
-    @GET
-    @Path("csv-export")
-    @ApiOperation(value = "Export a CSV file for the given context URI and scientific object type.")
+    @POST
+    @Path("export-csv")
+    @ApiOperation("Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
+        @ApiResponse(code = 201, message = "Data file exported")
     })
     @ApiProtected
     @ApiCredential(
@@ -701,33 +701,28 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/", required = true)
-            @QueryParam("contextURI")
-            @ValidURI
-            @NotNull URI contextURI,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant", required = true)
-            @QueryParam("rdfType")
-            @ValidURI
-            @NotNull URI rdfType,
-            @ApiParam(value = "Parent URI", example = "http://example.com/")
-            @QueryParam("parentURI")
-            @ValidURI URI parentURI
+            @ApiParam("CSV export configuration") @Valid ScientificObjectCsvExportDTO dto
     ) throws Exception {
-
+        URI contextURI = dto.getContextURI();
         validateContextAccess(contextURI);
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-
-        List<ScientificObjectModel> objects = dao.searchAll(contextURI, rdfType, parentURI, currentUser);
-
-        Map<String, GeospatialModel> geospacialMap = new HashMap<>();
+        Node contextNode;
+        if (contextURI == null) {
+            contextNode = sparql.getDefaultGraph(ScientificObjectModel.class);
+        } else {
+            contextNode = SPARQLDeserializers.nodeURI(contextURI);
+        }
+        List<ScientificObjectModel> objects = sparql.getListByURIs(contextNode, ScientificObjectModel.class, dto.getObjectURIs(), currentUser.getLanguage());
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+
+        Map<String, GeospatialModel> geospacialMap = new HashMap<>();
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(GEOMETRY_COLUMN_ID);
 
-        BiFunction<String, SPARQLResourceModel, String> customValueGenerator = (columnID, value) -> {
+        BiFunction<String, SPARQLNamedResourceModel, String> customValueGenerator = (columnID, value) -> {
             if (columnID.equals(GEOMETRY_COLUMN_ID) && value != null) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
                 if (geospacialMap.containsKey(uriString)) {
@@ -744,12 +739,10 @@ public class ScientificObjectAPI {
                 return null;
             }
         };
-        File csvFile = ontologyDAO.exportCSV(contextURI, rdfType, new URI(Oeso.ScientificObject.getURI()), objects, currentUser, customValueGenerator, customColumns);
-
-        byte[] csvContent = FileUtils.readFileToByteArray(csvFile);
+        String csvContent = ontologyDAO.exportCSV(objects, currentUser.getLanguage(), customValueGenerator, customColumns);
 
         String csvName = "scientific-object-export.csv";
-        return Response.ok(csvContent, MediaType.APPLICATION_OCTET_STREAM)
+        return Response.ok(csvContent.getBytes(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + csvName + "\"")
                 .build();
     }

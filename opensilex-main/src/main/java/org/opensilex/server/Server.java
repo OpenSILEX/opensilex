@@ -155,7 +155,7 @@ public class Server extends Tomcat {
         String rewritePrefix = pathPrefix + "/app/";
         try {
             String rewriteRules = "RewriteCond  %{REQUEST_URI} ^.*/webjars/.+$\n"
-                    + "RewriteRule .*/webjars/(.*)$ /webjars/$1 [L,NE]\n"
+                    + "RewriteRule .*/webjars/(.+)$ /webjars/$1 [L,NE]\n"
                     + "RewriteMap uc org.opensilex.server.rest.RestRewriteMap\n"
                     + "RewriteRule .*/rest/.* ${uc:%{REQUEST_URI}}\n"
                     + "RewriteCond %{REQUEST_URI} ^/$\n"

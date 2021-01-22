@@ -201,6 +201,10 @@ routes:
 
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
+  - path: /device/documents/:uri
+    component: opensilex-ProjectDetails
+  - path: /device/annotations/:uri
+    component: opensilex-ProjectDetails
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

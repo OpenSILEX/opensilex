@@ -717,7 +717,8 @@ public class ScientificObjectAPI {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        Map<String, GeospatialModel> geospacialMap = new HashMap<>();
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        HashMap<String, Geometry> geospacialMap = geoDAO.getGeometryByUris(null, dto.getObjectURIs());
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(GEOMETRY_COLUMN_ID);
@@ -726,9 +727,9 @@ public class ScientificObjectAPI {
             if (columnID.equals(GEOMETRY_COLUMN_ID) && value != null) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
                 if (geospacialMap.containsKey(uriString)) {
-                    GeospatialModel geoModel = geospacialMap.get(uriString);
+                    Geometry geo = geospacialMap.get(uriString);
                     try {
-                        return GeospatialDAO.geometryToWkt(geoModel.getGeometry());
+                        return GeospatialDAO.geometryToWkt(geo);
                     } catch (JsonProcessingException | ParseException ex) {
                         return null;
                     }

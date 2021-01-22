@@ -27,6 +27,7 @@
           <opensilex-StringFilter
             :filter.sync="filter.obtained"
             placeholder="DeviceList.filter.obtained-placeholder"
+            type="number"
           ></opensilex-StringFilter>
         </div>
 
@@ -91,13 +92,15 @@ export default class DeviceList extends Vue {
 
   filter = {
     namePattern: undefined,
-    rdf_type: undefined
+    rdf_type: undefined,
+    obtained: undefined
   };
 
   resetFilters() {
     this.filter = {
       namePattern: undefined,
-      rdf_type: undefined
+      rdf_type: undefined,
+      obtained: undefined
     };
     this.refresh();
   }
@@ -142,6 +145,7 @@ export default class DeviceList extends Vue {
     return this.service.searchDevices(
       this.filter.namePattern, // namePattern filter
       this.filter.rdf_type, // rdfTypes filter
+      this.filter.obtained, // year filter
       undefined, // brandPattern filter
       undefined, // model filter
       undefined,
@@ -175,7 +179,7 @@ en:
       rdfType: Type
       rdfType-placeholder: Select a device type
       obtained: Obtained
-      obtained-placeholder: Enter date
+      obtained-placeholder: Enter year
 
 fr:
   DeviceList:
@@ -194,5 +198,5 @@ fr:
       rdfType: Type
       rdfType-placeholder: Selectionner un type de dispositif
       obtained: Date d'obtention
-      obtained-placeholder: Entrer une date
+      obtained-placeholder: Entrer une année
 </i18n>

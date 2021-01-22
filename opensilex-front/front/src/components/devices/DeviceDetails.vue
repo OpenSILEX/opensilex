@@ -1,180 +1,160 @@
 <template>
-  <div class="container-fluid">
+    <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik#ik-file-text"
+      icon="ik#ik-thermometer"
       title="DeviceDetails.title"
       :description="device.name"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" >       
+      <template v-slot>
+        <b-nav-item
+          :active="isDetailsTab()"
+          :to="{path: '/device/details/' + encodeURIComponent(uri)}"
+        >{{ $t('DeviceDetails.details') }}
+        </b-nav-item>
+
+        <b-nav-item
+          class="ml-3"
+          :active="isAnnotationTab()"
+        >{{ $t("DeviceDetails.annotation") }}
+        </b-nav-item>
+
+        <b-nav-item
+          :active="isDocumentTab()"
+        >{{ $t('DeviceDetails.documents') }}</b-nav-item> 
+
+        <opensilex-Button
+          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+          label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
+          @click="annotationModalForm.showCreateForm()"
+        ></opensilex-Button>
+
+        <opensilex-AnnotationModalForm
+          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+          ref="annotationModalForm"
+          :target="uri"
+          @onCreate="updateAnnotations"
+          @onUpdate="updateAnnotations"
+        ></opensilex-AnnotationModalForm>
+
+        </template>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <b-row>
-        <b-col sm="5">
-          <opensilex-Card label="DeviceDetails.description" icon="ik#ik-clipboard">            
-          <template v-slot:rightHeader>
-            <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              label="DeviceDetails.update"
-            ></opensilex-EditButton>
-            <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
-              label="DeviceDetails.delete"
-              :small="true"
-            ></opensilex-DeleteButton>
-
-          </template>
-            <template v-slot:body>
-              <opensilex-UriView :uri="device.uri"></opensilex-UriView>
-              <opensilex-StringView label="DeviceDetails.type" :value="device.rdf_type"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDetails.brand" :value="device.brand"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDetails.constructorModel" :value="device.constructor_model"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDetails.serialNumber" :value="device.serial_number"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDetails.personInCharge" :uri="device.person_in_charge"></opensilex-StringView> 
-              <opensilex-StringView label="DeviceDetails.obtained" :value="device.obtained"></opensilex-StringView>
-            </template>
-          </opensilex-Card>
-      </b-col>
-
-      <b-col sm="5">
-        <opensilex-Card label="DeviceDetails.annex">
-            <template v-slot:body>
-
-            </template>
-        </opensilex-Card>
-      </b-col>
-      </b-row>
-
-      <b-row>
-        <b-col sm="5">
-          <opensilex-Card label="DeviceDetails.localisation" icon="ik#ik-clipboard">            
-          <template v-slot:rightHeader>
-
-          </template>
-            <template v-slot:body>
-
-            </template>
-          </opensilex-Card>
-      </b-col>
-
-      <b-col sm="5">
-        <opensilex-Card label="DeviceDetails.variables">
-            <template v-slot:body>
-
-            </template>
-        </opensilex-Card>
-      </b-col>
-
-      </b-row>
+        <template v-slot>
+            <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+            <!-- <opensilex-DocumentTabList v-else-if="isDocumentTab()" :uri="uri"></opensilex-DocumentTabList>
+            <opensilex-AnnotationList
+                    v-else-if="isAnnotationTab()"
+                    ref="annotationList"
+                    :target="uri"
+                    :displayTargetColumn="false"
+                    :enableActions="true"
+                    :modificationCredentialId="credentials.CREDENTIAL_PROJECT_MODIFICATION_ID"
+                    :deleteCredentialId="credentials.CREDENTIAL_PROJECT_DELETE_ID"
+                    @onEdit="annotationModalForm.showEditForm($event)"
+            ></opensilex-AnnotationList> -->
+        </template>
     </opensilex-PageContent>
-
-  </div>
+    </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import {
-  DeviceDTO,
-  DevicesService
-} from "opensilex-core/index";
-import {
-  SecurityService,
-  UserGetDTO
-} from "opensilex-security/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+    import VueRouter from "vue-router";
+    import {Component, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+    import {DeviceDTO, DevicesService} from "opensilex-core/index";
+    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
 
-@Component
-export default class DeviceDetails extends Vue {
-  $opensilex: any;
-  $store: any;
-  $route: any;
-  $t: any;
-  $i18n: any;
-  service: DevicesService;
-  uri: string = null;
+    @Component
+    export default class DeviceDetails extends Vue {
+        $opensilex: any;
+        $route: any;
 
-  @Ref("modalRef") readonly modalRef!: any;
+        service: DevicesService;
+        uri = null;
+        name: string = "";
 
-  get user() {
-    return this.$store.state.user;
-  }
+        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-  
-  refresh() {
-    this.modalRef.refresh();
-  }
+        get user() {
+            return this.$store.state.user;
+        }
 
-  device: DeviceDTO = { 
-        uri: null,
-        rdf_type: null,
-        name: null,
-        brand: null,
-        constructor_model: null,
-        serial_number: null,
-        person_in_charge: null,
-        obtained: null,
-        date_of_last_use: null,
-        relations: null
-      };
-  
-  created() {
-    this.service = this.$opensilex.getService("opensilex.DevicesService");
-    this.uri = decodeURIComponent(this.$route.params.uri);
-    this.loadDevice(this.uri);
-  }
+        get credentials() {
+            return this.$store.state.credentials;
+        }
 
-  loadDevice(uri: string) {
-    this.service
-      .getDevice(uri)
-      .then((http: HttpResponse<OpenSilexResponse<DeviceDTO>>) => {
-        this.device = http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-  
-}
+        device: DeviceDTO = { 
+              uri: null,
+              rdf_type: null,
+              name: null,
+              brand: null,
+              constructor_model: null,
+              serial_number: null,
+              person_in_charge: null,
+              obtained: null,
+              date_of_last_use: null,
+              relations: null
+            };
+        created() {
+          this.service = this.$opensilex.getService("opensilex.DevicesService");
+          this.uri = decodeURIComponent(this.$route.params.uri);
+          this.loadDevice(this.uri);
+        }
+
+        loadDevice(uri: string) {
+          this.service
+            .getDevice(uri)
+            .then((http: HttpResponse<OpenSilexResponse<DeviceDTO>>) => {
+              this.device = http.response.result;
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
+
+        isDetailsTab() {
+            return this.$route.path.startsWith("/device/details/");
+        }
+
+        isDocumentTab() {
+            return this.$route.path.startsWith("/device/documents/");
+        }
+
+        isAnnotationTab() {
+            return this.$route.path.startsWith("/device/annotations/");
+        }
+
+        updateAnnotations(){
+            this.$nextTick(() => {
+                this.annotationList.refresh();
+            });
+        }
+
+    }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 </style>
 
 <i18n>
 en:
   DeviceDetails:
-    annex: Annex
     title: Device
     description: Description
-    uri: URI
-    name: Name
-    type: Type
-    obtained: Obtained
-    brand: Brand
-    constructorModel: Constructor model
-    serialNumber: Serial number
-    personInCharge: Person in charge
-    localisation: Localisation
-    variables: Variables
+    details: Details
+    annotation: Annotation
+    documents: Documents
 
 fr:
   DeviceDetails:
-    annex: Annexe
     title: Dispositif
     description: Description
-    uri: URI
-    name: Nom
-    type: Type
-    obtained: Date d'obtention
-    brand: Marque
-    constructorModel: Modèle du constructeur
-    serialNumber: Numéro de série
-    personInCharge: Personne en charge
-    localisation: Localisation
-    variables: Variables
-
+    details: Details
+    annotations: Annotations
+    documents: Documents
 
 </i18n>

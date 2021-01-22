@@ -80,13 +80,12 @@ public class DeviceDAO {
     }
     
     public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, Integer year, String brandPattern, String model, String snPattern,  UserModel currentUser, Integer page, Integer pageSize) throws Exception {
-        LocalDate startDate ;
-        LocalDate endDate;
+        LocalDate date ;
         if (year != null) {
             String yearString = Integer.toString(year);
-            startDate = LocalDate.parse(yearString + "-01-01");
+            date = LocalDate.parse(yearString + "-01-01");
         }else {
-            startDate=null;
+            date=null;
         }
         return sparql.searchWithPagination(
                 DeviceModel.class,
@@ -107,8 +106,8 @@ public class DeviceDAO {
                     if (snPattern != null && !snPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.SERIALNUMBER_FIELD, snPattern));
                     }
-                    if(startDate != null){
-                        appendDateFilters(select, startDate);
+                    if(date != null){
+                        appendDateFilters(select, date);
                     }
                 },
                 null,

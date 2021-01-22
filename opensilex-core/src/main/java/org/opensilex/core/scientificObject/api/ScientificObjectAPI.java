@@ -330,7 +330,7 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("get-detail/{objURI}")
+    @Path("get-detail/{uri}")
     @ApiOperation("Get scientific object detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -340,7 +340,7 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectDetail(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
-            @PathParam("objURI") @ValidURI @NotNull URI objectURI,
+            @PathParam("uri") @ValidURI @NotNull URI objectURI,
             @ApiParam(value = "Context URI", example = "http://example.com/")
             @QueryParam("contextURI") @ValidURI URI contextURI
     ) throws Exception {

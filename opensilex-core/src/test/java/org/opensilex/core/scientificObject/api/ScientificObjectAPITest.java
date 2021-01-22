@@ -30,6 +30,7 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.opensilex.core.experiment.api.ExperimentAPITest.uriPath;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**
@@ -40,7 +41,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     protected static final String path = "/core/scientific-object";
 
-    public static final String uriPath = path + "/get-detail";
+    public static final String uriPath = path + "/get-detail/{uri}";
     public static final String createPath = path + "/create";
     public static final String updatePath = path + "/update";
     public static final String deletePath = path + "/delete";
@@ -108,11 +109,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     private Response getResponse(URI createdUri) throws Exception {
-        WebTarget getDetailTarget = target(uriPath);
-        getDetailTarget = getDetailTarget.queryParam("contextURI", experiment.toString());
-        getDetailTarget = getDetailTarget.queryParam("objURI", createdUri.toString());
+        WebTarget target = target(uriPath).resolveTemplate("uri", createdUri.toString());
+        target = target.queryParam("contextURI", experiment.toString());
 
-        return appendToken(getDetailTarget).get();
+        return appendToken(target).get();
     }
 
     public void testUpdate(boolean withGeometry) throws Exception {

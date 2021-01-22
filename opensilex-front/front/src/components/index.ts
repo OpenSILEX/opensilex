@@ -543,5 +543,7 @@ import DeviceList from './devices/DeviceList.vue';
 components["opensilex-DeviceList"] = DeviceList;
 import DeviceDetails from './devices/DeviceDetails.vue';
 components["opensilex-DeviceDetails"] = DeviceDetails;
+import DeviceDescription from './devices/details/DeviceDescription.vue';
+components["opensilex-DeviceDescription"] = DeviceDescription;
 
 export default components;

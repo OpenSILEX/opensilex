@@ -49,7 +49,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             ontology = RDFS.class,
             property = "comment"
     )
-    String comment;
+    String description;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -88,12 +88,12 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
 
     
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<FactorLevelModel> getFactorLevels() {

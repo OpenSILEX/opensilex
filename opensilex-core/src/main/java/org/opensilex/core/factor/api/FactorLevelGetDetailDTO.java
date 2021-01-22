@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.factor.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 
@@ -17,6 +18,7 @@ import org.opensilex.core.factor.dal.FactorLevelModel;
  * @author Arnaud Charleroy
  */
 public class FactorLevelGetDetailDTO extends FactorLevelGetDTO {
+    @JsonPropertyOrder({"uri", "name", "description","factor_uri","factor_name"})
 
     private URI factorURI;
 
@@ -43,7 +45,7 @@ public class FactorLevelGetDetailDTO extends FactorLevelGetDTO {
 
         dto.setUri(model.getUri());
         dto.setName(model.getName());
-        dto.setComment(model.getComment());
+        dto.setDescription(model.getDescription());
         dto.setFactorURI(model.getFactor().getUri());
         dto.setFactorName(model.getFactor().getName());
         return dto;

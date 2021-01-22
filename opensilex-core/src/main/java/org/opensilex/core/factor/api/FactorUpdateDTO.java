@@ -9,6 +9,8 @@
  */
 package org.opensilex.core.factor.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.util.List;
 import javax.validation.Valid;
@@ -22,6 +24,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Arnaud Charleroy
  */
 public class FactorUpdateDTO extends SKOSReferencesDTO {
+    @JsonPropertyOrder({"uri", "name", "description","factor_levels"})
 
     @NotNull
     @ValidURI
@@ -31,9 +34,10 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
 
     private String category;
 
-    private String comment;
+    private String description;
 
     @Valid
+    @JsonProperty("factor_levels")
     private List<FactorLevelCreationDTO> factorLevels;
 
     public URI getUri() {
@@ -60,12 +64,12 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         this.category = category;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<FactorLevelCreationDTO> getFactorLevels() {
@@ -81,7 +85,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         model.setUri(getUri());
         model.setName(getName());
         model.setCategory(getCategory());
-        model.setComment(getComment());
+        model.setDescription(getDescription());
         this.setSkosReferencesToModel(model);
 
         return model;

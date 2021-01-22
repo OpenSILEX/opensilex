@@ -25,7 +25,6 @@ import HttpResponse, {
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO,
 } from "opensilex-core/index";
 
 import { ASYNC_SEARCH } from "@riophae/vue-treeselect";
@@ -48,8 +47,8 @@ export default class FactorSelector extends Vue {
   @Prop()
   multiple;
 
-  filter: FactorSearchDTO = {
-    name: "",
+  filter: any =  {
+    name: null,
     uri: null,
   };
 
@@ -61,12 +60,12 @@ export default class FactorSelector extends Vue {
   loadFactors(factorsURI) {
     return this.$opensilex
       .getService("opensilex.FactorsService")
-      .getFactorsByURI(factorsURI)
+      .getFactorsByURIs(factorsURI)
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) =>
           http.response.result
       )
-      .then((result: any[]) => {
+      .then((result: FactorGetDTO[]) => {
         let nodeList = [];
         for (let factor of result) {
           nodeList.push(this.factorToSelectNode(factor));
@@ -81,7 +80,15 @@ export default class FactorSelector extends Vue {
     this.filter.uri = query;
     return this.$opensilex
       .getService("opensilex.FactorsService")
-      .searchFactors(null, page, pageSize, this.filter)
+      .searchFactors(
+          this.$opensilex.prepareGetParameter(this.filter.name), // name
+          undefined, // description
+          undefined, // category
+          undefined, // experiment
+          undefined, // orderBy
+          page, // page
+          pageSize // pageSize
+          )
       .then((http) => {
         let factorMapByCategory = this.sortFactorListByCategory(http.response.result);
         let factorsByCategoryNode = this.transformFactorListByCategoryInNodes(

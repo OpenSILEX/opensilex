@@ -24,7 +24,7 @@ import HttpResponse, {
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO,
+  
 } from "opensilex-core/index";
 
 @Component

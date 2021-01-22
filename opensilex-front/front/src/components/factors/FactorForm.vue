@@ -40,20 +40,20 @@
           :category.sync="form.category"
         ></opensilex-FactorCategorySelector>
       </div>
-      <!-- Comment -->
+      <!-- description -->
       <div id="v-step-2">
         <opensilex-TextAreaForm
-          :value.sync="form.comment"
-          label="component.factor.comment"
-          helpMessage="component.factor.comment-help"
-          placeholder="component.factor.comment-placeholder"
+          :value.sync="form.description"
+          label="component.factor.description"
+          helpMessage="component.factor.description-help"
+          placeholder="component.factor.description-placeholder"
         ></opensilex-TextAreaForm>
       </div>
       <div id="v-step-3">
         <opensilex-FactorLevelTable
           ref="factorLevelTable"
           :editMode="editMode"
-          :factorLevels.sync="form.factorLevels"
+          :factorLevels.sync="form.factor_levels"
         ></opensilex-FactorLevelTable>
       </div>
     </b-form>
@@ -94,16 +94,16 @@ export default class FactorForm extends Vue {
         uri: null,
         name: null,
         category: null,
-        comment: null,
+        description: null,
         exactMatch: [],
         closeMatch: [],
         broader: [],
         narrower: [],
-        factorLevels: [
+        factor_levels: [
           {
             uri: null,
             name: null,
-            comment: null,
+            description: null,
           },
         ],
       };
@@ -122,10 +122,10 @@ export default class FactorForm extends Vue {
 
   addEmptyRow() {
     console.debug("add row");
-    this.form.factorLevels.unshift({
+    this.form.factor_levels.unshift({
       uri: null,
       name: null,
-      comment: null,
+      description: null,
     });
   }
   saveForm() {
@@ -137,16 +137,16 @@ export default class FactorForm extends Vue {
       uri: null,
       name: null,
       category: null,
-      comment: null,
+      description: null,
       exactMatch: [],
       closeMatch: [],
       broader: [],
       narrower: [],
-      factorLevels: [
+      factor_levels: [
         {
           uri: null,
           name: null,
-          comment: null,
+          description: null,
         },
       ],
     };
@@ -177,9 +177,9 @@ export default class FactorForm extends Vue {
       {
         target: "#v-step-2",
         header: {
-          title: this.$i18n.t("component.factor.comment").toString(),
+          title: this.$i18n.t("component.factor.description").toString(),
         },
-        content: this.$i18n.t("component.factor.comment-help").toString(),
+        content: this.$i18n.t("component.factor.description-help").toString(),
         params: {
           placement: "left", // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
         },
@@ -206,7 +206,7 @@ export default class FactorForm extends Vue {
 
     this.form.category = this.savedForm.category;
 
-    this.form.comment = this.savedForm.comment;
+    this.form.description = this.savedForm.description;
 
     this.form.exactMatch = this.savedForm.exactMatch;
 
@@ -215,7 +215,7 @@ export default class FactorForm extends Vue {
     this.form.broader = this.savedForm.broader;
 
     this.form.narrower = this.savedForm.narrower;
-    this.form.factorLevels = this.savedForm.factorLevels;
+    this.form.factor_levels = this.savedForm.factor_levels;
   }
 
   setUri(uri: string) {
@@ -306,14 +306,14 @@ export default class FactorForm extends Vue {
     this.saveForm();
     this.form.name = this.$i18n.t("component.factor.example.name");
     this.form.category = this.$i18n.t("component.factor.example.category");
-    this.form.comment = this.$i18n.t("component.factor.example.comment");
-    let factorLevels = [];
+    this.form.description = this.$i18n.t("component.factor.example.description");
+    let factor_levels = [];
     for (const [key, value] of Object.entries(
       this.$i18n.t("component.factor.example.factorLevels")
     )) {
-      factorLevels.push(value);
+      factor_levels.push(value);
     }
-    this.form.factorLevels = factorLevels;
+    this.form.factor_levels = factor_levels;
     this.factorTutorial.start();
   }
 }
@@ -330,12 +330,12 @@ en:
       example :
         name : Nitrogen
         category : nutrient
-        comment : Chemical compound added in the soil
+        description : Chemical compound added in the soil
         factorLevels :
           - name: "N-10/N+"
-            comment: "Dose 10 mmolar"
+            description: "Dose 10 mmolar"
           - name: "N-5/N-"
-            comment: "Dose 5 mmolar"         
+            description: "Dose 5 mmolar"         
     
             
 fr:
@@ -345,11 +345,11 @@ fr:
       example :
         name : Azote
         category : nutrient
-        comment : Composant chimique ajouté dans le sol 
+        description : Composant chimique ajouté dans le sol 
         factorLevels :
           - name: "N-10/N+"
-            comment: "Dosage 10 mmol"
+            description: "Dosage 10 mmol"
           - name: "N-5/N-"
-            comment: "Dosage 5 mmol"
+            description: "Dosage 5 mmol"
 
 </i18n>

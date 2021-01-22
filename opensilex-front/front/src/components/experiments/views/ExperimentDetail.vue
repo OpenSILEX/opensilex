@@ -350,7 +350,15 @@ export default class ExperimentDetail extends Vue {
     this.factorsList = [];
     if (this.experiment.factors && this.experiment.factors.length > 0) {
       service
-        .getAllFactors()
+        .searchFactors(
+          undefined, // name
+          undefined, // description
+          undefined, // category
+          undefined, // experiment
+          undefined, // orderBy
+          0, // page
+          0 // pageSize
+          )
         .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
             if (

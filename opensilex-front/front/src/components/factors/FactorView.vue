@@ -106,12 +106,12 @@
             uri: null,
             name: null,
             category: null,
-            comment: null,
+            description: null,
             exactMatch: [],
             closeMatch: [],
             broader: [],
             narrower: [],
-            factorLevels: [],
+            factor_levels: [],
         };
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -190,7 +190,7 @@
 
         loadFactor(uri: string) {
             this.service
-                .getFactor(uri)
+                .getFactorByURI(uri)
                 .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
                     this.factor = http.response.result;
                 })

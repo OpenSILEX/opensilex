@@ -43,8 +43,8 @@
               :value="$i18n.t(factorCategoriesMap[factor.category])"
             ></opensilex-StringView>
             <opensilex-StringView
-              label="component.factor.comment"
-              :value="factor.comment"
+              label="component.factor.description"
+              :value="factor.description"
             ></opensilex-StringView>
           </template>
         </opensilex-Card>
@@ -65,8 +65,8 @@
         <opensilex-Card label="component.factor.details.factorLevels" icon>
           <template v-slot:body>
             <opensilex-TableView
-              v-if="factor.factorLevels.length != 0"
-              :items="factor.factorLevels"
+              v-if="factor.factor_levels.length != 0"
+              :items="factor.factor_levels"
               :fields="factorLevelFields"
               :globalFilterField="true"
             >
@@ -149,12 +149,12 @@ export default class FactorDetails extends Vue {
         uri: null,
         name: null,
         category: null,
-        comment: null,
+        description: null,
         exactMatch: [],
         closeMatch: [],
         broader: [],
         narrower: [],
-        factorLevels: [],
+        factor_levels: [],
       };
     },
   })
@@ -167,8 +167,8 @@ export default class FactorDetails extends Vue {
       sortable: true,
     },
     {
-      key: "comment",
-      label: "component.factorLevel.comment",
+      key: "description",
+      label: "component.factorLevel.description",
       sortable: false,
     },
   ];

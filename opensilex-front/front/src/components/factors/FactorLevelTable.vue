@@ -22,7 +22,7 @@
                 }}</b-button
               >
               <opensilex-CSVInputFile
-                :headersToCheck="['name', 'comment']"
+                :headersToCheck="['name', 'description']"
                 v-on:updated="uploaded"
               ></opensilex-CSVInputFile>
               <b-button
@@ -104,7 +104,7 @@ export default class FactorLevelTable extends Vue {
       //French language definition
       columns: {
         name: "Nom",
-        comment: "Description",
+        description: "Description",
         actions: "Supprimer",
       },
       pagination: {
@@ -121,7 +121,7 @@ export default class FactorLevelTable extends Vue {
     en: {
       columns: {
         name: "Name", //replace the title of column name with the value "Name"
-        comment: "Comment",
+        description: "Description",
         actions: "Delete",
       },
       pagination: {
@@ -169,8 +169,8 @@ export default class FactorLevelTable extends Vue {
         widthGrow: 0.5,
       },
       {
-        title: "Comment",
-        field: "comment",
+        title: "description",
+        field: "description",
         formater: "string",
         editor: "input",
         widthGrow: 1,
@@ -323,7 +323,7 @@ export default class FactorLevelTable extends Vue {
       this.internalFactorLevels.unshift({
         uri: null,
         name: null,
-        comment: null,
+        description: null,
       });
     } else {
       this.$opensilex.showWarningToast(
@@ -344,7 +344,7 @@ export default class FactorLevelTable extends Vue {
   }
 
   csvExport() {
-    let arrData = [{ name: "", comment: "" }];
+    let arrData = [{ name: "", description: "" }];
     this.$papa.download(this.$papa.unparse(arrData), "factorLevelTemplate");
   }
 }
@@ -370,7 +370,7 @@ en:
       update: update factor level
       name: name
       factor: factor
-      comment: comment
+      description: description
       hasFactor: has factor
       errors:
         factor-already-exists: Factor level already exists with this URI.
@@ -391,7 +391,7 @@ fr:
       update: Modifier un niveau de facteur
       name: nom
       factor: facteur
-      comment: description
+      description: description
       hasFactor: est lié au facteur
       errors:
         factor-already-exists: URI du niveau de facteur déjà existante.

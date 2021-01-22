@@ -33,7 +33,7 @@ public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel>
             ontology = RDFS.class,
             property = "comment"
     )
-    String comment;
+    String description;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -41,12 +41,12 @@ public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel>
     )
     FactorModel factor;
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public FactorModel getFactor() {

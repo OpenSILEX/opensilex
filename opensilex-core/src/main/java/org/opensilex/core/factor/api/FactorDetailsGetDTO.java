@@ -9,6 +9,9 @@
  */
 package org.opensilex.core.factor.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,15 +25,21 @@ import org.opensilex.core.ontology.SKOSReferencesDTO;
  * @author Arnaud Charleroy
  */
 public class FactorDetailsGetDTO extends SKOSReferencesDTO {
+    @JsonPropertyOrder({"uri", "name", "category", "description", "factor_levels"})
 
+    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
     private URI uri;
-
+    
+    @ApiModelProperty(example = "Irrigation")
     private String name;
-
+    
+    @ApiModelProperty(example = "waterManagement")
     private String category;
+    
+    @ApiModelProperty(example = "Experimental factor about water management")
+    private String description;
 
-    private String comment;
-
+    @JsonProperty("factor_levels")
     List<FactorLevelGetDTO> factorLevels = new LinkedList<>();
 
     public URI getUri() {
@@ -57,12 +66,12 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
         this.category = category;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<FactorLevelGetDTO> getFactorLevels() {
@@ -78,7 +87,7 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setCategory(model.getCategory());
-        dto.setComment(model.getComment());
+        dto.setDescription(model.getDescription());
         List<FactorLevelGetDTO> factorLevels = new ArrayList<>();
         model.getFactorLevels().forEach(factorLevelModel -> {
             FactorLevelGetDTO newFactorLevelDTO = FactorLevelGetDTO.fromModel(factorLevelModel);

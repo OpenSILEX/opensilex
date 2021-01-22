@@ -885,5 +885,15 @@ export default class OpenSilexVuePlugin {
     public getSelectIconIDs() {
         return this.selectIconIDs;
     }
+
+    public prepareGetParameter(value){
+        if(value == null || value == '' || value == undefined){
+            return undefined;
+        }else{
+            return value;
+        }
+    }
+
+
     
 }

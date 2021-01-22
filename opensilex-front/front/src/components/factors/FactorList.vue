@@ -55,7 +55,7 @@
       iconNumberOfSelectedRow="ik#ik-feather"
     >
       <template v-slot:head(name)="{data}">{{$t(data.label)}}</template>
-      <template v-slot:head(comment)="{data}">{{$t(data.label)}}</template>
+      <template v-slot:head(description)="{data}">{{$t(data.label)}}</template>
       <template v-slot:head(category)="{data}">{{$t(data.label)}}</template>
 
       <!-- <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template> -->
@@ -101,7 +101,6 @@ import VueRouter from "vue-router";
 import {
   FactorsService,
   FactorGetDTO,
-  FactorSearchDTO
 } from "opensilex-core/index";
 import HttpResponse, {
   OpenSilexResponse
@@ -137,10 +136,10 @@ export default class FactorList extends Vue {
     return FactorCategory.getFactorCategoryLabel(category);
   }
 
-  filter: FactorSearchDTO = {
+  filter = {
     uri: "",
     name: "",
-    comment: "",
+    description: "",
     experiment: null,
     category: "",
   };
@@ -154,7 +153,7 @@ export default class FactorList extends Vue {
     this.filter = {
       uri: null,
       name: "",
-      comment: "",
+      description: "",
       experiment: null,
       category: ""
     };
@@ -197,8 +196,8 @@ export default class FactorList extends Vue {
         sortable: true
       },
       {
-        key: "comment",
-        label: "component.factor.list.comment",
+        key: "description",
+        label: "component.factor.list.description",
         sortable: false
       }
     ];
@@ -223,10 +222,13 @@ export default class FactorList extends Vue {
 
   searchFactors(options) {
     return this.service.searchFactors(
-      options.orderBy,
-      options.currentPage,
-      options.pageSize,
-      this.filter
+      this.$opensilex.prepareGetParameter(this.filter.name), // name
+      this.$opensilex.prepareGetParameter(this.filter.description), // description
+      this.$opensilex.prepareGetParameter(this.filter.category), // category
+      this.$opensilex.prepareGetParameter(this.filter.experiment), // experiment
+      options.orderBy,  // orderBy
+      options.currentPage, // page
+      options.pageSize, // pageSize 
     );
   }
 }
@@ -257,7 +259,7 @@ en:
       list:
         name: Name
         category: Category
-        comment: Comment
+        description: description
         filter: 
           label: Filter factors
           name: Name
@@ -275,7 +277,7 @@ fr:
       list:
         name: Nom
         category: Categorie
-        comment: Commentaire
+        description: descriptionaire
         filter: 
           label: Filtrer les facteurs
           name: Nom

@@ -10,7 +10,6 @@
 package org.opensilex.core.factor.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -18,8 +17,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.factor.api.FactorSearchDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -62,10 +59,19 @@ public class FactorDAO {
 
     public ListWithPagination<FactorModel> search(URI uri, String name, String category, URI experimentUri,
             List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
-        return sparql.searchWithPagination(FactorModel.class, lang, (SelectBuilder select) -> {
-            // TODO implements filters
-            appendFilters(uri, name, category, experimentUri, select);
-        }, orderByList, page, pageSize);
+        if(pageSize == -1){
+            List<FactorModel> searchList = sparql.search(FactorModel.class, lang, (SelectBuilder select) -> {
+                // TODO implements filters
+                appendFilters(uri, name, category, experimentUri, select);
+            }, orderByList);
+            return  new ListWithPagination<>(searchList);
+        }else{
+            return sparql.searchWithPagination(FactorModel.class, lang, (SelectBuilder select) -> {
+                // TODO implements filters
+                appendFilters(uri, name, category, experimentUri, select);
+            }, orderByList, page, pageSize);
+        }
+        
     }
 
     public List<FactorModel> getAll(String lang) throws Exception {

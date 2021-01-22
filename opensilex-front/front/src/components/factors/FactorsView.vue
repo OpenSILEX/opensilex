@@ -3,7 +3,7 @@
     <opensilex-PageHeader
       icon="fa#sun"
       title="component.menu.experimentalDesign.factors"
-      description="component.factor.description"
+      description="component.factor.description-title-help"
     ></opensilex-PageHeader>
     <opensilex-PageActions>
       <template v-slot>
@@ -65,7 +65,6 @@ import {
   FactorsService,
   FactorGetDTO,
   FactorDetailsGetDTO,
-  FactorSearchDTO,
   FactorUpdateDTO,
 } from "opensilex-core/index";
 
@@ -82,7 +81,7 @@ export default class FactorsView extends Vue {
     uri: null,
     name: null,
     category: null,
-    comment: null,
+    description: null,
     exactMatch: [],
     closeMatch: [],
     broader: [],
@@ -140,7 +139,7 @@ export default class FactorsView extends Vue {
   showSkosReferences(uri: string) {
     console.debug("showSkosReferences" + uri);
     this.service
-      .getFactor(uri)
+      .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         let result = http.response.result;
         if (result instanceof Promise) {
@@ -159,7 +158,7 @@ export default class FactorsView extends Vue {
   editFactor(uri: any) {
     console.debug("editFactor" + uri);
     this.service
-      .getFactor(uri)
+      .getFactorByURI(uri)
       .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
         console.debug(http.response.result);
         this.factorForm.showEditForm(http.response.result);
@@ -210,7 +209,7 @@ export default class FactorsView extends Vue {
 en:
   component:
     factor :
-      description: Manage experimental factors
+      description-title-help: Manage experimental factors
       label: Factor
       uri: URI
       uri-help: Unique factor identifier
@@ -226,10 +225,10 @@ en:
       category: Category
       category-help: General category used to classify factors
       category-placeholder: Environnement-Irrigation, Field management, etc ...
-      comment: Comment
-      comment-help: Description associated to this factors (protocol, amount of component)
-      comment-error: Must contains at least 10 characters
-      comment-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
+      description: description
+      description-help: Description associated to this factors (protocol, amount of component)
+      description-error: Must contains at least 10 characters
+      description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
       errors:
         user-already-exists: Factor already exists with this URI.
       select:
@@ -248,7 +247,7 @@ en:
 fr:
   component:
     factor:
-      description: Gestion des facteurs expérimentaux
+      description-title-help: Gestion des facteurs expérimentaux
       label: Facteur
       uri: URI
       uri-help: Identifiant unique du facteur
@@ -265,9 +264,9 @@ fr:
       category: Catégorie
       category-help: Grandes catégories servant à classifier les facteurs
       category-placeholder: Irrigation-Environnement, Conduite au champ , etc.
-      comment: Description
-      comment-help: Description associée à ce facteur (protocole, apport de composé)
-      form-comment-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
+      description: Description
+      description-help: Description associée à ce facteur (protocole, apport de composé)
+      form-description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
       errors:
         user-already-exists: URI du facteur déjà existante.
       select:

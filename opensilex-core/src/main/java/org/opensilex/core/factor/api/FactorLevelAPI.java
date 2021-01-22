@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @author Arnaud Charleroy
  */
 @Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
-@Path("/core/factorLevel")
+@Path("/core/factorLevels")
 @ApiCredentialGroup(
         groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
         groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
@@ -55,7 +55,7 @@ public class FactorLevelAPI {
     public static final String FACTOR_LEVEL_EXAMPLE_URI = "http://opensilex/set/factorLevel/irrigation.ww";
     public static final String DEFAULT_TRANSLATION_LANGUAGE = "en";
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(FactorAPI.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(FactorLevelAPI.class);
 
     @Inject
     private SPARQLService sparql;
@@ -72,8 +72,8 @@ public class FactorLevelAPI {
      * @throws Exception in case of server error
      */
     @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get an factor level")
+    @Path("{uri}")
+    @ApiOperation("Get a factor level")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -82,7 +82,7 @@ public class FactorLevelAPI {
         @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
     })
     public Response getFactorLevel(
-            @ApiParam(value = "Factor Level URI", example = "platform-factor:irrigation.ww", required = true) @PathParam("uri") @NotNull URI factorLevelUri
+            @ApiParam(value = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         FactorLevelModel model = dao.get(factorLevelUri);
@@ -108,8 +108,8 @@ public class FactorLevelAPI {
      * @throws Exception in case of server error
      */
     @GET
-    @Path("get-details/{uri}")
-    @ApiOperation("Get an factor level")
+    @Path("{uri}/details")
+    @ApiOperation("Get a factor level")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -118,7 +118,7 @@ public class FactorLevelAPI {
         @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
     })
     public Response getFactorLevelDetail(
-            @ApiParam(value = "Factor Level URI", example = "platform-factor:irrigation.ww", required = true) @PathParam("uri") @NotNull URI factorLevelUri
+            @ApiParam(value = "Factor Level URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         FactorLevelModel model = dao.get(factorLevelUri);
@@ -144,8 +144,8 @@ public class FactorLevelAPI {
      * the deleted Factor Level {@link URI}
      */
     @DELETE
-    @Path("delete/{uri}")
-    @ApiOperation("Delete an factor Level")
+    @Path("{uri}")
+    @ApiOperation("Delete a factor Level")
     @ApiProtected
     @ApiCredential(
             credentialId = FactorAPI.CREDENTIAL_FACTOR_DELETE_ID,

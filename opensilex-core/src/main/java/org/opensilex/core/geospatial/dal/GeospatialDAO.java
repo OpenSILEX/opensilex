@@ -218,13 +218,12 @@ public class GeospatialDAO {
         if (geometry != null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.PerennialArea.getURI()), ClassModel.class,
+            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class,
                     currentUser,
                     true,
                     null);
             List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);
             List<String> ontologyAreaURI = new LinkedList<>();
-            ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI("vocabulary:Zone"));
 
             resourceTreeDTOS.forEach(resourceTreeDTO -> ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString())));
 

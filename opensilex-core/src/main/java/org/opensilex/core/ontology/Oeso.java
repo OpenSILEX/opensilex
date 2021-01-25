@@ -142,8 +142,7 @@ public class Oeso {
     public static final Property isScientificObjectManagedClass = Ontology.property(NS, "isScientificObjectManagedClass");
 
     // ---- AREA ----
-    public static final Resource Area = Ontology.resource(NS, "Zone");
-    public static final Resource PerennialArea = Ontology.resource(NS, "PerenialArea");
+    public static final Resource Area = Ontology.resource(NS, "Area");
 
     // ---- PROVENANCES ----
     public static final Property ImageAnalysis = Ontology.property(NS, "ImageAnalysis");

@@ -743,18 +743,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:comment xml:lang="fr">Zone au sens large.
-            Peut définir une zone au sens physique ou théorique</rdfs:comment>
-        <rdfs:label xml:lang="en">zone</rdfs:label>
-        <rdfs:label xml:lang="fr">zone</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Camera -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Camera">
@@ -808,15 +796,6 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
         <rdfs:label xml:lang="fr">compartiment</rdfs:label>
         <rdfs:label xml:lang="en">compartment</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#CultivatedLand -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CultivatedLand">
-        <rdfs:label xml:lang="en">Cultivated Land</rdfs:label>
-        <rdfs:label xml:lang="fr">Terre cultivée</rdfs:label>
     </owl:Class>
     
 
@@ -944,17 +923,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
         <rdfs:label xml:lang="en">fiber-glass block</rdfs:label>
     </owl:Class>
-    
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Field -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Field">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
-        <rdfs:label xml:lang="fr">champ</rdfs:label>
-        <rdfs:label xml:lang="en">field</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#FieldRobot -->

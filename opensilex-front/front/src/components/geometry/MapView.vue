@@ -148,7 +148,6 @@ import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from 'ol/control'
 import Oeso from "../../ontologies/Oeso";
-import {RDFClassDTO} from "opensilex-core/model/rDFClassDTO";
 import * as turf from "@turf/turf";
 import MultiPolygon from "ol/geom/MultiPolygon";
 
@@ -367,15 +366,7 @@ export default class MapView extends Vue {
         )
         .catch(this.$opensilex.errorHandler);
 
-    this.service.getClass(Oeso.AREA)
-        .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
-              const res = http.response.result;
-              typeLabel.push({uri: res.uri, name: res.label});
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-
-    this.service.getSubClassesOf(Oeso.PERENNIAL_AREA, true)
+    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI, true)
         .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
               res.forEach(({name, uri}) => {

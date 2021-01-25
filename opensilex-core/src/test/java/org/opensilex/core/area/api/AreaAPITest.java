@@ -80,7 +80,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         // update the area
         areaDTO.setUri(extractUriFromResponse(postResult));
         areaDTO.setName("new name");
-        areaDTO.setType(new URI("vocabulary:PollutedArea"));
+        areaDTO.setType(new URI("vocabulary:FloodableArea"));
         Geometry geometry = new Point(new Position(3.97167246, 43.61328981));
         areaDTO.setGeometry(geometryToGeoJson(geometry));
 

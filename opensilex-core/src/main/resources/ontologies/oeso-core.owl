@@ -740,6 +740,50 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
+        <rdfs:comment xml:lang="fr">Zone au sens large.
+Peut définir une zone au sens physique ou théorique</rdfs:comment>
+        <rdfs:comment xml:lang="en">Zone in the broadest sense.
+Can define a zone in the physical or theoretical sense</rdfs:comment>
+        <rdfs:label xml:lang="en">Area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ClayeyArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ClayeyArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Clayey area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone argileuse</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Compartment -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Compartment">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
+        <rdfs:label xml:lang="fr">Compartiment</rdfs:label>
+        <rdfs:label xml:lang="en">Compartment</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#CultivatedLand -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CultivatedLand">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Cultivated land</rdfs:label>
+        <rdfs:label xml:lang="fr">Terres cultivées</rdfs:label>
+    </owl:Class>
+
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Dataset -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Dataset">
@@ -842,10 +886,22 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#FloodArea -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#Field -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Field">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#CultivatedLand"/>
+        <rdfs:label xml:lang="fr">Champ</rdfs:label>
+        <rdfs:label xml:lang="en">Field</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#FloodableArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodableArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Floodable area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
     </owl:Class>
     
 
@@ -854,6 +910,26 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Greenhouse -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Greenhouse">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
+        <rdfs:label xml:lang="en">Greenhouse</rdfs:label>
+        <rdfs:label xml:lang="fr">Serre</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#GrowthChamber -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GrowthChamber">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
+        <rdfs:label xml:lang="fr">Chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">Growth chamber</rdfs:label>
+    </owl:Class>
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Infrastructure -->
@@ -894,7 +970,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
     
 
@@ -913,14 +989,6 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
         <rdfs:label xml:lang="en">Multimedia</rdfs:label>
         <rdfs:label xml:lang="fr">Multimédia</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PerenialArea -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PerenialArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Zone"/>
     </owl:Class>
     
 
@@ -949,6 +1017,16 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     </owl:Class>
     
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ProtectedStructure -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
+        <opensilex-api:propertyMapping xml:lang="en">Protected structure</opensilex-api:propertyMapping>
+        <rdfs:label xml:lang="en">Structure protégée</rdfs:label>
+    </owl:Class>
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Provenance -->
@@ -1062,6 +1140,25 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Shed -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Shed">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
+        <rdfs:label xml:lang="fr">Hangar</rdfs:label>
+        <rdfs:label xml:lang="en">Shed</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#SoilArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoilArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Soil area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone de sol</rdfs:label>
+    </owl:Class>
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ShinyAppPackage">
@@ -1078,6 +1175,18 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
     </owl:Class>
     
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#StructuralArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#StructuralArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
+        <rdfs:comment xml:lang="fr">durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:comment>
+        <rdfs:comment xml:lang="en">lifetime, building, cadastral, floodable, etc.</rdfs:comment>
+        <rdfs:label xml:lang="en">Structural area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone structurelle</rdfs:label>
+    </owl:Class>
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#TechnicalDocument -->
@@ -1230,19 +1339,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PerenialArea"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Zone -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Zone">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:comment xml:lang="fr">Zone au sens large.
-            Peut définir une zone au sens physique ou théorique</rdfs:comment>
-        <rdfs:label xml:lang="en">Area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
     
 
@@ -1517,12 +1614,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Area"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Document"/>
@@ -1571,12 +1662,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#FloodArea -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
@@ -1604,12 +1689,6 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PollutedArea -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#PollutedArea"/>
     
 
 
@@ -1664,12 +1743,6 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea"/>
     
 
 
@@ -1794,10 +1867,6 @@
         <rdfs:label xml:lang="en">Factor level</rdfs:label>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:label xml:lang="en">Flood area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
-    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
         <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
@@ -1817,10 +1886,6 @@
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
         <rdfs:label xml:lang="en">Limestone area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone calcaire</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#PollutedArea">
-        <rdfs:label xml:lang="en">Polluted area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone pollué</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
         <rdfs:label xml:lang="fr">projet</rdfs:label>
@@ -1858,6 +1923,10 @@
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
         <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
         <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
+        <rdfs:label xml:lang="fr">Zone venteuse</rdfs:label>
+        <rdfs:label xml:lang="en">Windy area</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel">
         <rdfs:label xml:lang="fr">Modalité de facteur</rdfs:label>

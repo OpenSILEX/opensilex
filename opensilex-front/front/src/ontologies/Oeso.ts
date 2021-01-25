@@ -18,8 +18,7 @@ let ontologies = {
     UNIT_TYPE_URI: OESO_URI + "#Unit",
     DOCUMENT_TYPE_URI: OESO_URI + "#Document",
     CONCERNS: OESO_URI + "#concerns",
-    AREA: OESO_URI + "#Zone",
-    PERENNIAL_AREA: OESO_URI + "#PerenialArea",
+    AREA_TYPE_URI: OESO_URI + "#Area",
     OPERATOR_TYPE_URI: OESO_URI + "#Operator",
     SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
 };

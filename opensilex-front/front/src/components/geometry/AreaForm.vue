@@ -102,7 +102,7 @@ export default class AreaForm extends Vue {
 
     let optionsArea: { label: string; id: string }[] = [];
 
-    this.service.getSubClassesOf(Oeso.PERENNIAL_AREA, true)
+    this.service.getSubClassesOf(Oeso.AREA_TYPE_URI, true)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
@@ -152,7 +152,7 @@ export default class AreaForm extends Vue {
     if (form.optionAreaType !== null)
       form.type = form.optionAreaType;
     else
-      form.type = Oeso.AREA;
+      form.type = Oeso.AREA_TYPE_URI;
 
     return this.$opensilex
         .getService("opensilex.AreaService")

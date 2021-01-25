@@ -19,14 +19,18 @@
     </template>
 
     <div class="card">
-      <opensilex-ProjectList ref="projectSelection" :isSelectable="true" :noActions="true"></opensilex-ProjectList>
+      <opensilex-ProjectList 
+      ref="projectSelection"
+       :isSelectable="true"
+        :maximumSelectedRows="maximumSelectedRows"
+        :noActions="true"></opensilex-ProjectList>
     </div>
   </b-modal>
 </template>
 
 <script lang="ts">
 import moment from "moment";
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
@@ -37,6 +41,12 @@ import ProjectList from "./ProjectList.vue";
 export default class ProjectModalList extends ProjectList {
   @Ref("projectSelection") readonly projectSelection!: any;
 
+
+  @Prop()
+  maximumSelectedRows;
+  unSelect(row) {
+    this.projectSelection.onItemUnselected(row);
+  }
   show() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

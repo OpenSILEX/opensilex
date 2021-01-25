@@ -334,7 +334,7 @@ export default class GermplasmList extends Vue {
             let expDTO = http.response.result[i];
             this.experimentsList.push({
               value: expDTO.uri,
-              text: expDTO.label
+              text: expDTO.name
             });
           }
         }

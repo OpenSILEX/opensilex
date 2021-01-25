@@ -40,8 +40,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
             property = "label",
             required = true
     )
-    String label;
-    public static final String LABEL_FIELD = "label";
+    String name;
+    public static final String LABEL_FIELD = "name";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -86,12 +86,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     List<GroupModel> groups;
     public static final String GROUP_FIELD = "groups";
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasCampaign"
-    )
-    Integer campaign;
-    public static final String CAMPAIGN_FIELD = "campaign";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -101,19 +95,13 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     String objective;
     public static final String OBJECTIVE_FIELD = "objective";
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasKeyword"
-    )
-    List<String> keywords;
-    public static final String KEYWORD_FIELD = "keyword";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
-    String comment;
-    public static final String COMMENT_FIELD = "comment";
+    String description;
+    public static final String COMMENT_FIELD = "description";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -128,14 +116,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<InfrastructureModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructure";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasDevice"
-    )
-    List<URI> devices;
-    public static final String DEVICES_FIELD = "devices";
-
+ 
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPublic"
@@ -152,25 +134,17 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "participatesIn",
-            inverse = true
-    )
-    List<URI> sensors;
-    public static final String SENSORS_FIELD = "sensors";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
             property = "studyEffectOf"
     )
     List<FactorModel> factors;
     public static final String FACTORS_FIELD = "factors";
     
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<ProjectModel> getProjects() {
@@ -229,28 +203,12 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.objective = objective;
     }
 
-    public List<String> getKeywords() {
-        return keywords;
+    public String getDescription() {
+        return description;
     }
 
-    public void setKeywords(List<String> keywords) {
-        this.keywords = keywords;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Integer getCampaign() {
-        return campaign;
-    }
-
-    public void setCampaign(Integer campaign) {
-        this.campaign = campaign;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<SpeciesModel> getSpecies() {
@@ -285,14 +243,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.variables = variables;
     }
 
-    public List<URI> getSensors() {
-        return sensors;
-    }
-
-    public void setSensors(List<URI> sensors) {
-        this.sensors = sensors;
-    }
-
     public List<FactorModel> getFactors() {
         return factors;
     }
@@ -301,18 +251,10 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
         this.factors = factors;
     }
 
-    public List<URI> getDevices() {
-        return devices;
-    }
-
-    public void setDevices(List<URI> devices) {
-        this.devices = devices;
-    }
-
     @Override
     public String[] getUriSegments(ExperimentModel instance) {
         return new String[]{
-            instance.getLabel()
+            instance.getName()
         };
     }
 }

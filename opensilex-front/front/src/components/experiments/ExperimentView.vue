@@ -120,7 +120,7 @@
                 this.service
                     .getExperiment(this.uri)
                     .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
-                        this.name = http.response.result.label;
+                        this.name = http.response.result.name;
                     })
                     .catch((error) => {
                         this.$opensilex.errorHandler(error);

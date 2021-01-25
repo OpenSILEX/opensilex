@@ -27,17 +27,13 @@ public class ExperimentCreationDTO extends ExperimentDTO {
 
         ExperimentModel model = new ExperimentModel();
         model.setUri(getUri());
-        model.setLabel(getLabel());
+        model.setName(getName());
         model.setStartDate(startDate);
         model.setEndDate(endDate);
 
         model.setObjective(getObjective());
-        model.setComment(getComment());
-        model.setKeywords(keywords);
-        model.setCampaign(campaign);
-        model.setDevices(installations);
+        model.setDescription(getDescription());
         model.setIsPublic(isPublic);
-        model.setSensors(sensors);
         model.setVariables(variables);
 
         List<SpeciesModel> speciesList = new ArrayList<>(species.size());

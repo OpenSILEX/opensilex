@@ -413,15 +413,12 @@ public class ExperimentResourceService extends ResourceService {
         try {
 
             ExperimentDAO xpDao = new ExperimentDAO(sparql);
-            List<URI> sensorUris = new ArrayList<>(sensors.size());
-            for (String sensorUri : sensors) {
-                sensorUris.add(new URI(sensorUri));
-            }
-            xpDao.updateWithSensors(uri, sensorUris, null);
+          
+            
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.RESOURCES_UPDATED, StatusCodeMsg.INFO, "The experiment " + uri + " has now " + sensors.size() + " linked sensors"));
             return Response.status(Response.Status.OK).entity(postResponse).build();
 
-        } catch (IllegalArgumentException | URISyntaxException e) {
+        } catch (IllegalArgumentException e) {
             AbstractResultForm postResponse = new ResponseFormPOST(new Status(StatusCodeMsg.REQUEST_ERROR, StatusCodeMsg.ERR, e.getMessage()));
             return Response.status(Response.Status.BAD_REQUEST).entity(postResponse).build();
         } catch (Exception e) {

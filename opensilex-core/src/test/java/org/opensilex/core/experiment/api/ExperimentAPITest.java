@@ -33,23 +33,22 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
-    protected static String path = "/core/experiment";
+    protected static String path = "/core/experiments";
 
-    public static String uriPath = path + "/get/{uri}";
-    public static String searchPath = path + "/search";
-    public static String createPath = path + "/create";
-    public static String updatePath = path + "/update";
-    public static String deletePath = path + "/delete/{uri}";
+    public static String uriPath = path + "/{uri}";
+    public static String searchPath = path ;
+    public static String createPath = path;
+    public static String updatePath = path ;
+    public static String deletePath = path + "/{uri}";
 
     public static ExperimentCreationDTO getCreationDTO() {
 
         ExperimentCreationDTO xpDto = new ExperimentCreationDTO();
-        xpDto.setLabel("xp");
+        xpDto.setName("xp");
 
         LocalDate currentDate = LocalDate.now();
         xpDto.setStartDate(currentDate.minusDays(3));
         xpDto.setEndDate(currentDate.plusDays(3));
-        xpDto.setCampaign(currentDate.getYear());
         xpDto.setObjective("Objective");
         return xpDto;
     }
@@ -91,7 +90,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         // update the xp
         xpDto.setUri(extractUriFromResponse(postResult));
-        xpDto.setLabel("new alias");
+        xpDto.setName("new name");
         xpDto.setEndDate(LocalDate.now());
 
         final Response updateResult = getJsonPutResponse(target(updatePath), xpDto);
@@ -107,7 +106,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         ExperimentGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(xpDto.getLabel(), dtoFromApi.getLabel());
+        assertEquals(xpDto.getName(), dtoFromApi.getName());
         assertEquals(xpDto.getEndDate(), dtoFromApi.getEndDate());
     }
 
@@ -167,8 +166,8 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("startDate", creationDTO.getStartDate());
-                put("label", creationDTO.getLabel());
+                put("start_date", creationDTO.getStartDate());
+                put("name", creationDTO.getName());
                 put("uri", uri);
             }
         };

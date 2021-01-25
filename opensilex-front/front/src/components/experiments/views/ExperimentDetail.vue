@@ -28,7 +28,7 @@
           </template>
 
           <template v-slot:body>
-            <opensilex-StringView label="component.common.name" :value="experiment.label"></opensilex-StringView>
+            <opensilex-StringView label="component.common.name" :value="experiment.name"></opensilex-StringView>
             <div class="static-field">
               <span
                 class="field-view-title"
@@ -52,7 +52,7 @@
                 </span>
 
                 <span
-                  v-if="experiment.isPublic"
+                  v-if="experiment.is_public"
                   class="badge badge-pill badge-info"
                   :title="$t('component.experiment.view.status.public')"
                 >
@@ -67,7 +67,7 @@
               label="component.experiment.objective"
               :value="experiment.objective"
             ></opensilex-TextView>
-            <opensilex-TextView label="component.experiment.comment" :value="experiment.comment"></opensilex-TextView>
+            <opensilex-TextView label="component.experiment.comment" :value="experiment.description"></opensilex-TextView>
           </template>
         </opensilex-Card>
       </div>
@@ -159,9 +159,23 @@ export default class ExperimentDetail extends Vue {
     this.loadExperiment();
   }
 
+private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        
+    this.loadSpecies();
+      }
+    );
+  }
   showEditForm() {
     this.convertDtoBeforeEditForm();
-    this.experimentForm.showEditForm(this.experiment);
+    // make a deep copy of the experiment in order to not change the current dto
+    // In case a field has been updated into the form without confirmation (by sending update to the server)
+    let experimentDtoCopy = JSON.parse(JSON.stringify(this.experiment));
+
+    this.experimentForm.showEditForm(experimentDtoCopy);
   }
 
   convertDtoBeforeEditForm() {
@@ -175,13 +189,13 @@ export default class ExperimentDetail extends Vue {
       });
     }
     if (
-      this.experiment.infrastructures &&
-      this.experiment.infrastructures.length >0 &&
-      this.experiment.infrastructures[0].uri
+      this.experiment.organisations &&
+      this.experiment.organisations.length >0 &&
+      this.experiment.organisations[0].uri
     ) {
-      this.experiment.infrastructures = this.experiment.infrastructures.map(
-        infrastructure => {
-          return infrastructure.uri;
+      this.experiment.organisations = this.experiment.organisations.map(
+        organisation => {
+          return organisation.uri;
         }
       );
     }
@@ -191,7 +205,10 @@ export default class ExperimentDetail extends Vue {
     this.service
       .deleteExperiment(uri)
       .then(() => {
-        this.$router.go(-1);
+        this.$router.push({
+            path: "/experiments"
+          });
+
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -225,10 +242,10 @@ export default class ExperimentDetail extends Vue {
     this.loadGroups();
     this.loadFactors();
     this.loadSpecies();
-
+console.log(this.experiment);
     this.period = this.formatPeriod(
-      this.experiment.startDate,
-      this.experiment.endDate
+      this.experiment.start_date,
+      this.experiment.end_date
     );
   }
 
@@ -239,13 +256,13 @@ export default class ExperimentDetail extends Vue {
     this.infrastructuresList = [];
 
     if (
-      this.experiment.infrastructures &&
-      this.experiment.infrastructures.length > 0
+      this.experiment.organisations &&
+      this.experiment.organisations.length > 0
     ) {
-      this.experiment.infrastructures.forEach(infrastructure => {
+      this.experiment.organisations.forEach(organisation => {
         this.infrastructuresList.push({
-          uri: infrastructure.uri,
-          value: infrastructure.name
+          uri: organisation.uri,
+          value: organisation.name
         });
       });
     }
@@ -277,11 +294,11 @@ export default class ExperimentDetail extends Vue {
     );
     this.scientificSupervisorsList = [];
     if (
-      this.experiment.scientificSupervisors &&
-      this.experiment.scientificSupervisors.length > 0
+      this.experiment.scientific_supervisors &&
+      this.experiment.scientific_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.scientificSupervisors)
+        .getUsersByURI(this.experiment.scientific_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.scientificSupervisorsList = http.response.result.map(item => {
             return {
@@ -295,11 +312,11 @@ export default class ExperimentDetail extends Vue {
     }
     this.technicalSupervisorsList = [];
     if (
-      this.experiment.technicalSupervisors &&
-      this.experiment.technicalSupervisors.length > 0
+      this.experiment.technical_supervisors &&
+      this.experiment.technical_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.technicalSupervisors)
+        .getUsersByURI(this.experiment.technical_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.technicalSupervisorsList = http.response.result.map(item => {
             return {
@@ -322,6 +339,8 @@ export default class ExperimentDetail extends Vue {
       service
         .getAllSpecies()
         .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+          console.log("http.response.result");
+          console.log(http.response.result);
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
@@ -403,8 +422,8 @@ export default class ExperimentDetail extends Vue {
   }
 
   isEnded(experiment) {
-    if (experiment.endDate) {
-      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    if (experiment.end_date) {
+      return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
     }
     return false;
   }

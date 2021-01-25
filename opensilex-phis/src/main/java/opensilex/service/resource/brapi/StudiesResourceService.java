@@ -830,7 +830,7 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
             unit.setObservationLevel(unitType[1]);
             unit.setObservationUnitName(object.getLabel());
             unit.setStudyDbId(experiment.getUri().toString());
-            unit.setStudyName(experiment.getLabel());
+            unit.setStudyName(experiment.getName());
             ArrayList<BrapiObservationSummaryDTO> observationsPerObsUnit = new ArrayList();
             for (Variable variable : variablesList) {
                 //retrieve observations
@@ -860,12 +860,10 @@ public class StudiesResourceService extends ResourceService implements BrapiCall
 
         StudyDTO study = new StudyDTO();
         study.setStudyDbId(SPARQLDeserializers.getExpandedURI(xp.getUri().toString()));
-        study.setName(xp.getLabel());
-        study.setStudyName(xp.getLabel());
+        study.setName(xp.getName());
+        study.setStudyName(xp.getName());
         ArrayList<String> seasons = new ArrayList();
-        if (xp.getCampaign() != null) {
-            seasons.add(xp.getCampaign().toString());
-        }
+      
         study.setSeasons(seasons);
         study.setStartDate(xp.getStartDate().toString());
         if (xp.getEndDate() != null) {

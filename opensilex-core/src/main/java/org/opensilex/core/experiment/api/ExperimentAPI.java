@@ -73,9 +73,10 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 /**
  * @author Vincent MIGOT
  * @author Renaud COLIN
+ * @author Julien BONNEFONT
  */
 @Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
-@Path("/core/experiment")
+@Path("/core/experiments")
 @ApiCredentialGroup(
         groupId = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID,
         groupLabelKey = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY
@@ -113,8 +114,7 @@ public class ExperimentAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @Path("create")
-    @ApiOperation("Create an experiment")
+    @ApiOperation("Add an experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
@@ -123,7 +123,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an experiment", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "An experiment is created", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createExperiment(
@@ -151,7 +151,6 @@ public class ExperimentAPI {
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Experiment {@link URI}
      */
     @PUT
-    @Path("update")
     @ApiOperation("Update an experiment")
     @ApiProtected
     @ApiCredential(
@@ -180,8 +179,8 @@ public class ExperimentAPI {
      * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link ExperimentGetDTO}
      */
     @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get an experiment by URI")
+    @Path("{uri}")
+    @ApiOperation("Get an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -202,8 +201,9 @@ public class ExperimentAPI {
      * Search experiments
      *
      * @param year
-     * @param label
+     * @param name
      * @param species
+     * @param factors
      * @param projects
      * @param isPublic
      * @param isEnded
@@ -215,31 +215,30 @@ public class ExperimentAPI {
      * @see ExperimentDAO
      */
     @GET
-    @Path("search")
-    @ApiOperation("Search Experiments")
+    @ApiOperation("Search experiments")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return Experiment list", response = ExperimentGetListDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List")
     })
     public Response searchExperiments(
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
-            @ApiParam(value = "Regex pattern for filtering by label", example = "ZA17") @QueryParam("label") String label,
+            @ApiParam(value = "Regex pattern for filtering by name", example = "ZA17") @QueryParam("name") String name,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factors,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
-            @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("isPublic") Boolean isPublic,
-            @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("isEnded") Boolean isEnded,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
+            @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
 
         ListWithPagination<ExperimentModel> resultList = xpDao.search(
                 year,
-                label,
+                name,
                 species,
                 factors,
                 isEnded,
@@ -263,7 +262,7 @@ public class ExperimentAPI {
      * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Experiment {@link URI}
      */
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete an experiment")
     @ApiProtected
     @ApiCredential(
@@ -285,30 +284,10 @@ public class ExperimentAPI {
         return new ObjectUriResponse(xpUri).getResponse();
     }
 
-    @PUT
-    @Path("{uri}/set-facilities")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return experiment URI", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
-    })
-    public Response setFacilities(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Facility URI") List<URI> facitilities) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
-        xpDao.setFacilities(xpUri, facitilities, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
-    }
-
+    
     @GET
-    @Path("{uri}/get-facilities")
-    @ApiOperation("get all facilities involved in an experiment")
+    @Path("{uri}/facilities")
+    @ApiOperation("Get facilities involved in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -327,8 +306,8 @@ public class ExperimentAPI {
     }
 
     @GET
-    @Path("{uri}/get-available-facilities")
-    @ApiOperation("get all facilities available for an experiment (depending of which infrastructures are selected)")
+    @Path("{uri}/available_facilities")
+    @ApiOperation("Get facilities available for an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -347,8 +326,8 @@ public class ExperimentAPI {
     }
 
     @GET
-    @Path("get-available-species/{uri}")
-    @ApiOperation("get all species associated to an experiment")
+    @Path("{uri}/species")
+    @ApiOperation("Get species present in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -369,8 +348,8 @@ public class ExperimentAPI {
     }
 
     @GET
-    @Path("get-available-factors/{uri}")
-    @ApiOperation("get all factors with their levels associated to an experiment")
+    @Path("{uri}/factors")
+    @ApiOperation("Get factors with their levels associated to an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -391,8 +370,8 @@ public class ExperimentAPI {
     }
 
     @GET
-    @Path("get-used-variables/{uri}")
-    @ApiOperation("get all variables related to an experiment")
+    @Path("{uri}/variables")
+    @ApiOperation("Get variables involved in an experiment")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -413,39 +392,7 @@ public class ExperimentAPI {
 
     }
     
-    /**
-     * Updates the factors linked to an experiment.
-     *
-     * @param xpUri
-     * @param factors
-     * @return the query result
-     * @example [ "http://www.phenome-fppn.fr/opensilex/2018/s18001" ]
-     * @example { "metadata": { "pagination": null, "status": [ { "message": "Resources updated", "exception": { "type":
-     * "Info", "href": null, "details": "The experiment http://www.opensilex.fr/platform/OSL2018-1 has now 1 linked
-     * sensors" } } ], "datafiles": [ "http://www.opensilex.fr/platform/OSL2015-1" ] } }
-     */
-    @PUT
-    @Path("{uri}/factors")
-    @ApiOperation("Update the factors which participates in an experiment")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EXPERIMENT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "The list of factors which participates in the experiment updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
-    })
-    public Response putFactors(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "List of factors uris") ArrayList<URI> factors) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
-        xpDao.updateWithFactors(xpUri, factors, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, xpUri).getResponse();
-    }
-    
+  
     @GET
     @Path("{uri}/data")
     @ApiOperation("Search data")

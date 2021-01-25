@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.experiment.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.time.LocalDate;
@@ -31,41 +32,52 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 public class ExperimentGetDTO {
 
+    
+    @JsonProperty("uri")
     protected URI uri;
 
-    protected String label;
+    @JsonProperty("name")
+    protected String name;
 
-    protected List<NamedResourceDTO<ProjectModel>> projects = new ArrayList<>();
-
+    @JsonProperty("start_date")
     protected LocalDate startDate;
 
+    @JsonProperty("end_date")
     protected LocalDate endDate;
 
+    @JsonProperty("description")
+    protected String description;
+    
+    @JsonProperty("objective")
     protected String objective;
-
-    protected String comment;
-
-    protected Integer campaign;
-
-    protected List<String> keywords = new ArrayList<>();
-
+    
+    @JsonProperty("species")
+    protected List<URI> species = new ArrayList<>();
+   
+    @JsonProperty("variables")  
+    protected List<URI> variables = new ArrayList<>();
+    
+    @JsonProperty("factors") 
+    protected List<URI> factors = new ArrayList<>();
+    
+    @JsonProperty("organisations") 
+    protected List<NamedResourceDTO<InfrastructureModel>> infrastructures = new ArrayList<>();
+     
+    @JsonProperty("projects")
+    protected List<NamedResourceDTO<ProjectModel>> projects = new ArrayList<>();
+    
+    @JsonProperty("scientific_supervisors")
     protected List<URI> scientificSupervisors = new ArrayList<>();
 
+    @JsonProperty("technical_supervisors")
     protected List<URI> technicalSupervisors = new ArrayList<>();
 
+    @JsonProperty("groups")
     protected List<URI> groups = new ArrayList<>();
 
-    protected List<NamedResourceDTO<InfrastructureModel>> infrastructures = new ArrayList<>();
-
-    protected List<URI> species = new ArrayList<>();
-
+    @JsonProperty("is_public")
     protected Boolean isPublic;
-
-    protected List<URI> variables = new ArrayList<>();
-
-    protected List<URI> sensors = new ArrayList<>();
-
-    protected List<URI> factors = new ArrayList<>();
+    
 
     public URI getUri() {
         return uri;
@@ -76,13 +88,12 @@ public class ExperimentGetDTO {
     }
 
     @Required
-    @ApiModelProperty(example = "ZA17")
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<NamedResourceDTO<ProjectModel>> getProjects() {
@@ -103,7 +114,6 @@ public class ExperimentGetDTO {
         this.startDate = startDate;
     }
 
-    @ApiModelProperty(example = "2020-02-20")
     public LocalDate getEndDate() {
         return endDate;
     }
@@ -112,7 +122,6 @@ public class ExperimentGetDTO {
         this.endDate = endDate;
     }
 
-    @ApiModelProperty(example = "Genomic prediction of maize yield")
     public String getObjective() {
         return objective;
     }
@@ -121,30 +130,12 @@ public class ExperimentGetDTO {
         this.objective = objective;
     }
 
-    @ApiModelProperty(example = "Genomic prediction of maize yield across European environmental scenarios")
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    @ApiModelProperty(example = "2020")
-    public Integer getCampaign() {
-        return campaign;
-    }
-
-    public void setCampaign(Integer campaign) {
-        this.campaign = campaign;
-    }
-
-    public List<String> getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(List<String> keywords) {
-        this.keywords = keywords;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<URI> getScientificSupervisors() {
@@ -171,7 +162,6 @@ public class ExperimentGetDTO {
         this.groups = groups;
     }
 
-    @ApiModelProperty(example = "http://www.phenome-fppn.fr/id/species/zeamays")
     public List<URI> getSpecies() {
         return species;
     }
@@ -205,14 +195,6 @@ public class ExperimentGetDTO {
         this.variables = variables;
     }
 
-    public List<URI> getSensors() {
-        return sensors;
-    }
-
-    public void setSensors(List<URI> sensors) {
-        this.sensors = sensors;
-    }
-
     public List<URI> getFactors() {
         return factors;
     }
@@ -235,14 +217,11 @@ public class ExperimentGetDTO {
         ExperimentGetDTO dto = new ExperimentGetDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getLabel());
+        dto.setName(model.getName());
         dto.setStartDate(model.getStartDate());
-        dto.setCampaign(model.getCampaign());
         dto.setObjective(model.getObjective());
-        dto.setComment(model.getComment());
-        dto.setKeywords(model.getKeywords());
+        dto.setDescription(model.getDescription());
         dto.setIsPublic(model.getIsPublic());
-        dto.setSensors(model.getSensors());
         dto.setVariables(model.getVariables());
 
         if (model.getEndDate() != null) {

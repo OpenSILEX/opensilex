@@ -2,13 +2,13 @@
   <ValidationObserver ref="validatorRef">
     <opensilex-UserSelector
       label="component.experiment.scientificSupervisors"
-      :users.sync="experiment.scientificSupervisors"
+      :users.sync="experiment.scientific_supervisors"
       :multiple="true"
     ></opensilex-UserSelector>
 
     <opensilex-UserSelector
       label="component.experiment.technicalSupervisors"
-      :users.sync="experiment.technicalSupervisors"
+      :users.sync="experiment.technical_supervisors"
       :multiple="true"
     ></opensilex-UserSelector>
 
@@ -20,7 +20,7 @@
 
     <opensilex-InfrastructureSelector
       label="component.experiment.infrastructures"
-      :infrastructures.sync="experiment.infrastructures"
+      :infrastructures.sync="experiment.organisations"
       :multiple="true"
     ></opensilex-InfrastructureSelector>
 
@@ -31,7 +31,7 @@
     ></opensilex-GroupSelector>
 
     <opensilex-CheckboxForm
-      :value.sync="form.isPublic"
+      :value.sync="form.is_public"
       label="component.experiment.public-label"
       title="component.experiment.public-title"
     ></opensilex-CheckboxForm>

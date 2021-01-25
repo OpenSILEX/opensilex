@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.experiment.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,25 +23,32 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  *
  * @author Vincent MIGOT
  * @author Renaud COLIN
+ * @author Julien BONNEFONT
  */
 public class ExperimentGetListDTO {
 
+    @JsonProperty("uri")
     protected URI uri;
 
-    protected String label;
+    @JsonProperty("name")
+    protected String name;
 
+    @JsonProperty("start_date")
     protected LocalDate startDate;
 
+    @JsonProperty("end_date")
     protected LocalDate endDate;
 
+    @JsonProperty("description")
+    protected String description;
+    
+    @JsonProperty("objective")
     protected String objective;
 
-    protected String comment;
-
-    protected Integer campaign;
-
+    @JsonProperty("species")
     protected List<URI> species = new ArrayList<>();
 
+    @JsonProperty("is_public")
     protected Boolean isPublic;
 
     public URI getUri() {
@@ -51,12 +59,12 @@ public class ExperimentGetListDTO {
         this.uri = uri;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public LocalDate getStartDate() {
@@ -83,20 +91,12 @@ public class ExperimentGetListDTO {
         this.objective = objective;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Integer getCampaign() {
-        return campaign;
-    }
-
-    public void setCampaign(Integer campaign) {
-        this.campaign = campaign;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<URI> getSpecies() {
@@ -129,13 +129,12 @@ public class ExperimentGetListDTO {
         ExperimentGetListDTO dto = new ExperimentGetListDTO();
 
         dto.setUri(model.getUri());
-        dto.setLabel(model.getLabel());
+        dto.setName(model.getName());
         dto.setStartDate(model.getStartDate());
         dto.setEndDate(model.getEndDate());
-        dto.setCampaign(model.getCampaign());
         dto.setIsPublic(model.getIsPublic());
         dto.setObjective(model.getObjective());
-        dto.setComment(model.getComment());
+        dto.setDescription(model.getDescription());
         dto.setSpecies(getUriList(model.getSpecies()));
 
         return dto;

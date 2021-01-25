@@ -11,7 +11,7 @@
 
     <!-- Label -->
     <opensilex-InputForm
-      :value.sync="experiment.label"
+      :value.sync="experiment.name"
       label="component.experiment.label"
       type="text"
       :required="true"
@@ -22,7 +22,7 @@
       <!-- Start Date -->
       <div class="col-lg-6">
         <opensilex-InputForm
-          :value.sync="experiment.startDate"
+          :value.sync="experiment.start_date"
           label="component.experiment.startDate"
           type="date"
           :required="true"
@@ -33,7 +33,7 @@
       <!-- End Date -->
       <div class="col-lg-6">
         <opensilex-InputForm
-          :value.sync="experiment.endDate"
+          :value.sync="experiment.end_date"
           label="component.experiment.endDate"
           type="date"
           rules="dateDiff:@startDate"
@@ -41,14 +41,6 @@
       </div>
     </div>
 
-    <!-- Campaign
-    <opensilex-InputForm
-      :value.sync="experiment.campaign"
-      label="component.experiment.campaign"
-      helpMessage="component.experiment.campaign-help"
-      type="text"
-    ></opensilex-InputForm>
-    -->
     <!-- Species -->
     <opensilex-SpeciesSelector
       :required="true"
@@ -70,7 +62,7 @@
 
     <!-- Comment -->
     <opensilex-TextAreaForm
-      :value.sync="experiment.comment"
+      :value.sync="experiment.description"
       label="component.experiment.comment"
       placeholder="component.experiment.comment-help"
     ></opensilex-TextAreaForm>

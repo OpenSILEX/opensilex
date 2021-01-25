@@ -101,12 +101,12 @@ export default class ExperimentListView extends Vue {
     }
 
     if (
-      experiment.infrastructures &&
-      experiment.infrastructures.length >0 
+      experiment.organisations &&
+      experiment.organisations.length >0 
     ) {
-     convertedExperiment.infrastructures = experiment.infrastructures.map(
-        infrastructure => {
-          return infrastructure.uri;
+     convertedExperiment.organisations = experiment.organisations.map(
+        organisation => {
+          return organisation.uri;
         }
       );
     }

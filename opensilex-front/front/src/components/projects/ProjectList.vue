@@ -45,10 +45,13 @@
       :fields="fields"
       defaultSortBy="startDate"
       :isSelectable="isSelectable"
+      :maximumSelectedRows="maximumSelectedRows"
       labelNumberOfSelectedRow="component.project.selectedLabel"
     >
       <template v-slot:cell(name)="{ data }">
         <opensilex-UriLink
+
+          v-if="!noActions"
           :uri="data.item.uri"
           :value="data.item.name"
           :to="{
@@ -131,6 +134,9 @@ export default class ProjectList extends Vue {
     default: false,
   })
   noActions;
+
+  @Prop()
+  maximumSelectedRows;
 
   private yearFilter: any = "";
   private nameFilter: any = "";
@@ -216,6 +222,10 @@ export default class ProjectList extends Vue {
       return moment(project.end_date, "YYYY-MM-DD").diff(moment()) < 0;
     }
     return false;
+  }
+
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
   }
 
   deleteProject(uri: string) {

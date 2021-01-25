@@ -7,15 +7,18 @@
       :showAdvancedSearch="true"
     >
       <template v-slot:filters>
-        <!-- Label -->
-        <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="filter.label"
-            label="ExperimentList.filter-label"
-            type="text"
-            placeholder="ExperimentList.filter-label-placeholder"
-          ></opensilex-InputForm>
+        <!-- Name -->
+       <opensilex-FilterField>
+          <b-form-group>
+            <label for="name">{{$t('ExperimentList.filter-label')}}</label>
+            <opensilex-StringFilter
+              id="name"
+              :filter.sync="filter.name"
+              placeholder="ExperimentList.filter-label-placeholder"
+            ></opensilex-StringFilter>
+          </b-form-group>
         </opensilex-FilterField>
+
 
         <!-- Species -->
         <opensilex-FilterField>
@@ -55,6 +58,8 @@
             :conversionMethod="projectGetDTOToSelectNode"
             modalComponent="opensilex-ProjectModalList"
             :isModalSearch="true"
+                :clearable="false"
+                :maximumSelectedItems="1"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -77,10 +82,10 @@
       :fields="fields"
       :isSelectable="isSelectable"
     >
-      <template v-slot:cell(label)="{data}">
+      <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
-          :value="data.item.label"
+          :value="data.item.name"
           :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
@@ -92,11 +97,11 @@
         </span>
       </template>
 
-      <template v-slot:cell(startDate)="{data}">
-        <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+      <template v-slot:cell(start_date)="{data}">
+        <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
       </template>
-      <template v-slot:cell(endDate)="{data}">
-        <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+      <template v-slot:cell(end_date)="{data}">
+        <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
       </template>
 
       <template v-slot:cell(state)="{data}">
@@ -111,7 +116,7 @@
           :title="$t('component.experiment.common.status.finished')"
         ></i>
         <i
-          v-if="data.item.isPublic"
+          v-if="data.item.is_public"
           class="ik ik-users badge-icon badge-info"
           :title="$t('component.experiment.common.status.public')"
         ></i>
@@ -191,7 +196,7 @@ export default class ExperimentList extends Vue {
   }
 
   filter = {
-    label: "",
+    name: "",
     species: [],
     factors: [],
     projects: [],
@@ -201,7 +206,7 @@ export default class ExperimentList extends Vue {
 
   reset() {
     this.filter = {
-      label: "",
+      name: "",
       species: [],
       factors: [],
       projects: [],
@@ -236,7 +241,7 @@ export default class ExperimentList extends Vue {
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
        this.filter.yearFilter, // year
-        this.filter.label, // label
+        this.filter.name, // label
         this.filter.species, // species
         this.filter.factors, // factors
         projects, // projects
@@ -262,6 +267,7 @@ export default class ExperimentList extends Vue {
       lang => {
         this.refreshStateLabel();
         this.loadSpecies();
+        this.refresh();
       }
     );
   }
@@ -317,8 +323,8 @@ export default class ExperimentList extends Vue {
   }
 
   isEnded(experiment) {
-    if (experiment.endDate) {
-      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+    if (experiment.end_date) {
+      return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
     }
     return false;
   }
@@ -326,7 +332,7 @@ export default class ExperimentList extends Vue {
   get fields() {
     let tableFields = [
       {
-        key: "label",
+        key: "name",
         label: "component.common.name",
         sortable: true
       },
@@ -335,12 +341,12 @@ export default class ExperimentList extends Vue {
         label: "component.experiment.species"
       },
       {
-        key: "startDate",
+        key: "start_date",
         label: "component.experiment.startDate",
         sortable: true
       },
       {
-        key: "endDate",
+        key: "end_date",
         label: "component.experiment.endDate",
         sortable: true
       },
@@ -372,7 +378,7 @@ export default class ExperimentList extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.shortname ? dto.shortname : dto.label
+        label: dto.shortname ? dto.shortname : dto.name
       };
     }
     return null;

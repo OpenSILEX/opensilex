@@ -76,7 +76,7 @@ export default class ExperimentSearch extends Vue {
         
           this.experiments.push({
             value: element.uri,
-            text: element.alias
+            text: element.name
           });
         });
       })

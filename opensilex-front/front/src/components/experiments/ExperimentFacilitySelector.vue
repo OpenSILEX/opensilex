@@ -82,7 +82,7 @@ export default class ExperimentFacilitySelector extends Vue {
     let infrastructures;
 
     this.xpService.getExperiment(this.uri).then(http => {
-      let infrastructures = http.response.result.infrastructures;
+      let infrastructures = http.response.result.organisations;
       let infrastructuresURI = [];
       infrastructures.forEach((infrastructure) => {
         infrastructuresURI.push(infrastructure.uri);
@@ -94,7 +94,6 @@ export default class ExperimentFacilitySelector extends Vue {
         this.xpService.getFacilities(this.uri).then(http => {
           facilities = http.response.result;
         }),
-
         this.infraService
           .searchInfrastructuresTree(undefined, infrastructuresURI)
           .then(http => {
@@ -196,15 +195,6 @@ export default class ExperimentFacilitySelector extends Vue {
   }
 
   update() {
-    this.xpService
-      .setFacilities(this.uri, this.selected)
-      .then(result => {
-        this.$nextTick(() => {
-          this.$emit("facilitiesUpdated", this.selected);
-          this.hide();
-        });
-      })
-      .catch(console.error);
   }
 }
 </script>

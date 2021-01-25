@@ -37,17 +37,11 @@ public class ExperimentModelToExperiment {
 
         Experiment oldXpModel = new Experiment();
         oldXpModel.setUri(SPARQLDeserializers.getExpandedURI(xp.getUri().toString()));
-        oldXpModel.setAlias(xp.getLabel());
+        oldXpModel.setAlias(xp.getName());
         oldXpModel.setObjective(xp.getObjective());
-        oldXpModel.setComment(xp.getComment());
-        if(! xp.getKeywords().isEmpty()){
-            oldXpModel.setKeywords(String.join(" ",xp.getKeywords()));
-        }
-
+        oldXpModel.setComment(xp.getDescription());
         oldXpModel.setStartDate(xp.getStartDate().toString());
-        if(xp.getCampaign() != null){
-            oldXpModel.setCampaign(xp.getCampaign().toString());
-        }
+      
         if(xp.getEndDate() != null) {
             oldXpModel.setEndDate(xp.getEndDate().toString());
         }
@@ -69,26 +63,11 @@ public class ExperimentModelToExperiment {
             oldXpModel.getVariables().put(variable.getUri(),variable.getLabel());
         }
 
-
-        // use the Sensor DAO since new model only store sensors URIs instead of a pair <SensorURI,sensorLabel> for the old model
-        for(URI sensorUri : xp.getSensors()){
-            Sensor sensor = sensorDAO.findById(sensorUri.toString());
-            if(sensor == null){
-                throw new IllegalArgumentException("Unknown sensor URI "+sensorUri);
-            }
-            oldXpModel.getSensors().put(sensor.getUri(),sensor.getLabel());
-        }
-
-
         // convert infrastructure to field
         if(!xp.getInfrastructures().isEmpty()){
             oldXpModel.setField(xp.getInfrastructures().get(0).toString());
         }
-        // convert devices to place
-        if(!xp.getDevices().isEmpty()){
-            oldXpModel.setPlace(xp.getDevices().get(0).toString());
-        }
-
+      
         for(UserModel scientific : xp.getScientificSupervisors()){
             ContactPostgreSQL contact = new ContactPostgreSQL();
             contact.setEmail(scientific.getEmail().toString());

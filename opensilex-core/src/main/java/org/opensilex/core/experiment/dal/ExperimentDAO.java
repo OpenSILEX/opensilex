@@ -75,11 +75,6 @@ public class ExperimentDAO {
         sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(xpUri), xpUri, Oeso.measures, variablesUris);
     }
 
-    public void updateWithSensors(URI xpUri, List<URI> sensorsUris, UserModel user) throws Exception {
-        validateExperimentAccess(xpUri, user);
-        sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), sensorsUris, Oeso.participatesIn, xpUri);
-    }
-
     public void updateWithFactors(URI xpUri, List<URI> factorsUris, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.studyEffectOf, xpUri);
@@ -100,38 +95,14 @@ public class ExperimentDAO {
     public ExperimentModel get(URI xpUri, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, null);
-        if (xp != null) {
-            filterExperimentSensors(xp);
-        }
         return xp;
     }
 
-    /**
-     * Remove all URI from {@link ExperimentModel#getSensors()} method which
-     * don't represents a {@link Oeso#SensingDevice} in the SPARQL Graph
-     *
-     * @param xp the {@link ExperimentModel} to filter
-     */
-    private void filterExperimentSensors(ExperimentModel xp) {
-        if (xp.getSensors().isEmpty()) {
-            return;
-        }
-
-        // #TODO don't fetch URI which don't represents sensors and delete this method
-        xp.getSensors().removeIf(sensor -> {
-            try {
-                return !sparql.uriExists(new URI(Oeso.SensingDevice.getURI()), sensor);
-            } catch (SPARQLException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-    }
 
     @Deprecated
     public ListWithPagination<ExperimentModel> search(
             URI uri,
-            String label,
+            String name,
             Integer campaign,
             Boolean isEnded,
             List<URI> variables, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
@@ -141,25 +112,21 @@ public class ExperimentDAO {
                 null,
                 (SelectBuilder select) -> {
                     appendUriRegexFilter(select, uri);
-                    appendRegexLabelFilter(select, label);
+                    appendRegexLabelFilter(select, name);
                     appendIsActiveFilter(select, isEnded);
-                    appendCampaignFilter(select, campaign);
                     appendVariablesListFilter(select, variables);
                 },
                 orderByList,
                 page,
                 pageSize
         );
-        for (ExperimentModel xp : xps.getList()) {
-            filterExperimentSensors(xp);
-        }
         return xps;
     }
 
     @Deprecated
     public ListWithPagination<ExperimentModel> search(URI uri,
             Integer campaign,
-            String label,
+            String name,
             List<URI> species,
             String startDate, String endDate,
             Boolean isEnded,
@@ -173,8 +140,7 @@ public class ExperimentDAO {
                 null,
                 (SelectBuilder select) -> {
                     appendUriRegexFilter(select, uri);
-                    appendRegexLabelFilter(select, label);
-                    appendCampaignFilter(select, campaign);
+                    appendRegexLabelFilter(select, name);
                     appendSpeciesFilter(select, species);
                     appendGroupsListFilters(select, admin, isPublic, groups);
                     appendProjectListFilter(select, projects);
@@ -183,16 +149,14 @@ public class ExperimentDAO {
                 page,
                 pageSize
         );
-        for (ExperimentModel xp : xps.getList()) {
-            filterExperimentSensors(xp);
-        }
+       
         return xps;
 
     }
 
     public ListWithPagination<ExperimentModel> search(
             Integer year,
-            String label,
+            String name,
             List<URI> species,
             List<URI> factors,
             Boolean isEnded,
@@ -215,7 +179,7 @@ public class ExperimentDAO {
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    appendRegexLabelFilter(select, label);
+                    appendRegexLabelFilter(select, name);
                     appendSpeciesFilter(select, species);
                     appendFactorsFilter(select, factors);
                     appendIsActiveFilter(select, isEnded);
@@ -233,11 +197,6 @@ public class ExperimentDAO {
 
     }
 
-    private void appendCampaignFilter(SelectBuilder select, Integer campaign) throws Exception {
-        if (campaign != null) {
-            select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.CAMPAIGN_FIELD, campaign));
-        }
-    }
 
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
         if (species != null && !species.isEmpty()) {
@@ -254,9 +213,9 @@ public class ExperimentDAO {
     }
 
 
-    private void appendRegexLabelFilter(SelectBuilder select, String label) {
-        if (!StringUtils.isEmpty(label)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, label));
+    private void appendRegexLabelFilter(SelectBuilder select, String name) {
+        if (!StringUtils.isEmpty(name)) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, name));
         }
     }
 
@@ -470,24 +429,6 @@ public class ExperimentDAO {
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(experimentURI);
-        }
-    }
-
-    public void setFacilities(URI xpUri, List<URI> facilities, UserModel user) throws Exception {
-        validateExperimentAccess(xpUri, user);
-
-        Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
-        sparql.startTransaction();
-        try {
-            List<URI> existingFacilities = sparql.searchPrimitives(xpGraph, xpUri, Oeso.hasFacility, URI.class);
-            sparql.deletePrimitives(xpGraph, xpUri, Oeso.hasFacility);
-            sparql.insertPrimitives(xpGraph, xpUri, Oeso.hasFacility, facilities, URI.class);
-            sparql.deleteAll(xpGraph, existingFacilities);
-            sparql.copyAll(sparql.getDefaultGraph(InfrastructureModel.class), facilities, xpGraph);
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
-            throw ex;
         }
     }
 

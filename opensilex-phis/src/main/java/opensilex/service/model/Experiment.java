@@ -222,22 +222,15 @@ public class Experiment {
         if (!StringUtils.isEmpty(xp.getUri())) {
             xpModel.setUri(new URI(xp.getUri()));
         }
-        xpModel.setLabel(xp.getAlias());
+        xpModel.setName(xp.getAlias());
 
-        if (!StringUtils.isEmpty(xp.getCampaign())) {
-            xpModel.setCampaign(Integer.parseInt(xp.getCampaign()));
-        }
+       
         if (!StringUtils.isEmpty(xp.getObjective())) {
             xpModel.setObjective(xp.getObjective());
         }
         if (!StringUtils.isEmpty(xp.getComment())) {
-            xpModel.setComment(xp.getObjective());
+            xpModel.setDescription(xp.getObjective());
         }
-        if (!StringUtils.isEmpty(xp.getKeywords())) {
-            String[] keywords = xp.getKeywords().split("\\s+");
-            xpModel.setKeywords(Arrays.asList(keywords));
-        }
-
         if (xp.getStartDate() != null) {
             xpModel.setStartDate(LocalDate.parse(xp.getStartDate()));
         }

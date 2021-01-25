@@ -90,21 +90,21 @@
               defaultSortBy="name"
               :defaultPageSize="6"
             >
-              <template v-slot:cell(label)="{data}">
+              <template v-slot:cell(name)="{data}">
                 <opensilex-UriLink
                   :uri="data.item.uri"
-                  :value="data.item.label"
+                  :value="data.item.name"
                   :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
                 ></opensilex-UriLink>
               </template>
-              <template v-slot:cell(startDate)="{data}">
-                <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+              <template v-slot:cell(start_date)="{data}">
+                <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
               </template>
-              <template v-slot:cell(endDate)="{data}">
-                <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+              <template v-slot:cell(end_date)="{data}">
+                <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
               </template>
-              <template v-slot:cell(comment)="{data}">
-                <span>{{textReduce(data.item.comment)}}</span>
+              <template v-slot:cell(description)="{data}">
+                <span>{{textReduce(data.item.description)}}</span>
               </template>
               <template v-slot:cell(state)="{data}">
                 <i
@@ -181,20 +181,20 @@ export default class ProjectDescription extends Vue {
   relatedProjectsList = [];
   fields = [
     {
-      key: "label",
+      key: "name",
       label: "component.common.name"
     },
     {
-      key: "comment",
+      key: "description",
       label: "component.common.description"
     },
     {
-      key: "startDate",
+      key: "start_date",
       label: "component.common.startDate",
       sortable: true
     },
     {
-      key: "endDate",
+      key: "end_date",
       label: "component.common.endDate",
       sortable: true
     },
@@ -220,7 +220,9 @@ export default class ProjectDescription extends Vue {
     this.service
       .deleteProject(uri)
       .then(() => {
-        this.$router.go(-1);
+        this.$router.push({
+            path: "/projects"
+          });
       })
       .catch(this.$opensilex.errorHandler);
   }

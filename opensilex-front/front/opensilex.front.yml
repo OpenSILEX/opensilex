@@ -202,7 +202,6 @@ routes:
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
   - path: /device/documents/:uri
-<<<<<<< HEAD
     component: opensilex-DeviceDetails
   - path: /device/annotations/:uri
     component: opensilex-DeviceDetails
@@ -210,18 +209,6 @@ routes:
   - path: /devices/create
     component: opensilex-DeviceCreate
     credentials: [device-modification]
-=======
-    component: opensilex-ProjectDetails
-  - path: /device/annotations/:uri
-    component: opensilex-ProjectDetails
-<<<<<<< HEAD
->>>>>>> device / add details page + filter date
-=======
-
-  - path: /devices/create
-    component: opensilex-DeviceCreate
-    credentials: [device-modification]
->>>>>>> import (without type)
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

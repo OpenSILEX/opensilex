@@ -24,7 +24,7 @@
               <opensilex-StringView label="DeviceDescription.constructorModel" :value="device.constructor_model"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.serialNumber" :value="device.serial_number"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.personInCharge" :uri="device.person_in_charge"></opensilex-StringView> 
-              <opensilex-StringView label="DeviceDescription.obtained" :value="device.obtained"></opensilex-StringView>
+              <opensilex-StringView label="DeviceDescription.startUp" :value="device.startUp"></opensilex-StringView>
             </template>
           </opensilex-Card>
       </b-col>
@@ -109,7 +109,7 @@ export default class DeviceDescription extends Vue {
         constructor_model: null,
         serial_number: null,
         person_in_charge: null,
-        obtained: null,
+        startUp: null,
         date_of_last_use: null,
         relations: null
       };
@@ -144,7 +144,7 @@ en:
     uri: URI
     name: Name
     type: Type
-    obtained: Obtained
+    startUp: Start-up
     brand: Brand
     constructorModel: Constructor model
     serialNumber: Serial number
@@ -160,7 +160,7 @@ fr:
     uri: URI
     name: Nom
     type: Type
-    obtained: Date d'obtention
+    startUp: Date de mide en service
     brand: Marque
     constructorModel: Modèle du constructeur
     serialNumber: Numéro de série

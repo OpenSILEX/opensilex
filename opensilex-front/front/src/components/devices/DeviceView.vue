@@ -10,7 +10,10 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
     >
       <template v-slot>
-        <opensilex-CreateButton label="Device.add"></opensilex-CreateButton>
+        <opensilex-CreateButton 
+          @click="goToDeviceCreate"
+          label="Device.add"
+        ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 
@@ -23,22 +26,40 @@
         ></opensilex-DeviceList>
       </template>
     </opensilex-PageContent>
+
+    <!-- <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+      ref="deviceForm"
+      component="opensilex-DeviceForm"
+      createTitle="Device.add"
+      editTitle="Device.update"
+      icon="ik#ik-user"
+      modalSize="lg"
+      @onCreate="deviceList.refresh()"
+      @onUpdate="deviceList.refresh()"
+    ></opensilex-ModalForm> -->
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceDTO} from "opensilex-core/index";
 import HttpResponse, {
   OpenSilexResponse
 } from "../../lib/HttpResponse";
 
+import { 
+  DevicesService, 
+  DeviceDTO
+  } from "opensilex-core/index"
+import VueRouter from "vue-router";
+
 @Component
 export default class Device extends Vue {
   $opensilex: any;
-  service: DevicesService;
   $store: any;
+  $router: VueRouter;
+  service: DevicesService;
 
   get user() {
     return this.$store.state.user;
@@ -49,12 +70,31 @@ export default class Device extends Vue {
   }
 
   @Ref("deviceList") readonly deviceList!: any;
+  @Ref("deviceForm") readonly deviceForm!: any;
+  @Ref("deviceDetails") readonly deviceDetails!: any;
+  @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
-   created() {
+  created() {
     console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
+  goToDeviceCreate(){    
+    this.$store.commit("storeReturnPage", this.$router);
+    this.$router.push({ path: '/devices/create' });
+  }
+  
+  callCreateDeviceService(form: DeviceDTO, done) {
+    done(
+      this.service
+        .createDevice(form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("device created", uri);
+          this.deviceList.refresh();
+        })
+    );
+  }
 }
 </script>
 

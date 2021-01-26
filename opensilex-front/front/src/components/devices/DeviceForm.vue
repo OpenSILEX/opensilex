@@ -1,117 +1,158 @@
 <template>
-  <b-form>
+  <ValidationObserver ref="validatorRef" v-if="form.type">
+    
     <!-- URI -->
     <opensilex-UriForm
-      :uri.sync="form.uri" 
+      :uri.sync="form.uri"
       label="DeviceForm.uri"
+      helpMessage="DeviceForm.uri-help"
       :editMode="editMode"
       :generated.sync="uriGenerated"
-      helpMessage="DeviceForm.uri-help"
     ></opensilex-UriForm>
 
-    <!-- rdfType -->
+    <!-- type -->
     <opensilex-TypeForm
-      :type.sync="form.rdf_type"
+      :type.sync="form.type"
       :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-      helpMessage="DeviceForm.type-help"    
       :required="true"
+      helpMessage="DeviceForm.type-help"
+      disabled
     ></opensilex-TypeForm>
-
-    <!-- name -->
+    
+    <!-- label -->
     <opensilex-InputForm
       :value.sync="form.name"
       label="DeviceForm.name"
       type="text"
-      helpMessage="DeviceForm.name-help"
       :required="true"
+      helpMessage="DeviceForm.name-help"
     ></opensilex-InputForm>
 
-    <!-- brand -->
+    <!-- synonyms -->
+    <opensilex-TagInputForm
+      v-if= 'form.type.endsWith("Accession") || form.type.endsWith("Variety")'
+      :value.sync="form.synonyms"
+      label="DeviceForm.subtaxa"
+      helpMessage="DeviceForm.subtaxa-help"
+      variant="primary"
+    ></opensilex-TagInputForm>
+
+    <!-- synonyms -->
+    <opensilex-TagInputForm
+      v-else
+      :value.sync="form.synonyms"
+      label="DeviceForm.synonyms"
+      helpMessage="DeviceForm.synonyms-help"
+      variant="primary"
+    ></opensilex-TagInputForm>
+    <!-- <label for="tags-basic">Type a new tag and press enter</label>
+    <b-form-tags
+        v-model="value"        
+    ></b-form-tags> -->
+
+    <!-- code -->
     <opensilex-InputForm
-      :value.sync="form.brand"
-      label="DeviceForm.brand"
+      v-if= '!form.type.endsWith("Species")'
+      :value.sync="form.code"
+      label="DeviceForm.code"
       type="text"
-      helpMessage="DeviceForm.brand-help"
+      helpMessage="DeviceForm.code-help"
     ></opensilex-InputForm>
-
-    <!-- constructor_model -->
+    
+    <!-- species -->
     <opensilex-InputForm
-      :value.sync="form.constructor_model"
-      label="DeviceForm.constructor_model"
+      v-if= '!form.type.endsWith("Species")'
+      :value.sync="form.species"
+      label="DeviceForm.species"
       type="text"
-      helpMessage="DeviceForm.constructor_model-help"
+      helpMessage="DeviceForm.species-help"
     ></opensilex-InputForm>
-
-    <!-- serial_number -->
+ 
+    <!-- variety -->
     <opensilex-InputForm
-      :value.sync="form.serial_number"
-      label="DeviceForm.serial_number"
-      type="number"
-      helpMessage="DeviceForm.serial_number-help"
-    ></opensilex-InputForm>
-
-   <!--person_in_charge -->
-    <opensilex-UserSelector
-      :users.sync="form.person_in_charge"
-      label="DeviceForm.person_in_charge"
-      helpMessage="DeviceForm.person_in_charge-help"
-    ></opensilex-UserSelector>
-
-    <!-- start_up -->
-    <opensilex-InputForm
-      :value.sync="form.start_up"
-      label="DeviceForm.start_up"
-      type="date"
-      helpMessage="DeviceForm.start_up-help"
-    ></opensilex-InputForm>
-
-    <!-- removal -->
-    <opensilex-InputForm
-      :value.sync="form.removal"
-      label="DeviceForm.removal"
-      type="date"
-      helpMessage="DeviceForm.removal-help"
-    ></opensilex-InputForm>
-
-    <!-- description -->
-    <opensilex-TextAreaForm
-      :value.sync="form.description"
-      label="DeviceForm.description"
+      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety"))'
+      :value.sync="form.variety"
+      label="DeviceForm.variety"
       type="text"
-      helpMessage="DeviceForm.description-help"
-    ></opensilex-TextAreaForm>
+      helpMessage="DeviceForm.variety-help"
+    ></opensilex-InputForm>
+    
+    <!-- accession -->
+    <opensilex-InputForm
+      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety") || form.type.endsWith("Accession"))'
+      :value.sync="form.accession"
+      label="DeviceForm.accession"
+      type="text"
+      helpMessage="DeviceForm.accession-help"
+    ></opensilex-InputForm>
+    
+    <!-- institute -->
+    <opensilex-InputForm
+      v-if= '!form.type.endsWith("Species")'
+      :value.sync="form.institute"
+      label="DeviceForm.institute"
+      type="text"
+      helpMessage="DeviceForm.institute-help"
+    ></opensilex-InputForm>
+    
+    <!-- year -->
+    <opensilex-InputForm
+      v-if= '!form.type.endsWith("Species")'
+      :value.sync="form.productionYear"
+      label="DeviceForm.year"
+      type="text"
+      helpMessage="DeviceForm.year-help"
+    ></opensilex-InputForm>
+    
+    <!-- comment -->
+    <opensilex-InputForm
+      :value.sync="form.comment"
+      label="DeviceForm.comment"
+      type="text"
+      helpMessage="DeviceForm.comment-help"
+    ></opensilex-InputForm>
 
-    <!-- metadata -->
     <opensilex-DeviceAttributesTable
       ref="deviceAttributesTable"
       :editMode="editMode"
       :attributesArray='attributesArray'
     ></opensilex-DeviceAttributesTable>
 
-  </b-form>
+  </ValidationObserver>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import {DevicesService} from "opensilex-core/index"; 
+import { DeviceDTO, DevicesService, OntologyService } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class DeviceForm extends Vue {
   $opensilex: any;
-  service: DevicesService;
   $store: any;
-  $t: any;
+  service: DevicesService;
 
-  uriGenerated = true;
-
-  @Ref("deviceAttributesTable") readonly table!: any;
 
   get user() {
     return this.$store.state.user;
-  } 
+  }
+
+  get languages() {
+    let langs = [];
+    Object.keys(this.$i18n.messages).forEach(key => {
+      langs.push({
+        id: key,
+        label: this.$i18n.t("component.header.language." + key)
+      });
+    });
+    return langs;
+  }
+
+  uriGenerated = true;
+
+  attributesArray = [];
 
   @Prop()
   editMode;
@@ -119,69 +160,72 @@ export default class DeviceForm extends Vue {
   @Prop({
     default: () => {
       return {
-        device: {
-            uri: undefined,
-            name: undefined,
-            rdf_type: undefined,
-            brand: undefined,
-            constructor_model: undefined,
-            serial_number: undefined,
-            person_in_charge: undefined,
-            start_up: undefined,
-            removal: undefined,
-            description: undefined,
-            metadata: undefined
-        }
-      }
+        uri: null,
+        type: null,
+        name: null,
+        code: null,
+        species: null,
+        variety: null,
+        accession: null,
+        institute: null,
+        productionYear: null,
+        comment: null,
+        synonyms:[],
+        attributes: null
+      };
     }
   })
-  form: any;
+  form;
 
-  getEmptyForm() {
-    return {
-      uri: undefined,
-      name: undefined,
-      rdf_type: undefined,
-      brand: undefined,
-      constructor_model: undefined,
-      serial_number: undefined,
-      person_in_charge: undefined,
-      start_up: undefined,
-      removal: undefined,
-      description: undefined,
-      metadata: undefined
-    };
-  }
   reset() {
     this.uriGenerated = true;
   }
 
+  getEmptyForm() {
+    return {
+      uri: null,
+      type: null,
+      name: null,
+      code: null,
+      species: null,
+      variety: null,
+      accession: null,
+      institute: null,
+      productionYear: null,
+      comment: null,
+      synonyms:[],
+      attributes: null
+    };
+  }
+  @Ref("deviceAttributesTable") readonly table!: any;
+
   update(form) {
-    form.metadata = this.table.pushAttributes();
-    this.$opensilex
-      .getService("opensilex.DevicesService")
+    form.attributes = this.table.pushAttributes();
+    return this.$opensilex
+      .getService("opensilex.DeviceService")
       .updateDevice(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
-        this.$emit("onUpdate", form);
+        console.debug("Device updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
   }
-
-  attributesArray = [];
-
+  
   getAttributes(form) {
     this.attributesArray = [];
-    if (form.metadata != null) {   
-      for (const property in form.metadata) {
+    if (form.attributes != null) {   
+      for (const property in form.attributes) {
         let att = {
           attribute: property,
-          value: form.metadata[property]
+          value: form.attributes[property]
         }
         this.attributesArray.push(att);
       } 
     }
   }
+    
+
+
 }
 </script>
 
@@ -192,48 +236,56 @@ export default class DeviceForm extends Vue {
 
 en:
   DeviceForm:
-    uri: URI 
-    uri-help: Unique device identifier autogenerated 
+    name: Name
+    name-help: Name used to define this device
+    uri: URI
+    uri-help: Unique device identifier
     type: Type
     type-help: Device Type
-    name: Name
-    name-help: A name given to the device
-    brand: Brand
-    brand-help:
-    constructor_model: Constructor model
-    constructor_model-help:
-    serial_number: Serial number
-    serial_number-help:
-    person_in_charge: Person in charge
-    person_in_charge-help:
-    start_up: Start up
-    start_up-help:
-    removal: Removal
-    removal-help:
-    description: Description
-    description-help:
+    species : Species URI
+    species-help: Species URI of the device
+    variety : Variety URI
+    variety-help: Variety URI of the device
+    accession: Accession URI
+    accession-help: Accession URI of the device
+    institute: Institute
+    institute-help: The code of the institute which the device comes from
+    comment: Comment
+    comment-help: Description associated to the device 
+    year: Production Year
+    year-help: Year when the ressource has been produced
+    synonyms: Synonyms
+    synonyms-help: Fill with a synonym and press Enter
+    subtaxa: Subtaxa
+    subtaxa-help: Fill with a subtaxa and press Enter
+    code: Code
+    code-help: The code of the device
 
 fr:
   DeviceForm:
-    uri: URI 
-    uri-help: Identifiant unique du dispositif généré automatiquement 
-    type: Type
-    type-help: Type de dispositif 
     name: Nom
-    name-help: Nom du dispositif 
-    brand: Marque
-    brand-help:
-    constructor_model: Modèle constructeur
-    constructor_model-help:
-    serial_number: Numéro de série
-    serial_number-help:
-    person_in_charge: Personne responsable
-    person_in_charge-help:
-    start_up: Date d'obtention
-    start_up-help:
-    removal: Date de mise hors service
-    removal-help:
-    description: Description
-    description-help:
-
+    name-help: Nom du device
+    uri: URI
+    uri-help: Identifiant unique du device
+    type: Type
+    type-help: Type du device
+    species : URI de l'espèce
+    species-help: URI de l'espèce
+    variety : URI de variété
+    variety-help: URI de la variété
+    accession: URI d'accession
+    accession-help: Accession URI of the device
+    institute: institut
+    institute-help: Code de l'institut dont provient le device
+    comment: Commentaire
+    comment-help: Description associée au device
+    year: Année de production
+    year-help: Year when the ressource has been produced
+    synonyms: Synonymes
+    synonyms-help: Entrer un synonyme et appuyer sur Entrée
+    subtaxa: Subtaxa
+    subtaxa-help: Entrer un subtaxa et appuyer sur Entrée
+    code: Code
+    code-help: Code de la ressource génétique
 </i18n>
+

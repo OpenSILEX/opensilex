@@ -15,6 +15,7 @@ import java.util.List;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
@@ -22,7 +23,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri","type","name","brand","constructorModel","serialNumber","personInCharge","dateOfPurchase","dateOfLastUse","relations"})
+@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand","constructorModel","serialNumber","personInCharge","start-up","removal","relations"})
 public class DeviceDTO extends RDFObjectDTO {
     
     private String name;
@@ -38,15 +39,26 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
-    @JsonProperty("obtained")
-    protected LocalDate obtained;
+    @JsonProperty("start-up")
+    protected LocalDate startUp;
     
-    @JsonProperty("date_of_last_use")
-    protected LocalDate dateOfLastUse;
+    @JsonProperty("removal")
+    protected LocalDate removal;
     
     @JsonProperty("rdf_type")
     protected URI type;
+    
+    @JsonProperty("rdf_type_name")
+    protected SPARQLLabel typeLabel;
 
+    public void setTypeLabel(SPARQLLabel typeLabel){
+        this.typeLabel = typeLabel;
+    }
+    
+    public SPARQLLabel getTypeLabel(){
+        return typeLabel;
+    }
+    
     public String getName() {
         return name;
     }
@@ -71,12 +83,12 @@ public class DeviceDTO extends RDFObjectDTO {
         this.personInCharge = personInCharge;
     }
     
-    public void setObtained(LocalDate obtained){
-        this.obtained = obtained;
+    public void setStartUp(LocalDate startUp){
+        this.startUp = startUp;
     }
     
-    public void setDateOfLastUse(LocalDate dateOfLastUse){
-        this.dateOfLastUse = dateOfLastUse;
+    public void setRemoval(LocalDate removal){
+        this.removal = removal;
     }
     
     public String getBrand(){
@@ -95,12 +107,12 @@ public class DeviceDTO extends RDFObjectDTO {
         return personInCharge;
     }
     
-    public LocalDate getObtained(){
-        return obtained;
+    public LocalDate getStartUp(){
+        return startUp;
     }
     
-    public LocalDate getDateOfLastUse(){
-        return dateOfLastUse;
+    public LocalDate getRemoval(){
+        return removal;
     }
     public DeviceModel newModelInstance() {
         return new DeviceModel();
@@ -109,6 +121,7 @@ public class DeviceDTO extends RDFObjectDTO {
     public void fromModel(DeviceModel model) {
         setUri(model.getUri());
         setType(model.getType());
+        setTypeLabel(model.getTypeLabel());
         setName(model.getName());
         if (model.getBrand() != null) {
             setBrand(model.getBrand());
@@ -126,12 +139,12 @@ public class DeviceDTO extends RDFObjectDTO {
             setPersonInCharge(model.getPersonInCharge());
         }
         
-        if(model.getObtained() != null){
-            setObtained(model.getObtained());
+        if(model.getStartUp() != null){
+            setStartUp(model.getStartUp());
         }
         
-        if(model.getDateOfLastUse() != null){
-            setDateOfLastUse(model.getDateOfLastUse());
+        if(model.getRemoval() != null){
+            setRemoval(model.getRemoval());
         }
         
         List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
@@ -161,12 +174,12 @@ public class DeviceDTO extends RDFObjectDTO {
             model.setPersonInCharge(getPersonInCharge());
         }
         
-        if(getObtained() != null){
-            model.setObtained(getObtained());
+        if(getStartUp() != null){
+            model.setStartUp(getStartUp());
         }
 
-        if(getDateOfLastUse() != null){
-            model.setDateOfLastUse(getDateOfLastUse());
+        if(getRemoval() != null){
+            model.setRemoval(getRemoval());
         }
     }
     

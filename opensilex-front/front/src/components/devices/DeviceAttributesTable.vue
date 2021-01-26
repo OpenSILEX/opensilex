@@ -50,7 +50,10 @@ export default class DeviceAttributesTable extends Vue {
   @Ref("langInput") readonly langInput!: any;
 
   @Prop()
-  editMode: boolean; 
+  editMode: boolean;
+
+  // @Prop({ default: [] })
+  // attributesArray: any[];  
 
   @Prop()
   attributesArray;
@@ -84,6 +87,7 @@ export default class DeviceAttributesTable extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DeviceService");
+    //this.getAttributes();
   }
 
   options: any = {
@@ -99,6 +103,7 @@ export default class DeviceAttributesTable extends Vue {
   }
 
   addEmptyRow() {
+    console.debug("add row");
     let tabulatorInstance = this.tabulatorRef.getInstance();
     tabulatorInstance.addRow({
       attribute: null,
@@ -107,6 +112,7 @@ export default class DeviceAttributesTable extends Vue {
   }
 
   addRow(row) {
+    console.debug("add row", row);
     if (row.attribute != undefined && row.attribute != null && row.attribute != "") {
       this.attributesArray.unshift(row);
     }
@@ -114,6 +120,7 @@ export default class DeviceAttributesTable extends Vue {
 
   removeRow(evt, clickedCell) {
     let columnName = clickedCell.getField();
+    console.debug(columnName);
 
     if (columnName == "actions") {
       let row = clickedCell.getRow();
@@ -131,6 +138,19 @@ export default class DeviceAttributesTable extends Vue {
     }
     return attributes;
   }
+
+  // getAttributes() {
+
+  //   if (this.attributesMap != null) {   
+  //     for (const property in this.attributesMap) {
+  //       let att = {
+  //         attribute: property,
+  //         value: this.attributesMap[property]
+  //       }
+  //       this.attributesArray.push(att);
+  //     } 
+  //   }
+  // }
 }
 </script>
 

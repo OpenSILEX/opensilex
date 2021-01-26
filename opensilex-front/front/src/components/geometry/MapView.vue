@@ -101,6 +101,11 @@
       </vl-map>
     </div>
 
+    {{ $t('MapView.Legend') }}:
+    <span id="OS">{{ $t('MapView.LegendSO') }}</span>
+    &nbsp;-&nbsp;
+    <span id="Area">{{ $t('MapView.LegendArea') }}</span>
+
     <div id="selectedTable">
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -518,6 +523,14 @@ p {
 .border-secondary {
   border-width: 2mm !important;
 }
+
+#OS {
+  color: blue;
+}
+
+#Area {
+  color: green;
+}
 </style>
 
 <i18n>
@@ -533,6 +546,9 @@ en:
     selected-button: Exit creation mode
     errorLongitude: the longitude must be between -180 and 180
     errorLatitude: the latitude must be between -90 and 90
+    Legend: Legend
+    LegendSO: Scientific Object
+    LegendArea: Area
   Area:
     title: Area
     add: Description of the area
@@ -549,13 +565,11 @@ fr:
     selected-button: Sortir du mode création
     errorLongitude: la longitude doit être comprise entre -180 et 180
     errorLatitude: la latitude doit être comprise entre -90 et 90
+    Legend: Légende
+    LegendSO: Objet scientifique
+    LegendArea: Zone
   Area:
     title: Zone
     add: Description de la zone
     update: Mise à jour de la zone
-
-
-
-
-
 </i18n>

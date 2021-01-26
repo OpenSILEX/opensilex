@@ -182,80 +182,88 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI rdfType, URI parentClass, InputStream file, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, List<String> customColumns, URIGenerator<String> uriGenerator) throws Exception {
-        Map<URI, OwlRestrictionModel> restrictionsByID = new HashMap<>();
+    public CSVValidationModel validateCSV(URI graph, URI parentClass, InputStream file, int firstRow, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, List<String> customColumns, URIGenerator<String> uriGenerator) throws Exception {
 
-        ClassModel model = getClassModel(rdfType, parentClass, currentUser.getLanguage());
-
-        model.getRestrictions().values().forEach(restriction -> {
-            URI propertyURI = restriction.getOnProperty();
-            restrictionsByID.put(propertyURI, restriction);
-        });
-
-        int uriIndex = 0;
-        Map<Integer, OwlRestrictionModel> restrictionsByIndex = new HashMap<>();
+        Map<String, Map<String, OwlRestrictionModel>> typeRestrictions = new HashMap<>();
+        Map<String, ClassModel> typeModels = new HashMap<>();
         Map<Integer, String> headerByIndex = new HashMap<>();
-
-        CSVValidationModel csvValidation = new CSVValidationModel();
 
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file));) {
             String[] ids = csvReader.readNext();
 
-            csvReader.readNext();
-            csvReader.readNext();
+            int uriIndex = -1;
+            int typeIndex = -1;
+            int nameIndex = -1;
+            for (int i = 0; i < ids.length; i++) {
+                String id = ids[i];
 
-            if (ids != null) {
-
-                for (int i = 0; i < ids.length; i++) {
-                    if (customColumns != null && customColumns.contains(ids[i])) {
-                        headerByIndex.put(i, ids[i]);
-                    } else {
-                        try {
-                            URI id = new URI(ids[i]);
-
-                            if (restrictionsByID.containsKey(id)) {
-                                restrictionsByIndex.put(i, restrictionsByID.get(id));
-
-                                String header = id.toString();
-                                if (model.isDatatypePropertyRestriction(id)) {
-                                    header = model.getDatatypeProperty(id).getName();
-                                } else if (model.isObjectPropertyRestriction(id)) {
-                                    header = model.getObjectProperty(id).getName();
-                                }
-                                headerByIndex.put(i, header);
-
-                                restrictionsByID.remove(id);
-
-                            } else if ("uri".equals(ids[i])) {
-                                uriIndex = i;
-                            }
-                        } catch (URISyntaxException ex) {
-                            csvValidation.addInvalidHeaderURI(i, ids[i]);
-                        }
-                    }
+                if (id.equalsIgnoreCase(CSV_URI_KEY)) {
+                    uriIndex = i;
+                } else if (id.equalsIgnoreCase(CSV_TYPE_KEY)) {
+                    typeIndex = i;
+                } else if (id.equalsIgnoreCase(CSV_NAME_KEY)) {
+                    nameIndex = i;
                 }
+                headerByIndex.put(i, id);
+            }
 
-                if (!restrictionsByID.isEmpty()) {
-                    csvValidation.addMissingHeaders(restrictionsByID.keySet());
-                }
+            csvReader.skip(firstRow - 2);
 
-                if (csvValidation.hasErrors()) {
-                    return csvValidation;
-                }
+            int rowIndex = 1;
+            String[] values = null;
+
+            CSVValidationModel csvValidation = new CSVValidationModel();
+
+            List<String> missingHeaders = new ArrayList<>();
+            if (uriIndex == -1) {
+                missingHeaders.add(CSV_URI_KEY);
+            }
+            if (typeIndex == -1) {
+                missingHeaders.add(CSV_TYPE_KEY);
+            }
+            if (nameIndex == -1) {
+                missingHeaders.add(CSV_NAME_KEY);
+            }
+
+            if (missingHeaders.size() > 0) {
+                csvValidation.addMissingHeaders(missingHeaders);
+            } else {
 
                 Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
                 Map<URI, Integer> checkedURIs = new HashMap<>();
-                int rowIndex = 1;
-                String[] values = null;
 
                 while ((values = csvReader.readNext()) != null) {
-                    validateCSVRow(graph, model, values, rowIndex, csvValidation, uriIndex, restrictionsByIndex, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators, uriGenerator);
+                    try {
+                        URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex]));
+                        if (!typeRestrictions.containsKey(rdfType.toString())) {
+                            ClassModel model = getClassModel(rdfType, parentClass, currentUser.getLanguage());
+
+                            Map<String, OwlRestrictionModel> restrictionsByID = new HashMap<>();
+                            model.getRestrictions().values().forEach(restriction -> {
+                                String propertyURI = SPARQLDeserializers.getExpandedURI(restriction.getOnProperty());
+                                restrictionsByID.put(propertyURI, restriction);
+                            });
+
+                            typeRestrictions.put(SPARQLDeserializers.getExpandedURI(rdfType.toString()), restrictionsByID);
+                            typeModels.put(rdfType.toString(), model);
+                        }
+
+                        Map<String, OwlRestrictionModel> restrictionsByID = typeRestrictions.get(rdfType.toString());
+
+                        validateCSVRow(graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators, uriGenerator);
+
+                    } catch (Exception ex) {
+                        CSVCell cell = new CSVCell(rowIndex, 0, "Unhandled error while parsing row: " + ex.getMessage(), "all");
+                        csvValidation.addInvalidValueError(cell);
+                    }
+
                     rowIndex++;
                 }
-            }
-        }
 
-        return csvValidation;
+            }
+
+            return csvValidation;
+        }
     }
 
     private void validateCSVRow(
@@ -265,34 +273,32 @@ public final class OntologyDAO {
             int rowIndex,
             CSVValidationModel csvValidation,
             int uriIndex,
-            Map<Integer, OwlRestrictionModel> restrictionsByIndex,
+            int typeIndex,
+            int nameIndex,
+            Map<String, OwlRestrictionModel> restrictionsByID,
             Map<Integer, String> headerByIndex,
             Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
             Map<URI, Integer> checkedURIs,
             Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
             URIGenerator<String> uriGenerator
     ) throws Exception {
-        SPARQLResourceModel object = new SPARQLResourceModel();
+        SPARQLNamedResourceModel object = new SPARQLNamedResourceModel();
         String name = null;
+
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            if (restrictionsByIndex.containsKey(colIndex)) {
-                String value = values[colIndex].trim();
-                OwlRestrictionModel restriction = restrictionsByIndex.get(colIndex);
-                URI propertyURI = restriction.getOnProperty();
-
-                BiConsumer<CSVCell, CSVValidationModel> customValidator = null;
-                if (customValidators != null) {
-                    customValidator = customValidators.get(SPARQLDeserializers.getExpandedURI(propertyURI));
+            if (colIndex == typeIndex) {
+                continue;
+            } else if (colIndex == nameIndex) {
+                name = values[colIndex].trim();
+                if (name.isEmpty()) {
+                    CSVCell cell = new CSVCell(rowIndex, colIndex, name, CSV_NAME_KEY);
+                    csvValidation.addMissingRequiredValue(cell);
+                } else {
+                    object.setName(name);
                 }
-
-                if (SPARQLDeserializers.compareURIs(RDFS.label.getURI(), propertyURI.toString())) {
-                    name = value;
-                }
-                String header = headerByIndex.get(colIndex);
-                validateCSVValue(graph, model, propertyURI, value, rowIndex, colIndex, restriction, header, csvValidation, checkedClassObjectURIs, customValidator, object);
             } else if (colIndex == uriIndex) {
                 String value = values[colIndex].trim();
-                CSVCell cell = new CSVCell(rowIndex, colIndex, value, "uri");
+                CSVCell cell = new CSVCell(rowIndex, colIndex, value, CSV_URI_KEY);
                 if (value != null && !value.isEmpty()) {
                     if (URIDeserializer.validateURI(value)) {
                         URI objectURI = new URI(value);
@@ -311,10 +317,25 @@ public final class OntologyDAO {
             } else if (headerByIndex.containsKey(colIndex)) {
                 String header = headerByIndex.get(colIndex);
                 String value = values[colIndex].trim();
-                CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
-                if (customValidators != null) {
-                    BiConsumer<CSVCell, CSVValidationModel> customValidator = customValidators.get(header);
-                    customValidator.accept(cell, csvValidation);
+                if (restrictionsByID.containsKey(header)) {
+                    OwlRestrictionModel restriction = restrictionsByID.get(header);
+                    URI propertyURI = restriction.getOnProperty();
+                    BiConsumer<CSVCell, CSVValidationModel> customValidator = null;
+                    if (customValidators != null) {
+                        customValidator = customValidators.get(SPARQLDeserializers.getExpandedURI(propertyURI));
+                    }
+
+                    CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
+                    validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
+
+                } else {
+                    CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
+                    if (customValidators != null) {
+                        BiConsumer<CSVCell, CSVValidationModel> customValidator = customValidators.get(header);
+                        if (customValidator != null) {
+                            customValidator.accept(cell, csvValidation);
+                        }
+                    }
                 }
             }
         }
@@ -332,35 +353,8 @@ public final class OntologyDAO {
             }
 
             object.setType(model.getUri());
-            csvValidation.addObject(object);
+            csvValidation.addObject(name, object);
         }
-    }
-
-    private void validateCSVValue(
-            URI graph,
-            ClassModel model,
-            URI propertyURI,
-            String value,
-            int rowIndex,
-            int colIndex,
-            OwlRestrictionModel restriction,
-            String header,
-            CSVValidationModel csvValidation,
-            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
-            BiConsumer<CSVCell, CSVValidationModel> customValidator,
-            SPARQLResourceModel object
-    ) throws SPARQLException {
-        if (!restriction.isList()) {
-            CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
-            validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
-        } else {
-            String[] multipleValues = value.split("\\|");
-            for (String singleValue : multipleValues) {
-                CSVCell cell = new CSVCell(rowIndex, colIndex, singleValue, header);
-                validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
-            }
-        }
-
     }
 
     private void validateCSVSingleValue(
@@ -380,15 +374,17 @@ public final class OntologyDAO {
             csvValidation.addMissingRequiredValue(cell);
         } else if (model.isDatatypePropertyRestriction(propertyURI)) {
             try {
-                SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
-                if (!deserializer.validate(value)) {
-                    csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
-                } else if (customValidator != null) {
-                    customValidator.accept(cell, csvValidation);
-                }
+                if (!value.isEmpty()) {
+                    SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
+                    if (!deserializer.validate(value)) {
+                        csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
+                    } else if (customValidator != null) {
+                        customValidator.accept(cell, csvValidation);
+                    }
 
-                if (!csvValidation.hasErrors()) {
-                    object.addRelation(graph, propertyURI, deserializer.getClassType(), value);
+                    if (!csvValidation.hasErrors()) {
+                        object.addRelation(graph, propertyURI, deserializer.getClassType(), value);
+                    }
                 }
             } catch (SPARQLDeserializerNotFoundException ex) {
                 csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
@@ -416,12 +412,16 @@ public final class OntologyDAO {
                         } else if (customValidator != null) {
                             customValidator.accept(cell, csvValidation);
                         }
-                    } else {
-                        csvValidation.addInvalidURIError(cell);
-                    }
 
-                    if (!csvValidation.hasErrors()) {
-                        object.addRelation(graph, propertyURI, URI.class, value);
+                        if (!csvValidation.hasErrors()) {
+                            object.addRelation(graph, propertyURI, URI.class, value);
+                        }
+                    } else {
+                        if (customValidator != null) {
+                            customValidator.accept(cell, csvValidation);
+                        } else {
+                            csvValidation.addInvalidURIError(cell);
+                        }
                     }
                 }
             } catch (URISyntaxException ex) {
@@ -603,13 +603,13 @@ public final class OntologyDAO {
     private static final String CSV_TYPE_KEY = "type";
     private static final String CSV_NAME_KEY = "name";
 
-    public String exportCSV(List<? extends SPARQLNamedResourceModel> objects, String lang, BiFunction<String, SPARQLNamedResourceModel, String> customValueGenerator, List<String> customColumns) throws Exception {
+    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns) throws Exception {
         List<String> columnsID = new ArrayList<>();
 
         List<Map<Integer, String>> rows = new ArrayList<>();
         Map<String, List<Integer>> propertiesIndexes = new HashMap<>();
 
-        for (SPARQLNamedResourceModel object : objects) {
+        for (T object : objects) {
             Map<Integer, String> row = new HashMap<>();
 
             String typeURI = URIDeserializer.formatURI(object.getType()).toString();
@@ -693,13 +693,13 @@ public final class OntologyDAO {
         int colOffset = 3;
 
         for (int i = 0; i < columnsID.size(); i++) {
-            headerArray[i + colOffset] = columnsID.get(i);
+            headerArray[i + colOffset] = SPARQLDeserializers.formatURI(columnsID.get(i));
         }
 
         colOffset += columnsID.size();
 
         for (int i = 0; i < customColumns.size(); i++) {
-            headerArray[i + colOffset] = customColumns.get(i);
+            headerArray[i + colOffset] = SPARQLDeserializers.formatURI(customColumns.get(i));
         }
 
         writer.writeNext(headerArray);

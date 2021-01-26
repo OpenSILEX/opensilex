@@ -26,7 +26,10 @@ public class CSVValidationModel {
     @JsonIgnore()
     private Map<String, Object> objectsMetadata = new HashMap<>();
 
-    private List<URI> missingHeaders = new ArrayList<>();
+    @JsonIgnore()
+    private Map<String, List<URI>> uriByNames = new HashMap<>();
+
+    private List<String> missingHeaders = new ArrayList<>();
 
     private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
 
@@ -44,7 +47,7 @@ public class CSVValidationModel {
 
     private Map<Integer, CSVDuplicateURIError> duplicateURIErrors = new HashMap<>();
 
-    public List<URI> getMissingHeaders() {
+    public List<String> getMissingHeaders() {
         return missingHeaders;
     }
 
@@ -116,7 +119,7 @@ public class CSVValidationModel {
                 || getDuplicateURIErrors().size() > 0;
     }
 
-    public void addMissingHeaders(Collection<URI> headers) {
+    public void addMissingHeaders(Collection<String> headers) {
         missingHeaders.addAll(headers);
     }
 
@@ -174,13 +177,26 @@ public class CSVValidationModel {
         duplicateURIErrors.put(rowIndex, new CSVDuplicateURIError(cell, previousRow));
     }
 
-    public void addObject(SPARQLResourceModel object) {
+    public void addObject(String name, SPARQLResourceModel object) {
+        if (name != null) {
+            if (!uriByNames.containsKey(name)) {
+                uriByNames.put(name, new ArrayList<>());
+            }
+            uriByNames.get(name).add(object.getUri());
+        }
         objects.add(object);
     }
     
+    public List<URI> getObjectNameUris(String name) {
+        return uriByNames.get(name);
+    }
+
+    public boolean containsObject(SPARQLResourceModel object) {
+        return objects.contains(object);
+    }
+
     public void addObjectMetadata(String metadataKey, Object value) {
         objectsMetadata.put(metadataKey, value);
     }
-    
 
 }

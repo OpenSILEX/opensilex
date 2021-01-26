@@ -17,6 +17,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.annotations.SPARQLResourceURI;
 import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.utils.Ontology;
 
 /**
@@ -109,7 +110,7 @@ public class SPARQLResourceModel implements SPARQLModel {
             return false;
         }
         final SPARQLResourceModel other = (SPARQLResourceModel) obj;
-        return Objects.equals(this.uri, other.uri);
+        return SPARQLDeserializers.compareURIs(this.uri, other.uri);
     }
 
     public void addRelation(URI graph, URI propertyURI, Class<?> type, String value) {

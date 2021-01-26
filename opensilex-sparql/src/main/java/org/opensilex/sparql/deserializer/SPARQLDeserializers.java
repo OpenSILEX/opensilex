@@ -191,17 +191,25 @@ public class SPARQLDeserializers {
     public static String getExpandedURI(URI value) {
         return getExpandedURI(value.toString());
     }
-    
+
     public static String getShortURI(String value) {
         return URIDeserializer.getShortURI(value);
     }
-            
-        public static String getShortURI(URI value) {
+
+    public static String getShortURI(URI value) {
         return getShortURI(value.toString());
     }
 
     public static URI formatURI(URI value) {
         return URIDeserializer.formatURI(value);
+    }
+
+    public static String formatURI(String value) {
+        try {
+            return URIDeserializer.formatURI(new URI(value)).toString();
+        } catch (URISyntaxException ex) {
+            return value;
+        }
     }
 
     public static Collection<Node> nodeListURI(Collection<URI> uris) throws Exception {

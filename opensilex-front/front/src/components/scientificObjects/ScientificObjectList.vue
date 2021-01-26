@@ -12,11 +12,20 @@
         label="ExperimentScientificObjects.create-scientific-object"
       ></opensilex-CreateButton
       >&nbsp;
+      <opensilex-CreateButton
+        @click="importForm.show()"
+        label="OntologyCsvImporter.import"
+      ></opensilex-CreateButton>
       <opensilex-ScientificObjectForm
         ref="soForm"
         @refresh="refresh"
       ></opensilex-ScientificObjectForm>
-      <opensilex-CreateButton label="Import CSV"></opensilex-CreateButton>
+      <opensilex-OntologyCsvImporter
+        ref="importForm"
+        :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+        :validateCSV="validateCSV"
+        :uploadCSV="uploadCSV"
+      ></opensilex-OntologyCsvImporter>
     </opensilex-PageActions>
 
     <opensilex-SearchFilterField
@@ -174,6 +183,7 @@ export default class ScientificObjectList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("soForm") readonly soForm!: any;
+  @Ref("importForm") readonly importForm!: any;
 
   fields = [
     {
@@ -306,6 +316,26 @@ export default class ScientificObjectList extends Vue {
         objectURIs: objectURIs,
       },
       this.lang
+    );
+  }
+
+  validateCSV(csvFile) {
+    return this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-validate",
+      {
+        description: {},
+        file: csvFile,
+      }
+    );
+  }
+
+  uploadCSV(validationToken, csvFile) {
+    return this.$opensilex.uploadFileToService(
+      "/core/scientific-object/csv-import",
+      {
+        description: {},
+        file: csvFile,
+      }
     );
   }
 }

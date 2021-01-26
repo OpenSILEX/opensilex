@@ -1,150 +1,105 @@
  <template>
-  <span>
-    <opensilex-CreateButton @click="show" label="OntologyCsvImporter.import"></opensilex-CreateButton>
-    <b-modal
-      ref="OntologyCsvImporter"
-      @ok.prevent="importCSV"
-      size="xl"
-      :static="true"
-      :ok-disabled="!csvFile || !!validationErrors"
-    >
-      <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-      <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
+  <b-modal
+    ref="OntologyCsvImporter"
+    @ok.prevent="importCSV"
+    size="xl"
+    :static="true"
+    :ok-disabled="!csvFile || !!validationErrors"
+  >
+    <template v-slot:modal-ok>{{ $t("component.common.ok") }}</template>
+    <template v-slot:modal-cancel>{{ $t("component.common.cancel") }}</template>
 
-      <template v-slot:modal-title>
-        <i>
-          <slot name="icon">
-            <opensilex-Icon icon="fa#eye" class="icon-title" />
-          </slot>
-          <span>{{$t("OntologyCsvImporter.import")}}</span>
-        </i>
-      </template>
-      <ValidationObserver ref="validatorRef">
-        <!-- Type -->
-        <opensilex-TypeForm
-          :type.sync="objectType"
-          @update:type="typeSwitch"
-          :baseType="baseType"
-          :required="true"
-          label="OntologyCsvImporter.object-type"
-          placeholder="OntologyCsvImporter.object-type-placeholder"
-        ></opensilex-TypeForm>
-
-        <div v-if="objectType && fields.length > 0">
-          <div class="row">
-            <div class="col-md-4">
-              <b-form-file
-                size="sm"
-                ref="inputFile"
-                accept="text/csv, .csv"
-                @input="csvUploaded"
-                v-model="csvFile"
-                :placeholder="$t('OntologyCsvImporter.csv-file-placeholder')"
-                :drop-placeholder="$t('OntologyCsvImporter.csv-file-drop-placeholder')"
-                :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
-              ></b-form-file>
-            </div>
-            <div class="col">
-              <b-button @click="downloadCSVTemplate">{{$t("OntologyCsvImporter.downloadTemplate")}}</b-button>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12 csv-format">
-              <div class="static-field">
-                <span class="field-view-title">{{$t("OntologyCsvImporter.expectedFormat")}}:</span>
-              </div>
-
-              <b-table-simple hover small responsive>
-                <b-thead>
-                  <b-tr>
-                    <b-th>1</b-th>
-                    <b-th
-                      v-for="field in fields"
-                      v-bind:key="field.key"
-                      class="row-header"
-                    >{{field.key}}</b-th>
-                  </b-tr>
-                </b-thead>
-                <b-tbody>
-                  <b-tr v-for="(row, index) in rows" v-bind:key="index">
-                    <b-th>{{index + 2}}</b-th>
-                    <b-td
-                      :class="getCellClass(cellIndex, cell)"
-                      v-for="(cell, cellIndex) in row"
-                      v-bind:key="cell"
-                    >{{cell}}</b-td>
-                  </b-tr>
-                </b-tbody>
-                <b-tfoot>
-                  <b-tr>
-                    <b-th variant="secondary">4</b-th>
-                    <b-td :colspan="fields.length" variant="secondary">
-                      <div class="csv-import-helper">
-                        {{$t("OntologyCsvImporter.dataPlaceholder")}}
-                        <br />
-                        {{$t("OntologyCsvImporter.ignoredFirstRows")}}
-                        <br />
-                        {{$t("OntologyCsvImporter.columnModification")}}
-                      </div>
-                    </b-td>
-                  </b-tr>
-                </b-tfoot>
-              </b-table-simple>
-            </div>
-          </div>
-          <div class="error-container" v-if="validationErrors">
-            <div class="static-field">
-              <span class="field-view-title">{{$t("OntologyCsvImporter.csvErrors")}}:</span>
-            </div>
-
-            <b-table-simple hover small responsive sticky-header>
-              <b-thead head-variant="light">
-                <b-tr>
-                  <b-th>Ligne</b-th>
-                  <b-th>Type d'erreur</b-th>
-                  <b-th>Détail</b-th>
-                </b-tr>
-              </b-thead>
-              <b-tbody>
-                <slot v-for="(row, index) in validationErrors">
-                  <b-tr>
-                    <b-th :rowspan="row.listSize">{{row.index + 3}}</b-th>
-                    <b-td>{{$t("OntologyCsvImporter." + row.firstErrorType.type)}}</b-td>
-                    <b-td>
-                      <ul>
-                        <li
-                          v-for="validationErr in row.firstErrorType.validationErrors"
-                          v-bind:key="getErrKey(validationErr, row.firstErrorType.type)"
-                        >{{getValidationErrorDetail(validationErr, row.firstErrorType.type)}}</li>
-                      </ul>
-                    </b-td>
-                  </b-tr>
-                  <b-tr
-                    v-for="(validationError, errorType) in row.list"
-                    v-bind:key="index + errorType"
-                  >
-                    <b-td>{{$t("OntologyCsvImporter." + errorType)}}</b-td>
-                    <b-td>
-                      <ul>
-                        <li
-                          v-for="validationErr in validationError"
-                          v-bind:key="getErrKey(validationErr, errorType)"
-                        >{{getValidationErrorDetail(validationErr, errorType)}}</li>
-                      </ul>
-                    </b-td>
-                  </b-tr>
-                </slot>
-              </b-tbody>
-            </b-table-simple>
-          </div>
-          <div
-            class="validation-confirm-container"
-            v-else-if="validationToken"
-          >{{$t("OntologyCsvImporter.CSVIsValid")}}</div>
+    <template v-slot:modal-title>
+      <i>
+        <slot name="icon">
+          <opensilex-Icon icon="fa#eye" class="icon-title" />
+        </slot>
+        <span>{{ $t("OntologyCsvImporter.import") }}</span>
+      </i>
+    </template>
+    <ValidationObserver ref="validatorRef">
+      <div class="row">
+        <div class="col-md-4">
+          <b-form-file
+            size="sm"
+            ref="inputFile"
+            accept="text/csv, .csv"
+            @input="csvUploaded"
+            v-model="csvFile"
+            :placeholder="$t('OntologyCsvImporter.csv-file-placeholder')"
+            :drop-placeholder="
+              $t('OntologyCsvImporter.csv-file-drop-placeholder')
+            "
+            :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
+          ></b-form-file>
         </div>
-      </ValidationObserver>
-    </b-modal>
-  </span>
+      </div>
+      <div class="error-container" v-if="validationErrors">
+        <div class="static-field">
+          <span class="field-view-title"
+            >{{ $t("OntologyCsvImporter.csvErrors") }}:</span
+          >
+        </div>
+
+        <b-table-simple hover small responsive sticky-header>
+          <b-thead head-variant="light">
+            <b-tr>
+              <b-th>Ligne</b-th>
+              <b-th>Type d'erreur</b-th>
+              <b-th>Détail</b-th>
+            </b-tr>
+          </b-thead>
+          <b-tbody>
+            <slot v-for="(row, index) in validationErrors">
+              <b-tr>
+                <b-th :rowspan="row.listSize">{{ row.index }}</b-th>
+                <b-td>{{
+                  $t("OntologyCsvImporter." + row.firstErrorType.type)
+                }}</b-td>
+                <b-td>
+                  <ul>
+                    <li
+                      v-for="validationErr in row.firstErrorType
+                        .validationErrors"
+                      v-bind:key="
+                        getErrKey(validationErr, row.firstErrorType.type)
+                      "
+                    >
+                      {{
+                        getValidationErrorDetail(
+                          validationErr,
+                          row.firstErrorType.type
+                        )
+                      }}
+                    </li>
+                  </ul>
+                </b-td>
+              </b-tr>
+              <b-tr
+                v-for="(validationError, errorType) in row.list"
+                v-bind:key="index + errorType"
+              >
+                <b-td>{{ $t("OntologyCsvImporter." + errorType) }}</b-td>
+                <b-td>
+                  <ul>
+                    <li
+                      v-for="validationErr in validationError"
+                      v-bind:key="getErrKey(validationErr, errorType)"
+                    >
+                      {{ getValidationErrorDetail(validationErr, errorType) }}
+                    </li>
+                  </ul>
+                </b-td>
+              </b-tr>
+            </slot>
+          </b-tbody>
+        </b-table-simple>
+      </div>
+      <div class="validation-confirm-container" v-else-if="validationToken">
+        {{ $t("OntologyCsvImporter.CSVIsValid") }}
+      </div>
+    </ValidationObserver>
+  </b-modal>
 </template>
 
 <script lang="ts">
@@ -164,29 +119,29 @@ export default class OntologyCsvImporter extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
   @Ref("inputFile") readonly inputFile!: any;
 
-  objectType = null;
-
   @Prop()
   baseType;
 
   @Prop({
-    default: () => Promise.reject("validateCSV property is mandatory")
+    default: () => Promise.reject("validateCSV property is mandatory"),
   })
   validateCSV;
 
   @Prop({
-    default: () => Promise.reject("uploadCSV property is mandatory")
+    default: () => Promise.reject("uploadCSV property is mandatory"),
   })
   uploadCSV;
 
   @Prop({
-    default: () => []
+    default: () => [],
   })
   customColumns;
 
   show() {
-    this.objectType = null;
     this.validatorRef.reset();
+    this.csvFile = null;
+    this.validationToken = null;
+    this.validationErrors = null;
     this.OntologyCsvImporter.show();
   }
 
@@ -209,201 +164,23 @@ export default class OntologyCsvImporter extends Vue {
     return classStr;
   }
 
-  downloadCSVTemplate() {
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    let columnIDs = [];
-    let rowsValues = [];
-
-    for (let i in this.fields) {
-      let fieldKey = this.fields[i].key;
-      columnIDs.push(fieldKey);
-
-      for (let j in this.rows) {
-        let row = this.rows[j];
-        let value = row[fieldKey];
-        if (!rowsValues[j]) {
-          rowsValues[j] = [];
-        }
-        rowsValues[j].push(row[fieldKey]);
-      }
-    }
-
-    let csvRows = [];
-    csvRows.push(columnIDs.join(","));
-
-    for (let i in rowsValues) {
-      let rowValues = rowsValues[i];
-      csvRows.push('"' + rowValues.join('","') + '"');
-    }
-
-    csvContent += csvRows.join("\r\n");
-
-    let link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "template.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  getFieldDescription(field, lineSeparator) {
-    let fieldDescription = "";
-    if (field.comment) {
-      fieldDescription +=
-        this.$t("component.common.comment") +
-        ": " +
-        field.comment +
-        lineSeparator;
-    }
-    if (field.propertyType == "OBJECT") {
-      let targetName = "URI";
-      fieldDescription +=
-        this.$t("component.common.type") + ": " + targetName + lineSeparator;
-    } else if (field.propertyType == "DATA") {
-      if (field.targetProperty) {
-        let targetType = this.$opensilex.getType(field.targetProperty);
-        let targetName = "";
-        if (targetType) {
-          targetName = this.$t(targetType.labelKey);
-        }
-        fieldDescription +=
-          this.$t("component.common.type") + ": " + targetName + lineSeparator;
-      }
-    } else {
-      fieldDescription +=
-        this.$t("component.common.type") + ": " + field.type + lineSeparator;
-    }
-
-    fieldDescription +=
-      this.$t("OntologyClassDetail.required") +
-      ": " +
-      (field.isRequired
-        ? this.$t("component.common.yes")
-        : this.$t("component.common.no")) +
-      lineSeparator;
-
-    fieldDescription +=
-      this.$t("OntologyClassDetail.list") +
-      ": " +
-      (field.isList
-        ? this.$t("component.common.yes") +
-          " (" +
-          this.$t("OntologyCsvImporter.separator") +
-          ": |)"
-        : this.$t("component.common.no")) +
-      lineSeparator;
-
-    return fieldDescription;
-  }
-
-  fields = [];
   rows = [];
 
   csvFile = null;
   validationToken = null;
 
-  typeSwitch() {
-    this.fields = [];
-    this.rows = [];
-
-    this.csvFile = null;
-    this.validationToken = null;
-    this.validationErrors = null;
-
-    if (this.objectType != null) {
-      return this.$opensilex
-        .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.objectType, this.baseType)
-        .then(http => {
-          let classModel: any = http.response.result;
-
-          this.fields = [
-            {
-              key: "URI",
-              label: "URI"
-            }
-          ];
-
-          let propertiesByURI = {};
-
-          for (let i in classModel.dataProperties) {
-            let dataProperty = classModel.dataProperties[i];
-
-            this.fields.push({
-              key: dataProperty.property,
-              label: dataProperty.property
-            });
-
-            dataProperty.propertyType = "DATA";
-            propertiesByURI[dataProperty.property] = dataProperty;
-          }
-
-          for (let i in classModel.objectProperties) {
-            let objectProperty = classModel.objectProperties[i];
-
-            this.fields.push({
-              key: objectProperty.property,
-              label: objectProperty.property
-            });
-
-            objectProperty.propertyType = "OBJECT";
-            propertiesByURI[objectProperty.property] = objectProperty;
-          }
-
-          let nameRow = {};
-          let commentRow = {};
-
-          // TODO sort by properties order
-
-          this.fields.forEach(field => {
-            if (field.key == "URI") {
-              nameRow[field.key] = this.$t("OntologyCsvImporter.objectURI");
-              commentRow[field.key] = this.$t(
-                "OntologyCsvImporter.objectURIComment"
-              ).replace("\\n", "\n");
-            } else if (propertiesByURI[field.key]) {
-              let fieldKey = field.key;
-              let property = propertiesByURI[fieldKey];
-
-              nameRow[fieldKey] = property.name;
-              commentRow[fieldKey] = this.getFieldDescription(property, "\n");
-            }
-          });
-
-          for (let i in this.customColumns) {
-            let customColumn = this.customColumns[i];
-
-            this.fields.push({
-              key: customColumn.id,
-              label: customColumn.id
-            });
-
-            nameRow[customColumn.id] = customColumn.label;
-            commentRow[customColumn.id] = this.getFieldDescription(
-              customColumn,
-              "\n"
-            );
-          }
-
-          this.rows = [nameRow, commentRow];
-        });
-    }
-  }
-
   csvUploaded() {
     this.validationToken = null;
     this.validationErrors = null;
-
-    this.validateCSV(this.objectType, this.csvFile).then(
-      this.checkCSVValidation
-    );
+    if (this.csvFile != null) {
+      this.validateCSV(this.csvFile).then(this.checkCSVValidation);
+    }
   }
 
   importCSV() {
     this.validationErrors = null;
-    this.uploadCSV(this.objectType, this.validationToken, this.csvFile)
-      .then(response => {
+    this.uploadCSV(this.validationToken, this.csvFile)
+      .then((response) => {
         this.checkCSVValidation(response);
         if (this.validationToken) {
           this.$opensilex.showSuccessToast(
@@ -435,7 +212,7 @@ export default class OntologyCsvImporter extends Vue {
         index: "Erreurs générales",
         list: {},
         listSize: 1,
-        firstErrorType: null
+        firstErrorType: null,
       };
       if (errors.missingHeaders.length > 0) {
         generalErrors.list.missingHeaders = errors.missingHeaders;
@@ -460,19 +237,20 @@ export default class OntologyCsvImporter extends Vue {
         let firstErrorType = generalErrors.firstErrorType;
         generalErrors.firstErrorType = {
           type: firstErrorType,
-          validationErrors: generalErrors.list[firstErrorType]
+          validationErrors: generalErrors.list[firstErrorType],
         };
         delete generalErrors.list[firstErrorType];
         this.validationErrors.push(generalErrors);
       }
 
       for (let i in globalErrors) {
+        globalErrors[i].index = globalErrors[i].index + 1;
         if (globalErrors[i].firstErrorType) {
           globalErrors[i].listSize = globalErrors[i].listSize - 1;
           let firstErrorType = globalErrors[i].firstErrorType;
           globalErrors[i].firstErrorType = {
             type: firstErrorType,
-            validationErrors: globalErrors[i].list[firstErrorType]
+            validationErrors: globalErrors[i].list[firstErrorType],
           };
           delete globalErrors[i].list[firstErrorType];
           this.validationErrors.push(globalErrors[i]);
@@ -528,7 +306,7 @@ export default class OntologyCsvImporter extends Vue {
           globalErrors[rowIndex] = {
             index: rowIndex,
             list: {},
-            listSize: 1
+            listSize: 1,
           };
         }
 

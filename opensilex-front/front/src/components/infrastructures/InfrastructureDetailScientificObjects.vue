@@ -622,9 +622,9 @@ export default class InfrastructureDetailScientificObjects extends Vue {
 <i18n>
 en:
   ExperimentScientificObjects:
-    import-scientific-objects: Import experiment objets
-    add: Add experiment object
-    update: Update experiment object
+    import-scientific-objects: Import scientific objets
+    add: Add scientific object
+    update: Update scientific object
     create-scientific-object: Create scientific object
     edit-scientific-object: Edit scientific object
     delete-scientific-object: Delete scientific object

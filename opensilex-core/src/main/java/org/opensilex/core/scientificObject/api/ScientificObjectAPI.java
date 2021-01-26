@@ -73,7 +73,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -97,7 +96,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
@@ -623,16 +622,18 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         URI contextURI = descriptionDto.getContext();
-        URI soType = descriptionDto.getType();
+        if (contextURI == null) {
+            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        }
         String validationToken = descriptionDto.getValidationToken();
 
         CSVValidationModel errors;
         if (validationToken == null) {
-            errors = getCSVValidationModel(contextURI, soType, file, currentUser);
+            errors = getCSVValidationModel(contextURI, file, currentUser);
         } else {
             errors = filesValidationCache.getIfPresent(validationToken);
             if (errors == null) {
-                errors = getCSVValidationModel(contextURI, soType, file, currentUser);
+                errors = getCSVValidationModel(contextURI, file, currentUser);
             } else {
                 Map<String, Claim> claims = TokenGenerator.getTokenClaims(validationToken);
                 contextURI = new URI(claims.get(CLAIM_CONTEXT_URI).asString());
@@ -721,10 +722,20 @@ public class ScientificObjectAPI {
         HashMap<String, Geometry> geospacialMap = geoDAO.getGeometryByUris(null, dto.getObjectURIs());
 
         List<String> customColumns = new ArrayList<>();
+        customColumns.add(Oeso.isPartOf.toString());
         customColumns.add(GEOMETRY_COLUMN_ID);
 
-        BiFunction<String, SPARQLNamedResourceModel, String> customValueGenerator = (columnID, value) -> {
-            if (columnID.equals(GEOMETRY_COLUMN_ID) && value != null) {
+        BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
+            if (value == null) {
+                return null;
+            }
+            if (columnID.equals(Oeso.isPartOf.toString())) {
+                if (value.getParent() != null) {
+                    return SPARQLDeserializers.formatURI(value.getParent().getUri()).toString();
+                } else {
+                    return null;
+                }
+            } else if (columnID.equals(GEOMETRY_COLUMN_ID)) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
                 if (geospacialMap.containsKey(uriString)) {
                     Geometry geo = geospacialMap.get(uriString);
@@ -768,9 +779,12 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         URI contextURI = descriptionDto.getContext();
-        URI soType = descriptionDto.getType();
 
-        CSVValidationModel csvValidationModel = getCSVValidationModel(contextURI, soType, file, currentUser);
+        if (contextURI == null) {
+            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        }
+
+        CSVValidationModel csvValidationModel = getCSVValidationModel(contextURI, file, currentUser);
 
         CSVValidationDTO csvValidation = new CSVValidationDTO();
         csvValidation.setErrors(csvValidationModel);
@@ -783,87 +797,94 @@ public class ScientificObjectAPI {
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 
-    private CSVValidationModel getCSVValidationModel(URI contextURI, URI soType, InputStream file, UserModel currentUser) throws Exception {
-        if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-            return getCSVExperimentValidationModel(contextURI, soType, file, currentUser);
-        } else if (sparql.uriExists(InfrastructureModel.class, contextURI)) {
-            return null;
-        }
-
-        return null;
-    }
-
-    private CSVValidationModel getCSVExperimentValidationModel(URI xpURI, URI soType, InputStream file, UserModel currentUser) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpURI, currentUser);
-
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-
+    private CSVValidationModel getCSVValidationModel(URI contextURI, InputStream file, UserModel currentUser) throws Exception {
         HashMap<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
 
-        ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpURI, currentUser.getLanguage());
-
-        List<String> factorLevelURIs = new ArrayList<>();
-        for (FactorModel factor : xp.getFactors()) {
-            for (FactorLevelModel factorLevel : factor.getFactorLevels()) {
-                factorLevelURIs.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
-            }
+        if (contextURI == null) {
+            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
 
-        List<String> germplasmStringURIs = new ArrayList<>();
-        List<URI> germplasmURIs = new ArrayList<>();
-        List<SpeciesModel> species = xp.getSpecies();
-        for (SpeciesModel germplasm : species) {
-            germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
-            germplasmURIs.add(germplasm.getUri());
-        }
+        ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(contextURI);
 
-        List<String> facilityStringURIs = new ArrayList<>();
-        List<InfrastructureFacilityModel> facilities = xpDAO.getAvailableFacilities(xpURI, currentUser);
-        for (InfrastructureFacilityModel facility : facilities) {
-            facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
-        }
-
-        if (germplasmURIs.size() > 0) {
-            GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-            List<URI> subSpecies = dao.getGermplasmURIsBySpecies(germplasmURIs, currentUser.getLanguage());
-            for (URI germplasmURI : subSpecies) {
-                germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasmURI));
-            }
-        }
-
-        customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
-            try {
-                String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                if (!factorLevelURIs.contains(factorLevelURI)) {
-                    csvErrors.addInvalidValueError(cell);
+        Map<String, List<CSVCell>> parentNamesToReplace = new HashMap<>();
+        customValidators.put(Oeso.isPartOf.toString(), (cell, csvErrors) -> {
+            String value = cell.getValue();
+            if (!URIDeserializer.validateURI(value)) {
+                if (!parentNamesToReplace.containsKey(value)) {
+                    parentNamesToReplace.put(value, new ArrayList<>());
                 }
-            } catch (URISyntaxException ex) {
-                csvErrors.addInvalidURIError(cell);
+                parentNamesToReplace.get(value).add(cell);
             }
         });
 
-        customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
-            try {
-                String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                if (!germplasmStringURIs.contains(germplasmURI)) {
-                    csvErrors.addInvalidValueError(cell);
-                }
-            } catch (URISyntaxException ex) {
-                csvErrors.addInvalidURIError(cell);
-            }
-        });
+        if (sparql.uriExists(ExperimentModel.class, contextURI)) {
 
-        customValidators.put(Oeso.hasFacility.toString(), (cell, csvErrors) -> {
-            try {
-                String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                if (!facilityStringURIs.contains(facilityURI)) {
-                    csvErrors.addInvalidValueError(cell);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            xpDAO.validateExperimentAccess(contextURI, currentUser);
+            ExperimentModel xp = sparql.getByURI(ExperimentModel.class, contextURI, currentUser.getLanguage());
+
+            List<String> factorLevelURIs = new ArrayList<>();
+            for (FactorModel factor : xp.getFactors()) {
+                for (FactorLevelModel factorLevel : factor.getFactorLevels()) {
+                    factorLevelURIs.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
                 }
-            } catch (URISyntaxException ex) {
-                csvErrors.addInvalidURIError(cell);
             }
-        });
+
+            customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
+                try {
+                    String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                    if (!factorLevelURIs.contains(factorLevelURI)) {
+                        csvErrors.addInvalidValueError(cell);
+                    }
+                } catch (URISyntaxException ex) {
+                    csvErrors.addInvalidURIError(cell);
+                }
+            });
+
+            List<String> germplasmStringURIs = new ArrayList<>();
+            List<URI> germplasmURIs = new ArrayList<>();
+
+            for (SpeciesModel germplasm : xp.getSpecies()) {
+                germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
+                germplasmURIs.add(germplasm.getUri());
+            }
+
+            if (germplasmURIs.size() > 0) {
+                GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
+                List<URI> subSpecies = dao.getGermplasmURIsBySpecies(germplasmURIs, currentUser.getLanguage());
+                for (URI germplasmURI : subSpecies) {
+                    germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasmURI));
+                }
+            }
+
+            customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
+                try {
+                    String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                    if (!germplasmStringURIs.contains(germplasmURI)) {
+                        csvErrors.addInvalidValueError(cell);
+                    }
+                } catch (URISyntaxException ex) {
+                    csvErrors.addInvalidURIError(cell);
+                }
+            });
+
+            List<String> facilityStringURIs = new ArrayList<>();
+            List<InfrastructureFacilityModel> facilities = xpDAO.getAvailableFacilities(contextURI, currentUser);
+            for (InfrastructureFacilityModel facility : facilities) {
+                facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
+            }
+
+            customValidators.put(Oeso.hasFacility.toString(), (cell, csvErrors) -> {
+                try {
+                    String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                    if (!facilityStringURIs.contains(facilityURI)) {
+                        csvErrors.addInvalidValueError(cell);
+                    }
+                } catch (URISyntaxException ex) {
+                    csvErrors.addInvalidURIError(cell);
+                }
+            });
+        }
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(GEOMETRY_COLUMN_ID);
@@ -881,7 +902,33 @@ public class ScientificObjectAPI {
             }
         });
 
-        CSVValidationModel validationResult = ontologyDAO.validateCSV(xpURI, soType, new URI(Oeso.ScientificObject.getURI()), file, currentUser, customValidators, customColumns, new ScientificObjectURIGenerator(xpURI));
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+
+        int firstRow = 2;
+        CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, uriGenerator);
+
+        URI partOfURI = new URI(Oeso.isPartOf.toString());
+        final URI graphURI = contextURI;
+        parentNamesToReplace.forEach((name, cells) -> {
+            List<URI> parentURIs = validationResult.getObjectNameUris(name);
+            if (parentURIs == null || parentURIs.size() == 0) {
+                // Case parent name not found in file
+                cells.forEach((cell) -> {
+                    validationResult.addInvalidValueError(cell);
+                });
+            } else if (parentURIs.size() == 1) {
+                cells.forEach((cell) -> {
+                    int rowIndex = cell.getRowIndex() - 1;
+                    SPARQLResourceModel object = validationResult.getObjects().get(rowIndex);
+                    object.addRelation(graphURI, partOfURI, URI.class, parentURIs.get(0).toString());
+                });
+            } else {
+                // Case multiple objects with the same name, can not chose correct parent
+                cells.forEach((cell) -> {
+                    validationResult.addInvalidValueError(cell);
+                });
+            }
+        });
 
         validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
 

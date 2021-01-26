@@ -155,7 +155,7 @@ public class Oeso {
     public static final Property hasSerialNumber = Ontology.property(NS,"hasSerialNumber");
     public static final Property hasModel = Ontology.property(NS,"hasModel");
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
-    public static final Property obtained = Ontology.property(NS,"obtained");
-    public static final Property dateOfLastUse = Ontology.property(NS,"dateOfLastUse");
+    public static final Property startUp = Ontology.property(NS,"startUp");
+    public static final Property removal = Ontology.property(NS,"removal");
 
 }

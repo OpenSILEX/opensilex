@@ -70,17 +70,17 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "obtained"
+            property = "startUp"
     )
-    LocalDate obtained;
-    public static final String OBTAINED_FIELD = "obtained";
+    LocalDate startUp;
+    public static final String OBTAINED_FIELD = "startUp";
     
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "dateOfLastUse"
+            property = "removal"
     )
-    LocalDate dateOfLastUse;
-    public static final String DATEOFLASTUSE_FIELD = "dateOfLastUse";
+    LocalDate removal;
+    public static final String DATEOFLASTUSE_FIELD = "removal";
     
     public String getBrand() {
         return brand;
@@ -114,19 +114,19 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
         this.personInCharge = personInCharge;
     }
     
-    public LocalDate getObtained() {
-        return obtained;
+    public LocalDate getStartUp() {
+        return startUp;
     }
 
-    public void setObtained(LocalDate obtained) {
-        this.obtained = obtained;
+    public void setStartUp(LocalDate startUp) {
+        this.startUp = startUp;
     }
     
-    public LocalDate getDateOfLastUse() {
-        return dateOfLastUse;
+    public LocalDate getRemoval() {
+        return removal;
     }
 
-    public void setDateOfLastUse(LocalDate dateOfLastUse) {
-        this.dateOfLastUse = dateOfLastUse;
+    public void setRemoval(LocalDate removal) {
+        this.removal = removal;
     }
 }

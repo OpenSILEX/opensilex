@@ -205,6 +205,10 @@ routes:
     component: opensilex-ProjectDetails
   - path: /device/annotations/:uri
     component: opensilex-ProjectDetails
+
+  - path: /devices/create
+    component: opensilex-DeviceCreate
+    credentials: [device-modification]
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

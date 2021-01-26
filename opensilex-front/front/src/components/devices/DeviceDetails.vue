@@ -97,8 +97,8 @@
               constructor_model: null,
               serial_number: null,
               person_in_charge: null,
-              obtained: null,
-              date_of_last_use: null,
+              start_up: null,
+              removal: null,
               relations: null
             };
         created() {

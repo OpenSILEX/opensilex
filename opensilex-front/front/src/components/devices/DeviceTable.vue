@@ -1,8 +1,6 @@
 <template>
   <div class="card"> 
     <b-modal ref="colModal" :title="$t('DeviceTable.addColumn')" size="sm" hide-footer>
-      <b-form-checkbox id="removalColSw" v-model="displayRemovalCol" switch>{{$t('DeviceTable.removal')}}</b-form-checkbox>
-      <b-form-checkbox id="personColSw" v-model="displayPersonCol" switch>{{$t('DeviceTable.person_in_charge')}}</b-form-checkbox>
       <b-form-input v-model="colName" placeholder="Enter column name"></b-form-input>
       <b-button class="mt-3" variant="primary" block @click="addColumn">{{$t('DeviceTable.addColumn')}}</b-button>
     </b-modal>
@@ -30,8 +28,7 @@
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('DeviceTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('DeviceTable.addRow')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark" v-bind:disabled="!measure">{{$t('DeviceTable.addVarColumn')}} </b-button>
+      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>  
       <b-form-select v-if="this.checkedLines>0"
         id="filter"
         v-model="filter"
@@ -43,12 +40,11 @@
       ></b-form-select> 
     </b-input-group>    
 
+    <div ref="table"></div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-button class="mb-2 mr-2" @click="checkData()" variant="primary" v-bind:disabled="disableCheck">{{$t("DeviceTable.check")}}</b-button>
       <b-button class="mb-2 mr-2 " @click="insertData()" variant="success" v-bind:disabled="disableInsert">{{$t('DeviceTable.insert')}}</b-button>
     </b-input-group>
-
-    <div ref="table"></div>
 
     <b-modal
       id="progressModal"
@@ -68,12 +64,6 @@
       </b-alert>
       <b-alert variant="primary" :show="infoMessage">{{this.summary}}</b-alert>
       <b-alert variant="danger" :show="alertEmptyTable">{{$t('DeviceTable.emptyMessage')}}</b-alert>
-      <b-button
-          v-if="onlyChecking && !alertEmptyTable"
-          class="mb-2 mr-2"
-          @click="insertDataFromModal()"
-          variant="success"
-        >{{$t('DeviceTable.insert')}}</b-button>
       <template v-slot:modal-footer>
         <b-button
           v-bind:disabled="disableCloseButton"
@@ -88,13 +78,11 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFClassDTO } from "opensilex-core/index";
+import { DeviceDTO, DevicesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
 import Tabulator from 'tabulator-tables';
-import moment from 'moment';
-window.moment = moment;
 
 @Component
 export default class DeviceTable extends Vue {
@@ -105,19 +93,8 @@ export default class DeviceTable extends Vue {
   $i18n: any;
   service: DevicesService;
   onlyChecking: boolean;
-
-  //add Metadata
   colName: string;
   suppColumnsNames: Array<string>;
-
-  // Optionnal column display
-  displayRemovalCol: boolean = false;
-  displayPersonCol: boolean = false;
-
-  // Variable
-  nbVariableCol: number = 0;
-  measure: boolean = false;
-  
 
   // Progress Modal
   errorNumber: number = 0;
@@ -130,10 +107,6 @@ export default class DeviceTable extends Vue {
   infoMessage: boolean = false;
   alertEmptyTable: boolean = false;
   disableCloseButton: boolean = true;
-
-  deviceTypes: any = [];
-  typeProperty: any = [];
-  service_onto: OntologyService;
 
   @Ref("progressModal") readonly progressModal!: any;
   @Ref("progressBar") readonly progressBar!: any;
@@ -192,75 +165,17 @@ export default class DeviceTable extends Vue {
     this.tabulator.replaceData(value);
   }
 
-  isSubClassOf(parent){
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    return new Promise((resolve,reject) => {ontoService
-      .getClass(this.$attrs.deviceType,parent)
-      .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
-        this.measure = true;
-        resolve(this.measure);
-      })
-      .catch((error) => {
-        this.measure = false;
-        resolve(this.measure);
-      })});
-  }
-  
-
-  buildFinalTypeList(){
-    this.deviceTypes = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getSubClassesOf(this.$attrs.deviceType, true)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.deviceTypes.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  async updateColumns() {
-    this.measure = false;
-    let measureType = ['SensingDevice','Actuator','SoftSensor'];
-    let idx = 0;
-    let ontoService: OntologyService = this.$opensilex.getService(
-        "opensilex.OntologyService"
-      );
-    while (!this.measure && idx < measureType.length){
-      this.measure = this.$attrs.deviceType.endsWith(measureType[idx]);
-      if(!this.measure){
-        await this.isSubClassOf('vocabulary:'+measureType[idx]);
-      }
-      
-      idx++;
-    }
-
+  updateColumns() {
+    console.log(this.$attrs.deviceType);
     this.suppColumnsNames = [];
     this.colName = null;
-    this.displayRemovalCol = true;
-    this.displayPersonCol = true;
-    this.nbVariableCol = 0;
-
-    
-    this.buildFinalTypeList();
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
     let statusCol ={title:"status", field:"status",visible:false};
 
     let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150, validator: "unique"};
-    let typeCol = {title:"Type", field:"rdf_type", visible:true, editor:"autocomplete", editorParams:{values: this.deviceTypes},minWidth:150};
+
     let labelCol = 
       {title:this.$t('DeviceTable.name') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
         validator: "unique"
@@ -268,20 +183,12 @@ export default class DeviceTable extends Vue {
     let brandCol = {title:this.$t('DeviceTable.brand'), field:"brand", visible:true, editor:true};
     let constructor_modelCol = {title:this.$t('DeviceTable.constructor_model'), field:"constructor_model", visible:true, editor:true};
     let serial_numberCol = {title:this.$t('DeviceTable.serial_number'), field:"serial_number", visible:true, editor:true}
-    let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:this.displayPersonCol, editor:true};
-    let start_upCol =  {title:this.$t('DeviceTable.start_up'), field:"start_up", visible:true, editor:true};
-    let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:this.displayRemovalCol, editor:true};
-    let commentCol =  {title:this.$t('DeviceTable.comment'), field:"comment", visible:true, editor:true};
+    let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:true, editor:true};
+    let obtainedCol =  {title:this.$t('DeviceTable.obtained'), field:"obtained", visible:true, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    if(this.measure){
-      this.nbVariableCol = 1;
-      let variableCol = {title:this.$t('DeviceTable.variable')+'_1', field:"variable_1", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, variableCol, checkingStatusCol, insertionStatusCol]
-    }else{
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, checkingStatusCol, insertionStatusCol]
-    }
+    this.tableColumns = [idCol, statusCol, uriCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, obtainedCol, checkingStatusCol, insertionStatusCol]
 
     this.tableData = [];
     this.addInitialXRows(5);
@@ -315,17 +222,7 @@ export default class DeviceTable extends Vue {
     this.checkedLines = 0;
     this.disableCheck = false;
     this.disableInsert = false;
-
-    this.displayRemovalCol = false;
-    this.tabulator.hideColumn("removal");
-    this.displayPersonCol = false;
-    this.tabulator.hideColumn("person_in_charge");
     
-  }
-  
-  enableCheckInsert(){
-    this.disableCheck = false;
-    this.disableInsert = false;
   }
 
   addInitialXRows(X) {
@@ -340,52 +237,21 @@ export default class DeviceTable extends Vue {
 
   addColumn() {
     this.colModal.hide();
-    if(this.colName != null && this.colName !=  ""){
-      this.tabulator.addColumn(
-        { title: this.colName, field: this.colName, editor: true },
-        false,
-        "comment"
-      );
-      this.suppColumnsNames.push(this.colName);
-      this.jsonForTemplate[0][this.colName] = null;
-      this.$attrs.downloadCsv;
-    }
-
-    if(this.displayRemovalCol){
-      this.tabulator.showColumn("removal");
-      this.displayRemovalCol = true;
-    }else{
-      this.tabulator.hideColumn("removal");
-      this.displayRemovalCol = false;
-    }
-    if(this.displayPersonCol){
-      this.tabulator.showColumn("person_in_charge");
-      this.displayPersonCol = true;
-    }else{
-      this.tabulator.hideColumn("person_in_charge");
-      this.displayPersonCol = false;
-    }
-    this.colName = null;
-  }
-
-  addVariableCol(){
-    this.nbVariableCol = this.nbVariableCol + 1;
-    let varColName = "variable_" + this.nbVariableCol
     this.tabulator.addColumn(
-              { title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, 
-                field: varColName, 
-                visible:true, 
-                editor:true
-              },
-              false,"variable_" + (this.nbVariableCol-1)
-              );
-    this.jsonForTemplate[0][varColName] = null;
+      { title: this.colName, field: this.colName, editor: true },
+      false,
+      "comment"
+    );
+    this.suppColumnsNames.push(this.colName);
+    this.jsonForTemplate[0][this.colName] = null;
     this.$attrs.downloadCsv;
+    this.colName = null;
   }
 
   addRow() {
     let size = this.tabulator.getData().length;
-    this.tabulator.addRow({ rowNumber: size + 1});
+    this.tabulator.addRow({ rowNumber: size + 1 });
+    console.log(this.tabulator.getData().length);
   }
 
   resetModal() {
@@ -405,11 +271,6 @@ export default class DeviceTable extends Vue {
     this.$bvModal.show("progressModal");
   }
 
-   insertDataFromModal() {
-    this.$bvModal.hide('progressModal');
-    this.insertData();
-  }
-
   checkData() {
     this.onlyChecking = true;
     this.showModal();
@@ -425,8 +286,8 @@ export default class DeviceTable extends Vue {
     this.showModal();
     this.tabulator.hideColumn("checkingStatus");
     this.tabulator.showColumn("insertionStatus");   
-    this.disableInsert = false;
-    this.disableCheck = false;
+    this.disableInsert = true;
+    this.disableCheck = true;
   }
 
   insertOrCheckData() {
@@ -436,8 +297,10 @@ export default class DeviceTable extends Vue {
     let promises = [];
     this.$opensilex.disableLoader();
 
+    let colDefs = this.tabulator.getColumnDefinitions();
+
     for (let idx = 0; idx < dataToInsert.length; idx++) {
-      let form: DeviceCreationDTO = {
+      let form: DeviceDTO = {
         rdf_type: null,
         name: null,
         uri: null,
@@ -445,18 +308,11 @@ export default class DeviceTable extends Vue {
         constructor_model: null,
         serial_number: null,
         person_in_charge: null,
-        start_up: null,
-        removal: null,
-        description:null,
-        relations: [],
-        metadata: {}
+        obtained: null
       };
 
-      if (dataToInsert[idx].rdf_type != null && dataToInsert[idx].rdf_type != ""){
-        form.rdf_type = dataToInsert[idx].rdf_type;
-      }else{
-        form.rdf_type = this.$attrs.deviceType;
-      }
+      form.rdf_type = this.$attrs.deviceType;
+
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
       }
@@ -482,62 +338,16 @@ export default class DeviceTable extends Vue {
         form.serial_number = dataToInsert[idx].serial_number;
       }
       if (
-        this.displayPersonCol &&
         dataToInsert[idx].person_in_charge != null &&
         dataToInsert[idx].person_in_charge != ""
       ) {
         form.person_in_charge = dataToInsert[idx].person_in_charge;
       }
       if (
-        dataToInsert[idx].start_up != null &&
-        dataToInsert[idx].start_up != ""
+        dataToInsert[idx].obtained != null &&
+        dataToInsert[idx].obtained != ""
       ) {
-        let startDate = moment(dataToInsert[idx].start_up, ["YYYY-MM-DD","DD-MM-YYYY","DD/MM/YYYY"]);
-        form.start_up = startDate.format("YYYY-MM-DD");
-      }
-
-      if (
-        this.displayRemovalCol &&
-        dataToInsert[idx].removal != null &&
-        dataToInsert[idx].removal != ""
-      ) {
-        let endDate = moment(dataToInsert[idx].removal, ["YYYY-MM-DD","DD-MM-YYYY","DD/MM/YYYY"]);
-        form.removal = endDate.format("YYYY-MM-DD");
-      }
-
-      if (
-        dataToInsert[idx].comment != null &&
-        dataToInsert[idx].comment != ""
-      ) {
-        form.description = dataToInsert[idx].comment;
-      }
-
-      if (this.suppColumnsNames.length > 0) {
-        let attributes = {};
-        for (let y = 0; y < this.suppColumnsNames.length; y++) {
-          let key = this.suppColumnsNames[y];
-          if (dataToInsert[idx][key] != null && dataToInsert[idx][key] != "") {
-            attributes[key] = dataToInsert[idx][key];
-          }
-        }
-
-        if (Object.keys(attributes).length !== 0) {
-          form.metadata = attributes;
-        }
-      }
-
-      if (
-        this.measure &&
-        this.nbVariableCol > 0
-      ){
-        for(let i = 1; i <= this.nbVariableCol; i++ ){
-          if(
-            dataToInsert[idx]['variable_'+i] != null &&
-            dataToInsert[idx]['variable_'+i] != ""
-          ) {
-              form.relations.push({"property":"vocabulary:measures","value":dataToInsert[idx]['variable_'+i]})
-          }
-        }
+        form.obtained = dataToInsert[idx].obtained;
       }
 
       if (
@@ -547,9 +357,7 @@ export default class DeviceTable extends Vue {
         form.constructor_model == null &&
         form.serial_number == null &&
         form.person_in_charge == null &&
-        form.start_up == null &&
-        form.removal == null &&
-        form.description == null
+        form.obtained == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
@@ -562,9 +370,9 @@ export default class DeviceTable extends Vue {
 
     Promise.all(promises).then(result => {
       if (this.onlyChecking) {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageGermplReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       } else {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageGermplInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       }
       this.infoMessage = true;
       this.disableCloseButton = false;
@@ -587,17 +395,18 @@ export default class DeviceTable extends Vue {
   }
 
   created() {
+    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
   callCreateDeviceService(
-    form: DeviceCreationDTO,
+    form: DeviceDTO,
     index: number,
     onlyChecking: boolean
   ) {
     return new Promise((resolve, reject) => {
     this.service
-    .createDevice(onlyChecking,form)
+    .createDevice(form)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => {
       if(onlyChecking) {
         this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('DeviceTable.checkingStatusMessage'), status:"OK"}])
@@ -614,6 +423,7 @@ export default class DeviceTable extends Vue {
       
     }).catch(error => {
         let errorMessage: string;
+        let errorMessage2: string;
         let failure = true;
         try {
           errorMessage = error.response.result.message;
@@ -645,8 +455,6 @@ export default class DeviceTable extends Vue {
         row.reformat();
         this.errorNumber = this.errorNumber + 1;
         this.progressValue = this.progressValue + 1;
-        this.disableInsert = false;
-        this.disableCheck = false;
         resolve();
       });
     });
@@ -678,16 +486,8 @@ export default class DeviceTable extends Vue {
             }
         } 
       }
-      let header = data[0];
-      for(let idy = 0; idy < header.length; idy++){
-        if(header[idy].startsWith('variable_')){
-          this.nbVariableCol++;
-        }
-      }
       if (insertionOK) {
         this.tabulator.setData(data);
-        this.displayRemovalCol = true;
-        this.displayPersonCol = true;
       }
     }
         
@@ -736,6 +536,10 @@ export default class DeviceTable extends Vue {
   border-right:1px solid #dee2e6;
   height: 30px;
 }
+
+// .tabulator .tabulator-header .tabulator-row  {
+//   height: 30px;
+// }
   
 </style>
 
@@ -750,10 +554,7 @@ en:
     constructor_model: Constructor model
     serial_number: Serial number
     person_in_charge: Person in charge
-    start_up: Start-up date
-    removal: Removal date
-    comment: Description
-    variable: Variable
+    obtained: Start-up
     checkingStatus: Checking status
     insertionStatus: Insertion Status
     downloadTemplate : Download template
@@ -764,13 +565,14 @@ en:
     emptyMessage: The table is empty
     close: Close
     addRow: Add Row
+    serial_numberNumber: Serial number
+    constructor_modelCode: Constructor model
     addColumn: Add column
-    addVarColumn: Add variable column
     help: Help
-    infoMessageDevReady: device ready to be inserted
+    infoMessageGermplReady: device ready to be inserted
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
-    infoMessageDevInserted: device inserted
+    infoMessageGermplInserted: device inserted
     checkingStatusMessage: ready
     insertionStatusMessage: created
     filterLines: Filter the lines
@@ -788,10 +590,7 @@ fr:
     constructor_model: Modèle du dispositif
     serial_number: Numéro de série
     person_in_charge: Personne en charge
-    start_up: Date de mise en service
-    removal: Date de mise hors service
-    comment: Description
-    variable: Variable
+    obtained: Date de mise en service
     checkingStatus: Statut
     insertionStatus: Statut
     downloadTemplate : Télécharger un gabarit
@@ -801,15 +600,17 @@ fr:
     progressTitle: lignes à parcourir
     emptyMessage: Le tableau est vide
     close : Fermer
+    addRow: Ajouter ligne
+    serial_numberNumber: Numéro de série
+    constructor_modelCode: Modèle de l'appareil
     addColumn: Ajouter colonne
-    addVarColumn: Ajouter colonne variable
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
-    infoMessageDevReady: device prêts à être insérer
-    infoMessageErrors: erreursoeso
+    infoMessageGermplReady: device prêts à être insérer
+    infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
-    infoMessageDevInserted: device insérés
+    infoMessageGermplInserted: device insérés
     checkingStatusMessage: validé
     insertionStatusMessage: créé
     seeErrorLines: See lines

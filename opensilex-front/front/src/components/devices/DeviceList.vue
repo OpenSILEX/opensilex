@@ -23,10 +23,10 @@
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.obtained')}}</label>
+          <label>{{$t('DeviceList.filter.startUp')}}</label>
           <opensilex-StringFilter
-            :filter.sync="filter.obtained"
-            placeholder="DeviceList.filter.obtained-placeholder"
+            :filter.sync="filter.startUp"
+            placeholder="DeviceList.filter.startUp-placeholder"
             type="number"
           ></opensilex-StringFilter>
         </div>
@@ -93,14 +93,14 @@ export default class DeviceList extends Vue {
   filter = {
     namePattern: undefined,
     rdf_type: undefined,
-    obtained: undefined
+    startUp: undefined
   };
 
   resetFilters() {
     this.filter = {
       namePattern: undefined,
       rdf_type: undefined,
-      obtained: undefined
+      startUp: undefined
     };
     this.refresh();
   }
@@ -127,8 +127,8 @@ export default class DeviceList extends Vue {
       sortable: true
     },
     {
-      key: "obtained",
-      label: "DeviceList.obtained",
+      key: "startUp",
+      label: "DeviceList.startUp",
       sortable: true
     },
     {
@@ -145,7 +145,7 @@ export default class DeviceList extends Vue {
     return this.service.searchDevices(
       this.filter.namePattern, // namePattern filter
       this.filter.rdf_type, // rdfTypes filter
-      this.filter.obtained, // year filter
+      this.filter.startUp, // year filter
       undefined, // brandPattern filter
       undefined, // model filter
       undefined,
@@ -167,7 +167,7 @@ en:
     uri: URI
     name: Name
     rdfType: Device Type 
-    obtained: Obtained 
+    startUp: Obtained 
     update: Update Device
     delete: Delete Device
     selected: Devices
@@ -178,15 +178,15 @@ en:
       namePattern-placeholder: Enter name
       rdfType: Type
       rdfType-placeholder: Select a device type
-      obtained: Obtained
-      obtained-placeholder: Enter year
+      startUp: Obtained
+      startUp-placeholder: Enter year
 
 fr:
   DeviceList:
     uri: URI
     name: Nom
     rdfType: Type du dispositif
-    obtained: Date d'obtention
+    startUp: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
     selected: Dispositifs
@@ -197,6 +197,6 @@ fr:
       namePattern-placeholder: Entrez un nom
       rdfType: Type
       rdfType-placeholder: Selectionner un type de dispositif
-      obtained: Date d'obtention
-      obtained-placeholder: Entrer une année
+      startUp: Date d'obtention
+      startUp-placeholder: Entrer une année
 </i18n>

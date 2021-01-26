@@ -184,11 +184,11 @@ export default class DeviceTable extends Vue {
     let constructor_modelCol = {title:this.$t('DeviceTable.constructor_model'), field:"constructor_model", visible:true, editor:true};
     let serial_numberCol = {title:this.$t('DeviceTable.serial_number'), field:"serial_number", visible:true, editor:true}
     let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:true, editor:true};
-    let obtainedCol =  {title:this.$t('DeviceTable.obtained'), field:"obtained", visible:true, editor:true};
+    let start_upCol =  {title:this.$t('DeviceTable.start_up'), field:"start_up", visible:true, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    this.tableColumns = [idCol, statusCol, uriCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, obtainedCol, checkingStatusCol, insertionStatusCol]
+    this.tableColumns = [idCol, statusCol, uriCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol, checkingStatusCol, insertionStatusCol]
 
     this.tableData = [];
     this.addInitialXRows(5);
@@ -308,7 +308,7 @@ export default class DeviceTable extends Vue {
         constructor_model: null,
         serial_number: null,
         person_in_charge: null,
-        obtained: null
+        start_up: null
       };
 
       form.rdf_type = this.$attrs.deviceType;
@@ -344,10 +344,10 @@ export default class DeviceTable extends Vue {
         form.person_in_charge = dataToInsert[idx].person_in_charge;
       }
       if (
-        dataToInsert[idx].obtained != null &&
-        dataToInsert[idx].obtained != ""
+        dataToInsert[idx].start_up != null &&
+        dataToInsert[idx].start_up != ""
       ) {
-        form.obtained = dataToInsert[idx].obtained;
+        form.start_up = dataToInsert[idx].start_up;
       }
 
       if (
@@ -357,7 +357,7 @@ export default class DeviceTable extends Vue {
         form.constructor_model == null &&
         form.serial_number == null &&
         form.person_in_charge == null &&
-        form.obtained == null
+        form.start_up == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
@@ -554,7 +554,7 @@ en:
     constructor_model: Constructor model
     serial_number: Serial number
     person_in_charge: Person in charge
-    obtained: Start-up
+    start_up: Start-up
     checkingStatus: Checking status
     insertionStatus: Insertion Status
     downloadTemplate : Download template
@@ -590,7 +590,7 @@ fr:
     constructor_model: Modèle du dispositif
     serial_number: Numéro de série
     person_in_charge: Personne en charge
-    obtained: Date de mise en service
+    start_up: Date de mise en service
     checkingStatus: Statut
     insertionStatus: Statut
     downloadTemplate : Télécharger un gabarit

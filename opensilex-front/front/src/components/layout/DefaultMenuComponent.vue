@@ -1,6 +1,6 @@
 <template>
-<div>
-      <div class="hamburger-container">
+  <div>
+    <div class="hamburger-container">
       <button
         class="hamburger hamburger--collapse"
         v-bind:class="{ 'is-active': menuVisible }"
@@ -12,56 +12,56 @@
         </span>
       </button>
     </div>
-  <div class="app-sidebar">
-    <div class="sidebar-content">
-      <div class="nav-container">
-        <nav id="main-menu-navigation" class="navigation-main">
-          <div
-            li
-            v-for="item in menu"
-            v-bind:key="item.id"
-            class="nav-item"
-            v-bind:class="{
-              'has-sub': item.hasChildren(),
-              open: item.showChildren,
-              active: isActive(item),
-            }"
-          >
-            <a
-              v-if="item.hasChildren()"
-              href="#"
-              v-on:click="toogle(item, $event)"
-            >
-              <i class="ik" v-bind:class="getIcon(item)"></i>
-              <span>{{ $t(item.label) }}</span>
-            </a>
-            <router-link v-else :to="item.route.path" :active="isActive">
-              <i class="ik" v-bind:class="getIcon(item)"></i>
-              <span>{{ $t(item.label) }}</span>
-            </router-link>
+    <div class="app-sidebar">
+      <div class="sidebar-content">
+        <div class="nav-container">
+          <nav id="main-menu-navigation" class="navigation-main">
             <div
-              class="submenu-content"
-              v-bind:class="{ open: item.showChildren }"
+              li
+              v-for="item in menu"
+              v-bind:key="item.id"
+              class="nav-item"
+              v-bind:class="{
+                'has-sub': item.hasChildren(),
+                open: item.showChildren,
+                active: isActive(item),
+              }"
             >
-              <router-link
-                v-for="itemChild in item.children"
-                v-bind:key="itemChild.id"
-                v-bind:class="{
-                  'is-shown': item.showChildren,
-                  active: isActive(itemChild),
-                }"
-                class="menu-item"
-                :to="itemChild.route.path"
+              <a
+                v-if="item.hasChildren()"
+                href="#"
+                v-on:click="toogle(item, $event)"
               >
-                {{ $t(itemChild.label) }}
+                <i class="ik" v-bind:class="getIcon(item)"></i>
+                <span>{{ $t(item.label) }}</span>
+              </a>
+              <router-link v-else :to="item.route.path" :active="isActive">
+                <i class="ik" v-bind:class="getIcon(item)"></i>
+                <span>{{ $t(item.label) }}</span>
               </router-link>
+              <div
+                class="submenu-content"
+                v-bind:class="{ open: item.showChildren }"
+              >
+                <router-link
+                  v-for="itemChild in item.children"
+                  v-bind:key="itemChild.id"
+                  v-bind:class="{
+                    'is-shown': item.showChildren,
+                    active: isActive(itemChild),
+                  }"
+                  class="menu-item"
+                  :to="itemChild.route.path"
+                >
+                  {{ $t(itemChild.label) }}
+                </router-link>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script lang="ts">
@@ -114,7 +114,7 @@ export default class DefaultMenuComponent extends Vue {
 
 <style scoped lang="scss">
 .hamburger-container {
-  position:fixed;
+  position: fixed;
   z-index: 1030;
   -webkit-user-select: none;
   user-select: none;
@@ -149,7 +149,7 @@ export default class DefaultMenuComponent extends Vue {
 .hamburger.is-active:hover .hamburger-inner,
 .hamburger.is-active:hover .hamburger-inner::after,
 .hamburger.is-active:hover .hamburger-inner::before {
-  background-color: #CCC;
+  background-color: rgb(221, 221, 221);
 }
 
 .hamburger.is-active:hover,

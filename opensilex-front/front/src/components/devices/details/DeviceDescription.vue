@@ -109,8 +109,8 @@ export default class DeviceDescription extends Vue {
         constructor_model: null,
         serial_number: null,
         person_in_charge: null,
-        startUp: null,
-        date_of_last_use: null,
+        start_up: null,
+        removal: null,
         relations: null
       };
   

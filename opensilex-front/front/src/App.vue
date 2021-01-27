@@ -13,7 +13,7 @@
           <component class="header-login" v-bind:is="loginComponent"></component>
         </header>
 
-        <section id="content-wrapper" class="page-wrap" v-if="user.isLoggedIn() && !disconnected">
+        <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" v-if="user.isLoggedIn() && !disconnected">
           <div>
             <component id="menu-container" v-if="!embed" v-bind:is="menuComponent"></component>
           </div>
@@ -75,6 +75,10 @@ export default class App extends Vue {
     return this.$store.state.loaderVisible;
   }
 
+  get menuVisible(): boolean {
+    return this.$store.state.menuVisible;
+  }
+
   keydownEnter(event) {
     console.debug("Keydown enter");
   }
@@ -131,4 +135,5 @@ main {
   margin-left: 0px;
   padding: 15px;
 }
+
 </style>

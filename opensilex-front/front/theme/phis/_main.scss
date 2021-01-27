@@ -368,6 +368,18 @@ p {
 		    }
 		}
 	}
+
+	.header-brand {
+		display: block;
+		font-size: 22px;
+		font-weight: 700;
+		color: #212529;
+		.logo-img {
+			display: inline-block;
+			width: 30px;
+		}
+	}
+	
 	.page-wrap {
 	    position: relative;
 	    .app-sidebar {
@@ -389,16 +401,7 @@ p {
 			    @include justify-content(space-between);
 			    padding: 13px 15px;
 			    height: 60px;
-			    .header-brand {
-				    display: block;
-				    font-size: 22px;
-				    font-weight: 700;
-				    color: #212529;
-				    .logo-img {
-					    display: inline-block;
-					    width: 30px;
-					}
-				}
+			    
 				.nav-toggle {
 					border: none;
 					background-color: $empty;

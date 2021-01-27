@@ -312,8 +312,28 @@
 /*************************************
 * MAIN NAVIGATION MENU
 *************************************/
+.app-sidebar {
+    margin-top: 60px;
+}
+
+.hidden-menu #menu-container {
+	background-color: transparent;
+	box-shadow: none;
+	z-index: -1;
+}
+
+.hidden-menu .app-sidebar {
+    display: none;
+}
+
+.wrapper .page-wrap.hidden-menu .main-content {
+    padding-left: 0;
+}
+
 .sidebar-header {
-    background-color: #00A38D
+    background-color: #00A38D;
+    position: absolute;
+    width: 240px;
 }
 
 .sidebar-header .header-brand .text {
@@ -325,10 +345,6 @@
     font-size: 0.7em;
     font-weight: normal;
     margin-left: 0.5em;
-}
-
-.sidebar-content {
-    padding-top: 3em
 }
 
 #main-menu-navigation .nav-item:hover, .customized #main-menu-navigation .nav-item.has-sub .submenu-content .menu-item:hover {

@@ -40,11 +40,11 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
     protected String pathFactors = "/core/factors";
-    protected String pathFactorsLevel = "/core/factorLevels";
+    protected String pathFactorsLevel = "/core/factors/levels";
 
     protected String uriPath = pathFactors + "/{uri}";
     protected String factorsLevelsPath = pathFactors + "/{uri}/levels";
-    protected String searchPath = pathFactors + "/search";
+    protected String searchPath = pathFactors ;
     protected String createPath = pathFactors ;
     protected String updatePath = pathFactors ;
     protected String deleteFactorPath = pathFactors + "/{uri}";
@@ -143,11 +143,14 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        creationDTO.setUri(createdUri);
+       
         // create
         FactorUpdateDTO updateDTOFromCreationDTO = addLevelFactorToDTO(
                 getUpdateDTOFromCreationDTO(creationDTO));
+        updateDTOFromCreationDTO.setUri(createdUri);
+
         final Response putResult = getJsonPutResponse(target(updatePath), updateDTOFromCreationDTO);
+        System.out.println(putResult.readEntity(JsonNode.class));
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
@@ -240,43 +243,6 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
-    public void testDeleteFactorLevel() throws Exception {
-
-        // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
-        String uri = extractUriFromResponse(postResponse).toString();
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-
-        // ensure that the result is a well formed URI, else throw exception
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
-        SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
-                new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
-        });
-        FactorDetailsGetDTO factorGetDto = getResponse.getResult();
-        int factorLevelSize = factorGetDto.getFactorLevels().size();
-        URI uriToRemove = factorGetDto.getFactorLevels().get(0).getUri();
-        // delete object and check if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deleteFactorsLevelPath), uriToRemove.toString());
-        assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
-
-        Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToRemove.toString());
-        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult2.getStatus());
-
-        getResult = getJsonGetByUriResponse(target(uriPath), uri);
-        node = getResult.readEntity(JsonNode.class);
-        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
-        getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
-        });
-        factorGetDto = getResponse.getResult();
-        assertEquals(factorLevelSize - 1, factorGetDto.getFactorLevels().size());
-    }
-
-    @Test
     public void testGetFactorLevel() throws Exception {
 
         // create object and check if URI exists
@@ -296,10 +262,11 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
                 new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
+        
         int factorLevelSize = factorGetDto.getFactorLevels().size();
         assertEquals(factorLevelSize, creationDTO.getFactorLevels().size());
-        URI uriToFind = factorGetDto.getFactorLevels().get(0).getUri();
 
+        URI uriToFind = factorGetDto.getFactorLevels().get(0).getUri();
         Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToFind.toString());
         assertEquals(Status.OK.getStatusCode(), getResult2.getStatus());
     }

@@ -16,7 +16,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 
@@ -25,7 +24,7 @@ import org.opensilex.core.ontology.SKOSReferencesDTO;
  * @author Arnaud Charleroy
  */
 public class FactorDetailsGetDTO extends SKOSReferencesDTO {
-    @JsonPropertyOrder({"uri", "name", "category", "description", "factor_levels"})
+    @JsonPropertyOrder({"uri", "name", "category", "description", "levels"})
 
     @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
     private URI uri;
@@ -39,7 +38,7 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
     @ApiModelProperty(example = "Experimental factor about water management")
     private String description;
 
-    @JsonProperty("factor_levels")
+    @JsonProperty("levels")
     List<FactorLevelGetDTO> factorLevels = new LinkedList<>();
 
     public URI getUri() {

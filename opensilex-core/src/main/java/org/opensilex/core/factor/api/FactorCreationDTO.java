@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.server.rest.validation.Required;
@@ -25,26 +26,23 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Arnaud Charleroy
  */
 public class FactorCreationDTO extends SKOSReferencesDTO {
-    @JsonPropertyOrder({"uri", "name", "category", "description", "factor_levels"})
+    @JsonPropertyOrder({"uri", "name", "category", "description", "levels"})
 
-    @ValidURI
-    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
-    private URI uri;
+    protected URI uri;
 
-    @Required 
-    @ApiModelProperty(example = "Irrigation")
     private String name;
     
-    @ApiModelProperty(example = "waterManagement")
     private String category;
     
-    @ApiModelProperty(example = "Experimental factor about water management")
     private String description;
     
     @Valid
-    @JsonProperty("factor_levels")
+    @NotNull
+    @JsonProperty("levels")
     private List<FactorLevelCreationDTO> factorLevels;
 
+    @ValidURI
+    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
     public URI getUri() {
         return uri;
     }
@@ -53,6 +51,8 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
+    @Required 
+    @ApiModelProperty(required = true, example = "Irrigation")
     public String getName() {
         return name;
     }
@@ -61,6 +61,7 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
         this.name = name;
     }
 
+    @ApiModelProperty(example = "waterManagement")
     public String getCategory() {
         return category;
     }
@@ -68,7 +69,8 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
     public void setCategory(String category) {
         this.category = category;
     }
-
+    
+    @ApiModelProperty(example = "Experimental factor about water management")
     public String getDescription() {
         return description;
     }

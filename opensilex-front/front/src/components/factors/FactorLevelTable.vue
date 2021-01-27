@@ -51,7 +51,12 @@
             :skipIfEmpty="false"
             v-slot="{ errors }"
           >
-            <div class="error-message alert alert-danger">{{ errors[0] }}</div>
+            <div
+              class="error-message alert alert-danger"
+              v-if="errors.length > 0"
+            >
+              {{ $t(errors[0]) }}
+            </div>
             <VueTabulator
               ref="tabulatorRef"
               class="table-light table-bordered"
@@ -72,21 +77,22 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorsService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
-import ValidationProvider from "vee-validate";
 import { extend } from "vee-validate";
 
 extend("requiredTabulator", (value) => {
   let valid = true;
-  value.some(function (factorLevel) {
-    if (factorLevel.name == null || factorLevel.name.trim() === "") {
-      valid = false;
-    }
-  });
+  if (value.length == 0) {
+    valid = false;
+  } else {
+    value.some(function (factorLevel) {
+      if (factorLevel.name == null || factorLevel.name.trim() === "") {
+        valid = false;
+      }
+    });
+  }
+
   if (!valid) {
-    return "Missing factor level name";
+    return "component.factorLevel.errors.factor-empty-levels";
   } else {
     return valid;
   }
@@ -375,6 +381,7 @@ en:
       errors:
         factor-already-exists: Factor level already exists with this URI.
         factor-empty-row: You can't add several empty rows
+        factor-empty-levels: Missing factor levels 
 fr:
   component:
     factorLevel:
@@ -396,5 +403,7 @@ fr:
       errors:
         factor-already-exists: URI du niveau de facteur déjà existante.
         factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides
+        factor-empty-levels: Niveaux de facteurs manquants
+        
 
 </i18n>

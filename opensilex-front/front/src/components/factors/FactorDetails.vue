@@ -65,8 +65,8 @@
         <opensilex-Card label="component.factor.details.factorLevels" icon>
           <template v-slot:body>
             <opensilex-TableView
-              v-if="factor.factor_levels.length != 0"
-              :items="factor.factor_levels"
+              v-if="factor.levels.length != 0"
+              :items="factor.levels"
               :fields="factorLevelFields"
               :globalFilterField="true"
             >
@@ -111,8 +111,6 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { FactorCategory } from "./FactorCategory";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { FactorDetailsGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FactorDetails extends Vue {
@@ -154,7 +152,7 @@ export default class FactorDetails extends Vue {
         closeMatch: [],
         broader: [],
         narrower: [],
-        factor_levels: [],
+        levels: [],
       };
     },
   })

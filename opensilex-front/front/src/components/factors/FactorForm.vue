@@ -53,7 +53,7 @@
         <opensilex-FactorLevelTable
           ref="factorLevelTable"
           :editMode="editMode"
-          :factorLevels.sync="form.factor_levels"
+          :factorLevels.sync="form.levels"
         ></opensilex-FactorLevelTable>
       </div>
     </b-form>
@@ -99,7 +99,7 @@ export default class FactorForm extends Vue {
         closeMatch: [],
         broader: [],
         narrower: [],
-        factor_levels: [
+        levels: [
           {
             uri: null,
             name: null,
@@ -115,14 +115,14 @@ export default class FactorForm extends Vue {
 
   reset() {
     this.uriGenerated = true;
-    if(!this.editMode){
+    if (!this.editMode) {
       this.factorTutorial.stop();
     }
   }
 
   addEmptyRow() {
     console.debug("add row");
-    this.form.factor_levels.unshift({
+    this.form.levels.unshift({
       uri: null,
       name: null,
       description: null,
@@ -142,7 +142,7 @@ export default class FactorForm extends Vue {
       closeMatch: [],
       broader: [],
       narrower: [],
-      factor_levels: [
+      levels: [
         {
           uri: null,
           name: null,
@@ -215,7 +215,7 @@ export default class FactorForm extends Vue {
     this.form.broader = this.savedForm.broader;
 
     this.form.narrower = this.savedForm.narrower;
-    this.form.factor_levels = this.savedForm.factor_levels;
+    this.form.levels = this.savedForm.levels;
   }
 
   setUri(uri: string) {
@@ -306,14 +306,16 @@ export default class FactorForm extends Vue {
     this.saveForm();
     this.form.name = this.$i18n.t("component.factor.example.name");
     this.form.category = this.$i18n.t("component.factor.example.category");
-    this.form.description = this.$i18n.t("component.factor.example.description");
-    let factor_levels = [];
+    this.form.description = this.$i18n.t(
+      "component.factor.example.description"
+    );
+    let levels = [];
     for (const [key, value] of Object.entries(
       this.$i18n.t("component.factor.example.factorLevels")
     )) {
-      factor_levels.push(value);
+      levels.push(value);
     }
-    this.form.factor_levels = factor_levels;
+    this.form.levels = levels;
     this.factorTutorial.start();
   }
 }

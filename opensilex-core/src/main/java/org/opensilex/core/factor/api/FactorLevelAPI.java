@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @author Arnaud Charleroy
  */
 @Api(FactorAPI.CREDENTIAL_FACTOR_GROUP_ID)
-@Path("/core/factorLevels")
+@Path("/core/factors/levels")
 @ApiCredentialGroup(
         groupId = FactorAPI.CREDENTIAL_FACTOR_GROUP_ID,
         groupLabelKey = FactorAPI.CREDENTIAL_FACTOR_GROUP_LABEL_KEY
@@ -133,44 +133,6 @@ public class FactorLevelAPI {
                     "Factor level not found",
                     "Unknown factor level URI: " + factorLevelUri.toString()
             ).getResponse();
-        }
-    }
-   
-    /**
-     * Remove an factor Level
-     *
-     * @param factorLevelUri the factor Level  URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Factor Level {@link URI}
-     */
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete a factor Level")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = FactorAPI.CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = FactorAPI.CREDENTIAL_FACTOR_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Invalid or unknown Factor level URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response deleteFactorLevel(
-            @ApiParam(value = "FactorLevel URI", example = FACTOR_LEVEL_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI factorLevelUri
-    ) {
-
-        // TODO : check super admin
-        try {
-            FactorLevelDAO dao = new FactorLevelDAO(sparql);
-            dao.delete(factorLevelUri);
-            return new ObjectUriResponse(factorLevelUri).getResponse();
-
-        } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Factor Level URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
         }
     }
 }

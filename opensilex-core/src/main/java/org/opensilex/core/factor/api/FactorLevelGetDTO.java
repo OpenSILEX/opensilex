@@ -10,6 +10,7 @@
 package org.opensilex.core.factor.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import org.opensilex.core.factor.dal.FactorLevelModel;
 
@@ -20,12 +21,13 @@ import org.opensilex.core.factor.dal.FactorLevelModel;
 public class FactorLevelGetDTO {
     @JsonPropertyOrder({"uri", "name", "description"})
        
-    private URI uri;
+    protected URI uri;
 
-    private String name;
+    protected String name;
 
-    private String description;
+    protected String description;
     
+    @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation.ww")
     public URI getUri() {
         return uri;
     }
@@ -34,6 +36,7 @@ public class FactorLevelGetDTO {
         this.uri = uri;
     }
 
+    @ApiModelProperty(example = "WW")
     public String getName() {
         return name;
     }
@@ -41,7 +44,8 @@ public class FactorLevelGetDTO {
     public void setName(String name) {
         this.name = name;
     }
-   
+    
+    @ApiModelProperty(example = "Well watered")
     public String getDescription() {
         return description;
     }
@@ -52,11 +56,9 @@ public class FactorLevelGetDTO {
     
     public static FactorLevelGetDTO fromModel(FactorLevelModel model) {
         FactorLevelGetDTO dto = new FactorLevelGetDTO();
-
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
-
         return dto;
     }
 }

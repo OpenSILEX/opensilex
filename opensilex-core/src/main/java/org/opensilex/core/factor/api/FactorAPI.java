@@ -236,7 +236,6 @@ public class FactorAPI {
      */
     @GET
     @ApiOperation("Search factors")
-    @Path("search")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

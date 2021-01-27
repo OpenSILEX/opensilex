@@ -59,8 +59,8 @@ export default class FactorLevelSelector extends Vue {
               isDisabled: true,
               children: []
             };
-            for (let j in factor.factorLevels) {
-              let factorLevel = factor.factorLevels[j];
+            for (let j in factor.levels) {
+              let factorLevel = factor.levels[j];
               factorNode.children.push({
                 id: factorLevel.uri,
                 label: factorLevel.name

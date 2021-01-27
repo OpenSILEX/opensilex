@@ -91,7 +91,7 @@ export default class SpeciesSelector extends Vue {
   speciesToSelectNode(dto: SpeciesDTO) {
     return {
       id: dto.uri,
-      label: dto.label
+      label: dto.name
     };
   }
 

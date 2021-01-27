@@ -41,12 +41,8 @@ public class SpeciesAPI {
     UserModel user;
 
     @GET
-    @Path("get-all")
-    @ApiOperation("get all species")
+    @ApiOperation("get species (no pagination)")
     @ApiTranslatable
-//    @ApiCache(
-//            category = SPECIES_CACHE_CATEGORY
-//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

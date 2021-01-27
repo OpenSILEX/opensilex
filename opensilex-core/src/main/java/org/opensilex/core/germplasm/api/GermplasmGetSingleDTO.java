@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
@@ -14,19 +15,22 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  *
  * @author Alice Boizet
  */
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
+    "production_year", "description", "species", "species_name","variety", 
+    "variety_name", "accession", "accession_name", "institute", "website", "metadata"})
 public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
 
     /**
      * attributes
      */
-    protected Map<String, String> attributes;
+    protected Map<String, String> metadata;
 
-    public Map<String, String> getAttributes() {
-        return attributes;
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 
     /**
@@ -39,14 +43,14 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         GermplasmGetSingleDTO dto = new GermplasmGetSingleDTO();
 
         dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
+        dto.setRdfType(model.getType());
+        dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());
             try {
-                dto.setSpeciesLabel(model.getSpecies().getName());
+                dto.setSpeciesName(model.getSpecies().getName());
             } catch (Exception e) {
             }
         }
@@ -54,7 +58,7 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         if (model.getVariety() != null) {
             dto.setVariety(model.getVariety().getUri());
             try {
-                dto.setVarietyLabel(model.getVariety().getName());
+                dto.setVarietyName(model.getVariety().getName());
             } catch (Exception e) {
             }
         }
@@ -62,13 +66,13 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         if (model.getAccession() != null) {
             dto.setAccession(model.getAccession().getUri());
             try {
-                dto.setAccessionLabel(model.getAccession().getName());
+                dto.setAccessionName(model.getAccession().getName());
             } catch (Exception e) {
             }
         }
 
         if (model.getComment() != null) {
-            dto.setComment(model.getComment());
+            dto.setDescription(model.getComment());
         }
         
         if (model.getInstitute() != null) {
@@ -84,13 +88,17 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         }
 
         if (model.getAttributes() != null) {
-            dto.setAttributes(model.getAttributes());
+            dto.setMetadata(model.getAttributes());
         }
 
         if (model.getSynonyms() != null) {
             dto.setSynonyms(model.getSynonyms());
         }
 
+        if (model.getWebsite() != null) {
+            dto.setWebsite(model.getWebsite());
+        }
+        
         return dto;
     }
 

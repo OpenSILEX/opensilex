@@ -308,7 +308,7 @@ export default class ExperimentList extends Vue {
           );
           this.species.push({
             id: http.response.result[i].uri,
-            label: http.response.result[i].label
+            label: http.response.result[i].name
           });
         }
       })
@@ -317,7 +317,7 @@ export default class ExperimentList extends Vue {
 
   getSpeciesName(uri: String): String {
     if (this.speciesByUri.has(uri)) {
-      return this.speciesByUri.get(uri).label;
+      return this.speciesByUri.get(uri).name;
     }
     return null;
   }

@@ -12,7 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static junit.framework.TestCase.assertEquals;
@@ -35,23 +38,23 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
     protected String path = "/core/germplasm";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = path + "/{uri}";
+    protected String searchPath = path;
+    protected String createPath = path;
+    protected String updatePath = path;
+    protected String deletePath = path + "/{uri}";
 
     protected GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testSpecies");
-        germplasmDTO.setType(new URI(Oeso.Species.toString()));
+        germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));
         return germplasmDTO;
     }
 
     protected GermplasmCreationDTO getCreationVarietyDTO(URI speciesURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testVariety");
-        germplasmDTO.setType(new URI(Oeso.Variety.toString()));
+        germplasmDTO.setRdfType(new URI(Oeso.Variety.toString()));
         germplasmDTO.setSpecies(speciesURI);
         return germplasmDTO;
     }
@@ -59,7 +62,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     protected GermplasmCreationDTO getCreationAccessionDTO(URI varietyURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testAccession");
-        germplasmDTO.setType(new URI(Oeso.Accession.toString()));
+        germplasmDTO.setRdfType(new URI(Oeso.Accession.toString()));
         germplasmDTO.setVariety(varietyURI);
         return germplasmDTO;
     }
@@ -67,7 +70,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     protected GermplasmCreationDTO getCreationLotDTO(URI accessionURI) throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testLot");
-        germplasmDTO.setType(new URI(Oeso.PlantMaterialLot.toString()));
+        germplasmDTO.setRdfType(new URI(Oeso.PlantMaterialLot.toString()));
         germplasmDTO.setAccession(accessionURI);
         return germplasmDTO;
     }
@@ -136,12 +139,15 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        GermplasmSearchDTO searchDTO = new GermplasmSearchDTO();
-        searchDTO.name = getCreationSpeciesDTO().name;
-        searchDTO.type = getCreationSpeciesDTO().type;
+        Map<String, Object> params = new HashMap<String, Object>() {
+            {
+                put("name", getCreationSpeciesDTO().name);
+                put("rdf_type", getCreationSpeciesDTO().rdfType);                
+            }
+        };
 
-        Response getResult = getJsonPostResponse(target(searchPath), searchDTO, OpenSilex.DEFAULT_LANGUAGE);
-
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        final Response getResult = appendToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);

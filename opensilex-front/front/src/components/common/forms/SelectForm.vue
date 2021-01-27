@@ -387,7 +387,7 @@ export default class SelectForm extends Vue {
         return;
       }
     } else if (!values) {
-      this.selection = null;
+      this.selection = undefined;
       this.$emit("clear");
       return;
     }

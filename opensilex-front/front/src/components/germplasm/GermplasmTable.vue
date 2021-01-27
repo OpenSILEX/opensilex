@@ -5,7 +5,7 @@
       <b-button class="mt-3" variant="primary" block @click="addColumn">{{$t('GermplasmTable.addColumn')}}</b-button>
     </b-modal>
 
-    <div>
+    <!-- <div>
       <b-button pill v-b-toggle.collapse-1 variant="outline-secondary">{{$t('GermplasmTable.help')}}</b-button>
       <b-collapse id="collapse-1" class="mb-2mt-2">
         <b-alert show>
@@ -14,9 +14,9 @@
           <div>{{$t('GermplasmTable.infoMandatoryFields')}}</div>
         </b-alert>
       </b-collapse>
-    </div>
+    </div> -->
 
-    <b-input-group class="mt-3 mb-3" size="sm">
+    <b-input-group class="mt-2 mb-2" size="sm">
       <downloadCsv
         ref="downloadCsv"
         class="btn btn-outline-primary mb-2 mr-2"
@@ -40,11 +40,13 @@
       ></b-form-select> 
     </b-input-group>    
 
-    <div ref="table"></div>
-    <b-input-group class="mt-3 mb-3" size="sm">
+    <b-input-group  size="sm">
       <b-button class="mb-2 mr-2" @click="checkData()" variant="primary" v-bind:disabled="disableCheck">{{$t("GermplasmTable.check")}}</b-button>
       <b-button class="mb-2 mr-2 " @click="insertData()" variant="success" v-bind:disabled="disableInsert">{{$t('GermplasmTable.insert')}}</b-button>
     </b-input-group>
+
+    <div ref="table"></div>
+
 
     <b-modal
       id="progressModal"
@@ -64,7 +66,14 @@
       </b-alert>
       <b-alert variant="primary" :show="infoMessage">{{this.summary}}</b-alert>
       <b-alert variant="danger" :show="alertEmptyTable">{{$t('GermplasmTable.emptyMessage')}}</b-alert>
+      <b-alert v-if="onlyChecking" variant="warning" :show="onlyChecking && !alertEmptyTable">{{$t('GermplasmTable.infoProposeInsertion')}}</b-alert>
       <template v-slot:modal-footer>
+        <b-button
+          v-if="onlyChecking && !alertEmptyTable"
+          class="mb-2 mr-2"
+          @click="insertDataFromModal()"
+          variant="success"
+        >{{$t('GermplasmTable.insert')}}</b-button>
         <b-button
           v-bind:disabled="disableCloseButton"
           class="mb-2 mr-2"
@@ -215,22 +224,23 @@ export default class GermplasmTable extends Vue {
     let varietyCol = {title:this.$t('GermplasmTable.fromVariety') + '<span class="requiredOnCondition">*</span>', field:"variety", visible:true, editor:true};
     let accessionCol = {title:this.$t('GermplasmTable.fromAccession') + '<span class="requiredOnCondition">*</span>', field:"accession", visible:true, editor:true}
     let instituteCol =  {title:this.$t('GermplasmTable.institute'), field:"institute", visible:true, editor:true};
+    let websiteCol = {title:this.$t('GermplasmTable.website'), field:"website", visible:true, editor:true};
     let productionYearCol =  {title:this.$t('GermplasmTable.year'), field:"productionYear", visible:true, editor:true};
     let commentCol = {title:this.$t('GermplasmTable.comment'), field:"comment", visible:true, editor:true};
-    let checkingStatusCol = {title:this.$t('GermplasmTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
-    let insertionStatusCol ={title:this.$t('GermplasmTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
+    let checkingStatusCol = {title:this.$t('GermplasmTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false,minWidth:400};
+    let insertionStatusCol ={title:this.$t('GermplasmTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false, minWidth:400};
 
     if (this.$attrs.germplasmType.endsWith('Species'))  {
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Variety'))  {
       let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"code", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeVar,  speciesCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeVar,  speciesCol, instituteCol, websiteCol, commentCol, checkingStatusCol, insertionStatusCol]
     } else if (this.$attrs.germplasmType.endsWith('Accession')) {
       let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"code", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeAcc, speciesCol, varietyCol, instituteCol, commentCol, checkingStatusCol, insertionStatusCol]        
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeAcc, speciesCol, varietyCol, instituteCol, websiteCol, commentCol, checkingStatusCol, insertionStatusCol]        
     } else {
       let codeLot = {title:this.$t('GermplasmTable.lotNumber'), field:"code", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
+      this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, codeLot,  speciesCol, varietyCol, accessionCol, instituteCol, websiteCol, productionYearCol, commentCol, checkingStatusCol, insertionStatusCol]  
     }
 
     this.tableData = [];
@@ -344,21 +354,22 @@ export default class GermplasmTable extends Vue {
 
     for (let idx = 0; idx < dataToInsert.length; idx++) {
       let form: GermplasmCreationDTO = {
-        type: null,
+        rdf_type: null,
         name: null,
         uri: null,
         species: null,
         variety: null,
         accession: null,
         institute: null,
-        productionYear: null,
-        comment: null,
+        production_year: null,
+        description: null,
         code: null,
         synonyms: [],
-        attributes: null
+        metadata: null,
+        website: null
       };
 
-      form.type = this.$attrs.germplasmType;
+      form.rdf_type = this.$attrs.germplasmType;
 
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
@@ -394,13 +405,13 @@ export default class GermplasmTable extends Vue {
         dataToInsert[idx].productionYear != null &&
         dataToInsert[idx].productionYear != ""
       ) {
-        form.productionYear = dataToInsert[idx].productionYear;
+        form.production_year = dataToInsert[idx].productionYear;
       }
       if (
         dataToInsert[idx].comment != null &&
         dataToInsert[idx].comment != ""
       ) {
-        form.comment = dataToInsert[idx].comment;
+        form.description = dataToInsert[idx].comment;
       }
       if (dataToInsert[idx].code != null && dataToInsert[idx].code != "") {
         form.code = dataToInsert[idx].code;
@@ -412,6 +423,10 @@ export default class GermplasmTable extends Vue {
       ) {
         let stringSynonyms = dataToInsert[idx].synonyms;
         form.synonyms = stringSynonyms.split("|");
+      }
+
+      if (dataToInsert[idx].website != null && dataToInsert[idx].website != "") {
+        form.website = dataToInsert[idx].website;
       }
 
 
@@ -433,7 +448,7 @@ export default class GermplasmTable extends Vue {
         }
 
         if (Object.keys(attributes).length !== 0) {
-          form.attributes = attributes;
+          form.metadata = attributes;
         }
       }
 
@@ -444,11 +459,12 @@ export default class GermplasmTable extends Vue {
         form.variety == null &&
         form.accession == null &&
         form.institute == null &&
-        form.productionYear == null &&
-        form.comment == null &&
+        form.production_year == null &&
+        form.description == null &&
         form.code == null &&
         form.synonyms.length == 0 &&
-        form.attributes == null
+        form.metadata == null &&
+        form.website == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
@@ -589,8 +605,12 @@ export default class GermplasmTable extends Vue {
       this.tabulator.setFilter("status", "=", this.filter);
     } else {
       this.tabulator.clearFilter();
-    }
-    
+    }    
+  }
+
+  insertDataFromModal() {
+    this.$bvModal.hide('progressModal');
+    this.insertData();
   }
 
 }
@@ -662,6 +682,7 @@ en:
     lotNumber: LotNumber
     synonyms: Synonyms
     subtaxa: Subtaxa
+    website: Website
     addColumn: Add column
     infoSynonyms: To add several synonyms or subtaxa, use | as separator
     infoAttributes: To add additional information, you can add columns
@@ -672,6 +693,7 @@ en:
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
     infoMessageGermplInserted: germplasm inserted
+    infoProposeInsertion: Don't forget to click on Insert button in order to finalize germplasm insertion (button below or above the table)
     checkingStatusMessage: ready
     insertionStatusMessage: created
     filterLines: Filter the lines
@@ -706,6 +728,7 @@ fr:
     lotNumber: Code Lot
     synonyms: Synonymes
     subtaxa : Subtaxa
+    website: Site web
     addColumn: Ajouter colonne
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
@@ -716,6 +739,7 @@ fr:
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
     infoMessageGermplInserted: germplasm insérés
+    infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
     checkingStatusMessage: validé
     insertionStatusMessage: créé
     seeErrorLines: See lines

@@ -51,6 +51,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { 
   GermplasmService, 
   GermplasmCreationDTO, 
+  GermplasmUpdateDTO,
   GermplasmGetAllDTO,
   GermplasmGetSingleDTO,
   OntologyService, 
@@ -104,7 +105,7 @@ export default class GermplasmView extends Vue {
     );
   }
 
-  callUpdateGermplasmService(form: GermplasmCreationDTO, done) {
+  callUpdateGermplasmService(form: GermplasmUpdateDTO, done) {
     console.debug(form);
     done(
       this.service

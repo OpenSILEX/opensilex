@@ -6,8 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
@@ -106,6 +108,13 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     )
     List<String> synonyms;
     public static final String SYNONYM_VAR = "synonym";
+    
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "homepage"
+    )
+    URI website;
+    public static final String WEBSITE_VAR = "website";
 
     public SPARQLLabel getLabel() {
         return label;
@@ -187,6 +196,14 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
         this.synonyms = synonyms;
     }
 
+    public URI getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(URI website) {
+        this.website = website;
+    }
+    
     @Override
     public String[] getUriSegments(GermplasmModel instance) {
         String germplasmType = "";

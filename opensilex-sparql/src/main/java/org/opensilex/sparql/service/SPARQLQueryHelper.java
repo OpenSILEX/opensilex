@@ -15,6 +15,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_LogicalAnd;
 import org.apache.jena.sparql.expr.E_LogicalOr;
 import org.apache.jena.sparql.expr.E_Regex;
+import org.apache.jena.sparql.expr.E_Str;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
@@ -66,6 +67,11 @@ public class SPARQLQueryHelper {
     public static Expr regexFilter(String varName, String regexPattern, String regexFlag) {
         ExprVar name = new ExprVar(varName);
         return regexFilter(name, regexPattern, regexFlag);
+    }
+    
+    public static Expr regexFilterOnURI(String varName, String regexPattern, String regexFlag) {
+        ExprVar name = new ExprVar(varName);
+        return regexFilter(new E_Str(name), regexPattern, regexFlag);
     }
 
     public static Expr or(Expr... expressions) {

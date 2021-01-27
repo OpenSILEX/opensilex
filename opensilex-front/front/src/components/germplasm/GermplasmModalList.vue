@@ -31,7 +31,6 @@ import VueRouter from "vue-router";
 import {
   GermplasmService,
   GermplasmGetAllDTO,
-  GermplasmSearchDTO,
   ResourceTreeDTO
 } from "opensilex-core/index";
 

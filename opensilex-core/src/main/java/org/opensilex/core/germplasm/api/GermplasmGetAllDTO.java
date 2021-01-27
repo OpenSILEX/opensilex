@@ -5,13 +5,16 @@
  */
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
  *
- * @author boizetal
+ * @author Alice Boizet
  */
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "species", "species_name"})
 public class GermplasmGetAllDTO {
 
     /**
@@ -22,15 +25,17 @@ public class GermplasmGetAllDTO {
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
      */
-    protected URI type;
+    @JsonProperty("rdf_type")
+    protected URI rdfType;
 
     /**
      * typeLabel
      */
-    protected String typeLabel;
+    @JsonProperty("rdf_type_name")
+    protected String rdfTypeName;
 
     /**
-     * Germplasm label
+     * Germplasm name
      */
     protected String name;
 
@@ -42,7 +47,8 @@ public class GermplasmGetAllDTO {
     /**
      * speciesLabel
      */
-    protected String speciesLabel;
+    @JsonProperty("species_name")
+    protected String speciesName;
 
     public URI getUri() {
         return uri;
@@ -52,20 +58,20 @@ public class GermplasmGetAllDTO {
         this.uri = uri;
     }
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
-    public String getTypeLabel() {
-        return typeLabel;
+    public String getRdfTypeName() {
+        return rdfTypeName;
     }
 
-    public void setTypeLabel(String typeLabel) {
-        this.typeLabel = typeLabel;
+    public void setRdfTypeName(String rdfTypeName) {
+        this.rdfTypeName = rdfTypeName;
     }
 
     public String getName() {
@@ -84,12 +90,12 @@ public class GermplasmGetAllDTO {
         this.species = species;
     }
 
-    public String getSpeciesLabel() {
-        return speciesLabel;
+    public String getSpeciesName() {
+        return speciesName;
     }
 
-    public void setSpeciesLabel(String speciesLabel) {
-        this.speciesLabel = speciesLabel;
+    public void setSpeciesName(String speciesName) {
+        this.speciesName = speciesName;
     }
 
     /**
@@ -102,14 +108,14 @@ public class GermplasmGetAllDTO {
         GermplasmGetAllDTO dto = new GermplasmGetAllDTO();
 
         dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
+        dto.setRdfType(model.getType());
+        dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());
             try {
-                dto.setSpeciesLabel(model.getSpecies().getName());
+                dto.setSpeciesName(model.getSpecies().getName());
             } catch (Exception e) {
             }
         }

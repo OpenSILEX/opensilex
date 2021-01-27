@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
@@ -14,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLLabel;
 
@@ -23,6 +24,8 @@ import org.opensilex.sparql.model.SPARQLLabel;
  * @author Alice Boizet
  */
 @ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
+    "description", "species", "variety", "accession", "institute", "website", "metadata"})
 public class GermplasmCreationDTO {
     
     /**
@@ -37,19 +40,20 @@ public class GermplasmCreationDTO {
      */
     @NotNull
     @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
-    protected URI type;
+    @JsonProperty("rdf_type")
+    protected URI rdfType;
     
     /**
      * Germplasm label
      */
-    @Required
+    @NotNull
     @ApiModelProperty(value = "Germplasm name", example = "SL_001", required = true)
     protected String name;
     
     /**
      * Germplasm id (accessionNumber, varietyCode...)
      */
-    @ApiModelProperty(value = "Germplasm code (accessionNumber, varietyCode...)", example = "", required = true)
+    @ApiModelProperty(value = "Germplasm code (accessionNumber, varietyCode...)", example = "")
     protected String code;
     
     /**
@@ -78,18 +82,26 @@ public class GermplasmCreationDTO {
      */
     @ApiModelProperty(value = "institute", example = "INRA")
     protected String institute;
-    
+        
     /**
      * productionYear
      */
     @ApiModelProperty(value = "production year", example = "2015")
+    @JsonProperty("production_year")
     protected Integer productionYear;
         
     /**
      * comment
      */
     @ApiModelProperty(value = "comment")
-    protected String comment;    
+    protected String description;  
+    
+    /**
+     * website
+     */
+    @ValidURI
+    @ApiModelProperty(value = "website")
+    protected URI website;
 
     public URI getUri() {
         return uri;
@@ -99,12 +111,12 @@ public class GermplasmCreationDTO {
         this.uri = uri;
     }
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public String getName() {
@@ -163,12 +175,12 @@ public class GermplasmCreationDTO {
         this.productionYear = productionYear;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
     
     protected List<String> synonyms;
@@ -181,15 +193,23 @@ public class GermplasmCreationDTO {
         this.synonyms = synonyms;
     }
 
-    protected Map<String, String> attributes;
+    protected Map<String, String> metadata;
 
-    public Map<String, String> getAttributes() {
-        return attributes;
+    public Map<String, String> getMetadata() {
+        return metadata;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }  
+
+    public URI getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(URI website) {
+        this.website = website;
+    }
     
     public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
@@ -200,8 +220,8 @@ public class GermplasmCreationDTO {
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
-        if (type != null) {
-            model.setType(type);
+        if (rdfType != null) {
+            model.setType(rdfType);
         }
         
         if (species != null) {
@@ -228,12 +248,12 @@ public class GermplasmCreationDTO {
             model.setProductionYear(productionYear);
         }
         
-        if (comment != null) {
-            model.setComment(comment);
+        if (description != null) {
+            model.setComment(description);
         }        
         
-        if (attributes != null ) {
-           model.setAttributes(attributes);
+        if (metadata != null ) {
+           model.setAttributes(metadata);
         }
 
         if (synonyms != null) {
@@ -246,6 +266,10 @@ public class GermplasmCreationDTO {
         
         if (code != null) {
             model.setCode(code);
+        }
+        
+        if (website != null) {
+            model.setWebsite(website);                    
         }
 
         return model;

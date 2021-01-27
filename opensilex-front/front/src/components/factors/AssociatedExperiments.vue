@@ -149,7 +149,7 @@ export default class ExperimentList extends Vue {
 
   getSpeciesName(uri: String): String {
     if (this.speciesByUri.has(uri)) {
-      return this.speciesByUri.get(uri).label;
+      return this.speciesByUri.get(uri).name;
     }
     return null;
   }

@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.util.List;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
@@ -15,6 +17,9 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  *
  * @author Alice Boizet
  */
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
+    "production_year", "description", "species", "species_name","variety", 
+    "variety_name", "accession", "accession_name", "institute", "website"})
 public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
     /**
@@ -23,9 +28,10 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
     protected URI variety;
 
     /**
-     * varietyLabel
+     * varietyName
      */
-    protected String varietyLabel;
+    @JsonProperty("variety_name")
+    protected String varietyName;
 
     /**
      * Germplasm Accession URI
@@ -33,9 +39,10 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
     protected URI accession;
 
     /**
-     * accessionLabel
+     * accessionName
      */
-    protected String accessionLabel;
+    @JsonProperty("accession_name")
+    protected String accessionName;
 
     /**
      * institute where the accession has been created
@@ -50,15 +57,17 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
     /**
      * productionYear
      */
+    @JsonProperty("production_year")
     protected Integer productionYear;
 
     /**
-     * comment
+     * description
      */
-    protected String comment;
+    protected String description;
 
     protected List<String> synonyms;
-
+    
+    protected URI website;
 
     public URI getVariety() {
         return variety;
@@ -68,12 +77,12 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.variety = variety;
     }
 
-    public String getVarietyLabel() {
-        return varietyLabel;
+    public String getVarietyName() {
+        return varietyName;
     }
 
-    public void setVarietyLabel(String varietyLabel) {
-        this.varietyLabel = varietyLabel;
+    public void setVarietyName(String varietyName) {
+        this.varietyName = varietyName;
     }
 
     public URI getAccession() {
@@ -84,12 +93,12 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.accession = accession;
     }
 
-    public String getAccessionLabel() {
-        return accessionLabel;
+    public String getAccessionName() {
+        return accessionName;
     }
 
-    public void setAccessionLabel(String accessionLabel) {
-        this.accessionLabel = accessionLabel;
+    public void setAccessionName(String accessionName) {
+        this.accessionName = accessionName;
     }
 
     public String getInstitute() {
@@ -108,12 +117,12 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.productionYear = productionYear;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getCode() {
@@ -132,6 +141,14 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         this.synonyms = synonyms;
     }
 
+    public URI getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(URI website) {
+        this.website = website;
+    }
+
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -142,14 +159,14 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         GermplasmGetExportDTO dto = new GermplasmGetExportDTO();
 
         dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        dto.setTypeLabel(model.getTypeLabel().getDefaultValue());
+        dto.setRdfType(model.getType());
+        dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());
             try {
-                dto.setSpeciesLabel(model.getSpecies().getName());
+                dto.setSpeciesName(model.getSpecies().getName());
             } catch (Exception e) {
             }
         }
@@ -157,7 +174,7 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         if (model.getVariety() != null) {
             dto.setVariety(model.getVariety().getUri());
             try {
-                dto.setVarietyLabel(model.getVariety().getName());
+                dto.setVarietyName(model.getVariety().getName());
             } catch (Exception e) {
             }
         }
@@ -165,13 +182,13 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
         if (model.getAccession() != null) {
             dto.setAccession(model.getAccession().getUri());
             try {
-                dto.setAccessionLabel(model.getAccession().getName());
+                dto.setAccessionName(model.getAccession().getName());
             } catch (Exception e) {
             }
         }
 
         if (model.getComment() != null) {
-            dto.setComment(model.getComment());
+            dto.setDescription(model.getComment());
         }
 
         if (model.getInstitute() != null) {
@@ -188,6 +205,10 @@ public class GermplasmGetExportDTO extends GermplasmGetAllDTO {
 
         if (model.getSynonyms() != null) {
             dto.setSynonyms(model.getSynonyms());
+        }
+        
+        if (model.getWebsite() != null) {
+            dto.setWebsite(model.getWebsite());
         }
 
         return dto;

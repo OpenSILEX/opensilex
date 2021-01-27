@@ -344,7 +344,7 @@ export default class ScientificObjectList extends Vue {
   speciesToSelectNode(dto: SpeciesDTO) {
     return {
       id: dto.uri,
-      label: dto.label,
+      label: dto.name,
     };
   }
 

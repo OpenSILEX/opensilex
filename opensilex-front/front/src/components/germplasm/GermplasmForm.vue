@@ -1,5 +1,5 @@
 <template>
-  <ValidationObserver ref="validatorRef" v-if="form.type">
+  <ValidationObserver ref="validatorRef" v-if="form.rdf_type">
     
     <!-- URI -->
     <opensilex-UriForm
@@ -12,7 +12,7 @@
 
     <!-- type -->
     <opensilex-TypeForm
-      :type.sync="form.type"
+      :type.sync="form.rdf_type"
       :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
       :required="true"
       helpMessage="GermplasmForm.type-help"
@@ -30,7 +30,7 @@
 
     <!-- synonyms -->
     <opensilex-TagInputForm
-      v-if= 'form.type.endsWith("Accession") || form.type.endsWith("Variety")'
+      v-if= 'form.rdf_type.endsWith("Accession") || form.rdf_type.endsWith("Variety")'
       :value.sync="form.synonyms"
       label="GermplasmForm.subtaxa"
       helpMessage="GermplasmForm.subtaxa-help"
@@ -52,7 +52,7 @@
 
     <!-- code -->
     <opensilex-InputForm
-      v-if= '!form.type.endsWith("Species")'
+      v-if= '!form.rdf_type.endsWith("Species")'
       :value.sync="form.code"
       label="GermplasmForm.code"
       type="text"
@@ -61,7 +61,7 @@
     
     <!-- species -->
     <opensilex-InputForm
-      v-if= '!form.type.endsWith("Species")'
+      v-if= '!form.rdf_type.endsWith("Species")'
       :value.sync="form.species"
       label="GermplasmForm.species"
       type="text"
@@ -70,7 +70,7 @@
  
     <!-- variety -->
     <opensilex-InputForm
-      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety"))'
+      v-if= '! (form.rdf_type.endsWith("Species") || form.rdf_type.endsWith("Variety"))'
       :value.sync="form.variety"
       label="GermplasmForm.variety"
       type="text"
@@ -79,7 +79,7 @@
     
     <!-- accession -->
     <opensilex-InputForm
-      v-if= '! (form.type.endsWith("Species") || form.type.endsWith("Variety") || form.type.endsWith("Accession"))'
+      v-if= '! (form.rdf_type.endsWith("Species") || form.rdf_type.endsWith("Variety") || form.rdf_type.endsWith("Accession"))'
       :value.sync="form.accession"
       label="GermplasmForm.accession"
       type="text"
@@ -88,17 +88,27 @@
     
     <!-- institute -->
     <opensilex-InputForm
-      v-if= '!form.type.endsWith("Species")'
+      v-if= '!form.rdf_type.endsWith("Species")'
       :value.sync="form.institute"
       label="GermplasmForm.institute"
       type="text"
       helpMessage="GermplasmForm.institute-help"
     ></opensilex-InputForm>
+
+    <!-- website -->
+    <opensilex-InputForm
+      v-if= '!form.rdf_type.endsWith("Species")'
+      :value.sync="form.website"
+      label="GermplasmForm.website"
+      type="url"
+      rules="url"
+      helpMessage="GermplasmForm.website-help"
+    ></opensilex-InputForm>
     
     <!-- year -->
     <opensilex-InputForm
-      v-if= '!form.type.endsWith("Species")'
-      :value.sync="form.productionYear"
+      v-if= '!form.rdf_type.endsWith("Species")'
+      :value.sync="form.production_year"
       label="GermplasmForm.year"
       type="text"
       helpMessage="GermplasmForm.year-help"
@@ -106,7 +116,7 @@
     
     <!-- comment -->
     <opensilex-InputForm
-      :value.sync="form.comment"
+      :value.sync="form.description"
       label="GermplasmForm.comment"
       type="text"
       helpMessage="GermplasmForm.comment-help"
@@ -124,7 +134,7 @@
 <script lang="ts">
 import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-import { GermplasmCreationDTO, GermplasmGetSingleDTO, GermplasmSearchDTO, GermplasmService, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
+import { GermplasmCreationDTO, GermplasmGetSingleDTO, GermplasmService, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import Oeso from "../../ontologies/Oeso";
 
@@ -161,17 +171,17 @@ export default class GermplasmForm extends Vue {
     default: () => {
       return {
         uri: null,
-        type: null,
+        rdf_type: null,
         name: null,
         code: null,
         species: null,
         variety: null,
         accession: null,
         institute: null,
-        productionYear: null,
-        comment: null,
+        production_year: null,
+        description: null,
         synonyms:[],
-        attributes: null
+        metadata: null
       };
     }
   })
@@ -184,23 +194,23 @@ export default class GermplasmForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      type: null,
+      rdf_type: null,
       name: null,
       code: null,
       species: null,
       variety: null,
       accession: null,
       institute: null,
-      productionYear: null,
-      comment: null,
+      production_year: null,
+      description: null,
       synonyms:[],
-      attributes: null
+      metadata: null
     };
   }
   @Ref("germplasmAttributesTable") readonly table!: any;
 
   update(form) {
-    form.attributes = this.table.pushAttributes();
+    form.metadata = this.table.pushAttributes();
     return this.$opensilex
       .getService("opensilex.GermplasmService")
       .updateGermplasm(form)
@@ -213,18 +223,16 @@ export default class GermplasmForm extends Vue {
   
   getAttributes(form) {
     this.attributesArray = [];
-    if (form.attributes != null) {   
-      for (const property in form.attributes) {
+    if (form.metadata != null) {   
+      for (const property in form.metadata) {
         let att = {
           attribute: property,
-          value: form.attributes[property]
+          value: form.metadata[property]
         }
         this.attributesArray.push(att);
       } 
     }
   }
-    
-
 
 }
 </script>
@@ -250,7 +258,7 @@ en:
     accession-help: Accession URI of the germplasm
     institute: Institute
     institute-help: The code of the institute which the germplasm comes from
-    comment: Comment
+    comment: Description
     comment-help: Description associated to the germplasm 
     year: Production Year
     year-help: Year when the ressource has been produced
@@ -260,6 +268,8 @@ en:
     subtaxa-help: Fill with a subtaxa and press Enter
     code: Code
     code-help: The code of the germplasm
+    website: Web site
+    website-help: the web page of the institute or the germplasm
 
 fr:
   GermplasmForm:
@@ -277,7 +287,7 @@ fr:
     accession-help: Accession URI of the germplasm
     institute: institut
     institute-help: Code de l'institut dont provient le germplasm
-    comment: Commentaire
+    comment: Description
     comment-help: Description associée au germplasm
     year: Année de production
     year-help: Year when the ressource has been produced
@@ -287,5 +297,7 @@ fr:
     subtaxa-help: Entrer un subtaxa et appuyer sur Entrée
     code: Code
     code-help: Code de la ressource génétique
+    website: Site web
+    website-help: page web de l'institut ou de la ressource plus spécifique
 </i18n>
 

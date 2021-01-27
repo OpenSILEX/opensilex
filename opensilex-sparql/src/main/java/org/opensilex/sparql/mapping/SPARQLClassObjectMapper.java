@@ -225,7 +225,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromField(field);
             Node propertyGraph = graph;
             boolean useDefaultGraph = classAnalizer.useDefaultGraph(field);
-            if (useDefaultGraph && classAnalizer.isReverseRelation(field)) {
+            if (useDefaultGraph) {
                 propertyGraph = mapperIndex.getForClass(model).getDefaultGraph();
             }
             SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, propertyGraph, uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);

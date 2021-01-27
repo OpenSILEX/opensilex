@@ -181,15 +181,15 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     String name = result.getStringValue(fieldNameVar);
 
                     // try to build a proxy object including name with the SPARQL builder variable binding name
-                    if (! StringUtils.isEmpty(name)) {
+                    if (!StringUtils.isEmpty(name)) {
                         proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, false, service);
-                    }else{
+                    } else {
                         // try to build a proxy object including name with an another SPARQL builder variable binding name
                         name = result.getStringValue(SPARQLClassQueryBuilder.getObjectDefaultNameVarName(field.getName()));
 
-                        if(! StringUtils.isEmpty(name)){
+                        if (!StringUtils.isEmpty(name)) {
                             proxy = new SparqlProxyNamedResource(mapperIndex, propertyGraph, objURI, fieldType, name, lang, useDefaultGraph, service);
-                        }else{
+                        } else {
                             proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, useDefaultGraph, service);
                         }
                     }
@@ -199,7 +199,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 setter.invoke(instance, proxy.getInstance());
             }
         }
-
 
         for (Field field : classAnalizer.getLabelPropertyFields()) {
             Method setter = classAnalizer.getSetterFromField(field);
@@ -225,7 +224,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
             Class<? extends SPARQLResourceModel> model = (Class<? extends SPARQLResourceModel>) ClassUtils.getGenericTypeFromField(field);
             Node propertyGraph = graph;
-            if (classAnalizer.isReverseRelation(field)) {
+            boolean useDefaultGraph = classAnalizer.useDefaultGraph(field);
+            if (useDefaultGraph && classAnalizer.isReverseRelation(field)) {
                 propertyGraph = mapperIndex.getForClass(model).getDefaultGraph();
             }
             SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, propertyGraph, uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
@@ -264,7 +264,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (classAnalizer.getGraphSuffix() != null) {
             try {
                 URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
-                if(graphSuffixUri.isAbsolute()){
+                if (graphSuffixUri.isAbsolute()) {
                     return graphSuffixUri;
                 }
                 String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraphSuffix()).toString();
@@ -417,8 +417,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      *
      * @param fieldName the var name to put in the {@link Expr}
-     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the
-     * {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
+     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the {@link #classAnalizer}, else return an
+     * {@link Expr} with the given fieldName
      * @see ExprVar
      */
     public Expr getFieldOrderExpr(String fieldName) {
@@ -631,7 +631,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         if (newInstance.getType() == null) {
             newInstance.setType(oldInstance.getType());
         }
-        
+
         if (oldInstance.getCreator() != null && newInstance.getCreator() == null) {
             newInstance.setCreator(oldInstance.getCreator());
         }

@@ -106,7 +106,7 @@ import org.slf4j.LoggerFactory;
  * @author Julien BONNEFONT
  */
 @Api(ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
-@Path("/core/scientific-object")
+@Path("/core/scientific_objects")
 @ApiCredentialGroup(
         groupId = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID,
         groupLabelKey = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY
@@ -137,7 +137,7 @@ public class ScientificObjectAPI {
     private MongoDBService nosql;
 
     @POST
-    @Path("get-by-uris")
+    @Path("by_uris")
     @ApiOperation("Get scientific objet list of a given context (experiment or organization) URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -166,8 +166,8 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("get-used-types")
-    @ApiOperation("get all scientific object types associated to a given context")
+    @Path("used_types")
+    @ApiOperation("get used scientific object types")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -175,16 +175,15 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
     })
     public Response getUsedTypes(
-            @ApiParam(value = "Context URI", example = "http://example.com/") @QueryParam("contextURI") @ValidURI URI contextURI
+            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment_uri") @ValidURI URI experimentURI
     ) throws Exception {
 
-        validateContextAccess(contextURI);
+        validateContextAccess(experimentURI);
 
         SelectBuilder select = new SelectBuilder();
 
-        if (contextURI != null) {
-            validateContextAccess(contextURI);
-            Node context = SPARQLDeserializers.nodeURI(contextURI);
+        if (experimentURI != null) {
+            Node context = SPARQLDeserializers.nodeURI(experimentURI);
             select.addGraph(context, "?uri", RDF.type, "?type");
         } else if (!currentUser.isAdmin()) {
             ExperimentDAO xpDO = new ExperimentDAO(sparql);
@@ -254,8 +253,8 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("get-children/{contextURI}")
-    @ApiOperation("Get list of scientific object children of a given context (experiment or organization) URI")
+    @Path("children")
+    @ApiOperation("Get list of scientific object children")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -263,17 +262,20 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the given context URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsChildren(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI,
-            @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parenturi") URI parentURI,
+            @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parent_uri") URI parentURI,
+            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment_uri") @ValidURI URI experimentURI,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        validateContextAccess(contextURI);
+        validateContextAccess(experimentURI);
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildrenByContext(contextURI, parentURI, facility, page, pageSize, currentUser);
+        if (experimentURI == null) {
+            experimentURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        }
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildren(experimentURI, parentURI, facility, page, pageSize, currentUser);
 
         ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = scientificObjects.convert(ScientificObjectNodeWithChildrenDTO.class, ScientificObjectNodeWithChildrenDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
@@ -599,7 +601,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("csv-import")
+    @Path("import")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
@@ -689,7 +691,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("export-csv")
+    @Path("export")
     @ApiOperation("Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file exported")
@@ -723,6 +725,8 @@ public class ScientificObjectAPI {
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(Oeso.isPartOf.toString());
+        customColumns.add(Oeso.hasCreationDate.toString());
+        customColumns.add(Oeso.hasDestructionDate.toString());
         customColumns.add(GEOMETRY_COLUMN_ID);
 
         BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
@@ -735,6 +739,10 @@ public class ScientificObjectAPI {
                 } else {
                     return null;
                 }
+            } else if (columnID.equals(Oeso.hasCreationDate.toString()) && value.getCreationDate() != null) {
+                return value.getCreationDate().toString();
+            } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
+                return value.getDestructionDate().toString();
             } else if (columnID.equals(GEOMETRY_COLUMN_ID)) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
                 if (geospacialMap.containsKey(uriString)) {
@@ -751,7 +759,7 @@ public class ScientificObjectAPI {
                 return null;
             }
         };
-        String csvContent = ontologyDAO.exportCSV(objects, currentUser.getLanguage(), customValueGenerator, customColumns);
+        String csvContent = ontologyDAO.exportCSV(objects, new URI(Oeso.ScientificObject.toString()), currentUser.getLanguage(), customValueGenerator, customColumns);
 
         String csvName = "scientific-object-export.csv";
         return Response.ok(csvContent.getBytes(), MediaType.APPLICATION_OCTET_STREAM)
@@ -760,7 +768,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @Path("csv-validate")
+    @Path("validate")
     @ApiOperation(value = "Validate a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)

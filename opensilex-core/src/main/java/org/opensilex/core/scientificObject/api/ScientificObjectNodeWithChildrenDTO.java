@@ -6,7 +6,6 @@
 package org.opensilex.core.scientificObject.api;
 
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *

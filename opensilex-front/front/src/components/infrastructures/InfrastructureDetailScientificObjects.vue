@@ -30,7 +30,7 @@
                   id="type"
                   :types.sync="filters.types"
                   :multiple="true"
-                  :contextURI="uri"
+                  :experimentURI="uri"
                 ></opensilex-ScientificObjectTypeSelector>
               </b-form-group>
             </opensilex-FilterField>
@@ -81,11 +81,6 @@
               :customColumns="customColumns"
               @csvImported="refresh"
             ></opensilex-OntologyCsvImporter>
-            <!-- &nbsp;
-            <opensilex-CreateButton
-              @click="exportCSV()"
-              label="ExperimentScientificObjects.export-csv"
-            ></opensilex-CreateButton>-->
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -579,7 +574,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
 
   validateCSV(objectType, csvFile) {
     return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-validate",
+      "/core/scientific_objects/validate",
       {
         description: {
           context: this.uri,
@@ -592,7 +587,7 @@ export default class InfrastructureDetailScientificObjects extends Vue {
 
   uploadCSV(objectType, validationToken, csvFile) {
     return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-import",
+      "/core/scientific_objects/import",
       {
         description: {
           context: this.uri,

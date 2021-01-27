@@ -29,8 +29,12 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
     protected List<T> loadData() throws Exception {
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(genericType);
 
+        Node graphNode = service.getDefaultGraph(genericType);
+        if (graph != null) {
+            graphNode = graph;
+        }
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
-        List<T> list = service.search(genericType, lang, (SelectBuilder select) -> {
+        List<T> list = service.search(graphNode, genericType, lang, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);
             } else {
@@ -46,7 +50,11 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(genericType);
 
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
-        return service.count(genericType, lang, (SelectBuilder select) -> {
+        Node graphNode = service.getDefaultGraph(genericType);
+        if (graph != null) {
+            graphNode = graph;
+        }
+        return service.count(graphNode, genericType, lang, (SelectBuilder select) -> {
             if (isReverseRelation) {
                 select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);
             } else {

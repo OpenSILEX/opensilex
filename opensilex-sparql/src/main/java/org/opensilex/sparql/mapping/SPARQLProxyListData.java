@@ -30,7 +30,7 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLProxyListData.class);
 
     public SPARQLProxyListData(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) throws SPARQLDeserializerNotFoundException {
-        super(repository,graph, uri, property, genericType, isReverseRelation, lang, service);
+        super(repository, graph, uri, property, genericType, isReverseRelation, lang, service);
     }
 
     @Override
@@ -40,10 +40,18 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
         Var value = makeVar("value");
         select.addVar(value);
 
-        if (isReverseRelation) {
-            select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
+        if (graph != null) {
+            if (isReverseRelation) {
+                select.addGraph(graph, value, property, SPARQLDeserializers.nodeURI(uri));
+            } else {
+                select.addGraph(graph, SPARQLDeserializers.nodeURI(uri), property, value);
+            }
         } else {
-            select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
+            if (isReverseRelation) {
+                select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
+            } else {
+                select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
+            }
         }
 
         List<T> results = new ArrayList<>();
@@ -60,23 +68,30 @@ class SPARQLProxyListData<T> extends SPARQLProxyList<T> {
 
         return results;
     }
-    
-    
+
     @Override
     public int getSize() throws Exception {
-         SelectBuilder select = new SelectBuilder();
+        SelectBuilder select = new SelectBuilder();
 
         Var value = makeVar("value");
         select.addVar("(COUNT(DISTINCT ?value))", makeVar("count"));
 
-        if (isReverseRelation) {
-            select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
+        if (graph != null) {
+            if (isReverseRelation) {
+                select.addGraph(graph, value, property, SPARQLDeserializers.nodeURI(uri));
+            } else {
+                select.addGraph(graph, SPARQLDeserializers.nodeURI(uri), property, value);
+            }
         } else {
-            select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
+            if (isReverseRelation) {
+                select.addWhere(value, property, SPARQLDeserializers.nodeURI(uri));
+            } else {
+                select.addWhere(SPARQLDeserializers.nodeURI(uri), property, value);
+            }
         }
 
         List<SPARQLResult> resultSet = service.executeSelectQuery(select);
-        
+
         if (resultSet.size() == 1) {
             return Integer.valueOf(resultSet.get(0).getStringValue("count"));
         } else {

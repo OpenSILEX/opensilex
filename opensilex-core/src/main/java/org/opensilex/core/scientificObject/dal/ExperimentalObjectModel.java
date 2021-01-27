@@ -22,7 +22,8 @@ public class ExperimentalObjectModel extends SPARQLTreeModel<ExperimentalObjectM
             ontology = Oeso.class,
             property = "isPartOf",
             inverse = true,
-            ignoreUpdateIfNull = true
+            ignoreUpdateIfNull = true,
+            useDefaultGraph = false
     )
     protected List<ExperimentalObjectModel> children;
 

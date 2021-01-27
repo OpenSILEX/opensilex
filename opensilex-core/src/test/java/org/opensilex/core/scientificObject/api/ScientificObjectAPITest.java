@@ -39,7 +39,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  */
 public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
-    protected static final String path = "/core/scientific-object";
+    protected static final String path = "/core/scientific_objects";
 
     public static final String uriPath = path + "/get-detail/{uri}";
     public static final String createPath = path + "/create";

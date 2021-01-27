@@ -29,7 +29,7 @@
                   id="type"
                   :types.sync="filters.types"
                   :multiple="true"
-                  :contextURI="uri"
+                  :experimentURI="uri"
                 ></opensilex-ScientificObjectTypeSelector>
               </b-form-group>
             </opensilex-FilterField>
@@ -268,7 +268,7 @@ export default class ExperimentScientificObjects extends Vue {
     }
 
     this.soService
-      .getScientificObjectsChildren(this.uri, nodeURI)
+      .getScientificObjectsChildren(nodeURI, this.uri)
       .then((http) => {
         let childrenNodes = [];
         for (let i in http.response.result) {
@@ -299,8 +299,8 @@ export default class ExperimentScientificObjects extends Vue {
       this.filters.factorLevels.length == 0
     ) {
       return this.soService.getScientificObjectsChildren(
-        this.uri,
         nodeURI,
+        this.uri,
         undefined,
         page,
         pageSize

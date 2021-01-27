@@ -296,7 +296,7 @@ export default class ScientificObjectList extends Vue {
   }
 
   exportCSV() {
-    let path = "/core/scientific-object/export-csv";
+    let path = "/core/scientific_objects/export";
     let today = new Date();
     let filename =
       "export_scientific_objects_" +
@@ -321,7 +321,7 @@ export default class ScientificObjectList extends Vue {
 
   validateCSV(csvFile) {
     return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-validate",
+      "/core/scientific_objects/validate",
       {
         description: {},
         file: csvFile,
@@ -331,7 +331,7 @@ export default class ScientificObjectList extends Vue {
 
   uploadCSV(validationToken, csvFile) {
     return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-import",
+      "/core/scientific_objects/import",
       {
         description: {},
         file: csvFile,

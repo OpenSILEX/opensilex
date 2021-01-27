@@ -59,7 +59,7 @@ public class ScientificObjectDAO {
         return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
     }
 
-    public ListWithPagination<ScientificObjectModel> searchChildrenByContext(URI contextURI, URI parentURI, URI facility, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> searchChildren(URI contextURI, URI parentURI, URI facility, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
         Node contextGraph = SPARQLDeserializers.nodeURI(contextURI);
         return sparql.searchWithPagination(
                 contextGraph,

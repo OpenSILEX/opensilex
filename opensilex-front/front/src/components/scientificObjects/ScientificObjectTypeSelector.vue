@@ -28,7 +28,7 @@ export default class ScientificObjectTypeSelector extends Vue {
   typesURI;
 
   @Prop()
-  contextURI;
+  experimentURI;
 
   @Prop()
   label;
@@ -42,9 +42,9 @@ export default class ScientificObjectTypeSelector extends Vue {
 
   loadTypes(typesURI) {
     if (
-      this.contextURI == null ||
-      this.contextURI == "" ||
-      this.contextURI == undefined
+      this.experimentURI == null ||
+      this.experimentURI == "" ||
+      this.experimentURI == undefined
     ) {
       return this.$opensilex
         .getService("opensilex.ScientificObjectsService")
@@ -55,7 +55,7 @@ export default class ScientificObjectTypeSelector extends Vue {
     } else {
       return this.$opensilex
         .getService("opensilex.ScientificObjectsService")
-        .getUsedTypes(this.contextURI)
+        .getUsedTypes(this.experimentURI)
         .then((http: HttpResponse<OpenSilexResponse<Array<ListItemDTO>>>) => {
           return http.response.result;
         });

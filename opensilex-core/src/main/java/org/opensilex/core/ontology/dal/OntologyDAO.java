@@ -603,11 +603,13 @@ public final class OntologyDAO {
     private static final String CSV_TYPE_KEY = "type";
     private static final String CSV_NAME_KEY = "name";
 
-    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns) throws Exception {
+    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, URI parentClass, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns) throws Exception {
         List<String> columnsID = new ArrayList<>();
 
         List<Map<Integer, String>> rows = new ArrayList<>();
         Map<String, List<Integer>> propertiesIndexes = new HashMap<>();
+
+        List<String> loadedTypes = new ArrayList<>();
 
         for (T object : objects) {
             Map<Integer, String> row = new HashMap<>();
@@ -617,14 +619,14 @@ public final class OntologyDAO {
             row.put(1, typeURI);
             row.put(2, object.getName());
 
-            int rowOffset = row.size();
+            int initialOffset = row.size();
 
             for (int i = 0; i < customColumns.size(); i++) {
                 String value = customValueGenerator.apply(customColumns.get(i), object);
-                row.put(rowOffset + i, value);
+                row.put(initialOffset + i, value);
             }
 
-            rowOffset = row.size();
+            int rowOffset = row.size();
 
             for (SPARQLModelRelation relation : object.getRelations()) {
                 Property property = relation.getProperty();
@@ -669,6 +671,25 @@ public final class OntologyDAO {
                     }
                 }
                 row.put(currentIndex, strValue);
+            }
+
+            // for each type relation
+            if (!loadedTypes.contains(typeURI)) {
+                ClassModel model = getClassModel(object.getType(), parentClass, lang);
+                model.getRestrictions().keySet().forEach(property -> {
+                    String propertyURI = SPARQLDeserializers.getExpandedURI(property);
+                    if (!columnsID.contains(propertyURI)
+                            && !customColumns.contains(propertyURI)
+                            && !SPARQLDeserializers.compareURIs(RDFS.label.getURI(), property)) {
+                        columnsID.add(propertyURI);
+                        List<Integer> indexes = new ArrayList<>();
+                        indexes.add(columnsID.size() + rowOffset - 1);
+                        propertiesIndexes.put(propertyURI, indexes);
+
+                    }
+                });
+
+                loadedTypes.add(typeURI);
             }
 
             rows.add(row);

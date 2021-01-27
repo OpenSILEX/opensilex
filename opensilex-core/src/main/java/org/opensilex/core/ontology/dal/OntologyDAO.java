@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -603,7 +604,7 @@ public final class OntologyDAO {
     private static final String CSV_TYPE_KEY = "type";
     private static final String CSV_NAME_KEY = "name";
 
-    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, URI parentClass, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns) throws Exception {
+    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, URI parentClass, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns, Comparator<String> columnSorter) throws Exception {
         List<String> columnsID = new ArrayList<>();
 
         List<Map<Integer, String>> rows = new ArrayList<>();
@@ -695,7 +696,20 @@ public final class OntologyDAO {
             rows.add(row);
         }
 
+        int colOffset = 3;
+
+        for (int i = 0; i < customColumns.size(); i++) {
+            String customColumn = customColumns.get(i);
+            List<Integer> customColumnIndex = new ArrayList<>();
+            customColumnIndex.add(i + colOffset);
+            propertiesIndexes.put(customColumn, customColumnIndex);
+            columnsID.add(customColumn);
+        }
+
         columnsID.sort((id1, id2) -> {
+            if (columnSorter != null) {
+                return columnSorter.compare(id1, id2);
+            }
             return id1.compareTo(id2);
         });
 
@@ -706,32 +720,24 @@ public final class OntologyDAO {
                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                 CSVWriter.DEFAULT_LINE_END);
 
-        String[] headerArray = new String[3 + columnsID.size() + customColumns.size()];
+        String[] headerArray = new String[colOffset + columnsID.size()];
         headerArray[0] = CSV_URI_KEY;
         headerArray[1] = CSV_TYPE_KEY;
         headerArray[2] = CSV_NAME_KEY;
-
-        int colOffset = 3;
 
         for (int i = 0; i < columnsID.size(); i++) {
             headerArray[i + colOffset] = SPARQLDeserializers.formatURI(columnsID.get(i));
         }
 
-        colOffset += columnsID.size();
-
-        for (int i = 0; i < customColumns.size(); i++) {
-            headerArray[i + colOffset] = SPARQLDeserializers.formatURI(customColumns.get(i));
-        }
-
         writer.writeNext(headerArray);
 
         for (Map<Integer, String> row : rows) {
-            String[] rowArray = new String[columnsID.size() + 3 + customColumns.size()];
+            String[] rowArray = new String[columnsID.size() + colOffset];
             rowArray[0] = row.get(0);
             rowArray[1] = row.get(1);
             rowArray[2] = row.get(2);
 
-            int arrayIndex = 3;
+            int arrayIndex = colOffset;
             String lastColumnId = "";
             List<Integer> indexes = null;
             int currentColumnIndex = 0;
@@ -747,11 +753,6 @@ public final class OntologyDAO {
                     rowArray[arrayIndex] = row.get(rowIndex);
                 }
                 lastColumnId = columnID;
-                arrayIndex++;
-            }
-
-            for (int i = 0; i < customColumns.size(); i++) {
-                rowArray[arrayIndex] = row.get(i + 3);
                 arrayIndex++;
             }
 

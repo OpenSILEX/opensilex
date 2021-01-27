@@ -759,7 +759,23 @@ public class ScientificObjectAPI {
                 return null;
             }
         };
-        String csvContent = ontologyDAO.exportCSV(objects, new URI(Oeso.ScientificObject.toString()), currentUser.getLanguage(), customValueGenerator, customColumns);
+        String csvContent = ontologyDAO.exportCSV(
+                objects,
+                new URI(Oeso.ScientificObject.toString()),
+                currentUser.getLanguage(),
+                customValueGenerator,
+                customColumns,
+                (colId1, colId2) -> {
+                    if (colId1.equals(colId2)) {
+                        return 0;
+                    } else if (colId1.equals(GEOMETRY_COLUMN_ID)) {
+                        return 1;
+                    } else if (colId2.equals(GEOMETRY_COLUMN_ID)) {
+                        return -1;
+                    } else {
+                        return colId1.compareTo(colId2);
+                    }
+                });
 
         String csvName = "scientific-object-export.csv";
         return Response.ok(csvContent.getBytes(), MediaType.APPLICATION_OCTET_STREAM)

@@ -66,7 +66,7 @@ public class GeospatialDAO {
 
     public GeospatialDAO(MongoDBService nosql) {
         MongoDatabase db = nosql.getDatabase();
-        String nameCollection = "Geospatial";
+        String nameCollection = "geospatial";
         geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
     }
 

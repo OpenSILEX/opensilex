@@ -315,9 +315,12 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     protected URI extractUriFromResponse(final Response response) throws URISyntaxException {
         JsonNode node = response.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
-        return new URI(postResponse.getResult());
+        String uri = postResponse.getResult();
+        uri = uri.replace("[", "");
+        uri = uri.replace("]", "");
+        return new URI(uri);
     }
-
+    
     /**
      * This method try to extract an URI from the given {@link Response} and is expecting that the Response describe a {@link PaginatedListResponse}
      *

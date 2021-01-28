@@ -18,6 +18,12 @@ public enum DateFormat {
             return "yyyy-MM-dd HH:mm:ssZ";
         }
     },
+    YMDTHMS {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ss";
+        }
+    },
     YMDTHMSZ {
         @Override
         public String toString(){
@@ -36,10 +42,22 @@ public enum DateFormat {
             return "yyyy-MM-dd";
         }
     },
+    YMDTHMSMS {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ss.SSS";
+        }
+    },
     YMDTHMSMSZ {
         @Override
         public String toString(){
             return "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+        }
+    },
+    YMDTHMSMSZZ {
+        @Override
+        public String toString(){
+            return "yyyy-MM-dd'T'HH:mm:ss.SSSZZ";
         }
     },
     YMDTHMSMSX {

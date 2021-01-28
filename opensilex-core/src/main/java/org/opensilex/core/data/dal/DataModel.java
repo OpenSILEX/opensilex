@@ -6,12 +6,14 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -27,9 +29,11 @@ public class DataModel extends MongoModel {
     
     private DataProvenanceModel provenance;
 
-    private LocalDateTime date;
+    private Instant date;
     
-    private String timezone;
+    private Boolean isDateTime;
+    
+    private String offset;
 
     private Object value;
     
@@ -61,20 +65,28 @@ public class DataModel extends MongoModel {
         this.provenance = provenance;
     }
 
-    public LocalDateTime getDate() {
+    public Instant getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Instant date) {
         this.date = date;
     }
 
-    public String getTimezone() {
-        return timezone;
+    public Boolean getIsDateTime() {
+        return isDateTime;
     }
 
-    public void setTimezone(String timezone) {
-        this.timezone = timezone;
+    public void setIsDateTime(Boolean isDateTime) {
+        this.isDateTime = isDateTime;
+    }
+    
+    public String getOffset() {
+        return offset;
+    }
+
+    public void setOffset(String offset) {
+        this.offset = offset;
     }
 
     public Object getValue() {
@@ -103,9 +115,23 @@ public class DataModel extends MongoModel {
            
     @Override
     public String[] getUriSegments(MongoModel instance) {
-        return new String[]{
-            Timestamp.from(ZonedDateTime.now().toInstant()).toString(),
-            Timestamp.from(getDate().atOffset(ZoneOffset.of(getTimezone())).toInstant()).toString()
+        ObjectMapper mapper = new ObjectMapper();
+        String provenanceString = "";
+        try {
+            provenanceString = mapper.writeValueAsString(getProvenance());
+        } catch (JsonProcessingException ex) {            
+        }
+        
+        String objectsString = "";
+        if (getScientificObjects() != null) {
+            objectsString = getScientificObjects().toString();
+        }
+        
+        String md5Hash = DigestUtils.md5Hex(getVariable().toString() + objectsString + provenanceString);
+        
+        return new String[]{            
+            String.valueOf(getDate().getEpochSecond()),
+            md5Hash
         };
     } 
 

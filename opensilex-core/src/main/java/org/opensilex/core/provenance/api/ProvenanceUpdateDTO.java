@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +17,8 @@ import javax.validation.constraints.NotNull;
 public class ProvenanceUpdateDTO extends ProvenanceCreationDTO {
     
     @Override
-    @NotNull
+    @NotNull    
+    @ApiModelProperty(value = "uri of the provenance being updated", example = "air_temperature_acquisition")
     public URI getUri() {
         return uri;
     }

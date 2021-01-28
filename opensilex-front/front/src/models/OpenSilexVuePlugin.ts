@@ -470,7 +470,7 @@ export default class OpenSilexVuePlugin {
             toaster: "b-toaster-top-center",
             appendToast: true,
             solid: true,
-            autoHideDelay: 1500,
+            autoHideDelay: 2500,
             noCloseButton: true
         });
     }
@@ -481,7 +481,7 @@ export default class OpenSilexVuePlugin {
             toaster: "b-toaster-top-center",
             appendToast: true,
             solid: true,
-            autoHideDelay: 1500,
+            autoHideDelay: 3000,
             noCloseButton: true
         });
     }
@@ -492,7 +492,7 @@ export default class OpenSilexVuePlugin {
             toaster: "b-toaster-top-center",
             appendToast: true,
             solid: true,
-            autoHideDelay: 1500,
+            autoHideDelay: 2000,
             noCloseButton: true
         });
     }
@@ -655,7 +655,15 @@ export default class OpenSilexVuePlugin {
     public formatDate(value) {
         if (value != undefined && value != null) {
             moment.locale(this.$i18n.locale);
-            return moment(value, "YYYY-MM-DD").format("L");
+            return moment(value, "YYYY-MM-DD").format("YYYY-MM-DD");
+        }
+        return "";
+    }
+
+    public formatDateTime(value) {
+        if (value != undefined && value != null) {
+            moment.locale(this.$i18n.locale);
+            return moment(value).toISOString(true);
         }
         return "";
     }
@@ -683,8 +691,7 @@ export default class OpenSilexVuePlugin {
      *  {description  : {"name" :"filename",....}, file : File Object}
      *  @see UploadFile interface
      */
-    uploadFileToService(servicePath: string, body: UploadFileBody, isUpdated : boolean) {
-        console.log(this.baseApi);
+    uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated: boolean) {
         let formData = new FormData();
 
         // send form data  string part in json
@@ -699,7 +706,7 @@ export default class OpenSilexVuePlugin {
             }
         }
 
-        console.debug("formData", body, JSON.stringify(body));
+        console.debug("POST request body", body, JSON.stringify(body));
         let headers = {};
         let user: User = this.getUser();
         if (user != User.ANONYMOUS()) {
@@ -716,9 +723,30 @@ export default class OpenSilexVuePlugin {
             // If you add this, upload won't work
             headers
         };
+
+        let url =
+            this.baseApi +
+            servicePath;
+
+        if (queryParams != null) {
+            Object.keys(queryParams).forEach((k) =>
+                (
+                    queryParams[k] == null
+                    || queryParams[k] == null
+                    || queryParams[k] == ""
+                ) && delete queryParams[k]
+            );
+            let params = new URLSearchParams(queryParams);
+            let paramsSize = [...params].length;
+            if (paramsSize > 0) {
+                url = url + "?" + params.toString();
+            }
+            console.debug("Query parameters", queryParams, "Generated URL", url)
+        }
+
         this.showLoader();
         return new Promise((resolve, reject) => {
-            let promise = fetch(this.baseApi + servicePath, options)
+            let promise = fetch(url, options)
                 .then(response => response.json())
                 .then((http) => {
                     console.debug("uploaded file result", http);
@@ -743,8 +771,8 @@ export default class OpenSilexVuePlugin {
     * @param name name of the returned file
     * @param extension extension of the file
     */
-    downloadFilefromService(servicePath: string, name: string, extension: string) {
-    return this.downloadFilefromPostOrGetService(servicePath, name, extension, "GET", null)
+    downloadFilefromService(servicePath: string, name: string, extension: string, queryParams: any) {
+        return this.downloadFilefromPostOrGetService(servicePath, name, extension, "GET", queryParams, null)
     }
 
     /**
@@ -754,7 +782,7 @@ export default class OpenSilexVuePlugin {
     * @param body body of a post request
     */
     downloadFilefromPostService(servicePath: string, name: string, extension: string, body: any, lang: string) {
-        return this.downloadFilefromPostOrGetService(servicePath, name, extension, "POST", body)
+        return this.downloadFilefromPostOrGetService(servicePath, name, extension, "POST", null, body)
     }
 
     /**    * 
@@ -764,22 +792,21 @@ export default class OpenSilexVuePlugin {
     * @param method REST service method (POST or GET)
     * @param body body of a post request
     */
-    downloadFilefromPostOrGetService(servicePath: string, name: string, extension: string, method: string, body: any) {
+    downloadFilefromPostOrGetService(servicePath: string, name: string, extension: string, method: string, queryParams: any, body: any) {
         this.showLoader();
-        console.log(this.baseApi);
         let url =
             this.baseApi +
             servicePath;
         let headers = {};
 
-        let user = this.getUser(); 
+        let user = this.getUser();
         if (user != User.ANONYMOUS()) {
-            headers["Authorization"] = user.getAuthorizationHeader();            
+            headers["Authorization"] = user.getAuthorizationHeader();
         }
 
         headers["Accept-Language"] = this.getLang();
 
-        let request: RequestInit =  {
+        let request: RequestInit = {
             method: method,
             headers: headers
         }
@@ -787,9 +814,26 @@ export default class OpenSilexVuePlugin {
         if (body != null) {
             request['body'] = JSON.stringify(body)
             headers["Content-Type"] = "application/json";
+
         }
-        
-        let promise = fetch(url, request);            
+
+        if (queryParams != null) {
+            Object.keys(queryParams).forEach((k) =>
+                (
+                    queryParams[k] == null
+                    || queryParams[k] == null
+                    || queryParams[k] == ""
+                ) && delete queryParams[k]
+            );
+            let params = new URLSearchParams(queryParams);
+            let paramsSize = [...params].length;
+            if (paramsSize > 0) {
+                url = url + "?" + params.toString();
+            }
+            console.debug("Query parameters", queryParams, "Generated URL", url)
+        }
+
+        let promise = fetch(url, request);
 
         return promise
             .then(function (response) {
@@ -806,7 +850,7 @@ export default class OpenSilexVuePlugin {
                 this.hideLoader()
             })
             .catch(function (error) {
-                console.log(error);
+                console.error(error);
             });
     }
 
@@ -873,12 +917,12 @@ export default class OpenSilexVuePlugin {
         this.iconIDs = iconIDs;
         this.selectIconIDs = [];
         for (let i in iconIDs) {
-          let iconID = iconIDs[i];
-    
-          this.selectIconIDs.push({
-            id: iconID,
-            label: iconID
-          })
+            let iconID = iconIDs[i];
+
+            this.selectIconIDs.push({
+                id: iconID,
+                label: iconID
+            })
         }
     }
 
@@ -893,7 +937,4 @@ export default class OpenSilexVuePlugin {
             return value;
         }
     }
-
-
-    
 }

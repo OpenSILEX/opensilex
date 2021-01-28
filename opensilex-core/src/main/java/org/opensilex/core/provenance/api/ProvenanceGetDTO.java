@@ -6,7 +6,12 @@
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 
 /**
@@ -14,24 +19,40 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
  * @author Alice Boizet
  */
 public class ProvenanceGetDTO extends ProvenanceCreationDTO {
-    
-    protected URI uri;
+        
+    @JsonProperty("prov_activity")
+    protected List<ActivityGetDTO> activityGet;
 
-    public URI getUri() {
-        return uri;
+    public List<ActivityGetDTO> getActivityGet() {
+        return activityGet;
     }
 
-    public void setUri(URI uri) {
-        this.uri = uri;
+    public void setActivityGet(List<ActivityGetDTO> activityGet) {
+        this.activityGet = activityGet;
+    }
+    
+    @JsonIgnore
+    @Override
+    public List<ActivityCreationDTO> getActivity() {
+        return activity;
     }
     
     public static ProvenanceGetDTO fromModel(ProvenanceModel model){
         ProvenanceGetDTO dto = new ProvenanceGetDTO();        
         dto.setUri(model.getUri());
         dto.setName(model.getName());
-        dto.setComment(model.getComment());
+        dto.setDescription(model.getDescription());
         dto.setExperiments(model.getExperiments());
-        dto.setActivity(model.getActivity());
+        
+        if (model.getActivity() != null) {
+            List<ActivityGetDTO> activities = new ArrayList<>();
+            for (ActivityModel act:model.getActivity()) {
+                ActivityGetDTO actDTO = new ActivityGetDTO();
+                activities.add(actDTO.fromModel(act));
+            }
+            dto.setActivityGet(activities);
+        }
+        
         dto.setAgents(model.getAgents());
         
         return dto;

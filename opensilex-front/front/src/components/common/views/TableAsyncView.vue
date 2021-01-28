@@ -38,8 +38,26 @@
           <slot name="secondActionsSelectableTable"></slot>
         </div>
       </div>
-
-      <b-table
+      <b-row>
+        <slot name="export" v-if="this.totalRow >0" > 
+          
+        </slot>
+      </b-row>
+      <div v-if="showCount">
+          <div v-if="totalRow > 0">
+          <strong>
+            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.totalRow})}}
+              </span>
+          </strong>
+        </div>
+        <div v-else>
+          <strong>
+            <span class="ml-1"> {{$t('component.common.list.pagination.noEntries')}}
+              </span>
+          </strong>
+        </div>
+      </div>
+       <b-table
         ref="tableRef"
         striped
         hover
@@ -150,6 +168,11 @@ export default class TableAsyncView extends Vue {
   @Prop()
   iconNumberOfSelectedRow;
 
+  @Prop({
+    default: true
+  })
+  showCount: boolean;
+
   numberOfSelectedRows = 0;
   selectedRowIndex;
 
@@ -257,6 +280,7 @@ export default class TableAsyncView extends Vue {
 
   onRefreshed() {
     let that = this;
+    this.$emit('refreshed')
     setTimeout(function() {
       that.afterRefreshedItemsSelection();
     }, 1); //do it after real table refreshed
@@ -336,6 +360,14 @@ export default class TableAsyncView extends Vue {
         this.isSearching = false;
         this.$opensilex.errorHandler(error);
       });
+  }
+
+  getCurrentItemLimit() : number {
+    return (this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
+  }
+
+  getCurrentItemOffset() : number {
+    return (this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
   }
 }
 </script>

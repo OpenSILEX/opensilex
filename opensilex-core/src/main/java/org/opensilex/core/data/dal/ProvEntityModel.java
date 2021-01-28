@@ -14,7 +14,7 @@ import java.net.URI;
  * @author Alice Boizet
  */
 public class ProvEntityModel {
-    @JsonProperty("rdfType")
+    @JsonProperty("rdf_type")
     URI type;
     
     URI uri;

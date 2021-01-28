@@ -16,7 +16,7 @@ public class LogsDAO {
 
     protected final MongoDBService nosql;
     
-    public static final String LOGS_COLLECTION_NAME = "Logs";
+    public static final String LOGS_COLLECTION_NAME = "logs";
 
     public LogsDAO(MongoDBService nosql) {
         this.nosql = nosql;

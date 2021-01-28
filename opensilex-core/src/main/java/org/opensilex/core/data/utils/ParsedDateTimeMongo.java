@@ -5,7 +5,7 @@
  */
 package org.opensilex.core.data.utils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  *
@@ -13,21 +13,24 @@ import java.time.LocalDateTime;
  */
 public class ParsedDateTimeMongo {
 
-    private LocalDateTime localDateTime;
+    private Instant instant;
 
     private String offset;
+    
+    private Boolean isDateTime;
 
-    public ParsedDateTimeMongo(LocalDateTime localDateTime, String offset) {
-        this.localDateTime = localDateTime;
+    public ParsedDateTimeMongo(Instant localDateTime, String offset, Boolean isDateTime) {
+        this.instant = localDateTime;
         this.offset = offset;
+        this.isDateTime = isDateTime;
     }
 
-    public LocalDateTime getLocalDateTime() {
-        return localDateTime;
+    public Instant getInstant() {
+        return instant;
     }
 
-    public void setLocalDateTime(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
+    public void setInstant(Instant localDateTime) {
+        this.instant = localDateTime;
     }
 
     public String getOffset() {
@@ -36,6 +39,14 @@ public class ParsedDateTimeMongo {
 
     public void setOffset(String offset) {
         this.offset = offset;
+    }
+
+    public Boolean getIsDateTime() {
+        return isDateTime;
+    }
+
+    public void setIsDateTime(Boolean isDateTime) {
+        this.isDateTime = isDateTime;
     }
 
 }

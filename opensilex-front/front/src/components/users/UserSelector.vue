@@ -1,6 +1,7 @@
 <template>
   <opensilex-SelectForm
     :label="label"
+    :helpMessage="helpMessage"
     :selected.sync="usersURI"
     :multiple="multiple"
     :itemLoadingMethod="loadUsers"
@@ -34,6 +35,9 @@ export default class UserSelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop()
+  helpMessage: string;
 
   loadUsers(usersURI) {
     return this.$opensilex

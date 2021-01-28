@@ -6,30 +6,30 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.server.rest.validation.Date;
-import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.exception.TimezoneAmbiguityException;
+import org.opensilex.core.exception.TimezoneException;
+import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *
  * @author Alice Boizet
  */
+@JsonPropertyOrder({"uri", "rdf_type", "date","timezone", "scientific_objects", "provenance",  "metadata"})
 public class DataFileCreationDTO {
     
     @ValidURI
@@ -37,17 +37,25 @@ public class DataFileCreationDTO {
        
     @ValidURI
     @NotNull
+    @JsonProperty("rdf_type")
+    @ApiModelProperty(value = "file type", example = DataFilesAPI.DATAFILE_EXAMPLE_TYPE)
     private URI rdfType; 
     
+    @Required
+    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
+    private String date;
+    
+    @JsonProperty("scientific_objects")
+    @ApiModelProperty(value = "scientific objects URIs on which the data have been collected", example = "http://plot01")
     private List<URI> scientificObjects;
     
     @NotNull
     private DataProvenanceModel provenance;
     
-    @NotNull
-    @Date({DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ})
-    private String date;
-    
+    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
+    private String timezone;
+
+    @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     private Document metadata;
 
     public URI getUri() {
@@ -90,6 +98,14 @@ public class DataFileCreationDTO {
         this.date = date;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+    
     public Document getMetadata() {
         return metadata;
     }
@@ -99,7 +115,7 @@ public class DataFileCreationDTO {
     }
       
     
-    public DataFileModel newModel() throws ParseException {
+    public DataFileModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataFileModel model = new DataFileModel();
         model.setMetadata(metadata);
         model.setProvenance(provenance);
@@ -107,23 +123,11 @@ public class DataFileCreationDTO {
         model.setScientificObjects(scientificObjects);
         model.setUri(uri);
         
-        if(date != null){
-            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
-            LocalDateTime dateTimeUTC = null;
-            String offset = null;
-            for (DateFormat dateCheckFormat : formats) {
-                try { 
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
-                    OffsetDateTime ost = OffsetDateTime.parse(date, dtf);
-                    dateTimeUTC = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
-                    offset = ost.getOffset().toString();
-                    break;
-                } catch (DateTimeParseException e) {
-                }                    
-            }
-            model.setDate(dateTimeUTC);
-            model.setTimezone(offset);
-        }
+        ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
+        model.setDate(parsedDateTimeMongo.getInstant());
+        model.setOffset(parsedDateTimeMongo.getOffset());
+        model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+        
         return model;
     }
     

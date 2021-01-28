@@ -139,7 +139,7 @@ export default class DocumentDetails extends Vue {
   loadFile(uri: string, name: string, format: string) {
     let path = "/core/document/getFile/" + encodeURIComponent(uri);
     this.$opensilex
-     .downloadFilefromService(path, name, format);
+     .downloadFilefromService(path, name, format, null);
   }
 
   @Ref("documentForm") readonly documentForm!: any;

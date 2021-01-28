@@ -33,17 +33,17 @@ import org.opensilex.server.response.SingleObjectResponse;
 
 /**
  *
- * @author boizetal
+ * @author Alice Boizet
  */
 public class DataAPITest extends AbstractMongoIntegrationTest {
     protected String path = "/core/data";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String createListPath = path + "/listcreate";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = path + "/{uri}";
+    protected String searchPath = path;
+    protected String createPath = path;
+    protected String createListPath = path;
+    protected String updatePath = path;
+    protected String deletePath = path + "/{uri}";
     
     private URI variable;
     private DataProvenanceModel provenance;
@@ -82,18 +82,9 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
                 
         return dataDTO;        
     }    
-    
+       
     @Test
-    public void testCreate() throws Exception {
-        
-        final Response postResultData = getJsonPostResponse(target(createPath), getCreationDataDTO("2020-10-10T10:29:06.402+0200"));
-        LOGGER.info(postResultData.toString());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());        
-    }
-    
-    @Test
-    public void testListCreate() throws Exception {
-        
+    public void testCreate() throws Exception {        
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(getCreationDataDTO("2020-10-11T10:29:06.402+0200"));
         final Response postResultData = getJsonPostResponse(target(createListPath), dtoList);
@@ -103,9 +94,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     
     @Test
     public void testUpdate() throws Exception {
-
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO dto = getCreationDataDTO("2020-10-12T10:29:06.402+0200");
-        final Response postResult = getJsonPostResponse(target(createPath), dto);
+        dtoList.add(dto);
+        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setValue(10.2);
@@ -130,7 +122,9 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDataDTO("2020-10-13T10:29:06.402+0200"));
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(getCreationDataDTO("2020-10-13T10:29:06.402+0200"));
+        Response postResponse = getJsonPostResponse(target(createPath), dtoList);
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
@@ -143,8 +137,9 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUri() throws Exception {
-
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDataDTO("2020-10-14T10:29:06.402+0200"));
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        dtoList.add(getCreationDataDTO("2020-10-14T10:29:06.402+0200"));
+        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
@@ -160,17 +155,18 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     
     @Test
     public void testSearch() throws Exception {
-
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO creationDTO = getCreationDataDTO("2020-06-15T10:29:06.402+0200");
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        dtoList.add(creationDTO);
+        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("startDate", "2020-06-01T00:00:00.000+0200");
-                put("endDate", "2020-06-30T00:00:00.000+0200");
-                put("provenanceUri", creationDTO.getProvenance().getUri());
-                
+                put("start_date", "2020-06-01");
+                put("end_date", "2020-06-30");
+                put("provenance", creationDTO.getProvenance().getUri());
+                put("order_by", "date=desc");
             }
         };
 

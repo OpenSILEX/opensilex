@@ -340,11 +340,16 @@ export default class VisuView extends Vue {
   
     return this.dataService
       .searchDataList(
+        this.form.startDate,
+        this.form.endDate,
+        undefined,
         concernedItem,
         variable.id,
         undefined,
-        this.form.startDate,
-        this.form.endDate,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         0,
         1000000
       )
@@ -419,6 +424,9 @@ export default class VisuView extends Vue {
     return this.dataService
       .getDataFileDescriptionsBySearch(
         "http://www.opensilex.org/vocabulary/oeso#Image",
+        undefined,
+        undefined,
+        undefined,
         concernedItem,
         undefined,
         undefined,
@@ -479,10 +487,13 @@ export default class VisuView extends Vue {
     return this.dataService
       .getDataFileDescriptionsBySearch(
         "http://www.opensilex.org/vocabulary/oeso#Image",
+        time,
+        undefined,
+        null,
         point.concernedItem,
         undefined,
-        time,
-        undefined, //wait for the service
+        undefined,
+        undefined,
         0,
         100
       )
@@ -500,7 +511,7 @@ export default class VisuView extends Vue {
   }
   imagesFilter(data: Array<DataFileGetDTO>, point: any) {
     data.forEach(element => {
-      element.scientificObjects.forEach(concernedItem => {
+      element.scientific_objects.forEach(concernedItem => {
         //else add same image many times as far as they are concerned items
         const image: Image = {
           imageUri: element.uri,
@@ -509,7 +520,7 @@ export default class VisuView extends Vue {
             "/data/file/thumbnail" +
             encodeURIComponent(element.uri) +
             "?scaledHeight=800",
-          type: element.rdfType,
+          type: element.rdf_type,
           objectUri: concernedItem,
           date: element.date,
           provenanceUri: element.provenance.uri,

@@ -6,15 +6,15 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
-import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataFileModel;
-import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.exception.TimezoneAmbiguityException;
+import org.opensilex.core.exception.TimezoneException;
+import org.opensilex.core.exception.UnableToParseDateException;
 
 /**
  *
@@ -22,6 +22,8 @@ import org.opensilex.server.rest.validation.DateFormat;
  */
 public class DataFilePathCreationDTO extends DataFileCreationDTO {
     @NotNull
+    @JsonProperty("relative_path")
+    @ApiModelProperty(value = "path to the stored file", example = DataFilesAPI.DATAFILE_EXAMPLE_URI)
     private String relativePath;
 
     public String getRelativePath() {
@@ -33,7 +35,7 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
     }    
     
     @Override
-    public DataFileModel newModel() throws ParseException {
+    public DataFileModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataFileModel model = new DataFileModel();
         
         model.setMetadata(getMetadata());
@@ -41,25 +43,13 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
         model.setRdfType(getRdfType());
         model.setScientificObjects(getScientificObjects());
         model.setUri(getUri());
-        model.setPath(relativePath);
+
+        model.setPath(relativePath);        
+        ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
+        model.setDate(parsedDateTimeMongo.getInstant());
+        model.setOffset(parsedDateTimeMongo.getOffset());
+        model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         
-        if(getDate() != null){
-            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
-            LocalDateTime dateTimeUTC = null;
-            String offset = null;
-            for (DateFormat dateCheckFormat : formats) {
-                try { 
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
-                    OffsetDateTime ost = OffsetDateTime.parse(getDate(), dtf);
-                    dateTimeUTC = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
-                    offset = ost.getOffset().toString();
-                    break;
-                } catch (DateTimeParseException e) {
-                }                    
-            }
-            model.setDate(dateTimeUTC);
-            model.setTimezone(offset);
-        }
         return model;
     }
     

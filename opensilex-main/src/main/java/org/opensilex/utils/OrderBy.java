@@ -63,4 +63,8 @@ public class OrderBy {
         return order;
     }
 
+    @Override
+    public String toString() {
+        return fieldName + ":" + order.toString(); //To change body of generated methods, choose Tools | Templates.
+    } 
 }

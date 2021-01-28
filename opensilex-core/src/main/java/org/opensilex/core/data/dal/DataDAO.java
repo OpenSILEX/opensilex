@@ -12,13 +12,14 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.result.DeleteResult;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -28,11 +29,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.BooleanUtils;
 import org.bson.Document;
+import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -48,6 +48,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.utils.OrderBy;
 
 /**
  *
@@ -57,13 +58,13 @@ public class DataDAO {
 
     protected final URI RDFTYPE_VARIABLE;
     private final URI RDFTYPE_SCIENTIFICOBJECT;
-    public static final String DATA_COLLECTION_NAME = "Data";
-    public static final String FILE_COLLECTION_NAME = "File";
+    public static final String DATA_COLLECTION_NAME = "data";
+    public static final String FILE_COLLECTION_NAME = "file";
 
     protected final MongoDBService nosql;
     protected final SPARQLService sparql;
-    protected final FileStorageService fs;
-
+    protected final FileStorageService fs; 
+    
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
         this.RDFTYPE_VARIABLE = new URI(Oeso.Variable.toString());
         this.RDFTYPE_SCIENTIFICOBJECT = new URI(Oeso.ScientificObject.toString());
@@ -127,14 +128,18 @@ public class DataDAO {
             URI objectUri,
             URI variableUri,
             List<URI> provenances,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata,
+            List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) {
 
-        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate);
+        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
-        ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, page, pageSize);
+        ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
         return datas;
 
@@ -145,18 +150,22 @@ public class DataDAO {
             URI objectUri,
             URI variableUri,
             List<URI> provenances,
-            LocalDateTime startDate,
-            LocalDateTime endDate) {
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata,
+            List<OrderBy> orderByList) {
 
-        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate);
+        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
-        List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter);
+        List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
 
         return datas;
 
     }
     
-    private Document searchFilter(URI objectUri, URI variableUri, List<URI> provenances, LocalDateTime startDate, LocalDateTime endDate) {
+    private Document searchFilter(URI objectUri, URI variableUri, List<URI> provenances, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) {
         Document filter = new Document();
         
         if (objectUri != null) {
@@ -174,18 +183,38 @@ public class DataDAO {
             filter.put("provenance.uri", inFilter);
         }
 
-        if (startDate != null) {
-            Document greater = new Document();
-            greater.put("$gte", startDate);
-            filter.put("date", greater);
-        }
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {            
+                dateFilter.put("$gte", startDate);
+            }
 
-        if (endDate != null) {
-            Document less = new Document();
-            less.put("$lte", endDate);
-            filter.put("date", less);
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+
+            }
+            filter.put("date", dateFilter);
+        }    
+        
+        if (confidenceMin != null || confidenceMax != null) {
+            Document confidenceFilter = new Document();
+            if (confidenceMin != null) {            
+                confidenceFilter.put("$gte", confidenceMin);
+            }
+
+            if (confidenceMax != null) {
+                confidenceFilter.put("$lte", confidenceMax);
+
+            }
+            filter.put("confidence", confidenceFilter);
         }
         
+        if (metadata != null) {
+            for (String key:metadata.keySet()) {
+                filter.put("metadata." + key, metadata.get(key));
+            }
+        }
+                
         return filter;
     }    
 
@@ -198,66 +227,19 @@ public class DataDAO {
         DataFileModel data = nosql.findByURI(DataFileModel.class, FILE_COLLECTION_NAME, uri);
         return data;
     }
-
-    public void delete(URI uri) throws NoSQLInvalidURIException {
+    
+    public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
         nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
+    }
+
+    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
+        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uris);
     }
 
     public void deleteFile(URI uri) throws NoSQLInvalidURIException {
         nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
     }
-
-    public ErrorResponse validList(Set<URI> variables, Set<URI> objects, Set<URI> provenances) throws Exception {
-        //check variables uri
-        if (!variables.isEmpty()) {
-            if (!sparql.uriListExists(VariableModel.class, variables)) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "wrong variable uri",
-                        "A given variable uri doesn't exist"
-                );
-            }
-        }
-
-        //check objects uri
-        if (!objects.isEmpty()) {
-            if (!sparql.uriListExists(ScientificObjectModel.class, objects)) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "wrong object uri",
-                        "A given object uri doesn't exist"
-                );
-            }
-        }
-
-        //check provenances uri
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        if (!provDAO.provenanceListExists(provenances)) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "wrong provenance uri",
-                    "At least one provenance uri doesn't exist"
-            );
-        }
-
-        return null;
-
-    }
-
-    public ZonedDateTime convertDateTime(String strDate) {
-        DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
-        ZonedDateTime zdt = null;
-        for (DateFormat dateCheckFormat : formats) {
-            try {
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
-                zdt = ZonedDateTime.parse(strDate, dtf);
-                break;
-            } catch (DateTimeParseException e) {
-            }
-        }
-        return zdt;
-    }
-
+    
     public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
         Set<URI> provenances = getProvenancesByExperiment(xpUri);
         if (provenances.size() > 0) {
@@ -303,42 +285,14 @@ public class DataDAO {
             UserModel user,
             URI objectUri,
             URI provenanceUri,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
+            Instant startDate,
+            Instant endDate,
+            Document metadata,
+            List<OrderBy> orderBy,
             int page,
             int pageSize) {
 
-        Document filter = searchFileFilter(objectUri, provenanceUri, startDate, endDate);
-
-        if (objectUri != null) {
-            filter.put("scientificObjects", objectUri);
-        }
-
-        if (provenanceUri != null) {
-            filter.put("provenance.uri", provenanceUri);
-        }
-
-        if (startDate != null) {
-            Document greater = new Document();
-            greater.put("$gte", startDate);
-            filter.put("date", greater);
-        }
-
-        if (endDate != null) {
-            Document less = new Document();
-            less.put("$lte", endDate);
-            filter.put("date", less);
-        }
-
-        ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
-                DataFileModel.class, DATA_COLLECTION_NAME, filter, page, pageSize);
-
-        return files;
-
-    }
-    
-    private Document searchFileFilter(URI objectUri, URI provenanceUri, LocalDateTime startDate, LocalDateTime endDate) {
-        Document filter = new Document();
+        Document filter = searchFileFilter(objectUri, provenanceUri, startDate, endDate, metadata);
 
         if (objectUri != null) {
             filter.put("scientificObjects", objectUri);
@@ -360,6 +314,129 @@ public class DataDAO {
             filter.put("date", less);
         }
         
+        if (metadata != null) {
+            for (String key:metadata.keySet()) {
+                filter.put("metadata." + key, metadata.get(key));
+            }
+        }
+
+        ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
+                DataFileModel.class, DATA_COLLECTION_NAME, filter, orderBy, page, pageSize);
+
+        return files;
+
+    }
+    
+    private Document searchFileFilter(URI objectUri, URI provenanceUri, Instant startDate, Instant endDate, Document metadata) {
+        Document filter = new Document();
+
+        if (objectUri != null) {
+            filter.put("scientificObjects", objectUri);
+        }
+
+        if (provenanceUri != null) {
+            filter.put("provenance.uri", provenanceUri);
+        }
+
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {            
+                dateFilter.put("$gte", startDate);
+            }
+
+            if (endDate != null) {
+                dateFilter.put("$lte", endDate);
+
+            }
+            filter.put("date", dateFilter);
+        }   
+        
+        if (metadata != null) {
+            for (String key:metadata.keySet()) {
+                filter.put("metadata." + key, metadata.get(key));
+            }
+        }
+        
         return filter;
-    } 
+    }
+
+    public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
+        VariableDAO dao = new VariableDAO(sparql);
+        Set<URI> variables = new HashSet<>();
+        Map<URI, URI> variableTypes = new HashMap();
+
+        for (DataModel data : datas) {
+            if (data.getValue() != "NA") {
+                URI variableUri = data.getVariable();
+                if (!variableTypes.containsKey(variableUri)) {
+                    VariableModel variable = dao.get(data.getVariable());
+                    if (variable.getDataType() == null) {
+                        throw new NoVariableDataTypeException(variableUri);
+                    } else {
+                        variableTypes.put(variableUri,variable.getDataType());
+                    }                    
+                }
+                URI dataType = variableTypes.get(variableUri);
+                
+                if (!checkTypeCoherence(dataType, data.getValue()))  {
+                    throw new DataTypeException(variableUri, data.getValue(), dataType);
+                }
+
+            }
+        }
+    }
+
+    private Boolean checkTypeCoherence(URI dataType, Object value) {
+        Boolean checkCoherence = false;
+        if (dataType == null) {
+            checkCoherence = true;
+
+        } else {
+            switch (dataType.toString()) {
+                case "xsd:integer":
+                    if ((value instanceof Integer)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                case "xsd:decimal":
+                    if ((value instanceof Double)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                case "xsd:boolean":
+                    if ((value instanceof Boolean)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                case "xsd:date":
+                    if ((value instanceof String)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                case "xsd:datetime":
+                    if ((value instanceof String)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                case "xsd:string":
+                    if ((value instanceof String)) {
+                        checkCoherence = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return checkCoherence;
+    }
+
+    public DeleteResult deleteWithFilter(URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
+        List<URI> provenances = new ArrayList<>();
+        provenances.add(provenanceUri);
+        Document filter = searchFilter(objectUri, variableUri, provenances, null, null, null, null, null);
+        DeleteResult result = nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
+        return result;
+    }
+
 }

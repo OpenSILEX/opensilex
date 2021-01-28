@@ -24,16 +24,19 @@
           @deselect="searchModal.unSelect($event)"
           @open="showModal"
         >
-          <template v-slot:option-label="{node}">
-            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:option-label="{ node }">
+            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
-          <template v-slot:value-label="{node}">
-            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:value-label="{ node }">
+            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
         </treeselect>
         <treeselect
           v-else-if="optionsLoadingMethod"
-          v-bind:class="{ 'multiselect-action': actionHandler}"
+          v-bind:class="{
+            'multiselect-action': actionHandler,
+            'multiselect-view': viewHandler,
+          }"
           :multiple="multiple"
           :flat="multiple && flat"
           :value="selectedValues"
@@ -56,19 +59,24 @@
           :search-nested="searchNested"
           :show-count="showCount"
         >
-          <template v-slot:option-label="{node}">
-            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:option-label="{ node }">
+            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
-          <template v-slot:value-label="{node}">
-            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:value-label="{ node }">
+            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
           <template v-if="resultCount < totalCount" v-slot:after-list>
-            <i class="more-results-info">{{$t('SelectorForm.refineSearchMessage', [resultCount, totalCount])}}</i>
+            <i class="more-results-info">{{
+              $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
+            }}</i>
           </template>
         </treeselect>
         <treeselect
           v-else
-          v-bind:class="{ 'multiselect-action': actionHandler}"
+          v-bind:class="{
+            'multiselect-action': actionHandler,
+            'multiselect-view': viewHandler,
+          }"
           :multiple="multiple"
           :flat="multiple && flat"
           :value="selectedValues"
@@ -91,22 +99,41 @@
           :search-nested="searchNested"
           :show-count="showCount"
         >
-          <template v-slot:option-label="{node}">
-            <slot name="option-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:option-label="{ node }">
+            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
-          <template v-slot:value-label="{node}">
-            <slot name="value-label" v-bind:node="node">{{node.label}}</slot>
+          <template v-slot:value-label="{ node }">
+            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
           <template v-if="resultCount < totalCount" v-slot:after-list>
-            <i class="more-results-info">{{$t('SelectorForm.refineSearchMessage', [resultCount, totalCount])}}</i>
+            <i class="more-results-info">{{
+              $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
+            }}</i>
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
           <b-button variant="primary" @click="showModal">+</b-button>
         </b-input-group-append>
+        <b-input-group-append v-else-if="!actionHandler && viewHandler">
+           <opensilex-DetailButton
+            v-if="viewHandler"
+            @click="viewHandler"
+            :detailVisible="viewHandlerDetailsVisible"
+            :label="(viewHandlerDetailsVisible ? 'SelectorForm.hideDetails' : 'SelectorForm.showDetails')"
+            :small="true"
+          ></opensilex-DetailButton>
+        </b-input-group-append>
         <b-input-group-append v-else-if="actionHandler">
           <b-button variant="primary" @click="actionHandler">+</b-button>
+          <opensilex-DetailButton
+            v-if="viewHandler"
+            @click="viewHandler"
+            :detailVisible="viewHandlerDetailsVisible"
+            :label="(viewHandlerDetailsVisible ? 'SelectorForm.hideDetails' : 'SelectorForm.showDetails')"
+            :small="true"
+          ></opensilex-DetailButton>
         </b-input-group-append>
+   
       </b-input-group>
       <component
         v-if="isModalSearch"
@@ -120,11 +147,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Watch,Ref } from "vue-property-decorator";
+import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
-  OpenSilexResponse
+  OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
 import AsyncComputedProp from "vue-async-computed-decorator";
 
@@ -156,22 +183,22 @@ export default class SelectForm extends Vue {
   searchMethod;
 
   @Prop({
-    default: false
+    default: false,
   })
   isModalSearch;
 
   @Prop({
-    default: true
+    default: true,
   })
   clearable;
 
   @Prop({
-    default: true
+    default: true,
   })
   openOnClick;
 
   @Prop({
-    default: false
+    default: false,
   })
   showCount;
 
@@ -180,9 +207,9 @@ export default class SelectForm extends Vue {
 
   @Prop({
     type: Function,
-    default: function(e) {
+    default: function (e) {
       return e;
-    }
+    },
   })
   conversionMethod: Function;
 
@@ -196,7 +223,7 @@ export default class SelectForm extends Vue {
   placeholder: string;
 
   @Prop({
-    default: "component.common.filter-search-no-result"
+    default: "component.common.filter-search-no-result",
   })
   noResultsText: string;
 
@@ -210,17 +237,27 @@ export default class SelectForm extends Vue {
   rules: string | Function;
 
   @Prop({
-    default: true
+    default: true,
   })
   flat: boolean;
 
   @Prop({
-    default: null
+    default: null,
   })
   actionHandler;
 
   @Prop({
-    default: 10
+    default: null,
+  })
+  viewHandler;
+
+  @Prop({
+    default: false,
+  })
+  viewHandlerDetailsVisible
+
+  @Prop({
+    default: 10,
   })
   resultLimit;
 
@@ -230,17 +267,18 @@ export default class SelectForm extends Vue {
   }
 
   @Prop({
-    default: false
+    default: false,
   })
   disableBranchNodes: boolean;
 
   @Prop({
-    default: false
+    default: false,
   })
   searchNested: boolean;
 
   @Prop()
   maximumSelectedItems;
+  detailVisible: boolean = false;
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -265,9 +303,9 @@ export default class SelectForm extends Vue {
             loadingPromise = Promise.resolve(loadingPromise);
           }
           loadingPromise
-            .then(list => {
+            .then((list) => {
               let nodeList = [];
-              list.forEach(item => {
+              list.forEach((item) => {
                 nodeList.push(this.conversionMethod(item));
               });
               if (this.multiple) {
@@ -277,7 +315,7 @@ export default class SelectForm extends Vue {
               }
               resolve(this.currentValue);
             })
-            .catch(error => {
+            .catch((error) => {
               this.$opensilex.errorHandler(error);
               reject(error);
             });
@@ -366,7 +404,7 @@ export default class SelectForm extends Vue {
 
   deselect(value) {
     if (this.multiple) {
-      this.selection = this.selection.filter(id => id !== value.id);
+      this.selection = this.selection.filter((id) => id !== value.id);
     } else {
       this.selection = null;
     }
@@ -408,9 +446,9 @@ export default class SelectForm extends Vue {
       if (this.optionsLoadingMethod) {
         this.$opensilex.disableLoader();
         this.optionsLoadingMethod()
-          .then(list => {
+          .then((list) => {
             let nodeList = [];
-            list.forEach(item => {
+            list.forEach((item) => {
               nodeList.push(this.conversionMethod(item));
             });
             this.internalOption = nodeList;
@@ -433,19 +471,19 @@ export default class SelectForm extends Vue {
 
   created() {
     let self = this;
-    this.debounceSearch = this.debounce(function(query, callback) {
+    this.debounceSearch = this.debounce(function (query, callback) {
       self.$opensilex.disableLoader();
       if (query == "") {
         query = ".*";
       }
       self
         .searchMethod(query, 0, self.resultLimit)
-        .then(http => {
+        .then((http) => {
           let list = http.response.result;
           self.totalCount = http.response.metadata.pagination.totalCount;
           self.resultCount = list.length;
           let nodeList = [];
-          list.forEach(item => {
+          list.forEach((item) => {
             nodeList.push(self.conversionMethod(item));
           });
           callback(null, nodeList);
@@ -456,14 +494,32 @@ export default class SelectForm extends Vue {
   }
 
   debounceSearch;
-  
+
+  refresh(){ 
+      this.$opensilex.disableLoader();
+         let query = ".*";
+       this
+        .searchMethod(query, 0, this.resultLimit)
+        .then((http) => {
+          let list = http.response.result;
+          this.totalCount = http.response.metadata.pagination.totalCount;
+          this.resultCount = list.length;
+          let nodeList = [];
+          list.forEach((item) => {
+            nodeList.push(this.conversionMethod(item));
+          });
+           this.$opensilex.enableLoader();
+        })
+        .catch(this.$opensilex.errorHandler);
+ 
+  }
 
   debounce(func, wait, immediate?): Function {
     var timeout;
     var context: any = this;
-    return function() {
+    return function () {
       var args = arguments;
-      var later = function() {
+      var later = function () {
         timeout = null;
         if (!immediate) func.apply(context, args);
       };
@@ -487,10 +543,15 @@ export default class SelectForm extends Vue {
 
   updateValues(selectedValues) {
     if (this.conversionMethod && selectedValues) {
-      this.selection = selectedValues.map(item => this.conversionMethod(item));
+      this.selection = selectedValues.map((item) =>
+        this.conversionMethod(item)
+      );
     } else {
       this.selection = selectedValues;
     }
+  }
+  showDetails() {
+    this.detailVisible != this.detailVisible;
   }
 }
 </script>
@@ -506,6 +567,20 @@ export default class SelectForm extends Vue {
 }
 
 ::v-deep .multiselect-action .vue-treeselect__control,
+::v-deep .multiselect-popup .vue-treeselect__control {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 5px !important;
+  width: 100%;
+  height: 35px;
+}
+
+::v-deep .multiselect-view.vue-treeselect,
+::v-deep .multiselect-popup.vue-treeselect {
+  width: calc(100% - 85px);
+}
+
+::v-deep .multiselect-view .vue-treeselect__control,
 ::v-deep .multiselect-popup .vue-treeselect__control {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
@@ -536,9 +611,13 @@ i.more-results-info {
 en:
   SelectorForm:
     refineSearchMessage: "{0}/{1} results displayed, please refine your search..."
-    
+    showDetails : "Show details"
+    hideDetails : "Hide details"
+  
 fr:
   SelectorForm:
     refineSearchMessage: "{0}/{1} résultats affichés, merci de préciser votre recherche..."
+    showDetails : "Afficher les détails"
+    hideDetails : "Masquer les détails"
 
 </i18n>

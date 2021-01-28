@@ -19,7 +19,7 @@ public class ProvenanceModel extends MongoModel {
 
     //URI uri;    
     String name;
-    String comment;
+    String description;
     List<URI> experiments;
 
     List<ActivityModel> activity;
@@ -41,12 +41,12 @@ public class ProvenanceModel extends MongoModel {
         this.name = name;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<URI> getExperiments() {

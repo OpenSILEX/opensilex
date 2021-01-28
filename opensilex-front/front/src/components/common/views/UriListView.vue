@@ -10,7 +10,7 @@
           :url="value.url"
           :to="value.to"
         ></opensilex-UriLink>
-        <span v-if="index + 1 < list.length">,</span>
+        <span v-if="index + 1 < list.length">, </span>
       </span>
     </span>
   </div>

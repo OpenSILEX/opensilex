@@ -49,13 +49,13 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
     
-    protected String path = "/core/data/file";
+    protected String path = "/core/datafiles";
 
-    protected String uriPath = path + "/get/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String deletePath = path + "/delete/{uri}";    
-    protected String getDescriptionPath = path + "/description/{uri}";
+    protected String uriPath = path + "/{uri}";
+    protected String searchPath = path;
+    protected String createPath = path;
+    protected String deletePath = path + "/{uri}";    
+    protected String getDescriptionPath = path + "/{uri}/description";
         
     private DataProvenanceModel provenance;
     

@@ -159,7 +159,7 @@ export default class ExperimentDetail extends Vue {
     this.loadExperiment();
   }
 
-private langUnwatcher;
+  private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
@@ -169,6 +169,11 @@ private langUnwatcher;
       }
     );
   }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+  
   showEditForm() {
     this.convertDtoBeforeEditForm();
     // make a deep copy of the experiment in order to not change the current dto

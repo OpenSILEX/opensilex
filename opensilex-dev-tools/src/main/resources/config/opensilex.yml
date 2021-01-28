@@ -19,6 +19,7 @@ big-data:
             host: localhost
             port: 8668
             database: opensilex
+#            timezone: Europe/Paris
     
 phisws:
     infrastructure: opensilex

@@ -8,14 +8,17 @@ package org.opensilex.core.provenance.dal;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.naming.NamingException;
 import org.bson.Document;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
         
 /**
  * Provenance DAO
@@ -42,10 +45,13 @@ public class ProvenanceDAO {
     
     public ListWithPagination<ProvenanceModel> search(
             String name, 
+            String description, 
             URI experiment, 
-            URI activityType, 
+            URI activityType,
+            URI activityUri,
             URI agentType, 
             URI agentURI,
+            List<OrderBy> orderByList,
             Integer page,
             Integer pageSize
     ) throws NamingException, IOException, Exception {
@@ -61,23 +67,37 @@ public class ProvenanceDAO {
             filter.put("name", regexFilter);
         }
         
+        if (description != null) {
+            Document regexFilter = new Document();
+            regexFilter.put("$regex", ".*" + Pattern.quote(description) + ".*" );
+            // Case ignore
+            regexFilter.put("$options", "i" );
+
+            //regexFilter.put("$options", "i");
+            filter.put("description", regexFilter);
+        }
+        
         if (experiment != null) {
             filter.put("experiments", experiment);
         }
 
         if (activityType != null) {
-            filter.put("activity.type", activityType);
+            filter.put("activity.rdfType", activityType);
+        }
+        
+        if (activityUri != null) {
+            filter.put("activity.uri", activityUri);
         }
         
         if (agentType != null) {
-            filter.put("agents.type", agentType);
+            filter.put("agents.rdfType", agentType);
         }
         
         if (agentURI != null) {
             filter.put("agents.uri", agentURI);
         }      
         
-        ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, page, pageSize);
+        ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, orderByList, page, pageSize);
         return provenances;        
            
     }
@@ -95,7 +115,7 @@ public class ProvenanceDAO {
         return nosql.uriExists(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
     }
     
-    public boolean provenanceListExists(Set<URI> uris) throws NamingException, IOException{  
+    public boolean provenanceListExists(Set<URI> uris) throws NamingException, IOException {  
         Document listFilter = new Document();
         listFilter.append("$in", uris);
         Document filter = new Document();
@@ -104,5 +124,25 @@ public class ProvenanceDAO {
         Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return (foundedURIs.size() == uris.size());
     }
-
+    
+    public Set<URI> getExistingProvenanceURIs(Set<URI> uris) throws NamingException, IOException {  
+        Document listFilter = new Document();
+        listFilter.append("$in", uris);
+        Document filter = new Document();
+        filter.append("uri",listFilter);        
+                
+        Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
+        return foundedURIs;
+    }
+    
+    public Set<URI> getNotExistingProvenanceURIs(Set<URI> uris) throws NamingException, IOException {
+        Set<URI> existingURIs = getExistingProvenanceURIs(uris);
+        uris.removeAll(existingURIs);
+        return uris;
+    }
+    
+    public List<ProvenanceModel> getListByURIs(List<URI> uris) throws NamingException, IOException, NoSQLInvalidUriListException{  
+        List<ProvenanceModel> findByURIs = nosql.findByURIs(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME,uris);
+        return findByURIs;
+    }
 }

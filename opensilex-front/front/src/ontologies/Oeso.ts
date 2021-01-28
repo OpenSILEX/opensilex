@@ -12,15 +12,16 @@ let ontologies = {
     HAS_REPLICATION: OESO_URI + "#hasReplication",
     HAS_VARIETY: OESO_URI + "#hasVariety",
     HAS_SPECIES: OESO_URI + "#hasSpecies",
-    ENTITY_TYPE_URI: OESO_URI +"#Entity",
-    QUALITY_TYPE_URI: OESO_URI +"#Quality",
-    METHOD_TYPE_URI: OESO_URI +"#Method",
-    UNIT_TYPE_URI: OESO_URI +"#Unit",
+    ENTITY_TYPE_URI: OESO_URI + "#Entity",
+    QUALITY_TYPE_URI: OESO_URI + "#Quality",
+    METHOD_TYPE_URI: OESO_URI + "#Method",
+    UNIT_TYPE_URI: OESO_URI + "#Unit",
     DOCUMENT_TYPE_URI: OESO_URI + "#Document",
     CONCERNS: OESO_URI + "#concerns",
     AREA: OESO_URI + "#Zone",
-    PERENNIAL_AREA: OESO_URI + "#PerenialArea"
-
+    PERENNIAL_AREA: OESO_URI + "#PerenialArea",
+    OPERATOR_TYPE_URI: OESO_URI + "#Operator",
+    SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
 };
 
 export default ontologies;

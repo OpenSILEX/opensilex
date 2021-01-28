@@ -3,6 +3,7 @@
     ref="modalRef"
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
+    @hide="$emit('hide')"
     :size="modalSize"
     :static="true"
     no-close-on-backdrop

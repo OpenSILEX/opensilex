@@ -6,15 +6,11 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
 import static java.lang.Double.NaN;
 import java.net.URI;
-import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import javax.validation.constraints.Max;
@@ -23,41 +19,57 @@ import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.server.rest.validation.Date;
-import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.exception.TimezoneAmbiguityException;
+import org.opensilex.core.exception.TimezoneException;
+import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *
  * @author sammy
  */
-public class DataCreationDTO{
+@JsonPropertyOrder({"uri", "date","timezone", "scientific_objects", "variable", "value", "confidence", "provenance",  "metadata"})
+public class DataCreationDTO {
     
     public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/a"};
     public static final String[] NAN_VALUES = {"nan", "NaN", "NAN"};
     
     @ValidURI
+    @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
     protected URI uri;
     
-    private List<URI> scientificObjects;
-    
-    @NotNull
-    @ValidURI
-    private URI variable;
-    
-    @NotNull
-    private DataProvenanceModel provenance;
-    
-    @NotNull
-    @Date({DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ})
+    @Required
+    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
     private String date;
     
+    @JsonProperty("scientific_objects")
+    @ApiModelProperty(value = "scientific objects URIs on which the data have been collected", example = "http://plot01")
+    private List<URI> scientificObjects;
+    
+    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
+    protected String timezone;
+    
+    @ValidURI
+    @NotNull
+    @ApiModelProperty(value = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, required = true)
+    private URI variable;   
+
+    @NotNull
+    @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
     
     @Min(0)
     @Max(1)
-    private Float confidence = null;
+    @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
+    private Float confidence = null;    
+        
+    @NotNull
+    private DataProvenanceModel provenance;
     
+    @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)
     private Document metadata;
 
     public URI getUri() {
@@ -100,6 +112,14 @@ public class DataCreationDTO{
         this.date = date;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+
     public Object getValue() {
         return value;
     }
@@ -124,7 +144,7 @@ public class DataCreationDTO{
         this.metadata = metadata;
     }       
 
-    public DataModel newModel() throws ParseException {
+    public DataModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataModel model = new DataModel();
 
         model.setUri(getUri());        
@@ -135,27 +155,18 @@ public class DataCreationDTO{
         model.setConfidence(getConfidence());
         model.setMetadata(getMetadata());
         
-        if(getDate() != null){
-            DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
-            LocalDateTime dateTimeUTC = null;
-            String offset = null;
-            for (DateFormat dateCheckFormat : formats) {
-                try { 
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
-                    OffsetDateTime ost = OffsetDateTime.parse(date, dtf);
-                    dateTimeUTC = ost.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
-                    offset = ost.getOffset().toString();
-                    break;
-                } catch (DateTimeParseException e) {
-                }                    
-            }
-            model.setDate(dateTimeUTC);
-            model.setTimezone(offset);
+        ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
+        if (parsedDateTimeMongo == null) {
+            throw new UnableToParseDateException(getDate());
+        } else {
+            model.setDate(parsedDateTimeMongo.getInstant());
+            model.setOffset(parsedDateTimeMongo.getOffset());
+            model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         }
         
         if (getValue() instanceof String) {
             if (Arrays.asList(NA_VALUES).contains(getValue())) {
-                model.setValue("NA");
+                model.setValue(null);
             } else if (Arrays.asList(NAN_VALUES).contains(getValue())) {
                 model.setValue(NaN);
             } else {

@@ -6,8 +6,12 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -24,15 +28,28 @@ public class DataGetDTO extends DataCreationDTO {
     
     @NotNull
     @ValidURI
+    @ApiModelProperty(value = "data URI", example = DataAPI.DATA_EXAMPLE_URI)    
     @Override
     public URI getUri() {
         return uri;
-    }    
+    }        
+    
+    @JsonIgnore
+    @Override
+    public String getTimezone() {
+        return timezone;
+    }
         
-    public void setDate(LocalDateTime date, String offset){;
-        OffsetDateTime offsetDateTime = date.atOffset(ZoneOffset.UTC).withOffsetSameInstant(ZoneOffset.of(offset));
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
-        this.setDate(dtf.format(offsetDateTime));
+    public void setDate(Instant instant, String offset, Boolean isDateTime) {
+        if (isDateTime) {
+            OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
+            this.setDate(dtf.format(odt));
+        } else {
+            LocalDate date = LocalDate.ofInstant(instant, ZoneOffset.of(offset));            
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
+            this.setDate(dtf.format(date));
+        }        
     }
     
     public static DataGetDTO fromModel(DataModel model){
@@ -40,7 +57,7 @@ public class DataGetDTO extends DataCreationDTO {
         dto.setUri(model.getUri());
         dto.setScientificObjects(model.getScientificObjects());
         dto.setVariable(model.getVariable());      
-        dto.setDate(model.getDate(), model.getTimezone());        
+        dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         dto.setConfidence(model.getConfidence());
         dto.setValue(model.getValue());
         dto.setMetadata(model.getMetadata());   

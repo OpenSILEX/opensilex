@@ -54,4 +54,10 @@ import org.opensilex.service.ServiceConfig;
             value = "MongoDB other connection options"
     )
     public Map<String, String> options();
+    
+    @ConfigDescription(
+            value = "timezone",
+            defaultString = "UTC"
+    )
+    public String timezone();
 }

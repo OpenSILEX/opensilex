@@ -78,7 +78,8 @@
             },
             "import-files": {
                 "csv-file": " Load CSV",
-                "csv-template": "Download template"
+                "csv-template": "Download template",
+                "select-button": "Select"
             },
             "tabulator": {
                 "reset-table": "Reset table",
@@ -108,6 +109,10 @@
                     "interoperability": "References",
                     "update": "Update",
                     "delete": "Delete"
+                },
+                "pagination" : {
+                    "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
+                    "noEntries" : "No entries found"
                 }
             }
         },

@@ -11,11 +11,19 @@ import moment from "moment";
 export default class DateView extends Vue {
   $i18n: any;
   $opensilex: any;
+
   @Prop()
   value: string;
 
+  @Prop()
+  isDatetime: boolean;
+
   formatDate(value: string): string {
-    return this.$opensilex.formatDate(value);
+    if(this.isDatetime){
+      return this.$opensilex.formatDateTime(value); 
+    }else{
+      return this.$opensilex.formatDate(value);
+    } 
   }
 }
 </script>

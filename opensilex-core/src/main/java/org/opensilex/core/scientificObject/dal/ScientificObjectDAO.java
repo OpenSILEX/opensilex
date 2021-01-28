@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -211,7 +212,7 @@ public class ScientificObjectDAO {
         sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
     }
 
-    public ExperimentalObjectModel getByNameAndContext(URI contextUri, String objectName) throws Exception {
+    public ExperimentalObjectModel getByNameAndContext( String objectName, URI contextUri) throws Exception {
         Node experimentGraph = SPARQLDeserializers.nodeURI(contextUri);
 
         ListWithPagination<ExperimentalObjectModel> searchWithPagination = sparql.searchWithPagination(
@@ -259,10 +260,20 @@ public class ScientificObjectDAO {
     }
 
     private void appendStrictNameFilter(SelectBuilder select, String name) throws Exception {
-        select.addFilter(SPARQLQueryHelper.eq(ExperimentalObjectModel.NAME_FIELD, name.trim()));
+        select.addFilter(SPARQLQueryHelper.eq(ExperimentalObjectModel.NAME_FIELD, name));
     }
 
     public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
-        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, null);
+        List<URI> objectURIs = new ArrayList<>();
+        
+        objectURIs.add(objectURI);
+        List<ScientificObjectModel> listByURIs = sparql.getListByURIs(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURIs, null);
+        if(listByURIs == null || listByURIs.isEmpty()){
+              return null;
+        }else{
+            return listByURIs.get(0);
+        } 
+        // TODO Not working
+//        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, null);
     }
 }

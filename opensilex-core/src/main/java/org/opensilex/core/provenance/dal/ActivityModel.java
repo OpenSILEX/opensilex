@@ -7,7 +7,9 @@
 package org.opensilex.core.provenance.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.time.Instant;
 import org.bson.Document;
 
 /**
@@ -15,38 +17,57 @@ import org.bson.Document;
  * @author Alice Boizet
  */
 public class ActivityModel {    
-    @JsonProperty("rdfType")
-    URI type;   
+    URI rdfType;   
 
-    String startedAtTime;
+    URI uri;
     
-    String endedAtTime;
+    Instant startDate;
+    
+    Instant endDate;
+    
+    String offset;
     
     Document settings; 
 
-    public URI getType() {
-        return type;
+    public URI getRdfType() {
+        return rdfType;
     }
 
-    public void setType(URI type) {
-        this.type = type;
-    }
-    
-    public String getStartedAtTime() {
-        return startedAtTime;
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
-    public void setStartedAtTime(String startedAtTime) {
-        this.startedAtTime = startedAtTime;
+    public URI getUri() {
+        return uri;
     }
 
-    public String getEndedAtTime() {
-        return endedAtTime;
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
-    public void setEndedAtTime(String endedAtTime) {
-        this.endedAtTime = endedAtTime;
+    public Instant getStartDate() {
+        return startDate;
     }
+
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
+    }
+
+    public Instant getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getOffset() {
+        return offset;
+    }
+
+    public void setOffset(String offset) {
+        this.offset = offset;
+    }    
 
     public Document getSettings() {
         return settings;

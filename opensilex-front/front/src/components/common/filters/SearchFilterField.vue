@@ -1,5 +1,6 @@
 <template>
   <div class="card-vertical-group">
+    <ValidationObserver ref="validatorRef">
     <div class="card">
       <div v-if="showTitle" class="card-header">
         <h3 class="mr-3">
@@ -61,6 +62,7 @@
         </div>
       </div>
     </div>
+      </ValidationObserver>
   </div>
 </template>
 
@@ -70,12 +72,16 @@ import {
   Prop,
   Model,
   Provide,
-  PropSync
+  PropSync,
+  Ref
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class SearchFilterField extends Vue {
+
+  @Ref("validatorRef") readonly validatorRef!: any;
+
   @Prop({ default: "SearchFilter.searchlabel" })
   label: string;
 

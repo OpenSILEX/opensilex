@@ -7,6 +7,7 @@
 package org.opensilex.core.data.dal;
 
 import java.net.URI;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * DataFileModel
@@ -42,5 +43,14 @@ public class DataFileModel extends DataModel {
     public void setPath(String path) {
         this.path = path;
     }
+    
+    @Override
+    public String[] getUriSegments(MongoModel instance) {
+        return new String[]{            
+            String.valueOf(getDate().getEpochSecond()),
+            String.valueOf(getProvenance().getUri().getFragment()),
+            String.valueOf(System.nanoTime())
+        };
+    } 
         
 }

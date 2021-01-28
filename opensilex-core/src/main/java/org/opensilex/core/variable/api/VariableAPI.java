@@ -265,7 +265,7 @@ public class VariableAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("uris")
+    @Path("by-uris")
     @ApiOperation("Get a list of variables by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)

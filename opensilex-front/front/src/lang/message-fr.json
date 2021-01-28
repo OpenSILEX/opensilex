@@ -77,7 +77,8 @@
             },
             "import-files": {
                 "csv-file": "Charger un CSV",
-                "csv-template": "Télécharger un gabarit"
+                "csv-template": "Télécharger un gabarit",
+                "select-button": "Sélectionner"
             },
             "tabulator": {
                 "reset-table": "Vider la table",
@@ -107,6 +108,10 @@
                     "interoperability": "Références",
                     "update": "Modifier",
                     "delete": "Supprimer"
+                },
+                "pagination" : {
+                    "nbEntries" : " Affiche {limit} sur {offset} des {totalRow} éléments",
+                    "noEntries" : "Aucun élément trouvé"
                 }
             }
         },

@@ -3,7 +3,7 @@
     <div class="card">
       <div v-if="globalFilterField">
         <div>
-           <opensilex-StringFilter
+          <opensilex-StringFilter
             :filter.sync="filter"
             placeholder="TableView.filter.placeholder"
           ></opensilex-StringFilter>
@@ -202,5 +202,5 @@ en:
 fr:
   TableView: 
     filter:
-       placeholder: Rechercher dans ce tabkeau
+       placeholder: Rechercher dans ce tableau
 </i18n>

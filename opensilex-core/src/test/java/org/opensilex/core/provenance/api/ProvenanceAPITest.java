@@ -34,27 +34,27 @@ import org.opensilex.server.response.SingleObjectResponse;
  */
 public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     
-    public String path = "/core/provenance";
+    public String path = "/core/provenances";
 
-    public String uriPath = path + "/get/{uri}";
-    public String searchPath = path + "/search";
-    public String createPath = path + "/create";
-    public String updatePath = path + "/update";
-    public String deletePath = path + "/delete/{uri}";
+    public String uriPath = path + "/{uri}";
+    public String searchPath = path;
+    public String createPath = path;
+    public String updatePath = path;
+    public String deletePath = path + "/{uri}";
     
     public ProvenanceCreationDTO getCreationProvDTO() throws URISyntaxException {
         ProvenanceCreationDTO provDTO = new ProvenanceCreationDTO();
         provDTO.setName("label");
-        provDTO.setComment("comment");
+        provDTO.setDescription("comment");
         
-        ActivityModel activity = new ActivityModel();
-        activity.setType(new URI(Oeso.ImageAnalysis.toString()));
+        ActivityCreationDTO activity = new ActivityCreationDTO();
+        activity.setRdfType(new URI(Oeso.ImageAnalysis.toString()));
         ArrayList activities = new ArrayList();
         activities.add(activity);
         provDTO.setActivity(activities);
         
         AgentModel agent = new AgentModel();
-        agent.setType(new URI(Oeso.SensingDevice.toString()));
+        agent.setRdfType(new URI(Oeso.SensingDevice.toString()));
         agent.setUri(new URI("http://opensilex.org/sensor#s001"));
         Document settings = new Document();
         settings.put("param", "value");
@@ -84,7 +84,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
 
         // update the provenance
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setComment("new comment");
+        dto.setDescription("new comment");
         
         // check update ok
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
@@ -100,7 +100,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         ProvenanceGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getComment(), dtoFromApi.getComment());
+        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
     }
     
     @Test
@@ -144,10 +144,10 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("label", creationDTO.getName());
-                put("comment", creationDTO.getComment());
-                put("activity type", creationDTO.getActivity().get(0).getType());
-                put("agent URI", creationDTO.getAgents().get(0).getUri());
+                put("name", creationDTO.getName());
+                put("description", creationDTO.getDescription());
+                put("activity_type", creationDTO.getActivity().get(0).getRdfType());
+                put("agent", creationDTO.getAgents().get(0).getUri());
             }
         };
 
@@ -156,9 +156,9 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
-        PaginatedListResponse<ProvenanceGetDTO> xpListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProvenanceGetDTO>>() {
+        PaginatedListResponse<ProvenanceGetDTO> provListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ProvenanceGetDTO>>() {
         });
-        List<ProvenanceGetDTO> provenances = xpListResponse.getResult();
+        List<ProvenanceGetDTO> provenances = provListResponse.getResult();
 
         assertFalse(provenances.isEmpty());
     }

@@ -191,7 +191,7 @@ components["opensilex-TreeView"] = TreeView;
 import TreeViewAsync from './common/views/TreeViewAsync.vue'
 components["opensilex-TreeViewAsync"] = TreeViewAsync;
 import TableView from './common/views/TableView.vue'
-components["opensilex-TableView"] = TableView; 
+components["opensilex-TableView"] = TableView;
 import TableAsyncView from './common/views/TableAsyncView.vue'
 components["opensilex-TableAsyncView"] = TableAsyncView;
 import Card from './common/views/Card.vue'
@@ -310,6 +310,10 @@ import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
 components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
+import ExperimentVariableSelector from './experiments/ExperimentVariableSelector.vue';
+components["opensilex-ExperimentVariableSelector"] = ExperimentVariableSelector;
+import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
+components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';
@@ -397,6 +401,8 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
+import VariableSelector from './variables/views/VariableSelector.vue';
+components["opensilex-VariableSelector"] = VariableSelector;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -441,6 +447,20 @@ components["opensilex-UnitDetails"] = UnitDetails;
 // Data
 import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
+import ProvenanceSelector from './data/ProvenanceSelector.vue';
+components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
+import ResultModalView from './data/ResultModalView.vue';
+components["opensilex-ResultModalView"] = ResultModalView;
+import ProvenanceDetails from './data/ProvenanceDetails.vue';
+components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
+import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
+components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
+import ProvenanceForm from './data/form/ProvenanceForm.vue';
+components["opensilex-ProvenanceForm"] = ProvenanceForm;
+import DataValidationReport from './data/form/DataValidationReport.vue';
+components["opensilex-DataValidationReport"] = DataValidationReport;
+import DataHelpTableView from './data/form/DataHelpTableView.vue';
+components["opensilex-DataHelpTableView"] = DataHelpTableView;
 
 // PHIS
 //IMAGES

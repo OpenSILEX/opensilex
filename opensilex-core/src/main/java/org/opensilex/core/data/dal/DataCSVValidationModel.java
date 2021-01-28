@@ -11,9 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVDuplicateURIError;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 
 /**

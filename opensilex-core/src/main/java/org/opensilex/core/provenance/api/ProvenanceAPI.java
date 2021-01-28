@@ -40,11 +40,13 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
@@ -54,6 +56,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 /**
  * Provenance API
@@ -61,7 +64,7 @@ import org.opensilex.utils.ListWithPagination;
  * @author Alice Boizet
  */
 @Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
-@Path("/core/provenance")
+@Path("/core/provenances")
 @ApiCredentialGroup(
         groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
         groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
@@ -80,8 +83,7 @@ public class ProvenanceAPI {
     private SPARQLService sparql;
 
     @POST
-    @Path("create")
-    @ApiOperation("Create a provenance")
+    @ApiOperation("Add a provenance")
     @ApiProtected
     @ApiCredential(
             credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
@@ -90,19 +92,29 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a provenance", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 201, message = "A provenance is created", response = ObjectUriResponse.class),
+        @ApiResponse(code = 409, message = "A provenance with the same URI already exists", response = ErrorResponse.class)})
 
     public Response createProvenance(
-            @ApiParam("provenance description") @Valid ProvenanceCreationDTO provDTO
+            @ApiParam("Provenance description") @Valid ProvenanceCreationDTO provDTO
     ) throws Exception {
+        
+        try {
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);                    
+            ProvenanceModel model = provDTO.newModel();
+            ProvenanceModel provenance = provDAO.create(model);
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        ProvenanceModel model = provDTO.newModel();
-        ProvenanceModel provenance = provDAO.create(model);
-
-        return new ObjectUriResponse(Response.Status.CREATED, provenance.getUri()).getResponse();
+            return new ObjectUriResponse(Response.Status.CREATED, provenance.getUri()).getResponse();
+            
+        } catch (NoSQLAlreadyExistingUriException exception) {            
+             // Return error response 409 - CONFLICT if experiment URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Provenance already exists",
+                    "Duplicated URI: " + exception.getUri()
+            ).getResponse();            
+        } 
+        
     }
 
     /**
@@ -111,14 +123,13 @@ public class ProvenanceAPI {
      * @throws java.lang.Exception
      */
     @GET
-    @Path("get/{uri}")
+    @Path("{uri}")
     @ApiOperation("Get a provenance")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance retrieved", response = ProvenanceGetDTO.class),
-        @ApiResponse(code = 404, message = "Provenance not found", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Provenance retrieved", response = ProvenanceGetDTO.class)
     })
     public Response getProvenance(
             @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
@@ -129,10 +140,7 @@ public class ProvenanceAPI {
             ProvenanceModel provenance = dao.get(uri);
             return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
         } catch (NoSQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Invalid or unknown Provenance URI", e.getMessage())
-                    .getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            throw new NotFoundURIException("Invalid or unknown provenance URI ", uri);
         }
 
     }
@@ -149,28 +157,28 @@ public class ProvenanceAPI {
      * @throws java.lang.Exception
      */
     @GET
-    @Path("search")
-    @ApiOperation("Get lists of provenances")
+    @ApiOperation("Get provenances")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenance", response = ProvenanceGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response searchProvenance(
-            @ApiParam(value = "name") @QueryParam("name") String name,
-            @ApiParam(value = "experiment URI") @QueryParam("experimentURI") URI experiment,
-            @ApiParam(value = "activity type") @QueryParam("activityType") URI activityType,
-            @ApiParam(value = "agent URI") @QueryParam("agentURI") URI agentURI,
-            @ApiParam(value = "agent type") @QueryParam("agentType") URI agentType,
+            @ApiParam(value = "Search by name") @QueryParam("name") String name,
+            @ApiParam(value = "Search by description") @QueryParam("description") String description,
+            @ApiParam(value = "Search by experiment URI") @QueryParam("experiment") URI experiment,
+            @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
+            @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
+            @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
+            @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        ListWithPagination<ProvenanceModel> resultList = dao.search(name, experiment, activityType, agentType, agentURI, page, pageSize);
+        ListWithPagination<ProvenanceModel> resultList = dao.search(name, description, experiment, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
         
         // Convert paginated list to DTO
         ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
@@ -181,8 +189,8 @@ public class ProvenanceAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
-    @ApiOperation("Delete a provenance")
+    @Path("{uri}")
+    @ApiOperation("Delete a provenance that doesn't describe data")
     @ApiProtected
     @ApiCredential(
             credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
@@ -191,9 +199,8 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown provenance URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 200, message = "Provenance deleted", response = ObjectUriResponse.class)
+    })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
@@ -207,6 +214,10 @@ public class ProvenanceAPI {
                 null,
                 null,
                 provenances,
+                null,
+                null,
+                null,
+                null,
                 null,
                 null,
                 0,
@@ -225,14 +236,12 @@ public class ProvenanceAPI {
                 return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
             } catch (NoSQLInvalidURIException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
-                        .getResponse();
+                throw new NotFoundURIException("Invalid or unknown provenance URI ", uri);
             }
         }
     }
 
     @PUT
-    @Path("update")
     @ApiProtected
     @ApiOperation("Update a provenance")
     @ApiCredential(
@@ -242,9 +251,8 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+        @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class)
+    })
 
     public Response update(
             @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
@@ -255,10 +263,48 @@ public class ProvenanceAPI {
             newProvenance = dao.update(newProvenance);
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
         } catch (NoSQLInvalidURIException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Provenance URI", e.getMessage())
-                        .getResponse();
-        } catch (BadRequestException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "wrong provenance json", e.getMessage()).getResponse();
+            throw new NotFoundURIException("Invalid or unknown provenance URI ", dto.getUri());
+        }
+    }
+    
+    /**
+     * * Return a list of provenancess corresponding to the given URIs
+     *
+     * @param uris list of provenancess uri
+     * @return Corresponding list of provenancess
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @GET
+    @Path("by-uris")
+    @ApiOperation("Get a list of provenances by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getProvenancesByURIs(
+            @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        List<ProvenanceModel> models = dao.getListByURIs(uris);
+
+        if (!models.isEmpty()) {
+            List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Provenances not found",
+                    "Unknown provenances URIs"
+            ).getResponse();
         }
     }
 }

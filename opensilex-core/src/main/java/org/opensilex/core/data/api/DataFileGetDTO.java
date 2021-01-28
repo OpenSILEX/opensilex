@@ -6,7 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.data.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -29,10 +32,16 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         return uri;
     }
     
-    public void setDate(LocalDateTime date, String offset){
-        OffsetDateTime offsetDateTime = date.atOffset(ZoneOffset.UTC).withOffsetSameInstant(ZoneOffset.of(offset));
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
-        this.setDate(dtf.format(offsetDateTime));
+    public void setDate(Instant instant, String offset, Boolean isDateTime) {
+        if (isDateTime) {
+            OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
+            this.setDate(dtf.format(odt));
+        } else {
+            LocalDate date = LocalDate.ofInstant(instant, ZoneOffset.of(offset));            
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
+            this.setDate(dtf.format(date));
+        }        
     }
     
     public static DataFileGetDTO fromModel(DataFileModel model){
@@ -40,7 +49,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setUri(model.getUri());
         dto.setRdfType(model.getRdfType());
         dto.setScientificObjects(model.getScientificObjects());
-        dto.setDate(model.getDate(), model.getTimezone());        
+        dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());        
         dto.setMetadata(model.getMetadata());   
         dto.setProvenance(model.getProvenance());
         

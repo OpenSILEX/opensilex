@@ -14,7 +14,6 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
-
 /**
  * @author sammy
  */
@@ -25,7 +24,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
-    
+
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"

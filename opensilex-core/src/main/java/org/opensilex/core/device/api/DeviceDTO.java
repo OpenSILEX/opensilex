@@ -23,7 +23,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand","constructorModel","serialNumber","personInCharge","start-up","removal","relations"})
+@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand","constructorModel","serialNumber","personInCharge","start_up","removal","relations"})
 public class DeviceDTO extends RDFObjectDTO {
     
     private String name;
@@ -39,7 +39,7 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
-    @JsonProperty("start-up")
+    @JsonProperty("start_up")
     protected LocalDate startUp;
     
     @JsonProperty("removal")
@@ -49,13 +49,13 @@ public class DeviceDTO extends RDFObjectDTO {
     protected URI type;
     
     @JsonProperty("rdf_type_name")
-    protected SPARQLLabel typeLabel;
+    protected String typeLabel;
 
-    public void setTypeLabel(SPARQLLabel typeLabel){
+    public void setTypeLabel(String typeLabel){
         this.typeLabel = typeLabel;
     }
     
-    public SPARQLLabel getTypeLabel(){
+    public String getTypeLabel(){
         return typeLabel;
     }
     
@@ -121,7 +121,7 @@ public class DeviceDTO extends RDFObjectDTO {
     public void fromModel(DeviceModel model) {
         setUri(model.getUri());
         setType(model.getType());
-        setTypeLabel(model.getTypeLabel());
+        setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
         if (model.getBrand() != null) {
             setBrand(model.getBrand());

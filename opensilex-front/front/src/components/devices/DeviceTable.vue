@@ -78,7 +78,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceDTO, DevicesService } from "opensilex-core/index";
+import { DeviceDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFPropertyDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
@@ -107,6 +107,10 @@ export default class DeviceTable extends Vue {
   infoMessage: boolean = false;
   alertEmptyTable: boolean = false;
   disableCloseButton: boolean = true;
+
+  deviceTypes: any = [];
+  typeProperty: any = [];
+  service_onto: OntologyService;
 
   @Ref("progressModal") readonly progressModal!: any;
   @Ref("progressBar") readonly progressBar!: any;
@@ -170,12 +174,15 @@ export default class DeviceTable extends Vue {
     this.suppColumnsNames = [];
     this.colName = null;
 
+    this.buildFinalTypeList();
+    this.getTypeProperty();
+
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
     let statusCol ={title:"status", field:"status",visible:false};
 
     let uriCol = {title:"URI", field:"uri", visible:true, editor:true, minWidth:150, validator: "unique"};
-
+    let typeCol = {title:"Type", field:"rdf_type", visible:true, editor:"autocomplete", editorParams:{values: this.deviceTypes},minWidth:150};
     let labelCol = 
       {title:this.$t('DeviceTable.name') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
         validator: "unique"
@@ -185,11 +192,15 @@ export default class DeviceTable extends Vue {
     let serial_numberCol = {title:this.$t('DeviceTable.serial_number'), field:"serial_number", visible:true, editor:true}
     let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:true, editor:true};
     let start_upCol =  {title:this.$t('DeviceTable.start_up'), field:"start_up", visible:true, editor:true};
+    let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:true, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    this.tableColumns = [idCol, statusCol, uriCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol, checkingStatusCol, insertionStatusCol]
+    this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, checkingStatusCol, insertionStatusCol]
 
+    for (let i = 0; i < this.typeProperty.length; i++){
+      this.tableColumns.push({title:this.typeProperty[i].label, field: this.typeProperty[i].value, visible:true, editor:true});
+    }
     this.tableData = [];
     this.addInitialXRows(5);
 
@@ -225,6 +236,47 @@ export default class DeviceTable extends Vue {
     
   }
 
+  getTypeProperty(){
+    this.typeProperty = [];
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
+
+    ontoService
+      .getProperties(this.$attrs.deviceType)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        console.log(http.response.result);
+        for (let i = 0; i < http.response.result.length; i++) {
+            let resourceDTO = http.response.result[i];
+            this.typeProperty.push({
+                value: resourceDTO.uri,
+                label: resourceDTO.name
+            });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  buildFinalTypeList(){
+    this.deviceTypes = [];
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
+
+    ontoService
+      .getSubClassesOf(this.$attrs.deviceType, true)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        console.log(http.response.result);
+        for (let i = 0; i < http.response.result.length; i++) {
+            let resourceDTO = http.response.result[i];
+            this.deviceTypes.push({
+                value: resourceDTO.uri,
+                label: resourceDTO.name
+            });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
       this.tableData.push({ rowNumber: i });
@@ -240,7 +292,7 @@ export default class DeviceTable extends Vue {
     this.tabulator.addColumn(
       { title: this.colName, field: this.colName, editor: true },
       false,
-      "comment"
+      "removal"
     );
     this.suppColumnsNames.push(this.colName);
     this.jsonForTemplate[0][this.colName] = null;
@@ -308,11 +360,15 @@ export default class DeviceTable extends Vue {
         constructor_model: null,
         serial_number: null,
         person_in_charge: null,
-        start_up: null
+        start_up: null,
+        removal: null
       };
 
-      form.rdf_type = this.$attrs.deviceType;
-
+      if (dataToInsert[idx].type != null && dataToInsert[idx].type != ""){
+        form.rdf_type = dataToInsert[idx].type;
+      }else{
+        form.rdf_type = this.$attrs.deviceType;
+      }
       if (dataToInsert[idx].uri != null && dataToInsert[idx].uri != "") {
         form.uri = dataToInsert[idx].uri;
       }
@@ -351,13 +407,21 @@ export default class DeviceTable extends Vue {
       }
 
       if (
+        dataToInsert[idx].removal != null &&
+        dataToInsert[idx].removal != ""
+      ) {
+        form.removal = dataToInsert[idx].removal;
+      }
+
+      if (
         form.name == null &&
         form.uri == null &&
         form.brand == null &&
         form.constructor_model == null &&
         form.serial_number == null &&
         form.person_in_charge == null &&
-        form.start_up == null
+        form.start_up == null &&
+        form.removal == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
@@ -370,9 +434,9 @@ export default class DeviceTable extends Vue {
 
     Promise.all(promises).then(result => {
       if (this.onlyChecking) {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageGermplReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevlReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       } else {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageGermplInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevlInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       }
       this.infoMessage = true;
       this.disableCloseButton = false;
@@ -536,10 +600,6 @@ export default class DeviceTable extends Vue {
   border-right:1px solid #dee2e6;
   height: 30px;
 }
-
-// .tabulator .tabulator-header .tabulator-row  {
-//   height: 30px;
-// }
   
 </style>
 
@@ -554,7 +614,8 @@ en:
     constructor_model: Constructor model
     serial_number: Serial number
     person_in_charge: Person in charge
-    start_up: Start-up
+    start_up: Start-up date
+    removal: Removal date
     checkingStatus: Checking status
     insertionStatus: Insertion Status
     downloadTemplate : Download template
@@ -565,14 +626,12 @@ en:
     emptyMessage: The table is empty
     close: Close
     addRow: Add Row
-    serial_numberNumber: Serial number
-    constructor_modelCode: Constructor model
     addColumn: Add column
     help: Help
-    infoMessageGermplReady: device ready to be inserted
+    infoMessageDevReady: device ready to be inserted
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
-    infoMessageGermplInserted: device inserted
+    infoMessageDevInserted: device inserted
     checkingStatusMessage: ready
     insertionStatusMessage: created
     filterLines: Filter the lines
@@ -591,6 +650,7 @@ fr:
     serial_number: Numéro de série
     person_in_charge: Personne en charge
     start_up: Date de mise en service
+    removal: date de mise hors service
     checkingStatus: Statut
     insertionStatus: Statut
     downloadTemplate : Télécharger un gabarit
@@ -600,17 +660,14 @@ fr:
     progressTitle: lignes à parcourir
     emptyMessage: Le tableau est vide
     close : Fermer
-    addRow: Ajouter ligne
-    serial_numberNumber: Numéro de série
-    constructor_modelCode: Modèle de l'appareil
     addColumn: Ajouter colonne
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
-    infoMessageGermplReady: device prêts à être insérer
+    infoMessageDevReady: device prêts à être insérer
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
-    infoMessageGermplInserted: device insérés
+    infoMessageDevInserted: device insérés
     checkingStatusMessage: validé
     insertionStatusMessage: créé
     seeErrorLines: See lines

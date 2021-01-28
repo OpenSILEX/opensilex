@@ -19,12 +19,12 @@
           </template>
             <template v-slot:body>
               <opensilex-UriView :uri="device.uri"></opensilex-UriView>
-              <opensilex-StringView label="DeviceDescription.type" :value="device.rdf_type"></opensilex-StringView>
+              <opensilex-StringView label="DeviceDescription.type" :value="device.rdf_type_name"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.brand" :value="device.brand"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.constructorModel" :value="device.constructor_model"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.serialNumber" :value="device.serial_number"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.personInCharge" :uri="device.person_in_charge"></opensilex-StringView> 
-              <opensilex-StringView label="DeviceDescription.startUp" :value="device.startUp"></opensilex-StringView>
+              <opensilex-StringView label="DeviceDescription.start_up" :value="device.start_up"></opensilex-StringView>
             </template>
           </opensilex-Card>
       </b-col>
@@ -53,7 +53,7 @@
       <b-col sm="5">
         <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
             <template v-slot:body>
-
+              <!-- <opensilex-StringView :value="device.relations"></opensilex-StringView> -->
             </template>
         </opensilex-Card>
       </b-col>
@@ -144,7 +144,7 @@ en:
     uri: URI
     name: Name
     type: Type
-    startUp: Start-up
+    start_up: Start up
     brand: Brand
     constructorModel: Constructor model
     serialNumber: Serial number
@@ -160,7 +160,7 @@ fr:
     uri: URI
     name: Nom
     type: Type
-    startUp: Date de mide en service
+    start_up: Date de mide en service
     brand: Marque
     constructorModel: Modèle du constructeur
     serialNumber: Numéro de série

@@ -32,18 +32,6 @@
         ></opensilex-DeviceList>
       </template>
     </opensilex-PageContent>
-
-    <!-- <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-      ref="deviceForm"
-      component="opensilex-DeviceForm"
-      createTitle="Device.add"
-      editTitle="Device.update"
-      icon="ik#ik-user"
-      modalSize="lg"
-      @onCreate="deviceList.refresh()"
-      @onUpdate="deviceList.refresh()"
-    ></opensilex-ModalForm> -->
   </div>
 </template>
 

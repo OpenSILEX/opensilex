@@ -238,6 +238,9 @@ export default class DeviceTable extends Vue {
     this.buildFinalTypeList();
     this.getTypeProperty();
 
+    this.buildFinalTypeList();
+    this.getTypeProperty();
+
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
     let statusCol ={title:"status", field:"status",visible:false};

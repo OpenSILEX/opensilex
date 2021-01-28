@@ -6,7 +6,7 @@
       :description="device.name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true" >       
+    <opensilex-PageActions :tabs="true" :returnButton="true" >       
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"
@@ -25,13 +25,13 @@
         >{{ $t('DeviceDetails.documents') }}</b-nav-item> 
 
         <opensilex-Button
-          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
           label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
           @click="annotationModalForm.showCreateForm()"
         ></opensilex-Button>
 
         <opensilex-AnnotationModalForm
-          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
           ref="annotationModalForm"
           :target="uri"
           @onCreate="updateAnnotations"
@@ -44,17 +44,17 @@
     <opensilex-PageContent>
         <template v-slot>
             <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
-            <!-- <opensilex-DocumentTabList v-else-if="isDocumentTab()" :uri="uri"></opensilex-DocumentTabList>
+            <!-- <opensilex-DocumentTabList v-else-if="isDocumentTab()" :uri="uri"></opensilex-DocumentTabList> -->
             <opensilex-AnnotationList
                     v-else-if="isAnnotationTab()"
                     ref="annotationList"
                     :target="uri"
                     :displayTargetColumn="false"
                     :enableActions="true"
-                    :modificationCredentialId="credentials.CREDENTIAL_PROJECT_MODIFICATION_ID"
-                    :deleteCredentialId="credentials.CREDENTIAL_PROJECT_DELETE_ID"
+                    :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+                    :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
                     @onEdit="annotationModalForm.showEditForm($event)"
-            ></opensilex-AnnotationList> -->
+            ></opensilex-AnnotationList>
         </template>
     </opensilex-PageContent>
     </div>

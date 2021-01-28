@@ -71,11 +71,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "startUp"
     )
     LocalDate startUp;
-<<<<<<< HEAD
     public static final String STARTUP_FIELD = "startUp";
-=======
-    public static final String OBTAINED_FIELD = "startUp";
->>>>>>> update DTO
     
     @SPARQLProperty(
             ontology = Oeso.class,

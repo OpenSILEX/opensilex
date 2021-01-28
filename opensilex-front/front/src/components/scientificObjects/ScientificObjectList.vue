@@ -22,10 +22,18 @@
       ></opensilex-ScientificObjectForm>
       <opensilex-OntologyCsvImporter
         ref="importForm"
+        
         :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
         :validateCSV="validateCSV"
         :uploadCSV="uploadCSV"
-      ></opensilex-OntologyCsvImporter>
+      >
+        <template v-slot:icon>
+          <opensilex-Icon icon="ik#ik-target" class="icon-title" />
+        </template>
+        <template v-slot:help>
+          <opensilex-ScientificObjectImportHelp></opensilex-ScientificObjectImportHelp>
+        </template>
+      </opensilex-OntologyCsvImporter>
     </opensilex-PageActions>
 
     <opensilex-SearchFilterField

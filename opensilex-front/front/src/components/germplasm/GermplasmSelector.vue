@@ -65,17 +65,19 @@ export default class GermplasmSelector extends Vue {
   loadOptions(query, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.GermplasmService")
-      .searchGermplasmList(
+      .searchGermplasm(
         undefined, //uri?: string
         undefined, //type?: string
         query, // name: string
+        undefined, //code?: string
+        undefined, //productionYear?: number
         undefined, //species?: string
         undefined, //variety?: string
         undefined, //accession?: string
         undefined, //institute?: string
-        undefined, //productionYear?: number
         undefined, //experiment?: string
-        undefined, //orderBy?: Array<string>
+        undefined, //metadata?: string
+        [], //orderBy?: Array<string>
         page, //page?: number
         pageSize //pageSize?
       )

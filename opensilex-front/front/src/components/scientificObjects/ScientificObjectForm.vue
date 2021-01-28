@@ -5,6 +5,7 @@
     createTitle="ExperimentScientificObjects.add"
     editTitle="ExperimentScientificObjects.update"
     modalSize="lg"
+    icon="ik#ik-target"
     :createAction="callScientificObjectCreation"
     :updateAction="callScientificObjectUpdate"
     @onCreate="$emit('refresh')"

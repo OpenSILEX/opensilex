@@ -9,96 +9,121 @@
     <template v-slot:modal-ok>{{ $t("component.common.ok") }}</template>
     <template v-slot:modal-cancel>{{ $t("component.common.cancel") }}</template>
 
-    <template v-slot:modal-title>
-      <i>
-        <slot name="icon">
-          <opensilex-Icon icon="fa#eye" class="icon-title" />
-        </slot>
-        <span>{{ $t("OntologyCsvImporter.import") }}</span>
-      </i>
-    </template>
-    <ValidationObserver ref="validatorRef">
-      <div class="row">
-        <div class="col-md-4">
-          <b-form-file
-            size="sm"
-            ref="inputFile"
-            accept="text/csv, .csv"
-            @input="csvUploaded"
-            v-model="csvFile"
-            :placeholder="$t('OntologyCsvImporter.csv-file-placeholder')"
-            :drop-placeholder="
-              $t('OntologyCsvImporter.csv-file-drop-placeholder')
-            "
-            :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
-          ></b-form-file>
-        </div>
-      </div>
-      <div class="error-container" v-if="validationErrors">
-        <div class="static-field">
-          <span class="field-view-title"
-            >{{ $t("OntologyCsvImporter.csvErrors") }}:</span
+    <template class="mt-1" v-slot:modal-header>
+      <b-row class="mt-1" style="width: 100%">
+        <b-col cols="11">
+          <i>
+            <h4>
+              <slot name="icon">
+                <opensilex-Icon icon="fa#eye" class="icon-title" />
+              </slot>
+              <span>{{ $t("OntologyCsvImporter.import") }}</span>
+            </h4>
+          </i>
+        </b-col>
+        <b-col cols="1">
+          <!-- Emulate built in modal header close button action -->
+          <button
+            type="button"
+            class="close"
+            @click="OntologyCsvImporter.hide()"
+            data-dismiss="modal"
+            aria-label="Close"
           >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </b-col>
+      </b-row>
+    </template>
+    <div class="container-fluid">
+      <ValidationObserver ref="validatorRef">
+        <div class="row">
+          <div class="col-md-4">
+            <b-form-file
+              size="sm"
+              ref="inputFile"
+              accept="text/csv, .csv"
+              @input="csvUploaded"
+              v-model="csvFile"
+              :placeholder="$t('OntologyCsvImporter.csv-file-placeholder')"
+              :drop-placeholder="
+                $t('OntologyCsvImporter.csv-file-drop-placeholder')
+              "
+              :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
+            ></b-form-file>
+          </div>
         </div>
+        <div class="row" style="padding-top: 15px">
+          <div class="col-md-12">
+            <slot name="help"></slot>
+          </div>
+        </div>
+        <div class="error-container" v-if="validationErrors">
+          <div class="static-field">
+            <span class="field-view-title"
+              >{{ $t("OntologyCsvImporter.csvErrors") }}:</span
+            >
+          </div>
 
-        <b-table-simple hover small responsive sticky-header>
-          <b-thead head-variant="light">
-            <b-tr>
-              <b-th>Ligne</b-th>
-              <b-th>Type d'erreur</b-th>
-              <b-th>Détail</b-th>
-            </b-tr>
-          </b-thead>
-          <b-tbody>
-            <slot v-for="(row, index) in validationErrors">
+          <b-table-simple hover small responsive sticky-header>
+            <b-thead head-variant="light">
               <b-tr>
-                <b-th :rowspan="row.listSize">{{ row.index }}</b-th>
-                <b-td>{{
-                  $t("OntologyCsvImporter." + row.firstErrorType.type)
-                }}</b-td>
-                <b-td>
-                  <ul>
-                    <li
-                      v-for="validationErr in row.firstErrorType
-                        .validationErrors"
-                      v-bind:key="
-                        getErrKey(validationErr, row.firstErrorType.type)
-                      "
-                    >
-                      {{
-                        getValidationErrorDetail(
-                          validationErr,
-                          row.firstErrorType.type
-                        )
-                      }}
-                    </li>
-                  </ul>
-                </b-td>
+                <b-th>Ligne</b-th>
+                <b-th>Type d'erreur</b-th>
+                <b-th>Détail</b-th>
               </b-tr>
-              <b-tr
-                v-for="(validationError, errorType) in row.list"
-                v-bind:key="index + errorType"
-              >
-                <b-td>{{ $t("OntologyCsvImporter." + errorType) }}</b-td>
-                <b-td>
-                  <ul>
-                    <li
-                      v-for="validationErr in validationError"
-                      v-bind:key="getErrKey(validationErr, errorType)"
-                    >
-                      {{ getValidationErrorDetail(validationErr, errorType) }}
-                    </li>
-                  </ul>
-                </b-td>
-              </b-tr>
-            </slot>
-          </b-tbody>
-        </b-table-simple>
-      </div>
-      <div class="validation-confirm-container" v-else-if="validationToken">
-        {{ $t("OntologyCsvImporter.CSVIsValid") }}
-      </div>
-    </ValidationObserver>
+            </b-thead>
+            <b-tbody>
+              <slot v-for="(row, index) in validationErrors">
+                <b-tr>
+                  <b-th :rowspan="row.listSize">{{ row.index }}</b-th>
+                  <b-td>{{
+                    $t("OntologyCsvImporter." + row.firstErrorType.type)
+                  }}</b-td>
+                  <b-td>
+                    <ul>
+                      <li
+                        v-for="validationErr in row.firstErrorType
+                          .validationErrors"
+                        v-bind:key="
+                          getErrKey(validationErr, row.firstErrorType.type)
+                        "
+                      >
+                        {{
+                          getValidationErrorDetail(
+                            validationErr,
+                            row.firstErrorType.type
+                          )
+                        }}
+                      </li>
+                    </ul>
+                  </b-td>
+                </b-tr>
+                <b-tr
+                  v-for="(validationError, errorType) in row.list"
+                  v-bind:key="index + errorType"
+                >
+                  <b-td>{{ $t("OntologyCsvImporter." + errorType) }}</b-td>
+                  <b-td>
+                    <ul>
+                      <li
+                        v-for="validationErr in validationError"
+                        v-bind:key="getErrKey(validationErr, errorType)"
+                      >
+                        {{ getValidationErrorDetail(validationErr, errorType) }}
+                      </li>
+                    </ul>
+                  </b-td>
+                </b-tr>
+              </slot>
+            </b-tbody>
+          </b-table-simple>
+        </div>
+        <div class="validation-confirm-container" v-else-if="validationToken">
+          {{ $t("OntologyCsvImporter.CSVIsValid") }}
+        </div>
+      </ValidationObserver>
+    </div>
   </b-modal>
 </template>
 

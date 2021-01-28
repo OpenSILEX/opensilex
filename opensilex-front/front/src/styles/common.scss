@@ -20,6 +20,10 @@ label::first-letter {
     text-transform: capitalize;
 }
 
+.uri-field::first-letter {
+  text-transform: none;
+}
+
 .field-view-title {
   min-width: 200px;
   font-weight: bold;
@@ -272,4 +276,8 @@ label {
 
 .button-zone {
   padding-bottom: 20px;
+}
+
+.icon-title {
+  margin-right: 5px!important;
 }

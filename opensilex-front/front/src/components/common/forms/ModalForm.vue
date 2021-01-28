@@ -203,9 +203,6 @@ export default class ModalForm extends Vue {
 </script>
 
 <style scoped lang="scss">
-.icon-title {
-  margin-right: 5px;
-}
 ::v-deep .full-screen-modal-form > .modal-dialog {
   max-width: 95%;
 }

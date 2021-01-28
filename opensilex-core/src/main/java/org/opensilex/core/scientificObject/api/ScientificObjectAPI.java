@@ -928,7 +928,7 @@ public class ScientificObjectAPI {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        int firstRow = 2;
+        int firstRow = 3;
         CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, uriGenerator);
 
         URI partOfURI = new URI(Oeso.isPartOf.toString());
@@ -983,7 +983,7 @@ public class ScientificObjectAPI {
                 ExperimentModel xp = xpDAO.get(contextURI, currentUser);
                 ScientificObjectContextModel context = new ScientificObjectContextModel();
                 context.setContext(xp.getUri());
-                context.setContextLabel(xp.getLabel());
+                context.setContextLabel(xp.getName());
                 context.setContextType(xp.getType());
                 context.setContextTypeLabel(xp.getTypeLabel().getDefaultValue());
                 return context;

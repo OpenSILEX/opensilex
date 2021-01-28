@@ -205,10 +205,12 @@ public final class OntologyDAO {
                 } else if (id.equalsIgnoreCase(CSV_NAME_KEY)) {
                     nameIndex = i;
                 }
-                headerByIndex.put(i, id);
+                headerByIndex.put(i, SPARQLDeserializers.getExpandedURI(id));
             }
 
-            csvReader.skip(firstRow - 2);
+            if (firstRow > 2) {
+                csvReader.skip(firstRow - 2);
+            }
 
             int rowIndex = 1;
             String[] values = null;
@@ -713,6 +715,34 @@ public final class OntologyDAO {
             return id1.compareTo(id2);
         });
 
+        List<URI> columnURIs = new ArrayList<>();
+        columnURIs.add(new URI(RDFS.label.getURI()));
+        columnsID.forEach((columID) -> {
+            try {
+                URI columnURI = new URI(columID);
+                if (columnURI.isAbsolute()) {
+                    columnURIs.add(columnURI);
+                }
+            } catch (Exception ex) {
+                // Ignore invalid column IDs
+            }
+        });
+
+        Map<String, String> columnsNames = new HashMap<>();
+
+        SelectBuilder propertyNamesRequest = new SelectBuilder();
+        Var uriVar = makeVar("uri");
+        Var nameVar = makeVar("name");
+        propertyNamesRequest.addVar(uriVar);
+        propertyNamesRequest.addVar(nameVar);
+        propertyNamesRequest.addWhere(uriVar, RDFS.label, nameVar);
+        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilter(nameVar.getVarName(), lang));
+        SPARQLQueryHelper.inURI(propertyNamesRequest, uriVar.getVarName(), columnURIs);
+        sparql.executeSelectQuery(propertyNamesRequest, (result) -> {
+            String uri = SPARQLDeserializers.getExpandedURI(result.getStringValue(uriVar.getVarName()));
+            columnsNames.put(uri, result.getStringValue(nameVar.getVarName()));
+        });
+
         StringWriter strWriter = new StringWriter();
         CSVWriter writer = new CSVWriter(strWriter,
                 lang.equals("fr") ? ';' : CSVWriter.DEFAULT_SEPARATOR,
@@ -721,15 +751,28 @@ public final class OntologyDAO {
                 CSVWriter.DEFAULT_LINE_END);
 
         String[] headerArray = new String[colOffset + columnsID.size()];
+        String[] headerNameArray = new String[colOffset + columnsID.size()];
         headerArray[0] = CSV_URI_KEY;
+        headerNameArray[0] = "URI";
         headerArray[1] = CSV_TYPE_KEY;
+        headerNameArray[1] = "Type";
         headerArray[2] = CSV_NAME_KEY;
+        headerNameArray[2] = columnsNames.get(SPARQLDeserializers.getExpandedURI(RDFS.label.getURI()));
 
         for (int i = 0; i < columnsID.size(); i++) {
             headerArray[i + colOffset] = SPARQLDeserializers.formatURI(columnsID.get(i));
+            String colName = columnsID.get(i);
+            if (columnsNames.containsKey(colName)) {
+                colName = columnsNames.get(colName);
+            }
+            if (!colName.isEmpty()) {
+                headerNameArray[i + colOffset] = colName.substring(0, 1).toUpperCase() + colName.substring(1);;
+            }
         }
 
         writer.writeNext(headerArray);
+
+        writer.writeNext(headerNameArray);
 
         for (Map<Integer, String> row : rows) {
             String[] rowArray = new String[columnsID.size() + colOffset];

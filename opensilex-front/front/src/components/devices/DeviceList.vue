@@ -268,8 +268,11 @@ fr:
       rdfTypes-placeholder: Selectionner un type de dispositif
       start_up: Date d'obtention
       start_up-placeholder: Entrer une année
+<<<<<<< HEAD
       brand: Marque 
       brand-placeholder: Entrer une marque
       model: Modèle constructeur
       model-placeholder: Entrer le nom du modèle constructeur
+=======
+>>>>>>> device / edit dto
 </i18n>

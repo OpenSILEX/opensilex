@@ -23,6 +23,7 @@
                         :disabled="viewMode"
                         :selected.sync="form.motivation"
                         :options="motivations"
+                        :itemLoadingMethod="loadMotivation"
                         noResultsText="Annotation.no-motivation"
                         helpMessage="Annotation.motivation-help"
                         placeholder="Annotation.motivation-placeholder"
@@ -34,9 +35,9 @@
             <div class="col">
                 <!-- bodyValue -->
                 <opensilex-TextAreaForm
-                        :value.sync="form.bodyValue"
+                        :value.sync="form.description"
                         :required="true"
-                        label="Annotation.body-value">
+                        label="Annotation.description">
                 </opensilex-TextAreaForm>
             </div>
         </div>
@@ -52,6 +53,8 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
     import {currentConfig} from "vee-validate/dist/types/config";
+    import {AnnotationCreationDTO} from "opensilex-core/model/annotationCreationDTO";
+    import {MotivationGetDTO} from "opensilex-core/model/motivationGetDTO";
 
     @Component
     export default class AnnotationForm extends Vue {
@@ -79,18 +82,18 @@
             this.langUnwatcher = this.$store.watch(
                 () => this.$store.getters.language,
                 () => {
-                    this.loadMotivations();
+                    this.searchMotivations();
                 }
             );
         }
 
         created(){
             this.$service = this.$opensilex.getService("opensilex.AnnotationsService");
-            this.loadMotivations();
+            this.searchMotivations();
         }
 
-        loadMotivations() {
-            this.$service.searchMotivations(undefined, undefined, undefined, undefined)
+        searchMotivations() {
+            this.$service.searchMotivations(undefined, ["name=asc"], undefined, undefined)
                 .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                     if (http && http.response) {
                         this.motivations = [];
@@ -101,14 +104,25 @@
                 }).catch(this.$opensilex.errorHandler);
         }
 
-        static getEmptyForm() {
+        loadMotivation(motivations: Array<any>): Array<any>{
+
+            if(! motivations || motivations.length == 0){
+                return undefined;
+            }
+            // in edit mode, the loaded motivation is an object composed of uri and name
+            if(motivations[0].uri){
+                return [{label: this.form.motivation.name, id: this.form.motivation.uri}];
+            }
+
+            return [this.motivations.find(motivation => motivation.id == motivations[0])];
+        }
+
+        static getEmptyForm(): AnnotationCreationDTO {
             return {
                 uri: undefined,
-                description: undefined,
-                type: undefined,
-                beginning: undefined,
-                end: undefined,
-                concernedItems: []
+                motivation: undefined,
+                targets: [],
+                description: undefined
             };
         }
 

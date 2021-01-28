@@ -21,7 +21,7 @@ public class AnnotationUpdateDTO extends AnnotationCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return super.getUri();
     }

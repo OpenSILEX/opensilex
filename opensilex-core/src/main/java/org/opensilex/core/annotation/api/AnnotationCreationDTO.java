@@ -7,35 +7,43 @@
 
 package org.opensilex.core.annotation.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.ResourceDTO;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
  * @author Renaud COLIN
  */
 @ApiModel
+@JsonPropertyOrder({
+        "uri", "targets", "description", "motivation"
+})
 public class AnnotationCreationDTO {
 
+    @JsonProperty("uri")
     protected URI uri;
-    protected String bodyValue;
+
+    @JsonProperty("description")
+    protected String description;
+
+    @JsonProperty("targets")
     protected List<URI> targets;
+
+    @JsonProperty("motivation")
     protected URI motivation;
-    protected URI creator;
 
-
-    @ApiModelProperty(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
+    @ApiModelProperty(example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415")
     public URI getUri() {
         return uri;
     }
@@ -46,12 +54,12 @@ public class AnnotationCreationDTO {
 
     @ApiModelProperty(required = true, example = "The pest attack lasted 20 minutes")
     @Required
-    public String getBodyValue() {
-        return bodyValue;
+    public String getDescription() {
+        return description;
     }
 
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @NotEmpty
@@ -68,7 +76,7 @@ public class AnnotationCreationDTO {
 
     @NotNull
     @ValidURI
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, example = "http://www.w3.org/ns/oa#describing")
     public URI getMotivation() {
         return motivation;
     }
@@ -77,23 +85,14 @@ public class AnnotationCreationDTO {
         this.motivation = motivation;
     }
 
-    public URI getCreator() {
-        return creator;
-    }
-
-    @ApiModelProperty(hidden = true)
-    public void setCreator(URI creator) {
-        this.creator = creator;
-    }
-
 
     public AnnotationModel newModel() {
 
         AnnotationModel model = new AnnotationModel();
 
         model.setUri(uri);
-        model.setBodyValue(bodyValue);
-        model.setCreated(LocalDate.now());
+        model.setBodyValue(description);
+        model.setCreated(OffsetDateTime.now());
         model.setTargets(targets);
 
         MotivationModel motivationModel = new MotivationModel();

@@ -17,20 +17,15 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -42,7 +37,7 @@ import java.util.List;
  * @author Renaud COLIN
  */
 @Api(AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_ID)
-@Path("/core/annotation")
+@Path("/core/annotations")
 @ApiCredentialGroup(
         groupId = AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_ID,
         groupLabelKey = AnnotationAPI.CREDENTIAL_ANNOTATION_GROUP_LABEL_KEY
@@ -68,7 +63,6 @@ public class AnnotationAPI {
     UserModel currentUser;
 
     @POST
-    @Path("create")
     @ApiOperation("Create an annotation")
     @ApiProtected
     @ApiCredential(
@@ -76,7 +70,7 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create an annotation", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "An annotation is created", response = ObjectUriResponse.class),
             @ApiResponse(code = 409, message = "An annotation with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -97,7 +91,6 @@ public class AnnotationAPI {
     }
 
     @PUT
-    @Path("update")
     @ApiOperation("Update an annotation")
     @ApiProtected
     @ApiCredential(
@@ -105,8 +98,8 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated annotation", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Annotation URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Annotation created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -118,7 +111,7 @@ public class AnnotationAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete an annotation")
     @ApiProtected
     @ApiCredential(
@@ -140,7 +133,7 @@ public class AnnotationAPI {
     }
 
     @GET
-    @Path("get/{uri}")
+    @Path("{uri}")
     @ApiOperation("Get an annotation")
     @ApiProtected
     @ApiCredential(
@@ -149,7 +142,7 @@ public class AnnotationAPI {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
-            @ApiResponse(code = 404, message = "Annotation URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -167,7 +160,7 @@ public class AnnotationAPI {
     }
 
     @GET
-    @Path("motivations/search")
+    @Path("/motivations")
     @ApiOperation("Search motivations")
     @ApiProtected
     @ApiCredential(
@@ -175,21 +168,21 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return motivation list", response = MotivationGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return motivations", response = MotivationGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchMotivations(
-            @ApiParam(value = "Motivation name regex pattern", example = "description") @QueryParam("bodyValue") String stringPattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
+            @ApiParam(value = "Motivation name regex pattern", example = "describing") @QueryParam("name") String namePattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         AnnotationDao dao = new AnnotationDao(sparql);
 
         ListWithPagination<MotivationModel> resultList = dao.searchMotivations(
-                stringPattern,
+                namePattern,
                 currentUser.getLanguage(),
                 orderByList,
                 page,
@@ -204,7 +197,6 @@ public class AnnotationAPI {
     }
 
     @GET
-    @Path("search")
     @ApiOperation("Search annotations")
     @ApiProtected
     @ApiCredential(
@@ -212,18 +204,18 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return annotation list", response = AnnotationGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return annotations", response = AnnotationGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchAnnotations(
-            @ApiParam(value = "Annotation body value regex pattern", example = "The pest attack") @QueryParam("bodyValue") String bodyValuePattern,
+            @ApiParam(value = "Description (regex)", example = "The pest attack") @QueryParam("description") String bodyValuePattern,
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target,
             @ApiParam(value = "Motivation URI", example = "http://www.w3.org/ns/oa#describing") @QueryParam("motivation") URI motivation,
-            @ApiParam(value = "Search by creator", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("creator") URI creator,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("orderBy") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number") @QueryParam("page") int page,
-            @ApiParam(value = "Page size") @QueryParam("pageSize") int pageSize
+            @ApiParam(value = "Creator URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("creator") URI creator,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         AnnotationDao dao = new AnnotationDao(sparql);
@@ -247,5 +239,26 @@ public class AnnotationAPI {
 
     }
 
+    @GET
+    @Path("count")
+    @ApiOperation("Count annotations")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_ANNOTATION_READ_ID,
+            credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of annotations associated to a given target", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countAnnotations(
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+
+        AnnotationDao dao = new AnnotationDao(sparql);
+        int annotationCount = dao.countAnnotations(target);
+
+        return new SingleObjectResponse<>(annotationCount).getResponse();
+    }
 
 }

@@ -89,7 +89,6 @@ public class AnnotationDao {
         return sparql.getByURI(AnnotationModel.class, uri, user.getLanguage());
     }
 
-
     private void appendBodyValueFilter(ElementGroup annotationGraphGroupElem, String descriptionPattern) {
 
         if (!StringUtils.isEmpty(descriptionPattern)) {
@@ -118,7 +117,7 @@ public class AnnotationDao {
     private void appendCreatorFilter(ElementGroup annotationGraphGroupElem, URI creator) throws Exception {
 
         if (creator != null) {
-            Expr targetEqFilter = SPARQLQueryHelper.eq(AnnotationModel.TARGET_FIELD, creator);
+            Expr targetEqFilter = SPARQLQueryHelper.eq(AnnotationModel.CREATOR_FIELD, creator);
             annotationGraphGroupElem.addElementFilter(new ElementFilter(targetEqFilter));
         }
 
@@ -133,9 +132,7 @@ public class AnnotationDao {
                                                       Integer page,
                                                       Integer pageSize) throws Exception {
 
-
         // use a specific ordering for motivation : use the motivation name instead of the motivation URI which is used by default
-
         List<OrderBy> defaultOrderByList = new LinkedList<>();
         Map<Expr, Order> specificOrderMap = new HashMap<>();
 
@@ -177,11 +174,29 @@ public class AnnotationDao {
         );
     }
 
+    /**
+     *
+     * @param target the URI on which find associated annotations
+     * @return the number of annotations associated to a target
+     */
+    public int countAnnotations(URI target) throws Exception {
+
+        return sparql.count(annotationGraph,AnnotationModel.class,null,countBuilder -> {
+
+            ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
+            ElementGroup annotationGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,annotationGraph);
+
+            appendTargetFilter(annotationGraphGroupElem, target);
+        });
+    }
+
+
     public ListWithPagination<MotivationModel> searchMotivations(String stringPattern,
                                                                  String lang,
                                                                  List<OrderBy> orderByList,
                                                                  Integer page,
                                                                  Integer pageSize) throws Exception {
+
         return sparql.searchWithPagination(
                 MotivationModel.class,
                 lang,

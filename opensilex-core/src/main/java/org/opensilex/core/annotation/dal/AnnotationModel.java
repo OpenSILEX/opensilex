@@ -16,6 +16,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
             property = "created",
             required = true
     )
-    private LocalDate created;
+    private OffsetDateTime created;
 
     @SPARQLProperty(
             ontology = OA.class,
@@ -61,11 +62,11 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
     private List<URI> targets;
     public static final String TARGET_FIELD = "targets";
 
-    public LocalDate getCreated() {
+    public OffsetDateTime getCreated() {
         return created;
     }
 
-    public void setCreated(LocalDate created) {
+    public void setCreated(OffsetDateTime created) {
         this.created = created;
     }
 

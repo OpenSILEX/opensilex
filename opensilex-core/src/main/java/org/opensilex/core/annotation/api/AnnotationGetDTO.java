@@ -7,28 +7,42 @@
 
 package org.opensilex.core.annotation.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
-import org.opensilex.sparql.response.ResourceDTO;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
  * @author Renaud COLIN
  */
 @ApiModel
+@JsonPropertyOrder({
+        "uri", "targets", "description", "motivation", "creator", "created"
+})
 public class AnnotationGetDTO {
 
+    @JsonProperty("uri")
     protected URI uri;
-    protected String bodyValue;
+
+    @JsonProperty("description")
+    protected String description;
+
+    @JsonProperty("targets")
     protected List<URI> targets;
+
+    @JsonProperty("motivation")
     protected MotivationGetDTO motivation;
+
+    @JsonProperty("creator")
     protected URI creator;
-    protected LocalDate created;
+
+    @JsonProperty("created")
+    protected String created;
 
     public AnnotationGetDTO() {
     }
@@ -36,9 +50,9 @@ public class AnnotationGetDTO {
     public AnnotationGetDTO(AnnotationModel model) {
         uri = model.getUri();
 
-        bodyValue = model.getBodyValue();
+        description = model.getBodyValue();
         targets = model.getTargets();
-        created = model.getCreated();
+        created = model.getCreated().toString();
         creator = model.getCreator();
 
         MotivationModel motivationModel = model.getMotivation();
@@ -55,16 +69,14 @@ public class AnnotationGetDTO {
     }
 
     @ApiModelProperty(value = "Content of the annotation", example = "The pest attack lasted 20 minutes")
-    public String getBodyValue() {
-        return bodyValue;
+    public String getDescription() {
+        return description;
     }
 
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-
-    @ApiModelProperty(value = "Target URI(s) of the annotation")
     public List<URI> getTargets() {
         return targets;
     }
@@ -73,12 +85,12 @@ public class AnnotationGetDTO {
         this.targets = targets;
     }
 
-    @ApiModelProperty(value = "Creation date" ,example = "2020-02-20")
-    public LocalDate getCreated() {
+    @ApiModelProperty(value = "Creation date" ,example = "2019-09-08T12:00:00+01:00")
+    public String getCreated() {
         return created;
     }
 
-    public void setCreated(LocalDate created) {
+    public void setCreated(String created) {
         this.created = created;
     }
 

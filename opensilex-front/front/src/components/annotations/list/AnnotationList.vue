@@ -55,8 +55,8 @@
                 {{ data.item.targets[0]}}
             </template>
 
-            <template v-slot:cell(bodyValue)="{data}">
-                <opensilex-StringView :value="data.item.bodyValue"></opensilex-StringView>
+            <template v-slot:cell(description)="{data}">
+                <opensilex-StringView :value="data.item.description"></opensilex-StringView>
             </template>
 
             <template v-slot:cell(creator)="{data}">
@@ -64,7 +64,7 @@
             </template>
 
             <template v-slot:cell(created)="{data}">
-                <opensilex-StringView :value="new Date(data.item.created).toLocaleDateString()"></opensilex-StringView>
+                <opensilex-StringView :value="new Date(data.item.created).toLocaleString()"></opensilex-StringView>
             </template>
 
             <template v-slot:cell(actions)="{data}">
@@ -126,7 +126,7 @@
         columnsToDisplay: Set<string>;
 
         static getDefaultColumns(){
-            return new Set(["uri","motivation","bodyValue","creator","created"]);
+            return new Set(["uri","motivation","description","creator","created"]);
         }
 
         get user() {
@@ -203,8 +203,8 @@
             if(this.columnsToDisplay.has("targets")){
                 tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
             }
-            if(this.columnsToDisplay.has("bodyValue")){
-                tableFields.push({key: "bodyValue", label: "Annotation.body-value", sortable: true});
+            if(this.columnsToDisplay.has("description")){
+                tableFields.push({key: "description", label: "Annotation.description", sortable: true});
             }
             if(this.columnsToDisplay.has("creator")){
                 tableFields.push({key: "creator", label: "Annotation.creator", sortable: true});
@@ -242,7 +242,7 @@ en:
         motivation: Motivation
         motivation-placeholder: Select a motivation
         motivation-help: Intent or motivation for the creation of the Annotation.
-        body-value: Description
+        description: Description
         creator: Creator
         created: Created
         target: Target
@@ -256,7 +256,7 @@ fr:
         motivation: Motivation
         motivation-placeholder: Selectionnez une motivation
         motivation-help: "Intention ou motivation guidant la création de l'annotation"
-        body-value: Description
+        description: Description
         created: Créée le
         creator: Créateur
         target: Cible

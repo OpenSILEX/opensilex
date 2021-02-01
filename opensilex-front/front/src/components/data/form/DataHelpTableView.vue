@@ -200,7 +200,7 @@ en :
     objectId-help: Scientific object name or URI
     variable-help : Variable 1 name
     variables-help : Other variables names
-    text-help:  "Your can insert your data from this row. <br /> \n
+    text-help:  "You can insert data from this row. <br /> \n
             First three rows of CSV content will be ignored. <br /> \n
             <strong>You can't change the two first columns' order </strong> and \n
             you can add new ones as long as you don't change the variable URI \n
@@ -234,7 +234,7 @@ fr :
     objectId-help: Nom ou l'URI de l'objet scientifique
     variable-help : Nom de la variable 1 
     variables-help : Autres noms de variables
-    text-help:  "Vous pouvez insérer vos données à partir de cette ligne. <br /> \n
+    text-help:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
             <strong>Vous ne pouvez pas changer l'ordre des deux premières colonnes  \n
             et vous pouvez en ajouter de nouvelles tant que vous ne changez pas l'URI variable de la première ligne.</strong> \n

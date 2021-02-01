@@ -190,17 +190,15 @@ en:
     data: 
         form: 
          selector:
-            placeholder  : Select one data description
+            placeholder  : Select one provenance
             placeholder-multiple  : Select one or more provenance(s)
             filter-search-no-result : No provenance found
-    
-            
 fr:
   component: 
     data: 
         form:
           selector:
-            placeholder : Selectionner une description de données
+            placeholder : Selectionner une provenance
             placeholder-multiple : Selectionner un ou plusieurs provenance(s)   
             filter-search-no-result : Aucune provenance trouvée
 

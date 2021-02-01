@@ -467,7 +467,7 @@ en:
         date: Date
         value: Value
         variable : Variable
-        provenance: Data description
+        provenance: Provenance
         export-wide : Export data list (wide format)
         export-long : Export data list (long format)
 fr:
@@ -476,7 +476,7 @@ fr:
         date: Date
         value: Valeur
         variable : Variable
-        provenance: Description des données
+        provenance: Provenance
         export-wide : Exporter la liste de données (format large)
         export-long : Exporter la liste de données (format long)
 </i18n>

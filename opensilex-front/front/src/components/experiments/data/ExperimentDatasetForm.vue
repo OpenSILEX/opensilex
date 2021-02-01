@@ -6,7 +6,7 @@
       modalSize="lg"
       :initForm="initForm"
       component="opensilex-ProvenanceForm"
-      createTitle="DatasetForm.describe"
+      createTitle="DatasetForm.provenance.label"
       editTitle="component.factor.update"
       icon="fa#sun"
       @onCreate="afterCreateProvenance"
@@ -62,11 +62,6 @@
               :state="Boolean(file)"
             ></b-form-file>
           </b-col>
-          <!-- <b-col cols="2"
-            ><b-button v-if="form.dataFile != null" @click="file = null">{{
-              $t("DatasetForm.reset-file")
-            }}</b-button></b-col
-          > -->
           <b-col cols="2">
             <opensilex-Button
               variant="secondary"
@@ -437,24 +432,25 @@ en:
     create: Add Data
     update: Update
     experiment: Choose experiment
-    describe: Describe your data
+    describe: Describe information involved in the production of data
     provenance: 
+      label: Provenance
       operators: Operators
       operators-help: Who have generated these data ?
       name: Name 
-      name-search: Data description name of the experiment
+      name-search: Data provenance name in this experiment
       name-help: Give a name
       description : Description
       description-help : Other comment(s) about your data environment parameters
       description-placeholder : Add description
-      title: Create a new data description
-      title-create : Create a new data description
-      title-use : Use an already existing data description
-      already-exists: Data description already existing
+      title: Create a new provenance
+      title-create : Create a new provenance
+      title-use : Use an already existing provenance
+      already-exists: Provenance already existing
       success-message : Provenance has been successfully created
     choose-experiment: First choose an experiment
     choosen-experiment: Choosen experiment
-    choosen-provenance: Choosen description
+    choosen-provenance: Choosen provenance
     selected-file: Selected file
     no-selected-file: No selected file
     csv-file-placeholder: Drop CSV Data file or select a file...
@@ -471,23 +467,24 @@ fr:
     create: Ajouter des données
     update: Modifier
     experiment: Choisir une experimentation
-    describe: Décrivez vos données
+    describe: Décrivez les informations impliquées dans la production des données
     provenance:
+      label: Provenance
       operators: Operateurs
       agent-help: Qui a produit ces données ?
       name: Nom 
-      name-search: Nom de la description des données de l'expérimentation
-      name-help: Nommez votre description
+      name-search: Nom de la provenance des données de l'expérimentation
+      name-help: Nommez votre provenance
       description: Description
       description-help: Autres commentaires à propos de vos données ?
       description-placeholder: Ajouter une description
-      title-create: Créer la description des données
-      title-use: Utilisation de la description des données
-      already-exists: La description existe déjà
+      title-create: Créer la provenance des données
+      title-use: Utilisation de la provenance des données
+      already-exists: La provenance existe déjà
       success-message : La provenance a été créé avec succès
     choose-experiment: Choisissez une expérimentation
     choosen-experiment: Expérimentation choisie
-    choosen-provenance: Description choisie
+    choosen-provenance: Provenance choisie
     selected-file: Fichier sélectionné
     no-selected-file: Aucun fichier sélectionné
     csv-file-placeholder: Déposez le CSV de données ici ou sélectionner un fichier..

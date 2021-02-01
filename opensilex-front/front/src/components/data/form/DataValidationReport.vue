@@ -389,7 +389,7 @@ en:
     expectedFormat: Expected CSV format
     objectURI: Object URI
     objectURIComment: You can set a custom URI or leave it empty to generate one.
-    dataPlaceholder: Your can insert your data from this row.
+    dataPlaceholder: Yourcan insert data from this row.
     ignoredFirstRows: First three rows of CSV content will be ignored.
     columnModification: You can change columns' order and add new ones as long as you don't change the ID of the first row.
     csvErrors: Error(s) detected in CSV file

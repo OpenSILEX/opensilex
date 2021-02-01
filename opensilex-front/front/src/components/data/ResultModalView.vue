@@ -84,12 +84,12 @@ export default class ResultModalView extends Vue {
       data-imported: observations ont été importées avec succès
       datum-imported: L'observation a été importée avec succès
       title : Rapport de l'insertion des données 
-      provenanceLabel : Description des données
+      provenanceLabel : Provenance
 
   en: 
     ResultModalView:
       data-imported: Observations have been imported successfully
       datum-imported: Observation has been imported successfully
       title : Data insertion report
-      provenanceLabel : Data description 
+      provenanceLabel : Provenance
 </i18n>

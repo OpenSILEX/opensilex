@@ -1004,7 +1004,7 @@ public class ExperimentAPI {
                     // object uri
                     csvRow.add(os.getUri().toString());
                     // variable uri
-                    csvRow.add(variables.get(dataGetDTO.getVariable()).getName());
+                    csvRow.add(dataGetDTO.getVariable().toString());
                     // provenance Uri
                     csvRow.add(dataGetDTO.getProvenance().getUri().toString());
                     

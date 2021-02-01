@@ -167,7 +167,7 @@ en:
     uri: URI
     name: Name
     rdf_type: Device Type 
-    start_up: Obtained 
+    start_up: Start up 
     update: Update Device
     delete: Delete Device
     selected: Devices
@@ -178,7 +178,7 @@ en:
       namePattern-placeholder: Enter name
       rdf_type: Type
       rdf_type-placeholder: Select a device type
-      start_up: Obtained
+      start_up: Start up
       start_up-placeholder: Enter year
 
 fr:

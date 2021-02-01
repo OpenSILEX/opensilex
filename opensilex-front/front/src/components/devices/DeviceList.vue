@@ -31,6 +31,22 @@
           ></opensilex-StringFilter>
         </div>
 
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.brand')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.brand"
+            placeholder="DeviceList.filter.brand-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.model')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.model"
+            placeholder="DeviceList.filter.model-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+
       </template>
     </opensilex-SearchFilterField>
 
@@ -93,14 +109,18 @@ export default class DeviceList extends Vue {
   filter = {
     namePattern: undefined,
     rdf_type: undefined,
-    start_up: undefined
+    start_up: undefined,
+    brand: undefined,
+    model: undefined
   };
 
   resetFilters() {
     this.filter = {
       namePattern: undefined,
       rdf_type: undefined,
-      start_up: undefined
+      start_up: undefined,
+      brand: undefined,
+      model: undefined
     };
     this.refresh();
   }
@@ -146,9 +166,9 @@ export default class DeviceList extends Vue {
       this.filter.namePattern, // namePattern filter
       this.filter.rdf_type, // rdfTypes filter
       this.filter.start_up, // year filter
-      undefined, // brandPattern filter
-      undefined, // model filter
-      undefined,
+      this.filter.brand, // brandPattern filter
+      this.filter.model, // model filter
+      undefined, // snPattern filter
       options.currentPage,
       options.pageSize,
     );
@@ -180,6 +200,10 @@ en:
       rdf_type-placeholder: Select a device type
       start_up: Start up
       start_up-placeholder: Enter year
+      brand: Brand
+      brand-placeholder: Enter brand
+      model: Constructor model
+      model-placeholder: Enter constructor model
 
 fr:
   DeviceList:
@@ -199,4 +223,8 @@ fr:
       rdf_type-placeholder: Selectionner un type de dispositif
       start_up: Date d'obtention
       start_up-placeholder: Entrer une année
+      brand: Marque 
+      brand-placeholder: Entrer une marque
+      model: Modèle constructeur
+      model-placeholder: Entrer le nom du modèle constructeur
 </i18n>

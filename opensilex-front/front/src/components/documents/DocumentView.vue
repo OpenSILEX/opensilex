@@ -6,35 +6,15 @@
       description="DocumentView.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-    >
-      <template v-slot>
-        <opensilex-CreateButton @click="documentForm.showCreateForm()" label="DocumentView.add"></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
-
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-DocumentList
-          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_READ_ID)"
           ref="documentList"
           v-bind:credentialsGroups="credentialsGroups"
         ></opensilex-DocumentList>
       </template>
     </opensilex-PageContent>
 
-    <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-      ref="documentForm"
-      component="opensilex-DocumentForm"
-      createTitle="DocumentView.add"
-      editTitle="DocumentView.update"
-      modalSize="lg"
-      icon="ik#ik-settings"
-      @onCreate="documentList.refresh()"
-      @onUpdate="documentList.refresh()"
-    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -62,7 +42,12 @@ export default class DocumentView extends Vue {
 
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("documentList") readonly documentList!: any;
+  @Ref("tableRef") readonly tableRef!: any;
 
+  refresh() {
+      this.tableRef.refresh();
+  }
+  
    created() {
     console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DocumentsService");

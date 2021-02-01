@@ -227,6 +227,8 @@ import AddChildButton from './common/buttons/AddChildButton.vue'
 components["opensilex-AddChildButton"] = AddChildButton;
 import HelpButton from './common/buttons/HelpButton.vue'
 components["opensilex-HelpButton"] = HelpButton;
+import DeprecatedButton from './common/buttons/DeprecatedButton.vue'
+components["opensilex-DeprecatedButton"] = DeprecatedButton;
 
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
@@ -314,6 +316,8 @@ import ExperimentVariableSelector from './experiments/ExperimentVariableSelector
 components["opensilex-ExperimentVariableSelector"] = ExperimentVariableSelector;
 import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
 components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
+import ExperimentDocument from './experiments/views/ExperimentDocument.vue';
+components["opensilex-ExperimentDocument"] = ExperimentDocument;
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';
@@ -498,6 +502,8 @@ import DocumentList from './documents/DocumentList.vue';
 components["opensilex-DocumentList"] = DocumentList;
 import DocumentDetails from './documents/DocumentDetails.vue';
 components["opensilex-DocumentDetails"] = DocumentDetails;
+import DocumentTabList from './documents/DocumentTabList.vue';
+components["opensilex-DocumentTabList"] = DocumentTabList;
 
 // Map
 import MapView from './geometry/MapView.vue';

@@ -14,37 +14,45 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.Required;
-import java.io.File;
-import java.nio.file.Path;
-import org.opensilex.fs.service.FileStorageService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
- * @author Fernandez Emilie A basic DTO class about an {@link DocumentModel}
+ * @author Fernandez Emilie 
  */
+
+@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "deprecated", "keywords" })
 public abstract class DocumentDTO {
 
     protected URI uri;
 
+    protected String identifier;
+
+    @JsonProperty("rdf_type")
     protected URI type;
 
-    protected URI concerns;
+    @JsonProperty("rdf_type_name")
+    protected String typeLabel;
 
-    protected URI creator;
-    
-    protected String language;
-
-    protected String name;
+    protected String title;
 
     protected String date;
 
+    protected List<URI> targets = new ArrayList<>();
+
+    protected List<String> authors = new ArrayList<>();
+    
+    protected String language;
+
     protected String format;
 
-    protected String comment;
+    protected String description;
 
+    @JsonProperty("keywords")
     protected List<String> subject = new ArrayList<>();
     
     protected boolean deprecated;  
-
+    
     @ApiModelProperty(example = "http://opensilex.dev/set/documents#ProtocolExperimental")
     public URI getUri() {
         return uri;
@@ -52,6 +60,16 @@ public abstract class DocumentDTO {
 
     public DocumentDTO setUri(URI uri) {
         this.uri = uri;
+        return this;
+    }
+
+    @ApiModelProperty(example = "doi:10.1340/309registries")
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public DocumentDTO setIdentifier(String identifier) {
+        this.identifier = identifier;
         return this;
     }
 
@@ -65,23 +83,54 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/opensilex/id/variables/v001")
-    public URI getConcerns() {
-        return concerns;
+
+    public String getTypeLabel() {
+        return typeLabel;
     }
 
-    public DocumentDTO setConcerns(URI concerns) {
-        this.concerns = concerns;
+    public DocumentDTO setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
         return this;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/users#emilie")
-    public URI getCreator() {
-        return creator;
+    @Required
+    @ApiModelProperty(example = "title")
+    public String getTitle() {
+        return title;
     }
 
-    public DocumentDTO setCreator(URI creator) {
-        this.creator = creator;
+    public DocumentDTO setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    @ApiModelProperty(example = "2020-06-01")
+    public String getDate() {
+        return date;
+    }
+
+    public DocumentDTO setDate(String date) {
+        this.date = date;
+        return this;
+    }
+
+    @ApiModelProperty(example = "http://opensilex.dev/opensilex/id/variables/v001")
+    public List<URI> getTargets() {
+        return targets;
+    }
+
+    public DocumentDTO setTargets(List<URI> targets) {
+        this.targets = targets;
+        return this;
+    }
+
+    @ApiModelProperty(example = "Author name")
+    public List<String> getAuthors() {
+        return authors;
+    }
+
+    public DocumentDTO setAuthors(List<String> authors) {
+        this.authors = authors;
         return this;
     }
 
@@ -95,28 +144,6 @@ public abstract class DocumentDTO {
         return this;
     }
     
-    @Required
-    @ApiModelProperty(example = "title")
-    public String getName() {
-        return name;
-    }
-
-    public DocumentDTO setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    @Required
-    @ApiModelProperty(example = "2020-06-01")
-    public String getDate() {
-        return date;
-    }
-
-    public DocumentDTO setDate(String date) {
-        this.date = date;
-        return this;
-    }
-    
     @ApiModelProperty(example = "jpg")
     public String getFormat() {
         return format;
@@ -127,13 +154,13 @@ public abstract class DocumentDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "Comment")
-    public String getComment() {
-        return comment;
+    @ApiModelProperty(example = "description")
+    public String getDescription() {
+        return description;
     }
 
-    public DocumentDTO setComment(String comment) {
-        this.comment = comment;
+    public DocumentDTO setDescription(String description) {
+        this.description = description;
         return this;
     }
 
@@ -156,4 +183,6 @@ public abstract class DocumentDTO {
         this.deprecated = deprecated;
         return this;
     }
+
+
 }

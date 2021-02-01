@@ -27,17 +27,17 @@ public class DocumentCreationDTO extends DocumentDTO {
 
         DocumentModel model = new DocumentModel();
         model.setUri(getUri());
+        model.setIdentifier(getIdentifier());
         model.setType(getType());
-        model.setConcerns(getConcerns());
-        model.setCreator(getCreator());
-        model.setLanguage(getLanguage());
-        model.setName(getName());
+        model.setTitle(getTitle());
         model.setDate(getDate());
+        model.setTargets(getTargets());
+        model.setAuthors(getAuthors());
+        model.setLanguage(getLanguage());
         model.setFormat(getFormat());
-        model.setComment(getComment());
+        model.setDescription(getDescription());
         model.setSubject(getSubject());
         model.setDeprecated(Boolean.toString(getDeprecated()));
-
         return model;
     }
 

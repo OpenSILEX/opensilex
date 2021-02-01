@@ -13,6 +13,7 @@
         :state="Boolean(fileValue)"
         :placeholder="$t(placeholder)"
         :drop-placeholder="$t(dropPlaceholder)"
+        :browse-text="$t(browseText)"
       ></b-form-file>
     </template>
   </opensilex-FormField>
@@ -46,6 +47,9 @@ export default class FileInputForm extends Vue {
 
   @Prop()
   dropPlaceholder: string;
+
+  @Prop()
+  browseText: string;
 
   @Prop()
   required: boolean;

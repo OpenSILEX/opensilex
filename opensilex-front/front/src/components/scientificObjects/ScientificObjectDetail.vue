@@ -5,7 +5,7 @@
             <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
             <b-tab :title="$t('Documents')"></b-tab>
             <b-tab :title="$t('Annotation.list-title')"></b-tab>
-<!--            <b-tab :title="$t('Event.list-title')"></b-tab>-->
+            <b-tab :title="$t('Event.list-title')"></b-tab>
         </b-tabs>
         <!--    <template v-slot:header>-->
         <!--      <h3>-->
@@ -66,6 +66,13 @@
                 @onCreate="updateAnnotations"
                 @onUpdate="updateAnnotations"
         ></opensilex-AnnotationModalForm>
+
+        <opensilex-DocumentTabList
+                v-if="isDocumentTab()"
+                :uri="selected.uri"
+                :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+                :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+        ></opensilex-DocumentTabList>
 
     </b-card>
 </template>
@@ -204,6 +211,10 @@
             this.$nextTick(() => {
                 this.annotationList.refresh();
             });
+        }
+
+        private isDocumentTab() : boolean {
+            return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
         }
 
     }

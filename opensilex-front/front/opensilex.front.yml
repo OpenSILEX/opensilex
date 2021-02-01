@@ -144,6 +144,8 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/annotations/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/document/:uri
+    component: opensilex-ExperimentView
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
@@ -195,4 +197,5 @@ routes:
 #  - path: /users/create
 #    component: opensilex-UserCreate
 #    credentials: []
+
 

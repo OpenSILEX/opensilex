@@ -1,47 +1,91 @@
 <template>
   <div>
+    <opensilex-PageActions
+      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+    >
+      <template v-slot>
+        <opensilex-CreateButton @click="documentForm.showCreateForm()" label="DocumentView.add"></opensilex-CreateButton>
+      </template>
+    </opensilex-PageActions>
+
     <opensilex-SearchFilterField
-      @search="updateFilter()"
+      @search="refresh()"
       @clear="resetFilters()"
       withButton="false"
+      :showAdvancedSearch="true"
     >
       <template v-slot:filters>
-        <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.name')}}</label>
+        <!-- title -->
+        <div class="col col-xl-12 col-sm-12 col-12">
           <opensilex-StringFilter
-            :filter.sync="filter.name"
-            placeholder="DocumentList.filter.name-placeholder"
+            style="margin-bottom:10px;"
+            :filter.sync="filter.title"
+            :value.sync="filter.keywords"
+            placeholder="DocumentList.filter.searchAll-placeholder"
           ></opensilex-StringFilter>
         </div>
-        <!-- <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.subject')}}</label>
+      </template>
+
+      <template v-slot:advancedSearch>
+        <!-- title -->
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DocumentList.filter.title')}}</label>
           <opensilex-StringFilter
-            :filter.sync="filter.subject"
-            placeholder="DocumentList.filter.subject-placeholder"
+            :filter.sync="filter.title"
+            placeholder="DocumentList.filter.title-placeholder"
           ></opensilex-StringFilter>
-        </div> -->
-         <div class="col col-xl-3 col-sm-6 col-12">
+        </div>
+
+        <!-- type -->
+        <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-TypeForm
-            :type.sync="filter.rdfType"
+            :type.sync="filter.rdf_type"
             :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
-            placeholder="DocumentList.filter.rdfType-placeholder"
+            placeholder="DocumentList.filter.type-placeholder"
           ></opensilex-TypeForm>
         </div>
+
+        <!-- keywords -->
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.user')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="filter.user"
-            placeholder="DocumentList.filter.user-placeholder"
-          ></opensilex-StringFilter>
+          <label>{{$t('DocumentList.filter.keywords')}}</label>
+          <opensilex-InputForm
+            :value.sync="filter.keywords"
+            placeholder="DocumentList.filter.keywords-placeholder"
+          ></opensilex-InputForm>
         </div>
+
+        <!-- author -->
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DocumentList.filter.author')}}</label>
+            <opensilex-InputForm
+              :value.sync="filter.authors"
+              placeholder="DocumentList.filter.author-placeholder"
+            ></opensilex-InputForm>
+        </div>  
+
+        <!-- date -->   
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DocumentList.filter.date')}}</label>
             <opensilex-StringFilter
               :filter.sync="filter.date"
               placeholder="DocumentList.filter.date-placeholder"
+              type="number"
+              min= "1900"
+              max= "2900"
             ></opensilex-StringFilter>
         </div>
-        <div class="col col-xl-1 col-sm-2 col-12">
+
+        <!-- targets -->
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DocumentList.filter.targets')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.targets"
+            placeholder="DocumentList.filter.targets-placeholder"
+          ></opensilex-StringFilter>
+        </div>
+        
+        <!-- deprecated -->
+        <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-CheckboxForm
             label="DocumentList.filter.deprecated"
             :value.sync="filter.deprecated"
@@ -49,7 +93,7 @@
         </div>
       </template>
     </opensilex-SearchFilterField>
-<opensilex-TableAsyncView
+    <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDocuments"
       :fields="fields"
@@ -57,13 +101,22 @@
     >
       <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink :uri="data.item.uri"
-        :value="data.item.name"
+        :value="data.item.title"
         :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
-
+      
       <template v-slot:row-details>
       </template>
+
+     <template v-slot:cell(authors)="{data}">
+       <span v-if="data.item.authors">
+       <span :key="index" v-for="(author, index) in data.item.authors">
+          <span :title="author">{{ author }}</span>
+          <span v-if="index + 1 < data.item.authors.length"> - </span>
+        </span>   
+        </span>  
+     </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -73,21 +126,39 @@
             label="DocumentList.update"
             :small="true"
           ></opensilex-EditButton>
-          <opensilex-DeleteButton
+          <opensilex-DeprecatedButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+            @click="deprecatedDocument(data.item.uri)"
+            :small="true"
+            label="DocumentList.deprecated"
+            :deprecated="data.item.deprecated"
+          ></opensilex-DeprecatedButton>
+          <opensilex-Button
+           component="opensilex-DocumentDetails"
+            @click="loadFile(data.item.uri, data.item.title, data.item.format)"
+            label="DocumentList.download"
+            :small="true"
+            icon= "ik#ik-download"
+            variant="outline-info"
+          ></opensilex-Button>
+          <!-- <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_DELETE_ID)"
             @click="deleteDocument(data.item.uri)"
             label="DocumentList.delete"
             :small="true"
-          ></opensilex-DeleteButton>
+          ></opensilex-DeleteButton> -->
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
     <opensilex-ModalForm
       ref="documentForm"
       component="opensilex-DocumentForm"
-      editTitle="udpate"
+      editTitle="DocumentList.update"
+      createTitle="DocumentList.add"
       icon="ik#ik-user"
       modalSize="lg"
+      @onCreate="refresh()"
+      @onUpdate="refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -118,22 +189,24 @@ export default class DocumentList extends Vue {
   }
 
   filter = {
-    name: undefined,
+    title: undefined,
     deprecated: "false",
-    subject: undefined,
     date: undefined,
-    rdfType: undefined,
-    user: undefined
+    rdf_type: undefined,
+    authors: undefined,
+    keywords: undefined,
+    targets: undefined
   };
 
   resetFilters() {
     this.filter = {
-      name: undefined,
+      title: undefined,
       deprecated: "false",
-      subject: undefined,
       date: undefined,
-      rdfType: undefined,
-      user: undefined
+      rdf_type: undefined,
+      authors: undefined,
+      keywords: undefined,
+      targets: undefined
     };
     this.refresh();
   }
@@ -151,22 +224,17 @@ export default class DocumentList extends Vue {
     fields = [
     {
       key: "uri",
-      label: "DocumentList.name",
+      label: "DocumentList.title",
       sortable: true
     },
     {
-      key: "creator",
-      label: "DocumentList.creator",
+      key: "rdf_type_name",
+      label: "DocumentList.type",
       sortable: true
     },
     {
-      key: "date",
-      label: "DocumentList.date",
-      sortable: true
-    },
-    {
-      key: "language",
-      label: "DocumentList.language",
+      key: "authors",
+      label: "DocumentList.author",
       sortable: true
     },
     {
@@ -176,17 +244,18 @@ export default class DocumentList extends Vue {
   ];
 
   refresh() {
-    this.tableRef.refresh();
+      this.tableRef.refresh();
   }
 
   searchDocuments(options) {
     return this.service.searchDocuments(
-      this.filter.name, //name filter
-      this.filter.deprecated, // deprecated filter
-      this.filter.subject, // subject filter
+      this.filter.rdf_type, // type filter
+      this.filter.title, //title filter
       this.filter.date, // date filter
-      this.filter.rdfType, // type filter
-      this.filter.user, // user filter
+      this.filter.targets, // targets filter
+      this.filter.authors, // user filter
+      this.filter.keywords, // keywords filter
+      this.filter.deprecated, // deprecated filter
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -212,21 +281,65 @@ export default class DocumentList extends Vue {
         let form = {
           description: {
             uri: document.uri,
-            type: document.type,
-            concerns: document.concerns,
-            creator: document.creator,
-            language: document.language,
-            name: document.name,
+            identifier: document.identifier,
+            rdf_type: document.rdf_type,
+            title: document.title,
             date: document.date,
+            description: document.description,
+            targets: document.targets,
+            authors: document.authors,
+            language: document.language,
             format: document.format,
-            comment: document.comment,
-            subject: document.subject,
-            deprecated: document.deprecated
+            deprecated: document.deprecated,
+            keywords: document.keywords
           }
         };
         this.documentForm.showEditForm(form);
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  deprecatedDocument(uri: string){
+   this.service
+      .getDocumentMetadata(uri)
+      .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
+        let document = http.response.result;
+        let form = {
+          description: {
+            uri: document.uri,
+            identifier: document.identifier,
+            rdf_type: document.rdf_type,
+            title: document.title,
+            date: document.date,
+            description: document.description,
+            targets: document.targets,
+            authors: document.authors,
+            language: document.language,
+            format: document.format,
+            deprecated: !document.deprecated,
+            keywords: document.keywords
+          }
+        };
+      this.updateForDeprecated(form);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  updateForDeprecated(form) {
+    return this.$opensilex
+     .uploadFileToService("/core/documents", form, true)
+     .then((http: OpenSilexResponse<any>) => {
+        let uri = http.result;
+        this.$emit("onUpdate", form);
+        this.refresh();
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  loadFile(uri: string, title: string, format: string) {
+    let path = "/core/documents/" + encodeURIComponent(uri);
+    this.$opensilex
+     .downloadFilefromService(path, title, format);
   }
 
 }
@@ -240,56 +353,73 @@ export default class DocumentList extends Vue {
 en:
   DocumentList:
     uri: URI
-    name: Name
-    rdfType: Document Type 
+    title: Title
+    type: Document Type 
     date: Creation Date 
-    subject: Subject
+    keywords: Keywords
+    add: Add document
     update: Update Document
-    concerns: Concerned Items
+    targets: Concerns
     delete: Delete Document
-    creator: Creator
+    author: Author
     language: Language
+    deprecated: Deprecated
+    cancelDeprecated: Cancel Deprecated
+    identifier: Identifier
+    download: Download file
 
     filter:
-      name: Name
-      name-placeholder: Enter name
+      title: Title
+      title-placeholder: Enter title
       search: Search
       reset: Reset
       date: Date
-      date-placeholder: Enter date
+      date-placeholder: Enter year
       deprecated: Deprecated
-      subject: Subject
-      subject-placeholder: Enter subject
-      rdfType: Type
-      rdfType-placeholder: Select a document type
-      user: Creator
-      user-placeholder: Enter creator's URI
+      keywords: Keyword
+      keywords-placeholder: Enter Keyword
+      type: Type
+      type-placeholder: Select a document type
+      author: Author
+      author-placeholder: Enter Author's title
+      targets: Target
+      targets-placeholder: Enter targets's URI
+      searchAll-placeholder: Search by title and keyword 
 
 fr:
   DocumentList:
     uri: URI
-    name: Nom
-    rdfType: Type du document
+    title: Titre
+    type: Type du document
     date: Date de création
-    subject: Sujet
+    keywords: Mot-clés
+    add: Ajouter un document
     update: Editer le document
-    concerns: Items concernés
+    targets: Cible
     delete: Supprimer le document
-    creator: Auteur
+    author: Auteur
     language: Langue
+    deprecated: Obsolète
+    cancelDeprecated: Annuler Obsolète
+    identifier: Identifiant
+    download: Télécharger le fichier
 
     filter:
-      name: Recherche de documents
-      name-placeholder: Saisir un nom
+      title: Titre
+      title-placeholder: Saisir un titre
       search: Rechercher
       reset: Réinitialiser
       date: Date
-      date-placeholder: Saisir une date
+      date-placeholder: Saisir une année
       deprecated: Obsolète
-      subject: Sujet
-      subject-placeholder: Saisir un sujet
-      rdfType: Type
-      rdfType-placeholder: Selectionner un type de document
-      user: Auteur
-      user-placeholder: Saisir l'uri d'un auteur
+      keywords: Mots-clés
+      keywords-placeholder: Saisir un mot-clé
+      type: Type
+      type-placeholder: Selectionner un type de document
+      author: Auteur
+      author-placeholder: Saisir le nom d'un auteur
+      targets: Concernes
+      targets-placeholder: Entrez l'URI concernés
+      searchAll-placeholder: Recherche par titre et mot-clé
+      
 </i18n>

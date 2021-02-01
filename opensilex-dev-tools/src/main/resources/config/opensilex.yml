@@ -13,7 +13,7 @@ file-system:
         config:
             basePath: ../../opensilex-data
 
-big-data:
+big-data:   
     mongodb:
         config:
             host: localhost
@@ -26,5 +26,3 @@ phisws:
     
 #core:
 #    enableLogs: true
-#server:
-#    pathPrefix: configurable-app-path

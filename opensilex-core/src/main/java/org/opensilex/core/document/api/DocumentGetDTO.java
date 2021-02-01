@@ -24,27 +24,20 @@ import org.opensilex.fs.service.FileStorageService;
  */
 public class DocumentGetDTO extends DocumentDTO {
 
-    // protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
-
-    //     if (models == null || models.isEmpty()) {
-    //         return Collections.emptyList();
-    //     }
-    //     return models.stream().map(SPARQLResourceModel::getUri)
-    //             .collect(Collectors.toCollection(ArrayList::new));
-    // }
-
     public static DocumentGetDTO fromModel(DocumentModel model) {
 
         DocumentGetDTO dto = new DocumentGetDTO();
         dto.setUri(model.getUri())
+                .setIdentifier(model.getIdentifier())
                 .setType(model.getType())
-                .setConcerns(model.getConcerns())
-                .setCreator(model.getCreator())
-                .setLanguage(model.getLanguage())
-                .setName(model.getName())
+                .setTypeLabel(model.getTypeLabel().getDefaultValue())
+                .setTitle(model.getTitle())
                 .setDate(model.getDate())
+                .setTargets(model.getTargets())
+                .setAuthors(model.getAuthors())
+                .setLanguage(model.getLanguage())
                 .setFormat(model.getFormat())
-                .setComment(model.getComment())
+                .setDescription(model.getDescription())
                 .setSubject(model.getSubject())
                 .setDeprecated(Boolean.parseBoolean(model.getDeprecated()));
 

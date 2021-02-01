@@ -15,6 +15,7 @@ import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
+import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -41,27 +42,27 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     public static final String TYPE_FIELD = "type";
 
     @SPARQLProperty(
-        ontology = Oeso.class,
-        property = "concerns"
+            ontology = OA.class,
+            property = "hasTarget",
+            required = true
     )
-    URI concerns;
-    public static final String CONCERNS_FIELD = "concerns";
+    private List<URI> targets;
+    public static final String TARGET_FIELD = "targets";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "title",
             required = true
     )
-    String name;
-    public static final String NAME_FIELD = "name";
+    String title;
+    public static final String TITLE_FIELD = "title";
 
     @SPARQLProperty(
-        ontology = DCTerms.class,
-        property = "creator",
-        required = true
+        ontology = Oeso.class,
+        property = "hasAuthor"
     )
-    URI creator;
-    public static final String CREATOR_FIELD = "creator";
+    List<String> authors;
+    public static final String AUTHORS_FIELD = "authors";
 
     @SPARQLProperty(
         ontology = DCTerms.class,
@@ -72,8 +73,7 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
 
     @SPARQLProperty(
         ontology = DCTerms.class,
-        property = "date",
-        required = true
+        property = "date"
     )
     String date;
     public static final String DATE_FIELD = "date";
@@ -86,11 +86,11 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     public static final String FORMAT_FIELD = "format";
 
     @SPARQLProperty(
-        ontology = RDFS.class,
-        property = "comment"
+        ontology = DCTerms.class,
+        property = "description"
     )
-    String comment;
-    public static final String COMMENT_FIELD = "comment";
+    String description;
+    public static final String DESCRIPTION_FIELD = "description";
 
     @SPARQLProperty(
         ontology = DCTerms.class,
@@ -106,6 +106,13 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     String deprecated;
     public static final String DEPRECATED_FIELD = "deprecated";
 
+    @SPARQLProperty(
+        ontology = DCTerms.class,
+        property = "identifier"
+    )
+    String identifier;
+    public static final String IDENTIFIER_FIELD = "identifier";
+
     public URI getType() {
         return type;
     }
@@ -114,20 +121,20 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
         this.type = type;
     }
 
-    public URI getConcerns() {
-        return concerns;
+    public List<URI> getTargets() {
+        return targets;
     }
 
-    public void setConcerns(URI concerns) {
-        this.concerns = concerns;
+    public void setTargets(List<URI> targets) {
+        this.targets = targets;
     }
 
-    public URI getCreator() {
-        return creator;
+    public List<String> getAuthors() {
+        return authors;
     }
 
-    public void setCreator(URI creator) {
-        this.creator = creator;
+    public void setAuthors(List<String> authors) {
+        this.authors = authors;
     }
 
     public String getLanguage() {
@@ -138,12 +145,12 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
         this.language = language;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDate() {
@@ -162,12 +169,12 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
         this.format = format;
     }
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<String> getSubject() {
@@ -185,11 +192,19 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     public void setDeprecated(String deprecated) {
         this.deprecated = deprecated;
     }
+    
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
 
     @Override
     public String[] getUriSegments(DocumentModel instance) {
         return new String[]{
-            instance.getName()
+            instance.getTitle()
         };
     }
 }

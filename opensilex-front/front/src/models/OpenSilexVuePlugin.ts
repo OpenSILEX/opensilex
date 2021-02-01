@@ -854,6 +854,68 @@ export default class OpenSilexVuePlugin {
             });
     }
 
+    previewFilefromGetService(servicePath: string, name: string, extension: string) {
+        this.showLoader();
+
+        console.log(this.baseApi);
+        let url =
+            this.baseApi +
+            servicePath;
+        let headers = {};
+    
+        let user = this.getUser(); 
+        if (user != User.ANONYMOUS()) {
+            headers["Authorization"] = user.getAuthorizationHeader();            
+        }
+    
+        headers["Accept-Language"] = this.getLang();
+    
+        let request: RequestInit =  {
+            method: "GET",
+            headers: headers
+        }
+
+        let promise = fetch(url, request);            
+    
+        return promise
+            .then(function (response) {
+                return response.blob();
+            })
+            .then((result) => {
+                let file = result;
+                let type = "";
+                if (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "svg"){
+                    type = "image/" + extension;
+                } else if (extension == "pdf" || extension == "json" || extension == "xml"){
+                    type = "application/" + extension;
+                } else if (extension == "csv") {
+                    type = "text/" + extension;
+                } else if (extension == "mp4" || extension == "mpeg") {
+                    type = "video/" + extension;
+                } else {
+                    type = null;
+                    let message = this.$i18n.t("component.document.nopreview");
+                    let error = document.createElement("p");
+                    let content = document.createTextNode(message as string);
+                    document.getElementById("preview").appendChild( error.appendChild(content));
+                }
+                let blob = new Blob([file], {type: type});
+                console.log(extension);
+                if(type != null){
+                    let url =  URL.createObjectURL(blob);
+                    let iframe = document.createElement("iframe");
+                    iframe.src = url;
+                    iframe.width="600";
+                    iframe.height="600";
+                    document.getElementById("preview").appendChild(iframe);
+                }
+                this.hideLoader()
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+    
     public datatypes = [];
     private datatypesByURI = {};
 

@@ -33,6 +33,12 @@
                 </b-nav-item>
 
                 <b-nav-item
+                  :active="isDocumentTab()"
+                  :to="{path: '/experiment/document/' + encodeURIComponent(uri)}"
+                >{{ $t('ExperimentView.document') }}
+                </b-nav-item>
+
+                <b-nav-item
                         :active="isAnnotationTab()"
                         :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
                 >{{ $t("Annotation.list-title") }}
@@ -74,6 +80,11 @@
                         v-else-if="isMap()"
                         :uri="uri"
                 ></opensilex-MapView>
+
+                <opensilex-ExperimentDocument 
+                  v-else-if="isDocumentTab()" 
+                  :uri="uri"
+                ></opensilex-ExperimentDocument>
 
                 <opensilex-AnnotationList
                         v-else-if="isAnnotationTab()"
@@ -152,6 +163,10 @@
             return this.$route.path.startsWith("/experiment/data/");
         }
 
+        isDocumentTab() {
+          return this.$route.path.startsWith("/experiment/document/");
+        }
+
         isAnnotationTab() {
             return this.$route.path.startsWith("/experiment/annotations/");
         }
@@ -173,10 +188,12 @@ en:
         details: Details
         scientific-objects: Scientific objects
         data: Data
+        document: Documents
 
 fr:
     ExperimentView:
         details: Détail
         scientific-objects: Objets scientifiques
         data: Data
+        document: Documents
 </i18n>

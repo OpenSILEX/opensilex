@@ -192,6 +192,9 @@ public class Server extends Tomcat {
 
         Connector connector = getConnector();
 
+        //Limit file size 100MB
+        connector.setMaxPostSize(104857600);
+
         // Allow tomcat to accept encoded slash
         connector.setEncodedSolidusHandling(EncodedSolidusHandling.DECODE.getValue());
 

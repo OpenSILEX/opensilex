@@ -73,7 +73,7 @@
                 "delete-success-message": "has been deleted"
             },
             "details": {
-                "document": "Associated documents",
+                "document": "Documents",
                 "experiment": "Associated experiments"
             },
             "import-files": {
@@ -261,7 +261,7 @@
             "project":"Project",
             "uri": "URI",
             "details":"Details",
-            "documents":"Associated documents",
+            "documents":"Documents",
             "delete": "Delete project",
             "project-uri": "Project URI",
             "filter-description": "Search",
@@ -595,6 +595,9 @@
                     "variable": " Add a variable"
                 }
             }
+        },
+        "document": {
+            "nopreview": "No preview possible"
         }
     },
     "credential-groups": {

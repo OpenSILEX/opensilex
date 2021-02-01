@@ -45,24 +45,21 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
  */
 public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/core/document";
+    protected String path = "/core/documents";
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    protected String uriPath = path + "/getMetadata/{uri}";
-    protected String searchPath = path + "/search";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String deletePath = path + "/delete/{uri}";
+    protected String uriPath = path + "/{uri}/description";
+    protected String deletePath = path + "/{uri}";
 
     protected DocumentCreationDTO getCreationDTO() {
 
         DocumentCreationDTO docDto = new DocumentCreationDTO();
-        docDto.setName("test document");
+        docDto.setTitle("test document");
         LocalDate currentDate = LocalDate.now();
         docDto.setDate(currentDate.toString());
-        docDto.setComment("comment");
+        docDto.setDescription("description");
         return docDto;
     }
 
@@ -76,7 +73,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
 
-        final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -95,14 +92,13 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         }
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", docDto, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
-        final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
 
         // update the doc
         docDto.setUri(extractUriFromResponse(postResult));
-        docDto.setName("new name test document");
-        docDto.setCreator(new URI("http://opensilex.dev/users#admin.opensilex"));
+        docDto.setTitle("new title test document");
 
-        final Response updateResult = getJsonPutResponseMultipart(target(updatePath), multipart);
+        final Response updateResult = getJsonPutResponseMultipart(target(path), multipart);
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new doc and compare to the expected doc
@@ -115,7 +111,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         DocumentGetDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(docDto.getName(), dtoFromApi.getName());
+        assertEquals(docDto.getTitle(), dtoFromApi.getTitle());
     }
 
     @Test
@@ -130,7 +126,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
 
-        Response postResponse = getJsonPostResponseMultipart(target(createPath), multipart);
+        Response postResponse = getJsonPostResponseMultipart(target(path), multipart);
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
@@ -151,7 +147,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
 
-        final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
@@ -175,7 +171,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
 
-        final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
@@ -195,7 +191,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
         MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
 
-        final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -204,7 +200,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
             }
         };
 
-        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 50, params);
+        WebTarget searchTarget = appendSearchParams(target(path), 0, 50, params);
         final Response getResult = appendToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 

@@ -10,7 +10,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.ontology.Oeso;
+import org.apache.jena.vocabulary.OA;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.project.dal.ProjectDAO;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +47,12 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.NotFoundURIException;
 
 /**
  * @author Emilie Fernandez
@@ -45,7 +60,6 @@ import org.apache.jena.vocabulary.DCTerms;
 public class DocumentDAO {
 
     protected final SPARQLService sparql;
-
     protected final FileStorageService fs;
 
     public final static String FS_DOCUMENT_PREFIX = "documents";
@@ -60,10 +74,6 @@ public class DocumentDAO {
         fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
         return instance;
     }
-
-    // public String getFile(URI uri) throws Exception {
-    //     return fs.readFile(FS_DOCUMENT_PREFIX, uri);    
-    // }
 
     public byte[] getFile(URI uri) throws Exception {
         return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
@@ -83,18 +93,22 @@ public class DocumentDAO {
         fs.delete(FS_DOCUMENT_PREFIX, uri);
     }
 
-    public ListWithPagination<DocumentModel> search(String name, String deprecated, String subject, String date, URI rdfType, URI user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         ListWithPagination<DocumentModel> listDocumentModel = sparql.searchWithPagination(
             DocumentModel.class,
             null,
-            //TODO: implements filters
             (SelectBuilder select) -> {
-                appendNameFilters(select, name);
-                appendDeprecatedFilters(select, deprecated);
-                appendSubjectFilters(select, subject);
+                Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
+                ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+                ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, docGraph);
+               
+                appendTypeFilter(select, type);
+                appendTitleFilter(select, title);
                 appendDateFilter(select, date);
-                appendRdfTypeFilter(select, rdfType);
-                appendUserDocFilter(select, user);
+                appendTargetsFilter(multipleGraphGroupElem, targets);
+                appendAuthorsFilter(multipleGraphGroupElem, authors);
+                appendSubjectsListFilter(multipleGraphGroupElem, subject);
+                appendDeprecatedFilter(select, deprecated);
             },
             orderByList,
             page,
@@ -103,21 +117,15 @@ public class DocumentDAO {
         return listDocumentModel;
     }
 
-    private void appendNameFilters(SelectBuilder select, String name) throws Exception {
-        if (name != null) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.NAME_FIELD, name));
+    private void appendTitleFilter(SelectBuilder select, String title) throws Exception {
+        if (title != null) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, title));
         }
     }
    
-    private void appendDeprecatedFilters(SelectBuilder select, String deprecated) throws Exception {        
+    private void appendDeprecatedFilter(SelectBuilder select, String deprecated) throws Exception {        
         if (deprecated != null) {
             select.addFilter(SPARQLQueryHelper.eq(DocumentModel.DEPRECATED_FIELD, deprecated));
-        }
-    }
-
-    private void appendSubjectFilters(SelectBuilder select, String subject) throws Exception {
-        if (subject != null) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, subject));
         }
     }
 
@@ -127,15 +135,116 @@ public class DocumentDAO {
         }
     }
 
-    private void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
-        if (rdfType != null) {
-            select.addFilter(SPARQLQueryHelper.eq(DocumentModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
+    private void appendTypeFilter(SelectBuilder select, URI type) throws Exception {
+        if (type != null) {
+            select.addFilter(SPARQLQueryHelper.eq(DocumentModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(type.toString()))));
         }
     }
 
-    private void appendUserDocFilter(SelectBuilder select, URI user) throws Exception {
-        if (user != null) {
-            select.addFilter(SPARQLQueryHelper.eq(DocumentModel.CREATOR_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(user.toString()))));
+    // private void appendUserDocFilter(SelectBuilder select, URI user) throws Exception {
+    //     if (user != null) {
+    //         select.addFilter(SPARQLQueryHelper.eq(DocumentModel.CREATOR_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(user.toString()))));
+    //     }
+    // }
+
+    private void appendAuthorsFilter(ElementGroup authorsGraphGroupElem, String authors) throws Exception {
+        if (authors != null) {
+            Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+            Var authorsVar = SPARQLQueryHelper.makeVar(DocumentModel.AUTHORS_FIELD);
+
+            Triple docAuthorsTriple = new Triple(uriVar, Oeso.hasAuthor.asNode(), authorsVar);
+
+            authorsGraphGroupElem.addTriplePattern(docAuthorsTriple);
+
+            Expr authorsEqExpr = SPARQLQueryHelper.regexFilter(DocumentModel.AUTHORS_FIELD, authors);
+            authorsGraphGroupElem.addElementFilter(new ElementFilter(authorsEqExpr));
+    
+        }
+    }
+
+    private void appendSubjectsListFilter(ElementGroup subjectGraphGroupElem, String subject) throws Exception {
+        if (subject != null) {
+
+            Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+            Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);
+
+            Triple docSubjectTriple = new Triple(uriVar, DCTerms.subject.asNode(), subjectVar);
+  
+            subjectGraphGroupElem.addTriplePattern(docSubjectTriple);
+
+            Expr subjectEqExpr = SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, subject);
+            subjectGraphGroupElem.addElementFilter(new ElementFilter(subjectEqExpr));
+        }
+    }
+
+
+    private void appendTargetsFilter(ElementGroup targetsGraphGroupElem, URI targets) throws Exception {
+
+        if (targets != null) {
+
+            Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+            Var targetsVar = SPARQLQueryHelper.makeVar(DocumentModel.TARGET_FIELD);
+
+            // append where between doc uri and the multi-valued "targets" property because
+            // the sparql service don't fetch multi-valued property during the search call
+            Triple targetsTriple = new Triple(uriVar, OA.hasTarget.asNode(), targetsVar);
+
+            targetsGraphGroupElem.addTriplePattern(targetsTriple);
+
+            Expr targetsEqExpr = SPARQLQueryHelper.eq(DocumentModel.TARGET_FIELD, targets);
+            targetsGraphGroupElem.addElementFilter(new ElementFilter(targetsEqExpr));
+        }
+    }
+
+    private static void addWhere(SelectBuilder select, String subjectVar, Property property, String objectVar) {
+        select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+    }
+
+    public void validateDocumentAccess(URI documentURI, UserModel user) throws Exception {
+        if (!sparql.uriExists(DocumentModel.class, documentURI)) {
+            throw new NotFoundURIException("Document URI not found: ", documentURI);
+        }
+
+        if (user.isAdmin()) {
+            return;
+        }
+
+        Node uriVar = SPARQLDeserializers.nodeURI(documentURI);
+        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
+
+
+        AskBuilder ask = sparql.getUriExistsQuery(DocumentModel.class, documentURI);
+
+        if (!sparql.executeAskQuery(ask)) {
+            // check related document experiment
+            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
+                select.addWhere(makeVar(ExperimentModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
+            });
+
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            for (URI xpUri : xpUris) {
+                try {
+                    xpDAO.validateExperimentAccess(xpUri, user);
+                    return;
+                } catch (Exception ex) {
+                    // Ignore exception
+                }
+            }
+
+            // check related document scientific object
+            List<URI> soUris = sparql.searchURIs(ScientificObjectModel.class, user.getLanguage(), (select) -> {
+                select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
+            });
+
+            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql);
+            for (URI soUri : soUris) {
+                try {
+                    xpsoDAO.validateExperimentAccess(soUri, user);
+                    return;
+                } catch (Exception ex) {
+                    // Ignore exception
+                }
+            }
         }
     }
 }

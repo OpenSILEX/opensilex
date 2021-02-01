@@ -1,60 +1,27 @@
 <template>
-    <div class="container-fluid">
-        <opensilex-PageHeader :title="name" description="component.project.project"></opensilex-PageHeader>
+  <div class="container-fluid">
+    <opensilex-PageHeader :title="name" description="component.project.project"></opensilex-PageHeader>
 
-        <opensilex-PageActions :tabs="true" :returnButton="true">
-            <template v-slot>
-                <b-nav-item
-                        :active="isDetailsTab()"
-                        :to="{path: '/project/details/' + encodeURIComponent(uri)}"
-                >{{ $t('component.common.details-label') }}
-                </b-nav-item>
+    <opensilex-PageActions :returnButton="true">
+      <template v-slot>
+        <b-nav-item
+          :active="isDetailsTab()"
+          :to="{path: '/project/details/' + encodeURIComponent(uri)}"
+        >{{ $t('component.project.details') }}</b-nav-item>
 
-                <b-nav-item
-                        class="ml-3"
-                        :active="isAnnotationTab()"
-                        :to="{ path: '/project/annotations/' + encodeURIComponent(uri) }"
-                >{{ $t("Annotation.list-title") }}
-                </b-nav-item>
-
-                <opensilex-Button
-                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-                        label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-                        @click="annotationModalForm.showCreateForm()"
-                ></opensilex-Button>
-
-                <opensilex-AnnotationModalForm
-                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-                        ref="annotationModalForm"
-                        :target="uri"
-                        @onCreate="updateAnnotations"
-                        @onUpdate="updateAnnotations"
-                ></opensilex-AnnotationModalForm>
-
-                <!--
-                        <b-nav-item
-                          :active="isDocumentTab()"
-                          :to="{path: '/project/documents/' + encodeURIComponent(uri)}"
-                        >{{ $t('component.project.documents') }}</b-nav-item>  -->
-            </template>
-        </opensilex-PageActions>
-        <opensilex-PageContent>
-            <template v-slot>
-                <opensilex-ProjectDescription v-if="isDetailsTab()" :uri="uri"></opensilex-ProjectDescription>
-                <opensilex-ProjectDocuments v-else-if="isDocumentTab()" :uri="uri"></opensilex-ProjectDocuments>
-                <opensilex-AnnotationList
-                        v-else-if="isAnnotationTab()"
-                        ref="annotationList"
-                        :target="uri"
-                        :displayTargetColumn="false"
-                        :enableActions="true"
-                        :modificationCredentialId="credentials.CREDENTIAL_PROJECT_MODIFICATION_ID"
-                        :deleteCredentialId="credentials.CREDENTIAL_PROJECT_DELETE_ID"
-                        @onEdit="annotationModalForm.showEditForm($event)"
-                ></opensilex-AnnotationList>
-            </template>
-        </opensilex-PageContent>
-    </div>
+        <b-nav-item
+          :active="isDocumentTab()"
+          :to="{path: '/project/documents/' + encodeURIComponent(uri)}"
+        >{{ $t('component.project.documents') }}</b-nav-item> 
+      </template>
+    </opensilex-PageActions>
+    <opensilex-PageContent>
+      <template v-slot>
+        <opensilex-ProjectDescription v-if="isDetailsTab()" :uri="uri"></opensilex-ProjectDescription>
+        <opensilex-ProjectDocuments v-else-if="isDocumentTab()" :uri="uri"></opensilex-ProjectDocuments>
+      </template>
+    </opensilex-PageContent>
+  </div>
 </template>
 
 <script lang="ts">

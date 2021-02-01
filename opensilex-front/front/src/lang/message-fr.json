@@ -72,7 +72,7 @@
                 "delete-success-message": " a été supprimé(e)"
             },
             "details": {
-                "document": "Documents associés",
+                "document": "Documents",
                 "experiment": "Expérimentations associées"
             },
             "import-files": {
@@ -263,7 +263,7 @@
             "uri": "URI du projet",
             "details":"Details",
             "delete": "Supprimer le projet",
-            "documents":"Documents associés",
+            "documents":"Documents",
             "project-uri": "URI du projet",
             "project":"Projet",
             "filter-description": "Recherche",
@@ -502,6 +502,9 @@
             "errors": {
                 "germplasm-already-exists": "Germplasm already exists with this URI."
             }
+        },
+        "document": {
+            "nopreview": "Pas de prévisualisation possible"
         }
     },
     "credential-groups": {

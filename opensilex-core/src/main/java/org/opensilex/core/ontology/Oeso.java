@@ -151,5 +151,5 @@ public class Oeso {
 
     // ---- DOCUMENTS ----
     public static final Resource Document = Ontology.resource(NS, "Document");
-    public static final Property concerns = Ontology.property(NS, "concerns");
+    public static final Property hasAuthor = Ontology.property(NS, "hasAuthor");
 }

@@ -349,8 +349,6 @@ export default class DeviceTable extends Vue {
     let promises = [];
     this.$opensilex.disableLoader();
 
-    let colDefs = this.tabulator.getColumnDefinitions();
-
     for (let idx = 0; idx < dataToInsert.length; idx++) {
       let form: DeviceDTO = {
         rdf_type: null,
@@ -364,8 +362,8 @@ export default class DeviceTable extends Vue {
         removal: null
       };
 
-      if (dataToInsert[idx].type != null && dataToInsert[idx].type != ""){
-        form.rdf_type = dataToInsert[idx].type;
+      if (dataToInsert[idx].rdf_type != null && dataToInsert[idx].rdf_type != ""){
+        form.rdf_type = dataToInsert[idx].rdf_type;
       }else{
         form.rdf_type = this.$attrs.deviceType;
       }
@@ -434,9 +432,9 @@ export default class DeviceTable extends Vue {
 
     Promise.all(promises).then(result => {
       if (this.onlyChecking) {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevlReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevReady') + ", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       } else {
-        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevlInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
+        this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       }
       this.infoMessage = true;
       this.disableCloseButton = false;
@@ -470,7 +468,7 @@ export default class DeviceTable extends Vue {
   ) {
     return new Promise((resolve, reject) => {
     this.service
-    .createDevice(form)
+    .createDevice(onlyChecking,form)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => {
       if(onlyChecking) {
         this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('DeviceTable.checkingStatusMessage'), status:"OK"}])
@@ -487,7 +485,6 @@ export default class DeviceTable extends Vue {
       
     }).catch(error => {
         let errorMessage: string;
-        let errorMessage2: string;
         let failure = true;
         try {
           errorMessage = error.response.result.message;
@@ -519,6 +516,8 @@ export default class DeviceTable extends Vue {
         row.reformat();
         this.errorNumber = this.errorNumber + 1;
         this.progressValue = this.progressValue + 1;
+        this.disableInsert = false;
+        this.disableCheck = false;
         resolve();
       });
     });
@@ -665,7 +664,7 @@ fr:
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
     infoMessageDevReady: device prêts à être insérer
-    infoMessageErrors: erreurs
+    infoMessageErrors: erreursoeso
     infoMessageEmptyLines: lignes vides
     infoMessageDevInserted: device insérés
     checkingStatusMessage: validé

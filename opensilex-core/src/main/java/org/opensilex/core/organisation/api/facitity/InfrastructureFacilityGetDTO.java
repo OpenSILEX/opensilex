@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import java.net.URI;
+import javax.validation.constraints.NotNull;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -32,7 +32,7 @@ public class InfrastructureFacilityGetDTO extends NamedResourceDTO<Infrastructur
     @JsonProperty("organisation")
     protected URI infrastructure;
 
-    @Required
+    @NotNull
     public URI getInfrastructure() {
         return infrastructure;
     }

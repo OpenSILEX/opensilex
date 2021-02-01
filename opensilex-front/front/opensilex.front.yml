@@ -204,7 +204,7 @@ routes:
   - path: /device/documents/:uri
     component: opensilex-ProjectDetails
   - path: /device/annotations/:uri
-    component: opensilex-ProjectDetails
+    component: opensilex-DeviceDetails
 
   - path: /devices/create
     component: opensilex-DeviceCreate

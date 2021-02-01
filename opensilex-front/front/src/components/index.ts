@@ -551,5 +551,7 @@ import DeviceTable from './devices/DeviceTable.vue';
 components["opensilex-DeviceTable"] = DeviceTable;
 import DeviceAttributesTable from './devices/DeviceAttributesTable.vue';
 components["opensilex-DeviceAttributesTable"] = DeviceAttributesTable;
+import DeviceForm from './devices/DeviceForm.vue';
+components["opensilex-DeviceForm"] = DeviceForm;
 
 export default components;

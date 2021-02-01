@@ -81,7 +81,7 @@ export default class Device extends Vue {
   callCreateDeviceService(form: DeviceDTO, done) {
     done(
       this.service
-        .createDevice(form)
+        .createDevice(false,form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("device created", uri);

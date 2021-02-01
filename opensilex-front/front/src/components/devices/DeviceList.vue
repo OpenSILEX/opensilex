@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <opensilex-SearchFilterField
       @search="updateFilter()"
       @clear="resetFilters()"

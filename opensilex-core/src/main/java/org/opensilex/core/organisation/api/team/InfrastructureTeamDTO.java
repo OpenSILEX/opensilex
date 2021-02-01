@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import java.net.URI;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 import org.opensilex.security.group.api.GroupDTO;
@@ -36,6 +37,8 @@ public class InfrastructureTeamDTO extends GroupDTO {
     @JsonProperty("organisation")
     protected URI infrastructure;
 
+    
+    @NotNull
     public URI getInfrastructure() {
         return infrastructure;
     }

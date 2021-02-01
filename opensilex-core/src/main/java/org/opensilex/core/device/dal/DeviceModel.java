@@ -24,7 +24,6 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
-
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
@@ -72,7 +71,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "startUp"
     )
     LocalDate startUp;
-    public static final String OBTAINED_FIELD = "startUp";
+    public static final String STARTUP_FIELD = "startUp";
     
     @SPARQLProperty(
             ontology = Oeso.class,

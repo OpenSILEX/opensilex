@@ -1,7 +1,7 @@
 <template>
   <div>
     <global-events @keydown.enter.exact="keydownEnter"></global-events>
-    <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000">
+    <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000" :fullscreen="true">
       <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
         <component
           class="header-logo"

@@ -1,5 +1,12 @@
 <template>
-  <b-overlay :show="show" :no-fade="noFade" :z-index="zIndex" opacity="0.7" class="overlay">
+  <b-overlay
+    :show="show"
+    :no-fade="noFade"
+    :z-index="zIndex"
+    opacity="0.7"
+    class="overlay"
+    v-bind:class="{ fullscreen: fullscreen }"
+  >
     <template v-slot:overlay>
       <div class="lds-ripple">
         <div></div>
@@ -17,26 +24,35 @@ import Vue from "vue";
 @Component
 export default class Overlay extends Vue {
   @Prop({
-    default: false
+    default: false,
   })
   show;
 
   @Prop({
-    default: true
+    default: true,
   })
   noFade;
 
   @Prop({
-    default: 10
+    default: 10,
   })
   zIndex;
 
+  @Prop({
+    default: false,
+  })
+  fullscreen;
 }
 </script>
 
 <style scoped lang="scss">
 .overlay {
   width: 100%;
+}
+
+.overlay.fullscreen {
+  width: 100%;
+  height: 100vh !important;
 }
 
 .lds-ripple {

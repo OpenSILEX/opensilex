@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Overlay :show="isSearching">
+  <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
     <div class="card">
       <div v-if="isSelectable && tableRef" class="card-header row clearfix">
         <div class="col col-sm-12">
@@ -193,6 +193,10 @@ export default class TableAsyncView extends Vue {
         this.sortDesc = this.defaultSortDesc;
       }
     }
+  }
+
+  get isGlobalLoaderVisible() {
+    return this.$store.state.loaderVisible;
   }
 
   getHeadTemplateName(key) {

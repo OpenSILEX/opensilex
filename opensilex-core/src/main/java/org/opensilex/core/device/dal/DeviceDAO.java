@@ -79,7 +79,7 @@ public class DeviceDAO {
         return device.getUri();
     }
     
-    public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, Integer year, String brandPattern, String model, String snPattern,  UserModel currentUser, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, Integer year, String brandPattern, String modelPattern, String snPattern,  UserModel currentUser, Integer page, Integer pageSize) throws Exception {
         LocalDate date ;
         if (year != null) {
             String yearString = Integer.toString(year);
@@ -100,8 +100,8 @@ public class DeviceDAO {
                     if (brandPattern != null && !brandPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.BRAND_FIELD, brandPattern));
                     }
-                    if (model != null && !model.trim().isEmpty()) {
-                        select.addFilter(SPARQLQueryHelper.eq(DeviceModel.MODEL_FIELD, model));
+                    if (modelPattern != null && !modelPattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.MODEL_FIELD, modelPattern));
                     }
                     if (snPattern != null && !snPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.SERIALNUMBER_FIELD, snPattern));
@@ -116,7 +116,7 @@ public class DeviceDAO {
     }
 
     private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
-        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.OBTAINED_FIELD, Date,null,null);
+        Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date,null,null);
         select.addFilter(dateRangeExpr);
     }
     

@@ -24,8 +24,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -36,6 +41,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -89,16 +95,20 @@ public class DeviceAPI {
     })
 
     public Response createDevice(
-            @ApiParam("Device description") @Valid DeviceDTO dto
-    ) throws Exception {
-        try {        
-            DeviceDAO dao = new DeviceDAO(sparql);
-            
-            URI uri = dao.create(dto, currentUser);
+            @ApiParam("Device description") @Valid DeviceDTO deviceDTO,
+            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+    ) throws Exception {       
+        DeviceDAO deviceDAO = new DeviceDAO(sparql);
+        ErrorResponse error = check(deviceDTO, false);
+        if (error != null) {
+            return error.getResponse();
+        }
+        if (!checkOnly){
+            URI uri = deviceDAO.create(deviceDTO, currentUser);
 
             return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
-        } catch (SPARQLAlreadyExistingUriException e) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Device already exists", e.getMessage()).getResponse();
+        } else {
+            return new ObjectUriResponse().getResponse();
         }
     }
     
@@ -112,12 +122,12 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return list of devices corresponding to the given search parameters", response = DeviceDTO.class, responseContainer = "List")
     })    
     public Response searchDevices(
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfTypes") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
-            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue(".*") @QueryParam("brandPattern") String brandPattern,
-            @ApiParam(value = "Model filter", example = "") @DefaultValue("") @QueryParam("model") String model,
-            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue(".*") @QueryParam("serialNumberPattern") String snPattern,
+            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
+            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
+            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -127,7 +137,7 @@ public class DeviceAPI {
             rdfTypes,
             year,
             brandPattern,
-            model,
+            modelPattern,
             snPattern,
             currentUser,
             page,
@@ -219,5 +229,47 @@ public class DeviceAPI {
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         
+    }
+    
+    private ErrorResponse check(DeviceDTO deviceDTO, boolean update) throws Exception {
+
+        if (!update) {
+            // check if germplasm URI already exists
+            if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
+                // Return error response 409 - CONFLICT if URI already exists
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "device URI already exists",
+                        "Duplicated URI: " + deviceDTO.getUri()
+                );
+            }
+
+            AskBuilder askQuery = new AskBuilder()
+                .from(sparql.getDefaultGraph(DeviceModel.class).toString())
+                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(deviceDTO.getType()))
+                .addWhere("?uri", RDFS.label, deviceDTO.getName());//boolean exists = germplasmDAO.labelExistsCaseInsensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
+            boolean exists = sparql.executeAskQuery(askQuery);
+            if (exists) {
+                // Return error response 409 - CONFLICT if label already exists
+                return new ErrorResponse(
+                        Response.Status.PRECONDITION_FAILED,
+                        "Device label already exists for this type",
+                        "Duplicated label: " + deviceDTO.getName()
+                );
+            }
+        }
+
+        //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
+        if (deviceDTO.getPersonInCharge()!= null) {
+            if (!sparql.uriExists(UserModel.class,deviceDTO.getPersonInCharge())) {
+                return new ErrorResponse(
+                        Response.Status.BAD_REQUEST,
+                        "The given person doesn't exist in the database",
+                        "unknown person : " + deviceDTO.getPersonInCharge().toString()
+                );
+            }
+        }
+
+        return null;
     }
 }

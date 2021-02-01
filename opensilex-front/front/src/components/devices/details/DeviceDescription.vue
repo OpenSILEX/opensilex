@@ -9,11 +9,13 @@
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               label="DeviceDescription.update"
+              @click="update"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
               label="DeviceDescription.delete"
               :small="true"
+              @click="deleteDevice(device.uri)"
             ></opensilex-DeleteButton>
 
           </template>
@@ -53,7 +55,7 @@
       <b-col sm="5">
         <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
             <template v-slot:body>
-              <!-- <opensilex-StringView :value="device.relations"></opensilex-StringView> -->
+              <opensilex-StringView :value="device.relations"></opensilex-StringView>
             </template>
         </opensilex-Card>
       </b-col>
@@ -61,6 +63,13 @@
       </b-row>
     </opensilex-PageContent>
 
+    <opensilex-ModalForm
+      ref="deviceForm"
+      component="opensilex-DeviceForm"
+      editTitle="udpate"
+      icon="ik#ik-user"
+      modalSize="lg"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -88,6 +97,7 @@ export default class DeviceDescription extends Vue {
   uri: string = null;
 
   @Ref("modalRef") readonly modalRef!: any;
+  @Ref("deviceForm") readonly deviceForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -128,6 +138,31 @@ export default class DeviceDescription extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  deleteDevice(uri: string) {
+    this.service
+      .deleteDevice(uri)
+      .then(() => {
+        this.$router.go(-1);
+        this.$emit("onDelete", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  update() {
+    let device = {
+        uri: this.device.uri,
+        name: this.device.name,
+        rdf_type: this.device.rdf_type,
+        brand: this.device.brand,
+        constructor_model: this.device.constructor_model,
+        serial_number: this.device.serial_number,
+        person_in_charge: this.device.person_in_charge,
+        start_up: this.device.start_up,
+    }
+    this.deviceForm.showEditForm(device);
+  }
+
   
 }
 </script>
@@ -151,6 +186,7 @@ en:
     personInCharge: Person in charge
     localisation: Localisation
     variables: Variables
+    update: Update device
 
 fr:
   DeviceDescription:
@@ -167,6 +203,6 @@ fr:
     personInCharge: Personne en charge
     localisation: Localisation
     variables: Variables
-
+    update: Update device
 
 </i18n>

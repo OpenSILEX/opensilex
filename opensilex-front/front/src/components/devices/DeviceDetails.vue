@@ -17,11 +17,13 @@
         <b-nav-item
           class="ml-3"
           :active="isAnnotationTab()"
+          :to="{ path: '/device/annotations/' + encodeURIComponent(uri) }"
         >{{ $t("DeviceDetails.annotation") }}
         </b-nav-item>
 
         <b-nav-item
           :active="isDocumentTab()"
+          :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
         >{{ $t('DeviceDetails.documents') }}</b-nav-item> 
 
         <opensilex-Button
@@ -43,17 +45,23 @@
 
     <opensilex-PageContent>
         <template v-slot>
-            <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
-            <!-- <opensilex-DocumentTabList v-else-if="isDocumentTab()" :uri="uri"></opensilex-DocumentTabList> -->
-            <opensilex-AnnotationList
-                    v-else-if="isAnnotationTab()"
-                    ref="annotationList"
-                    :target="uri"
-                    :displayTargetColumn="false"
-                    :enableActions="true"
-                    :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-                    :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
-                    @onEdit="annotationModalForm.showEditForm($event)"
+          <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+          <opensilex-DocumentTabList
+            v-else-if="isDocumentTab()"
+            :uri="uri"
+            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+          ></opensilex-DocumentTabList>
+
+          <opensilex-AnnotationList
+            v-else-if="isAnnotationTab()"
+            ref="annotationList"
+            :target="uri"
+            :displayTargetColumn="false"
+            :enableActions="true"
+            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+            @onEdit="annotationModalForm.showEditForm($event)"
             ></opensilex-AnnotationList>
         </template>
     </opensilex-PageContent>
@@ -101,6 +109,7 @@
               removal: null,
               relations: null
             };
+            
         created() {
           this.service = this.$opensilex.getService("opensilex.DevicesService");
           this.uri = decodeURIComponent(this.$route.params.uri);

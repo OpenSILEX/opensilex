@@ -32,11 +32,22 @@
         ></opensilex-DeviceList>
       </template>
     </opensilex-PageContent>
+
+    <opensilex-ModalForm
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      editTitle="Device.update"
+      createTitle="Device.add"
+      icon="ik#ik-user"
+      modalSize="lg"
+      @onCreate="refresh()"
+      @onUpdate="refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {
   OpenSilexResponse
@@ -44,6 +55,7 @@ import HttpResponse, {
 
 import { 
   DevicesService, 
+  DocumentsService,
   DeviceDTO
   } from "opensilex-core/index"
 import VueRouter from "vue-router";
@@ -67,10 +79,18 @@ export default class Device extends Vue {
   @Ref("deviceForm") readonly deviceForm!: any;
   @Ref("deviceDetails") readonly deviceDetails!: any;
   @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
+  @Ref("documentForm") readonly documentForm!: any;
+
+  @Prop()
+    uri;
 
   created() {
     console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
+
+    if (this.uri == null){
+        this.uri = decodeURIComponent(this.$route.params.uri);
+    }
   }
 
   goToDeviceCreate(){    
@@ -88,6 +108,31 @@ export default class Device extends Vue {
           this.deviceList.refresh();
         })
     );
+  }
+
+  createDocument() {
+    this.documentForm.showCreateForm();
+  }
+
+  initForm() {
+    if(this.uri){
+      return {
+      description: {
+        uri: undefined,
+        identifier: undefined,
+        rdf_type: undefined,
+        title: undefined,
+        date: undefined,
+        description: undefined,
+        targets: decodeURIComponent(this.uri),
+        authors: undefined,
+        language: undefined,
+        deprecated: undefined,
+        keywords: undefined
+      },
+      file: undefined
+      }
+    }
   }
 }
 </script>

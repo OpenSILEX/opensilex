@@ -202,7 +202,7 @@ routes:
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
   - path: /device/documents/:uri
-    component: opensilex-ProjectDetails
+    component: opensilex-DeviceDetails
   - path: /device/annotations/:uri
     component: opensilex-DeviceDetails
 

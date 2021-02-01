@@ -287,7 +287,7 @@ public class DataFilesAPI {
                     .build();
             
         } catch (NoSQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown file URI ", uri);            
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
         } 
     }
     
@@ -374,10 +374,9 @@ public class DataFilesAPI {
             return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
                     .build();
-            
+
         } catch (NoSQLInvalidURIException e) {
-            throw new NotFoundURIException("Invalid or unknown URI ", uri);
-            
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         } catch (java.io.IOException e) {
             return Response.status(Response.Status.BAD_REQUEST.getStatusCode()).build();
         }

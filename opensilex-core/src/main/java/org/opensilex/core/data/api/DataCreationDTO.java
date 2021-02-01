@@ -34,7 +34,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 @JsonPropertyOrder({"uri", "date","timezone", "scientific_objects", "variable", "value", "confidence", "provenance",  "metadata"})
 public class DataCreationDTO {
     
-    public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/a"};
+    public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/A"};
     public static final String[] NAN_VALUES = {"nan", "NaN", "NAN"};
     
     @ValidURI

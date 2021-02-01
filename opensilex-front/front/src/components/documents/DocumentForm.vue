@@ -194,7 +194,7 @@ export default class DocumentForm extends Vue {
 
   create(form) {
     return this.$opensilex
-     .uploadFileToService("/core/documents", this.form, false)
+     .uploadFileToService("/core/documents", this.form, null, false)
      .then((http: OpenSilexResponse<any>) => {
         let uri = http.result;
         console.debug("document created", uri);
@@ -215,7 +215,7 @@ export default class DocumentForm extends Vue {
 
   update(form) {
     return this.$opensilex
-     .uploadFileToService("/core/documents", this.form, true)
+     .uploadFileToService("/core/documents", this.form, null, true)
      .then((http: OpenSilexResponse<any>) => {
         let uri = http.result;
         console.debug("Document updated", uri);

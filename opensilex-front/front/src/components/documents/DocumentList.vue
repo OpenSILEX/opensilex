@@ -327,7 +327,7 @@ export default class DocumentList extends Vue {
 
   updateForDeprecated(form) {
     return this.$opensilex
-     .uploadFileToService("/core/documents", form, true)
+     .uploadFileToService("/core/documents", form, null, true)
      .then((http: OpenSilexResponse<any>) => {
         let uri = http.result;
         this.$emit("onUpdate", form);

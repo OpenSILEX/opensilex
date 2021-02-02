@@ -225,7 +225,7 @@ public class GermplasmAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-by-uris")
+    @Path("by_uris")
     @ApiOperation("Get a list of germplasms by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)

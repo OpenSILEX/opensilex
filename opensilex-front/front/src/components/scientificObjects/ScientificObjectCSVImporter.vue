@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 
@@ -76,6 +76,11 @@ export default class ScientificObjectCSVImporter extends Vue {
   @Ref("importForm") readonly importForm!: any;
   @Ref("templateGenerator") readonly templateGenerator!: any;
   @Ref("resultModal") readonly resultModal!: any;
+
+  @Prop({
+      default: undefined
+  })
+  experimentURI;
 
   get user() {
     return this.$store.state.user;
@@ -95,7 +100,9 @@ export default class ScientificObjectCSVImporter extends Vue {
     return this.$opensilex.uploadFileToService(
       "/core/scientific_objects/validate",
       {
-        description: {},
+        description: {
+            context: this.experimentURI
+        },
         file: csvFile,
       }
     );
@@ -105,7 +112,9 @@ export default class ScientificObjectCSVImporter extends Vue {
     return this.$opensilex.uploadFileToService(
       "/core/scientific_objects/import",
       {
-        description: {},
+        description: {
+            context: this.experimentURI
+        },
         file: csvFile,
       }
     );

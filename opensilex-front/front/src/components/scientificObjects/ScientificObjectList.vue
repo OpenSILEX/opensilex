@@ -10,16 +10,16 @@
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
-      ></opensilex-CreateButton
-      >&nbsp;
-      <opensilex-CreateButton
-        @click="importForm.show()"
-        label="OntologyCsvImporter.import"
       ></opensilex-CreateButton>
       <opensilex-ScientificObjectForm
         ref="soForm"
         @refresh="refresh"
       ></opensilex-ScientificObjectForm>
+      &nbsp;
+      <opensilex-CreateButton
+        @click="importForm.show()"
+        label="OntologyCsvImporter.import"
+      ></opensilex-CreateButton>
       <opensilex-ScientificObjectCSVImporter
         ref="importForm"
         @csvImported="refresh()"

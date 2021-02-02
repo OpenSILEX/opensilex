@@ -857,9 +857,11 @@ public class ScientificObjectAPI {
 
             customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
                 try {
-                    String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                    if (!factorLevelURIs.contains(factorLevelURI)) {
-                        csvErrors.addInvalidValueError(cell);
+                    if (!cell.getValue().isEmpty()) {
+                        String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                        if (!factorLevelURIs.contains(factorLevelURI)) {
+                            csvErrors.addInvalidValueError(cell);
+                        }
                     }
                 } catch (URISyntaxException ex) {
                     csvErrors.addInvalidURIError(cell);
@@ -884,9 +886,11 @@ public class ScientificObjectAPI {
 
             customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
                 try {
-                    String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                    if (!germplasmStringURIs.contains(germplasmURI)) {
-                        csvErrors.addInvalidValueError(cell);
+                    if (!cell.getValue().isEmpty()) {
+                        String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                        if (!germplasmStringURIs.contains(germplasmURI)) {
+                            csvErrors.addInvalidValueError(cell);
+                        }
                     }
                 } catch (URISyntaxException ex) {
                     csvErrors.addInvalidURIError(cell);
@@ -901,9 +905,11 @@ public class ScientificObjectAPI {
 
             customValidators.put(Oeso.hasFacility.toString(), (cell, csvErrors) -> {
                 try {
-                    String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                    if (!facilityStringURIs.contains(facilityURI)) {
-                        csvErrors.addInvalidValueError(cell);
+                    if (!cell.getValue().isEmpty()) {
+                        String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
+                        if (!facilityStringURIs.contains(facilityURI)) {
+                            csvErrors.addInvalidValueError(cell);
+                        }
                     }
                 } catch (URISyntaxException ex) {
                     csvErrors.addInvalidURIError(cell);

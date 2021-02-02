@@ -82,38 +82,14 @@
             ></opensilex-CreateButton
             >&nbsp;
             <opensilex-CreateButton
-              @click="csvImporter.show()"
+              @click="importForm.show()"
               label="OntologyCsvImporter.import"
             ></opensilex-CreateButton>
-            <opensilex-OntologyCsvImporter
-              v-if="
-                user.hasCredential(
-                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-                )
-              "
-              ref="csvImporter"
-              :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-              :validateCSV="validateCSV"
-              :uploadCSV="uploadCSV"
-              :customColumns="customColumns"
-              @csvImported="refresh"
-            >
-              <template v-slot:generator>
-                <b-col cols="2">
-                  <opensilex-Button
-                    variant="secondary"
-                    class="mr-2"
-                    :small="false"
-                    @click="templateGenerator.show()"
-                    icon
-                    label="DataView.buttons.generate-template"
-                  ></opensilex-Button>
-                  <opensilex-ScientificObjectCSVTemplateGenerator
-                    ref="templateGenerator"
-                  ></opensilex-ScientificObjectCSVTemplateGenerator>
-                </b-col>
-              </template>
-            </opensilex-OntologyCsvImporter>
+            <opensilex-ScientificObjectCSVImporter
+              ref="importForm"
+              :experimentURI="uri"
+              @csvImported="refresh()"
+            ></opensilex-ScientificObjectCSVImporter>
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -191,8 +167,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
-  @Ref("csvImporter") readonly csvImporter!: any;
-  @Ref("templateGenerator") readonly templateGenerator!: any;
+  @Ref("importForm") readonly importForm!: any;
 
   get customColumns() {
     return [
@@ -392,35 +367,6 @@ export default class ExperimentScientificObjects extends Vue {
         }
       });
   }
-
-  validateCSV(objectType, csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-validate",
-      {
-        description: {
-          context: this.uri,
-          type: objectType,
-        },
-        file: csvFile,
-      }
-    );
-  }
-
-  uploadCSV(objectType, validationToken, csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific-object/csv-import",
-      {
-        description: {
-          context: this.uri,
-          type: objectType,
-          validationToken: validationToken,
-        },
-        file: csvFile,
-      }
-    );
-  }
-
-  exportCSV(objectType) {}
 }
 </script>
 

@@ -16,12 +16,9 @@ import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 import org.opensilex.security.group.api.GroupDTO;
 import org.opensilex.security.group.api.GroupUserProfileDTO;
 
-/**
- * DTO representing JSON for posting germplasm
- * @author Alice Boizet
- */
+
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "description", "userProfiles", "organisation"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "description", "user_profiles", "organisation"})
 
 public class InfrastructureTeamDTO extends GroupDTO {
 
@@ -32,6 +29,8 @@ public class InfrastructureTeamDTO extends GroupDTO {
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
     
+    
+    @JsonProperty("user_profiles")
     protected List<GroupUserProfileDTO> userProfiles;
     
     @JsonProperty("organisation")

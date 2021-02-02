@@ -1,6 +1,8 @@
 <template>
   <div class="card"> 
     <b-modal ref="colModal" :title="$t('DeviceTable.addColumn')" size="sm" hide-footer>
+      <b-form-checkbox id="removalColSw" v-model="displayRemovalCol" switch>{{$t('DeviceTable.removal')}}</b-form-checkbox>
+      <b-form-checkbox id="personColSw" v-model="displayPersonCol" switch>{{$t('DeviceTable.person_in_charge')}}</b-form-checkbox>
       <b-form-input v-model="colName" placeholder="Enter column name"></b-form-input>
       <b-button class="mt-3" variant="primary" block @click="addColumn">{{$t('DeviceTable.addColumn')}}</b-button>
     </b-modal>
@@ -28,7 +30,8 @@
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('DeviceTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('DeviceTable.addRow')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>  
+      <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>
+      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark">{{$t('DeviceTable.addVarColumn')}}</b-button>  
       <b-form-select v-if="this.checkedLines>0"
         id="filter"
         v-model="filter"
@@ -95,6 +98,11 @@ export default class DeviceTable extends Vue {
   onlyChecking: boolean;
   colName: string;
   suppColumnsNames: Array<string>;
+
+  displayRemovalCol: boolean = false;
+  displayPersonCol: boolean = false;
+  nbVariableCol: number = 0;
+  
 
   // Progress Modal
   errorNumber: number = 0;
@@ -173,6 +181,9 @@ export default class DeviceTable extends Vue {
     console.log(this.$attrs.deviceType);
     this.suppColumnsNames = [];
     this.colName = null;
+    this.displayRemovalCol = false;
+    this.displayPersonCol = false;
+    this.nbVariableCol = 0;
 
     this.buildFinalTypeList();
     this.getTypeProperty();
@@ -190,13 +201,19 @@ export default class DeviceTable extends Vue {
     let brandCol = {title:this.$t('DeviceTable.brand'), field:"brand", visible:true, editor:true};
     let constructor_modelCol = {title:this.$t('DeviceTable.constructor_model'), field:"constructor_model", visible:true, editor:true};
     let serial_numberCol = {title:this.$t('DeviceTable.serial_number'), field:"serial_number", visible:true, editor:true}
-    let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:true, editor:true};
+    let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:this.displayPersonCol, editor:true};
     let start_upCol =  {title:this.$t('DeviceTable.start_up'), field:"start_up", visible:true, editor:true};
-    let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:true, editor:true};
+    let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:this.displayRemovalCol, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, checkingStatusCol, insertionStatusCol]
+    if(this.$attrs.deviceType.endsWith('SensingDevice')){
+      this.nbVariableCol = 1;
+      let variableCol = {title:this.$t('DeviceTable.variable')+'_1', field:"variable_1", visible:true, editor:true};
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, variableCol, checkingStatusCol, insertionStatusCol]
+    }else{
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, checkingStatusCol, insertionStatusCol]
+    }
 
     for (let i = 0; i < this.typeProperty.length; i++){
       this.tableColumns.push({title:this.typeProperty[i].label, field: this.typeProperty[i].value, visible:true, editor:true});
@@ -234,6 +251,12 @@ export default class DeviceTable extends Vue {
     this.disableCheck = false;
     this.disableInsert = false;
     
+  }
+
+  addVariableCol(){
+    this.nbVariableCol = this.nbVariableCol + 1;
+    this.tabulator.addColumn({title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, field:"variable_" + this.nbVariableCol, visible:true, editor:true},false,
+        "variable_" + (this.nbVariableCol-1));
   }
 
   getTypeProperty(){
@@ -289,11 +312,27 @@ export default class DeviceTable extends Vue {
 
   addColumn() {
     this.colModal.hide();
-    this.tabulator.addColumn(
-      { title: this.colName, field: this.colName, editor: true },
-      false,
-      "removal"
-    );
+    if(this.colName != null && this.colName !=  ""){
+      this.tabulator.addColumn(
+        { title: this.colName, field: this.colName, editor: true },
+        false,
+        "removal"
+      );
+    }
+    if(this.displayRemovalCol){
+      this.tabulator.showColumn("removal");
+      this.displayRemovalCol = true;
+    }else{
+      this.tabulator.hideColumn("removal");
+      this.displayRemovalCol = false;
+    }
+    if(this.displayPersonCol){
+      this.tabulator.showColumn("person_in_charge");
+      this.displayPersonCol = true;
+    }else{
+      this.tabulator.hideColumn("person_in_charge");
+      this.displayPersonCol = false;
+    }
     this.suppColumnsNames.push(this.colName);
     this.jsonForTemplate[0][this.colName] = null;
     this.$attrs.downloadCsv;
@@ -359,7 +398,8 @@ export default class DeviceTable extends Vue {
         serial_number: null,
         person_in_charge: null,
         start_up: null,
-        removal: null
+        removal: null,
+        relations: []
       };
 
       if (dataToInsert[idx].rdf_type != null && dataToInsert[idx].rdf_type != ""){
@@ -392,6 +432,7 @@ export default class DeviceTable extends Vue {
         form.serial_number = dataToInsert[idx].serial_number;
       }
       if (
+        this.displayPersonCol &&
         dataToInsert[idx].person_in_charge != null &&
         dataToInsert[idx].person_in_charge != ""
       ) {
@@ -405,10 +446,25 @@ export default class DeviceTable extends Vue {
       }
 
       if (
+        this.displayRemovalCol &&
         dataToInsert[idx].removal != null &&
         dataToInsert[idx].removal != ""
       ) {
         form.removal = dataToInsert[idx].removal;
+      }
+
+      if (
+        this.$attrs.deviceType.endsWith('SensingDevice') &&
+        this.nbVariableCol > 0
+      ){
+        for(let i = 1; i <= this.nbVariableCol; i++ ){
+          if(
+            dataToInsert[idx]['variable_'+i] != null &&
+            dataToInsert[idx]['variable_'+i] != ""
+          ) {
+              form.relations.push({"property":"variable.measures","value":dataToInsert[idx]['variable_'+i]})
+          }
+        }
       }
 
       if (
@@ -615,6 +671,7 @@ en:
     person_in_charge: Person in charge
     start_up: Start-up date
     removal: Removal date
+    variable: Variable
     checkingStatus: Checking status
     insertionStatus: Insertion Status
     downloadTemplate : Download template
@@ -626,6 +683,7 @@ en:
     close: Close
     addRow: Add Row
     addColumn: Add column
+    addVarColumn: Add variable column
     help: Help
     infoMessageDevReady: device ready to be inserted
     infoMessageErrors: errors
@@ -649,7 +707,8 @@ fr:
     serial_number: Numéro de série
     person_in_charge: Personne en charge
     start_up: Date de mise en service
-    removal: date de mise hors service
+    removal: Date de mise hors service
+    variable: Variable
     checkingStatus: Statut
     insertionStatus: Statut
     downloadTemplate : Télécharger un gabarit
@@ -660,6 +719,7 @@ fr:
     emptyMessage: Le tableau est vide
     close : Fermer
     addColumn: Ajouter colonne
+    addVarColumn: Ajouter colonne variable
     infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide

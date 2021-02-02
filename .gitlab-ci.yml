@@ -250,6 +250,7 @@ update:nightly:builds:branch:
     - git config --global user.email "anonymous@opensilex.org"
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
+    - rm -fr ".git/rebase-apply"
     - git pull --rebase origin master
     - git push -f origin nightly-builds
   rules:

@@ -178,13 +178,26 @@
 
         options: any[] = [];
 
-        created() {
+        setOptions(){
+            this.options = [];
             for (let [key, value] of this.skosRelationsMap) {
                 this.$set(this.options, this.options.length, {
                     id: key,
                     label: this.$t(value)
                 });
             }
+        }
+
+        created() {
+           this.setOptions();
+        }
+
+        private langUnwatcher;
+        mounted() {
+            this.langUnwatcher = this.$store.watch(
+                () => this.$store.getters.language,
+                () => {this.setOptions();}
+            );
         }
 
         resetForm() {

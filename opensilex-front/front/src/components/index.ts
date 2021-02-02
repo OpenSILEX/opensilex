@@ -80,10 +80,6 @@ import InfrastructureFacilityPropertyView from './infrastructures/Infrastructure
 components["opensilex-InfrastructureFacilityPropertyView"] = InfrastructureFacilityPropertyView;
 import InfrastructureFacilityPropertySelector from './infrastructures/InfrastructureFacilityPropertySelector.vue';
 components["opensilex-InfrastructureFacilityPropertySelector"] = InfrastructureFacilityPropertySelector;
-import InfrastructureDetailView from './infrastructures/InfrastructureDetailView.vue';
-components["opensilex-InfrastructureDetailView"] = InfrastructureDetailView;
-import InfrastructureDetailScientificObjects from './infrastructures/InfrastructureDetailScientificObjects.vue';
-components["opensilex-InfrastructureDetailScientificObjects"] = InfrastructureDetailScientificObjects;
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';
@@ -396,6 +392,10 @@ import ScientificObjectParentPropertySelector from './scientificObjects/Scientif
 components["opensilex-ScientificObjectParentPropertySelector"] = ScientificObjectParentPropertySelector;
 import ScientificObjectImportHelp from './scientificObjects/ScientificObjectImportHelp.vue';
 components["opensilex-ScientificObjectImportHelp"] = ScientificObjectImportHelp;
+import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSVImporter.vue';
+components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
+import ScientificObjectCSVTemplateGenerator from './scientificObjects/ScientificObjectCSVTemplateGenerator.vue';
+components["opensilex-ScientificObjectCSVTemplateGenerator"] = ScientificObjectCSVTemplateGenerator;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

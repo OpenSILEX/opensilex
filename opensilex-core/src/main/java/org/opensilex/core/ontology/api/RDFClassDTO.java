@@ -6,12 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
-import org.opensilex.core.ontology.dal.PropertyModel;
 
 /**
  *

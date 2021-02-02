@@ -20,20 +20,10 @@
         ref="soForm"
         @refresh="refresh"
       ></opensilex-ScientificObjectForm>
-      <opensilex-OntologyCsvImporter
+      <opensilex-ScientificObjectCSVImporter
         ref="importForm"
-        
-        :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-        :validateCSV="validateCSV"
-        :uploadCSV="uploadCSV"
-      >
-        <template v-slot:icon>
-          <opensilex-Icon icon="ik#ik-target" class="icon-title" />
-        </template>
-        <template v-slot:help>
-          <opensilex-ScientificObjectImportHelp></opensilex-ScientificObjectImportHelp>
-        </template>
-      </opensilex-OntologyCsvImporter>
+        @csvImported="refresh()"
+      ></opensilex-ScientificObjectCSVImporter>
     </opensilex-PageActions>
 
     <opensilex-SearchFilterField
@@ -122,12 +112,32 @@
               }"
             ></opensilex-UriLink>
           </template>
-          <template v-slot:row-details>
-            <div>Expérimentation:</div>
-            <ul>
-              <li>ZA17</li>
-              <li>XP1</li>
-            </ul>
+          <template v-slot:row-details="{ data }">
+            <div
+              v-if="
+                objectDetails[data.item.uri] &&
+                objectDetails[data.item.uri].length > 0
+              "
+            >
+              <div>{{ $t("ScientificObjectList.experiments") }}:</div>
+              <ul>
+                <li
+                  v-for="(xp, index) in objectDetails[data.item.uri]"
+                  :key="index"
+                >
+                  <opensilex-UriLink
+                    :uri="xp.uri"
+                    :value="xp.name"
+                    :to="{
+                      path: '/experiment/details/' + encodeURIComponent(xp.uri),
+                    }"
+                  ></opensilex-UriLink>
+                </li>
+              </ul>
+            </div>
+            <div v-else>
+              {{ $t("ScientificObjectList.not-used-in-experiments") }}
+            </div>
           </template>
           <template v-slot:cell(actions)="{ data }">
             <b-button-group size="sm">
@@ -144,6 +154,7 @@
               ></opensilex-EditButton>
               <opensilex-DeleteButton
                 label="ExperimentScientificObjects.delete-scientific-object"
+                @click="deleteScientificObject(data.item.uri)"
                 :small="true"
               ></opensilex-DeleteButton>
             </b-button-group>
@@ -161,27 +172,12 @@ import Vue from "vue";
 import VueConstructor from "vue";
 import VueRouter from "vue-router";
 import moment from "moment";
-import copy from "copy-to-clipboard";
-import VueI18n from "vue-i18n";
-import { BDropdown } from "bootstrap-vue";
 import {
-  GermplasmGetAllDTO,
-  ProjectCreationDTO,
-  FactorGetDTO,
-  SpeciesDTO,
   ExperimentGetDTO,
-  ResourceTreeDTO,
-  ExperimentGetListDTO,
-  OntologyService,
   ScientificObjectsService,
   ScientificObjectDetailDTO,
 } from "opensilex-core/index";
-import Oeso from "../../ontologies/Oeso";
-import HttpResponse, {
-  OpenSilexResponse,
-  MetadataDTO,
-  PaginationDTO,
-} from "../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class ScientificObjectList extends Vue {
@@ -192,6 +188,7 @@ export default class ScientificObjectList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("soForm") readonly soForm!: any;
   @Ref("importForm") readonly importForm!: any;
+  @Ref("templateGenerator") readonly templateGenerator!: any;
 
   fields = [
     {
@@ -292,7 +289,16 @@ export default class ScientificObjectList extends Vue {
           (
             http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
           ) => {
-            this.objectDetails[data.item.uri] = http.response.result;
+            let objectExperiments = [];
+            for (let objectDetail of http.response.result) {
+              if (objectDetail.context != null) {
+                objectExperiments.push({
+                  uri: objectDetail.context,
+                  name: objectDetail.contextLabel
+                });
+              }
+            }
+            this.objectDetails[data.item.uri] = objectExperiments;
             data.toggleDetails();
             this.$opensilex.enableLoader();
           }
@@ -327,24 +333,15 @@ export default class ScientificObjectList extends Vue {
     );
   }
 
-  validateCSV(csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific_objects/validate",
-      {
-        description: {},
-        file: csvFile,
-      }
+  deleteScientificObject(uri) {
+    let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
     );
-  }
-
-  uploadCSV(validationToken, csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific_objects/import",
-      {
-        description: {},
-        file: csvFile,
-      }
-    );
+    scientificObjectsService.deleteScientificObject(uri)
+      .then(() => {
+        this.refresh();
+      })
+      .catch(this.$opensilex.errorHandler)
   }
 }
 </script>
@@ -361,6 +358,8 @@ en:
     description: Manage and configure scientific objects
     advancedSearch: Advanced search
     propetiesConfiguration: Properties to display
+    not-used-in-experiments: Scientific object not used in any experiments
+    experiments: Scientific object used in experiment(s)
     column:
       alias: Nom
       experiments: Experiment(s)
@@ -394,6 +393,8 @@ fr:
     description: Gérer et configurer les objets scientifiques
     advancedSearch: Recherche avancée
     propetiesConfiguration: Propriétés à afficher
+    not-used-in-experiments: L'objet scientifique n'est utilisé dans aucune expérimentation
+    experiments: L'objet scientifique n'est utilisé dans le/les expérimentation(s)
     column:
       alias: Name
       experiments: Expérimentation(s)

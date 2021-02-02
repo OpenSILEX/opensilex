@@ -17,6 +17,16 @@ public class CSVValidationDTO {
 
     private CSVValidationModel errors;
 
+    private Integer nbLinesImported = 0;
+        
+    public Integer getNbLinesImported() {
+        return nbLinesImported;
+    }
+
+    public void setNbLinesImported(Integer nbLinesImported) {
+        this.nbLinesImported = nbLinesImported;
+    }
+    
     public String getValidationToken() {
         return validationToken;
     }

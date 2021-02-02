@@ -37,6 +37,10 @@
     </template>
     <div class="container-fluid">
       <ValidationObserver ref="validatorRef">
+        <label
+          >{{ $t("OntologyCsvImporter.import") }}
+          <span class="required">*</span></label
+        >
         <div class="row">
           <div class="col-md-4">
             <b-form-file
@@ -52,6 +56,7 @@
               :browse-text="$t('OntologyCsvImporter.csv-file-select-button')"
             ></b-form-file>
           </div>
+          <slot name="generator"></slot>
         </div>
         <div class="row" style="padding-top: 15px">
           <div class="col-md-12">
@@ -208,10 +213,7 @@ export default class OntologyCsvImporter extends Vue {
       .then((response) => {
         this.checkCSVValidation(response);
         if (this.validationToken) {
-          this.$opensilex.showSuccessToast(
-            this.$i18n.t("OntologyCsvImporter.csv-import-success-message")
-          );
-          this.$emit("csvImported");
+          this.$emit("csvImported", response);
           this.hide();
         }
       })

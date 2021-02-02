@@ -684,6 +684,7 @@ public class ScientificObjectAPI {
                 sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
             }
 
+            csvValidation.setNbLinesImported(errors.getObjects().size());
             csvValidation.setValidationToken("done");
         }
 

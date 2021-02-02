@@ -1,46 +1,144 @@
 <template>
     <b-card v-if="selected && selected.uri">
+      <a
+        class="btn btn-outline-primary mr-2 h-100 back-button"
+        href="/"
+        @click.prevent="$router.go(-1)"
+        v-if="withReturnButton"
+      >
+        <opensilex-Icon class="icon-title" icon="ik#ik-corner-up-left" />
+      </a>
+      <b-tabs
+        content-class="mt-3"
+        :value="tabsIndex"
+        @input="updateTabs"
+        :class="{ withReturnButton: withReturnButton }"
+      >
+        <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
+        <b-tab :title="$t('Documents')"></b-tab>
+        <b-tab :title="$t('Annotation.list-title')"></b-tab>
+        <b-tab :title="$t('Event.list-title')"></b-tab>
+      </b-tabs>
+      <b-card v-if="loadDetails()">
+        <template v-slot:header>
+          <h3 v-if="selected.context">
+            {{ $t("component.experiment.view.title") }}:
+            <opensilex-UriLink
+              :to="{
+                path:
+                  '/experiment/details/' + encodeURIComponent(selected.context),
+              }"
+              :value="selected.contextLabel"
+              :allowCopy="false"
+            ></opensilex-UriLink>
+          </h3>
+          <h3 v-else>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
+        </template>
+        <!-- URI -->
+        <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+        <!-- Name -->
+        <opensilex-StringView
+          label="component.common.name"
+          :value="selected.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          :type="selected.type"
+          :typeLabel="selected.typeLabel"
+        ></opensilex-TypeView>
 
-        <b-tabs content-class="mt-3" :value=tabsIndex @input="updateTabs">
-            <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
-            <b-tab :title="$t('Documents')"></b-tab>
-            <b-tab :title="$t('Annotation.list-title')"></b-tab>
-            <b-tab :title="$t('Event.list-title')"></b-tab>
-        </b-tabs>
-        <!--    <template v-slot:header>-->
-        <!--      <h3>-->
-        <!--        &lt;!&ndash; <opensilex-Icon icon="ik#ik-clipboard" /> &ndash;&gt;-->
-        <!--        {{$t("ScientificObjectDetail.title")}}-->
-        <!--      </h3>-->
-        <!--    </template>-->
-        <div v-if="loadDetails()">
-      <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
-      <!-- Name -->
-      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
-
-      <!-- Type -->
-      <opensilex-GeometryView
-        v-if="selected.geometry"
-        label="component.common.geometry"
-        :value="selected.geometry"
-      ></opensilex-GeometryView>
-
-      <div v-for="(v, index) in typeProperties" v-bind:key="index">
-        <div class="static-field" v-if="!v.definition.isList">
-          <span class="field-view-title">{{v.definition.name}}:</span>
-          <component :is="v.definition.viewComponent" :value="v.property"></component>
+        <div v-for="(v, index) in typeProperties" v-bind:key="index">
+          <div class="static-field" v-if="!v.definition.isList">
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <component
+              :is="v.definition.viewComponent"
+              :value="v.property"
+            ></component>
+          </div>
+          <div
+            class="static-field"
+            v-else-if="v.property && v.property.length > 0"
+          >
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <ul>
+              <br />
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
+                <component
+                  :is="v.definition.viewComponent"
+                  :value="prop"
+                ></component>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="static-field" v-else-if="v.property && v.property.length > 0">
-          <span class="field-view-title">{{v.definition.name}}:</span>
-          <ul>
-            <br />
-            <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-              <component :is="v.definition.viewComponent" :value="prop"></component>
-            </li>
-          </ul>
+
+        <!-- Geometry -->
+        <opensilex-GeometryView
+          v-if="selected.geometry"
+          label="component.common.geometry"
+          :value="selected.geometry"
+        ></opensilex-GeometryView>
+      </b-card>
+
+      <b-card v-for="(value, index) in objectByContext" :key="index">
+        <template v-slot:header>
+          <h3 v-if="value.context">
+            {{ $t("component.experiment.view.title") }}:
+            <opensilex-UriLink
+              :to="{
+                path:
+                  '/experiment/details/' + encodeURIComponent(value.context),
+              }"
+              :value="value.contextLabel"
+              :allowCopy="false"
+            ></opensilex-UriLink>
+          </h3>
+        </template>
+        <!-- Name -->
+        <opensilex-StringView
+          v-if="selected.name != value.name"
+          label="component.common.name"
+          :value="value.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          v-if="selected.type != value.type"
+          :type="value.type"
+          :typeLabel="value.typeLabel"
+        ></opensilex-TypeView>
+
+        <div
+          v-for="(v, index) in getCustomTypeProperties(value)"
+          v-bind:key="index"
+        >
+          <div class="static-field" v-if="!v.definition.isList">
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <component
+              :is="v.definition.viewComponent"
+              :value="v.property"
+            ></component>
+          </div>
+          <div
+            class="static-field"
+            v-else-if="v.property && v.property.length > 0"
+          >
+            <span class="field-view-title">{{ v.definition.name }}:</span>
+            <ul>
+              <br />
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
+                <component
+                  :is="v.definition.viewComponent"
+                  :value="prop"
+                ></component>
+              </li>
+            </ul>
+          </div>
         </div>
             </div>
      
@@ -79,24 +177,25 @@ export default class ScientificObjectDetail extends Vue {
   selected;
 
   @Prop({
-    default: () => []
+    default: () => [],
   })
   objectByContext;
+
+  @Prop({
+    default: false,
+  })
+  withReturnButton;
 
   typeProperties = [];
   valueByProperties = {};
   classModel: any = {};
 
   static DETAILS_TAB = "Details";
-  static DOCUMENTS_TAB = "Documents";
   static ANNOTATIONS_TAB = "Annotations";
-  static EVENTS_TAB = "Events";
 
   static tabsValues = [
     ScientificObjectDetail.DETAILS_TAB,
-    ScientificObjectDetail.DOCUMENTS_TAB,
     ScientificObjectDetail.ANNOTATIONS_TAB,
-    ScientificObjectDetail.EVENTS_TAB
   ];
 
   tabsIndex: number = 0;
@@ -131,7 +230,7 @@ export default class ScientificObjectDetail extends Vue {
         this.selected.type,
         this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
       )
-      .then(http => {
+      .then((http) => {
         this.classModel = http.response.result;
         let valueByProperties = this.buildValueByProperties(
           this.selected.relations
@@ -198,12 +297,12 @@ export default class ScientificObjectDetail extends Vue {
         ) {
           typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]]
+            property: [valueByProperties[property.property]],
           });
         } else {
           typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property]
+            property: valueByProperties[property.property],
           });
         }
       }
@@ -219,7 +318,7 @@ export default class ScientificObjectDetail extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property]
+          valueByProperties[relation.property],
         ];
       }
 
@@ -262,7 +361,7 @@ export default class ScientificObjectDetail extends Vue {
         if (a.length != b.length) {
           return false;
         } else {
-          let intersect = a.filter(x => {
+          let intersect = a.filter((x) => {
             let hasMatch = false;
             for (let y of b) {
               if (this.checkRelationValueEquality(x, y)) {
@@ -316,6 +415,13 @@ export default class ScientificObjectDetail extends Vue {
 </script>
 
 <style scoped lang="scss">
+.withReturnButton {
+  margin-left: 65px;
+}
+
+.back-button {
+  float: left;
+}
 </style>
 
 

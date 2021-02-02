@@ -81,18 +81,39 @@
               label="ExperimentScientificObjects.create-scientific-object"
             ></opensilex-CreateButton
             >&nbsp;
+            <opensilex-CreateButton
+              @click="csvImporter.show()"
+              label="OntologyCsvImporter.import"
+            ></opensilex-CreateButton>
             <opensilex-OntologyCsvImporter
               v-if="
                 user.hasCredential(
                   credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
                 )
               "
+              ref="csvImporter"
               :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
               :validateCSV="validateCSV"
               :uploadCSV="uploadCSV"
               :customColumns="customColumns"
               @csvImported="refresh"
-            ></opensilex-OntologyCsvImporter>
+            >
+              <template v-slot:generator>
+                <b-col cols="2">
+                  <opensilex-Button
+                    variant="secondary"
+                    class="mr-2"
+                    :small="false"
+                    @click="templateGenerator.show()"
+                    icon
+                    label="DataView.buttons.generate-template"
+                  ></opensilex-Button>
+                  <opensilex-ScientificObjectCSVTemplateGenerator
+                    ref="templateGenerator"
+                  ></opensilex-ScientificObjectCSVTemplateGenerator>
+                </b-col>
+              </template>
+            </opensilex-OntologyCsvImporter>
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -171,6 +192,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
   @Ref("csvImporter") readonly csvImporter!: any;
+  @Ref("templateGenerator") readonly templateGenerator!: any;
 
   get customColumns() {
     return [

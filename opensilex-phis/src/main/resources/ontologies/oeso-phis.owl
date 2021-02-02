@@ -435,17 +435,6 @@
     </owl:DatatypeProperty>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasReplication -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasReplication">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Plot"/>
-        <rdfs:label xml:lang="en">replication</rdfs:label>
-        <rdfs:label xml:lang="fr">répétition</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasSerialNumber -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber">
@@ -1124,13 +1113,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Leaf">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasReplication"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000036</dc:source>
         <rdfs:comment xml:lang="en">A phyllome vascular system (PO:0025206) that includes the totality of the portions of  vascular tissue in their specific arrangement in a vascular leaf  (PO:0009025). [database_cross_reference:  POC:Ramona_Walls]</rdfs:comment>
         <rdfs:label xml:lang="fr">feuille</rdfs:label>

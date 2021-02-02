@@ -1,10 +1,10 @@
 <template>
   <div>
-    <p @click="visible = !visible" style="cursor: pointer;" >
-      <strong>{{ $t("DataHelp.exceptedFormat") }} </strong>
+    <p @click="visible = !visible" style="cursor: pointer">
+      <strong>{{ $t("ScientificObjectImportHelp.exceptedFormat") }} </strong>
       <opensilex-Icon v-if="!visible" icon="fa#eye" class="text-primary" />
-      <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="text-primary"/>
-     </p>
+      <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="text-primary" />
+    </p>
     <b-collapse id="collapse-4" v-model="visible" class="mt-2">
       <b-table-simple responsive>
         <b-thead>
@@ -25,68 +25,24 @@
         <b-tbody>
           <b-tr>
             <b-th>2</b-th>
-            <b-td>{{ $t("DataHelp.objectId-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.type-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.name-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.hasCreationDate-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.hasDestructionDate-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.hasFacility-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.isPartOf-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.comment-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.geometry-help") }}</b-td>
-            <b-td>{{ $t("DataHelp.properties-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.uri-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.type-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.name-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.hasCreationDate-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.hasDestructionDate-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.hasFacility-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.isPartOf-help") }}</b-td>
+            <b-td>{{ $t("DataScientificObjectImportHelpHelp.comment-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.geometry-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.properties-help") }}</b-td>
           </b-tr>
-          <!-- <b-tr>
-            <b-th>3</b-th>
-            <b-td
-              >{{ $t("DataHelp.column-type-help")
-              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
-              ><br /><strong>{{ $t("DataHelp.required") }}</strong></b-td
-            >
-            <b-td>
-              {{ $t("DataHelp.column-type-help") }}
-              <strong>
-                {{ this.getDataTypeLabel("xsd:date") }}<br />{{
-                  $t("DataHelp.required")
-                }}</strong
-              ></b-td
-            >
-            <b-td
-              >{{ $t("DataHelp.column-type-help") }}
-              <strong>
-                {{
-                  this.getDataTypeLabel("xsd:string") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:integer") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:boolean") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:date")
-                }}</strong
-              ></b-td
-            >
-            <b-td
-              >{{ $t("DataHelp.column-type-help") }}
-              <strong>
-                {{
-                  this.getDataTypeLabel("xsd:string") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:integer") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:boolean") +
-                  ", " +
-                  this.getDataTypeLabel("xsd:date")
-                }}</strong
-              ></b-td
-            >
-          </b-tr> -->
           <b-tr class="alert alert-info">
             <b-th>3</b-th>
             <b-td
               colspan="10"
               v-html="
-                $t('DataHelp.text-help', {
-                  decimalSeparator: '.'
+                $t('ScientificObjectImportHelp.text-help', {
+                  decimalSeparator: '.',
                 })
               "
             >
@@ -187,7 +143,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 
 <i18n>
 en :
-  DataHelp:
+  ScientificObjectImportHelp:
     exceptedFormat: Expected format
     title: Generate Data template
     required: "Required : yes"
@@ -197,13 +153,20 @@ en :
     csv-decimal-separator: Decimal separator for numeric values must be 
     alias: Scientific object name
     type-help: "URI of the scientific object type"
+    hasCreationDate-help: "Creation date"
+    hasDestructionDate-help: "Destruction date"
+    hasFacility-help: "Initial facility"
+    isPartOf-help: "Parent URI or name"
+    comment-help: "Description"
+    geometry-help: "Geospatial coordinates (WKT format)"
+    properties-help: "Custom properties for scientific object type..."
     first-variable : "First Variable"
     other-variables : "Other variables, 1 per column...."
     column-type-help: "Column data type: "
     variable-data-help: Value of the variable (real number, text ou date)
     columns: CSV Files columns 
     file-rules: CSV editing rules
-    objectId-help: Scientific object URI (autogenerated if empty)
+    uri-help: Scientific object URI (autogenerated if empty)
     name-help : Scientific object name
     variables-help : Other variables names
     text-help:  "Your can insert your data from this row. <br /> \n
@@ -218,7 +181,7 @@ en :
             <br /> \n
             <strong>Blank and unknown column identifier values will be ignored.<br>"
 fr :
-  DataHelp:
+  ScientificObjectImportHelp:
     exceptedFormat: Format attendu
     title: Générer un gabarit de données
     required: "Requis : oui"
@@ -230,11 +193,18 @@ fr :
     first-variable : "1ère variable"
     other-variables : "Autres variables (1 par colonne) ..."
     type-help: "URI du type d'objet scientifique"
+    hasCreationDate-help: "Date de création"
+    hasDestructionDate-help: "Date de destruction"
+    hasFacility-help: "Installation technique initiale"
+    isPartOf-help: "URI ou nom du parent"
+    comment-help: "Description"
+    geometry-help: "Coordonnées géospatiales (Format WKT)"
+    properties-help: "Propriétés specifiques du type d'objet scientifique..."
     column-type-help :  "Type de données colonne : "
     variable-data-help: Variable value (Real number, text or Date)
     columns: Colonnes du fichier CSV
     file-rules: Règles d'édition du CSV
-    objectId-help: URI de l'objet scientifique (auto-générée si vide)
+    uri-help: URI de l'objet scientifique (auto-générée si vide)
     name-help : Nom de l'objet scientifique
     variables-help : Autres noms de variables
     text-help:  "Vous pouvez insérer vos données à partir de cette ligne. <br /> \n
@@ -247,5 +217,4 @@ fr :
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n
             <strong>Les valeurs vides et les identifiant de colonnes inconnus seront ignorées.<br>"
-
 </i18n>

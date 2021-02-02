@@ -359,7 +359,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   public deleteScientificObject(node: any) {
     this.soService
-      .deleteScientificObject(this.uri, node.data.uri)
+      .deleteScientificObject(node.data.uri, this.uri)
       .then((http) => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;

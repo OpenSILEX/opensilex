@@ -84,9 +84,9 @@ export default class GermplasmSelector extends Vue {
   }
 
   convertGermplasmDTO(germplasm) {
-    let label = germplasm.name + " (" + germplasm.typeLabel;
+    let label = germplasm.name + " (" + germplasm.rdf_type_name;
     if (germplasm.species != null) {
-      label += " - " + germplasm.speciesLabel;
+      label += " - " + germplasm.species_name;
     }
     label += ")";
 

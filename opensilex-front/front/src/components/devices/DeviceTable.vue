@@ -308,6 +308,12 @@ export default class DeviceTable extends Vue {
     
   }
 
+  addVariableCol(){
+    this.nbVariableCol = this.nbVariableCol + 1;
+    this.tabulator.addColumn({title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, field:"variable_" + this.nbVariableCol, visible:true, editor:true},false,
+        "variable_" + (this.nbVariableCol-1));
+  }
+
   getTypeProperty(){
     this.typeProperty = [];
     let ontoService: OntologyService = this.$opensilex.getService(

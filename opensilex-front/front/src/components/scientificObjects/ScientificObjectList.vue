@@ -285,24 +285,20 @@ export default class ScientificObjectList extends Vue {
       );
       scientificObjectsService
         .getScientificObjectDetailByContext(data.item.uri)
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
-          ) => {
-            let objectExperiments = [];
-            for (let objectDetail of http.response.result) {
-              if (objectDetail.context != null) {
-                objectExperiments.push({
-                  uri: objectDetail.context,
-                  name: objectDetail.contextLabel
-                });
-              }
+        .then((http: any) => {
+          let objectExperiments = [];
+          for (let objectDetail of http.response.result) {
+            if (objectDetail.context != null) {
+              objectExperiments.push({
+                uri: objectDetail.context,
+                name: objectDetail.contextLabel,
+              });
             }
-            this.objectDetails[data.item.uri] = objectExperiments;
-            data.toggleDetails();
-            this.$opensilex.enableLoader();
           }
-        )
+          this.objectDetails[data.item.uri] = objectExperiments;
+          data.toggleDetails();
+          this.$opensilex.enableLoader();
+        })
         .catch(this.$opensilex.errorHandler);
     } else {
       data.toggleDetails();
@@ -337,11 +333,12 @@ export default class ScientificObjectList extends Vue {
     let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
-    scientificObjectsService.deleteScientificObject(uri)
+    scientificObjectsService
+      .deleteScientificObject(uri)
       .then(() => {
         this.refresh();
       })
-      .catch(this.$opensilex.errorHandler)
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

@@ -13,7 +13,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.data.dal.DataModel;
@@ -46,7 +48,7 @@ public class DataGetDTO extends DataCreationDTO {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
             this.setDate(dtf.format(odt));
         } else {
-            LocalDate date = LocalDate.ofInstant(instant, ZoneOffset.of(offset));            
+            LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();            
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
             this.setDate(dtf.format(date));
         }        

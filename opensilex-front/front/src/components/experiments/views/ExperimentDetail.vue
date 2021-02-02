@@ -360,7 +360,7 @@ export default class ExperimentDetail extends Vue {
           this.speciesList = this.speciesList.map(item => {
             return {
               uri: item.uri,
-              value: item.label
+              value: item.name
             };
           });
         })

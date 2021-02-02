@@ -29,7 +29,7 @@
     ></opensilex-ModalForm>
 
     <p class="alert-info">
-      <span v-if="!editingMode" v-html="$t('credential.geometry.instruction')"></span>
+      <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
     </p>
     <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
       <vl-map
@@ -549,6 +549,7 @@ en:
     Legend: Legend
     LegendSO: Scientific Object
     LegendArea: Area
+    Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift +Alt + Right Click and move the mouse to rotate the map. Press Ctrl+Right Click while dragging to <b>select multiple scientific objects</b>.
   Area:
     title: Area
     add: Description of the area
@@ -568,6 +569,7 @@ fr:
     Legend: Légende
     LegendSO: Objet scientifique
     LegendArea: Zone
+    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic  Droit  puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl+Clic droit tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
   Area:
     title: Zone
     add: Description de la zone

@@ -555,9 +555,6 @@
             "modification": "Ajout / Modification germplasm",
             "delete": "Suppression des germplasm"
         },
-        "geometry": {
-            "instruction": "Utilisez Alt+Shift+Drag pour faire <b>pivoter</b> la carte. Utilisez Ctrl+Clic+Glisser pour <b>sélectionner plusieurs objets scientifiques</b>."
-        },
         "scientific-objects": {
             "modification": "Ajout / Modification des objets scientifiques",
             "delete": "Suppression des objets scientifiques"

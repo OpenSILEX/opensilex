@@ -648,9 +648,6 @@
             "modification": "Add / update germplasm",
             "delete": "Delete germplasm"
         },
-        "geometry": {
-            "instruction": "Use Alt+Shift+Drag to <b> rotate </b> the map. Use Ctrl+Click+Drag to <b>select multiple scientific objects</b>."
-        },
         "scientific-objects": {
             "modification": "Add / update scientific objects",
             "delete": "Delete scientific objects"

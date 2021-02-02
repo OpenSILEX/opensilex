@@ -5,6 +5,7 @@
  */
 package org.opensilex.sparql.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -17,7 +18,8 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  */
 public class PartialResourceTreeDTO extends ResourceTreeDTO {
 
-    private int childCount;
+    @JsonProperty("child_count")
+    protected int childCount;
 
     public int getChildCount() {
         return childCount;

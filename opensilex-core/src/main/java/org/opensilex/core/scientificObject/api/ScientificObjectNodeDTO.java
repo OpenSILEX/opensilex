@@ -23,6 +23,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  * @author vmigot
  */
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
+    
     private GeoJsonObject geometry;
 
     public GeoJsonObject getGeometry() {

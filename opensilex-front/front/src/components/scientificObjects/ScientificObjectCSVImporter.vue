@@ -98,10 +98,10 @@ export default class ScientificObjectCSVImporter extends Vue {
 
   validateCSV(csvFile) {
     return this.$opensilex.uploadFileToService(
-      "/core/scientific_objects/validate",
+      "/core/scientific_objects/import_validation",
       {
         description: {
-            context: this.experimentURI
+            experiment: this.experimentURI
         },
         file: csvFile,
       }
@@ -113,7 +113,7 @@ export default class ScientificObjectCSVImporter extends Vue {
       "/core/scientific_objects/import",
       {
         description: {
-            context: this.experimentURI
+            experiment: this.experimentURI
         },
         file: csvFile,
       }

@@ -90,7 +90,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Context
     ResourceInfo resourceInfo;
-        
+
     @Inject
     AuthenticationService authentication;
 
@@ -104,8 +104,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             LOGGER.debug("Incoming request method: " + requestContext.getMethod());
             final AtomicBoolean isJSON = new AtomicBoolean(false);
             requestContext.getHeaders().forEach((header, value) -> {
-                if (header.equalsIgnoreCase("content-type") && value.equals(MediaType.APPLICATION_JSON)) {
-                    isJSON.set(true);
+                if (value.size() == 1) {
+                    if (header.equalsIgnoreCase("content-type") && value.get(0).equals(MediaType.APPLICATION_JSON)) {
+                        isJSON.set(true);
+                    }
                 }
                 LOGGER.debug("Incoming request header: " + header + " -> " + value);
             });
@@ -135,7 +137,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
             isSecuredAPI = (securityAnnotation != null);
         }
-        
+
         // Ignore user definition if no token
         UserModel user;
         if (tokenValue != null) {

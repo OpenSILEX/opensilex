@@ -262,7 +262,7 @@ export default class ScientificObjectList extends Vue {
       "opensilex.ScientificObjectsService"
     );
     return scientificObjectsService.searchScientificObjects(
-      this.filter.experiment ? this.filter.experiment : undefined, // contextURI?: string,
+      this.filter.experiment ? this.filter.experiment : undefined, // experiment uri?: string,
       this.filter.name, // pattern?: string,
       this.filter.types, // rdfTypes?: Array<string>,
       undefined, // parentURI?: string,
@@ -288,10 +288,10 @@ export default class ScientificObjectList extends Vue {
         .then((http: any) => {
           let objectExperiments = [];
           for (let objectDetail of http.response.result) {
-            if (objectDetail.context != null) {
+            if (objectDetail.experiment != null) {
               objectExperiments.push({
-                uri: objectDetail.context,
-                name: objectDetail.contextLabel,
+                uri: objectDetail.experiment,
+                name: objectDetail.experiment_name,
               });
             }
           }
@@ -323,7 +323,7 @@ export default class ScientificObjectList extends Vue {
       filename,
       "csv",
       {
-        objectURIs: objectURIs,
+        objects: objectURIs,
       },
       this.lang
     );

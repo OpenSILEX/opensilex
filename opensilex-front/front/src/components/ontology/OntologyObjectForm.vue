@@ -20,7 +20,7 @@
     <!-- Type -->
     <opensilex-TypeForm
       v-if="baseType"
-      :type.sync="form.type"
+      :type.sync="form.rdf_type"
       :baseType="baseType"
       :required="true"
       :disabled="editMode"
@@ -37,7 +37,7 @@
         :context="context"
       ></component>
     </div>
-    <slot v-if="form.type" v-bind:form="form"></slot>
+    <slot v-if="form.rdf_type" v-bind:form="form"></slot>
   </b-form>
 </template>
 
@@ -224,7 +224,7 @@ export default class OntologyObjectForm extends Vue {
     if (type) {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.form.type, this.baseType)
+        .getClassProperties(this.form.rdf_type, this.baseType)
         .then((http) => {
           this.typeModel = http.response.result;
           if (!this.editMode) {

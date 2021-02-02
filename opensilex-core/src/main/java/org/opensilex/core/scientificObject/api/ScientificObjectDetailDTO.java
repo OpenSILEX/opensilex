@@ -5,7 +5,9 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
@@ -19,8 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 import org.opensilex.core.ontology.Oeso;
@@ -32,19 +32,28 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObjectModel> {
 
-    private URI parent;
+    @ApiModelProperty(value = "Scientific object parent URI")
+    protected URI parent;
 
-    private String parentLabel;
+    @JsonProperty("parent_name")
+    @ApiModelProperty(value = "Scientific object parent name")
+    protected String parentLabel;
 
-    private URI type;
+    @JsonProperty("rdf_type")
+    @ApiModelProperty(value = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE)
+    protected URI type;
 
-    private String typeLabel;
+    @JsonProperty("rdf_type_name")
+    @ApiModelProperty(value = "Scientific object type", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_TYPE_NAME)
+    protected String typeLabel;
 
-    private List<NamedResourceDTO<FactorLevelModel>> factorLevels;
+    @JsonProperty("factor_level")
+    @ApiModelProperty(value = "Scientific object factor levels")
+    protected List<NamedResourceDTO<FactorLevelModel>> factorLevels;
 
-    private List<RDFObjectRelationDTO> relations;
+    protected List<RDFObjectRelationDTO> relations;
 
-    private GeoJsonObject geometry;
+    protected GeoJsonObject geometry;
 
     public URI getParent() {
         return parent;

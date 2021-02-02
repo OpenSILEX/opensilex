@@ -5,12 +5,15 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 import java.net.URI;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -20,44 +23,27 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  */
 public class ScientificObjectDetailByContextDTO extends ScientificObjectDetailDTO {
 
-    private URI context;
+    @ApiModelProperty(value = "Scientific object experiment URI")
+    private URI experiment;
 
-    private String contextLabel;
+    @JsonProperty("experiment_name")
+    @ApiModelProperty(value = "Scientific object experiment name")
+    private String experimentLabel;
 
-    private URI contextType;
-
-    private String contextTypeLabel;
-
-    public URI getContext() {
-        return context;
+    public URI getExperiment() {
+        return experiment;
     }
 
-    public void setContext(URI context) {
-        this.context = context;
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
     }
 
-    public String getContextLabel() {
-        return contextLabel;
+    public String getExperimentLabel() {
+        return experimentLabel;
     }
 
-    public void setContextLabel(String contextLabel) {
-        this.contextLabel = contextLabel;
-    }
-
-    public URI getContextType() {
-        return contextType;
-    }
-
-    public void setContextType(URI contextType) {
-        this.contextType = contextType;
-    }
-
-    public String getContextTypeLabel() {
-        return contextTypeLabel;
-    }
-
-    public void setContextTypeLabel(String contextTypeLabel) {
-        this.contextTypeLabel = contextTypeLabel;
+    public void setExperimentLabel(String experimentLabel) {
+        this.experimentLabel = experimentLabel;
     }
 
     @Override
@@ -70,18 +56,16 @@ public class ScientificObjectDetailByContextDTO extends ScientificObjectDetailDT
         return new ScientificObjectModel();
     }
 
-    static ScientificObjectDetailByContextDTO getDTOFromModel(ExperimentalObjectModel model, ScientificObjectContextModel context, GeospatialModel geometryByURI) throws JsonProcessingException {
+    static ScientificObjectDetailByContextDTO getDTOFromModel(ExperimentalObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
         ScientificObjectDetailByContextDTO dto = new ScientificObjectDetailByContextDTO();
         dto.fromModel(model);
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }
 
-        if (context != null) {
-            dto.setContext(context.getContext());
-            dto.setContextLabel(context.getContextLabel());
-            dto.setContextType(context.getContextType());
-            dto.setContextTypeLabel(context.getContextTypeLabel());
+        if (experiment != null) {
+            dto.setExperiment(experiment.getUri());
+            dto.setExperimentLabel(experiment.getName());
         }
         return dto;
     }

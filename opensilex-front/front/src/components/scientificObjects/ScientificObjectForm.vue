@@ -8,8 +8,8 @@
     icon="ik#ik-target"
     :createAction="callScientificObjectCreation"
     :updateAction="callScientificObjectUpdate"
-    @onCreate="$emit('refresh')"
-    @onUpdate="$emit('refresh')"
+    @onCreate="triggerRefresh"
+    @onUpdate="triggerRefresh"
   >
     <template v-slot:customFields="{ form }">
       <opensilex-GeometryForm
@@ -22,17 +22,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 
-import {
-  ExperimentCreationDTO,
-  SpeciesService,
-  SpeciesDTO,
-  ScientificObjectsService,
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import { ScientificObjectsService } from "opensilex-core/index";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -42,7 +35,7 @@ export default class ScientificObjectForm extends Vue {
   soService: ScientificObjectsService;
 
   @Prop({
-    default: () => {}
+    default: () => {},
   })
   context;
 
@@ -52,6 +45,10 @@ export default class ScientificObjectForm extends Vue {
     this.soService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
+  }
+
+  triggerRefresh() {
+    this.$emit("refresh");
   }
 
   createScientificObject() {
@@ -69,10 +66,12 @@ export default class ScientificObjectForm extends Vue {
       .setContext(this.getContext())
       .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
 
-    this.soService.getScientificObjectDetail(objectURI, this.getContextURI()).then((http) => {
-      let form: any = http.response.result;
-      this.soForm.showEditForm(form);
-    });
+    this.soService
+      .getScientificObjectDetail(objectURI, this.getExperimentURI())
+      .then((http) => {
+        let form: any = http.response.result;
+        this.soForm.showEditForm(form);
+      });
   }
 
   getContext() {
@@ -82,7 +81,7 @@ export default class ScientificObjectForm extends Vue {
     return {};
   }
 
-  getContextURI() {
+  getExperimentURI() {
     if (this.context && this.context.experimentURI) {
       return this.context.experimentURI;
     }
@@ -107,15 +106,14 @@ export default class ScientificObjectForm extends Vue {
       }
     }
 
-    return this.soService
-      .createScientificObject({
-        uri: form.uri,
-        name: form.name,
-        type: form.type,
-        geometry: form.geometry,
-        context: this.getContextURI(),
-        relations: definedRelations,
-      })
+    return this.soService.createScientificObject({
+      uri: form.uri,
+      name: form.name,
+      rdf_type: form.rdf_type,
+      geometry: form.geometry,
+      experiment: this.getExperimentURI(),
+      relations: definedRelations,
+    });
   }
 
   callScientificObjectUpdate(form) {
@@ -136,15 +134,14 @@ export default class ScientificObjectForm extends Vue {
       }
     }
 
-    return this.soService
-      .updateScientificObject({
-        uri: form.uri,
-        name: form.name,
-        type: form.type,
-        geometry: form.geometry,
-        context: this.getContextURI(),
-        relations: definedRelations,
-      })
+    return this.soService.updateScientificObject({
+      uri: form.uri,
+      name: form.name,
+      rdf_type: form.rdf_type,
+      geometry: form.geometry,
+      experiment: this.getExperimentURI(),
+      relations: definedRelations,
+    });
   }
 }
 </script>

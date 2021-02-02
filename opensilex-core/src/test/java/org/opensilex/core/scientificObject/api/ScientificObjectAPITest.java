@@ -41,10 +41,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     protected static final String path = "/core/scientific_objects";
 
-    public static final String uriPath = path + "/get-detail/{uri}";
-    public static final String createPath = path + "/create";
-    public static final String updatePath = path + "/update";
-    public static final String deletePath = path + "/delete";
+    public static final String uriPath = path + "/{uri}";
+    public static final String createPath = path + "/";
+    public static final String updatePath = path + "/";
+    public static final String deletePath = path + "/";
     private int soCount = 1;
     private URI experiment;
 
@@ -66,8 +66,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         experiment = null;
     }
 
-    protected ScientificObjectDescriptionDTO getCreationDTO(boolean withGeometry) throws Exception {
-        ScientificObjectDescriptionDTO dto = new ScientificObjectDescriptionDTO();
+    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
+        ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
 
         if (withGeometry) {
             List<Position> list = new LinkedList<>();
@@ -83,7 +83,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         dto.setName("SO " + soCount++);
         dto.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
-        dto.setContext(experiment);
+        dto.setExperiment(experiment);
 
         return dto;
     }
@@ -110,14 +110,14 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     private Response getResponse(URI createdUri) throws Exception {
         WebTarget target = target(uriPath).resolveTemplate("uri", createdUri.toString());
-        target = target.queryParam("contextURI", experiment.toString());
+        target = target.queryParam("experiment", experiment.toString());
 
         return appendToken(target).get();
     }
 
     public void testUpdate(boolean withGeometry) throws Exception {
         // create the so
-        ScientificObjectDescriptionDTO soDTO = getCreationDTO(withGeometry);
+        ScientificObjectCreationDTO soDTO = getCreationDTO(withGeometry);
         final Response postResult = getJsonPostResponse(target(createPath), soDTO);
 
         // update the so
@@ -134,9 +134,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<ScientificObjectDescriptionDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectDescriptionDTO>>() {
+        SingleObjectResponse<ScientificObjectDetailDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectDetailDTO>>() {
         });
-        ScientificObjectDescriptionDTO dtoFromApi = getResponse.getResult();
+        ScientificObjectDetailDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
         assertEquals(soDTO.getName(), dtoFromApi.getName());
@@ -161,8 +161,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // delete object and check if URI no longer exists
         WebTarget getDeleteByUriTarget = target(deletePath);
-        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("contextURI", experiment.toString());
-        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("objURI", uri);
+        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("experiment", experiment.toString());
+        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("uri", uri);
 
         final Response delResult = appendToken(getDeleteByUriTarget).delete();
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());

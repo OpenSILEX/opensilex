@@ -72,7 +72,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
   }
 
   getParentsByURI(soURIs) {
-    let contextURI = "null:null";
+    let contextURI = undefined;
     if (this.context && this.context.experimentURI) {
       contextURI = this.context.experimentURI;
     }

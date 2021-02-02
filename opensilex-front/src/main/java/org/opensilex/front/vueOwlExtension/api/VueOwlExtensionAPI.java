@@ -183,8 +183,8 @@ public class VueOwlExtensionAPI {
         @ApiResponse(code = 200, message = "Return class model properties definitions ", response = VueClassDTO.class)
     })
     public Response getClassProperties(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
+            @ApiParam(value = "RDF class URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 

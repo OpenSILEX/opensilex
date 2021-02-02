@@ -5,8 +5,10 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
+import javax.validation.constraints.Min;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -16,25 +18,28 @@ import org.opensilex.server.rest.validation.ValidURI;
 public class ScientificObjectCsvExportDTO {
 
     @ValidURI
-    private List<URI> objectURIs;
+    @ApiModelProperty(value = "List of scientific objects URI to export")
+    @Min(1)
+    protected List<URI> objects;
 
     @ValidURI
-    private URI contextURI;
+    @ApiModelProperty(value = "Scientific object experiment URI")
+    protected URI experiment;
 
-    public List<URI> getObjectURIs() {
-        return objectURIs;
+    public List<URI> getObjects() {
+        return objects;
     }
 
-    public void setObjectURIs(List<URI> objectURIs) {
-        this.objectURIs = objectURIs;
+    public void setObjects(List<URI> objects) {
+        this.objects = objects;
     }
 
-    public URI getContextURI() {
-        return contextURI;
+    public URI getExperiment() {
+        return experiment;
     }
 
-    public void setContextURI(URI contextURI) {
-        this.contextURI = contextURI;
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
     }
 
 }

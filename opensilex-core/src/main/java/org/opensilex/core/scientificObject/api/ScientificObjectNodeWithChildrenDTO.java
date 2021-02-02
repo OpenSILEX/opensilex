@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 /**
@@ -13,7 +14,8 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
  */
 public class ScientificObjectNodeWithChildrenDTO extends ScientificObjectNodeDTO {
 
-    private Integer childCount;
+    @JsonProperty("child_count")
+    protected Integer childCount;
 
     public Integer getChildCount() {
         return childCount;

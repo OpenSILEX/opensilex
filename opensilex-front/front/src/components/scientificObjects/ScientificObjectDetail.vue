@@ -19,122 +19,132 @@
       <b-tab :title="$t('Annotation.list-title')"></b-tab>
       <!-- <b-tab :title="$t('Event.list-title')"></b-tab> -->
     </b-tabs>
-    <b-card v-if="loadDetails()">
-      <template v-slot:header v-if="withReturnButton">
-        <h3 v-if="selected.context">
-          {{ $t("component.experiment.view.title") }}:
-          <opensilex-UriLink
-            :to="{
-              path:
-                '/experiment/details/' + encodeURIComponent(selected.context),
-            }"
-            :value="selected.contextLabel"
-            :allowCopy="false"
-          ></opensilex-UriLink>
-        </h3>
-        <h3>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
-      </template>
-      <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
-      <!-- Name -->
-      <opensilex-StringView
-        label="component.common.name"
-        :value="selected.name"
-      ></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView
-        :type="selected.type"
-        :typeLabel="selected.typeLabel"
-      ></opensilex-TypeView>
+    <div v-if="loadDetails()">
+      <b-card>
+        <template v-slot:header v-if="withReturnButton">
+          <h3 v-if="selected.experiment">
+            {{ $t("component.experiment.view.title") }}:
+            <opensilex-UriLink
+              :to="{
+                path:
+                  '/experiment/details/' +
+                  encodeURIComponent(selected.experiment),
+              }"
+              :value="selected.experiment_name"
+              :allowCopy="false"
+            ></opensilex-UriLink>
+          </h3>
+          <h3>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
+        </template>
+        <!-- URI -->
+        <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+        <!-- Name -->
+        <opensilex-StringView
+          label="component.common.name"
+          :value="selected.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          :type="selected.rdf_type"
+          :typeLabel="selected.rdf_type_name"
+        ></opensilex-TypeView>
 
-      <div v-for="(v, index) in typeProperties" v-bind:key="index">
-        <div class="static-field" v-if="!v.definition.isList">
-          <span class="field-view-title">{{ v.definition.name }}:</span>
-          <component
-            :is="v.definition.viewComponent"
-            :value="v.property"
-          ></component>
+        <div v-for="(v, index) in typeProperties" v-bind:key="index">
+          <div class="static-field" v-if="!v.definition.isList">
+            <span class="field-view-title">{{ v.definition.name }}</span>
+            <component
+              :is="v.definition.viewComponent"
+              :value="v.property"
+            ></component>
+          </div>
+          <div
+            class="static-field"
+            v-else-if="v.property && v.property.length > 0"
+          >
+            <span class="field-view-title">{{ v.definition.name }}</span>
+            <ul>
+              <br />
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
+                <component
+                  :is="v.definition.viewComponent"
+                  :value="prop"
+                ></component>
+              </li>
+            </ul>
+          </div>
         </div>
+
+        <!-- Geometry -->
+        <opensilex-GeometryView
+          v-if="selected.geometry"
+          label="component.common.geometry"
+          :value="selected.geometry"
+        ></opensilex-GeometryView>
+      </b-card>
+
+      <b-card v-for="(value, index) in objectByContext" :key="index">
+        <template v-slot:header>
+          <h3 v-if="value.experiment">
+            {{ $t("component.experiment.view.title") }}:
+            <opensilex-UriLink
+              :to="{
+                path:
+                  '/experiment/details/' + encodeURIComponent(value.experiment),
+              }"
+              :value="value.experimentLabel"
+              :allowCopy="false"
+            ></opensilex-UriLink>
+          </h3>
+        </template>
+        <!-- Name -->
+        <opensilex-StringView
+          v-if="selected.name != value.name"
+          label="component.common.name"
+          :value="value.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          v-if="selected.rdf_type != value.rdf_type"
+          :type="value.rdf_type"
+          :typeLabel="value.rdf_type_name"
+        ></opensilex-TypeView>
+
         <div
-          class="static-field"
-          v-else-if="v.property && v.property.length > 0"
+          v-for="(v, index) in getCustomTypeProperties(value)"
+          v-bind:key="index"
         >
-          <span class="field-view-title">{{ v.definition.name }}:</span>
-          <ul>
-            <br />
-            <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-              <component
-                :is="v.definition.viewComponent"
-                :value="prop"
-              ></component>
-            </li>
-          </ul>
+          <div class="static-field" v-if="!v.definition.isList">
+            <span class="field-view-title">{{ v.definition.name }}</span>
+            <component
+              :is="v.definition.viewComponent"
+              :value="v.property"
+            ></component>
+          </div>
+          <div
+            class="static-field"
+            v-else-if="v.property && v.property.length > 0"
+          >
+            <span class="field-view-title">{{ v.definition.name }}</span>
+            <ul>
+              <br />
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
+                <component
+                  :is="v.definition.viewComponent"
+                  :value="prop"
+                ></component>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-
-      <!-- Geometry -->
-      <opensilex-GeometryView
-        v-if="selected.geometry"
-        label="component.common.geometry"
-        :value="selected.geometry"
-      ></opensilex-GeometryView>
-    </b-card>
-
-    <b-card v-for="(value, index) in objectByContext" :key="index">
-      <template v-slot:header>
-        <h3 v-if="value.context">
-          {{ $t("component.experiment.view.title") }}:
-          <opensilex-UriLink
-            :to="{
-              path: '/experiment/details/' + encodeURIComponent(value.context),
-            }"
-            :value="value.contextLabel"
-            :allowCopy="false"
-          ></opensilex-UriLink>
-        </h3>
-      </template>
-      <!-- Name -->
-      <opensilex-StringView
-        v-if="selected.name != value.name"
-        label="component.common.name"
-        :value="value.name"
-      ></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView
-        v-if="selected.type != value.type"
-        :type="value.type"
-        :typeLabel="value.typeLabel"
-      ></opensilex-TypeView>
-
-      <div
-        v-for="(v, index) in getCustomTypeProperties(value)"
-        v-bind:key="index"
-      >
-        <div class="static-field" v-if="!v.definition.isList">
-          <span class="field-view-title">{{ v.definition.name }}:</span>
-          <component
-            :is="v.definition.viewComponent"
-            :value="v.property"
-          ></component>
-        </div>
-        <div
-          class="static-field"
-          v-else-if="v.property && v.property.length > 0"
-        >
-          <span class="field-view-title">{{ v.definition.name }}:</span>
-          <ul>
-            <br />
-            <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-              <component
-                :is="v.definition.viewComponent"
-                :value="prop"
-              ></component>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </b-card>
-
+      </b-card>
+    </div>
+    
     <opensilex-AnnotationList
       v-if="isAnnotationTab()"
       ref="annotationList"
@@ -250,7 +260,7 @@ export default class ScientificObjectDetail extends Vue {
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
       .getClassProperties(
-        this.selected.type,
+        this.selected.rdf_type,
         this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
       )
       .then((http) => {

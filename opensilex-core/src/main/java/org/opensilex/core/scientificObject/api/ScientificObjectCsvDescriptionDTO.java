@@ -5,7 +5,9 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *
@@ -13,16 +15,20 @@ import java.net.URI;
  */
 public class ScientificObjectCsvDescriptionDTO {
 
-    private URI context;
+    @ValidURI
+    @ApiModelProperty(value = "Scientific object experiment URI")
+    protected URI experiment;
 
-    private String validationToken;
+    @ValidURI
+    @ApiModelProperty(value = "Validation token provided by validation service to skip double validation")
+    protected String validationToken;
 
-    public URI getContext() {
-        return context;
+    public URI getExperiment() {
+        return experiment;
     }
 
-    public void setContext(URI context) {
-        this.context = context;
+    public void setExperiment(URI experiment) {
+        this.experiment = experiment;
     }
 
     public String getValidationToken() {

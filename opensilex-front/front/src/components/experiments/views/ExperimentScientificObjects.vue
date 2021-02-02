@@ -136,7 +136,7 @@
             "
             ref="soForm"
             :context="{ experimentURI: this.uri }"
-            @refresh="refresh()"
+            @refresh="refresh"
           >
           </opensilex-ScientificObjectForm>
         </b-card>

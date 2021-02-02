@@ -97,18 +97,21 @@
                 label="GermplasmDetails.species"
                 :value="germplasm.species_name"
                 :uri="germplasm.species"
+                :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.species)}"
               ></opensilex-LabelUriView>
               <opensilex-LabelUriView
                 v-if="(germplasm.variety_name != null) || (germplasm.variety != null)"
                 label="GermplasmDetails.variety"
                 :value="germplasm.variety_name"
                 :uri="germplasm.variety"
+                :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.variety)}"
               ></opensilex-LabelUriView>
               <opensilex-LabelUriView
                 v-if="(germplasm.accession_name != null) || (germplasm.accession != null)"
                 label="GermplasmDetails.accession"
                 :value="germplasm.accession_name"
                 :uri="germplasm.accession"
+                :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.accession)}"
               ></opensilex-LabelUriView>
             </template>
           </opensilex-Card>

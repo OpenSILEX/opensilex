@@ -133,13 +133,9 @@ export default class GermplasmTable extends Vue {
 
   tabulator = null;
   
-//   new Tabulator(this.table, {
-//     columns:[
-//         {title:"Name", field:"name", headerHozAlign:"right"}, //right align column header title
-//     ],
-// });
   tableData = [];
-   @Ref("helpModal") readonly helpModal!: any;
+  
+  @Ref("helpModal") readonly helpModal!: any;
 
   tableColumns = [];
 
@@ -156,7 +152,6 @@ export default class GermplasmTable extends Vue {
 
   disableInsert: boolean = false;
   disableCheck: boolean = false;
-
   checkedLines: number = 0;
 
   private langUnwatcher;
@@ -227,7 +222,7 @@ export default class GermplasmTable extends Vue {
     let websiteCol = {title:this.$t('GermplasmTable.website'), field:"website", visible:true, editor:true};
     let productionYearCol =  {title:this.$t('GermplasmTable.year'), field:"productionYear", visible:true, editor:true};
     let commentCol = {title:this.$t('GermplasmTable.comment'), field:"comment", visible:true, editor:true};
-    let checkingStatusCol = {title:this.$t('GermplasmTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false,minWidth:400};
+    let checkingStatusCol = {title:this.$t('GermplasmTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('GermplasmTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false, minWidth:400};
 
     if (this.$attrs.germplasmType.endsWith('Species'))  {
@@ -328,17 +323,16 @@ export default class GermplasmTable extends Vue {
     this.onlyChecking = true;
     this.showModal();
     this.tabulator.showColumn("checkingStatus");
-    this.tabulator.hideColumn("insertionStatus");    
+    this.tabulator.hideColumn("insertionStatus");     
     this.disableInsert = false;
     this.checkedLines++;
-    this.disableInsert = false;
   }
 
   insertData() {
     this.onlyChecking = false;
     this.showModal();
     this.tabulator.hideColumn("checkingStatus");
-    this.tabulator.showColumn("insertionStatus");   
+    this.tabulator.showColumn("insertionStatus");  
     this.disableInsert = true;
     this.disableCheck = true;
   }
@@ -481,6 +475,7 @@ export default class GermplasmTable extends Vue {
       } else {
         this.summary = this.okNumber + " " + this.$t('GermplasmTable.infoMessageGermplInserted') +", " + this.errorNumber + " " + this.$t('GermplasmTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('GermplasmTable.infoMessageEmptyLines');
       }
+      this.tabulator.redraw(true); 
       this.infoMessage = true;
       this.disableCloseButton = false;
       this.$opensilex.enableLoader();
@@ -576,12 +571,18 @@ export default class GermplasmTable extends Vue {
       let insertionOK = true;
       for (let idx = 0; idx < data.length; idx++) {
         data[idx]["rowNumber"] = idx + 1;
-        if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
-          uniqueNames.push(data[idx].name);        
-        } else {
+        if (data[idx].name === "") {
+          alert(this.$t('GermplasmTable.missingName') + " " + data[idx]["rowNumber"]);
           insertionOK = false
-          alert(this.$t('GermplasmTable.alertDuplicateName') + " " + data[idx]["rowNumber"] + ", name= " + data[idx].name);
           break
+        } else {
+          if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
+            uniqueNames.push(data[idx].name);        
+          } else {
+            insertionOK = false
+            alert(this.$t('GermplasmTable.alertDuplicateName') + " " + data[idx]["rowNumber"] + ", name= " + data[idx].name);
+            break
+          }
         }
         if(data[idx].uri !== "") {
             if (uniqueURIs.indexOf(data[idx].uri) === -1){
@@ -591,7 +592,8 @@ export default class GermplasmTable extends Vue {
               alert(this.$t('GermplasmTable.alertDuplicateURI') + " " + data[idx]["rowNumber"] + ", uri= " + data[idx].uri);
               break
             }
-        } 
+        }
+         
       }
       if (insertionOK) {
         this.tabulator.setData(data);
@@ -701,6 +703,7 @@ en:
     alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
+    missingName: The name is missing at line
 
 fr:
   GermplasmTable:
@@ -748,4 +751,5 @@ fr:
     alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
+    missingName: Le nom n'est pas renseigné à la ligne 
 </i18n>

@@ -929,6 +929,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Plant Material Lot</rdfs:label>
+        <rdfs:label xml:lang="fr">Lot de matériel végétal</rdfs:label>
     </owl:Class>
     
 

@@ -38,11 +38,12 @@
           <slot name="secondActionsSelectableTable"></slot>
         </div>
       </div>
-      <b-row>
-        <slot name="export" v-if="this.totalRow >0" > 
-          
+
+      <b-input-group size="sm">
+        <slot name="export" v-if="this.totalRow >0" >          
         </slot>
-      </b-row>
+      </b-input-group>
+
       <div v-if="showCount">
           <div v-if="totalRow > 0">
           <strong>

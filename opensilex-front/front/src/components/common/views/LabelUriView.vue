@@ -3,7 +3,7 @@
     <span class="field-view-title">{{$t(label)}}:</span>
     <span class="static-field-line">{{value}}</span>
     <opensilex-UriLink class="uri" v-if="uri.startsWith('http')" :uri=uri :url=uri></opensilex-UriLink>
-    <opensilex-UriLink class="uri" v-else :uri=uri :to="{path: '/germplasm/'+ encodeURIComponent(uri)}"></opensilex-UriLink>
+    <opensilex-UriLink class="uri" v-else :uri=uri :to=to></opensilex-UriLink>
   </div>
 </template>
 
@@ -21,6 +21,9 @@ export default class StringView extends Vue {
 
   @Prop()
   uri: string;
+
+  @Prop()
+  to: string;
 }
 </script>
 

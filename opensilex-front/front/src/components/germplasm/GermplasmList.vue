@@ -77,26 +77,20 @@
 
       <template v-slot:advancedSearch>
         <opensilex-FilterField>
-          <opensilex-InputForm 
-            :value.sync="filter.metadataKey"
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataKey"
             label="attribute key"
-            type="text"
-            placeholder=""
-          ></opensilex-InputForm>
+          ></opensilex-StringFilter>
         </opensilex-FilterField>
         <opensilex-FilterField>
-          <opensilex-InputForm 
-            :value.sync="filter.metadataValue"
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataValue"
             label="attribute value"
-            type="text"
-            placeholder=""
-          ></opensilex-InputForm>
+          ></opensilex-StringFilter>
         </opensilex-FilterField>
       </template>     
       
     </opensilex-SearchFilterField>
-
-    <b-button class="mb-2 mr-2" @click="exportGermplasm()" >{{$t('GermplasmList.export')}}</b-button> 
 
     <opensilex-TableAsyncView
       ref="tableRef"
@@ -107,6 +101,9 @@
       labelNumberOfSelectedRow="GermplasmList.selected"
       iconNumberOfSelectedRow="ik#ik-feather"
     >
+      <template v-slot:export>
+        <b-button class="mb-2 mr-2" @click="exportGermplasm()" >{{$t('GermplasmList.export')}}</b-button> 
+      </template>  
       <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
@@ -114,13 +111,6 @@
           :to="{path: '/germplasm/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
-
-      <template v-slot:row-details></template>
-
-      <!-- <template v-slot:cell(uri)="{data}">
-         <a  href="#" class="uri-info primary" @click="$emit('onDetails', data.item.uri)">{{ data.item.uri}}</a> 
-        <opensilex-UriLink :uri="data.item.uri"></opensilex-UriLink>
-      </template>-->
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -218,8 +208,7 @@ export default class GermplasmList extends Vue {
     institute: undefined,
     experiment: undefined,
     uri: undefined,
-    metadataKey: undefined,
-    metadataValue: undefined
+    metadata: undefined
   };
 
   resetSearch() {
@@ -249,8 +238,7 @@ export default class GermplasmList extends Vue {
       institute: undefined,
       experiment: undefined,
       uri: undefined,
-      metadataKey: undefined,
-      metadataValue: undefined
+      metadata: undefined
     };
   }
 
@@ -348,24 +336,10 @@ export default class GermplasmList extends Vue {
 
   exportGermplasm() {
     let path = "/core/germplasm/export";
-    let queryParams = new URLSearchParams();
-    for (let [key, value] of Object.entries(this.exportFilter)) {
-      if (value != null && value != undefined) {
-        if (key != "metadataKey" && key != "metadataValue")
-          queryParams.set(key, encodeURI(value));
-        else if (key == "metadataKey") {
-          queryParams.set("metadata", this.addMetadataFilter());
-        }
-      }
-    }
-    let queryParamString = queryParams.toString();
-    if (queryParamString) {
-        path += "?" + queryParamString;
-    }
     let today = new Date();
     let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
     this.$opensilex
-     .downloadFilefromService(path, filename, "csv", this.lang);
+     .downloadFilefromService(path, filename, "csv", this.exportFilter);
   }
 
 
@@ -428,7 +402,8 @@ export default class GermplasmList extends Vue {
 
   addMetadataFilter() {
     let metadata = undefined;
-    if (this.filter.metadataKey != undefined && this.filter.metadataValue != undefined) {
+    if (this.filter.metadataKey != undefined && this.filter.metadataKey != ""
+    && this.filter.metadataValue != undefined && this.filter.metadataValue != "") {
       metadata = '{"' + this.filter.metadataKey + '":"' + this.filter.metadataValue + '"}'
       return metadata;
     }
@@ -442,8 +417,7 @@ export default class GermplasmList extends Vue {
     this.exportFilter.institute = this.filter.institute;
     this.exportFilter.experiment = this.filter.experiment;
     this.exportFilter.uri = this.filter.uri;
-    this.exportFilter.metadataKey = this.filter.metadataKey;
-    this.exportFilter.metadataValue = this.filter.metadataValue;
+    this.exportFilter.metadata = this.addMetadataFilter();
   }
 
 }

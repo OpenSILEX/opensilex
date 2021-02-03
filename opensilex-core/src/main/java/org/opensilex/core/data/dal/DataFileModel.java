@@ -6,7 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
@@ -46,10 +49,23 @@ public class DataFileModel extends DataModel {
     
     @Override
     public String[] getUriSegments(MongoModel instance) {
+ObjectMapper mapper = new ObjectMapper();
+        String provenanceString = "";
+        try {
+            provenanceString = mapper.writeValueAsString(getProvenance());
+        } catch (JsonProcessingException ex) {            
+        }
+        
+        String objectsString = "";
+        if (getScientificObjects() != null) {
+            objectsString = getScientificObjects().toString();
+        }
+        
+        String md5Hash = DigestUtils.md5Hex(objectsString + provenanceString);
+        
         return new String[]{            
             String.valueOf(getDate().getEpochSecond()),
-            String.valueOf(getProvenance().getUri().getFragment()),
-            String.valueOf(System.nanoTime())
+            md5Hash
         };
     } 
         

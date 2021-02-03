@@ -109,7 +109,7 @@ public class DataDAO {
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, "id/data");
+        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, "id/datafile");
         return instances;
     }
 

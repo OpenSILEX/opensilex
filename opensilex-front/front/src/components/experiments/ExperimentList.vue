@@ -239,14 +239,14 @@ export default class ExperimentList extends Vue {
 
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
-      .searchExperiments(
-       this.filter.yearFilter, // year
+      .searchExperiments(       
         this.filter.name, // label
+        this.filter.yearFilter, // year
+        isEnded, // isEnded
         this.filter.species, // species
         this.filter.factors, // factors
         projects, // projects
-        isPublic, // isPublic
-        isEnded, // isEnded
+        isPublic, // isPublic        
         options.orderBy,
         options.currentPage,
         options.pageSize

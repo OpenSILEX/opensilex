@@ -64,8 +64,8 @@
               </opensilex-StringView>
               <opensilex-StringView label="DocumentDetails.language" :value="document.language"></opensilex-StringView>
               <opensilex-StringView label="DocumentDetails.format" :value="document.format"></opensilex-StringView>
-              <opensilex-StringView label="DocumentDetails.keywords" :value="document.keywords">
-                <span v-if="document.keywords"><span :key="keywords" v-for="(keywords) in document.keywords">{{ keywords }} - </span></span>
+              <opensilex-StringView label="DocumentDetails.keyword" :value="document.keyword">
+                <span v-if="document.keyword"><span :key="keyword" v-for="(keyword) in document.keyword">{{ keyword }} - </span></span>
               </opensilex-StringView>
             </template>
           </opensilex-Card>
@@ -151,7 +151,7 @@ export default class DocumentDetails extends Vue {
           language: null,
           format: null,
           deprecated: null,
-          keywords: null
+          keyword: null
       };
   
   created() {
@@ -196,7 +196,7 @@ export default class DocumentDetails extends Vue {
 
         format: this.document.format,
         deprecated: this.document.deprecated,
-        keywords: this.document.keywords
+        keyword: this.document.keyword
       }
     }
     this.documentForm.showEditForm(document);
@@ -233,7 +233,7 @@ en:
     targets: Target
     language: Language
     format: Format
-    keywords: Keywords
+    keyword: Keyword
     deprecated: Deprecated
     identifier: Identifier
     backToList: Go back to Document list
@@ -256,7 +256,7 @@ fr:
     targets: Cible
     language: Language
     format: Format
-    keywords: Mots-clés
+    keyword: Mot-clé
     deprecated: Obsolète
     identifier: Identifiant
     backToList: Retourner à la liste des documents

@@ -166,7 +166,7 @@ export default class DocumentTabList extends Vue {
       undefined, // date filter
       this.uri, // targets filter
       undefined, // authors filter
-      undefined, //keywords filter
+      undefined, //keyword filter
       false, // deprecated filter
       options.orderBy,
       options.currentPage,
@@ -197,7 +197,7 @@ export default class DocumentTabList extends Vue {
         authors: undefined,
         language: undefined,
         deprecated: undefined,
-        keywords: undefined
+        keyword: undefined
       },
       file: undefined
       }
@@ -223,7 +223,7 @@ export default class DocumentTabList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: true,
-            keywords: document.keywords
+            keyword: document.keyword
           }
         };
       this.updateForDeprecated(form);
@@ -262,7 +262,7 @@ export default class DocumentTabList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: document.deprecated,
-            keywords: document.keywords
+            keyword: document.keyword
           }
         };
         this.documentForm.showEditForm(form);

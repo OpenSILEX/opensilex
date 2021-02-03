@@ -277,9 +277,9 @@ public class DocumentAPI {
             @ApiParam(value = "Regex pattern for filtering list by date", example = "2020") @QueryParam("date") String date,
             @ApiParam(value = "Search by targets", example = "dev-expe:za17") @QueryParam("targets") URI targets,
             @ApiParam(value = "Regex pattern for filtering list by author", example = "Firstname Lastname") @QueryParam("authors") String authors,
-            @ApiParam(value = "Regex pattern for filtering list by keywords", example = "keywords") @QueryParam("keywords") String subject,
+            @ApiParam(value = "Regex pattern for filtering list by keyword", example = "keyword") @QueryParam("keyword") String subject,
             @ApiParam(value = "Search deprecated file", example = "true") @QueryParam("deprecated") String deprecated,
-            @ApiParam(value = "List of fields to sort as an array of fieldTitle=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldTitle=asc|desc", example = "label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Fernandez Emilie 
  */
 
-@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "deprecated", "keywords" })
+@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keyword", "deprecated" })
 public abstract class DocumentDTO {
 
     protected URI uri;
@@ -48,7 +48,7 @@ public abstract class DocumentDTO {
 
     protected String description;
 
-    @JsonProperty("keywords")
+    @JsonProperty("keyword")
     protected List<String> subject = new ArrayList<>();
     
     protected boolean deprecated;  

@@ -5,6 +5,8 @@
  */
 package org.opensilex.security.authentication.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.rest.validation.Required;
 
@@ -12,10 +14,12 @@ import org.opensilex.server.rest.validation.Required;
  *
  * @author vidalmor
  */
+@JsonPropertyOrder({"id","name"})
 public class CredentialDTO {
 
     private String id;
-
+    
+    @JsonProperty("name")
     private String label;
 
     @Required
@@ -29,7 +33,7 @@ public class CredentialDTO {
     }
 
     @Required
-    @ApiModelProperty(value = "Credential label")
+    @ApiModelProperty(value = "Credential name")
     public String getLabel() {
         return label;
     }

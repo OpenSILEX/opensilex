@@ -16,9 +16,9 @@
         <b-card-group columns>
           <b-card
             v-for="credentialGroup in filterCredentialGroups(data.item.credentials)"
-            v-bind:key="credentialGroup.groupId"
+            v-bind:key="credentialGroup.group_id"
           >
-            <strong>{{$t(credentialGroup.groupKeyLabel)}}</strong>
+            <strong>{{$t(credentialGroup.group_key_name)}}</strong>
             <ul>
               <li
                 v-for="credential in credentialGroup.credentials"
@@ -92,8 +92,8 @@ export default class ProfileList extends Vue {
       let credentialsGroup = this.credentialsGroups[i];
 
       let credentialsDetailGroup = {
-        groupId: credentialsGroup.groupId,
-        groupKeyLabel: credentialsGroup.groupKeyLabel,
+        group_id: credentialsGroup.group_id,
+        group_key_name: credentialsGroup.group_key_name,
         credentials: []
       };
 
@@ -101,7 +101,7 @@ export default class ProfileList extends Vue {
         let credential = credentialsGroup.credentials[j];
         if (credentialsFiltered.indexOf(credential.id) >= 0) {
           credentialsDetailGroup.credentials.push({
-            text: this.$t(credential.label),
+            text: this.$t(credential.name),
             value: credential.id
           });
         }

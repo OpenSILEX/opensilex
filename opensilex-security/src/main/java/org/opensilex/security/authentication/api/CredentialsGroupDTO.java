@@ -5,6 +5,8 @@
  */
 package org.opensilex.security.authentication.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
@@ -15,10 +17,15 @@ import javax.validation.Valid;
  * @author vince
  */
 @ApiModel
+@JsonPropertyOrder({"group_id", "group_key_name", "credentials"})
 public class CredentialsGroupDTO {
 
+    
+    @JsonProperty("group_id")
     private String groupId;
 
+    
+    @JsonProperty("group_key_name")
     private String groupKeyLabel;
 
     private List<CredentialDTO> credentials;

@@ -26,13 +26,13 @@
         </b-tr>
       </b-thead>
       <b-tbody>
-        <b-tr v-for="credentialsGroup in credentialsGroups" v-bind:key="credentialsGroup.groupId">
-          <b-td>{{$t(credentialsGroup.groupKeyLabel)}}</b-td>
+        <b-tr v-for="credentialsGroup in credentialsGroups" v-bind:key="credentialsGroup.group_id">
+          <b-td>{{$t(credentialsGroup.group_key_name)}}</b-td>
           <b-td>
             <b-form-checkbox-group
-              v-bind:key="credentialsGroup.groupId"
-              v-model="selectedCredentials[credentialsGroup.groupId]"
-              v-bind:options="credentialOptions[credentialsGroup.groupId]"
+              v-bind:key="credentialsGroup.group_id"
+              v-model="selectedCredentials[credentialsGroup.group_id]"
+              v-bind:options="credentialOptions[credentialsGroup.group_id]"
               switches
             ></b-form-checkbox-group>
           </b-td>
@@ -137,12 +137,12 @@ export default class ProfileForm extends Vue {
     let def: any = {};
     let credentialsGroups = this.credentialsGroups;
     for (let i = 0; i < credentialsGroups.length; i++) {
-      def[credentialsGroups[i].groupId] = [];
+      def[credentialsGroups[i].group_id] = [];
 
       for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
         let credentialId = credentialsGroups[i].credentials[j].id;
         if (this.form.credentials.indexOf(credentialId) >= 0) {
-          def[credentialsGroups[i].groupId].push(credentialId);
+          def[credentialsGroups[i].group_id].push(credentialId);
         }
       }
     }
@@ -160,12 +160,12 @@ export default class ProfileForm extends Vue {
     let credentialsGroups = this.credentialsGroups;
     let def: any = {};
     for (let i = 0; i < credentialsGroups.length; i++) {
-      def[credentialsGroups[i].groupId] = [];
+      def[credentialsGroups[i].group_id] = [];
 
       for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
         let credential = credentialsGroups[i].credentials[j];
-        def[credentialsGroups[i].groupId].push({
-          text: this.$t(credential.label),
+        def[credentialsGroups[i].group_id].push({
+          text: this.$t(credential.name),
           value: credential.id
         });
       }

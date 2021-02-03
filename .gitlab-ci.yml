@@ -191,6 +191,7 @@ trigger:sixtine:build:
   stage: deploy
   image: curlimages/curl
   script:
+    - sleep 60
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
@@ -202,18 +203,8 @@ trigger:phis:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
+    - sleep 60
     - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-  needs:
-    - job: "opensilex:build"
-
-# Trigger pipeline for bdg module deployment
-trigger:bdg:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/2063/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:
@@ -224,18 +215,8 @@ trigger:dataanalysis:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
+    - sleep 60
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/2076/trigger/pipeline
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-  needs:
-    - job: "opensilex:build"
-
-# Trigger pipeline for data-analysis module deployment
-trigger:vitioeno:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/2420/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:

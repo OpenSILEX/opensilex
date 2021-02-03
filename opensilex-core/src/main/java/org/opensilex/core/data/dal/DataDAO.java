@@ -273,11 +273,12 @@ public class DataDAO {
         //copy file to directory
         try {
             fs.createDirectories(fileStorageDirectory);
-            fs.writeFile(Paths.get(model.getPath()), file);
-            createFile(model);
-
-        } catch (IOException e) {
+        } catch (Exception e) {
+            
         }
+        
+        fs.writeFile(Paths.get(model.getPath()), file);
+        createFile(model);
 
     }
 

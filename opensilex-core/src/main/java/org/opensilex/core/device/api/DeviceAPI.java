@@ -105,7 +105,6 @@ public class DeviceAPI {
         }
         if (!checkOnly){
             URI uri = deviceDAO.create(deviceDTO, currentUser);
-
             return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
         } else {
             return new ObjectUriResponse().getResponse();

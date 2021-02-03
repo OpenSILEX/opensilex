@@ -31,7 +31,7 @@
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('DeviceTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('DeviceTable.addRow')}}</b-button>
       <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark">{{$t('DeviceTable.addVarColumn')}}</b-button>  
+      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark" v-bind:disabled="!isSensor">{{$t('DeviceTable.addVarColumn')}} </b-button>  
       <b-form-select v-if="this.checkedLines>0"
         id="filter"
         v-model="filter"
@@ -102,6 +102,7 @@ export default class DeviceTable extends Vue {
   displayRemovalCol: boolean = false;
   displayPersonCol: boolean = false;
   nbVariableCol: number = 0;
+  isSensor: boolean = false;
   
 
   // Progress Modal
@@ -177,16 +178,59 @@ export default class DeviceTable extends Vue {
     this.tabulator.replaceData(value);
   }
 
+  /*getTypeProperty(){
+    this.typeProperty = [];
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
+
+    ontoService
+      .getProperties(this.$attrs.deviceType)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        console.log(http.response.result);
+        for (let i = 0; i < http.response.result.length; i++) {
+            let resourceDTO = http.response.result[i];
+            this.typeProperty.push({
+                value: resourceDTO.uri,
+                label: resourceDTO.name
+            });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+  }*/
+
+  buildFinalTypeList(){
+    this.deviceTypes = [];
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
+
+    ontoService
+      .getSubClassesOf(this.$attrs.deviceType, true)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        console.log(http.response.result);
+        for (let i = 0; i < http.response.result.length; i++) {
+            let resourceDTO = http.response.result[i];
+            this.deviceTypes.push({
+                value: resourceDTO.uri,
+                label: resourceDTO.name
+            });
+        }
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
   updateColumns() {
     console.log(this.$attrs.deviceType);
     this.suppColumnsNames = [];
     this.colName = null;
-    this.displayRemovalCol = false;
-    this.displayPersonCol = false;
+    this.displayRemovalCol = true;
+    this.displayPersonCol = true;
     this.nbVariableCol = 0;
-
+    this.isSensor = this.$attrs.deviceType.endsWith('SensingDevice')
+    
     this.buildFinalTypeList();
-    this.getTypeProperty();
+    //this.getTypeProperty();
 
     this.buildFinalTypeList();
     this.getTypeProperty();
@@ -210,7 +254,7 @@ export default class DeviceTable extends Vue {
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    if(this.$attrs.deviceType.endsWith('SensingDevice')){
+    if(this.isSensor){
       this.nbVariableCol = 1;
       let variableCol = {title:this.$t('DeviceTable.variable')+'_1', field:"variable_1", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, variableCol, checkingStatusCol, insertionStatusCol]
@@ -218,9 +262,9 @@ export default class DeviceTable extends Vue {
       this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, checkingStatusCol, insertionStatusCol]
     }
 
-    for (let i = 0; i < this.typeProperty.length; i++){
+    /*for (let i = 0; i < this.typeProperty.length; i++){
       this.tableColumns.push({title:this.typeProperty[i].label, field: this.typeProperty[i].value, visible:true, editor:true});
-    }
+    }*/
     this.tableData = [];
     this.addInitialXRows(5);
 
@@ -253,56 +297,14 @@ export default class DeviceTable extends Vue {
     this.checkedLines = 0;
     this.disableCheck = false;
     this.disableInsert = false;
+
+    this.displayRemovalCol = false;
+    this.tabulator.hideColumn("removal");
+    this.displayPersonCol = false;
+    this.tabulator.hideColumn("person_in_charge");
     
   }
 
-  addVariableCol(){
-    this.nbVariableCol = this.nbVariableCol + 1;
-    this.tabulator.addColumn({title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, field:"variable_" + this.nbVariableCol, visible:true, editor:true},false,
-        "variable_" + (this.nbVariableCol-1));
-  }
-
-  getTypeProperty(){
-    this.typeProperty = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getProperties(this.$attrs.deviceType)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.typeProperty.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  buildFinalTypeList(){
-    this.deviceTypes = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getSubClassesOf(this.$attrs.deviceType, true)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.deviceTypes.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
       this.tableData.push({ rowNumber: i });
@@ -321,7 +323,11 @@ export default class DeviceTable extends Vue {
         false,
         "removal"
       );
+      this.suppColumnsNames.push(this.colName);
+      this.jsonForTemplate[0][this.colName] = null;
+      this.$attrs.downloadCsv;
     }
+
     if(this.displayRemovalCol){
       this.tabulator.showColumn("removal");
       this.displayRemovalCol = true;
@@ -336,10 +342,23 @@ export default class DeviceTable extends Vue {
       this.tabulator.hideColumn("person_in_charge");
       this.displayPersonCol = false;
     }
-    this.suppColumnsNames.push(this.colName);
-    this.jsonForTemplate[0][this.colName] = null;
-    this.$attrs.downloadCsv;
     this.colName = null;
+  }
+
+  addVariableCol(){
+    this.nbVariableCol = this.nbVariableCol + 1;
+    let varColName = "variable_" + this.nbVariableCol
+    this.tabulator.addColumn(
+              { title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, 
+                field: varColName, 
+                visible:true, 
+                editor:true
+              },
+              false,"variable_" + (this.nbVariableCol-1)
+              );
+    this.suppColumnsNames.push(varColName);
+    this.jsonForTemplate[0][varColName] = null;
+    this.$attrs.downloadCsv;
   }
 
   addRow() {
@@ -457,7 +476,7 @@ export default class DeviceTable extends Vue {
       }
 
       if (
-        this.$attrs.deviceType.endsWith('SensingDevice') &&
+        this.isSensor &&
         this.nbVariableCol > 0
       ){
         for(let i = 1; i <= this.nbVariableCol; i++ ){
@@ -465,7 +484,7 @@ export default class DeviceTable extends Vue {
             dataToInsert[idx]['variable_'+i] != null &&
             dataToInsert[idx]['variable_'+i] != ""
           ) {
-              form.relations.push({"property":"variable.measures","value":dataToInsert[idx]['variable_'+i]})
+              form.relations.push({"property":"vocabulary:measures","value":dataToInsert[idx]['variable_'+i]})
           }
         }
       }
@@ -608,8 +627,16 @@ export default class DeviceTable extends Vue {
             }
         } 
       }
+      let header = data[0];
+      for(let idy = 0; idy < header.length; idy++){
+        if(header[idy].startsWith('variable_')){
+          this.nbVariableCol++;
+        }
+      }
       if (insertionOK) {
         this.tabulator.setData(data);
+        this.displayRemovalCol = true;
+        this.displayPersonCol = true;
       }
     }
         

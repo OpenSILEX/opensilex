@@ -31,7 +31,7 @@
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('DeviceTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('DeviceTable.addRow')}}</b-button>
       <b-button class="mb-2 mr-2" @click="showColumnModal" variant="outline-dark">{{$t('DeviceTable.addColumn')}}</b-button>
-      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark" v-bind:disabled="!isSensor">{{$t('DeviceTable.addVarColumn')}} </b-button>  
+      <b-button class="mb-2 mr-2" @click="addVariableCol" variant="outline-dark" v-bind:disabled="!measure">{{$t('DeviceTable.addVarColumn')}} </b-button>
       <b-form-select v-if="this.checkedLines>0"
         id="filter"
         v-model="filter"
@@ -43,11 +43,12 @@
       ></b-form-select> 
     </b-input-group>    
 
-    <div ref="table"></div>
     <b-input-group class="mt-3 mb-3" size="sm">
       <b-button class="mb-2 mr-2" @click="checkData()" variant="primary" v-bind:disabled="disableCheck">{{$t("DeviceTable.check")}}</b-button>
       <b-button class="mb-2 mr-2 " @click="insertData()" variant="success" v-bind:disabled="disableInsert">{{$t('DeviceTable.insert')}}</b-button>
     </b-input-group>
+
+    <div ref="table"></div>
 
     <b-modal
       id="progressModal"
@@ -67,6 +68,12 @@
       </b-alert>
       <b-alert variant="primary" :show="infoMessage">{{this.summary}}</b-alert>
       <b-alert variant="danger" :show="alertEmptyTable">{{$t('DeviceTable.emptyMessage')}}</b-alert>
+      <b-button
+          v-if="onlyChecking && !alertEmptyTable"
+          class="mb-2 mr-2"
+          @click="insertDataFromModal()"
+          variant="success"
+        >{{$t('DeviceTable.insert')}}</b-button>
       <template v-slot:modal-footer>
         <b-button
           v-bind:disabled="disableCloseButton"
@@ -81,7 +88,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFPropertyDTO } from "opensilex-core/index";
+import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFPropertyDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
@@ -102,7 +109,7 @@ export default class DeviceTable extends Vue {
   displayRemovalCol: boolean = false;
   displayPersonCol: boolean = false;
   nbVariableCol: number = 0;
-  isSensor: boolean = false;
+  measure: boolean = false;
   
 
   // Progress Modal
@@ -227,19 +234,13 @@ export default class DeviceTable extends Vue {
     this.displayRemovalCol = true;
     this.displayPersonCol = true;
     this.nbVariableCol = 0;
-    this.isSensor = this.$attrs.deviceType.endsWith('SensingDevice')
+    this.measure = (  this.$attrs.deviceType.endsWith('SensingDevice') ||
+                      this.$attrs.deviceType.endsWith('Actuator') ||
+                      this.$attrs.deviceType.endsWith('SoftSensor')
+                    );
     
     this.buildFinalTypeList();
     //this.getTypeProperty();
-
-    this.buildFinalTypeList();
-    this.getTypeProperty();
-
-    this.buildFinalTypeList();
-    this.getTypeProperty();
-
-    this.buildFinalTypeList();
-    this.getTypeProperty();
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
@@ -257,15 +258,16 @@ export default class DeviceTable extends Vue {
     let person_in_chargeCol =  {title:this.$t('DeviceTable.person_in_charge'), field:"person_in_charge", visible:this.displayPersonCol, editor:true};
     let start_upCol =  {title:this.$t('DeviceTable.start_up'), field:"start_up", visible:true, editor:true};
     let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:this.displayRemovalCol, editor:true};
+    let commentCol =  {title:this.$t('DeviceTable.comment'), field:"comment", visible:true, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
-    if(this.isSensor){
+    if(this.measure){
       this.nbVariableCol = 1;
       let variableCol = {title:this.$t('DeviceTable.variable')+'_1', field:"variable_1", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, variableCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, variableCol, checkingStatusCol, insertionStatusCol]
     }else{
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, checkingStatusCol, insertionStatusCol]
     }
 
     /*for (let i = 0; i < this.typeProperty.length; i++){
@@ -288,6 +290,7 @@ export default class DeviceTable extends Vue {
         } else if (row.getData().status == "NOK") {
           row.getElement().style.backgroundColor = "#ed6661";
         }
+        row.update({"rdf_type":this.$attrs.deviceType})
       }
     });
 
@@ -310,54 +313,7 @@ export default class DeviceTable extends Vue {
     this.tabulator.hideColumn("person_in_charge");
     
   }
-
-  addVariableCol(){
-    this.nbVariableCol = this.nbVariableCol + 1;
-    this.tabulator.addColumn({title:this.$t('DeviceTable.variable')+'_'+this.nbVariableCol, field:"variable_" + this.nbVariableCol, visible:true, editor:true},false,
-        "variable_" + (this.nbVariableCol-1));
-  }
-
-  getTypeProperty(){
-    this.typeProperty = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getProperties(this.$attrs.deviceType)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.typeProperty.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  buildFinalTypeList(){
-    this.deviceTypes = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getSubClassesOf(this.$attrs.deviceType, true)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.deviceTypes.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+  
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
       this.tableData.push({ rowNumber: i });
@@ -374,7 +330,7 @@ export default class DeviceTable extends Vue {
       this.tabulator.addColumn(
         { title: this.colName, field: this.colName, editor: true },
         false,
-        "removal"
+        "comment"
       );
       this.suppColumnsNames.push(this.colName);
       this.jsonForTemplate[0][this.colName] = null;
@@ -409,14 +365,13 @@ export default class DeviceTable extends Vue {
               },
               false,"variable_" + (this.nbVariableCol-1)
               );
-    this.suppColumnsNames.push(varColName);
     this.jsonForTemplate[0][varColName] = null;
     this.$attrs.downloadCsv;
   }
 
   addRow() {
     let size = this.tabulator.getData().length;
-    this.tabulator.addRow({ rowNumber: size + 1 });
+    this.tabulator.addRow({ rowNumber: size + 1 , rdf_type: this.$attrs.deviceType});
     console.log(this.tabulator.getData().length);
   }
 
@@ -435,6 +390,11 @@ export default class DeviceTable extends Vue {
     this.max = this.tabulator.getData().length;
     this.modalTitle = this.max + " lines to scan";
     this.$bvModal.show("progressModal");
+  }
+
+   insertDataFromModal() {
+    this.$bvModal.hide('progressModal');
+    this.insertData();
   }
 
   checkData() {
@@ -464,7 +424,7 @@ export default class DeviceTable extends Vue {
     this.$opensilex.disableLoader();
 
     for (let idx = 0; idx < dataToInsert.length; idx++) {
-      let form: DeviceDTO = {
+      let form: DeviceCreationDTO = {
         rdf_type: null,
         name: null,
         uri: null,
@@ -474,7 +434,9 @@ export default class DeviceTable extends Vue {
         person_in_charge: null,
         start_up: null,
         removal: null,
-        relations: []
+        description:null,
+        relations: [],
+        metadata: {},
       };
 
       if (dataToInsert[idx].rdf_type != null && dataToInsert[idx].rdf_type != ""){
@@ -529,7 +491,28 @@ export default class DeviceTable extends Vue {
       }
 
       if (
-        this.isSensor &&
+        dataToInsert[idx].comment != null &&
+        dataToInsert[idx].comment != ""
+      ) {
+        form.description = dataToInsert[idx].comment;
+      }
+
+      if (this.suppColumnsNames.length > 0) {
+        let attributes = {};
+        for (let y = 0; y < this.suppColumnsNames.length; y++) {
+          let key = this.suppColumnsNames[y];
+          if (dataToInsert[idx][key] != null && dataToInsert[idx][key] != "") {
+            attributes[key] = dataToInsert[idx][key];
+          }
+        }
+
+        if (Object.keys(attributes).length !== 0) {
+          form.metadata = attributes;
+        }
+      }
+
+      if (
+        this.measure &&
         this.nbVariableCol > 0
       ){
         for(let i = 1; i <= this.nbVariableCol; i++ ){
@@ -550,7 +533,8 @@ export default class DeviceTable extends Vue {
         form.serial_number == null &&
         form.person_in_charge == null &&
         form.start_up == null &&
-        form.removal == null
+        form.removal == null &&
+        form.description == null
       ) {
         this.emptyLines = this.emptyLines + 1;
         this.progressValue = this.progressValue + 1;
@@ -593,7 +577,7 @@ export default class DeviceTable extends Vue {
   }
 
   callCreateDeviceService(
-    form: DeviceDTO,
+    form: DeviceCreationDTO,
     index: number,
     onlyChecking: boolean
   ) {
@@ -754,6 +738,7 @@ en:
     person_in_charge: Person in charge
     start_up: Start-up date
     removal: Removal date
+    comment: Description
     variable: Variable
     checkingStatus: Checking status
     insertionStatus: Insertion Status
@@ -791,6 +776,7 @@ fr:
     person_in_charge: Personne en charge
     start_up: Date de mise en service
     removal: Date de mise hors service
+    comment: Description
     variable: Variable
     checkingStatus: Statut
     insertionStatus: Statut

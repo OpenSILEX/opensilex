@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.utils;
 
+import org.apache.commons.text.CaseUtils;
 import org.apache.jena.arq.querybuilder.Order;
 
 /**
@@ -33,7 +34,8 @@ public class OrderBy {
     public OrderBy(String orderByStr) throws Exception {
         String[] orderParts = orderByStr.split("=");
         if (orderParts.length <= 2 && orderParts[0].length() > 0) {
-            fieldName = orderParts[0];
+            // "camel_case" returns "camelCase"
+            fieldName = CaseUtils.toCamelCase(orderParts[0], false, new char[]{'_'}); 
             String fieldOrder = orderParts[1];
             if (fieldOrder.equalsIgnoreCase("desc") || fieldOrder.equals("1") || fieldOrder.equalsIgnoreCase("true")) {
                 order = Order.DESCENDING;

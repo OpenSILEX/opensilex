@@ -55,7 +55,14 @@
       <b-col sm="5">
         <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
             <template v-slot:body>
-              <opensilex-StringView :value="device.relations"></opensilex-StringView>
+              <opensilex-StringView label="DeviceDescription.variables" :value="device.relations">
+                <span :key="relations" v-for="(relations) in device.relations"> 
+                  <opensilex-UriLink 
+                  :uri="relations.value"    
+                  :to="{path: '/variable/details/'+ encodeURIComponent(relations.value)}"
+                ></opensilex-UriLink><br>
+                </span>
+              </opensilex-StringView> 
             </template>
         </opensilex-Card>
       </b-col>
@@ -69,6 +76,7 @@
       editTitle="udpate"
       icon="ik#ik-user"
       modalSize="lg"
+      @onUpdate="refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -78,7 +86,8 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   DeviceDTO,
-  DevicesService
+  DevicesService,
+  VariablesService
 } from "opensilex-core/index";
 import {
   SecurityService,

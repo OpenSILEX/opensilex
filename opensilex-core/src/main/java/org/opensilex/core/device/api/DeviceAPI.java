@@ -194,13 +194,17 @@ public class DeviceAPI {
             @Valid DeviceDTO dto
     ) throws Exception {
 
-        URI devType = dto.getType();
+        // URI devType = dto.getType();
 
-        DeviceDAO dao = new DeviceDAO(sparql);
+        // DeviceDAO dao = new DeviceDAO(sparql);
 
-        URI devURI = dao.update(devType, dto.getUri(), dto.getName(), dto.getRelations(), currentUser);
+        // URI devURI = dao.update(devType, dto.getUri(), dto.getName(), dto.getRelations(), currentUser);
 
-        return new ObjectUriResponse(devURI).getResponse();
+        // return new ObjectUriResponse(devURI).getResponse();
+        DeviceDAO deviceDAO = new DeviceDAO(sparql);
+        DeviceModel DeviceModel = dto.newModel();
+        deviceDAO.update(DeviceModel, currentUser);
+        return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
     }
 
     @DELETE

@@ -78,7 +78,8 @@ public class DocumentDAO {
     }
 
     public byte[] getFile(URI uri) throws Exception {
-        return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
+        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
+        return fs.readFileAsByteArray(fileStorageDirectory.toString(), uri);
     }
 
     public DocumentModel getMetadata(URI uri, UserModel user) throws Exception {

@@ -9,6 +9,7 @@ package org.opensilex.core.device.dal;
 import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -80,6 +81,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     LocalDate removal;
     public static final String DATEOFLASTUSE_FIELD = "removal";
     
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    String description;
+    public static final String COMMENT_FIELD = "description";
+    
     public String getBrand() {
         return brand;
     }
@@ -126,5 +134,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setRemoval(LocalDate removal) {
         this.removal = removal;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

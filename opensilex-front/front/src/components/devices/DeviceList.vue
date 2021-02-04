@@ -17,9 +17,9 @@
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-TypeForm
-            :type.sync="filter.rdf_type"
+            :type.sync="filter.rdfTypes"
             :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-            placeholder="DeviceList.filter.rdf_type-placeholder"
+            placeholder="DeviceList.filter.rdfTypes-placeholder"
           ></opensilex-TypeForm>
         </div>
 
@@ -101,7 +101,7 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { DevicesService, DocumentsService, DeviceDTO } from "opensilex-core/index";
+import { DevicesService, DocumentsService, DeviceDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -123,8 +123,8 @@ export default class DeviceList extends Vue {
   }
 
   filter = {
+    rdfTypes: undefined,
     namePattern: undefined,
-    rdf_type: undefined,
     start_up: undefined,
     brand: undefined,
     model: undefined
@@ -132,8 +132,8 @@ export default class DeviceList extends Vue {
 
   resetFilters() {
     this.filter = {
+      rdfTypes: undefined,
       namePattern: undefined,
-      rdf_type: undefined,
       start_up: undefined,
       brand: undefined,
       model: undefined
@@ -159,7 +159,7 @@ export default class DeviceList extends Vue {
     },
     {
       key: "rdf_type_name",
-      label: "DeviceList.rdf_type",
+      label: "DeviceList.rdfTypes",
       sortable: true
     },
     {
@@ -179,8 +179,8 @@ export default class DeviceList extends Vue {
 
   searchDevices(options) {
     return this.service.searchDevices(
+      this.filter.rdfTypes, // rdfTypes filter
       this.filter.namePattern, // namePattern filter
-      this.filter.rdf_type, // rdfTypes filter
       this.filter.start_up, // year filter
       this.filter.brand, // brandPattern filter
       this.filter.model, // model filter
@@ -230,7 +230,7 @@ en:
   DeviceList:
     uri: URI
     name: Name
-    rdf_type: Device Type 
+    rdfTypes: Device Type 
     start_up: Start up 
     update: Update Device
     delete: Delete Device
@@ -241,8 +241,8 @@ en:
     filter:
       namePattern: Name
       namePattern-placeholder: Enter name
-      rdf_type: Type
-      rdf_type-placeholder: Select a device type
+      rdfTypes: Type
+      rdfTypes-placeholder: Select a device type
       start_up: Start up
       start_up-placeholder: Enter year
       brand: Brand
@@ -254,7 +254,7 @@ fr:
   DeviceList:
     uri: URI
     name: Nom
-    rdf_type: Type du dispositif
+    rdfTypes: Type du dispositif
     start_up: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
@@ -265,8 +265,8 @@ fr:
     filter:
       namePattern: Nom
       namePattern-placeholder: Entrez un nom
-      rdf_type: Type
-      rdf_type-placeholder: Selectionner un type de dispositif
+      rdfTypes: Type
+      rdfTypes-placeholder: Selectionner un type de dispositif
       start_up: Date d'obtention
       start_up-placeholder: Entrer une année
       brand: Marque 

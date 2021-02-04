@@ -3,7 +3,7 @@
     <b-modal ref="colModal" :title="$t('DeviceTable.addColumn')" size="sm" hide-footer>
       <b-form-checkbox id="removalColSw" v-model="displayRemovalCol" switch>{{$t('DeviceTable.removal')}}</b-form-checkbox>
       <b-form-checkbox id="personColSw" v-model="displayPersonCol" switch>{{$t('DeviceTable.person_in_charge')}}</b-form-checkbox>
-      <b-form-input v-model="colName" placeholder="Enter column name"></b-form-input>
+      <!--<b-form-input v-model="colName" placeholder="Enter column name"></b-form-input> -->
       <b-button class="mt-3" variant="primary" block @click="addColumn">{{$t('DeviceTable.addColumn')}}</b-button>
     </b-modal>
 
@@ -322,6 +322,16 @@ export default class DeviceTable extends Vue {
 
   showColumnModal() {
     this.colModal.show();
+  }
+
+  displayCol(){
+    if(this.displayRemovalCol){
+      this.tabulator.showColumn("removal");
+      this.displayRemovalCol = true;
+    }else{
+      this.tabulator.hideColumn("removal");
+      this.displayRemovalCol = false;
+    }
   }
 
   addColumn() {

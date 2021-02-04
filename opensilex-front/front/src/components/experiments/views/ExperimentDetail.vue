@@ -309,7 +309,7 @@ console.log(this.experiment);
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.firstName + " " + item.lastName
+              value: item.first_name + " " + item.last_name
             };
           });
         })
@@ -327,7 +327,7 @@ console.log(this.experiment);
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.firstName + " " + item.lastName
+              value: item.first_name + " " + item.last_name
             };
           });
         })

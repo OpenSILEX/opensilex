@@ -16,7 +16,7 @@
       <template v-slot>
         <opensilex-UserList
           ref="userList"
-          @onEdit="userForm.showEditForm($event)"
+          @onEdit="showEditForm($event)"
         ></opensilex-UserList>
       </template>
     </opensilex-PageContent>
@@ -59,6 +59,10 @@ export default class UserView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+  showEditForm(dto){
+    let copydto = JSON.parse(JSON.stringify(dto));
+    this.userForm.showEditForm(copydto);
   }
 }
 </script>

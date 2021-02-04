@@ -16,17 +16,17 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(userProfiles)="{data}">
-        <div>{{$tc("component.user.label", data.item.userProfiles.length, {count: data.item.userProfiles.length})}}</div>
+      <template v-slot:cell(user_profiles)="{data}">
+        <div>{{$tc("component.user.label", data.item.user_profiles.length, {count: data.item.user_profiles.length})}}</div>
       </template>
 
       <template v-slot:row-details="{data}">
         <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
         <ul>
           <li
-            v-for="userProfile in data.item.userProfiles"
+            v-for="userProfile in data.item.user_profiles"
             v-bind:key="userProfile.uri"
-          >{{userProfile.userName}} ({{userProfile.profileName}})</li>
+          >{{userProfile.user_name}} ({{userProfile.profile_name}})</li>
         </ul>
       </template>
 
@@ -105,7 +105,7 @@ export default class GroupList extends Vue {
     },
     {
       label: "component.user.users",
-      key: "userProfiles"
+      key: "user_profiles"
     },
     {
       label: "component.common.actions",

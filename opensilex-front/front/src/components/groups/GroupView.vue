@@ -16,7 +16,7 @@
       <template v-slot>
         <opensilex-GroupList
           ref="groupList"
-          @onEdit="groupForm.showEditForm($event)"
+          @onEdit="showEditForm($event)"
         ></opensilex-GroupList>
       </template>
     </opensilex-PageContent>
@@ -63,6 +63,12 @@ export default class GroupView extends Vue {
 
   @Ref("groupForm") readonly groupForm!: any;
   @Ref("groupList") readonly groupList!: any;
+
+
+  showEditForm(dto){
+    let copydto = JSON.parse(JSON.stringify(dto));
+    this.groupForm.showEditForm(copydto);
+  }
 }
 </script>
 

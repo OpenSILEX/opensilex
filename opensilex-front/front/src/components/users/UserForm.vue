@@ -32,7 +32,7 @@
 
     <!-- First name -->
     <opensilex-InputForm
-      :value.sync="form.firstName"
+      :value.sync="form.first_name"
       label="component.user.first-name"
       type="text"
       :required="true"
@@ -41,7 +41,7 @@
 
     <!-- Last name -->
     <opensilex-InputForm
-      :value.sync="form.lastName"
+      :value.sync="form.last_name"
       label="component.user.last-name"
       type="text"
       :required="true"
@@ -105,8 +105,8 @@ export default class UserForm extends Vue {
       return {
         uri: null,
         email: "",
-        firstName: "",
-        lastName: "",
+        first_name: "",
+        last_name: "",
         admin: false,
         password: "",
         language: "en"
@@ -123,8 +123,8 @@ export default class UserForm extends Vue {
     return {
       uri: null,
       email: "",
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       admin: false,
       password: "",
       language: "en"

@@ -12,10 +12,10 @@
       :fields="fields"
       defaultSortBy="email"
     >
-      <template v-slot:cell(lastName)="{data}">
+      <template v-slot:cell(last_name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
-          :value="data.item.lastName"
+          :value="data.item.last_name"
           :noExternalLink="true"
           @click="data.toggleDetails()"
         ></opensilex-UriLink>
@@ -109,12 +109,12 @@ export default class UserList extends Vue {
 
   fields = [
     {
-      key: "lastName",
+      key: "last_name",
       label: "component.user.last-name",
       sortable: true
     },
     {
-      key: "firstName",
+      key: "first_name",
       label: "component.user.first-name",
       sortable: true
     },

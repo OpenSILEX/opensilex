@@ -25,13 +25,13 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    protected String path = "/profile";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String getPath = path + "/get/{uri}";
-    protected String deletePath = path + "/delete/{uri}";
-    protected String searchPath = path + "/search";
-    protected String getAllPath = path + "/get-all";
+    protected String path = "/security/profiles";
+    protected String createPath = path ;
+    protected String updatePath = path ;
+    protected String getPath = path + "/{uri}";
+    protected String deletePath = path + "/{uri}";
+    protected String searchPath = path;
+    protected String getAllPath = path + "/all";
 
     protected ProfileCreationDTO getProfilCreationDTO() {
 
@@ -130,7 +130,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("pattern", "profile.*");
+                put("name", "profile.*");
             }
         };
 
@@ -146,7 +146,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
 
-        params.put("pattern", "profile 2");
+        params.put("name", "profile 2");
         target = appendSearchParams(target(searchPath), 0, 50, params);
         getSearchResult = appendToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());

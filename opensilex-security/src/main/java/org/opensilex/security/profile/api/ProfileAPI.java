@@ -61,25 +61,24 @@ import org.opensilex.utils.ListWithPagination;
  * @author Vincent Migot
  */
 @Api(SecurityModule.REST_SECURITY_API_ID)
-@Path("/profile")
+@Path("/security/profiles")
 public class ProfileAPI {
 
     @Inject
     private SPARQLService sparql;
 
     @POST
-    @Path("create")
-    @ApiOperation("Create a profile and return it's URI")
+    @ApiOperation("Add a profile")
     @ApiResponses({
-        @ApiResponse(code = 201, message = "Profile sucessfully created"),
-        @ApiResponse(code = 403, message = "Current user can't create profiles"),
-        @ApiResponse(code = 409, message = "Profile name already exists")
+        @ApiResponse(code = 201, message = "A profile is created"),
+        @ApiResponse(code = 403, message = "This current user can't create profiles"),
+        @ApiResponse(code = 409, message = "The profile name already exists")
     })
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
-            @ApiParam("Profile creation informations") @Valid ProfileCreationDTO profileDTO
+            @ApiParam("Profile description") @Valid ProfileCreationDTO profileDTO
     ) throws Exception {
         // Create profile DAO
         ProfileDAO profileDAO = new ProfileDAO(sparql);
@@ -115,7 +114,6 @@ public class ProfileAPI {
     }
 
     @PUT
-    @Path("update")
     @ApiOperation("Update a profile")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -158,18 +156,18 @@ public class ProfileAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get a profile by it's URI")
+    @Path("{uri}")
+    @ApiOperation("Get a profile")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile", response = ProfileGetDTO.class),
+        @ApiResponse(code = 200, message = "Profile retrieved", response = ProfileGetDTO.class),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Profile not found", response = ErrorDTO.class)
     })
     public Response getProfile(
-            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Profile URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         // Get user from DAO by URI
         ProfileDAO dao = new ProfileDAO(sparql);
@@ -192,7 +190,7 @@ public class ProfileAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete a profile")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -206,20 +204,19 @@ public class ProfileAPI {
     }
 
     @GET
-    @Path("search")
     @ApiOperation("Search profiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile list", response = ProfileGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return profiles", response = ProfileGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchProfiles(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search profiles with Profile DAO
         ProfileDAO dao = new ProfileDAO(sparql);
@@ -243,17 +240,17 @@ public class ProfileAPI {
     }
 
     @GET
-    @Path("get-all")
+    @Path("all")
     @ApiOperation("Get all profiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return profile list", response = ProfileGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return all profiles", response = ProfileGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response getAllProfiles(
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
         // Search profiles with Profile DAO
         ProfileDAO dao = new ProfileDAO(sparql);

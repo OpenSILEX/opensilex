@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.user.api;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
@@ -33,6 +34,8 @@ import org.opensilex.server.rest.validation.ValidURI;
  * @author Vincent Migot
  */
 @ApiModel
+@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "language", "password",
+    "admin"})
 public class UserCreationDTO extends UserGetDTO {
 
     /**

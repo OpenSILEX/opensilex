@@ -5,6 +5,8 @@
  */
 package org.opensilex.security.group.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
@@ -19,14 +21,26 @@ import org.opensilex.sparql.response.ResourceDTO;
  * @author vidalmor
  */
 @ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "profile_uri", "profile_name", "user_uri", "user_name"})
 public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
 
+    
+  @ JsonProperty("rdf_type")
+    protected URI type;
+    
+    @JsonProperty("rdf_type_name")
+    protected String typeLabel;
+    
+    @JsonProperty("profile_uri")
     protected URI profileURI;
 
+    @JsonProperty("profile_name")
     protected String profileName;
 
+    @JsonProperty("user_uri")
     protected URI userURI;
 
+    @JsonProperty("user_name")
     protected String userName;
 
     @ValidURI
@@ -55,7 +69,7 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
     }
 
     @ValidURI
-    @ApiModelProperty(value = "User URI")
+    @ApiModelProperty(value = "User URI",required = true)
     public URI getUserURI() {
         return userURI;
     }

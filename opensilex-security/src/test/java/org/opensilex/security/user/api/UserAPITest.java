@@ -26,13 +26,13 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    protected String path = "/user";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String getPath = path + "/get/{uri}";
-    protected String deletePath = path + "/delete/{uri}";
-    protected String searchPath = path + "/search";
-    protected String urisListPath = path + "/get-by-uris";
+    protected String path = "security/users";
+    protected String createPath = path ;
+    protected String updatePath = path ;
+    protected String getPath = path + "/{uri}";
+    protected String deletePath = path + "/{uri}";
+    protected String searchPath = path ;
+    protected String urisListPath = path + "/by_uris";
 
     private int userCount = 0;
 
@@ -147,7 +147,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("pattern", "user.*");
+                put("name", "user.*");
             }
         };
 
@@ -163,7 +163,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
 
-        params.put("pattern", "user1");
+        params.put("name", "user1");
         target = appendSearchParams(target(searchPath), 0, 50, params);
         getSearchResult = appendToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());

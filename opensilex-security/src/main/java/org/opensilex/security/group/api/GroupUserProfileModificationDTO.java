@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
-import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**

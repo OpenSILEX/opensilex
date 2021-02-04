@@ -56,7 +56,7 @@ export default class UserSelector extends Vue {
   }
 
   userToSelectNode(dto: UserGetDTO) {
-    let userLabel = dto.firstName + " " + dto.lastName + " <" + dto.email + ">";
+    let userLabel = dto.first_name + " " + dto.last_name + " <" + dto.email + ">";
     return {
       label: userLabel,
       id: dto.uri

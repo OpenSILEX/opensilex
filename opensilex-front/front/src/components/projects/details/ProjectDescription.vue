@@ -295,7 +295,7 @@ export default class ProjectDescription extends Vue {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.firstName + " " + item.lastName
+              value: item.first_name + " " + item.last_name
             };
           });
         })
@@ -310,7 +310,7 @@ export default class ProjectDescription extends Vue {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.firstName + " " + item.lastName
+              value: item.first_name + " " + item.last_name
             };
           });
         })
@@ -325,7 +325,7 @@ export default class ProjectDescription extends Vue {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.firstName + " " + item.lastName
+              value: item.first_name + " " + item.last_name
             };
           });
         })

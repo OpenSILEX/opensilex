@@ -5,6 +5,9 @@
  */
 package org.opensilex.security.group.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.ArrayList;
@@ -17,10 +20,19 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author vince
  */
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "description", "user_profiles"})
 public class GroupGetDTO extends NamedResourceDTO<GroupModel> {
 
     protected String description;
-
+    
+  @ JsonProperty("rdf_type")
+    protected URI type;
+    
+    @JsonProperty("rdf_type_name")
+    protected String typeLabel;
+    
+    @JsonProperty("user_profiles")
     protected List<GroupUserProfileDTO> userProfiles;
 
     @ApiModelProperty(value = "Group URI", example = "http://opensilex.dev/groups#Experiment_manager")

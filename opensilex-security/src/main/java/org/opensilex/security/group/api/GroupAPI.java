@@ -51,7 +51,7 @@ import org.opensilex.utils.ListWithPagination;
  * @author vidalmor
  */
 @Api(SecurityModule.REST_SECURITY_API_ID)
-@Path("/group")
+@Path("/security/groups")
 @ApiCredentialGroup(
         groupId = GroupAPI.CREDENTIAL_GROUP_GROUP_ID,
         groupLabelKey = GroupAPI.CREDENTIAL_GROUP_GROUP_LABEL_KEY
@@ -79,10 +79,9 @@ public class GroupAPI {
      * @throws Exception if creation failed
      */
     @POST
-    @Path("create")
-    @ApiOperation("Create a group and return it's URI")
+    @ApiOperation("Add a group")
     @ApiResponses({
-        @ApiResponse(code = 201, message = "Group sucessfully created")
+        @ApiResponse(code = 201, message = "A group is created")
     })
     @ApiProtected
     @ApiCredential(
@@ -92,7 +91,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createGroup(
-            @ApiParam("Group creation informations") @Valid GroupCreationDTO dto
+            @ApiParam("Group description") @Valid GroupCreationDTO dto
     ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
 
@@ -124,7 +123,6 @@ public class GroupAPI {
     }
 
     @PUT
-    @Path("update")
     @ApiOperation("Update a group")
     @ApiProtected
     @ApiCredential(
@@ -134,7 +132,7 @@ public class GroupAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group uri of the updated group", response = String.class),
+        @ApiResponse(code = 200, message = "Group updated", response = String.class),
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response updateGroup(
@@ -163,7 +161,7 @@ public class GroupAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
+    @Path("{uri}")
     @ApiOperation("Delete a group")
     @ApiProtected
     @ApiCredential(
@@ -194,13 +192,13 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get a group by it's URI")
+    @Path("{uri}")
+    @ApiOperation("Get a group")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group", response = GroupDTO.class),
+        @ApiResponse(code = 200, message = "Group retrieved", response = GroupDTO.class),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Group not found", response = ErrorDTO.class)
     })
@@ -240,27 +238,26 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("search")
     @ApiOperation("Search groups")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group list", response = GroupDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchGroups(
-            @ApiParam(value = "Regex pattern for filtering list by names", example = ".*")
+            @ApiParam(value = "Regex pattern for filtering list by name", example = ".*")
             @DefaultValue(".*")
-            @QueryParam("pattern") String pattern,
+            @QueryParam("name") String pattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc")
-            @QueryParam("orderBy") List<OrderBy> orderByList,
+            @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0")
             @QueryParam("page")
             @DefaultValue("0")
             @Min(0) int page,
             @ApiParam(value = "Page size", example = "20")
-            @QueryParam("pageSize")
+            @QueryParam("page_size")
             @DefaultValue("20")
             @Min(0) int pageSize
     ) throws Exception {
@@ -292,13 +289,13 @@ public class GroupAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-by-uris")
-    @ApiOperation("Get a list of groups by their URIs")
+    @Path("by_uris")
+    @ApiOperation("Get groups by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return group list", response = GroupDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return groups", response = GroupDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Group not found (if any provided URIs is not found", response = ErrorDTO.class)
     })

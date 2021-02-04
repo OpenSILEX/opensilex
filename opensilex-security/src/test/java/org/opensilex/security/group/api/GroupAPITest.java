@@ -30,12 +30,12 @@ import org.opensilex.sparql.service.SPARQLService;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/group";
-    protected String createPath = path + "/create";
-    protected String updatePath = path + "/update";
-    protected String getPath = path + "/get/{uri}";
-    protected String deletePath = path + "/delete/{uri}";
-    protected String searchPath = path + "/search";
+    protected String path = "/security/groups";
+    protected String createPath = path;
+    protected String updatePath = path ;
+    protected String getPath = path + "/{uri}";
+    protected String deletePath = path + "/{uri}";
+    protected String searchPath = path;
 
     private final static String USER1_URI = "http://example.org/users/user1";
     private final static String USER2_URI = "http://example.org/users/user2";
@@ -175,7 +175,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
-                put("pattern", "Group.*");
+                put("name", "Group.*");
             }
         };
 
@@ -191,7 +191,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
 
-        params.put("pattern", "Group 2");
+        params.put("name", "Group 2");
         target = appendSearchParams(target(searchPath), 0, 50, params);
         getSearchResult = appendToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());

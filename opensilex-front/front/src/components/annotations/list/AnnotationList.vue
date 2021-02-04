@@ -208,7 +208,7 @@
 
             return this.$securityService.getUsersByURI(Array.from(uniqueUsers)).then(http => {
                 http.response.result.forEach(userDto => {
-                    this.usersByUri.set(userDto.uri, {firstName : userDto.firstName, lastName : userDto.lastName});
+                    this.usersByUri.set(userDto.uri, {first_name : userDto.first_name, last_name : userDto.last_name});
                 })
             }).catch(reject);
         }
@@ -219,7 +219,7 @@
                 return undefined;
             }
             let userDto = this.usersByUri.get(userUri);
-            return userDto ? userDto.firstName + " "+userDto.lastName : undefined;
+            return userDto ? userDto.first_name + " "+userDto.last_name : undefined;
         }
 
         static newFilter() {

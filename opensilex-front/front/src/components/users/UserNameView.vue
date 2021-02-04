@@ -1,6 +1,6 @@
 <template>
   <span>
-    {{ user.firstName }} {{ user.lastName }}
+    {{ user.first_name }} {{ user.last_name }}
     <button
       v-on:click.prevent="copyEmail(user.email)"
       class="uri-copy"

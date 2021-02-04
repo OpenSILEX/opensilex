@@ -17,7 +17,7 @@
         <opensilex-ProfileList
           ref="profileList"
           v-bind:credentialsGroups="credentialsGroups"
-          @onEdit="profileForm.showEditForm($event)"
+          @onEdit="showEditForm($event)"
         ></opensilex-ProfileList>
       </template>
     </opensilex-PageContent>
@@ -67,6 +67,11 @@ export default class ProfileView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  showEditForm(dto){
+    let copydto = JSON.parse(JSON.stringify(dto));
+    this.profileForm.showEditForm(copydto);
   }
 }
 </script>

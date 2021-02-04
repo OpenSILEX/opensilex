@@ -28,9 +28,9 @@
 
     <!-- User profile selection -->
     <opensilex-GroupUserProfileForm
-      v-if="form.userProfiles"
+      v-if="form.user_profiles"
       ref="userProfilesRef"
-      :profiles.sync="form.userProfiles"
+      :profiles.sync="form.user_profiles"
     ></opensilex-GroupUserProfileForm>
   </b-form>
 </template>
@@ -71,7 +71,7 @@ export default class GroupForm extends Vue {
         uri: null,
         name: "",
         description: "",
-        userProfiles: []
+        user_profiles: []
       };
     }
   })
@@ -87,7 +87,7 @@ export default class GroupForm extends Vue {
       uri: null,
       name: "",
       description: "",
-      userProfiles: []
+      user_profiles: []
     };
   }
 

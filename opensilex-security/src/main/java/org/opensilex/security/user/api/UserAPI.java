@@ -70,7 +70,7 @@ import org.opensilex.utils.ListWithPagination;
  * @author Vincent Migot
  */
 @Api(SecurityModule.REST_SECURITY_API_ID)
-@Path("/user")
+@Path("/security/users")
 @ApiCredentialGroup(
         groupId = UserAPI.CREDENTIAL_GROUP_USER_ID,
         groupLabelKey = UserAPI.CREDENTIAL_GROUP_USER_LABEL_KEY
@@ -107,8 +107,7 @@ public class UserAPI {
      * @throws Exception If creation failed
      */
     @POST
-    @Path("create")
-    @ApiOperation("Create a user and return it's URI")
+    @ApiOperation("Add an user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
@@ -117,12 +116,12 @@ public class UserAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses({
-        @ApiResponse(code = 201, message = "User sucessfully created"),
-        @ApiResponse(code = 403, message = "Current user can't create other users with given parameters"),
-        @ApiResponse(code = 409, message = "User already exists (duplicate email)")
+        @ApiResponse(code = 201, message = "A user is created"),
+        @ApiResponse(code = 403, message = "This current user can't create other users with given parameters"),
+        @ApiResponse(code = 409, message = "The user already exists (duplicate email)")
     })
     public Response createUser(
-            @ApiParam("User creation informations") @Valid UserCreationDTO userDTO
+            @ApiParam("User description") @Valid UserCreationDTO userDTO
     ) throws Exception {
         // Check if user is admin to create a new admin user
         if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
@@ -176,13 +175,13 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get a user by it's URI")
+    @Path("{uri}")
+    @ApiOperation("Get an user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return user", response = UserGetDTO.class),
+        @ApiResponse(code = 200, message = "User retrieved", response = UserGetDTO.class),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
     })
@@ -218,15 +217,15 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("get-by-uris")
-    @ApiOperation("Get a list of users by their URIs")
+    @Path("by_uris")
+    @ApiOperation("Get users by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return user", response = UserGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return users", response = UserGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "User not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 404, message = "Users not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getUsersByURI(
             @ApiParam(value = "Users URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -266,20 +265,19 @@ public class UserAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("search")
     @ApiOperation("Search users")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return user list", response = UserGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return users", response = UserGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchUsers(
-            @ApiParam(value = "Regex pattern for filtering list by names or email", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Regex pattern for filtering list by name or email", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "email=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Search users with User DAO
         UserDAO dao = new UserDAO(sparql);
@@ -301,8 +299,7 @@ public class UserAPI {
     }
 
     @PUT
-    @Path("update")
-    @ApiOperation("Update a user")
+    @ApiOperation("Update an user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
@@ -311,7 +308,7 @@ public class UserAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return user uri of the updated user", response = String.class),
+        @ApiResponse(code = 200, message = "User updated", response = String.class),
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response updateUser(
@@ -345,8 +342,8 @@ public class UserAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
-    @ApiOperation("Delete a user")
+    @Path("{uri}")
+    @ApiOperation("Delete an user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_DELETE_ID,
@@ -363,13 +360,13 @@ public class UserAPI {
     }
 
     @GET
-    @Path("get-groups/{uri}")
-    @ApiOperation("Get groups associated to a user")
+    @Path("{uri}/groups")
+    @ApiOperation("Get groups of an user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return user group list", response = NamedResourceDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return user's  groups", response = NamedResourceDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response getUserGroups(

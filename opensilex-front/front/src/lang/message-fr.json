@@ -517,6 +517,7 @@
         "factors": "Facteurs",
         "infrastructures": "Organisations",
         "germplasm": "Germplasm",
+        "area": "Zone",
         "scientific-objects": "Objets scientifiques",
         "data": "Data",
         "documents": "Documents",
@@ -554,6 +555,10 @@
         "germplasm": {
             "modification": "Ajout / Modification germplasm",
             "delete": "Suppression des germplasm"
+        },
+        "area": {
+            "modification": "Ajout / Modification des zones",
+            "delete": "Suppression des zones"
         },
         "scientific-objects": {
             "modification": "Ajout / Modification des objets scientifiques",

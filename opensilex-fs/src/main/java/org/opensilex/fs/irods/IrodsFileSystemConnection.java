@@ -142,12 +142,18 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
     }
 
     private final static String IRODS_MKDIR_CMD = "imkdir";
+    
+    /**
+     * Option used in order to force IRODS make parent directories as needed
+     */
+    private final static String IRODS_MKDIR_PARENT = "-p";
 
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
         irodsCommand(
                 IRODS_MKDIR_CMD,
-                directoryPath.toString()
+                directoryPath.toString(),
+                IRODS_MKDIR_PARENT
         );
     }
 

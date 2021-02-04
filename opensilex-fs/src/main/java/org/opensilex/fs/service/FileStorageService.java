@@ -206,7 +206,7 @@ public class FileStorageService extends BaseService implements Service, FileStor
         try {
             createDirectories(filePath.getParent());
         } catch (Exception e) {
-            
+            LOGGER.debug(e.getMessage());
         }
         writeFile(filePath, file);
     }

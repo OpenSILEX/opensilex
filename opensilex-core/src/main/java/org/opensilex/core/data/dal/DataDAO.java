@@ -49,6 +49,8 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -64,6 +66,8 @@ public class DataDAO {
     protected final MongoDBService nosql;
     protected final SPARQLService sparql;
     protected final FileStorageService fs; 
+    
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
     
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
         this.RDFTYPE_VARIABLE = new URI(Oeso.Variable.toString());
@@ -274,7 +278,7 @@ public class DataDAO {
         try {
             fs.createDirectories(fileStorageDirectory);
         } catch (Exception e) {
-            
+            LOGGER.debug(e.getMessage());
         }
         
         fs.writeFile(Paths.get(model.getPath()), file);

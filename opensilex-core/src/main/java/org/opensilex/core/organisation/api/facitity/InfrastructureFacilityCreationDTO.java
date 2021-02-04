@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 
 /**
- * DTO representing JSON for posting germplasm
- * @author Alice Boizet
+ * DTO representing JSON for posting facility
+ * @author vince
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name","organisation"})

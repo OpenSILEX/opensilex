@@ -19,7 +19,7 @@ import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 
 /**
  * DTO representing JSON for getting organisation
- * @author Alice Boizet
+ * @author vince
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "children","groups", "facilities"})

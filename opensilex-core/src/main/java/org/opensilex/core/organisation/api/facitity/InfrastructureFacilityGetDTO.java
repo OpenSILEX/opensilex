@@ -15,8 +15,8 @@ import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
- * DTO representing JSON for posting germplasm
- * @author Alice Boizet
+ * DTO representing JSON for getting facility
+ * @author vince
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organisation"})

@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModel;
 
 /**
  * DTO representing JSON for update organisation
- * @author Alice Boizet
+ * @author vince
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "children"})

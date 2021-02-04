@@ -202,7 +202,13 @@ public class FileStorageService extends BaseService implements Service, FileStor
     }
 
     public void writeFile(String prefix, URI fileURI, File file) throws IOException {
-        writeFile(getFilePathFromPrefixURI(prefix, fileURI), file);
+        Path filePath = getFilePathFromPrefixURI(prefix, fileURI);        
+        try {
+            createDirectories(filePath.getParent());
+        } catch (Exception e) {
+            
+        }
+        writeFile(filePath, file);
     }
 
     public byte[] readFileAsByteArray(String prefix, URI fileURI) throws IOException {

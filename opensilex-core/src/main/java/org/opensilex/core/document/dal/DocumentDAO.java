@@ -40,6 +40,7 @@ import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.opensilex.fs.service.FileStorageService;
 import java.time.LocalDate;
 import org.apache.jena.graph.NodeFactory;
@@ -71,7 +72,8 @@ public class DocumentDAO {
 
     public DocumentModel create(DocumentModel instance, File file) throws Exception {
         sparql.create(instance);
-        fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
+        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
+        fs.writeFile(fileStorageDirectory.toString(), instance.getUri(), file);
         return instance;
     }
 
@@ -90,7 +92,8 @@ public class DocumentDAO {
 
     public void delete(URI uri, UserModel user) throws Exception {
         sparql.delete(DocumentModel.class, uri);
-        fs.delete(FS_DOCUMENT_PREFIX, uri);
+        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
+        fs.delete(fileStorageDirectory.toString(), uri);
     }
 
     public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {

@@ -23,7 +23,10 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand","constructorModel","serialNumber","personInCharge","start_up","removal","relations"})
+@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand",
+    "constructor_model","serial_number","person_in_charge","start_up",
+    "removal","relations", "description"})
+
 public class DeviceDTO extends RDFObjectDTO {
     
     private String name;
@@ -50,6 +53,9 @@ public class DeviceDTO extends RDFObjectDTO {
     
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
+    
+    @JsonProperty("description")
+    protected String description;
 
     public void setTypeLabel(String typeLabel){
         this.typeLabel = typeLabel;
@@ -114,6 +120,15 @@ public class DeviceDTO extends RDFObjectDTO {
     public LocalDate getRemoval(){
         return removal;
     }
+    
+     public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
     public DeviceModel newModelInstance() {
         return new DeviceModel();
     }
@@ -145,6 +160,10 @@ public class DeviceDTO extends RDFObjectDTO {
         
         if(model.getRemoval() != null){
             setRemoval(model.getRemoval());
+        }
+        
+        if(model.getDescription() != null){
+            setDescription(model.getDescription());
         }
         
         List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
@@ -180,6 +199,10 @@ public class DeviceDTO extends RDFObjectDTO {
 
         if(getRemoval() != null){
             model.setRemoval(getRemoval());
+        }
+        
+        if(getDescription() != null){
+            model.setDescription(getDescription());
         }
     }
     

@@ -20,19 +20,6 @@
       >{{ $t("Annotation.list-title") }}
       </b-nav-item>
 
-      <opensilex-Button
-      v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-      label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-      @click="annotationModalForm.showCreateForm()"
-      ></opensilex-Button>
-
-      <opensilex-AnnotationModalForm
-      v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-      ref="annotationModalForm"
-      :target="uri"
-      @onCreate="updateAnnotations"
-      @onUpdate="updateAnnotations"
-      ></opensilex-AnnotationModalForm>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -159,9 +146,8 @@
       :target="uri"
       :displayTargetColumn="false"
       :enableActions="true"
-      :modificationCredentialId="credentials.CREDENTIAL_PROJECT_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_PROJECT_DELETE_ID"
-      @onEdit="annotationModalForm.showEditForm($event)"
+      :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
+      :deleteCredentialId="credentials.CREDENTIAL_GERMPLASM_DELETE_ID"
       ></opensilex-AnnotationList>
 
     </opensilex-PageContent>
@@ -184,13 +170,10 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   GermplasmGetSingleDTO,
-  GermplasmCreationDTO,
   GermplasmUpdateDTO,
   GermplasmService,
-  ExperimentGetListDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 
 
@@ -208,7 +191,6 @@ export default class GermplasmDetails extends Vue {
   addInfo = [];
 
   @Ref("modalRef") readonly modalRef!: any;
-  @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
   @Ref("annotationList") readonly annotationList!: AnnotationList;
 
   get user() {

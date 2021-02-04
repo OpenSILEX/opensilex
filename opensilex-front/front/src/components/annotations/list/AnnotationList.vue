@@ -1,91 +1,80 @@
 <template>
-    <div>
-        <opensilex-PageContent>
-            <template v-slot>
-        <!--        <opensilex-SearchFilterField-->
-        <!--                @search="refresh()"-->
-        <!--                @clear="reset()"-->
-        <!--                label="component.experiment.search.label"-->
-        <!--                :showAdvancedSearch="true"-->
-        <!--        >-->
-        <!--            <template v-slot:filters>-->
-        <!--                &lt;!&ndash; Label &ndash;&gt;-->
-        <!--                <opensilex-FilterField>-->
-        <!--                    <opensilex-InputForm-->
-        <!--                            :value.sync="filter.label"-->
-        <!--                            label="ExperimentList.filter-label"-->
-        <!--                            type="text"-->
-        <!--                            placeholder="ExperimentList.filter-label-placeholder"-->
-        <!--                    ></opensilex-InputForm>-->
-        <!--                </opensilex-FilterField>-->
-        <!--                -->
-        <!--                <opensilex-FilterField>-->
-        <!--                    <label>{{$t('ExperimentList.filter-year')}}</label>-->
-        <!--                    <opensilex-StringFilter-->
-        <!--                            placeholder="ExperimentList.filter-year-placeholder"-->
-        <!--                            :filter.sync="filter.yearFilter"-->
-        <!--                            type="number"-->
-        <!--                            min="1000"-->
-        <!--                            max="9999"-->
-        <!--                    ></opensilex-StringFilter>-->
-        <!--                </opensilex-FilterField>-->
-        <!--            </template>-->
 
-        <!--        </opensilex-SearchFilterField>-->
+    <div class="row">
+        <div class="col col-xl-12">
 
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <i class="ik ik-clipboard"></i>
+                        {{ $t('Annotation.list-title') }}
+                    </h3>
+                </div>
 
-        <opensilex-TableAsyncView
-                ref="tableRef"
-                :searchMethod="search"
-                :fields="fields"
-                :isSelectable="isSelectable"
-        >
-            <template v-slot:cell(uri)="{data}">
-                <opensilex-UriLink
-                        :uri="data.item.uri"
-                        :value="data.item.uri"
-                ></opensilex-UriLink>
-            </template>
+                <div class="card-body">
+                    <div class="button-zone">
+                        <opensilex-CreateButton
+                                v-if="user.hasCredential(modificationCredentialId)"
+                                label="Annotation.add"
+                                @click="annotationModalForm.showCreateForm([target])"
+                        ></opensilex-CreateButton>
+                    </div>
+                    <opensilex-PageContent>
+                        <template v-slot>
 
-            <template v-slot:cell(motivation)="{data}">
-                {{ data.item.motivation.name}}
-            </template>
+                            <opensilex-TableAsyncView
+                                    ref="tableRef"
+                                    :searchMethod="search"
+                                    :fields="fields"
+                                    :isSelectable="isSelectable"
+                            >
 
-            <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
-                {{ data.item.targets[0]}}
-            </template>
+                                <template v-slot:cell(author)="{data}">
+                                    <opensilex-StringView v-if="data.item.author"
+                                                          :value="getUserNames(data.item.author)"></opensilex-StringView>
+                                </template>
 
-            <template v-slot:cell(description)="{data}">
-                <opensilex-StringView :value="data.item.description"></opensilex-StringView>
-            </template>
+                                <template v-slot:cell(created)="{data}">
+                                    <opensilex-StringView
+                                            :value="new Date(data.item.created).toLocaleString()"></opensilex-StringView>
+                                </template>
 
-            <template v-slot:cell(creator)="{data}">
-                <opensilex-StringView :value="data.item.creator"></opensilex-StringView>
-            </template>
+                                <template v-slot:cell(motivation)="{data}">
+                                    {{ data.item.motivation.name}}
+                                </template>
 
-            <template v-slot:cell(created)="{data}">
-                <opensilex-StringView :value="new Date(data.item.created).toLocaleString()"></opensilex-StringView>
-            </template>
+                                <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
+                                    {{ data.item.targets[0]}}
+                                </template>
 
-            <template v-slot:cell(actions)="{data}">
-                <b-button-group size="sm">
-                    <opensilex-EditButton
-                            v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                            @click="$emit('onEdit', data.item)"
-                            label="Annotation.edit"
-                            :small="true"
-                    ></opensilex-EditButton>
-                    <opensilex-DeleteButton
-                            v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                            @click="deleteAnnotation(data.item.uri)"
-                            label="Annotation.delete"
-                            :small="true"
-                    ></opensilex-DeleteButton>
-                </b-button-group>
-            </template>
-        </opensilex-TableAsyncView>
-            </template>
-        </opensilex-PageContent>
+                                <template v-slot:cell(actions)="{data}">
+                                    <b-button-group size="sm">
+                                        <opensilex-EditButton
+                                                v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                                                @click="editAnnotation(data.item)"
+                                                label="Annotation.edit"
+                                                :small="true"
+                                        ></opensilex-EditButton>
+                                        <opensilex-DeleteButton
+                                                v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
+                                                @click="deleteAnnotation(data.item.uri)"
+                                                label="Annotation.delete"
+                                                :small="true"
+                                        ></opensilex-DeleteButton>
+                                    </b-button-group>
+                                </template>
+                            </opensilex-TableAsyncView>
+                        </template>
+                    </opensilex-PageContent>
+
+                    <opensilex-AnnotationModalForm
+                            ref="annotationModalForm"
+                            @onCreate="refresh"
+                            @onUpdate="refresh"
+                    ></opensilex-AnnotationModalForm>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -97,11 +86,17 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
     import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+    import AnnotationModalForm from "../form/AnnotationModalForm.vue";
+    import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+    import {SecurityService} from "opensilex-security/api/security.service";
 
     @Component
     export default class AnnotationList extends Vue {
+
         $opensilex: OpenSilexVuePlugin;
         $service: AnnotationsService
+        $securityService: SecurityService;
+
         $i18n: any;
         $store: any;
 
@@ -125,8 +120,13 @@
         @Prop({default: AnnotationList.getDefaultColumns})
         columnsToDisplay: Set<string>;
 
+        usersByUri: Map<string,UserGetDTO>;
+
+        @Ref("tableRef") readonly tableRef!: any;
+        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+
         static getDefaultColumns(){
-            return new Set(["uri","motivation","description","creator","created"]);
+            return new Set(["created","description","author","motivation","uri"]);
         }
 
         get user() {
@@ -136,8 +136,6 @@
         get credentials() {
             return this.$store.state.credentials;
         }
-
-        @Ref("tableRef") readonly tableRef!: any;
 
         refresh() {
             this.tableRef.refresh();
@@ -167,19 +165,61 @@
 
         created() {
             this.$service = this.$opensilex.getService("opensilex.AnnotationsService")
+            this.$securityService = this.$opensilex.getService("opensilex.SecurityService")
         }
 
-        search(options) : Promise<HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>> {
-            return this.$service
-                .searchAnnotations(
+        search(options) {
+
+            return new Promise((resolve, reject) => {
+                this.$service.searchAnnotations(
                     this.filter.bodyValue,
                     this.target,
                     this.filter.motivation,
                     undefined,
-                    options.orderBy,
+                    ["created=desc"],
                     options.currentPage,
                     options.pageSize
-                );
+                ).then((http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+
+                    let results = http.response.result;
+                    if(results.length == 0){
+                        resolve(http);
+                    }else{
+                        let usersPromise = this.buildUsersIndex(http.response.result,reject);
+                        Promise.resolve(usersPromise).then(() => {
+                            resolve(http);
+                        })
+                    }
+
+                }).catch(reject);
+
+            });
+        }
+
+        buildUsersIndex(annotations : Array<AnnotationGetDTO>, reject): Promise<void | HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>> {
+
+            this.usersByUri = new Map();
+
+            let uniqueUsers = new Set<string>();
+            annotations.forEach(annotation => {
+                uniqueUsers.add(annotation.author);
+            });
+            console.log(uniqueUsers);
+
+            return this.$securityService.getUsersByURI(Array.from(uniqueUsers)).then(http => {
+                http.response.result.forEach(userDto => {
+                    this.usersByUri.set(userDto.uri, {firstName : userDto.firstName, lastName : userDto.lastName});
+                })
+            }).catch(reject);
+        }
+
+        getUserNames(userUri: string) : string{
+
+            if(! userUri){
+                return undefined;
+            }
+            let userDto = this.usersByUri.get(userUri);
+            return userDto ? userDto.firstName + " "+userDto.lastName : undefined;
         }
 
         static newFilter() {
@@ -190,28 +230,35 @@
             };
         }
 
+        editAnnotation(annotation){
+            let copy = JSON.parse(JSON.stringify(annotation));
+            this.annotationModalForm.showEditForm(copy);
+        }
+
         get fields() {
 
             let tableFields = [];
 
-            if(this.columnsToDisplay.has("uri")){
-                tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
+            if(this.columnsToDisplay.has("created")){
+                tableFields.push({key: "created", label: "Annotation.created", sortable: true});
             }
-            if(this.columnsToDisplay.has("motivation")){
-                tableFields.push({key: "motivation", label: "Annotation.motivation", sortable: true});
-            }
-            if(this.columnsToDisplay.has("targets")){
-                tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
+            if(this.columnsToDisplay.has("author")){
+                tableFields.push({key: "author", label: "Annotation.author", sortable: true});
             }
             if(this.columnsToDisplay.has("description")){
                 tableFields.push({key: "description", label: "Annotation.description", sortable: true});
             }
-            if(this.columnsToDisplay.has("creator")){
-                tableFields.push({key: "creator", label: "Annotation.creator", sortable: true});
+
+            if(this.columnsToDisplay.has("motivation")){
+                tableFields.push({key: "motivation", label: "Annotation.motivation", sortable: true});
             }
-            if(this.columnsToDisplay.has("created")){
-                tableFields.push({key: "created", label: "Annotation.created", sortable: true});
+            if(this.columnsToDisplay.has("uri")){
+                tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
             }
+            if(this.columnsToDisplay.has("targets")){
+                tableFields.push({key: "targets", label: "Annotation.targets", sortable: true});
+            }
+
             if (this.enableActions) {
                 tableFields.push({key: "actions", label: "component.common.actions", sortable: false});
             }
@@ -224,6 +271,8 @@
                 this.$nextTick(() => {
                     this.refresh();
                 });
+                let message = this.$i18n.t("Annotation.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+                this.$opensilex.showSuccessToast(message);
                 this.$emit("onDelete", uri);
             }).catch(this.$opensilex.errorHandler);
         }
@@ -243,10 +292,11 @@ en:
         motivation-placeholder: Select a motivation
         motivation-help: Intent or motivation for the creation of the Annotation.
         description: Description
-        creator: Creator
+        author: Author
         created: Created
         target: Target
         list-title: Annotations
+        already-exist: the annotation already exist
 fr:
     Annotation:
         name: L'annotation
@@ -258,7 +308,8 @@ fr:
         motivation-help: "Intention ou motivation guidant la création de l'annotation"
         description: Description
         created: Créée le
-        creator: Créateur
+        author: Auteur
         target: Cible
         list-title: Annotations
+        already-exist: l'annotation existe déjà
 </i18n>

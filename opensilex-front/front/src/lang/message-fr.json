@@ -519,7 +519,8 @@
         "germplasm": "Germplasm",
         "scientific-objects": "Objets scientifiques",
         "data": "Data",
-        "documents": "Documents"
+        "documents": "Documents",
+        "annotations" : "Annotations"
     },
     "credential": {
         "experiment": {
@@ -568,6 +569,10 @@
         "document": {
             "modification": "Ajout / Modification des documents",
             "delete": "Suppression des documents"
+        },
+        "annotation": {
+            "modification": "Ajout / Modification des annotations",
+            "delete": "Suppression des annotations"
         }
     },
     "validations": {

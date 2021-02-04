@@ -111,7 +111,9 @@
             }
             // in edit mode, the loaded motivation is an object composed of uri and name
             if(motivations[0].uri){
-                return [{label: this.form.motivation.name, id: this.form.motivation.uri}];
+                let motivation = [{label: this.form.motivation.name, id: this.form.motivation.uri}];
+                this.form.motivation = this.form.motivation.uri;
+                return motivation;
             }
 
             return [this.motivations.find(motivation => motivation.id == motivations[0])];

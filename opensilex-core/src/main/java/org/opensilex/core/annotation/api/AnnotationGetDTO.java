@@ -22,7 +22,7 @@ import java.util.List;
  */
 @ApiModel
 @JsonPropertyOrder({
-        "uri", "targets", "description", "motivation", "creator", "created"
+        "uri", "description", "targets", "motivation", "created", "author",
 })
 public class AnnotationGetDTO {
 
@@ -38,11 +38,12 @@ public class AnnotationGetDTO {
     @JsonProperty("motivation")
     protected MotivationGetDTO motivation;
 
-    @JsonProperty("creator")
-    protected URI creator;
 
     @JsonProperty("created")
     protected String created;
+
+    @JsonProperty("author")
+    protected URI author;
 
     public AnnotationGetDTO() {
     }
@@ -50,10 +51,10 @@ public class AnnotationGetDTO {
     public AnnotationGetDTO(AnnotationModel model) {
         uri = model.getUri();
 
-        description = model.getBodyValue();
+        description = model.getDescription();
         targets = model.getTargets();
         created = model.getCreated().toString();
-        creator = model.getCreator();
+        author = model.getCreator();
 
         MotivationModel motivationModel = model.getMotivation();
         motivation = new MotivationGetDTO(motivationModel);
@@ -94,13 +95,13 @@ public class AnnotationGetDTO {
         this.created = created;
     }
 
-    @ApiModelProperty(value = "Annotation creator URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
-    public URI getCreator() {
-        return creator;
+    @ApiModelProperty(value = "Annotation author URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
+    public URI getAuthor() {
+        return author;
     }
 
-    public void setCreator(URI creator) {
-        this.creator = creator;
+    public void setAuthor(URI author) {
+        this.author = author;
     }
 
 

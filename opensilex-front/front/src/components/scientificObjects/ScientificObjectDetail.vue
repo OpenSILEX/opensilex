@@ -47,25 +47,10 @@
                 ref="annotationList"
                 :target="selected.uri"
                 :enableActions="true"
-                :columnsToDisplay="new Set(['creator','motivation','created'])"
+                :columnsToDisplay="new Set(['author','motivation','created'])"
                 :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
                 :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-                @onEdit="annotationModalForm.showEditForm($event)"
         ></opensilex-AnnotationList>
-
-        <opensilex-Button
-                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-                @click="annotationModalForm.showCreateForm()"
-        ></opensilex-Button>
-
-        <opensilex-AnnotationModalForm
-                v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                ref="annotationModalForm"
-                :target="selected.uri"
-                @onCreate="updateAnnotations"
-                @onUpdate="updateAnnotations"
-        ></opensilex-AnnotationModalForm>
 
         <opensilex-DocumentTabList
                 v-if="isDocumentTab()"
@@ -108,7 +93,6 @@
         tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
-        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
         mounted() {
             if (this.selected) {
@@ -205,12 +189,6 @@
                 this.tabsIndex = tabIndex;
                 this.tabsValue = ScientificObjectDetail.tabsValues[tabIndex];
             }
-        }
-
-        updateAnnotations() {
-            this.$nextTick(() => {
-                this.annotationList.refresh();
-            });
         }
 
         private isDocumentTab() : boolean {

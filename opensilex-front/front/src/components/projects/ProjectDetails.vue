@@ -2,35 +2,53 @@
   <div class="container-fluid">
     <opensilex-PageHeader :title="name" description="component.project.project"></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true">
-      <template v-slot>
-        <b-nav-item
-          :active="isDetailsTab()"
-          :to="{path: '/project/details/' + encodeURIComponent(uri)}"
-        >{{ $t('component.project.details') }}</b-nav-item>
+      <opensilex-PageActions :tabs=true :returnButton="true">
+          <template v-slot>
+              <b-nav-item
+                      :active="isDetailsTab()"
+                      :to="{path: '/project/details/' + encodeURIComponent(uri)}"
+              >{{ $t('component.project.details') }}
+              </b-nav-item>
 
-        <b-nav-item
-          :active="isDocumentTab()"
-          :to="{path: '/project/documents/' + encodeURIComponent(uri)}"
-        >{{ $t('component.project.documents') }}</b-nav-item> 
-      </template>
-    </opensilex-PageActions>
-    <opensilex-PageContent>
-      <template v-slot>
-        <opensilex-ProjectDescription v-if="isDetailsTab()" :uri="uri"></opensilex-ProjectDescription>
-        <opensilex-ProjectDocuments v-else-if="isDocumentTab()" :uri="uri"></opensilex-ProjectDocuments>
-      </template>
-    </opensilex-PageContent>
+              <b-nav-item
+                      :active="isDocumentTab()"
+                      :to="{path: '/project/documents/' + encodeURIComponent(uri)}"
+              >{{ $t('component.project.documents') }}
+              </b-nav-item>
+
+              <b-nav-item
+                      class="ml-3"
+                      :active="isAnnotationTab()"
+                      :to="{ path: '/project/annotations/' + encodeURIComponent(uri) }"
+              >{{ $t("Annotation.list-title") }}
+              </b-nav-item>
+
+          </template>
+      </opensilex-PageActions>
+      <opensilex-PageContent>
+          <template v-slot>
+              <opensilex-ProjectDescription v-if="isDetailsTab()" :uri="uri"></opensilex-ProjectDescription>
+              <opensilex-ProjectDocuments v-else-if="isDocumentTab()" :uri="uri"></opensilex-ProjectDocuments>
+
+              <opensilex-AnnotationList
+                      v-else-if="isAnnotationTab()"
+                      ref="annotationList"
+                      :target="uri"
+                      :displayTargetColumn="false"
+                      :enableActions="true"
+                      :modificationCredentialId="credentials.CREDENTIAL_PROJECT_MODIFICATION_ID"
+                      :deleteCredentialId="credentials.CREDENTIAL_PROJECT_DELETE_ID"
+              ></opensilex-AnnotationList>
+          </template>
+      </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-    import VueRouter from "vue-router";
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
     import {ProjectGetDetailDTO, ProjectsService} from "opensilex-core/index";
-    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 
     @Component
@@ -42,7 +60,6 @@
         uri = null;
         name: string = "";
 
-        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
         get user() {
@@ -75,12 +92,6 @@
 
         isAnnotationTab() {
             return this.$route.path.startsWith("/project/annotations/");
-        }
-
-        updateAnnotations(){
-            this.$nextTick(() => {
-                this.annotationList.refresh();
-            });
         }
 
     }

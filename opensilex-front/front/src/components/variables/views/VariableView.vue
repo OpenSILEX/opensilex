@@ -22,20 +22,6 @@
                 >{{ $t("Annotation.list-title") }}
                 </b-nav-item>
 
-                <opensilex-Button
-                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                        label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-                        @click="annotationModalForm.showCreateForm()"
-                ></opensilex-Button>
-
-                <opensilex-AnnotationModalForm
-                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                        ref="annotationModalForm"
-                        :target="uri"
-                        @onCreate="updateAnnotations"
-                        @onUpdate="updateAnnotations"
-                ></opensilex-AnnotationModalForm>
-
             </template>
         </opensilex-PageActions>
         <opensilex-PageContent>
@@ -54,7 +40,6 @@
                         :enableActions="true"
                         :modificationCredentialId="credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID"
                         :deleteCredentialId="credentials.CREDENTIAL_VARIABLE_DELETE_ID"
-                        @onEdit="annotationModalForm.showEditForm($event)"
                 ></opensilex-AnnotationList>
             </template>
 
@@ -70,7 +55,6 @@
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import {VariablesService} from "opensilex-core/api/variables.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import AnnotationModalForm from "../../annotations/form/AnnotationModalForm.vue";
     import AnnotationList from "../../annotations/list/AnnotationList.vue";
 
     @Component
@@ -88,7 +72,6 @@
         variable : VariableDetailsDTO = VariableForm.getEmptyForm();
         uri: string;
 
-        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
         get user() {
@@ -121,12 +104,6 @@
 
         updateVariable(variable){
             this.variable = variable;
-        }
-
-        updateAnnotations(){
-            this.$nextTick(() => {
-                this.annotationList.refresh();
-            });
         }
 
     }

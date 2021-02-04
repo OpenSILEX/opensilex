@@ -27,7 +27,7 @@ import java.util.List;
  */
 @ApiModel
 @JsonPropertyOrder({
-        "uri", "targets", "description", "motivation"
+        "uri", "description","targets", "motivation"
 })
 public class AnnotationCreationDTO {
 
@@ -91,7 +91,7 @@ public class AnnotationCreationDTO {
         AnnotationModel model = new AnnotationModel();
 
         model.setUri(uri);
-        model.setBodyValue(description);
+        model.setDescription(description);
         model.setCreated(OffsetDateTime.now());
         model.setTargets(targets);
 

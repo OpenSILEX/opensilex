@@ -53,9 +53,6 @@ public class AnnotationAPI {
     public static final String CREDENTIAL_ANNOTATION_DELETE_ID = "annotation-delete";
     public static final String CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY = "credential.annotation.delete";
 
-    public static final String CREDENTIAL_ANNOTATION_READ_ID = "annotation-read";
-    public static final String CREDENTIAL_ANNOTATION_READ_LABEL_KEY = "credential.annotation.read";
-
     @Inject
     private SPARQLService sparql;
 
@@ -136,10 +133,6 @@ public class AnnotationAPI {
     @Path("{uri}")
     @ApiOperation("Get an annotation")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_ANNOTATION_READ_ID,
-            credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Annotation retrieved", response = AnnotationGetDTO.class),
             @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
@@ -163,10 +156,6 @@ public class AnnotationAPI {
     @Path("/motivations")
     @ApiOperation("Search motivations")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_ANNOTATION_READ_ID,
-            credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return motivations", response = MotivationGetDTO.class, responseContainer = "List")
     })
@@ -199,10 +188,6 @@ public class AnnotationAPI {
     @GET
     @ApiOperation("Search annotations")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_ANNOTATION_READ_ID,
-            credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return annotations", response = AnnotationGetDTO.class, responseContainer = "List")
     })
@@ -243,10 +228,6 @@ public class AnnotationAPI {
     @Path("count")
     @ApiOperation("Count annotations")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_ANNOTATION_READ_ID,
-            credentialLabelKey = CREDENTIAL_ANNOTATION_READ_LABEL_KEY
-    )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return the number of annotations associated to a given target", response = Integer.class)
     })

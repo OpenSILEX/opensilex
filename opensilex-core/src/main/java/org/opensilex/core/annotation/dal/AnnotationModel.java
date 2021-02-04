@@ -15,7 +15,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -42,9 +41,9 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
             property = "bodyValue",
             required = true
     )
-    private String bodyValue;
+    private String description;
 
-    public static final String BODY_VALUE_FIELD = "bodyValue";
+    public static final String DESCRIPTION_FIELD = "description";
 
     @SPARQLProperty(
             ontology = OA.class,
@@ -70,12 +69,12 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
         this.created = created;
     }
 
-    public String getBodyValue() {
-        return bodyValue;
+    public String getDescription() {
+        return description;
     }
 
-    public void setBodyValue(String bodyValue) {
-        this.bodyValue = bodyValue;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public MotivationModel getMotivation() {

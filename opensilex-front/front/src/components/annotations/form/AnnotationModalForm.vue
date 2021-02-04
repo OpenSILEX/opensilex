@@ -9,7 +9,6 @@
         icon="fa#vials"
         :createAction="create"
         :updateAction="update"
-        :successMessage="successMessage"
     ></opensilex-ModalForm>
 
 </template>
@@ -33,9 +32,7 @@ export default class AnnotationModalForm extends Vue {
     $store: any;
     service: AnnotationsService;
     $i18n: any;
-
-    @Prop()
-    target: string;
+    targets : Array<string>;
 
     get user() {
         return this.$store.state.user;
@@ -51,7 +48,8 @@ export default class AnnotationModalForm extends Vue {
         this.service = this.$opensilex.getService("opensilex.AnnotationsService");
     }
 
-    showCreateForm() {
+    showCreateForm(targets : Array<string> ) {
+        this.targets = targets;
         this.modalForm.showCreateForm();
     }
 
@@ -64,24 +62,30 @@ export default class AnnotationModalForm extends Vue {
 
     create(annotation : AnnotationCreationDTO) {
 
-        if(! annotation.targets){
-            annotation.targets = [];
-        }
-        annotation.targets.push(this.target);
+        annotation.targets = this.targets;
 
-        this.service.createAnnotation(annotation).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        return this.service.createAnnotation(annotation).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            let message = this.$i18n.t("Annotation.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
+            this.$opensilex.showSuccessToast(message);
             this.$emit("onCreate", http.response.result.toString());
-        }).catch(this.$opensilex.errorHandler);
-    }
-
-    successMessage(annotation : AnnotationCreationDTO){
-        return this.$i18n.t("Annotation.name");
+        }).catch((error) => {
+            if (error.status == 409) {
+                this.$opensilex.errorHandler(error,"Annotation "+annotation.uri+" : "+this.$i18n.t("Annotation.already-exist"));
+            } else {
+                this.$opensilex.errorHandler(error);
+            }
+        });
     }
 
     update(annotation: AnnotationUpdateDTO) {
-        this.service.updateAnnotation(annotation).then(() => {
+
+        return this.service.updateAnnotation(annotation).then(() => {
+            let message = this.$i18n.t("Annotation.name") + " " + annotation.uri+ " " + this.$i18n.t("component.common.success.update-success-message");
+            this.$opensilex.showSuccessToast(message);
             this.$emit("onUpdate", annotation.uri);
-        }).catch(this.$opensilex.errorHandler);
+        }).catch((error) => {
+            this.$opensilex.errorHandler(error);
+        });
     }
 }
 

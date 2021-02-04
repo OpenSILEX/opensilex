@@ -32,28 +32,6 @@
                   :to="{path: '/factor/document/' + encodeURIComponent(uri)}"
                 >{{ $t('component.common.details.document') }}</b-nav-item> -->
 
-        <opensilex-Button
-          v-if="
-            isAnnotationTab() &&
-            user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-          "
-          label="Annotation.add"
-          variant="primary"
-          :small="false"
-          icon="fa#edit"
-          @click="annotationModalForm.showCreateForm()"
-        ></opensilex-Button>
-
-        <opensilex-AnnotationModalForm
-          v-if="
-            isAnnotationTab() &&
-            user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-          "
-          ref="annotationModalForm"
-          :target="uri"
-          @onCreate="updateAnnotations"
-          @onUpdate="updateAnnotations"
-        ></opensilex-AnnotationModalForm>
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>
@@ -76,11 +54,8 @@
           :target="uri"
           :displayTargetColumn="false"
           :enableActions="true"
-          :modificationCredentialId="
-            credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
-          "
+          :modificationCredentialId="credentials.CREDENTIAL_FACTOR_MODIFICATION_ID"
           :deleteCredentialId="credentials.CREDENTIAL_FACTOR_DELETE_ID"
-          @onEdit="annotationModalForm.showEditForm($event)"
         ></opensilex-AnnotationList>
       </template>
     </opensilex-PageContent>
@@ -96,7 +71,6 @@ import {
   FactorsService,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 
 @Component
@@ -123,8 +97,6 @@ export default class FactorView extends Vue {
   };
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
-  @Ref("annotationModalForm")
-  readonly annotationModalForm!: AnnotationModalForm;
 
   get user() {
     return this.$store.state.user;
@@ -218,11 +190,6 @@ export default class FactorView extends Vue {
     return this.$route.path.startsWith("/factor/annotations/");
   }
 
-  updateAnnotations() {
-    this.$nextTick(() => {
-      this.annotationList.refresh();
-    });
-  }
 }
 </script>
 

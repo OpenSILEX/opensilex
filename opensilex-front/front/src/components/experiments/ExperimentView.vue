@@ -44,20 +44,6 @@
                 >{{ $t("Annotation.list-title") }}
                 </b-nav-item>
 
-                <opensilex-Button
-                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                        label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-                        @click="annotationModalForm.showCreateForm()"
-                ></opensilex-Button>
-
-                <opensilex-AnnotationModalForm
-                        v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-                        ref="annotationModalForm"
-                        :target="uri"
-                        @onCreate="updateAnnotations"
-                        @onUpdate="updateAnnotations"
-                ></opensilex-AnnotationModalForm>
-
             </template>
         </opensilex-PageActions>
 
@@ -94,7 +80,6 @@
                         :enableActions="true"
                         :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
                         :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-                        @onEdit="annotationModalForm.showEditForm($event)"
                 ></opensilex-AnnotationList>
 
             </template>
@@ -121,7 +106,6 @@
         name: string = "";
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
-        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
         created() {
             this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -171,11 +155,6 @@
             return this.$route.path.startsWith("/experiment/annotations/");
         }
 
-        updateAnnotations() {
-            this.$nextTick(() => {
-                this.annotationList.refresh();
-            });
-        }
     }
 </script>
 

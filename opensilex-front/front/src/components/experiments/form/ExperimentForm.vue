@@ -15,15 +15,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 
-import {
-  ExperimentCreationDTO,
-  SpeciesService,
-  SpeciesDTO
-} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

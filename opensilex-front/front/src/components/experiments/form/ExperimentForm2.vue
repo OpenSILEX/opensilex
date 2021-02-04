@@ -39,12 +39,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import { Component, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 
 import { ExperimentCreationDTO } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ExperimentForm2 extends Vue {

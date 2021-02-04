@@ -76,10 +76,7 @@ import VueRouter from "vue-router";
 
 import {
   ExperimentCreationDTO,
-  SpeciesService,
-  SpeciesDTO,
 } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ExperimentForm1 extends Vue {

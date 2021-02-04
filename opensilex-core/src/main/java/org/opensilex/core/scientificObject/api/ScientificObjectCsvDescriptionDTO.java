@@ -19,7 +19,6 @@ public class ScientificObjectCsvDescriptionDTO {
     @ApiModelProperty(value = "Scientific object experiment URI")
     protected URI experiment;
 
-    @ValidURI
     @ApiModelProperty(value = "Validation token provided by validation service to skip double validation")
     protected String validationToken;
 

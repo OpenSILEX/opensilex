@@ -8,7 +8,6 @@ package org.opensilex.core.scientificObject.api;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.util.List;
-import javax.validation.constraints.Min;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -19,7 +18,6 @@ public class ScientificObjectCsvExportDTO {
 
     @ValidURI
     @ApiModelProperty(value = "List of scientific objects URI to export")
-    @Min(1)
     protected List<URI> objects;
 
     @ValidURI

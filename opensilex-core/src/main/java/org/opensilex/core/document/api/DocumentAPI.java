@@ -108,7 +108,7 @@ public class DocumentAPI {
     })
 
         public Response createDocument(
-            @ApiParam(value = "File description with metadata", required =  true) @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto, 
+            @ApiParam(value = "File description with metadata", required =  true, type="string") @NotNull @Valid @FormDataParam("description") DocumentCreationDTO docDto, 
             @ApiParam(value = "file", type = "file") @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileDetail
         ) throws Exception {

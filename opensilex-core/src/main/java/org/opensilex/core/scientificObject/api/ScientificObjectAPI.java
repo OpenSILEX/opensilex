@@ -930,31 +930,33 @@ public class ScientificObjectAPI {
         int firstRow = 3;
         CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, uriGenerator);
 
-        URI partOfURI = new URI(Oeso.isPartOf.toString());
-        final URI graphURI = contextURI;
-        parentNamesToReplace.forEach((name, cells) -> {
-            List<URI> parentURIs = validationResult.getObjectNameUris(name);
-            if (parentURIs == null || parentURIs.size() == 0) {
-                // Case parent name not found in file
-                cells.forEach((cell) -> {
-                    validationResult.addInvalidValueError(cell);
-                });
-            } else if (parentURIs.size() == 1) {
-                cells.forEach((cell) -> {
-                    int rowIndex = cell.getRowIndex() - 1;
-                    SPARQLResourceModel object = validationResult.getObjects().get(rowIndex);
-                    object.addRelation(graphURI, partOfURI, URI.class, parentURIs.get(0).toString());
-                });
-            } else {
-                // Case multiple objects with the same name, can not chose correct parent
-                cells.forEach((cell) -> {
-                    validationResult.addInvalidValueError(cell);
-                });
-            }
-        });
+        if (!validationResult.hasErrors()) {
+            URI partOfURI = new URI(Oeso.isPartOf.toString());
+            final URI graphURI = contextURI;
+            parentNamesToReplace.forEach((name, cells) -> {
+                List<URI> parentURIs = validationResult.getObjectNameUris(name);
+                if (parentURIs == null || parentURIs.size() == 0) {
+                    // Case parent name not found in file
+                    cells.forEach((cell) -> {
+                        validationResult.addInvalidValueError(cell);
+                    });
+                } else if (parentURIs.size() == 1) {
+                    cells.forEach((cell) -> {
+                        int rowIndex = cell.getRowIndex() - 1;
+                        SPARQLResourceModel object = validationResult.getObjects().get(rowIndex);
+                        object.addRelation(graphURI, partOfURI, URI.class, parentURIs.get(0).toString());
+                    });
+                } else {
+                    // Case multiple objects with the same name, can not chose correct parent
+                    cells.forEach((cell) -> {
+                        validationResult.addInvalidValueError(cell);
+                    });
+                }
+            });
 
-        validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
-
+            validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
+        }
+        
         return validationResult;
     }
 

@@ -6,12 +6,16 @@
 package org.opensilex.server.rest;
 
 import org.apache.catalina.valves.rewrite.RewriteMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vince
  */
 public class RestRewriteMap implements RewriteMap {
+
+    final private static Logger LOGGER = LoggerFactory.getLogger(RestRewriteMap.class);
 
     @Override
     public String setParameters(String params) {
@@ -32,7 +36,7 @@ public class RestRewriteMap implements RewriteMap {
             result = key;
         }
 
-        System.out.println("Rewrite:" + key + " --> " + result);
+        LOGGER.debug("Rewrite:" + key + " --> " + result);
         return result;
 
     }

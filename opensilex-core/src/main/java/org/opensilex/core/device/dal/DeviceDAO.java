@@ -120,15 +120,20 @@ public class DeviceDAO {
         select.addFilter(dateRangeExpr);
     }
     
-    public URI update(URI deviceType, URI deviceURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
-        DeviceModel device = initDevice(deviceType, name, relations, currentUser);
-        device.setUri(deviceURI);
+    // public URI update(URI deviceType, URI deviceURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    //     DeviceModel device = initDevice(deviceType, name, relations, currentUser);
+    //     device.setUri(deviceURI);
 
-        sparql.update(device);
+    //     sparql.update(device);
 
-        return device.getUri();
+    //     return device.getUri();
+    // }
+
+    public DeviceModel update(DeviceModel instance, UserModel user) throws Exception {
+        sparql.update(instance);
+        return instance;
     }
-    
+
     public DeviceModel getDeviceByURI(URI deviceURI, UserModel currentUser) throws Exception {
         return sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
     }

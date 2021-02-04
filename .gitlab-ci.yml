@@ -44,7 +44,7 @@ variables:
   #CACHE
   YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/cache_yarn"
   NODE_CACHE: "$CI_PROJECT_DIR/.node"
-  EMBDED_MONGO_CACHE: "/root/.embedmongo/"
+  #EMBDED_MONGO_CACHE: "/root/.embedmongo/"
   # Prevent gitlab clone issues
   GITLAB_HTTPS: "false"
 
@@ -60,7 +60,6 @@ variables:
     paths:
       - $YARN_CACHE_FOLDER
       - $MAVEN_CACHE_FOLDER
-      - $EMBDED_MONGO_CACHE
 
 ########################
 ##  BUILD TEMPLATE

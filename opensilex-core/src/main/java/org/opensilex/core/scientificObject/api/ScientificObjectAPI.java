@@ -8,6 +8,7 @@ package org.opensilex.core.scientificObject.api;
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +16,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -67,7 +70,6 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -96,6 +98,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Julien BONNEFONT
@@ -119,6 +123,8 @@ public class ScientificObjectAPI {
 
     public static final String GEOMETRY_COLUMN_ID = "geometry";
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
 
     @CurrentUser
     UserModel currentUser;
@@ -200,7 +206,7 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("search-with-geometry/{contextURI}")
+    @Path("geometry")
     @ApiOperation("Get scientific objet list with geometry of a given context (experiment or organization) URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -209,27 +215,28 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @PathParam("contextURI") @NotNull URI contextURI
+            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI
     ) throws Exception {
 
         validateContextAccess(contextURI);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByGraph(contextURI);
+        Instant test_start = Instant.now();
+        FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
+        Instant test_end = Instant.now();
 
-        // retrieving the uri list with geometries in the experiment
-        List<URI> objectsURI = new LinkedList<>();
-        for (Map.Entry<String, Geometry> entry : mapGeo.entrySet()) {
-            objectsURI.add(new URI(entry.getKey()));
+        List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
+        int lengthMapGeo = 0;
+
+        for (GeospatialModel geospatialModel : mapGeo) {
+            ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+            dtoList.add(dtoFromModel);
+            lengthMapGeo++;
         }
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        List<ScientificObjectModel> scientificObjects = dao.searchByURIs(contextURI, objectsURI, currentUser);
-
-        List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
-
-        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
+        LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @GET

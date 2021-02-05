@@ -213,6 +213,14 @@ public class GeospatialDAO {
         }
     }
 
+    public FindIterable<GeospatialModel> getGeometryByGraphList(URI experimentURI) {
+        if (experimentURI != null) {
+            return geometryCollection.find(new Document("graph", SPARQLDeserializers.getExpandedURI(experimentURI)));
+        } else {
+            return null;
+        }
+    }
+
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
     public HashMap<String, Geometry> searchIntersectsArea(Geometry geometry, UserModel currentUser, SPARQLService sparql) throws Exception {
         if (geometry != null) {

@@ -110,7 +110,7 @@
                     "delete": "Supprimer"
                 },
                 "pagination" : {
-                    "nbEntries" : " Affiche {limit} sur {offset} des {totalRow} éléments",
+                    "nbEntries" : " Affiche {limit} à {offset} des {totalRow} éléments",
                     "noEntries" : "Aucun élément trouvé"
                 }
             }

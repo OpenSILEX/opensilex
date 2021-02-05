@@ -34,7 +34,7 @@ export default class InfrastructureFacilityPropertyView extends Vue {
   onValueChange() {
     if (this.value) {
       this.$opensilex
-        .getService("opensilex.InfrastructuresService")
+        .getService("opensilex.OrganisationsService")
         .getInfrastructureFacility(this.value)
         .then(http => {
           this.infrastructure = http.response.result;

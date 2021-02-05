@@ -38,7 +38,7 @@ import {
   ResourceTreeDTO,
   InfrastructureGetDTO,
   ExperimentsService,
-  InfrastructuresService,
+  OrganisationsService,
   ProjectsService,
   SpeciesService
 } from "opensilex-core/index";

@@ -19,7 +19,7 @@
 
     <!-- Type -->
     <opensilex-TypeForm
-      :type.sync="form.type"
+      :type.sync="form.rdf_type"
       :baseType="$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI"
       :required="true"
       placeholder="InfrastructureFacilityForm.form-type-placeholder"
@@ -52,9 +52,9 @@ export default class InfrastructureFacilityForm extends Vue {
     default: () => {
       return {
         uri: null,
-        type: null,
+        rdf_type: null,
         name: "",
-        infrastructure: null
+        organisation: null
       };
     }
   })
@@ -67,15 +67,15 @@ export default class InfrastructureFacilityForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      type: null,
+      rdf_type: null,
       name: "",
-      infrastructure: null
+      organisation: null
     };
   }
 
   create(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .createInfrastructureFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -97,9 +97,9 @@ export default class InfrastructureFacilityForm extends Vue {
   }
 
   update(form) {
-    delete form.typeLabel;
+    delete form.rdf_type_name;
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .updateInfrastructureFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;

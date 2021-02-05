@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.dal;
+package org.opensilex.core.organisation.dal;
 
 import java.util.List;
 import org.opensilex.core.ontology.Oeso;

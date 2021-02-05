@@ -12,7 +12,7 @@
       <!-- Name -->
       <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
       <!-- Type -->
-      <opensilex-TypeView :type="selected.type" :typeLabel="selected.typeLabel"></opensilex-TypeView>
+      <opensilex-TypeView :type="selected.rdf_type" :typeLabel="selected.rdf_type_name"></opensilex-TypeView>
     </div>
   </b-card>
 </template>
@@ -22,7 +22,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,

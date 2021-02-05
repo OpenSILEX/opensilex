@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.infrastructure.dal;
+package org.opensilex.core.organisation.dal;
 
 import java.net.URI;
 import java.util.HashSet;

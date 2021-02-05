@@ -83,10 +83,10 @@ import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.factor.dal.FactorDAO;
 import org.opensilex.core.factor.dal.FactorModel;
-import org.opensilex.core.infrastructure.api.InfrastructureFacilityGetDTO;
-import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.ontology.dal.CSVCell;
-import static org.opensilex.core.provenance.api.ProvenanceAPI.PROVENANCE_EXAMPLE_URI;
+import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
@@ -111,7 +111,6 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -1041,7 +1040,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
-            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
@@ -1117,7 +1116,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
-            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         // test exp

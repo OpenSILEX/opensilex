@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.model.SPARQLResourceModel;

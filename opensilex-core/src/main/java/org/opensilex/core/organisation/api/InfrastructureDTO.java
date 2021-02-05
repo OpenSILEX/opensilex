@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -17,6 +18,13 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
 
+    
+    @JsonProperty("rdf_type")
+    protected URI type;
+    
+    @JsonProperty("rdf_type_name")
+    protected String typeLabel;
+    
     protected URI parent;
 
     protected List<URI> children;

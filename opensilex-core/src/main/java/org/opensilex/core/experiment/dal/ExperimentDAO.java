@@ -39,8 +39,8 @@ import java.util.Set;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.DCTerms;
-import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;

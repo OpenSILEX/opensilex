@@ -3,21 +3,41 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.infrastructure.api;
+package org.opensilex.core.organisation.api.team;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
 import java.net.URI;
-import org.opensilex.core.infrastructure.dal.InfrastructureModel;
-import org.opensilex.core.infrastructure.dal.InfrastructureTeamModel;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 import org.opensilex.security.group.api.GroupDTO;
+import org.opensilex.security.group.api.GroupUserProfileDTO;
 
-/**
- *
- * @author vince
- */
+
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "description", "user_profiles", "organisation"})
+
 public class InfrastructureTeamDTO extends GroupDTO {
 
+    
+    @JsonProperty("rdf_type")
+    protected URI type;
+    
+    @JsonProperty("rdf_type_name")
+    protected String typeLabel;
+    
+    
+    @JsonProperty("user_profiles")
+    protected List<GroupUserProfileDTO> userProfiles;
+    
+    @JsonProperty("organisation")
     protected URI infrastructure;
 
+    
+    @NotNull
     public URI getInfrastructure() {
         return infrastructure;
     }

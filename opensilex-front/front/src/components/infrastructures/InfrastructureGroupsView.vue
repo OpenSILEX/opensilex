@@ -25,15 +25,15 @@
       :fields="fields"
     >
       <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(userProfiles)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(user_profiles)="data">{{$t(data.label)}}</template>
       <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
 
       <template v-slot:cell(name)="data">
         <span class="capitalize-first-letter">{{data.item.name}}</span>
       </template>
 
-      <template v-slot:cell(userProfiles)="data">
-        <div>{{$tc("component.user.label", data.item.userProfiles.length, {count: data.item.userProfiles.length})}}</div>
+      <template v-slot:cell(user_profiles)="data">
+        <div>{{$tc("component.user.label", data.item.user_profiles.length, {count: data.item.user_profiles.length})}}</div>
       </template>
 
       <template v-slot:row-details="data">
@@ -48,9 +48,9 @@
         <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
         <ul>
           <li
-            v-for="userProfile in data.item.userProfiles"
+            v-for="userProfile in data.item.user_profiles"
             v-bind:key="userProfile.uri"
-          >{{userProfile.userName}} ({{userProfile.profileName}})</li>
+          >{{userProfile.user_name}} ({{userProfile.profile_name}})</li>
         </ul>
       </template>
 
@@ -100,7 +100,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
@@ -131,7 +131,7 @@ export default class InfrastructureGroupsView extends Vue {
     },
     {
       label: "component.user.users",
-      key: "userProfiles"
+      key: "user_profiles"
     },
     {
       label: "component.common.actions",
@@ -144,7 +144,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   public deleteGroup(uri) {
     this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .deleteInfrastructureTeam(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -153,7 +153,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   create(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .createInfrastructureTeam(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -174,7 +174,7 @@ export default class InfrastructureGroupsView extends Vue {
 
   update(form) {
     return this.$opensilex
-      .getService("opensilex.InfrastructuresService")
+      .getService("opensilex.OrganisationsService")
       .updateInfrastructureTeam(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -184,7 +184,7 @@ export default class InfrastructureGroupsView extends Vue {
   }
 
   setInfrastructure(form) {
-    form.infrastructure = this.selected.uri;
+    form.organisation = this.selected.uri;
   }
 }
 </script>

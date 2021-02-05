@@ -40,7 +40,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
-  InfrastructuresService,
+  OrganisationsService,
   ResourceTreeDTO,
   InfrastructureUpdateDTO,
   InfrastructureGetDTO
@@ -50,7 +50,7 @@ import {
 export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
-  service: InfrastructuresService;
+  service: OrganisationsService;
 
   @Ref("infrastructureTree") readonly infrastructureTree!: any;
 

@@ -10,9 +10,9 @@
             <!-- URI -->
             <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
             <!-- Name -->
-            <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
+            <opensilex-TextView label="component.common.name" :value="selected.name"></opensilex-TextView>
             <!-- Description -->
-            <opensilex-TextView :value="selected.comment" label="component.common.description"></opensilex-TextView>
+            <opensilex-TextView :value="selected.description" label="component.common.description"></opensilex-TextView>
         </div>
     </b-card>
 </template>
@@ -22,7 +22,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
-export default class EntityDetails extends Vue {
+export default class VariableStructureDetails extends Vue {
     $opensilex: any;
 
     @Prop()

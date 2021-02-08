@@ -9,59 +9,102 @@ package org.opensilex.core.variable.api;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.method.MethodGetDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
+import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 
 /**
  *
  * @author Renaud COLIN
  */
-public class VariableDetailsDTO extends SKOSReferencesDTO {
 
-    private URI uri;
+@JsonPropertyOrder({
+        "uri", "name", "alternative_name", "description",
+        "entity","characteristic", "trait", "trait_name", "method", "unit",
+        "time_interval", "sampling_interval", "datatype",
+        "exactMatch","closeMatch","broader","narrower"
+})
+public class VariableDetailsDTO extends BaseVariableGetDTO<VariableModel> {
 
-    private String name;
+    @JsonProperty("alternative_name")
+    private String alternativeName;
 
-    private String longName;
+    @JsonProperty("entity")
+    private EntityGetDTO entity;
 
-    private String comment;
+    @JsonProperty("characteristic")
+    private CharacteristicGetDTO characteristic;
 
-    private NamedResourceDTO<EntityModel> entity;
+    @JsonProperty("method")
+    private MethodGetDTO method;
 
-    private NamedResourceDTO<QualityModel> quality;
+    @JsonProperty("unit")
+    private UnitGetDTO unit;
 
-    private NamedResourceDTO<MethodModel> method;
+    @JsonProperty("trait")
+    private URI trait;
 
-    private URI traitUri;
-
+    @JsonProperty("trait_name")
     private String traitName;
 
-    private NamedResourceDTO<UnitModel> unit;
-
-    private String synonym;
-
+    @JsonProperty("time_interval")
     private String timeInterval;
 
+    @JsonProperty("sampling_interval")
     private String samplingInterval;
 
-
+    @JsonProperty("datatype")
     private URI dataType;
+
+    public VariableDetailsDTO(VariableModel model) {
+        super(model);
+
+        EntityModel entity = model.getEntity();
+        this.entity = new EntityGetDTO(entity);
+
+        CharacteristicModel characteristic = model.getCharacteristic();
+        this.characteristic = new CharacteristicGetDTO(characteristic);
+
+        MethodModel method = model.getMethod();
+        if(method != null) {
+            this.method = new MethodGetDTO(method);
+        }
+
+        UnitModel unit = model.getUnit();
+        this.unit = new UnitGetDTO(unit);
+
+        this.alternativeName = model.getAlternativeName();
+        this.timeInterval = model.getTimeInterval();
+        this.samplingInterval = model.getSamplingInterval();
+
+        URI dataType = model.getDataType();
+        try {
+            this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        trait = model.getTraitUri();
+        traitName = model.getTraitName();
+    }
+
+    public VariableDetailsDTO() {
+    }
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
     }
 
     @ApiModelProperty(example = "Plant_Height")
@@ -69,135 +112,95 @@ public class VariableDetailsDTO extends SKOSReferencesDTO {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
+    public String getAlternativeName() {
+        return alternativeName;
     }
 
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
-    public String getLongName() { return longName; }
-
-    public void setLongName(String longName) { this.longName = longName; }
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
+    }
 
     @ApiModelProperty(example = "Describe the height of a plant.")
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+    public EntityGetDTO getEntity() { return entity; }
 
-    public NamedResourceDTO<EntityModel> getEntity() {
-        return entity;
-    }
-
-    public void setEntity(NamedResourceDTO<EntityModel> entity) {
+    public void setEntity(EntityGetDTO entity) {
         this.entity = entity;
     }
 
-    public NamedResourceDTO<QualityModel> getQuality() {
-        return quality;
+    public CharacteristicGetDTO getCharacteristic() {
+        return characteristic;
     }
 
-    public void setQuality(NamedResourceDTO<QualityModel> quality) { this.quality = quality; }
+    public void setCharacteristic(CharacteristicGetDTO characteristic) {
+        this.characteristic = characteristic;
+    }
 
-    @ApiModelProperty(notes = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
-    public URI getTraitUri() { return traitUri; }
+    public MethodGetDTO getMethod() {
+        return method;
+    }
 
-    public void setTraitUri(URI traitUri) { this.traitUri = traitUri; }
+    public void setMethod(MethodGetDTO method) {
+        this.method = method;
+    }
 
-    @ApiModelProperty(notes = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
-    public String getTraitName() { return traitName; }
-
-    public void setTraitName(String traitName) { this.traitName = traitName; }
-
-    public NamedResourceDTO<MethodModel> getMethod() { return method; }
-
-    public void setMethod(NamedResourceDTO<MethodModel> method) { this.method = method; }
-
-    public NamedResourceDTO<UnitModel> getUnit() {
+    public UnitGetDTO getUnit() {
         return unit;
     }
 
-    public void setUnit(NamedResourceDTO<UnitModel> unit) {
+    public void setUnit(UnitGetDTO unit) {
         this.unit = unit;
     }
 
-    @ApiModelProperty(example = "Plant_Length")
-    public String getSynonym() {
-        return synonym;
+    @ApiModelProperty(notes = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
+    public URI getTrait() {
+        return trait;
     }
 
-    public void setSynonym(String synonym) {
-        this.synonym = synonym;
+    public void setTrait(URI trait) {
+        this.trait = trait;
     }
+
+    @ApiModelProperty(notes = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
+    public String getTraitName() {
+        return traitName;
+    }
+
+    public void setTraitName(String traitName) {
+        this.traitName = traitName;
+    }
+
 
     @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
-    public String getTimeInterval() { return timeInterval; }
+    public String getTimeInterval() {
+        return timeInterval;
+    }
 
-    public void setTimeInterval(String timeInterval) { this.timeInterval = timeInterval; }
+    public void setTimeInterval(String timeInterval) {
+        this.timeInterval = timeInterval;
+    }
 
     @ApiModelProperty(notes = "Define the distance between two data recording", example = "minutes")
-    public String getSamplingInterval() { return samplingInterval; }
+    public String getSamplingInterval() {
+        return samplingInterval;
+    }
 
-    public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
+    public void setSamplingInterval(String samplingInterval) {
+        this.samplingInterval = samplingInterval;
+    }
 
-    public URI getDataType() { return dataType; }
+    public URI getDataType() {
+        return dataType;
+    }
 
     @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
-    public void setDataType(URI dataType) { this.dataType = dataType; }
-
-    public static VariableDetailsDTO fromModel(VariableModel model) {
-        VariableDetailsDTO dto = new VariableDetailsDTO();
-
-        dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setComment(model.getComment());
-        dto.setLongName(model.getLongName());
-        dto.setTimeInterval(model.getTimeInterval());
-        dto.setSamplingInterval(model.getSamplingInterval());
-
-        URI dataType = model.getDataType();
-        if(dataType != null){
-            try {
-                dto.setDataType(new URI(SPARQLDeserializers.getExpandedURI(dataType)));
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        dto.setTraitUri(model.getTraitUri());
-        dto.setTraitName(model.getTraitName());
-
-        NamedResourceDTO<EntityModel> entityDto = new NamedResourceDTO<>();
-        EntityModel entity = model.getEntity();
-        entityDto.setUri(entity.getUri());
-        entityDto.setName(entity.getName());
-        dto.setEntity(entityDto);
-
-        NamedResourceDTO<QualityModel> qualityDto = new NamedResourceDTO<>();
-        QualityModel quality = model.getQuality();
-        qualityDto.setUri(quality.getUri());
-        qualityDto.setName(quality.getName());
-        dto.setQuality(qualityDto);
-
-        MethodModel method = model.getMethod();
-        if(method != null){
-            NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
-            methodDto.setUri(method.getUri());
-            methodDto.setName(method.getName());
-            dto.setMethod(methodDto);
-        }
-
-        UnitModel unit = model.getUnit();
-        if(unit != null){
-            NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
-            unitDto.setUri(unit.getUri());
-            unitDto.setName(unit.getName());
-            dto.setUnit(unitDto);
-        }
-        dto.setSkosReferencesFromModel(model);
-        return dto;
+    public void setDataType(URI dataType) {
+        this.dataType = dataType;
     }
+
 }
 

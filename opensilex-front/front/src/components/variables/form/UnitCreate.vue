@@ -73,9 +73,9 @@
             return {
                 uri: null,
                 name: null,
-                comment: null,
+                description: null,
                 symbol: null,
-                alternativeSymbol: null,
+                alternative_symbol: null,
                 exactMatch: [],
                 narrower: [],
                 closeMatch: [],

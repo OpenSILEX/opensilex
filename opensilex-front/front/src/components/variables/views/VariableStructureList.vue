@@ -62,9 +62,9 @@ export default class VariableStructureList extends Vue {
 
     updateFilter() {
         this.$opensilex.updateURLParameter("name", this.nameFilter, "");
-        this.refresh();
+        this.refresh(false);
     }
-
+    
     created() {
         this.service = this.$opensilex.getService("opensilex-core.VariablesService");
 
@@ -73,9 +73,9 @@ export default class VariableStructureList extends Vue {
             this.nameFilter = decodeURIComponent(query.name);
         }
         if (query && query.selected) {
-            this.refresh(decodeURIComponent(query.selected));
+            this.refresh(false,decodeURIComponent(query.selected));
         } else {
-            this.refresh();
+            this.refresh(false);
         }
     }
 
@@ -90,37 +90,42 @@ export default class VariableStructureList extends Vue {
         );
     }
 
-    searchElements(): Promise<HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>> {
+    searchElements(nameFilter : string): Promise<HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>> {
+
+        let orderBy = ["name=asc"];
 
         switch (this.type) {
-            // case VariablesView.VARIABLE_TYPE: {
-            //     return this.service.searchVariables(this.nameFilter,["name=asc"]);
-            // }
+
             case VariablesView.ENTITY_TYPE: {
-                return this.service.searchEntities(this.nameFilter,["name=asc"]);
+                return this.service.searchEntities(nameFilter,orderBy);
             }
-            case VariablesView.QUALITY_TYPE: {
-                return this.service.searchQualities(this.nameFilter,["name=asc"]);
+            case VariablesView.CHARACTERISTIC_TYPE: {
+                return this.service.searchCharacteristics(nameFilter,orderBy);
             }
             case VariablesView.METHOD_TYPE: {
-                return this.service.searchMethods(this.nameFilter,["name=asc"]);
+                return this.service.searchMethods(nameFilter,orderBy);
             }
             case VariablesView.UNIT_TYPE: {
-                return this.service.searchUnits(this.nameFilter,["name=asc"]);
+                return this.service.searchUnits(nameFilter,orderBy);
             }
             default: {
-                return this.service.searchEntities(this.nameFilter,["name=asc"]);
+                return this.service.searchEntities(this.nameFilter,orderBy);
             }
         }
     }
 
-    refresh(uri?) {
+    refresh(updateType : boolean, uri?) {
 
         if(this.type == VariablesView.VARIABLE_TYPE){
             return;
         }
 
-        this.searchElements()
+        // if the type is updated, then no name filter
+        if(updateType){
+            this.nameFilter = "";
+        }
+
+        this.searchElements(this.nameFilter)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 let treeNode = [];
                 let first = true;
@@ -189,8 +194,8 @@ export default class VariableStructureList extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return this.service.getEntity(uri);
             }
-            case VariablesView.QUALITY_TYPE : {
-                return this.service.getQuality(uri);
+            case VariablesView.CHARACTERISTIC_TYPE : {
+                return this.service.getCharacteristic(uri);
             }
             case VariablesView.METHOD_TYPE: {
                 return this.service.getMethod(uri);
@@ -222,7 +227,8 @@ export default class VariableStructureList extends Vue {
     edit(uri) {
         if(this.type != VariablesView.VARIABLE_TYPE){
             if(this.selected){
-                this.$emit("onEdit",this.selected);
+                let selectedCopy = JSON.parse(JSON.stringify(this.selected));
+                this.$emit("onEdit",selectedCopy);
             }else{
                 this.getDetails(uri).then((http: HttpResponse<OpenSilexResponse>) => {
                     this.$emit("onEdit", http.response.result);

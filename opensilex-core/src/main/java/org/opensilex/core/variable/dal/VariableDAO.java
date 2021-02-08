@@ -6,6 +6,8 @@
 package org.opensilex.core.variable.dal;
 
 import java.net.URI;
+
+import com.google.common.base.CaseFormat;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -33,14 +35,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         super(VariableModel.class, sparql);
     }
 
-    static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("entity"));
-    static Var qualityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("quality"));
-    static Var methodLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("method"));
-    static Var unitLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName("unit"));
+    static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
+    static Var characteristicLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.CHARACTERISTIC_FIELD_NAME));
+    static Var methodLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.METHOD_FIELD_NAME));
+    static Var unitLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.UNIT_FIELD_NAME));
 
     /**
      * Contains the pre-computed list of SPARQL variables which could be used in order to filter or
-     * entity, quality, method or unit name.
+     * entity, characteristic, method or unit name.
      * <p>
      * This {@link Map} is indexed by the variables names
      */
@@ -50,7 +52,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         varsByVarName = new HashMap<>();
         varsByVarName.put(entityLabelVar.getVarName(), entityLabelVar);
-        varsByVarName.put(qualityLabelVar.getVarName(), qualityLabelVar);
+        varsByVarName.put(characteristicLabelVar.getVarName(), characteristicLabelVar);
         varsByVarName.put(methodLabelVar.getVarName(), methodLabelVar);
         varsByVarName.put(unitLabelVar.getVarName(), unitLabelVar);
     }
@@ -74,7 +76,13 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
         for (OrderBy orderBy : orderByList) {
-            Var correspondingVar = varsByVarName.get(orderBy.getFieldName());
+
+            /* We need to map field fieldName to _field_name : which is the variable name returned by SPARQLClassObjectMapper.getObjectNameVarName.
+               Else because of OrderBY snake_case to camelCase transformation, the direct mapping between orderBy field and SPARQLClassObjectMapper.getObjectNameVarName() result is broken
+               #TODO : append a cleaner way to do it. Here the solution works only because we known how SPARQLClassObjectMapper.getObjectNameVarName() works */
+
+            String correspondingVarName = "_" + CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, orderBy.getFieldName());
+            Var correspondingVar = varsByVarName.get(correspondingVarName);
 
             if (correspondingVar == null) {
                 unmatchingOrderByList.add(orderBy);
@@ -87,14 +95,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     /**
-     * Search all variables with a name, a long name, an entity name or a quality name
+     * Search all variables with a name, a long name, an entity name or a characteristic name
      * corresponding with the given stringPattern.
      *
      * <br></br>
      * <br> The following SPARQL variables are used  : </br>
      * <pre>
      *     _entity_name : the name of the variable entity
-     *     _quality_name : the name of the variable quality
+     *     _characteristic_name : the name of the variable characteristic
      *     _method_name : the name of the variable method
      *     _unit_name : the name of the variable unit
      * </pre>
@@ -107,9 +115,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      * @param pageSize      the maximum page size
      * @return the list of {@link VariableModel} founds
      * @see VariableModel#getName()
-     * @see VariableModel#getLongName()
+     * @see VariableModel#getAlternativeName()
      * @see EntityModel#getName()
-     * @see QualityModel#getName()
+     * @see CharacteristicModel#getName()
      */
     public ListWithPagination<VariableModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
@@ -142,21 +150,21 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
                 if (hasStringFilter) {
 
-                    // append string regex matching on entity, quality, method and unit name
+                    // append string regex matching on entity, characteristic, method and unit name
                     Expr[] regexExprArray = varsByVarName.values().stream()
                         .map(var -> SPARQLQueryHelper.regexFilter(var.getVarName(), stringPattern))
                         .toArray(Expr[]::new);
 
-                    // set the string regex filter on entity, quality, method, unit  name,long name and URI
+                    // set the string regex filter on entity, characteristic, method, unit  name,long name and URI
                     select.addFilter(
                         SPARQLQueryHelper.or(
                             regexExprArray,
                             SPARQLQueryHelper.regexFilter(VariableModel.NAME_FIELD, stringPattern),
-                            SPARQLQueryHelper.regexFilter(VariableModel.LONG_NAME_FIELD_NAME, stringPattern),
+                            SPARQLQueryHelper.regexFilter(VariableModel.ALTERNATIVE_NAME_FIELD_NAME, stringPattern),
                             SPARQLQueryHelper.regexFilter(uriStrRegex, stringPattern, null)
                         ));
                 }
-                // append specific(s) ORDER BY based on entity, quality, method and unit
+                // append specific(s) ORDER BY based on entity, characteristic, method and unit
                 orderByExprMap.forEach(select::addOrderBy);
             },
             newOrderByList,

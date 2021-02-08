@@ -11,13 +11,13 @@ public class VariableDatatypeDTO {
 
     }
 
-    public VariableDatatypeDTO(XSDDatatype datatype, String labelKey) throws URISyntaxException {
+    public VariableDatatypeDTO(XSDDatatype datatype, String name) throws URISyntaxException {
         this.uri = new URI(datatype.getURI());
-        this.labelKey = labelKey;
+        this.name = name;
     }
 
     private URI uri;
-    private String labelKey;
+    private String name;
 
     public URI getUri() {
         return uri;
@@ -27,11 +27,11 @@ public class VariableDatatypeDTO {
         this.uri = uri;
     }
 
-    public String getLabelKey() {
-        return labelKey;
+    public String getName() {
+        return name;
     }
 
-    public void setLabelKey(String labelKey) {
-        this.labelKey = labelKey;
+    public void setName(String name) {
+        this.name = name;
     }
 }

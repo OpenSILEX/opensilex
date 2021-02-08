@@ -17,12 +17,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
-
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
@@ -31,24 +25,28 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
+import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
+import static org.opensilex.core.variable.api.VariableAPI.*;
+
 @Api(CREDENTIAL_VARIABLE_GROUP_ID)
-@Path("/core/variable/unit")
+@Path(UnitAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
         groupLabelKey = VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY
 )
 public class UnitAPI {
+
+    public static final String PATH = "/core/units";
 
     @Inject
     private SPARQLService sparql;
@@ -57,8 +55,7 @@ public class UnitAPI {
     UserModel currentUser;
 
     @POST
-    @Path("create")
-    @ApiOperation("Create a unit")
+    @ApiOperation("Add an unit")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -67,10 +64,9 @@ public class UnitAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create an Unit", response = ObjectUriResponse.class),
-            @ApiResponse(code = 409, message = "An Unit with the same URI already exists", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
-    )
+            @ApiResponse(code = 201, message = "An unit is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "An unit with the same URI already exists", response = ErrorResponse.class),
+    })
     public Response createUnit(
             @ApiParam("Unit description") @Valid UnitCreationDTO dto
     ) throws Exception {
@@ -82,17 +78,35 @@ public class UnitAPI {
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Unit already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Unit already exists", duplicateUriException.getMessage()).getResponse();
+        }
+    }
+
+    @GET
+    @Path("{uri}")
+    @ApiOperation("Get an unit")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Unit retrieved", response = UnitDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown unit URI", response = ErrorResponse.class)
+    })
+    public Response getUnit(
+            @ApiParam(value = "Unit URI", example = "http://opensilex.dev/set/variables/unit/Centimeter", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
+        UnitModel model = dao.get(uri);
+
+        if (model != null) {
+            return new SingleObjectResponse<>(new UnitDetailsDTO(model)).getResponse();
+        } else {
+            throw new NotFoundURIException(uri);
         }
     }
 
     @PUT
-    @Path("update")
-    @ApiOperation("Update a unit")
+    @ApiOperation("Update an unit")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -102,9 +116,8 @@ public class UnitAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Unit updated", response = ObjectUriResponse.class),
-            @ApiResponse(code = 400, message = "Invalid or unknown Unit URI", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)}
-    )
+            @ApiResponse(code = 404, message = "Unknown unit URI", response = ErrorResponse.class)
+    })
     public Response updateUnit(
             @ApiParam("Unit description") @Valid UnitUpdateDTO dto
     ) throws Exception {
@@ -116,8 +129,8 @@ public class UnitAPI {
     }
 
     @DELETE
-    @Path("delete/{uri}")
-    @ApiOperation("Delete a unit")
+    @Path("{uri}")
+    @ApiOperation("Delete an unit")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
@@ -125,7 +138,7 @@ public class UnitAPI {
     )
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Unit deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Unit URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 404, message = "Unknown unit URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -137,44 +150,23 @@ public class UnitAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
-    @GET
-    @Path("get/{uri}")
-    @ApiOperation("Get a unit")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Unit retrieved", response = UnitGetDTO.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response getUnit(
-            @ApiParam(value = "Unit URI", example = "http://opensilex.dev/set/variables/unit/Centimeter", required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {
-        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
-        UnitModel model = dao.get(uri);
-
-        if (model != null) {
-            return new SingleObjectResponse<>(UnitGetDTO.fromModel(model)).getResponse();
-        } else {
-            throw new NotFoundURIException(uri);
-        }
-    }
 
     @GET
-    @Path("search")
-    @ApiOperation("Search units corresponding to given criteria")
+    @ApiOperation("Search units by name")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return Unit list", response = NamedResourceDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return Unit list", response = UnitGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchUnits(
-            @ApiParam(value = "Name regex pattern", example = "centimeter") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "Name (regex)", example = "Centimeter") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+
         BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
         ListWithPagination<UnitModel> resultList = dao.search(
                 namePattern,
@@ -182,6 +174,10 @@ public class UnitAPI {
                 page,
                 pageSize
         );
-        return new NamedResourcePaginatedListResponse<>(resultList).getResponse();
-    }
+
+        ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
+                UnitGetDTO.class,
+                UnitGetDTO::new
+        );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();    }
 }

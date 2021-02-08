@@ -11,9 +11,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.api.method.MethodAPI;
 import org.opensilex.core.variable.api.method.MethodCreationDTO;
-import org.opensilex.core.variable.api.method.MethodGetDTO;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.api.method.MethodDetailsDTO;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -26,26 +27,24 @@ import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
  */
 public class MethodApiTest extends AbstractSecurityIntegrationTest {
 
-    public String path = "/core/variable/method";
+    public String path = MethodAPI.PATH;
 
-    public String getByUriPath = path + "/get/{uri}";
-    public String searchPath = path + "/search";
-    public String createPath = path + "/create";
-    public String updatePath = path + "/update";
-    public String deletePath = path + "/delete/{uri}";
+    public String getByUriPath = path + "/{uri}";
+    public String createPath = path;
+    public String updatePath = path;
+    public String deletePath = path + "/{uri}";
 
 
     private MethodCreationDTO getCreationDto() {
         MethodCreationDTO dto = new MethodCreationDTO();
         dto.setName("SVM");
-        dto.setComment("A machine learning based method");
+        dto.setDescription("A machine learning based method");
         return dto;
     }
 
@@ -58,7 +57,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
     public void testCreateFailWithNoRequiredFields() throws Exception {
 
         MethodCreationDTO dto = new MethodCreationDTO();
-        dto.setComment("only a comment, not a name");
+        dto.setDescription("only a comment, not a name");
 
         final Response postResult = getJsonPostResponse(target(createPath),dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -78,7 +77,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
-        dto.setComment("new comment");
+        dto.setDescription("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
@@ -94,7 +93,7 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
-        assertEquals(dto.getComment(), dtoFromApi.getComment());
+        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
     }
 
     @Test
@@ -109,19 +108,18 @@ public class MethodApiTest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<MethodGetDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<MethodGetDTO>>() {
+        SingleObjectResponse<MethodDetailsDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<MethodDetailsDTO>>() {
         });
-        MethodGetDTO dtoFromDb = getResponse.getResult();
+        MethodDetailsDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
         assertEquals(creationDTO.getName(),dtoFromDb.getName());
-        assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
+        assertEquals(creationDTO.getDescription(),dtoFromDb.getDescription());
         
-        assertTrue(SPARQLDeserializers.compareURIs(Oeso.Method.getURI(),dtoFromDb.getType().toString()));
     }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(QualityModel.class);
+        return Collections.singletonList(CharacteristicModel.class);
     }
 
 }

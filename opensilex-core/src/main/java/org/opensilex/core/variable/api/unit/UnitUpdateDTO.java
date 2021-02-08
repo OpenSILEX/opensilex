@@ -14,7 +14,7 @@ public class UnitUpdateDTO extends UnitCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/unit/Centimeter")
     public URI getUri() {
         return super.getUri();
     }

@@ -22,9 +22,9 @@
                         ></opensilex-UriLink>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
-                    <template v-slot:cell(_quality_name)="{data}">{{ data.item.quality.name }}</template>
+                    <template v-slot:cell(_characteristic_name)="{data}">{{ data.item.characteristic.name }}</template>
                     <template v-slot:cell(_method_name)="{data}">{{ data.item.method ? data.item.method.name : ""  }}</template>
-                    <template v-slot:cell(_unit_name)="{data}">{{ data.item.unit ? data.item.unit.name : "" }}</template>
+                    <template v-slot:cell(_unit_name)="{data}">{{data.item.unit.name }}</template>
 
                     <template v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
@@ -143,8 +143,8 @@ export default class VariableList extends Vue {
         sortable: true
       },
       {
-        key: "_quality_name",
-        label: "VariableView.quality",
+        key: "_characteristic_name",
+        label: "VariableView.characteristic",
         sortable: true
       },
       {

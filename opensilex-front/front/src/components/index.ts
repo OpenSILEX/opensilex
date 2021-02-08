@@ -417,8 +417,8 @@ import EntityExternalReferencesForm from './variables/form/EntityExternalReferen
 components["opensilex-EntityExternalReferencesForm"] = EntityExternalReferencesForm;
 import VariableStructureList from './variables/views/VariableStructureList.vue';
 components["opensilex-VariableStructureList"] = VariableStructureList;
-import EntityDetails from './variables/views/EntityDetails.vue';
-components["opensilex-EntityDetails"] = EntityDetails;
+import VariableStructureDetails from './variables/views/VariableStructureDetails.vue';
+components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
 
 
 // Method
@@ -429,13 +429,13 @@ components["opensilex-MethodForm"] = MethodForm;
 import MethodExternalReferencesForm from './variables/form/MethodExternalReferencesForm.vue';
 components["opensilex-MethodExternalReferencesForm"] = MethodExternalReferencesForm;
 
-//Quality
-import QualityForm from './variables/form/QualityForm.vue';
-components["opensilex-QualityForm"] = QualityForm;
-import QualityCreate from './variables/form/QualityCreate.vue';
-components["opensilex-QualityCreate"] = QualityCreate;
-import QualityExternalReferencesForm from './variables/form/QualityExternalReferencesForm.vue';
-components["opensilex-QualityExternalReferencesForm"] = QualityExternalReferencesForm;
+//Characteristic
+import CharacteristicForm from './variables/form/CharacteristicForm.vue';
+components["opensilex-CharacteristicForm"] = CharacteristicForm;
+import CharacteristicModalForm from './variables/form/CharacteristicModalForm.vue';
+components["opensilex-CharacteristicModalForm"] = CharacteristicModalForm;
+import CharacteristicExternalReferencesForm from './variables/form/CharacteristicExternalReferencesForm.vue';
+components["opensilex-CharacteristicExternalReferencesForm"] = CharacteristicExternalReferencesForm;
 
 // Unit
 import UnitForm from './variables/form/UnitForm.vue';

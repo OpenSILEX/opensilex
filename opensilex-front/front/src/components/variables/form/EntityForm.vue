@@ -54,7 +54,7 @@
 
                 <!-- Comment -->
                 <opensilex-TextAreaForm
-                    :value.sync="form.comment"
+                    :value.sync="form.description"
                     label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>

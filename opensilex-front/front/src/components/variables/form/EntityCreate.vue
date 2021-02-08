@@ -73,8 +73,7 @@
             return {
                 uri: null,
                 name: null,
-                comment: null,
-                type: null,
+                description: null,
                 exactMatch: [],
                 narrower: [],
                 closeMatch: [],

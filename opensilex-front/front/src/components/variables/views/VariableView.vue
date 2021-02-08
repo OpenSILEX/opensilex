@@ -14,7 +14,6 @@
                         :to="{ path: '/variable/details/' + encodeURIComponent(uri) }"
                 >{{ $t('component.common.details-label') }}
                 </b-nav-item>
-
                 <b-nav-item
                         class="ml-3"
                         :active="isAnnotationTab()"
@@ -56,6 +55,7 @@
     import {VariablesService} from "opensilex-core/api/variables.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import AnnotationList from "../../annotations/list/AnnotationList.vue";
+    import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
     @Component
     export default class VariableView extends Vue {
@@ -69,7 +69,30 @@
         $t: any;
         $i18n: any;
 
-        variable : VariableDetailsDTO = VariableForm.getEmptyForm();
+        static getEmptyDetailsDTO() : VariableDetailsDTO{
+            return {
+                uri: undefined,
+                alternative_name: undefined,
+                name: undefined,
+                entity: undefined,
+                characteristic: undefined,
+                description: undefined,
+                time_interval: undefined,
+                sampling_interval: undefined,
+                datatype: undefined,
+                trait: undefined,
+                trait_name: undefined,
+                method: undefined,
+                unit: undefined,
+                exactMatch: [],
+                closeMatch: [],
+                broader: [],
+                narrower: [],
+            };
+        }
+
+
+        variable : VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
         uri: string;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -103,7 +126,8 @@
         }
 
         updateVariable(variable){
-            this.variable = variable;
+            this.uri = variable.uri;
+            this.loadVariable(this.uri);
         }
 
     }

@@ -6,33 +6,44 @@
 
 package org.opensilex.core.variable.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableCreationDTO;
-import org.opensilex.core.variable.dal.EntityModel;
-
 import java.net.URI;
 
-public class EntityCreationDTO extends BaseVariableCreationDTO<EntityModel> {
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
+import org.opensilex.core.variable.dal.EntityModel;
 
-    @Override
-    protected EntityModel newModelInstance() {
-        return new EntityModel();
+
+/**
+ *
+ * @author vidalmor
+ */
+
+public class EntityDetailsDTO extends BaseVariableGetDTO<EntityModel> {
+
+    public EntityDetailsDTO(EntityModel model) {
+        super(model);
     }
 
-    @ApiModelProperty(example = "Plant", required = true)
+    public EntityDetailsDTO() {
+    }
+
+    @Override
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    public URI getUri() {
+        return uri;
+    }
+
+    @Override
+    @ApiModelProperty(example = "Plant")
     public String getName() {
         return name;
     }
 
+    @Override
     @ApiModelProperty(example = "The entity which describe a plant")
     public String getDescription() {
         return description;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
-    public URI getUri() {
-        return uri;
-    }
 
 }

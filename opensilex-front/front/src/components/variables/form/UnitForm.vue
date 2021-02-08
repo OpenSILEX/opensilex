@@ -62,7 +62,7 @@
 
                 <!-- alternative symbol -->
                 <opensilex-InputForm
-                    :value.sync="form.alternativeSymbol"
+                    :value.sync="form.alternative_symbol"
                     label="UnitForm.alternative-symbol"
                     placeholder="UnitForm.alternative-symbol-placeholder"
                     type="text"
@@ -71,7 +71,7 @@
 
                 <!-- Comment -->
                 <opensilex-TextAreaForm
-                    :value.sync="form.comment"
+                    :value.sync="form.description"
                     label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>

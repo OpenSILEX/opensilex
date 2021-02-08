@@ -3,7 +3,7 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.core.variable.api.method;
+package org.opensilex.core.variable.api.characteristic;
 
 import io.swagger.annotations.*;
 
@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.opensilex.core.variable.api.VariableAPI;
-import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
@@ -30,7 +30,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.utils.OrderBy;
@@ -39,14 +38,14 @@ import org.opensilex.utils.ListWithPagination;
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
 @Api(CREDENTIAL_VARIABLE_GROUP_ID)
-@Path(MethodAPI.PATH)
+@Path(CharacteristicAPI.PATH)
 @ApiCredentialGroup(
         groupId = VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID,
         groupLabelKey = VariableAPI.CREDENTIAL_VARIABLE_GROUP_LABEL_KEY
 )
-public class MethodAPI {
+public class CharacteristicAPI {
 
-    public static final String PATH = "/core/methods";
+    public static final String PATH = "/core/characteristics";
 
     @Inject
     private SPARQLService sparql;
@@ -55,7 +54,7 @@ public class MethodAPI {
     UserModel currentUser;
 
     @POST
-    @ApiOperation("Add a method")
+    @ApiOperation("Add a Characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -64,53 +63,49 @@ public class MethodAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A method is created", response = ObjectUriResponse.class),
-            @ApiResponse(code = 409, message = "A method with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(code = 201, message = "A characteristic is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "A characteristic with the same URI already exists", response = ErrorResponse.class)
     })
-    public Response createMethod(
-            @ApiParam("Method description") @Valid MethodCreationDTO dto
+    public Response createCharacteristic(
+            @ApiParam("Characteristic description") @Valid CharacteristicCreationDTO dto
     ) throws Exception {
         try {
-            BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-            MethodModel model = dto.newModel();
+            BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+            CharacteristicModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
             dao.create(model);
             return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
-
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Method already exists",
-                    duplicateUriException.getMessage()
-            ).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Characteristic already exists", duplicateUriException.getMessage()).getResponse();
         }
     }
 
     @GET
     @Path("{uri}")
-    @ApiOperation("Get a method")
+    @ApiOperation("Get a characteristic")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method retrieved", response = MethodDetailsDTO.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response getMethod(
-            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiResponse(code = 200, message = "Characteristic retrieved", response = CharacteristicDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
+    })
+    public Response getCharacteristic(
+            @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-        MethodModel model = dao.get(uri);
+        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+        CharacteristicModel model = dao.get(uri);
 
         if (model != null) {
-            return new SingleObjectResponse<>(new MethodDetailsDTO(model)).getResponse();
+            return new SingleObjectResponse<>(new CharacteristicDetailsDTO(model)).getResponse();
         } else {
             throw new NotFoundURIException(uri);
         }
     }
 
     @PUT
-    @ApiOperation("Update a method")
+    @ApiOperation("Update a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
@@ -119,70 +114,69 @@ public class MethodAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method updated", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Unknown method URI", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Characteristic updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
     })
-    public Response updateMethod(
-            @ApiParam("Method description") @Valid MethodUpdateDTO dto
+    public Response updateCharacteristic(
+            @ApiParam("Characteristic description") @Valid CharacteristicUpdateDTO dto
     ) throws Exception {
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
+        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 
-        MethodModel model = dto.newModel();
+        CharacteristicModel model = dto.newModel();
         dao.update(model);
         return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
 
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete a method")
+    @ApiOperation("Delete a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Method deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Unknown method URI", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Characteristic deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown characteristic URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteMethod(
-            @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
+    public Response deleteCharacteristic(
+            @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
+        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
 
-
     @GET
-    @ApiOperation("Search methods by name")
+    @ApiOperation("Search characteristics by name")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return methods", response = MethodGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return characteristic list", response = CharacteristicGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchMethods(
-            @ApiParam(value = "Name (regex)", example = "ImageAnalysis") @QueryParam("name") String namePattern,
+    public Response searchCharacteristics(
+            @ApiParam(value = "Name (regex)", example = "Height") @QueryParam("name") String namePattern ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-        ListWithPagination<MethodModel> resultList = dao.search(
+        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+        ListWithPagination<CharacteristicModel> resultList = dao.search(
                 namePattern,
                 orderByList,
                 page,
                 pageSize
         );
 
-        ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
-                MethodGetDTO.class,
-                MethodGetDTO::new
+        ListWithPagination<CharacteristicGetDTO> resultDTOList = resultList.convert(
+                CharacteristicGetDTO.class,
+                CharacteristicGetDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

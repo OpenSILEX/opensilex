@@ -26,8 +26,8 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             ontology = SKOS.class,
             property = "altLabel"
     )
-    private String longName;
-    public static final String LONG_NAME_FIELD_NAME = "longName";
+    private String alternativeName;
+    public static final String ALTERNATIVE_NAME_FIELD_NAME = "alternativeName";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -39,11 +39,11 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasQuality",
+            property = "hasCharacteristic",
             required = true
     )
-    private QualityModel quality;
-    public static final String QUALITY_FIELD_NAME = "quality";
+    private CharacteristicModel characteristic;
+    public static final String CHARACTERISTIC_FIELD_NAME = "characteristic";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -86,13 +86,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDataType"
+            property = "hasDataType",
+            required = true
     )
     private URI dataType;
 
-    public String getLongName() { return longName; }
+    public String getAlternativeName() { return alternativeName; }
 
-    public void setLongName(String longName) { this.longName = longName; }
+    public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
 
     public EntityModel getEntity() {
         return entity;
@@ -102,12 +103,12 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.entity = entity;
     }
 
-    public QualityModel getQuality() {
-        return quality;
+    public CharacteristicModel getCharacteristic() {
+        return characteristic;
     }
 
-    public void setQuality(QualityModel quality) {
-        this.quality = quality;
+    public void setCharacteristic(CharacteristicModel characteristic) {
+        this.characteristic = characteristic;
     }
 
     public URI getTraitUri() { return traitUri; }

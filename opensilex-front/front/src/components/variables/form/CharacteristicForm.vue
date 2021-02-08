@@ -49,12 +49,12 @@
                     label="component.common.name"
                     type="text"
                     :required="true"
-                    placeholder="QualityForm.name-placeholder"
+                    placeholder="CharacteristicForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
                 <opensilex-TextAreaForm
-                    :value.sync="form.comment"
+                    :value.sync="form.description"
                     label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>
@@ -66,11 +66,11 @@
     import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import QualityCreate from "./QualityCreate.vue";
-    import { QualityCreationDTO } from "opensilex-core/index";
+    import {CharacteristicCreationDTO} from "opensilex-core/model/characteristicCreationDTO";
+    import CharacteristicModalForm from "./CharacteristicModalForm.vue";
 
     @Component
-    export default class QualityForm extends Vue {
+    export default class CharacteristicForm extends Vue {
         $opensilex: any;
 
         title = "";
@@ -80,9 +80,9 @@
         errorMsg: String = "";
 
         @PropSync("form")
-        qualityDto: QualityCreationDTO;
+        dto: CharacteristicCreationDTO;
 
-        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(QualityCreate.selectedOntologies);
+        externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(CharacteristicModalForm.selectedOntologies);
 
         handleErrorMessage(errorMsg: string) {
             this.errorMsg = errorMsg;

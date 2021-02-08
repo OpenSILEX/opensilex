@@ -140,7 +140,7 @@ export default class GenerateDataTemplateFrom extends Vue {
       (datatypeNode) => datatypeNode.uri == dataTypeUri
     );
 
-    return [dataType.labelKey];
+    return [dataType.name];
   }
 
   private langUnwatcher;
@@ -222,10 +222,10 @@ export default class GenerateDataTemplateFrom extends Vue {
           for (let element of http.response.result) {
             variableUriInfo.push(element.uri);
             otherHeaders.push(element.name);
-            if (element.dataType != undefined && element.dataType != null) {
+            if (element.datatype != undefined && element.datatype != null) {
               otherExample.push(
                 this.$t("DataHelp.column-type-help").toString() +
-                  this.getDataTypeLabel(element.dataType)
+                  this.getDataTypeLabel(element.datatype)
               );
             } else {
               otherExample.push(this.getDataTypeLabel("xsd:string"));

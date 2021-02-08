@@ -43,20 +43,17 @@ public class Oeso {
     // ---- COMMON PROPERTIES ----
     public static final Property startDate = Ontology.property(NS, "startDate");
     public static final Property endDate = Ontology.property(NS, "endDate");
-    public static final Property hasKeyword = Ontology.property(NS, "hasKeyword");
     public static final Property hasPart = Ontology.property(NS, "hasPart");
-    public static final Property hasLongName = Ontology.property(NS, "hasLongName");
-    public static final Property hasSynonym = Ontology.property(NS, "hasSynonym");
 
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
     public static final Resource Entity = Ontology.resource(NS, "Entity");
-    public static final Resource Quality = Ontology.resource(NS, "Quality");
+    public static final Resource Characteristic = Ontology.resource(NS, "Characteristic");
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
 
     public static final Property hasEntity = Ontology.property(NS, "hasEntity");
-    public static final Property hasQuality = Ontology.property(NS, "hasQuality");
+    public static final Property hasCharacteristic = Ontology.property(NS, "hasCharacteristic");
     public static final Property hasTraitUri = Ontology.property(NS, "hasTraitUri");
     public static final Property hasTraitName = Ontology.property(NS, "hasTraitName");
 
@@ -64,7 +61,7 @@ public class Oeso {
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
     public static final Property hasDataType = Ontology.property(NS, "hasDataType");
 
-    // ---- VARIABLES UNIT ----
+    // ---- VARIABLES Unit ----
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");
     public static final Property hasSamplingInterval = Ontology.property(NS, "hasSamplingInterval");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          QualityApiTest.java
+//                          CharacteristicApiTest.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -11,9 +11,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.api.quality.QualityCreationDTO;
-import org.opensilex.core.variable.api.quality.QualityGetDTO;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.api.characteristic.CharacteristicAPI;
+import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicDetailsDTO;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -26,26 +27,23 @@ import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
  */
-public class QualityApiTest extends AbstractSecurityIntegrationTest {
+public class CharacteristicApiTest extends AbstractSecurityIntegrationTest {
 
-    public String path = "/core/variable/quality";
+    public String path = CharacteristicAPI.PATH;
 
-    public String getByUriPath = path + "/get/{uri}";
-    public String searchPath = path + "/search";
-    public String createPath = path + "/create";
-    public String updatePath = path + "/update";
-    public String deletePath = path + "/delete/{uri}";
+    public String getByUriPath = path + "/{uri}";
+    public String createPath = path;
+    public String updatePath = path;
+    public String deletePath = path + "/{uri}";
 
-
-    private QualityCreationDTO getCreationDto() {
-        QualityCreationDTO dto = new QualityCreationDTO();
+    private CharacteristicCreationDTO getCreationDto() {
+        CharacteristicCreationDTO dto = new CharacteristicCreationDTO();
         dto.setName("size");
-        dto.setComment("The size of an object");
+        dto.setDescription("The size of an object");
         return dto;
     }
 
@@ -57,8 +55,8 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreateFailWithNoRequiredFields() throws Exception {
 
-        QualityCreationDTO dtoWithNoName = new QualityCreationDTO();
-        dtoWithNoName.setComment("only a comment, not a name");
+        CharacteristicCreationDTO dtoWithNoName = new CharacteristicCreationDTO();
+        dtoWithNoName.setDescription("only a comment, not a name");
 
         final Response postResult = getJsonPostResponse(target(createPath),dtoWithNoName);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -66,19 +64,19 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Quality+"/58165");
+        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Characteristic+"/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testUpdate() throws Exception {
 
-        QualityCreationDTO dto = getCreationDto();
+        CharacteristicCreationDTO dto = getCreationDto();
         final Response postResult = getJsonPostResponse(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
-        dto.setComment("new comment");
+        dto.setDescription("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
@@ -88,20 +86,20 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<QualityGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<QualityGetDTO>>() {
+        SingleObjectResponse<CharacteristicDetailsDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<CharacteristicDetailsDTO>>() {
         });
-        QualityGetDTO dtoFromApi = getResponse.getResult();
+        CharacteristicDetailsDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
-        assertEquals(dto.getComment(), dtoFromApi.getComment());
+        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
     }
 
     @Test
     public void testGetByUri() throws Exception {
 
         // Try to insert an Entity, to fetch it and to get fields
-        QualityCreationDTO creationDTO = getCreationDto();
+        CharacteristicCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
@@ -109,18 +107,17 @@ public class QualityApiTest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<QualityGetDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<QualityGetDTO>>() {
+        SingleObjectResponse<CharacteristicDetailsDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<CharacteristicDetailsDTO>>() {
         });
-        QualityGetDTO dtoFromDb = getResponse.getResult();
+        CharacteristicDetailsDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
         assertEquals(creationDTO.getName(),dtoFromDb.getName());
-        assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
-        assertTrue(SPARQLDeserializers.compareURIs(Oeso.Quality.getURI(),dtoFromDb.getType().toString()));
+        assertEquals(creationDTO.getDescription(),dtoFromDb.getDescription());
     }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(QualityModel.class);
+        return Collections.singletonList(CharacteristicModel.class);
     }
 
 }

@@ -11,8 +11,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.api.unit.UnitAPI;
 import org.opensilex.core.variable.api.unit.UnitCreationDTO;
-import org.opensilex.core.variable.api.unit.UnitGetDTO;
+import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -26,26 +27,24 @@ import java.util.List;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author Renaud COLIN
  */
 public class UnitApiTest extends AbstractSecurityIntegrationTest {
 
-    public String path = "/core/variable/unit";
+    public String path = UnitAPI.PATH;
 
-    public String getByUriPath = path + "/get/{uri}";
-    public String searchPath = path + "/search";
-    public String createPath = path + "/create";
-    public String updatePath = path + "/update";
-    public String deletePath = path + "/delete/{uri}";
+    public String getByUriPath = path + "/{uri}";
+    public String createPath = path;
+    public String updatePath = path;
+    public String deletePath = path + "/{uri}";
     
     
     private UnitCreationDTO getCreationDto() {
         UnitCreationDTO dto = new UnitCreationDTO();
         dto.setName("minute");
-        dto.setComment("I really need to comment it ?");
+        dto.setDescription("I really need to comment it ?");
         dto.setSymbol("m");
         dto.setAlternativeSymbol("mn");
         return dto;
@@ -60,7 +59,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
     public void testCreateFailWithNoRequiredFields() throws Exception {
 
         UnitCreationDTO dtoWithNoName = new UnitCreationDTO();
-        dtoWithNoName.setComment("only a comment, not a name");
+        dtoWithNoName.setDescription("only a comment, not a name");
 
         final Response postResult = getJsonPostResponse(target(createPath),dtoWithNoName);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -80,7 +79,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
-        dto.setComment("new comment");
+        dto.setDescription("new comment");
 
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
@@ -96,7 +95,7 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
-        assertEquals(dto.getComment(), dtoFromApi.getComment());
+        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
     }
 
     @Test
@@ -111,16 +110,15 @@ public class UnitApiTest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<UnitGetDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<UnitGetDTO>>() {
+        SingleObjectResponse<UnitDetailsDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<UnitDetailsDTO>>() {
         });
-        UnitGetDTO dtoFromDb = getResponse.getResult();
+        UnitDetailsDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
         assertEquals(creationDTO.getName(),dtoFromDb.getName());
-        assertEquals(creationDTO.getComment(),dtoFromDb.getComment());
+        assertEquals(creationDTO.getDescription(),dtoFromDb.getDescription());
         assertEquals(creationDTO.getSymbol(),dtoFromDb.getSymbol());
         assertEquals(creationDTO.getAlternativeSymbol(),dtoFromDb.getAlternativeSymbol());
 
-        assertTrue(SPARQLDeserializers.compareURIs(Oeso.Unit.getURI(),dtoFromDb.getType().toString()));
     }
 
     @Override

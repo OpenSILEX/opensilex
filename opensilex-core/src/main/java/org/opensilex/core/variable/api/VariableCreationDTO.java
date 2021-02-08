@@ -6,27 +6,73 @@
 package org.opensilex.core.variable.api;
 
 import java.net.URI;
-import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.plexus.util.StringUtils;
-import org.opensilex.core.ontology.OntologyReference;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * @author vidalmor
  */
+@JsonPropertyOrder({
+    "uri", "name", "alternative_name", "description",
+    "entity","characteristic", "trait", "trait_name", "method", "unit",
+    "time_interval", "sampling_interval", "datatype",
+    "exact_match","close_match","broader","narrower"
+})
 public class VariableCreationDTO extends SKOSReferencesDTO {
 
+    @JsonProperty("uri")
     protected URI uri;
 
+    @NotNull
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
+    @JsonProperty("description")
+    private String description;
+
+    @JsonProperty("entity")
+    private URI entity;
+
+    @JsonProperty("characteristic")
+    private URI characteristic;
+
+    @JsonProperty("trait")
+    private URI trait;
+
+    @JsonProperty("trait_name")
+    private String traitName;
+
+    @JsonProperty("method")
+    private URI method;
+
+    @JsonProperty("unit")
+    private URI unit;
+
+    @JsonProperty("time_interval")
+    private String timeInterval;
+
+    @JsonProperty("sampling_interval")
+    private String samplingInterval;
+
+    @JsonProperty("datatype")
+    private URI dataType;
+
+    @ValidURI
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
@@ -36,35 +82,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.uri = uri;
     }
 
-    @NotNull
-    private String name;
-
-    private String longName;
-
-    private String comment;
-
-    private URI entity;
-
-    private URI quality;
-
-    private URI traitUri;
-
-    private String traitName;
-
-    private URI method;
-
-    private URI unit;
-
-    private String synonym;
-
-    private String timeInterval;
-
-    private String samplingInterval;
-
-
-    private URI dataType;
-
-    private List<OntologyReference> relations;
 
     @ApiModelProperty(example = "Plant_Height", required = true)
     @NotNull
@@ -77,23 +94,24 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
-    public String getLongName() {
-        return longName;
+    public String getAlternativeName() {
+        return alternativeName;
     }
 
-    public void setLongName(String longName) {
-        this.longName = longName;
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
     }
 
     @ApiModelProperty(example = "Describe the height of a plant.")
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
+    @ValidURI
     @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant", required = true)
     public URI getEntity() {
@@ -104,14 +122,15 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.entity = entity;
     }
 
+    @ValidURI
     @NotNull
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/quality/Height", required = true)
-    public URI getQuality() {
-        return quality;
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height", required = true)
+    public URI getCharacteristic() {
+        return characteristic;
     }
 
-    public void setQuality(URI quality) {
-        this.quality = quality;
+    public void setCharacteristic(URI characteristic) {
+        this.characteristic = characteristic;
     }
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/Estimation")
@@ -123,6 +142,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.method = method;
     }
 
+    @ValidURI
     @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/centimeter", required = true)
     public URI getUnit() {
@@ -133,21 +153,14 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.unit = unit;
     }
 
-    public List<OntologyReference> getRelations() {
-        return relations;
-    }
-
-    public void setRelations(List<OntologyReference> reference) {
-        this.relations = reference;
-    }
-
+    @ValidURI
     @ApiModelProperty(notes = "Additional trait URI. Could be used for interoperability", example = "http://purl.obolibrary.org/obo/TO_0002644")
-    public URI getTraitUri() {
-        return traitUri;
+    public URI getTrait() {
+        return trait;
     }
 
-    public void setTraitUri(URI traitUri) {
-        this.traitUri = traitUri;
+    public void setTrait(URI trait) {
+        this.trait = trait;
     }
 
     @ApiModelProperty(notes = "Additional trait name. Could be used for interoperability if you describe the trait URI", example = "dry matter digestibility")
@@ -157,15 +170,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     public void setTraitName(String traitName) {
         this.traitName = traitName;
-    }
-
-    @ApiModelProperty(example = "Plant_Length")
-    public String getSynonym() {
-        return synonym;
-    }
-
-    public void setSynonym(String synonym) {
-        this.synonym = synonym;
     }
 
     @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
@@ -178,9 +182,11 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
 
+    @ValidURI
+    @NotNull
+    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public URI getDataType() { return dataType; }
 
-    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public void setDataType(URI dataType) { this.dataType = dataType; }
 
     public VariableModel newModel() {
@@ -188,23 +194,23 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         model.setUri(uri);
         model.setName(name);
 
-        if(!StringUtils.isEmpty(longName)){
-            model.setLongName(longName);
+        if(!StringUtils.isEmpty(alternativeName)){
+            model.setAlternativeName(alternativeName);
         }
-        if(!StringUtils.isEmpty(comment)){
-            model.setComment(comment);
+        if(!StringUtils.isEmpty(description)){
+            model.setDescription(description);
         }
         model.setDataType(dataType);
 
         model.setEntity(new EntityModel(entity));
-        model.setQuality(new QualityModel(quality));
+        model.setCharacteristic(new CharacteristicModel(characteristic));
         if(method != null){
             model.setMethod(new MethodModel(method));
         }
         model.setUnit(new UnitModel(unit));
 
-        if(traitUri != null){
-            model.setTraitUri(traitUri);
+        if(trait != null){
+            model.setTraitUri(trait);
             model.setTraitName(traitName);
         }
         if(!StringUtils.isEmpty(timeInterval)){

@@ -3,34 +3,36 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-
-package org.opensilex.core.variable.api.entity;
-
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableCreationDTO;
-import org.opensilex.core.variable.dal.EntityModel;
+package org.opensilex.core.variable.api.characteristic;
 
 import java.net.URI;
 
-public class EntityCreationDTO extends BaseVariableCreationDTO<EntityModel> {
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.BaseVariableCreationDTO;
+import org.opensilex.core.variable.dal.CharacteristicModel;
+
+/**
+ *
+ * @author vidalmor
+ */
+public class CharacteristicCreationDTO extends BaseVariableCreationDTO<CharacteristicModel> {
 
     @Override
-    protected EntityModel newModelInstance() {
-        return new EntityModel();
+    protected CharacteristicModel newModelInstance() {
+        return new CharacteristicModel();
     }
 
-    @ApiModelProperty(example = "Plant", required = true)
+    @ApiModelProperty(example = "Height", required = true)
     public String getName() {
         return name;
     }
 
-    @ApiModelProperty(example = "The entity which describe a plant")
+    @ApiModelProperty(example = "Describe the height")
     public String getDescription() {
         return description;
     }
 
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height")
     public URI getUri() {
         return uri;
     }

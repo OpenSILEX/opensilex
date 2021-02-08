@@ -3,38 +3,45 @@
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
+
 package org.opensilex.core.variable.api.method;
 
 import java.net.URI;
+
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableCreationDTO;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
+
 
 /**
  *
  * @author vidalmor
  */
-public class MethodCreationDTO  extends BaseVariableCreationDTO<MethodModel> {
+public class MethodDetailsDTO extends BaseVariableGetDTO<MethodModel> {
 
-    @Override
-    protected MethodModel newModelInstance() {
-        return new MethodModel();
+    public MethodDetailsDTO(MethodModel model) {
+        super(model);
     }
 
-    @ApiModelProperty(example = "ImageAnalysis", required = true)
+    public MethodDetailsDTO() {
+    }
+
+    @Override
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
+    public URI getUri() {
+        return uri;
+    }
+
+    @Override
+    @ApiModelProperty(example = "ImageAnalysis")
     public String getName() {
         return name;
     }
 
+    @Override
     @ApiModelProperty(example = "Based on a software")
     public String getDescription() {
         return description;
-    }
-
-
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
-    public URI getUri() {
-        return uri;
     }
 
 }

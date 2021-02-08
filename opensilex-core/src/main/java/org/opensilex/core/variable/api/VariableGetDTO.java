@@ -7,34 +7,45 @@ package org.opensilex.core.variable.api;
 
 import java.net.URI;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.method.MethodGetDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
+import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
-
 
 /**
  *
  * @author vidalmor
  */
+@JsonPropertyOrder({
+        "uri", "name", "entity", "characteristic", "method", "unit"
+})
 public class VariableGetDTO {
 
+    @JsonProperty("uri")
     private URI uri;
 
+    @JsonProperty("name")
     private String name;
 
-    private NamedResourceDTO<EntityModel> entity;
+    @JsonProperty("entity")
+    private EntityGetDTO entity;
 
-    private NamedResourceDTO<QualityModel> quality;
+    @JsonProperty("characteristic")
+    private CharacteristicGetDTO characteristic;
 
-    private NamedResourceDTO<MethodModel> method;
+    @JsonProperty("method")
+    private MethodGetDTO method;
 
-    private NamedResourceDTO<UnitModel> unit;
-
-    private URI dataType;
+    @JsonProperty("unit")
+    private UnitGetDTO unit;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -54,34 +65,29 @@ public class VariableGetDTO {
         this.name = name;
     }
 
-    public NamedResourceDTO<EntityModel> getEntity() { return entity; }
+    public EntityGetDTO getEntity() { return entity; }
 
-    public void setEntity(NamedResourceDTO<EntityModel> entity) {
+    public void setEntity(EntityGetDTO entity) {
         this.entity = entity;
     }
 
-    public NamedResourceDTO<QualityModel> getQuality() {
-        return quality;
+    public CharacteristicGetDTO getCharacteristic() {
+        return characteristic;
     }
 
-    public void setQuality(NamedResourceDTO<QualityModel> quality) { this.quality = quality; }
+    public void setCharacteristic(CharacteristicGetDTO characteristic) { this.characteristic = characteristic; }
 
-    public NamedResourceDTO<MethodModel> getMethod() { return method; }
+    public MethodGetDTO getMethod() { return method; }
 
-    public void setMethod(NamedResourceDTO<MethodModel> method) { this.method = method; }
+    public void setMethod(MethodGetDTO method) { this.method = method; }
 
-    public NamedResourceDTO<UnitModel> getUnit() {
+    public UnitGetDTO getUnit() {
         return unit;
     }
 
-    public void setUnit(NamedResourceDTO<UnitModel> unit) {
+    public void setUnit(UnitGetDTO unit) {
         this.unit = unit;
     }
-
-    public URI getDataType() { return dataType; }
-
-    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
-    public void setDataType(URI dataType) { this.dataType = dataType; }
 
 
     public static VariableGetDTO fromModel(VariableModel model) {
@@ -90,35 +96,20 @@ public class VariableGetDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
 
-        NamedResourceDTO<EntityModel> entityDto = new NamedResourceDTO<>();
         EntityModel entity = model.getEntity();
-        entityDto.setUri(entity.getUri());
-        entityDto.setName(entity.getName());
-        dto.setEntity(entityDto);
+        dto.setEntity(new EntityGetDTO(entity));
 
-        NamedResourceDTO<QualityModel> qualityDto = new NamedResourceDTO<>();
-        QualityModel quality = model.getQuality();
-        qualityDto.setUri(quality.getUri());
-        qualityDto.setName(quality.getName());
-        dto.setQuality(qualityDto);
+        CharacteristicModel characteristic = model.getCharacteristic();
+        dto.setCharacteristic(new CharacteristicGetDTO(characteristic));
 
         MethodModel method = model.getMethod();
         if(method != null){
-            NamedResourceDTO<MethodModel> methodDto = new NamedResourceDTO<>();
-            methodDto.setUri(method.getUri());
-            methodDto.setName(method.getName());
-            dto.setMethod(methodDto);
+            dto.setMethod(new MethodGetDTO(method));
         }
 
         UnitModel unit = model.getUnit();
-        if(unit != null){
-            NamedResourceDTO<UnitModel> unitDto = new NamedResourceDTO<>();
-            unitDto.setUri(unit.getUri());
-            unitDto.setName(unit.getName());
-            dto.setUnit(unitDto);
-        }
+        dto.setUnit(new UnitGetDTO(unit));
 
-        dto.setDataType(model.getDataType());
         return dto;
     }
 }

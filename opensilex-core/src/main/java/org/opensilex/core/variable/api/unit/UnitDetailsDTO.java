@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+
 package org.opensilex.core.variable.api.unit;
 
 import java.net.URI;
@@ -10,8 +11,9 @@ import java.net.URI;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableCreationDTO;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.UnitModel;
+
 
 /**
  *
@@ -21,7 +23,8 @@ import org.opensilex.core.variable.dal.UnitModel;
         "uri", "name", "description","symbol","alternative_symbol",
         "exactMatch","closeMatch","broader","narrower"
 })
-public class UnitCreationDTO extends BaseVariableCreationDTO<UnitModel> {
+
+public class UnitDetailsDTO extends BaseVariableGetDTO<UnitModel> {
 
     @JsonProperty("symbol")
     private String symbol;
@@ -29,27 +32,31 @@ public class UnitCreationDTO extends BaseVariableCreationDTO<UnitModel> {
     @JsonProperty("alternative_symbol")
     private String alternativeSymbol;
 
-    @Override
-    protected UnitModel newModelInstance() {
-        UnitModel model = new UnitModel();
-        model.setSymbol(symbol);
-        model.setAlternativeSymbol(alternativeSymbol);
-        return model;
+    public UnitDetailsDTO(UnitModel model) {
+        super(model);
+        this.symbol = model.getSymbol();
+        this.alternativeSymbol = model.getAlternativeSymbol();
     }
 
-    @ApiModelProperty(example = "Centimeter", required = true)
+    public UnitDetailsDTO() {
+    }
+
+    @Override
+    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
+    public URI getUri() {
+        return uri;
+    }
+
+    @Override
+    @ApiModelProperty(example = "Centimeter")
     public String getName() {
         return name;
     }
 
+    @Override
     @ApiModelProperty(example = "A common unit for describing a length")
     public String getDescription() {
         return description;
-    }
-
-    @ApiModelProperty(example = "http://opensilex.dev/set/variables/unit/Centimeter")
-    public URI getUri() {
-        return uri;
     }
 
     @ApiModelProperty(example = "cm")
@@ -69,5 +76,5 @@ public class UnitCreationDTO extends BaseVariableCreationDTO<UnitModel> {
     public void setAlternativeSymbol(String alternativeSymbol) {
         this.alternativeSymbol = alternativeSymbol;
     }
-    
+
 }

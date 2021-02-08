@@ -42,27 +42,27 @@
                     </opensilex-EntityCreate>
                 </div>
 
-                <div class="col-lg-6" id="v-step-quality">
-                    <!-- Quality -->
+                <div class="col-lg-6" id="v-step-characteristic">
+                    <!-- Characteristic -->
                     <opensilex-SelectForm
-                        ref="qualitySelectForm"
-                        label="VariableView.quality"
-                        :selected.sync="form.quality"
+                        ref="characteristicSelectForm"
+                        label="VariableView.characteristic"
+                        :selected.sync="form.characteristic"
                         :multiple="false"
                         :required="true"
-                        :searchMethod="searchQualities"
-                        :itemLoadingMethod="loadQuality"
-                        placeholder="VariableForm.quality-placeholder"
+                        :searchMethod="searchCharacteristics"
+                        :itemLoadingMethod="loadCharacteristic"
+                        placeholder="VariableForm.characteristic-placeholder"
                         :conversionMethod="objectToSelectNode"
-                        noResultsText="VariableForm.no-quality"
-                        helpMessage="VariableForm.quality-help"
+                        noResultsText="VariableForm.no-characteristic"
+                        helpMessage="VariableForm.characteristic-help"
                         @select="updateName(form)"
-                        :actionHandler="showQualityCreateForm"
+                        :actionHandler="showCharacteristicCreateForm"
                     ></opensilex-SelectForm>
-                    <opensilex-QualityCreate
-                        ref="qualityForm"
-                        @onCreate="setLoadedQuality">
-                    </opensilex-QualityCreate>
+                    <opensilex-CharacteristicModalForm
+                        ref="characteristicForm"
+                        @onCreate="setLoadedCharacteristic">
+                    </opensilex-CharacteristicModalForm>
                 </div>
             </div>
 
@@ -157,7 +157,7 @@
                 <div class="col-lg-6" id="v-step-alt">
                     <!-- altName -->
                     <opensilex-InputForm
-                        :value.sync="form.longName"
+                        :value.sync="form.alternative_name"
                         label="VariableForm.altName"
                         type="text"
                     ></opensilex-InputForm>
@@ -168,8 +168,8 @@
                 <div class="col-lg-6" id="v-step-datatype">
                     <opensilex-SelectForm
                         label="OntologyPropertyForm.data-type"
-                        :required="false"
-                        :selected.sync="form.dataType"
+                        :required="true"
+                        :selected.sync="form.datatype"
                         :options="datatypesNodes"
                         :itemLoadingMethod="loadDataType"
                         helpMessage="VariableForm.datatype-help"
@@ -183,7 +183,7 @@
                     <!-- time-interval -->
                     <opensilex-SelectForm
                         label="VariableForm.time-interval"
-                        :selected.sync="form.timeInterval"
+                        :selected.sync="form.time_interval"
                         :multiple="false"
                         :options="periodList"
                         placeholder="VariableForm.time-interval-placeholder"
@@ -195,7 +195,7 @@
                     <!-- sample/distance-interval -->
                     <opensilex-SelectForm
                         label="VariableForm.sampling-interval"
-                        :selected.sync="form.samplingInterval"
+                        :selected.sync="form.sampling_interval"
                         :multiple="false"
                         :options="sampleList"
                         placeholder="VariableForm.sampling-interval-placeholder"
@@ -207,7 +207,7 @@
             <div class="row">
                 <div class="col-xl-12" id="v-step-description">
                     <!-- description -->
-                    <opensilex-TextAreaForm :value.sync="form.comment" label="component.common.description">
+                    <opensilex-TextAreaForm :value.sync="form.description" label="component.common.description">
                     </opensilex-TextAreaForm>
                 </div>
             </div>
@@ -220,9 +220,11 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
-import { NamedResourceDTO, EntityCreationDTO, QualityCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
+import { NamedResourceDTO, EntityCreationDTO, CharacteristicCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component
 export default class VariableForm extends Vue {
@@ -246,12 +248,12 @@ export default class VariableForm extends Vue {
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
     @Ref("entitySelectForm") entitySelectForm!: any;
-    @Ref("qualitySelectForm") qualitySelectForm!: any;
+    @Ref("characteristicSelectForm") characteristicSelectForm!: any;
     @Ref("methodSelectForm") methodSelectForm!: any;
     @Ref("unitSelectForm") unitSelectForm!: any;
 
     @Ref("entityForm") readonly entityForm!: any;
-    @Ref("qualityForm") readonly qualityForm!: any;
+    @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: any;
 
@@ -260,7 +262,7 @@ export default class VariableForm extends Vue {
     loadedEntities: Array<NamedResourceDTO> = [];
     loadedUnits: Array<NamedResourceDTO> = [];
     loadedMethods: Array<NamedResourceDTO> = [];
-    loadedQualities: Array<NamedResourceDTO> = [];
+    loadedCharacteristics: Array<NamedResourceDTO> = [];
 
     traitSteps = [
         {component: "opensilex-TraitForm"}
@@ -327,7 +329,7 @@ export default class VariableForm extends Vue {
         if(buildLabel.length > 0 ){
             nameParts.push(buildLabel);
         }
-        buildLabel = this.getLabel(form.quality, this.loadedQualities);
+        buildLabel = this.getLabel(form.characteristic, this.loadedCharacteristics);
         if(buildLabel.length > 0 ){
             nameParts.push(buildLabel);
         }
@@ -345,7 +347,7 @@ export default class VariableForm extends Vue {
         }
 
         if(nameParts.length){
-            form.longName = nameParts.join("_");
+            form.alternative_name = nameParts.join("_");
         }
 
     }
@@ -354,8 +356,8 @@ export default class VariableForm extends Vue {
         this.entityForm.showCreateForm();
     }
 
-    showQualityCreateForm() {
-        this.qualityForm.showCreateForm();
+    showCharacteristicCreateForm() {
+        this.characteristicForm.showCreateForm();
     }
 
     showMethodCreateForm() {
@@ -374,20 +376,19 @@ export default class VariableForm extends Vue {
         }
     }
 
-    static getEmptyForm(){
+    static getEmptyForm() : VariableCreationDTO{
         return {
             uri: undefined,
+            alternative_name: undefined,
+            name: undefined,
             entity: undefined,
-            quality: undefined,
-            longName: undefined,
-            synonym: undefined,
-            label: undefined,
-            comment: undefined,
-            timeInterval: undefined,
-            samplingInterval: undefined,
-            dataType: undefined,
-            traitUri: undefined,
-            traitName: undefined,
+            characteristic: undefined,
+            description: undefined,
+            time_interval: undefined,
+            sampling_interval: undefined,
+            datatype: undefined,
+            trait: undefined,
+            trait_name: undefined,
             method: undefined,
             unit: undefined,
             exactMatch: [],
@@ -429,33 +430,33 @@ export default class VariableForm extends Vue {
         this.entitySelectForm.select({id: created.uri});
     }
 
-    searchQualities(name: string, page, pageSize){
+    searchCharacteristics(name: string, page, pageSize){
         return this.service
-            .searchQualities(name, ["name=asc"], page, pageSize)
+            .searchCharacteristics(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 if (http && http.response) {
                     for(let dto of http.response.result){
-                        this.loadedQualities.push(dto);
+                        this.loadedCharacteristics.push(dto);
                     }
                 }
                 return http;
             });
     }
 
-    loadQuality(qualities: Array<any>) {
-        if(! qualities || qualities.length !== 1){
+    loadCharacteristic(characteristics: Array<any>) {
+        if(! characteristics || characteristics.length !== 1){
             return undefined;
         }
-        // in edit mode, the loaded quality is an object composed of uri and name
-        if(qualities[0].uri){
-            return [this.form.quality];
+        // in edit mode, the loaded characteristic is an object composed of uri and name
+        if(characteristics[0].uri){
+            return [this.form.characteristic];
         }
-        return [this.loadedQualities.find(dto => dto.uri == qualities[0])];
+        return [this.loadedCharacteristics.find(dto => dto.uri == characteristics[0])];
     }
 
-    setLoadedQuality(created: QualityCreationDTO) {
-        this.loadedQualities = [{uri: created.uri, name: created.name}];
-        this.qualitySelectForm.select({id: created.uri});
+    setLoadedCharacteristic(created: CharacteristicCreationDTO) {
+        this.loadedCharacteristics = [{uri: created.uri, name: created.name}];
+        this.characteristicSelectForm.select({id: created.uri});
     }
 
     searchMethods(name: string, page, pageSize){
@@ -555,7 +556,7 @@ export default class VariableForm extends Vue {
     updateDatatypeNodes(){
         this.datatypesNodes = [];
         for (let dto of this.datatypes) {
-            let label: any = this.$t(dto.labelKey);
+            let label: any = this.$t(dto.name);
             this.datatypesNodes.push({
                 id: dto.uri,
                 label: label.charAt(0).toUpperCase() + label.slice(1)
@@ -584,15 +585,15 @@ export default class VariableForm extends Vue {
         this.savedVariable = JSON.parse(JSON.stringify(this.form));
 
         this.form.entity = { uri: this.$i18n.t("VariableForm.example.entity"),  name: this.$i18n.t("VariableForm.example.entity")};
-        this.form.quality = { uri: this.$i18n.t("VariableForm.example.quality"),  name: this.$i18n.t("VariableForm.example.quality")};
+        this.form.characteristic = { uri: this.$i18n.t("VariableForm.example.characteristic"),  name: this.$i18n.t("VariableForm.example.characteristic")};
         this.form.method = { uri: this.$i18n.t("VariableForm.example.method"),  name: this.$i18n.t("VariableForm.example.method")};
         this.form.unit = { uri: this.$i18n.t("VariableForm.example.unit"),  name: this.$i18n.t("VariableForm.example.unit")};
 
         this.form.name = this.$i18n.t("VariableForm.example.name");
-        this.form.longName = this.$i18n.t("VariableForm.example.altName");
+        this.form.alternative_name = this.$i18n.t("VariableForm.example.altName");
         this.form.dataType = this.$i18n.t("VariableForm.example.datatype");
-        this.form.timeInterval =  this.$i18n.t("VariableForm.example.time-interval");
-        this.form.samplingInterval =  this.$i18n.t("VariableForm.example.sampling-interval");
+        this.form.time_interval =  this.$i18n.t("VariableForm.example.time-interval");
+        this.form.sampling_interval =  this.$i18n.t("VariableForm.example.sampling-interval");
         this.form.comment =  this.$i18n.t("VariableForm.example.description");
 
         this.variableTutorial.start();
@@ -625,15 +626,15 @@ export default class VariableForm extends Vue {
                 params: {placement: "right"},
             },
             {
-                target: "#v-step-quality",
-                header: { title: this.$i18n.t("VariableView.quality")},
-                content: this.$i18n.t("VariableForm.tutorial.quality"),
+                target: "#v-step-characteristic",
+                header: { title: this.$i18n.t("VariableView.characteristic")},
+                content: this.$i18n.t("VariableForm.tutorial.characteristic"),
                 params: {placement: "left"},
             },
             {
-                target: "#v-step-quality",
-                header: { title: this.$i18n.t("VariableView.quality")},
-                content: this.$i18n.t("VariableForm.tutorial.quality-check"),
+                target: "#v-step-characteristic",
+                header: { title: this.$i18n.t("VariableView.characteristic")},
+                content: this.$i18n.t("VariableForm.tutorial.characteristic-check"),
                 params: {placement: "right"},
             },
             {
@@ -703,22 +704,22 @@ en:
             global: "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'."
             entity: "Select the entity that is the object of the observation/mesurement. Here 'Grain'."
             entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other orthograph - seed, crop, etc."
-            quality: "Select the measured characteristic. Here 'Yield' "
-            quality-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
+            characteristic: "Select the measured characteristic. Here 'Yield' "
+            characteristic-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
             method: "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester."
             method-check: "If the method is not present you can add it. Don't neglect the description as it is especially important for methods."
             unit: "Select the unit in which the variable is measured. What should I do if the unit is different from what I have measured ? I can select kg/ha, but my measurements are in t/ha.
                 1 - I convert the measurements I have into the appropriate unit.
                 2 - I declare a new Unit. This is highly advised to not create too many units and prefer convert into the existing units."
-            name: "Precise the variable name. By default this field is auto filled according the entity and quality name, but it can be filled manually."
-            altName: "Precise the alternative variable name if it exist. By default this field is auto filled according the entity, quality, method and unit names, but this field can be filled manually."
+            name: "Precise the variable name. By default this field is auto filled according the entity and characteristic name, but it can be filled manually."
+            altName: "Precise the alternative variable name if it exist. By default this field is auto filled according the entity, characteristic, method and unit names, but this field can be filled manually."
             time-interval: "Precise the time interval which associated with this variable. Here we obtained the grain yield each month."
             sampling-interval: "Precise the sample interval which is associated with this variable. Here we obtained the grain yield by harvesting experimental microplot (10m * 2.5m)."
             datatype: "Precise the data type. Here we are using decimal numbers."
             description: "Finalize the variable with some text description of it."
         example:
             entity: "Seed"
-            quality: "Yield"
+            characteristic: "Yield"
             method: "Harvest yield sensor"
             unit: "Kilogram per hectare"
             name: "grain_yield"
@@ -733,23 +734,23 @@ fr:
             global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
             entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."
             entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifiez toutefois des orthographes alternatives - seed, crop, etc."
-            quality: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
-            quality-check: "Si la qualité n'est pas dans la liste, vous pouvez l'ajouter. Vérifiez encore une fois que la caractéristique n'est pas présente sous un autre nom."
+            characteristic: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
+            characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifiez encore une fois que la caractéristique n'est pas présente sous un autre nom."
             method: " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse."
             method-check: "Si la méthode n'est pas présente, vous pouvez l'ajouter. Ne pas oublier de bien renseigner la description, c'est particulièrement important pour la méthode."
             unit: "Sélectionner l'unité dans laquelle est exprimée la variable. Que faire si l'unité proposée ne correspond pas à ma mesure ? On me propose kg/ha, mais j'ai des mesures en t/ha ?
                 1 - Je convertie ma variable dans la bonne unité.
                 2 - Je crée une nouvelle unité. Il vaut mieux limiter la création de multiples unités, privilégier la conversion."
 
-            name: "Renseigner le nom de cette variable. Par défault ce champ est rempli automatiquement en fonction de l'entité et de la qualité, mais il peut être rempli manuellement."
-            altName: "Renseigner le nom alternatif de cette variable si il existe. Par défault ce champ est rempli automatiquement en fonction de l'entité, de la qualité, de la méthode et de l'unité, mais il peut être rempli manuellement."
+            name: "Renseigner le nom de cette variable. Par défault ce champ est rempli automatiquement en fonction de l'entité et de la caractéristique, mais il peut être rempli manuellement."
+            altName: "Renseigner le nom alternatif de cette variable si il existe. Par défault ce champ est rempli automatiquement en fonction de l'entité, de la caractéristique, de la méthode et de l'unité, mais il peut être rempli manuellement."
             time-interval: "Renseigner le pas-de-temps qui a permis d'obtenir cette variable. Ici le rendement est mesuré chaque mois."
             sampling-interval: "Renseigner l'échantillonnage qui a permis d'obtenir cette variable. Ici on a obtenu le rendement sur une microparcelle expérimentale de taille standard (2.5m*10m)."
             datatype: "Renseigner le type de données. Ici nous avons des nombre décimaux."
             description: "Finaliser la variable avec une description textuelle de la variable."
         example:
             entity: "Grain"
-            quality: "Rendement"
+            characteristic: "Rendement"
             method: "Capteur de rendement de la moissoneuse-batteuse"
             unit: "Kilogramme par hectare"
             name: "rendement_grain"

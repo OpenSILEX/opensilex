@@ -9,7 +9,7 @@ public class EntityUpdateDTO extends EntityCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return super.getUri();
     }

@@ -2,8 +2,8 @@
     <opensilex-WizardForm
             ref="wizardRef"
             :steps="steps"
-            createTitle="QualityForm.add"
-            editTitle="QualityForm.edit"
+            createTitle="CharacteristicForm.add"
+            editTitle="CharacteristicForm.edit"
             icon="fa#vials"
             modalSize="lg"
             :initForm="getEmptyForm"
@@ -20,15 +20,15 @@
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import { VariablesService, QualityGetDTO, QualityCreationDTO, ObjectUriResponse } from "opensilex-core/index";
+    import { VariablesService, CharacteristicGetDTO, CharacteristicCreationDTO, ObjectUriResponse } from "opensilex-core/index";
     import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
     @Component
-    export default class QualityCreate extends Vue {
+    export default class CharacteristicModalForm extends Vue {
 
         steps = [
-            {component: "opensilex-QualityForm"}
-            ,{component: "opensilex-QualityExternalReferencesForm"}
+            {component: "opensilex-CharacteristicForm"}
+            ,{component: "opensilex-CharacteristicExternalReferencesForm"}
         ];
 
         static selectedOntologies: string[] = [
@@ -60,7 +60,7 @@
             this.wizardRef.showCreateForm();
         }
 
-        showEditForm(form : QualityGetDTO) {
+        showEditForm(form : CharacteristicGetDTO) {
             this.wizardRef.showEditForm(form);
         }
 
@@ -69,12 +69,11 @@
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm(): QualityCreationDTO {
+        getEmptyForm(): CharacteristicCreationDTO {
             return {
                 uri: null,
                 name: null,
-                comment: null,
-                type: null,
+                description: null,
                 exactMatch: [],
                 narrower: [],
                 closeMatch: [],
@@ -87,10 +86,10 @@
                 form.type = form.type.uri;
             }
             return this.service
-                .createQuality(form)
+                .createCharacteristic(form)
                 .then((http: HttpResponse<OpenSilexResponse>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("QualityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+                    let message = this.$i18n.t("CharacteristicForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onCreate", form);
                 })
@@ -108,10 +107,10 @@
 
         update(form){
             return this.service
-                .updateQuality(form)
+                .updateCharacteristic(form)
                 .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
                     form.uri = http.response.result;
-                    let message = this.$i18n.t("QualityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+                    let message = this.$i18n.t("CharacteristicForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);
                     this.$emit("onUpdate", form);
                 })
@@ -134,13 +133,13 @@
 
 <i18n>
 en:
-    QualityForm:
+    CharacteristicForm:
         name: The characteristic
         add: Add a characteristic
         edit: Edit a characteristic
         name-placeholder: Height
 fr:
-    QualityForm:
+    CharacteristicForm:
         name: La charactéristique
         add: Ajouter une charactéristique
         edit: Éditer une charactéristique

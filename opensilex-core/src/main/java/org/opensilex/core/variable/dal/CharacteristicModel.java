@@ -12,24 +12,23 @@ import java.net.URI;
 
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "Quality",
+        resource = "Characteristic",
         graph = "set/variables"
 )
-public class QualityModel extends BaseVariableModel<QualityModel> {
+public class CharacteristicModel extends BaseVariableModel<CharacteristicModel> {
 
-    public QualityModel() {
+    public CharacteristicModel() {
 
     }
 
-    public QualityModel(URI uri) {
+    public CharacteristicModel(URI uri) {
         setUri(uri);
     }
 
     @Override
-    public String[] getUriSegments(QualityModel instance) {
+    public String[] getUriSegments(CharacteristicModel instance) {
         return new String[]{
-            "variable",
-            "quality",
+            "characteristic",
             instance.getName()
         };
     }

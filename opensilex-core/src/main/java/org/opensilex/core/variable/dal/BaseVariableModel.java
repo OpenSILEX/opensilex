@@ -21,9 +21,8 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
             ontology = RDFS.class,
             property = "comment"
     )
-    private String comment;
-    public static final String COMMENT_FIELD = "comment";
-
+    private String description;
+    public static final String DESCRIPTION_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -49,12 +48,12 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
     )
     private List<URI> narrower;
 
-    public String getComment() {
-        return comment;
+    public String getDescription() {
+        return description;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setDescription(String comment) {
+        this.description = comment;
     }
 
     @Override

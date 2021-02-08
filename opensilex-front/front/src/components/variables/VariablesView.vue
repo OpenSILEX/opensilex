@@ -12,7 +12,7 @@
                     <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
                         <b-tab :title="$t('component.menu.variables')"></b-tab>
                         <b-tab :title="$t('VariableView.entity')" ></b-tab>
-                        <b-tab :title="$t('VariableView.quality')"></b-tab>
+                        <b-tab :title="$t('VariableView.characteristic')"></b-tab>
                         <b-tab :title="$t('VariableView.method')" ></b-tab>
                         <b-tab :title="$t('VariableView.unit')" ></b-tab>
                     </b-tabs>
@@ -26,7 +26,6 @@
                     <b-modal ref="helpModal" size="xl" hide-header ok-only>
                         <opensilex-VariableHelp></opensilex-VariableHelp>
                     </b-modal>
-
 
                     <opensilex-CreateButton
                         v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
@@ -60,9 +59,9 @@
                 ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
             ></opensilex-EntityCreate>
 
-            <opensilex-QualityCreate
-                ref="qualityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-QualityCreate>
+            <opensilex-CharacteristicModalForm
+                ref="characteristicForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-CharacteristicModalForm>
 
             <opensilex-MethodCreate
                 ref="methodForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
@@ -92,7 +91,7 @@
 
                 <div class="col-md-6">
                     <!-- Element details page -->
-                    <opensilex-EntityDetails v-show="! loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-EntityDetails>
+                    <opensilex-VariableStructureDetails v-show="! loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-VariableStructureDetails>
                     <!-- Unit specialized details page -->
                     <opensilex-UnitDetails v-show="! loadVariableList() && ! useGenericDetailsPage()" :selected="selected"></opensilex-UnitDetails>
 
@@ -136,21 +135,21 @@ export default class VariablesView extends Vue {
 
     static VARIABLE_TYPE: string = "Variable";
     static ENTITY_TYPE: string = "Entity";
-    static QUALITY_TYPE: string = "Quality";
+    static CHARACTERISTIC_TYPE: string = "Characteristic";
     static METHOD_TYPE: string = "Method";
     static UNIT_TYPE:  string = "Unit";
 
     static elementTypes = [
         VariablesView.VARIABLE_TYPE,
         VariablesView.ENTITY_TYPE,
-        VariablesView.QUALITY_TYPE,
+        VariablesView.CHARACTERISTIC_TYPE,
         VariablesView.METHOD_TYPE,
         VariablesView.UNIT_TYPE
     ]
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
     @Ref("entityForm") readonly entityForm!: EntityCreate;
-    @Ref("qualityForm") readonly qualityForm!: any;
+    @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
 
@@ -196,7 +195,8 @@ export default class VariablesView extends Vue {
                     // update entity list with the new elementType value
                     this.$nextTick(() => {
                         this.$opensilex.updateURLParameter("name", "");
-                        this.variableStructureList.refresh();
+                        this.$opensilex.updateURLParameter("selected", "");
+                        this.variableStructureList.refresh(true);
                     });
                 }
             }
@@ -236,7 +236,7 @@ export default class VariablesView extends Vue {
     }
 
     refresh(uri? : string) {
-        this.variableStructureList.refresh(uri);
+        this.variableStructureList.refresh(false,uri);
     }
 
     private getForm() {
@@ -247,8 +247,8 @@ export default class VariablesView extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return this.entityForm;
             }
-            case VariablesView.QUALITY_TYPE : {
-                return this.qualityForm;
+            case VariablesView.CHARACTERISTIC_TYPE : {
+                return this.characteristicForm;
             }
             case VariablesView.METHOD_TYPE: {
                 return this.methodForm;
@@ -270,8 +270,8 @@ export default class VariablesView extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return "add-entity";
             }
-            case VariablesView.QUALITY_TYPE : {
-                return "add-quality";
+            case VariablesView.CHARACTERISTIC_TYPE : {
+                return "add-characteristic";
             }
             case VariablesView.METHOD_TYPE: {
                 return "add-method";
@@ -306,10 +306,8 @@ export default class VariablesView extends Vue {
         let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
         this.service.updateVariable(formattedVariable).then(() => {
-            let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+            let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");
             this.$opensilex.showSuccessToast(message);
-            this.skosReferences.hide();
-            this.showVariableDetails(formattedVariable.uri);
         }).catch(this.$opensilex.errorHandler);
     }
 
@@ -321,9 +319,9 @@ export default class VariablesView extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
-    showVariableDetails(uri: any) {
+    showVariableDetails(variable) {
         this.$store.commit("storeReturnPage", this.$router);
-        this.$router.push({path: "/variable/details/" + encodeURIComponent(uri)});
+        this.$router.push({path: "/variable/details/" + encodeURIComponent(variable.uri)});
     }
 
     showVariableReferences(uri: string){
@@ -349,8 +347,8 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
-        quality: Characteristic
-        add-quality: Add characteristic
+        characteristic: Characteristic
+        add-characteristic: Add characteristic
         method: Method
         add-method: Add method
         unit: "Unit/Level"
@@ -365,8 +363,8 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
-        quality: Caractéristique
-        add-quality: Ajouter une caractéristique
+        characteristic: Caractéristique
+        add-characteristic: Ajouter une caractéristique
         method: Méthode
         add-method: Ajouter une méthode
         unit: "Unité/Niveau"

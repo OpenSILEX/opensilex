@@ -1,6 +1,6 @@
 <template>
 
-    <div class="container-fluid">
+    <div>
         <b-row>
             <b-col>
                 <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
@@ -46,9 +46,9 @@
                         <opensilex-StringView label="component.common.name"
                                               :value="variable.name"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.altName"
-                                              :value="variable.longName"></opensilex-StringView>
+                                              :value="variable.alternative_name"></opensilex-StringView>
                         <opensilex-TextView label="component.common.description"
-                                            :value="variable.comment"></opensilex-TextView>
+                                            :value="variable.description"></opensilex-TextView>
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -59,9 +59,9 @@
                                            :value="variable.entity.name" :uri="variable.entity.uri"
                                            :url="getEntityPageUrl()">
                         </opensilex-UriView>
-                        <opensilex-UriView title="VariableView.quality" v-if="variable.quality"
-                                           :value="variable.quality.name" :uri="variable.quality.uri"
-                                           :url="getQualityPageUrl()">
+                        <opensilex-UriView title="VariableView.characteristic" v-if="variable.characteristic"
+                                           :value="variable.characteristic.name" :uri="variable.characteristic.uri"
+                                           :url="getCharacteristicPageUrl()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.method" v-if="variable.method"
                                            :value="variable.method.name" :uri="variable.method.uri"
@@ -80,7 +80,8 @@
                 <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
                     <template v-slot:body>
                         <opensilex-ExternalReferencesDetails
-                            :skosReferences="variable"></opensilex-ExternalReferencesDetails>
+                            :skosReferences="variable">
+                        </opensilex-ExternalReferencesDetails>
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -88,17 +89,17 @@
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
                         <opensilex-StringView label="OntologyPropertyForm.data-type"
-                                              :value="getDataTypeLabel(variable.dataType)"></opensilex-StringView>
+                                              :value="getDataTypeLabel(variable.datatype)"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.time-interval"
-                                              :value="variable.timeInterval"></opensilex-StringView>
+                                              :value="variable.time_interval"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.sampling-interval"
-                                              :value="variable.samplingInterval"></opensilex-StringView>
+                                              :value="variable.sampling_interval"></opensilex-StringView>
 
-                        <opensilex-UriView v-if="variable && variable.traitUri" title="VariableForm.trait-uri"
-                                           :uri="variable.traitUri" :url="variable.traitUri"></opensilex-UriView>
-                        <opensilex-StringView v-if="variable && variable.traitUri"
+                        <opensilex-UriView v-if="variable && variable.trait" title="VariableForm.trait-uri"
+                                           :uri="variable.trait" :url="variable.trait"></opensilex-UriView>
+                        <opensilex-StringView v-if="variable && variable.trait"
                                               label="VariableForm.trait-name"
-                                              :value="variable.traitName"></opensilex-StringView>
+                                              :value="variable.trait_name"></opensilex-StringView>
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -158,16 +159,15 @@ export default class VariableDetails extends Vue {
         let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
         this.service.updateVariable(formattedVariable).then(() => {
-            let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+            let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");
             this.$opensilex.showSuccessToast(message);
-            this.skosReferences.hide();
             this.$emit("onUpdate", variable);
         }).catch(this.$opensilex.errorHandler);
     }
 
     deleteVariable(){
         this.service.deleteVariable(this.variable.uri).then(() => {
-            let message = this.$i18n.t("VariableView.name") + " " + this.variable.uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+            let message = this.$i18n.t("VariableView.name") + " " + this.variable.name + " " + this.$i18n.t("component.common.success.delete-success-message");
             this.$opensilex.showSuccessToast(message);
             this.$router.push({path: "/variables"});
         }).catch(this.$opensilex.errorHandler);
@@ -190,8 +190,8 @@ export default class VariableDetails extends Vue {
         return this.getEncodedUrlPage(VariablesView.ENTITY_TYPE,this.variable.entity.uri);
     }
 
-    getQualityPageUrl(): string{
-        return this.getEncodedUrlPage(VariablesView.QUALITY_TYPE,this.variable.quality.uri);
+    getCharacteristicPageUrl(): string{
+        return this.getEncodedUrlPage(VariablesView.CHARACTERISTIC_TYPE,this.variable.characteristic.uri);
     }
 
     getMethodPageUrl(): string{
@@ -213,7 +213,7 @@ en:
     VariableDetails:
         title: Detailled variable view
         entity-name: Entity name
-        quality-name: Characteristic name
+        characteristic-name: Characteristic name
         method-name: Method name
         unit-name: Unit name
         structure: Structure
@@ -224,7 +224,7 @@ fr:
     VariableDetails:
         title: Vue détaillée de la variable
         entity-name: Nom d'entité
-        quality-name: Nom de la caractéristique
+        characteristic-name: Nom de la caractéristique
         method-name: Nom de méthode
         unit-name: Nom d'unité
         structure: Structure

@@ -13,7 +13,6 @@
     import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {EntityCreationDTO} from "opensilex-core/index";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import EntityCreate from "./EntityCreate.vue";
 
     @Component

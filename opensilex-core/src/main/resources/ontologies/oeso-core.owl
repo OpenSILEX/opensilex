@@ -332,11 +332,11 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasQuality -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasCharacteristic -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasQuality">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasCharacteristic">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Quality"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Characteristic"/>
     </owl:ObjectProperty>
     
 
@@ -1045,9 +1045,9 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Quality -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#Characteristic -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Quality">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Characteristic">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
@@ -1241,9 +1241,9 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasQuality"/>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasCharacteristic"/>
                 <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Quality"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Characteristic"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>

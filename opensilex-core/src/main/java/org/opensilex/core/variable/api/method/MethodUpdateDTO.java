@@ -14,7 +14,7 @@ public class MethodUpdateDTO extends MethodCreationDTO {
 
     @NotNull
     @Override
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, example = "http://opensilex.dev/set/variables/method/ImageAnalysis")
     public URI getUri() {
         return super.getUri();
     }

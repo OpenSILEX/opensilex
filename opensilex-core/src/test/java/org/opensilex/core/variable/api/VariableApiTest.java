@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.QualityModel;
+import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
@@ -29,12 +29,12 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
-    public String path = "/core/variable";
+    public String path = VariableAPI.PATH;
 
-    public String getByUriPath = path + "/get/{uri}";
-    public String createPath = path + "/create";
-    public String updatePath = path + "/update";
-    public String deletePath = path + "/delete/{uri}";
+    public String getByUriPath = path + "/{uri}";
+    public String createPath = path ;
+    public String updatePath = path ;
+    public String deletePath = path + "/{uri}";
 
     public VariableCreationDTO getCreationDto() throws Exception {
 
@@ -42,39 +42,38 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         EntityModel entity = new EntityModel();
         entity.setName("Artemisia absinthium");
-        entity.setComment("A plant which was used in the past for building methanol");
+        entity.setDescription("A plant which was used in the past for building methanol");
 
         service.create(entity);
 
-        QualityModel quality = new QualityModel();
-        quality.setName("size");
-        quality.setComment("The size of an object");
-        service.create(quality);
+        CharacteristicModel characteristic = new CharacteristicModel();
+        characteristic.setName("size");
+        characteristic.setDescription("The size of an object");
+        service.create(characteristic);
 
         MethodModel method = new MethodModel();
         method.setName("SVM");
-        method.setComment("A machine learning based method");
+        method.setDescription("A machine learning based method");
         service.create(method);
 
         UnitModel unit = new UnitModel();
         unit.setName("minute");
-        unit.setComment("I really need to comment it ?");
+        unit.setDescription("I really need to comment it ?");
         unit.setSymbol("m");
         unit.setAlternativeSymbol("mn");
         service.create(unit);
 
         VariableCreationDTO variableDto = new VariableCreationDTO();
-        variableDto.setName(entity.getName() + quality.getName());
-        variableDto.setLongName(variableDto.getName() + method.getName() + unit.getName());
-        variableDto.setComment("A comment about a variable");
+        variableDto.setName(entity.getName() + characteristic.getName());
+        variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
+        variableDto.setDescription("A comment about a variable");
 
         variableDto.setEntity(entity.getUri());
-        variableDto.setQuality(quality.getUri());
+        variableDto.setCharacteristic(characteristic.getUri());
         variableDto.setMethod(method.getUri());
         variableDto.setUnit(unit.getUri());
 
-        variableDto.setSynonym("a synonym");
-        variableDto.setTraitUri(new URI("http://purl.obolibrary.org/obo/TO_0002644"));
+        variableDto.setTrait(new URI("http://purl.obolibrary.org/obo/TO_0002644"));
         variableDto.setTraitName("dry matter digestibility");
         variableDto.setTimeInterval("minutes");
         variableDto.setDataType(new URI("xsd:decimal"));
@@ -92,21 +91,19 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         VariableCreationDTO dto = new VariableCreationDTO();
         dto.setName("name");
-        dto.setComment("only a comment, not a name");
+        dto.setDescription("only a comment, not a name");
 
         Response postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();
-//        dto.setMethod(null);
         dto.setUnit(null);
-//
-//        postResult = getJsonPostResponse(target(createPath),dto);
+
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();
         dto.setEntity(null);
-        dto.setQuality(null);
+        dto.setCharacteristic(null);
 
         postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -126,13 +123,13 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
-        dto.setComment("new comment");
-        dto.setTraitUri(new URI("http://purl.obolibrary.org/obo/TO_0002644_new"));
+        dto.setDescription("new comment");
+        dto.setTrait(new URI("http://purl.obolibrary.org/obo/TO_0002644_new"));
 
         // create a new entity to associate with the variable
         EntityModel entity = new EntityModel();
         entity.setName("Artemisia absinthium");
-        entity.setComment("A plant which was used in the past for building methanol");
+        entity.setDescription("A plant which was used in the past for building methanol");
         getSparqlService().create(entity);
         dto.setEntity(entity.getUri());
 
@@ -150,9 +147,9 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
-        assertEquals(dto.getComment(), dtoFromApi.getComment());
+        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
         assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
-        assertTrue(SPARQLDeserializers.compareURIs(dto.getTraitUri(), dtoFromApi.getTraitUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(dto.getTrait(), dtoFromApi.getTrait()));
     }
 
     @Test
@@ -174,13 +171,13 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
         assertNotNull(dtoFromDb);
 
         assertEquals(creationDTO.getName(), dtoFromDb.getName());
-        assertEquals(creationDTO.getLongName(), dtoFromDb.getLongName());
-        assertEquals(creationDTO.getComment(), dtoFromDb.getComment());
-        assertEquals(creationDTO.getTraitUri(), dtoFromDb.getTraitUri());
+        assertEquals(creationDTO.getAlternativeName(), dtoFromDb.getAlternativeName());
+        assertEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
+        assertEquals(creationDTO.getTrait(), dtoFromDb.getTrait());
         assertEquals(creationDTO.getTraitName(), dtoFromDb.getTraitName());
 
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getEntity(), dtoFromDb.getEntity().getUri()));
-        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getQuality(), dtoFromDb.getQuality().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getCharacteristic(), dtoFromDb.getCharacteristic().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getMethod(), dtoFromDb.getMethod().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
     }

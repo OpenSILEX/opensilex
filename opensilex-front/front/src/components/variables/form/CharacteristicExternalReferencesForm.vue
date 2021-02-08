@@ -1,5 +1,5 @@
 <template>
-    <ValidationObserver ref="qualityValidatorRef">
+    <ValidationObserver ref="characteristicValidatorRef">
         <opensilex-ExternalReferencesForm
                 :references.sync="form"
                 :displayInsertButton="false"
@@ -12,17 +12,16 @@
 
     import {Component, PropSync} from "vue-property-decorator";
     import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    import QualityCreate from "./QualityCreate.vue";
-    import { QualityCreationDTO } from "opensilex-core/index";
+    import CharacteristicModalForm from "./CharacteristicModalForm.vue";
+    import { CharacteristicCreationDTO } from "opensilex-core/index";
 
     @Component
-    export default class QualityExternalReferencesForm extends Vue {
+    export default class CharacteristicExternalReferencesForm extends Vue {
 
-        selectedOntologies: string[] = QualityCreate.selectedOntologies;
+        selectedOntologies: string[] = CharacteristicModalForm.selectedOntologies;
 
         @PropSync("form")
-        dto: QualityCreationDTO;
+        dto: CharacteristicCreationDTO;
 
     }
 </script>

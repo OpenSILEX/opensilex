@@ -10,13 +10,13 @@
             <!-- URI -->
             <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
             <!-- Name -->
-            <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
+            <opensilex-TextView label="component.common.name" :value="selected.name"></opensilex-TextView>
             <!-- Description -->
-            <opensilex-TextView :value="selected.comment" label="component.common.description"></opensilex-TextView>
+            <opensilex-TextView :value="selected.description" label="component.common.description"></opensilex-TextView>
             <!-- symbol -->
-            <opensilex-StringView label="UnitForm.symbol" :value="selected.symbol"></opensilex-StringView>
+            <opensilex-TextView label="UnitForm.symbol" :value="selected.symbol"></opensilex-TextView>
             <!-- alternative symbol -->
-            <opensilex-StringView label="UnitForm.alternative-symbol" :value="selected.alternativeSymbol"></opensilex-StringView>
+            <opensilex-TextView label="UnitForm.alternative-symbol" :value="selected.alternative_symbol"></opensilex-TextView>
 
         </div>
     </b-card>
@@ -26,6 +26,7 @@
 import { Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import { UnitGetDTO } from "opensilex-core/index";
+import {UnitDetailsDTO} from "opensilex-core/model/unitDetailsDTO";
 
 
 @Component
@@ -33,7 +34,7 @@ export default class UnitDetails extends Vue {
     $opensilex: any;
 
     @Prop()
-    selected : UnitGetDTO;
+    selected : UnitDetailsDTO;
 }
 </script>
 

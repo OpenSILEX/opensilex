@@ -1,6 +1,6 @@
 <template>
     <opensilex-ModalForm
-        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadForm"
         ref="variableForm"
         modalSize="lg"
         :tutorial="true"
@@ -31,6 +31,13 @@
         service: VariablesService;
         $i18n: any;
 
+
+        @Prop()
+        editMode;
+
+        @Prop({default : false})
+        loadForm: boolean;
+
         get user() {
             return this.$store.state.user;
         }
@@ -46,15 +53,19 @@
         }
 
         showCreateForm() {
-            this.variableForm.showCreateForm();
+            this.loadForm = true;
+            this.$nextTick(() => {
+                this.variableForm.showCreateForm();
+            });
         }
 
         showEditForm(form : VariableGetDTO) {
-            this.variableForm.showEditForm(form);
+            this.loadForm = true;
+            this.$nextTick(() => {
+                this.variableForm.showEditForm(form);
+            });
         }
 
-        @Prop()
-        editMode;
 
         create(variable) {
 
@@ -62,10 +73,12 @@
                 variable.dataType = variable.dataType.uri
             }
             this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-                this.$emit("onCreate", http.response.result.toString());
+                let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+                this.$opensilex.showSuccessToast(message);
+                variable.uri =  http.response.result.toString();
+                this.$emit("onCreate",variable);
             }).catch((error) => {
                 if (error.status == 409) {
-                    console.error("Variable already exists", error);
                     this.$opensilex.errorHandler(error,"Variable "+variable.uri+" : "+this.$i18n.t("VariableForm.already-exist"));
                 } else {
                     this.$opensilex.errorHandler(error);
@@ -84,14 +97,14 @@
 
             let formattedVariable = JSON.parse(JSON.stringify(variable));
 
-            if(formattedVariable.dataType && formattedVariable.dataType.uri){
-                formattedVariable.dataType = formattedVariable.dataType.uri
+            if(formattedVariable.datatype && formattedVariable.datatype.uri){
+                formattedVariable.datatype = formattedVariable.datatype.uri
             }
             if(formattedVariable.entity && formattedVariable.entity.uri){
                 formattedVariable.entity = formattedVariable.entity.uri;
             }
-            if(formattedVariable.quality && formattedVariable.quality.uri){
-                formattedVariable.quality = formattedVariable.quality.uri;
+            if(formattedVariable.characteristic && formattedVariable.characteristic.uri){
+                formattedVariable.characteristic = formattedVariable.characteristic.uri;
             }
             if(formattedVariable.method && formattedVariable.method.uri){
                 formattedVariable.method = formattedVariable.method.uri;
@@ -107,6 +120,9 @@
             let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
             this.service.updateVariable(formattedVariable).then(() => {
+                let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.update-success-message");
+                this.$opensilex.showSuccessToast(message);
+
                 this.$emit("onUpdate", variable);
             }).catch(this.$opensilex.errorHandler);
         }
@@ -120,13 +136,14 @@
 <i18n>
 en:
     VariableForm:
+        variable: The variable
         add: Add variable
         edit: Edit variable
         altName: Alternative name
         entity-help: "Involved object or event. e.g : Leaf, plant, rain fall"
         entity-placeholder: Select an entity
-        quality-help: "Define what was measured/observed. e.g: temperature, infection level, weight, area"
-        quality-placeholder: Select a quality
+        characteristic-help: "Define what was measured/observed. e.g: temperature, infection level, weight, area"
+        characteristic-placeholder: Select a characteristic
         method-placeholder: Select a method
         method-help : How it was measured
         unit-placeholder: Select an unit
@@ -145,7 +162,7 @@ en:
         trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
         class-placeholder: Select a type
         no-entity: No entity found
-        no-quality: No quality found
+        no-characteristic: No characteristic found
         no-method: No method found
         no-unit: No unit found
         trait-button: Trait
@@ -171,13 +188,14 @@ en:
 
 fr:
     VariableForm:
+        variable: La variable
         add: Ajouter une variable
         edit: Éditer une variable
         altName: Nom alternatif
         entity-help: "Objet ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, plante, pluie"
         entity-placeholder: Sélectionnez une entité
-        quality-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
-        quality-placeholder: Sélectionnez une qualité
+        characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
+        characteristic-placeholder: Sélectionnez une caractéristique
         method-help: Définit comment la mesure/l'observation a été effectuée.
         method-placeholder: Sélectionnez une méthode
         unit-placeholder: Sélectionnez une unité
@@ -196,7 +214,7 @@ fr:
         trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
         class-placeholder: Sélectionnez un type
         no-entity: Aucune entité correspondante
-        no-quality: Aucune qualité correspondante
+        no-characteristic: Aucune caractéristique correspondante
         no-method: Aucune méthode correspondante
         no-unit: Aucune unité correspondante
         trait-button: Trait

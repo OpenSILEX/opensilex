@@ -12,6 +12,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -25,7 +26,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 @JsonPropertyOrder({"uri","type","rdf_type_name","name","brand",
     "constructor_model","serial_number","person_in_charge","start_up",
-    "removal","relations", "description"})
+    "removal","relations", "description", "metadata"})
 
 public class DeviceDTO extends RDFObjectDTO {
     
@@ -129,6 +130,17 @@ public class DeviceDTO extends RDFObjectDTO {
         this.description = description;
     }
     
+    @JsonProperty("metadata")
+    protected Map<String, String> metadata;
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
+    }  
+    
     public DeviceModel newModelInstance() {
         return new DeviceModel();
     }
@@ -171,6 +183,10 @@ public class DeviceDTO extends RDFObjectDTO {
             relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
         }
         setRelations(relationsDTO);
+        
+        if (model.getAttributes() != null) {
+            setMetadata(model.getAttributes());
+        }
     }
 
     public void toModel(DeviceModel model) {
@@ -203,6 +219,10 @@ public class DeviceDTO extends RDFObjectDTO {
         
         if(getDescription() != null){
             model.setDescription(getDescription());
+        }
+        
+        if (metadata != null ) {
+           model.setAttributes(metadata);
         }
     }
     

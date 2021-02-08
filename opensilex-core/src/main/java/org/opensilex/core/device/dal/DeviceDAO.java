@@ -5,6 +5,8 @@
  */
 package org.opensilex.core.device.dal;
 
+import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Filters.eq;
 import java.net.URI;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
@@ -16,6 +18,8 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -29,8 +33,11 @@ import org.opensilex.utils.ListWithPagination;
  */
 public class DeviceDAO {
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
     
-    private DeviceModel initDevice(URI deviceType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public static final String ATTRIBUTES_COLLECTION_NAME = "devicesAttributes";
+    
+    public DeviceModel initDevice(URI deviceType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(deviceType, new URI(Oeso.Device.getURI()), currentUser.getLanguage());
 
@@ -50,8 +57,23 @@ public class DeviceDAO {
         return device;
     }
     
-    public DeviceDAO(SPARQLService sparql){
+    public MongoCollection getAttributesCollection() {
+        return nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceAttributeModel.class);
+    }
+    
+    private DeviceAttributeModel getStoredAttributes(URI uri) {
+        DeviceAttributeModel storedAttributes = null;
+        try {
+            storedAttributes = nosql.findByURI(DeviceAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, uri);
+        } catch (NoSQLInvalidURIException e) {
+        }
+        return storedAttributes;
+
+    }
+    
+    public DeviceDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
+        this.nosql = nosql;
     }
     
     public URI create(DeviceDTO devDTO, UserModel currentUser) throws Exception {   
@@ -68,12 +90,30 @@ public class DeviceDAO {
             ClassModel model = ontologyDAO.getClassModel(deviceType, new URI(Oeso.Device.getURI()), currentUser.getLanguage());
             DeviceURIGenerator uriGenerator = new DeviceURIGenerator(sparql.getDefaultGraphURI(DeviceModel.class));
             deviceURI = uriGenerator.generateURI(model.getName(), deviceName, 0);
-            if(sparql.uriExists(sparql.getDefaultGraphURI(DeviceModel.class), deviceURI)) {
-                throw new SPARQLAlreadyExistingUriException(deviceURI);
-            }
         }
+        if(sparql.uriExists(sparql.getDefaultGraphURI(DeviceModel.class), deviceURI)) {
+                throw new SPARQLAlreadyExistingUriException(deviceURI);
+        }
+        
         device.setUri(deviceURI);
         
+        if(device.getAttributes() != null){
+            nosql.startTransaction();
+            sparql.startTransaction();
+            try {
+                sparql.create(device);
+                DeviceAttributeModel model = new DeviceAttributeModel();
+                model.setUri(device.getUri());
+                model.setAttribute(device.getAttributes());
+                MongoCollection collection = getAttributesCollection();
+                collection.insertOne(nosql.getSession(), model);
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            } 
+        }
         sparql.create(device,false);
         
         return device.getUri();
@@ -119,18 +159,39 @@ public class DeviceDAO {
         Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date,null,null);
         select.addFilter(dateRangeExpr);
     }
-    
-    // public URI update(URI deviceType, URI deviceURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
-    //     DeviceModel device = initDevice(deviceType, name, relations, currentUser);
-    //     device.setUri(deviceURI);
-
-    //     sparql.update(device);
-
-    //     return device.getUri();
-    // }
 
     public DeviceModel update(DeviceModel instance, UserModel user) throws Exception {
-        sparql.update(instance);
+        DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
+
+        if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
+            sparql.update(instance);
+        } else {
+            nosql.startTransaction();
+            sparql.startTransaction();
+            sparql.update(instance);
+            MongoCollection collection = getAttributesCollection();
+
+            try {
+                if (instance.getAttributes() != null && !instance.getAttributes().isEmpty()) {
+                    DeviceAttributeModel model = new DeviceAttributeModel();
+                    model.setUri(instance.getUri());
+                    model.setAttribute(instance.getAttributes());
+                    if (storedAttributes != null) {
+                        collection.findOneAndReplace(nosql.getSession(), eq("uri", instance.getUri()), model);
+                    } else {
+                        collection.insertOne(nosql.getSession(), model);
+                    }
+                } else {
+                    collection.findOneAndDelete(nosql.getSession(), eq("uri", instance.getUri()));
+                }
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+
+        }
         return instance;
     }
 

@@ -9,6 +9,7 @@ package org.opensilex.core.device.dal;
 import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -88,6 +89,8 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     String description;
     public static final String COMMENT_FIELD = "description";
     
+    Map<String, String> attributes;
+    
     public String getBrand() {
         return brand;
     }
@@ -142,5 +145,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 }

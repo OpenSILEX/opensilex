@@ -64,6 +64,7 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
             try {
                 dto.setType(geospatialModel.getRdfType());
                 dto.setUri(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri())));
+                dto.setName(geospatialModel.getName());
                 dto.setGeometry(geometryToGeoJson(geospatialModel.getGeometry()));
             } catch (JsonProcessingException | URISyntaxException e) {
                 e.printStackTrace();

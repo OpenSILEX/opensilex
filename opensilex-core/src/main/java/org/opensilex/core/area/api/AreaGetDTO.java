@@ -13,12 +13,13 @@ package org.opensilex.core.area.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.model.geojson.Geometry;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -77,6 +78,10 @@ public class AreaGetDTO {
         return dto;
     }
 
+    /**
+     * @param model Area Model to convert
+     * @return Corresponding user DTO
+     */
     private static AreaGetDTO dtoWithoutGeometry(AreaModel model) {
         AreaGetDTO dto = new AreaGetDTO();
 
@@ -91,13 +96,20 @@ public class AreaGetDTO {
         return dto;
     }
 
-    public static AreaGetDTO fromModel(AreaModel model, Geometry geometryByURI) {
-        AreaGetDTO dto = dtoWithoutGeometry(model);
-
-        if (geometryByURI != null) {
+    /**
+     * Convert Geospatial Model into Area DTO
+     *
+     * @param geospatialModel Geometry Model to convert
+     * @return Corresponding user DTO
+     */
+    public static AreaGetDTO fromModel(GeospatialModel geospatialModel) {
+        AreaGetDTO dto = new AreaGetDTO();
+        if (geospatialModel != null) {
             try {
-                dto.setGeometry(geometryToGeoJson(geometryByURI));
-            } catch (JsonProcessingException e) {
+                dto.setRdfType(geospatialModel.getRdfType());
+                dto.setUri(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri())));
+                dto.setGeometry(geometryToGeoJson(geospatialModel.getGeometry()));
+            } catch (JsonProcessingException | URISyntaxException e) {
                 e.printStackTrace();
             }
         }

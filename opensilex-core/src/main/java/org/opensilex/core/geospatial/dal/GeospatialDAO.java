@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.and;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 /**
@@ -222,7 +223,7 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
-    public HashMap<String, Geometry> searchIntersectsArea(Geometry geometry, UserModel currentUser, SPARQLService sparql) throws Exception {
+    public FindIterable<GeospatialModel> searchIntersectsArea(Geometry geometry, UserModel currentUser, SPARQLService sparql) throws Exception {
         if (geometry != null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
@@ -233,14 +234,28 @@ public class GeospatialDAO {
             List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);
             List<String> ontologyAreaURI = new LinkedList<>();
 
-            resourceTreeDTOS.forEach(resourceTreeDTO -> ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString())));
+            resourceTreeDTOS.forEach(resourceTreeDTO -> {
+                ontologyAreaURI.add(SPARQLDeserializers.getExpandedURI(resourceTreeDTO.getUri().toString()));
+                List<ResourceTreeDTO> childrenList = resourceTreeDTO.getChildren();
+                if (childrenList != null)
+                    extractedChildren(ontologyAreaURI, childrenList);
+            });
 
-            FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.in("rdfType", ontologyAreaURI)).filter(Filters.geoIntersects("geometry", geometry));
-
-            return createGeometryMap(geospatialFindIterable);
+            return geometryCollection.find(and(Filters.geoIntersects("geometry", geometry), Filters.in("rdfType", ontologyAreaURI)));
         } else {
             return null;
         }
+    }
+
+    private void extractedChildren(List<String> ontologyAreaURI, List<ResourceTreeDTO> children) {
+        children.forEach(child -> {
+            String expandedURI = SPARQLDeserializers.getExpandedURI(child.getUri().toString());
+            ontologyAreaURI.add(expandedURI);
+            List<ResourceTreeDTO> childrenList = child.getChildren();
+            if (childrenList != null) {
+                extractedChildren(ontologyAreaURI, childrenList);
+            }
+        });
     }
 
     public ListWithPagination<GeospatialModel> searchIntersects(URI rdfType, Geometry geometry, Integer page, Integer pageSize) {
@@ -250,7 +265,12 @@ public class GeospatialDAO {
         }
 
         // searches all documents containing a field with geospatial data that intersects the specified shape + filtering by rdfType.
-        FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry)).filter(filter);
+        FindIterable<GeospatialModel> geospatialFindIterable;
+        if (filter != null) {
+            geospatialFindIterable = geometryCollection.find(and(Filters.geoIntersects("geometry", geometry), filter));
+        } else {
+            geospatialFindIterable = geometryCollection.find(Filters.geoIntersects("geometry", geometry));
+        }
 
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
@@ -266,7 +286,12 @@ public class GeospatialDAO {
         }
 
         // search in all documents containing a field with geospatial data that is contained in the past form + filtering by rdfType.
-        FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.geoWithin("geometry", geometry)).filter(filter);
+        FindIterable<GeospatialModel> geospatialFindIterable;
+        if (filter != null) {
+            geospatialFindIterable = geometryCollection.find(and(Filters.geoWithin("geometry", geometry), filter));
+        } else {
+            geospatialFindIterable = geometryCollection.find(Filters.geoWithin("geometry", geometry));
+        }
 
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
@@ -282,7 +307,13 @@ public class GeospatialDAO {
         }
 
         // searches for documents between the range of distance around the point + filtering by rdfType.
-        FindIterable<GeospatialModel> geospatialFindIterable = geometryCollection.find(Filters.nearSphere("geometry", geometry, maxDistanceMeters, minDistanceMeters)).filter(filter);
+        FindIterable<GeospatialModel> geospatialFindIterable;
+        if (filter != null) {
+            geospatialFindIterable = geometryCollection.find(and(Filters.nearSphere("geometry", geometry, maxDistanceMeters, minDistanceMeters), filter));
+        } else {
+            geospatialFindIterable = geometryCollection.find(Filters.nearSphere("geometry", geometry, maxDistanceMeters, minDistanceMeters));
+        }
+
         return getGeospatialModelListWithPagination(page, pageSize, geospatialFindIterable);
     }
 

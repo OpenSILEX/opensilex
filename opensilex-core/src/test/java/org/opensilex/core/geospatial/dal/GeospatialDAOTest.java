@@ -339,7 +339,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchWithinInstance() throws URISyntaxException {
-        GeospatialModel geospatial = getGeospatialModel("Point", new URI(""), false);
+        GeospatialModel geospatial = getGeospatialModel("Polygon", new URI(""), false);
 
         // Creates a filter that matches all documents containing a field with geospatial data that withing with the specified shape.
         ListWithPagination<GeospatialModel> searchWithin = geospatialDAO.searchWithin(geospatial, 1, 20);

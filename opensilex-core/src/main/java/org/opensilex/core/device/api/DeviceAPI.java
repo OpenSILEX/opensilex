@@ -31,11 +31,16 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -78,6 +83,8 @@ public class DeviceAPI {
 
     @Inject
     private SPARQLService sparql;
+    @Inject
+    private MongoDBService nosql;
     
     @POST
     //@Path("create")
@@ -98,14 +105,22 @@ public class DeviceAPI {
             @ApiParam("Device description") @Valid DeviceDTO deviceDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
-        DeviceDAO deviceDAO = new DeviceDAO(sparql);
-        ErrorResponse error = check(deviceDTO, false);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        ErrorResponse error = check(deviceDTO, deviceDAO);
         if (error != null) {
             return error.getResponse();
         }
         if (!checkOnly){
-            URI uri = deviceDAO.create(deviceDTO, currentUser);
-            return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
+            try{
+                URI uri = deviceDAO.create(deviceDTO, currentUser);
+                return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
+            }catch(SPARQLAlreadyExistingUriException ex){
+                return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Device URI already exists",
+                    "Duplicated URI: " + deviceDTO.getUri()
+                ).getResponse();
+            }
         } else {
             return new ObjectUriResponse().getResponse();
         }
@@ -130,7 +145,7 @@ public class DeviceAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
         ListWithPagination<DeviceModel> devices = dao.search(
             namePattern,
             rdfTypes,
@@ -161,7 +176,7 @@ public class DeviceAPI {
             @PathParam("uri") URI uri
     ) throws Exception {
 
-        DeviceDAO dao = new DeviceDAO(sparql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
 
         DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
@@ -201,7 +216,7 @@ public class DeviceAPI {
         // URI devURI = dao.update(devType, dto.getUri(), dto.getName(), dto.getRelations(), currentUser);
 
         // return new ObjectUriResponse(devURI).getResponse();
-        DeviceDAO deviceDAO = new DeviceDAO(sparql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         DeviceModel DeviceModel = dto.newModel();
         deviceDAO.update(DeviceModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
@@ -227,42 +242,40 @@ public class DeviceAPI {
             @NotNull
             @ValidURI URI uri
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
         
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         
     }
     
-    private ErrorResponse check(DeviceDTO deviceDTO, boolean update) throws Exception {
+    private ErrorResponse check(DeviceDTO deviceDTO, DeviceDAO deviceDAO) throws Exception {
 
-        if (!update) {
-            // check if germplasm URI already exists
-            if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
-                // Return error response 409 - CONFLICT if URI already exists
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "device URI already exists",
-                        "Duplicated URI: " + deviceDTO.getUri()
-                );
-            }
-
-            AskBuilder askQuery = new AskBuilder()
-                .from(sparql.getDefaultGraph(DeviceModel.class).toString())
-                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(deviceDTO.getType()))
-                .addWhere("?uri", RDFS.label, deviceDTO.getName());//boolean exists = germplasmDAO.labelExistsCaseInsensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
-            boolean exists = sparql.executeAskQuery(askQuery);
-            if (exists) {
-                // Return error response 409 - CONFLICT if label already exists
-                return new ErrorResponse(
-                        Response.Status.PRECONDITION_FAILED,
-                        "Device label already exists for this type",
-                        "Duplicated label: " + deviceDTO.getName()
-                );
-            }
+        // check if device URI already exists
+        if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
+            // Return error response 409 - CONFLICT if URI already exists
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "Device URI already exists",
+                    "Duplicated URI: " + deviceDTO.getUri()
+            );
         }
 
-        //Check that the given fromAccession, fromVariety or fromSpecies exist in DB
+        AskBuilder askQuery = new AskBuilder()
+            .from(sparql.getDefaultGraph(DeviceModel.class).toString())
+            .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(deviceDTO.getType()))
+            .addWhere("?uri", RDFS.label, deviceDTO.getName());
+        boolean exists = sparql.executeAskQuery(askQuery);
+        if (exists) {
+            // Return error response 409 - CONFLICT if label already exists
+            return new ErrorResponse(
+                    Response.Status.PRECONDITION_FAILED,
+                    "Device label already exists for this type",
+                    "Duplicated label: " + deviceDTO.getName()
+            );
+        }
+
+        //Check that the given person exist in DB
         if (deviceDTO.getPersonInCharge()!= null) {
             if (!sparql.uriExists(UserModel.class,deviceDTO.getPersonInCharge())) {
                 return new ErrorResponse(
@@ -270,6 +283,23 @@ public class DeviceAPI {
                         "The given person doesn't exist in the database",
                         "unknown person : " + deviceDTO.getPersonInCharge().toString()
                 );
+            }
+        }
+        
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        ClassModel model = ontologyDAO.getClassModel(deviceDTO.getType(), new URI(Oeso.Device.getURI()), currentUser.getLanguage());
+
+        DeviceModel device = new DeviceModel();
+        
+        if (deviceDTO.getRelations() != null) {
+            for (RDFObjectRelationDTO relation : deviceDTO.getRelations()) {
+                URI prop = relation.getProperty();
+                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), device)) {
+                    return new ErrorResponse(
+                            Response.Status.BAD_REQUEST,
+                            "Invalid relation value",
+                            "Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+                }
             }
         }
 

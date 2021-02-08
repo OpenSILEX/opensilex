@@ -7,7 +7,11 @@
                     "x-more": "et {count} de plus"
                 }
             },
+            "month": "mois",
             "months": "mois",
+            "day":"jour",
+            "days":"jours",
+            "years":"années",
             "yes": "oui",
             "no": "non",
             "ok": "OK",

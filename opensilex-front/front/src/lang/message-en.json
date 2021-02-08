@@ -7,7 +7,11 @@
                     "x-more": "and {count} more"
                 }
             },
-            "months": "month(s)",
+            "month": "month",
+            "months": "months",
+            "day":"day",
+            "days":"days",
+            "years":"years",
             "yes": "yes",
             "no": "no",
             "ok": "OK",

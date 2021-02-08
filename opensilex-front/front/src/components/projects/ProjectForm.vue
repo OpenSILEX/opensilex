@@ -65,7 +65,8 @@ export default class ProjectForm extends Vue {
   }
 
   showEditForm(form) {
-    this.wizardRef.showEditForm(form);
+    let formDtoCopy = JSON.parse(JSON.stringify(form));
+    this.wizardRef.showEditForm(formDtoCopy);
   }
 
   create(form) {

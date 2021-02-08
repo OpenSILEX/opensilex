@@ -11,7 +11,6 @@
         <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.description')">
           <template v-slot:rightHeader>
             <b-button-group>
-             
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
                 @click="showEditForm"
@@ -23,7 +22,6 @@
                 @click="deleteProject(project.uri)"
                 label="component.project.delete"
               ></opensilex-DeleteButton>
-              
             </b-button-group>
           </template>
           <template v-slot:body>
@@ -209,20 +207,20 @@ export default class ProjectDescription extends Vue {
     this.loadProject();
   }
 
-   showEditForm() {
-        // make a deep copy of the variable in order to not change the current dto
-        // In case a field has been updated into the form without confirmation (by sending update to the server)
-        let projectDtoCopy = JSON.parse(JSON.stringify(this.project));
-        this.projectForm.showEditForm(projectDtoCopy);
-    }
+  showEditForm() {
+    // make a deep copy of the variable in order to not change the current dto
+    // In case a field has been updated into the form without confirmation (by sending update to the server)
+    let projectDtoCopy = JSON.parse(JSON.stringify(this.project));
+    this.projectForm.showEditForm(projectDtoCopy);
+  }
 
   deleteProject(uri: string) {
     this.service
       .deleteProject(uri)
       .then(() => {
         this.$router.push({
-            path: "/projects"
-          });
+          path: "/projects"
+        });
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -257,6 +255,18 @@ export default class ProjectDescription extends Vue {
         options.currentPage,
         options.pageSize
       );
+  }
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.period = this.formatPeriod(
+          this.project.start_date,
+          this.project.end_date
+        );
+      }
+    );
   }
 
   loadRelatedProject() {
@@ -353,15 +363,46 @@ export default class ProjectDescription extends Vue {
       endDate = moment();
     }
 
-    let period = endDate.diff(startDate);
-    let duration = Math.floor(moment.duration(period).asMonths());
+    let years = endDate.diff(startDate, "year");
+    startDate.add(years, "years");
+    let months = endDate.diff(startDate, "months");
+    startDate.add(months, "months");
+    let days = endDate.diff(startDate, "days");
 
-    result +=
-      " (" +
-      duration +
-      " " +
-      this.$t("component.common.months").toString() +
-      ")";
+    let yearsString = "";
+    let monthsString = "";
+    let daysString = "";
+    
+    if (years > 0) {
+      if (years == 1) {
+        yearsString = years + " " + this.$t("component.common.year").toString();
+      }
+      if (years > 1) {
+        yearsString =
+          years + " " + this.$t("component.common.years").toString();
+      }
+    }
+
+    if (months > 0) {
+      if (months == 1) {
+        monthsString =
+          months + " " + this.$t("component.common.month").toString();
+      }
+      if (months > 1) {
+        monthsString =
+          months + " " + this.$t("component.common.months").toString();
+      }
+    }
+    if (days > 0) {
+      if (days == 1) {
+        daysString = days + " " + this.$t("component.common.day").toString();
+      }
+      if (days > 1) {
+        daysString = days + " " + this.$t("component.common.days").toString();
+      }
+    }
+
+    result += " (" + yearsString + " " + monthsString + " " + daysString + " )";
 
     return result;
   }

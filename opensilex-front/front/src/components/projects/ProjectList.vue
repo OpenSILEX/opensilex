@@ -2,16 +2,8 @@
   <div>
     <opensilex-SearchFilterField @clear="reset()" @search="refresh()">
       <template v-slot:filters>
-        <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="termFilter"
-            label="component.common.keyword"
-            type="text"
-            placeholder="component.project.filter-keywords-placeholder"
-          ></opensilex-InputForm>
-        </opensilex-FilterField>
 
-        <opensilex-FilterField>
+          <opensilex-FilterField>
           <opensilex-InputForm
             :value.sync="nameFilter"
             label="component.common.name"
@@ -19,13 +11,22 @@
             placeholder="component.project.filter-label-placeholder"
           ></opensilex-InputForm>
         </opensilex-FilterField>
-
+      
         <opensilex-FilterField>
           <opensilex-InputForm
             :value.sync="yearFilter"
             label="component.common.year"
             type="number"
             placeholder="component.project.filter-year-placeholder"
+          ></opensilex-InputForm>
+        </opensilex-FilterField>
+
+          <opensilex-FilterField>
+          <opensilex-InputForm
+            :value.sync="termFilter"
+            label="component.common.keyword"
+            type="text"
+            placeholder="component.project.filter-keywords-placeholder"
           ></opensilex-InputForm>
         </opensilex-FilterField>
 
@@ -43,7 +44,7 @@
       ref="tableRef"
       :searchMethod="loadData"
       :fields="fields"
-      defaultSortBy="startDate"
+      defaultSortBy="start_date"
       :isSelectable="isSelectable"
       :maximumSelectedRows="maximumSelectedRows"
       labelNumberOfSelectedRow="component.project.selectedLabel"
@@ -207,9 +208,9 @@ export default class ProjectList extends Vue {
 
   loadData(options) {
     return this.service.searchProjects(
+      this.nameFilter,
       this.yearFilter,
       this.termFilter,
-      this.nameFilter,
       this.financialFilter,
       options.orderBy,
       options.currentPage,

@@ -166,6 +166,10 @@ export default class ExperimentDetail extends Vue {
       lang => {
         
     this.loadSpecies();
+     this.period = this.formatPeriod(
+      this.experiment.start_date,
+      this.experiment.end_date
+    );
       }
     );
   }
@@ -247,7 +251,6 @@ export default class ExperimentDetail extends Vue {
     this.loadGroups();
     this.loadFactors();
     this.loadSpecies();
-console.log(this.experiment);
     this.period = this.formatPeriod(
       this.experiment.start_date,
       this.experiment.end_date
@@ -433,7 +436,7 @@ console.log(this.experiment);
     return false;
   }
 
-  formatPeriod(startDateValue: string, endDateValue: string) {
+   formatPeriod(startDateValue: string, endDateValue: string) {
     let startDate = moment(startDateValue, "YYYY-MM-DD");
     let endDate;
     let result = this.$opensilex.formatDate(startDateValue);
@@ -445,15 +448,51 @@ console.log(this.experiment);
       endDate = moment();
     }
 
-    let period = endDate.diff(startDate);
-    let duration = Math.floor(moment.duration(period).asMonths());
+    let years = endDate.diff(startDate, 'year');
+    startDate.add(years, 'years');
+    let months = endDate.diff(startDate, 'months');
+    startDate.add(months, 'months');
+    let days = endDate.diff(startDate, 'days');
 
+    let yearsString="";
+    let monthsString="";
+    let daysString="";
+     if (years > 0) {
+      if (years == 1) {
+        yearsString = years + " " + this.$t("component.common.year").toString();
+      }
+      if (years > 1) {
+        yearsString =
+          years + " " + this.$t("component.common.years").toString();
+      }
+    }
+
+    if (months > 0) {
+      if (months == 1) {
+        monthsString =
+          months + " " + this.$t("component.common.month").toString();
+      }
+      if (months > 1) {
+        monthsString =
+          months + " " + this.$t("component.common.months").toString();
+      }
+    }
+    if (days > 0) {
+      if (days == 1) {
+        daysString = days + " " + this.$t("component.common.day").toString();
+      }
+      if (days > 1) {
+        daysString = days + " " + this.$t("component.common.days").toString();
+      }
+    }
     result +=
-      " (" +
-      duration +
+      " ( " +
+       yearsString+
       " " +
-      this.$t("component.common.months").toString() +
-      ")";
+       monthsString +
+      " " +
+       daysString +
+      " )";
 
     return result;
   }

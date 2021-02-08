@@ -108,6 +108,7 @@ public class AreaGetDTO {
             try {
                 dto.setRdfType(geospatialModel.getRdfType());
                 dto.setUri(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri())));
+                dto.setName(geospatialModel.getName());
                 dto.setGeometry(geometryToGeoJson(geospatialModel.getGeometry()));
             } catch (JsonProcessingException | URISyntaxException e) {
                 e.printStackTrace();

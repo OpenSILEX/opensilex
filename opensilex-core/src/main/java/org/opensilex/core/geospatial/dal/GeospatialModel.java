@@ -22,6 +22,7 @@ import java.net.URI;
 public class GeospatialModel extends MongoModel {
     URI graph;
     URI rdfType;
+    String name;
     Geometry geometry;
 
     public URI getGraph() {
@@ -38,6 +39,14 @@ public class GeospatialModel extends MongoModel {
 
     public void setRdfType(URI rdfType) {
         this.rdfType = rdfType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Geometry getGeometry() {

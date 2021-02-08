@@ -379,6 +379,7 @@ public class ScientificObjectAPI {
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
                 geospatialModel.setUri(soURI);
+                geospatialModel.setName(descriptionDto.getName());
                 geospatialModel.setRdfType(soType);
                 geospatialModel.setGraph(contextURI);
                 geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
@@ -442,6 +443,7 @@ public class ScientificObjectAPI {
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
                 geospatialModel.setUri(soURI);
+                geospatialModel.setName(descriptionDto.getName());
                 geospatialModel.setRdfType(soType);
                 geospatialModel.setGraph(contextURI);
                 geospatialModel.setGeometry(GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
@@ -584,6 +586,7 @@ public class ScientificObjectAPI {
                         SPARQLResourceModel object = objects.get(rowIndex - 1);
                         GeospatialModel geospatialModel = new GeospatialModel();
                         geospatialModel.setUri(object.getUri());
+                        geospatialModel.setName(object.getRelations().get(0).getValue());
                         geospatialModel.setRdfType(object.getType());
                         geospatialModel.setGraph(graphURI);
                         geospatialModel.setGeometry(geometry);

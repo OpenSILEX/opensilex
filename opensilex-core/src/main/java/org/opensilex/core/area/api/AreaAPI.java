@@ -52,7 +52,6 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
         groupLabelKey = AreaAPI.CREDENTIAL_AREA_GROUP_LABEL_KEY
 )
 public class AreaAPI {
-
     public static final String CREDENTIAL_AREA_GROUP_ID = "Area";
     public static final String CREDENTIAL_AREA_GROUP_LABEL_KEY = "credential-groups.area";
 
@@ -110,6 +109,7 @@ public class AreaAPI {
 
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
+            geospatialModel.setName(dto.getName());
             geospatialModel.setRdfType(dto.getRdfType());
             geospatialModel.setGeometry(geoJsonToGeometry(dto.getGeometry()));
             geoDAO.create(geospatialModel);
@@ -203,6 +203,7 @@ public class AreaAPI {
 
             GeospatialModel geospatialModel = new GeospatialModel();
             geospatialModel.setUri(areaURI);
+            geospatialModel.setName(areaDTO.getName());
             geospatialModel.setRdfType(areaDTO.getRdfType());
             geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
             geoDAO.update(geospatialModel, areaURI, null);

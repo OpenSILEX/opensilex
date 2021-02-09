@@ -112,6 +112,8 @@ public class MongoDBService extends BaseService {
         if (transactionLevel == 0) {
             LOGGER.debug("MONGO TRANSACTION COMMIT");
             session.commitTransaction();
+            session.close();
+            session = null;
         }
     }
 
@@ -120,6 +122,8 @@ public class MongoDBService extends BaseService {
             LOGGER.error("MONGO TRANSACTION ROLLBACK");
             transactionLevel = 0;
             session.abortTransaction();
+            session.close();
+            session = null;
         }
 
     }
@@ -131,7 +135,11 @@ public class MongoDBService extends BaseService {
         }
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
-            collection.insertOne(instance);
+            if (session != null) {
+                collection.insertOne(session, instance);
+            } else {
+                collection.insertOne(instance);
+            }            
         } catch (Exception error) {
             throw error;
         }
@@ -154,9 +162,6 @@ public class MongoDBService extends BaseService {
         } catch (Exception exception) {
             rollbackTransaction();
             throw exception;
-        } finally {
-            session.close();
-            session = null;
         }
 
     }

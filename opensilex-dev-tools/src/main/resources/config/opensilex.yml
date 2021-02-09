@@ -12,6 +12,15 @@ file-system:
     fs:
         config:
             basePath: ../../opensilex-data
+#            defaultFS:
+#                implementation: org.opensilex.fs.local.LocalFileSystemConnection
+#            connections:
+#                irods:                    
+#                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+#                    config:
+#                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS                
+#            customPath:
+#                datafile/: irods
 
 big-data:   
     mongodb:

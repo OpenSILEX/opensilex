@@ -35,6 +35,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
+import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.security.authentication.NotFoundURIException;
 
 /**
@@ -54,14 +55,12 @@ public class DocumentDAO {
 
     public DocumentModel create(DocumentModel instance, File file) throws Exception {
         sparql.create(instance);
-        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
-        fs.writeFile(fileStorageDirectory.toString(), instance.getUri(), file);
+        fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
         return instance;
     }
 
     public byte[] getFile(URI uri) throws Exception {
-        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
-        return fs.readFileAsByteArray(fileStorageDirectory.toString(), uri);
+        return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
     }
 
     public DocumentModel getMetadata(URI uri, UserModel user) throws Exception {
@@ -75,8 +74,7 @@ public class DocumentDAO {
 
     public void delete(URI uri, UserModel user) throws Exception {
         sparql.delete(DocumentModel.class, uri);
-        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString(), FS_DOCUMENT_PREFIX).toAbsolutePath();   
-        fs.delete(fileStorageDirectory.toString(), uri);
+        fs.delete(FS_DOCUMENT_PREFIX, uri);
     }
 
     public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {

@@ -188,7 +188,7 @@ public class FileStorageService extends BaseService implements Service, FileStor
         LOGGER.debug("DELETE FILE: " + filePath.toString());
         getConnection(filePath).delete(filePath);
     }
-
+    
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
         return Paths.get(prefix, fileURI.getPath(), Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
     }
@@ -221,5 +221,13 @@ public class FileStorageService extends BaseService implements Service, FileStor
 
     public void delete(String prefix, URI fileURI) throws IOException {
         delete(getFilePathFromPrefixURI(prefix, fileURI));
+    }
+
+    public void deleteIfExists(Path file) {
+        try {
+            delete(file);
+        } catch (Exception e) {
+            
+        }
     }
 }

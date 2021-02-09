@@ -62,6 +62,7 @@ public class DataDAO {
     private final URI RDFTYPE_SCIENTIFICOBJECT;
     public static final String DATA_COLLECTION_NAME = "data";
     public static final String FILE_COLLECTION_NAME = "file";
+    public final static String FS_FILE_PREFIX = "datafile";
 
     protected final MongoDBService nosql;
     protected final SPARQLService sparql;
@@ -270,19 +271,20 @@ public class DataDAO {
         //generate URI
         nosql.generateUniqueUriIfNullOrValidateCurrent(model, "id/file", FILE_COLLECTION_NAME);
 
-        Path fileStorageDirectory = Paths.get(fs.getStorageBasePath().toString()).toAbsolutePath();
         final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-        model.setPath(fileStorageDirectory.toString() + "/" + filename);
+        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
+        model.setPath(filePath.toString());
 
-        //copy file to directory
-        try {
-            fs.createDirectories(fileStorageDirectory);
+        nosql.startTransaction();         
+        try {   
+            createFile(model);
+            fs.writeFile(filePath, file);
+            nosql.commitTransaction();
         } catch (Exception e) {
-            LOGGER.debug(e.getMessage());
-        }
-        
-        fs.writeFile(Paths.get(model.getPath()), file);
-        createFile(model);
+            nosql.rollbackTransaction();
+            fs.deleteIfExists(filePath);
+            throw e;
+        } 
 
     }
 

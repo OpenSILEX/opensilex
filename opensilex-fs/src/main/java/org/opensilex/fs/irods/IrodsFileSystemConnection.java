@@ -11,18 +11,30 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
  * @author rcolin
  */
-public class IrodsFileSystemConnection extends BaseService implements FileStorageConnection {
-
-    public IrodsFileSystemConnection() {
-        super(null);
+@ServiceDefaultDefinition(config = IrodsFileSystemConfig.class)
+public class IrodsFileSystemConnection extends BaseService implements Service, FileStorageConnection {    
+    
+    public IrodsFileSystemConnection(IrodsFileSystemConfig config) {
+        super(config);
     }
 
+    public IrodsFileSystemConfig getImplementedConfig() {
+        return (IrodsFileSystemConfig) this.getConfig();
+    }
+    
+    public Path getStorageBasePath() {
+        return Paths.get(getImplementedConfig().basePath());
+    }
+    
     private final static Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
 
     private final static String IRODS_GET_CMD = "iget";
@@ -79,6 +91,10 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
             errorStream.close();
         }
     }
+    
+    public Path getAbsolutePath(Path filePath) throws IOException {
+        return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
+    }
 
     @Override
     public String readFile(Path filePath) throws IOException {
@@ -88,6 +104,7 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
+        filePath = getAbsolutePath(filePath);
         Path tmpFile = createLocalTempFile(filePath);
         byte[] fileContent = Files.readAllBytes(tmpFile);
         Files.delete(tmpFile);
@@ -118,27 +135,39 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public void writeFile(Path dest, String content) throws IOException {
+        Path filePath = getAbsolutePath(dest);
+        
         File tmpFile = null;
         try {
             tmpFile = Files.createTempFile(tmpDirectory, null, null).toFile();
             FileUtils.writeStringToFile(tmpFile, content, StandardCharsets.UTF_8);
-            writeFile(dest, tmpFile);
+            writeFile(filePath, tmpFile);
         } finally {
             if (tmpFile != null && tmpFile.exists()) {
                 tmpFile.delete();
             }
         }
+
     }
 
     private final static String IRODS_IPUT_CMD = "iput";
 
     @Override
     public void writeFile(Path dest, File file) throws IOException {
+        Path filePath = getAbsolutePath(dest);
+        
+        try {
+            createDirectories(filePath.getParent());
+        } catch (Exception e) {
+            LOGGER.debug(e.getMessage());
+        }
+        
         irodsCommand(
                 IRODS_IPUT_CMD,
                 file.getPath(),
-                dest.toString()
+                filePath.toString()
         );
+        
     }
 
     private final static String IRODS_MKDIR_CMD = "imkdir";
@@ -177,6 +206,7 @@ public class IrodsFileSystemConnection extends BaseService implements FileStorag
 
     @Override
     public void delete(Path filePath) throws IOException {
+        filePath = getAbsolutePath(filePath);
         irodsCommand(
                 IRODS_RM_CMD,
                 filePath.toString()

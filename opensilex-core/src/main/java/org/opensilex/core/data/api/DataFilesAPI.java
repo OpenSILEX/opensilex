@@ -288,6 +288,8 @@ public class DataFilesAPI {
             
         } catch (NoSQLInvalidURIException e) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();           
         } 
     }
     

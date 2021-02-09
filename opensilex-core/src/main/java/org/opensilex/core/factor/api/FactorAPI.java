@@ -247,9 +247,9 @@ public class FactorAPI {
             @ApiParam(value = "Regex pattern for filtering on description", example = "20ml of water") @QueryParam("description") String comment,
             @ApiParam(value = "Filter by category of a factor", example = "waterManagement") @QueryParam("category") String category,
             @ApiParam(value = "Filter by experiment", example = "demo-exp:experiment1") @QueryParam("experiment") URI experiment,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(-1) int pageSize)
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(-1) int pageSize)
             throws Exception {
 
         // Search factors with Factor DAO
@@ -280,7 +280,7 @@ public class FactorAPI {
      */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an factor")
+    @ApiOperation("Delete a factor")
     @ApiProtected
     @ApiCredential(
         credentialId = CREDENTIAL_FACTOR_DELETE_ID,
@@ -360,7 +360,7 @@ public class FactorAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("by-uris")
+    @Path("by_uris")
     @ApiOperation("Get a list of factors by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)

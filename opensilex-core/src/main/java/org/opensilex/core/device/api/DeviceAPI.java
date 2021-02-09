@@ -63,7 +63,7 @@ import org.opensilex.utils.ListWithPagination;
  */
 
 @Api(DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID)
-@Path("/core/device")
+@Path("/core/devices")
 @ApiCredentialGroup(
         groupId = DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID,
         groupLabelKey = DeviceAPI.CREDENTIAL_DEVICE_GROUP_LABEL_KEY
@@ -88,7 +88,7 @@ public class DeviceAPI {
     
     @POST
     //@Path("create")
-    @ApiOperation("Create a device")
+    @ApiOperation("Create a devices")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,

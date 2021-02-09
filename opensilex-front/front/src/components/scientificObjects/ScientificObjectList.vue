@@ -270,6 +270,7 @@ export default class ScientificObjectList extends Vue {
       this.filter.factors, // factors?: Array<string>,
       undefined, // factorLevels?: Array<string>,
       undefined, // facility?: string,
+      options.orderBy,
       options.currentPage, // page?: number,
       options.pageSize // pageSize?: number
     );
@@ -391,7 +392,7 @@ fr:
     advancedSearch: Recherche avancée
     propetiesConfiguration: Propriétés à afficher
     not-used-in-experiments: L'objet scientifique n'est utilisé dans aucune expérimentation
-    experiments: L'objet scientifique n'est utilisé dans le/les expérimentation(s)
+    experiments: L'objet scientifique est utilisé dans le/les expérimentation(s)
     column:
       alias: Name
       experiments: Expérimentation(s)

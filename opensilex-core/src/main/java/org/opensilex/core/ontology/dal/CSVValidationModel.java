@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
@@ -21,7 +22,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 public class CSVValidationModel {
 
     @JsonIgnore()
-    private List<SPARQLResourceModel> objects = new ArrayList<>();
+    private List<SPARQLNamedResourceModel> objects = new ArrayList<>();
 
     @JsonIgnore()
     private Map<String, Object> objectsMetadata = new HashMap<>();
@@ -83,7 +84,7 @@ public class CSVValidationModel {
         return duplicateURIErrors;
     }
 
-    public List<SPARQLResourceModel> getObjects() {
+    public List<SPARQLNamedResourceModel> getObjects() {
         if (hasErrors()) {
             return new ArrayList<>();
         }
@@ -91,7 +92,7 @@ public class CSVValidationModel {
         return objects;
     }
 
-    public void setObjects(List<SPARQLResourceModel> objects) {
+    public void setObjects(List<SPARQLNamedResourceModel> objects) {
         this.objects = objects;
     }
 
@@ -177,7 +178,7 @@ public class CSVValidationModel {
         duplicateURIErrors.put(rowIndex, new CSVDuplicateURIError(cell, previousRow));
     }
 
-    public void addObject(String name, SPARQLResourceModel object) {
+    public void addObject(String name, SPARQLNamedResourceModel object) {
         if (name != null) {
             if (!uriByNames.containsKey(name)) {
                 uriByNames.put(name, new ArrayList<>());

@@ -44,7 +44,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String uriPath = path + "/{uri}";
     public static final String createPath = path + "/";
     public static final String updatePath = path + "/";
-    public static final String deletePath = path + "/";
+    public static final String deletePath = path + "/{uri}";
     private int soCount = 1;
     private URI experiment;
 
@@ -161,8 +161,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // delete object and check if URI no longer exists
         WebTarget getDeleteByUriTarget = target(deletePath);
+        getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("uri", uri);
         getDeleteByUriTarget = getDeleteByUriTarget.queryParam("experiment", experiment.toString());
-        getDeleteByUriTarget = getDeleteByUriTarget.queryParam("uri", uri);
 
         final Response delResult = appendToken(getDeleteByUriTarget).delete();
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());

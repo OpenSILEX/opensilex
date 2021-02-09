@@ -33,6 +33,7 @@ export default class FactorLevelPropertyView extends Vue {
   @Watch("value")
   onValueChange() {
     if (this.value) {
+      this.$opensilex.disableLoader();
       this.$opensilex
         .getService("opensilex.FactorsService")
         .getFactorLevelDetail(this.value)
@@ -49,6 +50,9 @@ export default class FactorLevelPropertyView extends Vue {
         .catch(() => {
           this.label = this.value;
           this.to = null;
+        })
+        .finally(() => {
+          this.$opensilex.enableLoader();
         });
     }
   }

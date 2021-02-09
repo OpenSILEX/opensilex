@@ -84,7 +84,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.infrastructure.dal.InfrastructureDAO;
 import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.CSVCell;
@@ -96,10 +95,12 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensilex.utils.OrderBy;
 
 /**
  * @author Julien BONNEFONT
@@ -299,26 +300,20 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Factors URI", example = "vocabulary:Irrigation") @QueryParam("factors") @ValidURI List<URI> factors,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
-        List<URI> contextURIs = new ArrayList<>();
-
         if (contextURI != null) {
             if (sparql.uriExists(ExperimentModel.class, contextURI)) {
                 xpDAO.validateExperimentAccess(contextURI, currentUser);
-                contextURIs.add(contextURI);
             }
-        } else if (!currentUser.isAdmin()) {
-            contextURIs.addAll(xpDAO.getUserExperiments(currentUser));
-        } else {
-            contextURIs.add(sparql.getDefaultGraphURI(ScientificObjectModel.class));
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURIs, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, facility, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, facility, page, pageSize, orderByList, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
 
@@ -546,6 +541,7 @@ public class ScientificObjectAPI {
     }
 
     @DELETE
+    @Path("{uri}")
     @ApiOperation("Delete a scientific object")
     @ApiProtected
     @ApiCredential(
@@ -560,7 +556,7 @@ public class ScientificObjectAPI {
     })
     public Response deleteScientificObject(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
-            @QueryParam("uri") @ValidURI @NotNull URI objectURI,
+            @PathParam("uri") @ValidURI @NotNull URI objectURI,
             @ApiParam(value = "Experiment URI", example = "http://example.com/")
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
@@ -616,8 +612,11 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
         URI contextURI = descriptionDto.getExperiment();
+        boolean globalCopy = false;
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        } else {
+            globalCopy = true;
         }
         String validationToken = descriptionDto.getValidationToken();
 
@@ -647,8 +646,20 @@ public class ScientificObjectAPI {
                 nosql.startTransaction();
                 sparql.startTransaction();
                 try {
-                    List<SPARQLResourceModel> objects = errors.getObjects();
+                    List<SPARQLNamedResourceModel> objects = errors.getObjects();
                     sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
+
+                    if (globalCopy) {
+                        UpdateBuilder update = new UpdateBuilder();
+                        Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
+                        for (SPARQLNamedResourceModel object : objects) {
+                            Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
+                            update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
+                            update.addInsert(graphNode, soNode, RDFS.label, object.getName());
+
+                        }
+                        sparql.executeUpdateQuery(update);
+                    }
 
                     List<GeospatialModel> geospacialModels = new ArrayList<>();
                     geometries.forEach((rowIndex, geometry) -> {
@@ -672,8 +683,20 @@ public class ScientificObjectAPI {
                 }
             } else {
 
-                List<SPARQLResourceModel> objects = errors.getObjects();
+                List<SPARQLNamedResourceModel> objects = errors.getObjects();
                 sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
+
+                if (globalCopy) {
+                    UpdateBuilder update = new UpdateBuilder();
+                    Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
+                    for (SPARQLNamedResourceModel object : objects) {
+                        Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
+                        update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
+                        update.addInsert(graphNode, soNode, RDFS.label, object.getName());
+
+                    }
+                    sparql.executeUpdateQuery(update);
+                }
             }
 
             csvValidation.setNbLinesImported(errors.getObjects().size());
@@ -956,7 +979,7 @@ public class ScientificObjectAPI {
 
             validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
         }
-        
+
         return validationResult;
     }
 

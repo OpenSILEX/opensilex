@@ -36,6 +36,7 @@ export default class GermplasmPropertyView extends Vue {
   @Watch("value")
   onValueChange() {
     if (this.value) {
+      this.$opensilex.disableLoader();
       this.$opensilex
         .getService("opensilex.OntologyService")
         .getURILabel(this.value)
@@ -44,6 +45,9 @@ export default class GermplasmPropertyView extends Vue {
         })
         .catch(() => {
           this.label = this.value;
+        })
+        .finally(() => {
+          this.$opensilex.enableLoader();
         });
     }
   }

@@ -1,5 +1,28 @@
 <template>
   <div>
+    <opensilex-PageActions>
+      <opensilex-CreateButton
+        v-if="
+          user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+        "
+        @click="soForm.createScientificObject()"
+        label="ExperimentScientificObjects.create-scientific-object"
+      ></opensilex-CreateButton
+      >&nbsp;
+      <opensilex-CreateButton
+        v-if="
+          user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+        "
+        @click="importForm.show()"
+        label="OntologyCsvImporter.import"
+      ></opensilex-CreateButton>
+      <opensilex-ScientificObjectCSVImporter
+        ref="importForm"
+        :experimentURI="uri"
+        @csvImported="refresh()"
+      ></opensilex-ScientificObjectCSVImporter>
+    </opensilex-PageActions>
+
     <div class="row">
       <div class="col-md-12">
         <opensilex-SearchFilterField
@@ -71,25 +94,14 @@
       <div class="col-md-6">
         <b-card>
           <div class="button-zone">
-            <opensilex-CreateButton
-              v-if="
-                user.hasCredential(
-                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-                )
-              "
-              @click="soForm.createScientificObject()"
-              label="ExperimentScientificObjects.create-scientific-object"
-            ></opensilex-CreateButton
-            >&nbsp;
-            <opensilex-CreateButton
-              @click="importForm.show()"
-              label="OntologyCsvImporter.import"
-            ></opensilex-CreateButton>
-            <opensilex-ScientificObjectCSVImporter
-              ref="importForm"
-              :experimentURI="uri"
-              @csvImported="refresh()"
-            ></opensilex-ScientificObjectCSVImporter>
+            <opensilex-Button
+              :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
+              icon="none"
+              :small="false"
+              label="Export CSV"
+              :disabled="numberOfSelectedRows == 0"
+              @click="exportCSV"
+            ></opensilex-Button>
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -165,6 +177,8 @@ export default class ExperimentScientificObjects extends Vue {
   soService: ScientificObjectsService;
   uri: string;
 
+  numberOfSelectedRows = 0;
+
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
   @Ref("importForm") readonly importForm!: any;
@@ -238,6 +252,10 @@ export default class ExperimentScientificObjects extends Vue {
   unselectRefresh() {
     this.selected = null;
     this.refresh();
+  }
+
+  get lang() {
+    return this.$store.state.lang;
   }
 
   resetFilters() {
@@ -329,6 +347,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         undefined,
         undefined,
+        [],
         page,
         pageSize
       )
@@ -352,8 +371,10 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetails(nodeUri: any) {
+    this.$opensilex.disableLoader();
     this.soService.getScientificObjectDetail(nodeUri, this.uri).then((http) => {
       this.selected = http.response.result;
+      this.$opensilex.enableLoader();
     });
   }
 
@@ -366,6 +387,30 @@ export default class ExperimentScientificObjects extends Vue {
           this.soTree.refresh();
         }
       });
+  }
+
+  exportCSV() {
+    let path = "/core/scientific_objects/export";
+    let today = new Date();
+    let filename =
+      "export_scientific_objects_" +
+      today.getFullYear() +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0");
+
+    let objectURIs = [];
+    for (let select of this.soTree.getSelected()) {
+      objectURIs.push(select.uri);
+    }
+    this.$opensilex.downloadFilefromPostService(
+      path,
+      filename,
+      "csv",
+      {
+        objects: objectURIs,
+      },
+      this.lang
+    );
   }
 }
 </script>

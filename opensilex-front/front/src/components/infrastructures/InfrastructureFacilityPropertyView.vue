@@ -33,6 +33,7 @@ export default class InfrastructureFacilityPropertyView extends Vue {
   @Watch("value")
   onValueChange() {
     if (this.value) {
+       this.$opensilex.disableLoader();
       this.$opensilex
         .getService("opensilex.OrganisationsService")
         .getInfrastructureFacility(this.value)
@@ -42,6 +43,9 @@ export default class InfrastructureFacilityPropertyView extends Vue {
         })
         .catch(() => {
           this.label = this.value;
+        })
+        .finally(() => {
+          this.$opensilex.enableLoader();
         });
     }
   }

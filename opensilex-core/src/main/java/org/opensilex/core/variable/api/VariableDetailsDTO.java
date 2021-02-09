@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
@@ -24,6 +25,7 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 
+
 /**
  *
  * @author Renaud COLIN
@@ -33,9 +35,14 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
         "uri", "name", "alternative_name", "description",
         "entity","characteristic", "trait", "trait_name", "method", "unit",
         "time_interval", "sampling_interval", "datatype",
-        "exactMatch","closeMatch","broader","narrower"
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
-public class VariableDetailsDTO extends BaseVariableGetDTO<VariableModel> {
+
+//         "exact_match","close_match","broader","narrower"
+public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("alternative_name")
     private String alternativeName;

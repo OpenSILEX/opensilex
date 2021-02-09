@@ -38,15 +38,15 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
 
     @SPARQLProperty(
             ontology = SKOS.class,
-            property = "broader"
+            property = "broadMatch"
     )
-    private List<URI> broader;
+    private List<URI> broadMatch;
 
     @SPARQLProperty(
             ontology = SKOS.class,
-            property = "narrower"
+            property = "narrowMatch"
     )
-    private List<URI> narrower;
+    private List<URI> narrowMatch;
 
     public String getDescription() {
         return description;
@@ -77,22 +77,22 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
     }
 
     @Override
-    public List<URI> getBroader() {
-        return broader;
+    public List<URI> getBroadMatch() {
+        return broadMatch;
     }
 
     @Override
-    public void setBroader(List<URI> broader) {
-        this.broader = broader;
+    public void setBroadMatch(List<URI> broadMatch) {
+        this.broadMatch = broadMatch;
     }
 
     @Override
-    public List<URI> getNarrower() {
-        return narrower;
+    public List<URI> getNarrowMatch() {
+        return narrowMatch;
     }
 
     @Override
-    public void setNarrower(List<URI> narrower) {
-        this.narrower = narrower;
+    public void setNarrowMatch(List<URI> narrowMatch) {
+        this.narrowMatch = narrowMatch;
     }
 }

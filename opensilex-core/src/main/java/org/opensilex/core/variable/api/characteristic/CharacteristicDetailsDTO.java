@@ -8,7 +8,7 @@ package org.opensilex.core.variable.api.characteristic;
 import java.net.URI;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableGetDTO;
+import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
 
 
@@ -16,7 +16,7 @@ import org.opensilex.core.variable.dal.CharacteristicModel;
  *
  * @author vidalmor
  */
-public class CharacteristicDetailsDTO extends BaseVariableGetDTO<CharacteristicModel> {
+public class CharacteristicDetailsDTO extends BaseVariableDetailsDTO<CharacteristicModel> {
 
     public CharacteristicDetailsDTO(CharacteristicModel model) {
         super(model);

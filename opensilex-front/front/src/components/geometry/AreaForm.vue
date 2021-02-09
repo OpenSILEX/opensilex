@@ -73,11 +73,7 @@ export default class AreaForm extends Vue {
         rdf_type: null,
         description: "",
         geometry: [],
-        properties: [],
-        exactMatch: [],
-        closeMatch: [],
-        broader: [],
-        narrower: [],
+        properties: []
       };
     }
   })
@@ -122,11 +118,7 @@ export default class AreaForm extends Vue {
       rdf_type: null,
       description: "",
       geometry: [],
-      properties: [],
-      exactMatch: [],
-      closeMatch: [],
-      broader: [],
-      narrower: [],
+      properties: []
     };
   }
 

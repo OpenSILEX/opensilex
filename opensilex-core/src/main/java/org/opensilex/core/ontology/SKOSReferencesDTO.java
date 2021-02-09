@@ -8,7 +8,8 @@ package org.opensilex.core.ontology;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -18,17 +19,26 @@ import org.opensilex.server.rest.validation.ValidURI;
  */
 public abstract class SKOSReferencesDTO {
 
+    public final static String EXACT_MATCH_JSON_PROPERTY = "exact_match";
+    public final static String CLOSE_MATCH_JSON_PROPERTY = "close_match";
+    public final static String BROAD_MATCH_JSON_PROPERTY = "broad_match";
+    public final static String NARROW_MATCH_JSON_PROPERTY = "narrow_match";
+    
     @ValidURI
+    @JsonProperty(EXACT_MATCH_JSON_PROPERTY)
     private List<URI> exactMatch = new ArrayList<>();
     
     @ValidURI
+    @JsonProperty(CLOSE_MATCH_JSON_PROPERTY)
     private List<URI> closeMatch = new ArrayList<>();
     
     @ValidURI
-    private List<URI> broader = new ArrayList<>();
+    @JsonProperty(BROAD_MATCH_JSON_PROPERTY)
+    private List<URI> broadMatch = new ArrayList<>();
     
     @ValidURI
-    private List<URI> narrower = new ArrayList<>();
+    @JsonProperty(NARROW_MATCH_JSON_PROPERTY)
+    private List<URI> narrowMatch = new ArrayList<>();
 
     public List<URI> getExactMatch() {
         return exactMatch;
@@ -46,32 +56,32 @@ public abstract class SKOSReferencesDTO {
         this.closeMatch = closeMatch;
     }
 
-    public List<URI> getBroader() {
-        return broader;
+    public List<URI> getBroadMatch() {
+        return broadMatch;
     }
 
-    public void setBroader(List<URI> broader) {
-        this.broader = broader;
+    public void setBroadMatch(List<URI> broadMatch) {
+        this.broadMatch = broadMatch;
     }
 
-    public List<URI> getNarrower() {
-        return narrower;
+    public List<URI> getNarrowMatch() {
+        return narrowMatch;
     }
 
-    public void setNarrower(List<URI> narrower) {
-        this.narrower = narrower;
+    public void setNarrowMatch(List<URI> narrowMatch) {
+        this.narrowMatch = narrowMatch;
     }
 
     public void setSkosReferencesFromModel(SKOSReferences model) {
-        this.setNarrower(model.getNarrower());
-        this.setBroader(model.getBroader());
+        this.setNarrowMatch(model.getNarrowMatch());
+        this.setBroadMatch(model.getBroadMatch());
         this.setCloseMatch(model.getCloseMatch());
         this.setExactMatch(model.getExactMatch());
     }
 
     public void setSkosReferencesToModel(SKOSReferences model) {
-        model.setNarrower(this.getNarrower());
-        model.setBroader(this.getBroader());
+        model.setNarrowMatch(this.getNarrowMatch());
+        model.setBroadMatch(this.getBroadMatch());
         model.setCloseMatch(this.getCloseMatch());
         model.setExactMatch(this.getExactMatch());
     }

@@ -25,10 +25,13 @@ import javax.validation.constraints.NotNull;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-    "uri", "name", "alternative_name", "description",
-    "entity","characteristic", "trait", "trait_name", "method", "unit",
-    "time_interval", "sampling_interval", "datatype",
-    "exact_match","close_match","broader","narrower"
+        "uri", "name", "alternative_name", "description",
+        "entity", "characteristic", "trait", "trait_name", "method", "unit",
+        "time_interval", "sampling_interval", "datatype",
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
 public class VariableCreationDTO extends SKOSReferencesDTO {
 

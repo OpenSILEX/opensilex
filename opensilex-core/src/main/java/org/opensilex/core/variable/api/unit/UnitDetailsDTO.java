@@ -11,7 +11,8 @@ import java.net.URI;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableGetDTO;
+import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.UnitModel;
 
 
@@ -20,11 +21,14 @@ import org.opensilex.core.variable.dal.UnitModel;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "description","symbol","alternative_symbol",
-        "exactMatch","closeMatch","broader","narrower"
+        "uri", "name", "description", "symbol", "alternative_symbol",
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
 
-public class UnitDetailsDTO extends BaseVariableGetDTO<UnitModel> {
+public class UnitDetailsDTO extends BaseVariableDetailsDTO<UnitModel> {
 
     @JsonProperty("symbol")
     private String symbol;

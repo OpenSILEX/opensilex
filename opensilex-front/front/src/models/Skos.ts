@@ -3,17 +3,17 @@ export class Skos {
 
     // TODO: get relations from web service
     // labels
-    static narrower: string = "component.skos.narrower";
-    static broader: string = "component.skos.broader";
-    static closeMatch: string = "component.skos.closeMatch";
-    static exactMatch: string = "component.skos.exactMatch";
+    static narrow_match: string = "component.skos.narrowMatch";
+    static broad_match: string = "component.skos.broadMatch";
+    static close_match: string = "component.skos.closeMatch";
+    static exact_match: string = "component.skos.exactMatch";
 
     static getSkosObject(): any {
         return {
-            exactMatch: [],
-            closeMatch: [],
-            broader: [],
-            narrower: []
+            exact_match: [],
+            close_match: [],
+            broad_match: [],
+            narrow_match: []
         }
     }
 

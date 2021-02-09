@@ -25,8 +25,15 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Arnaud Charleroy
  */
+
+@JsonPropertyOrder({
+        "uri", "name", "category", "description", "levels",
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
+})
 public class FactorCreationDTO extends SKOSReferencesDTO {
-    @JsonPropertyOrder({"uri", "name", "category", "description", "levels"})
 
     protected URI uri;
 

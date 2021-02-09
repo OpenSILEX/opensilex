@@ -9,7 +9,7 @@ package org.opensilex.core.variable.api.method;
 import java.net.URI;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseVariableGetDTO;
+import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 
 
@@ -17,7 +17,7 @@ import org.opensilex.core.variable.dal.MethodModel;
  *
  * @author vidalmor
  */
-public class MethodDetailsDTO extends BaseVariableGetDTO<MethodModel> {
+public class MethodDetailsDTO extends BaseVariableDetailsDTO<MethodModel> {
 
     public MethodDetailsDTO(MethodModel model) {
         super(model);

@@ -95,10 +95,10 @@ export default class FactorForm extends Vue {
         name: null,
         category: null,
         description: null,
-        exactMatch: [],
-        closeMatch: [],
-        broader: [],
-        narrower: [],
+        exact_match: [],
+        close_match: [],
+        broad_match: [],
+        narrow_match: [],
         levels: [
           {
             uri: null,
@@ -138,10 +138,10 @@ export default class FactorForm extends Vue {
       name: null,
       category: null,
       description: null,
-      exactMatch: [],
-      closeMatch: [],
-      broader: [],
-      narrower: [],
+      exact_match: [],
+      close_match: [],
+      broad_match: [],
+      narrow_match: [],
       levels: [
         {
           uri: null,
@@ -208,9 +208,9 @@ export default class FactorForm extends Vue {
 
     this.form.description = this.savedForm.description;
 
-    this.form.exactMatch = this.savedForm.exactMatch;
+    this.form.exact_match = this.savedForm.exact_match;
 
-    this.form.closeMatch = this.savedForm.closeMatch;
+    this.form.close_match = this.savedForm.close_match;
 
     this.form.broader = this.savedForm.broader;
 

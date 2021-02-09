@@ -13,11 +13,11 @@ public interface SKOSReferences {
 
     void setCloseMatch(List<URI> closeMatch);
 
-    List<URI> getBroader();
+    List<URI> getBroadMatch();
 
-    void setBroader(List<URI> broader);
+    void setBroadMatch(List<URI> broadMatch);
 
-    List<URI> getNarrower();
+    List<URI> getNarrowMatch();
 
-    void setNarrower(List<URI> narrower);
+    void setNarrowMatch(List<URI> narrowMatch);
 }

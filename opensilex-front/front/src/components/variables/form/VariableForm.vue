@@ -391,10 +391,10 @@ export default class VariableForm extends Vue {
             trait_name: undefined,
             method: undefined,
             unit: undefined,
-            exactMatch: [],
-            closeMatch: [],
-            broader: [],
-            narrower: [],
+            exact_match: [],
+            close_match: [],
+            broad_match: [],
+            narrow_match: []
         };
     }
 

@@ -277,7 +277,7 @@ fr:
       list:
         name: Nom
         category: Categorie
-        description: descriptionaire
+        description: description
         filter: 
           label: Filtrer les facteurs
           name: Nom

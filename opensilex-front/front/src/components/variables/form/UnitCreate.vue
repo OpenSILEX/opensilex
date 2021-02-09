@@ -76,10 +76,10 @@
                 description: null,
                 symbol: null,
                 alternative_symbol: null,
-                exactMatch: [],
-                narrower: [],
-                closeMatch: [],
-                broader: []
+                exact_match: [],
+                close_match: [],
+                broad_match: [],
+                narrow_match: []
             };
         }
 

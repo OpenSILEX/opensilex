@@ -10,11 +10,14 @@ import java.net.URI;
 
 @JsonPropertyOrder({
         "uri", "name", "description",
-        "exactMatch","closeMatch","broader","narrower"
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
-public abstract class BaseVariableGetDTO<T extends BaseVariableModel<T>> extends SKOSReferencesDTO {
+public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> extends SKOSReferencesDTO {
 
-    protected BaseVariableGetDTO(T model){
+    protected BaseVariableDetailsDTO(T model){
         uri = model.getUri();
         name = model.getName();
         description = model.getDescription();
@@ -22,7 +25,7 @@ public abstract class BaseVariableGetDTO<T extends BaseVariableModel<T>> extends
         setSkosReferencesFromModel(model);
     }
 
-    protected BaseVariableGetDTO(){
+    protected BaseVariableDetailsDTO(){
 
     }
 

@@ -82,10 +82,10 @@ export default class FactorsView extends Vue {
     name: null,
     category: null,
     description: null,
-    exactMatch: [],
-    closeMatch: [],
-    broader: [],
-    narrower: [],
+    exact_match: [],
+    close_match: [],
+    broad_match: [],
+    narrow_match: []
   };
 
   get user() {

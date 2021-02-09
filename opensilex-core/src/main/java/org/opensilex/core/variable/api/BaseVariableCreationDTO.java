@@ -21,7 +21,10 @@ import java.util.List;
 
 @JsonPropertyOrder({
         "uri", "name", "description",
-        "exactMatch","closeMatch","broader","narrower"
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
 public abstract class BaseVariableCreationDTO<T extends BaseVariableModel<T>> extends SKOSReferencesDTO {
 

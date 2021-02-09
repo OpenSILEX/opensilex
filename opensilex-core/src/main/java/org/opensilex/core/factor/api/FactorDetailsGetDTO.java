@@ -23,8 +23,14 @@ import org.opensilex.core.ontology.SKOSReferencesDTO;
  *
  * @author Arnaud Charleroy
  */
+@JsonPropertyOrder({
+        "uri", "name", "category", "description", "levels",
+        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
+        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
+})
 public class FactorDetailsGetDTO extends SKOSReferencesDTO {
-    @JsonPropertyOrder({"uri", "name", "category", "description", "levels"})
 
     @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
     private URI uri;

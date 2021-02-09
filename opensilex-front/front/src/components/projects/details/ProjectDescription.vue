@@ -29,7 +29,7 @@
             <div class="static-field">
               <span
                 class="field-view-title"
-              >{{ $t('component.common.state') }}{{ $t('component.common.colon') }}</span>
+              >{{ $t('component.common.state') }}</span>
               <span class="static-field-line">
                 <span
                   v-if="!isEnded(project)"
@@ -244,13 +244,13 @@ export default class ProjectDescription extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined, //year
-        undefined, // label
+        undefined, //name
+        undefined, // year
+        undefined, // isEnded,
         undefined, // species,
-        undefined, // factors,
-        [this.uri], // projects
+        undefined, // factors
+         [this.uri], // projects
         undefined, // isPublic
-        undefined, // isEnded
         options.orderBy,
         options.currentPage,
         options.pageSize

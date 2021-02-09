@@ -32,7 +32,7 @@
             <div class="static-field">
               <span
                 class="field-view-title"
-              >{{ $t('component.common.state') }}{{ $t('component.common.colon') }}</span>
+              >{{ $t('component.common.state') }}</span>
               <span class="static-field-line">
                 <span
                   v-if="!isEnded(experiment)"

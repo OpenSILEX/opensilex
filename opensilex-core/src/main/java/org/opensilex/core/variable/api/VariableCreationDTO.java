@@ -25,13 +25,10 @@ import javax.validation.constraints.NotNull;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "description",
-        "entity", "characteristic", "trait", "trait_name", "method", "unit",
-        "time_interval", "sampling_interval", "datatype",
-        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
+    "uri", "name", "alternative_name", "description",
+    "entity","characteristic", "trait", "trait_name", "method", "unit",
+    "datatype","time_interval", "sampling_interval",
+    "exact_match","close_match","broader","narrower"
 })
 public class VariableCreationDTO extends SKOSReferencesDTO {
 
@@ -175,6 +172,13 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.traitName = traitName;
     }
 
+    @ValidURI
+    @NotNull
+    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
+    public URI getDataType() { return dataType; }
+
+    public void setDataType(URI dataType) { this.dataType = dataType; }
+
     @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
     public String getTimeInterval() { return timeInterval; }
 
@@ -184,13 +188,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public String getSamplingInterval() { return samplingInterval; }
 
     public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
-
-    @ValidURI
-    @NotNull
-    @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
-    public URI getDataType() { return dataType; }
-
-    public void setDataType(URI dataType) { this.dataType = dataType; }
 
     public VariableModel newModel() {
         VariableModel model = new VariableModel();

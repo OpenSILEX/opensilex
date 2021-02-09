@@ -152,7 +152,7 @@ public class EntityAPI {
     }
 
     @GET
-    @ApiOperation("Search entities")
+    @ApiOperation("Search entities by name")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return entities", response = EntityGetDTO.class, responseContainer = "List"),

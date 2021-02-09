@@ -54,7 +54,7 @@ public class CharacteristicAPI {
     UserModel currentUser;
 
     @POST
-    @ApiOperation("Add a Characteristic")
+    @ApiOperation("Add a characteristic")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,

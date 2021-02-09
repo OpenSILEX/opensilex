@@ -15,7 +15,7 @@ public class ListItemDTO {
     
     private URI uri;
     
-    private String label;
+    private String name;
 
     public URI getUri() {
         return uri;
@@ -25,13 +25,11 @@ public class ListItemDTO {
         this.uri = uri;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
-    
-    
 }

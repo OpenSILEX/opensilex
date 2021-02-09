@@ -64,7 +64,7 @@ export default class ScientificObjectTypeSelector extends Vue {
 
   typeToSelectNode(dto: ListItemDTO) {
     return {
-      label: dto.label,
+      label: dto.name,
       id: dto.uri
     };
   }

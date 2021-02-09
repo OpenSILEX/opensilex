@@ -285,7 +285,7 @@ export default class ScientificObjectList extends Vue {
         "opensilex.ScientificObjectsService"
       );
       scientificObjectsService
-        .getScientificObjectDetailByContext(data.item.uri)
+        .getScientificObjectDetailByExperiments(data.item.uri)
         .then((http: any) => {
           let objectExperiments = [];
           for (let objectDetail of http.response.result) {

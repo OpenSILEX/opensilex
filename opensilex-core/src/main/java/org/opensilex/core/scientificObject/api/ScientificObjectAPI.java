@@ -210,7 +210,7 @@ public class ScientificObjectAPI {
                 String label = row.getStringValue("label");
                 ListItemDTO listItem = new ListItemDTO();
                 listItem.setUri(uri);
-                listItem.setLabel(label);
+                listItem.setName(label);
                 types.add(listItem);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);
@@ -355,15 +355,15 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("{uri}/experiments")
-    @ApiOperation("Get scientific object detail, globally and by experiments, ...")
+    @Path("experiments/{uri}")
+    @ApiOperation("Get scientific object detail, globally and by experiments")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given context and object URI", response = ScientificObjectDetailByContextDTO.class)
+        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given context and object URI", response = ScientificObjectDetailByExperimentsDTO.class)
     })
-    public Response getScientificObjectDetailByContext(
+    public Response getScientificObjectDetailByExperiments(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI
     ) throws Exception {
@@ -374,14 +374,14 @@ public class ScientificObjectAPI {
 
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
-        List<ScientificObjectDetailByContextDTO> dtoList = new ArrayList<>();
+        List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
         for (URI contextURI : contexts) {
             ExperimentModel experiment = getExperiment(contextURI);
 
             ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
-                ScientificObjectDetailByContextDTO dto = ScientificObjectDetailByContextDTO.getDTOFromModel(model, experiment, geometryByURI);
+                ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI);
                 dtoList.add(dto);
             }
         }
@@ -732,12 +732,12 @@ public class ScientificObjectAPI {
         } else {
             contextNode = SPARQLDeserializers.nodeURI(contextURI);
         }
-        List<ScientificObjectModel> objects = sparql.getListByURIs(contextNode, ScientificObjectModel.class, dto.getObjects(), currentUser.getLanguage());
+        List<ScientificObjectModel> objects = sparql.getListByURIs(contextNode, ScientificObjectModel.class, dto.getUris(), currentUser.getLanguage());
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        HashMap<String, Geometry> geospacialMap = geoDAO.getGeometryByUris(null, dto.getObjects());
+        HashMap<String, Geometry> geospacialMap = geoDAO.getGeometryByUris(null, dto.getUris());
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(Oeso.isPartOf.toString());

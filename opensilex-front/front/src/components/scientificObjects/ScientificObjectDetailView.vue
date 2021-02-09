@@ -36,7 +36,7 @@ export default class ScientificObjectDetailView extends Vue {
 
     this.uri = decodeURIComponent(this.$route.params.uri);
     if (this.uri) {
-      service.getScientificObjectDetailByContext(this.uri).then((http) => {
+      service.getScientificObjectDetailByExperiments(this.uri).then((http) => {
         if (http.response.result.length == 1) {
           this.selected = http.response.result[0];
         } else {

@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
@@ -21,7 +22,8 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author vmigot
  */
-public class ScientificObjectDetailByContextDTO extends ScientificObjectDetailDTO {
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "experiment", "experiment_name", "factor_level", "relations", "geometry"})
+public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDetailDTO {
 
     @ApiModelProperty(value = "Scientific object experiment URI")
     private URI experiment;
@@ -56,8 +58,8 @@ public class ScientificObjectDetailByContextDTO extends ScientificObjectDetailDT
         return new ScientificObjectModel();
     }
 
-    static ScientificObjectDetailByContextDTO getDTOFromModel(ExperimentalObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
-        ScientificObjectDetailByContextDTO dto = new ScientificObjectDetailByContextDTO();
+    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ExperimentalObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
+        ScientificObjectDetailByExperimentsDTO dto = new ScientificObjectDetailByExperimentsDTO();
         dto.fromModel(model);
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));

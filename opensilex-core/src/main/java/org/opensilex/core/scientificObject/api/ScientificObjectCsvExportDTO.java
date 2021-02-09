@@ -18,18 +18,18 @@ public class ScientificObjectCsvExportDTO {
 
     @ValidURI
     @ApiModelProperty(value = "List of scientific objects URI to export")
-    protected List<URI> objects;
+    protected List<URI> uris;
 
     @ValidURI
     @ApiModelProperty(value = "Scientific object experiment URI")
     protected URI experiment;
 
-    public List<URI> getObjects() {
-        return objects;
+    public List<URI> getUris() {
+        return uris;
     }
 
-    public void setObjects(List<URI> objects) {
-        this.objects = objects;
+    public void setUris(List<URI> uris) {
+        this.uris = uris;
     }
 
     public URI getExperiment() {

@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
@@ -30,6 +31,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  *
  * @author vmigot
  */
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "geometry"})
 public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObjectModel> {
 
     @ApiModelProperty(value = "Scientific object parent URI")

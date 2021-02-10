@@ -484,6 +484,7 @@ export default class MapView extends Vue {
 
   private areaRecovery() {
     let coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
+    this.overlayCoordinate = [(coordinateExtent[0] + coordinateExtent[2]) / 2, coordinateExtent[3]];
 
     let geometry = {
       type: "Polygon",
@@ -571,9 +572,7 @@ p {
 
 .panel-content {
   background: white;
-  box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
-  border-radius: 5px;
-  text-indent: 2px;
+  box-shadow: 0 .25em .5em transparentize(#000000, 0.8);
 }
 </style>
 

@@ -131,10 +131,6 @@
           {{ nameType(data.item.properties.type) }}
         </template>
 
-        <template v-slot:cell(description)="{data}">
-          {{ data.item.properties.description }}
-        </template>
-
         <template v-slot:cell(actions)="{data}">
           <b-button-group size="sm">
             <div v-if="user.admin === true &&
@@ -199,10 +195,6 @@ export default class MapView extends Vue {
     {
       key: "type",
       label: "MapView.type",
-    },
-    {
-      key: "description",
-      label: "MapView.description",
     },
     {
       key: "actions",
@@ -474,6 +466,7 @@ export default class MapView extends Vue {
 
   private areaRecovery() {
     let coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
+    this.overlayCoordinate = [(coordinateExtent[0] + coordinateExtent[2]) / 2, coordinateExtent[3]];
 
     let geometry = {
       "type": "Polygon",
@@ -554,6 +547,11 @@ p {
 
 #Area {
   color: green;
+}
+
+.panel-content {
+  background: white;
+  box-shadow: 0 .25em .5em transparentize(#000000, 0.8);
 }
 </style>
 

@@ -66,14 +66,11 @@ export default class AreaForm extends Vue {
       let defaultLang = "en";
       names[defaultLang] = "";
       return {
-        author: null,
         uri: null,
         name: null,
-        subject: null,
         rdf_type: null,
         description: "",
         geometry: [],
-        properties: []
       };
     }
   })
@@ -111,14 +108,11 @@ export default class AreaForm extends Vue {
     names[lang] = "";
     names[defaultLang] = "";
     return {
-      author: null,
       uri: null,
       name: null,
-      subject: null,
       rdf_type: null,
       description: "",
       geometry: [],
-      properties: []
     };
   }
 

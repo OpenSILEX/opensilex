@@ -33,27 +33,36 @@
     </p>
     <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
       <vl-map
-          :default-controls="mapControls"
+          ref="map"
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
           data-projection="EPSG:4326"
           style="height: 400px"
           @created="mapCreated"
+          @pointermove="onMapPointerMove"
       >
-        <vl-view ref="mapView" :min-zoom="2" :rotation.sync="rotation" :zoom="3"
+        <vl-view ref="mapView" :min-zoom="2" :zoom="3"
                  @update:rotation="areaRecovery"
                  @update:zoom="areaRecovery">
         </vl-view>
 
         <vl-layer-tile id="osm">
-          <vl-source-osm></vl-source-osm>
+          <vl-source-osm :wrap-x="false"/>
         </vl-layer-tile>
+
+        <vl-overlay v-if="selectPointerMove.length !== 0" id="overlay" :position="overlayCoordinate">
+          <template slot-scope="scope">
+            <div class="panel-content">
+              {{ $t('MapView.hover') + " : " + selectPointerMove }}
+            </div>
+          </template>
+        </vl-overlay>
 
         <template v-if="endReceipt">
           <vl-layer-vector>
             <vl-source-vector
                 ref="vectorSource"
-                :features.sync="features"
+                :features.sync="featuresOS"
                 @update:features="defineCenter">
             </vl-source-vector>
           </vl-layer-vector>
@@ -100,7 +109,6 @@
         />
       </vl-map>
     </div>
-
     {{ $t('MapView.Legend') }}:
     <span id="OS">{{ $t('MapView.LegendSO') }}</span>
     &nbsp;-&nbsp;
@@ -170,6 +178,7 @@ import MultiPolygon from "ol/geom/MultiPolygon";
 @Component
 export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
+  @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
   @Ref("areaForm") readonly areaForm!: any;
 
@@ -177,9 +186,11 @@ export default class MapView extends Vue {
   $store: any;
   el: "map";
   service: any;
-  features: any[] = [];
+  featuresOS: any[] = [];
   featuresArea: any[] = [];
   temporaryArea: any[] = [];
+  selectPointerMove: string = "";
+  overlayCoordinate: any[] = [];
   fieldsSelected = [
     {
       key: "name",
@@ -204,7 +215,6 @@ export default class MapView extends Vue {
   private editingMode: boolean = false;
   private endReceipt: boolean = false;
   private errorGeometry: boolean = false;
-  private coordinateExtent: any;
   private typeLabel: { uri: String; name: String }[] = [];
   private lang: string;
 
@@ -250,6 +260,20 @@ export default class MapView extends Vue {
     });
   }
 
+  onMapPointerMove({pixel}: any) {
+    // Gets the name when the cursor hovers over the item.
+    const hitFeature = this.map.forEachFeatureAtPixel(
+        pixel,
+        feature => feature
+    );
+    if (hitFeature) {
+      console.log(hitFeature);
+      this.selectPointerMove = hitFeature.values_.name;
+    } else {
+      this.selectPointerMove = "";
+    }
+  }
+
   callAreaUpdate(areaUriResult) {
     areaUriResult.then(areaUri => {
       if (areaUri != undefined) {
@@ -280,10 +304,10 @@ export default class MapView extends Vue {
       // Transfers geometry to the form using the $store
       this.$store.state.zone = this.temporaryArea.pop();
 
-      let feature = this.$store.state.zone;
+      let areaFeature = this.$store.state.zone;
 
-      if (feature.geometry.type === "Polygon") {
-        let kinkedPoly = turf.polygon(feature.geometry.coordinates);
+      if (areaFeature.geometry.type === "Polygon") {
+        let kinkedPoly = turf.polygon(areaFeature.geometry.coordinates);
         let unKinkedPoly = turf.unkinkPolygon(kinkedPoly);
 
         if (unKinkedPoly.features.length > 1) {
@@ -298,7 +322,7 @@ export default class MapView extends Vue {
         }
       }
 
-      for (let element of feature.geometry.coordinates[0]) {
+      for (let element of areaFeature.geometry.coordinates[0]) {
         if (element[0] < -180 || element[0] > 180) {
           this.errorGeometry = true;
           alert(this.$i18n.t("MapView.errorLongitude"));
@@ -336,7 +360,7 @@ export default class MapView extends Vue {
                     type: element.type,
                     description: element.description,
                   }
-                  this.features.push(element.geometry)
+                  this.featuresOS.push(element.geometry)
                 }
               });
               if (res.length != 0) {
@@ -449,16 +473,16 @@ export default class MapView extends Vue {
   }
 
   private areaRecovery() {
-    this.coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
+    let coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
 
     let geometry = {
       "type": "Polygon",
       "coordinates": [[
-        [this.coordinateExtent[2], this.coordinateExtent[1]],
-        [this.coordinateExtent[0], this.coordinateExtent[1]],
-        [this.coordinateExtent[0], this.coordinateExtent[3]],
-        [this.coordinateExtent[2], this.coordinateExtent[3]],
-        [this.coordinateExtent[2], this.coordinateExtent[1]]
+        [coordinateExtent[2], coordinateExtent[1]],
+        [coordinateExtent[0], coordinateExtent[1]],
+        [coordinateExtent[0], coordinateExtent[3]],
+        [coordinateExtent[2], coordinateExtent[3]],
+        [coordinateExtent[2], coordinateExtent[1]]
       ]]
     }
 
@@ -550,6 +574,7 @@ en:
     LegendSO: Scientific Object
     LegendArea: Area
     Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift +Alt + Right Click and move the mouse to rotate the map. Press Ctrl+Right Click while dragging to <b>select multiple scientific objects</b>.
+    hover: name hover
   Area:
     title: Area
     add: Description of the area
@@ -570,6 +595,7 @@ fr:
     LegendSO: Objet scientifique
     LegendArea: Zone
     Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic  Droit  puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl+Clic droit tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    hover: nom survolez
   Area:
     title: Zone
     add: Description de la zone

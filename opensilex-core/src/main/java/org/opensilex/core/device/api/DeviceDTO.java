@@ -24,10 +24,6 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand",
-    "constructor_model","serial_number","person_in_charge","start_up",
-    "removal","relations", "description", "metadata"})
-
 public class DeviceDTO extends RDFObjectDTO {
     
     private String name;
@@ -52,19 +48,8 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("rdf_type")
     protected URI type;
     
-    @JsonProperty("rdf_type_name")
-    protected String typeLabel;
-    
     @JsonProperty("description")
     protected String description;
-
-    public void setTypeLabel(String typeLabel){
-        this.typeLabel = typeLabel;
-    }
-    
-    public String getTypeLabel(){
-        return typeLabel;
-    }
     
     public String getName() {
         return name;
@@ -128,114 +113,10 @@ public class DeviceDTO extends RDFObjectDTO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-    
-    @JsonProperty("metadata")
-    protected Map<String, String> metadata;
-
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Map<String, String> metadata) {
-        this.metadata = metadata;
     }  
     
     public DeviceModel newModelInstance() {
         return new DeviceModel();
     }
-
-    public void fromModel(DeviceModel model) {
-        setUri(model.getUri());
-        setType(model.getType());
-        setTypeLabel(model.getTypeLabel().getDefaultValue());
-        setName(model.getName());
-        if (model.getBrand() != null) {
-            setBrand(model.getBrand());
-        }
-        
-        if(model.getModel() != null){
-            setConstructorModel(model.getModel());
-        }
-        
-        if(model.getSerialNumber() != null){
-            setSerialNumber(model.getSerialNumber());
-        }
-        
-        if(model.getPersonInCharge() != null){
-            setPersonInCharge(model.getPersonInCharge());
-        }
-        
-        if(model.getStartUp() != null){
-            setStartUp(model.getStartUp());
-        }
-        
-        if(model.getRemoval() != null){
-            setRemoval(model.getRemoval());
-        }
-        
-        if(model.getDescription() != null){
-            setDescription(model.getDescription());
-        }
-        
-        List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>(model.getRelations().size());
-        for (SPARQLModelRelation relation : model.getRelations()) {
-            relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
-        }
-        setRelations(relationsDTO);
-        
-        if (model.getAttributes() != null) {
-            setMetadata(model.getAttributes());
-        }
-    }
-
-    public void toModel(DeviceModel model) {
-        model.setUri(getUri());
-        model.setType(getType());
-        model.setName(getName());
-        if (getBrand() != null) {
-            model.setBrand(getBrand());
-        }
-        
-        if(getConstructorModel() != null){
-            model.setModel(getConstructorModel());
-        }
-        
-        if(getSerialNumber() != null){
-            model.setSerialNumber(getSerialNumber());
-        }
-        
-        if(getPersonInCharge() != null){
-            model.setPersonInCharge(getPersonInCharge());
-        }
-        
-        if(getStartUp() != null){
-            model.setStartUp(getStartUp());
-        }
-
-        if(getRemoval() != null){
-            model.setRemoval(getRemoval());
-        }
-        
-        if(getDescription() != null){
-            model.setDescription(getDescription());
-        }
-        
-        if (metadata != null ) {
-           model.setAttributes(metadata);
-        }
-    }
     
-    public DeviceModel newModel() {
-        DeviceModel instance = newModelInstance();
-        toModel(instance);
-        return instance;
-    }
-    
-    public static DeviceDTO getDTOFromModel(DeviceModel model) {
-        DeviceDTO dto = new DeviceDTO();
-        dto.fromModel(model);
-
-        return dto;
-    }
 }

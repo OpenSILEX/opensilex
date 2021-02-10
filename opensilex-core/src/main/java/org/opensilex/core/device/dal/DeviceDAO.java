@@ -13,6 +13,7 @@ import org.apache.jena.sparql.expr.Expr;
 import java.util.List;
 import java.time.LocalDate;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.device.api.DeviceDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -76,7 +77,7 @@ public class DeviceDAO {
         this.nosql = nosql;
     }
     
-    public URI create(DeviceDTO devDTO, UserModel currentUser) throws Exception {   
+    public URI create(DeviceCreationDTO devDTO, UserModel currentUser) throws Exception {   
         URI deviceType = devDTO.getType();
         URI deviceURI = devDTO.getUri();
         String deviceName = devDTO.getName();
@@ -196,7 +197,14 @@ public class DeviceDAO {
     }
 
     public DeviceModel getDeviceByURI(URI deviceURI, UserModel currentUser) throws Exception {
-        return sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
+        DeviceModel device = sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
+        if (device != null) {
+            DeviceAttributeModel storedAttributes = getStoredAttributes(device.getUri());
+            if (storedAttributes != null) {
+                device.setAttributes(storedAttributes.getAttribute());
+            }
+        }
+        return device;
     }
     
      public void delete(URI deviceURI, UserModel currentUser) throws Exception {

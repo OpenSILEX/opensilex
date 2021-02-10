@@ -102,7 +102,7 @@ public class DeviceAPI {
     })
 
     public Response createDevice(
-            @ApiParam("Device description") @Valid DeviceDTO deviceDTO,
+            @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
@@ -157,9 +157,9 @@ public class DeviceAPI {
             page,
             pageSize);
 
-        ListWithPagination<DeviceDTO> dtoList = devices.convert(DeviceDTO.class, DeviceDTO::getDTOFromModel);
+        ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
-        return new PaginatedListResponse<DeviceDTO>(dtoList).getResponse();
+        return new PaginatedListResponse<DeviceGetDTO>(dtoList).getResponse();
     }
     
     @GET
@@ -182,7 +182,7 @@ public class DeviceAPI {
 
         Response response;
         if (model != null) {
-            response = new SingleObjectResponse<>(DeviceDTO.getDTOFromModel(model)).getResponse();
+            response = new SingleObjectResponse<>(DeviceGetSingleDTO.getDTOFromModel(model)).getResponse();
         } else {
             response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         }
@@ -206,7 +206,7 @@ public class DeviceAPI {
     public Response updateDevice(
             @ApiParam(value = "Device description", required = true)
             @NotNull
-            @Valid DeviceDTO dto
+            @Valid DeviceCreationDTO dto
     ) throws Exception {
 
         // URI devType = dto.getType();

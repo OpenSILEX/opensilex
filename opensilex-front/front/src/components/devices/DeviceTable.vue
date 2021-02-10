@@ -213,7 +213,7 @@ export default class DeviceTable extends Vue {
     );
 
     ontoService
-      .getSubClassesOf(this.$attrs.deviceType, false)
+      .getSubClassesOf(this.$attrs.deviceType, true)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         console.log(http.response.result);
         for (let i = 0; i < http.response.result.length; i++) {

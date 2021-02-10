@@ -37,10 +37,6 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { VariablesService } from "opensilex-core/index";
-
-import { VariableDatatypeDTO } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ScientificObjectCSVTemplateGenerator extends Vue {
@@ -49,7 +45,6 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
   $t: any;
   $i18n: any;
   $papa: any;
-  service: VariablesService;
 
   requiredField: boolean = false;
 
@@ -63,24 +58,14 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
     return this.$store.state.user;
   }
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.VariablesService");
-  }
-
   @Prop({ default: null })
   experiment: string;
 
-  variables: any[] = [];
   types: any[] = [];
-
-  variableFilter: string;
-
-  datatypes: Array<VariableDatatypeDTO> = [];
 
   reset() {
     this.validatorRefTemplate.reset();
     this.experiment = null;
-    this.variables = [];
   }
 
   show() {
@@ -89,44 +74,6 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
 
   validateTemplate() {
     return this.validatorRefTemplate.validate();
-  }
-
-  loadDatatypes() {
-    if (this.datatypes.length == 0) {
-      this.service
-        .getDatatypes()
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<VariableDatatypeDTO>>>
-          ) => {
-            this.datatypes = http.response.result;
-          }
-        );
-    }
-  }
-
-  loadDataType(dataTypeUri: string) {
-    if (!dataTypeUri) {
-      return undefined;
-    }
-    let dataType = this.datatypes.find(
-      (datatypeNode) => datatypeNode.uri == dataTypeUri
-    );
-
-    return [dataType.labelKey];
-  }
-
-  private langUnwatcher;
-  mounted() {
-    this.loadDatatypes();
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      () => this.loadDatatypes()
-    );
-  }
-
-  beforeDestroy() {
-    this.langUnwatcher();
   }
 
   csvExport() {
@@ -296,8 +243,6 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
               }
             }
           }
-
-          console.error(headers, datatypesByHeaders);
 
           let headersDescription = [];
 

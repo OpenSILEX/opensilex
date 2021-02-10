@@ -84,10 +84,10 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
-import org.opensilex.core.infrastructure.dal.InfrastructureFacilityModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -670,7 +670,7 @@ public class ScientificObjectAPI {
                         geospatialModel.setRdfType(object.getType());
                         geospatialModel.setGraph(graphURI);
                         geospatialModel.setGeometry(geometry);
-                        geospatialModels.add(geospatialModel);
+                        geospacialModels.add(geospatialModel);
                     });
 
                     geoDAO.createAll(geospacialModels);

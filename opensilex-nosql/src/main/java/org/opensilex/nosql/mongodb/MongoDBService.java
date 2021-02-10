@@ -164,6 +164,11 @@ public class MongoDBService extends BaseService {
         } catch (Exception exception) {
             rollbackTransaction();
             throw exception;
+        } finally {
+            if (session != null) {
+                session.close();
+                session = null;
+            }
         }
 
     }

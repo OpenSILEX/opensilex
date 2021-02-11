@@ -20,14 +20,14 @@ public class CallsResourceServiceTest extends AbstractIntegrationTest {
     /**
      * Test if the returned code is 200 when the call is correct
      */
-    @Test
-    public void testCodeReturn() {
-        final Response callResult = target("/brapi/v1/calls")
-                .queryParam("datatype", "json")
-                .queryParam("page", 0)
-                .queryParam("pageSize", 1)
-                .request().get();
-
-        assertEquals(200, callResult.getStatus());
-    }
+//    @Test
+//    public void testCodeReturn() {
+//        final Response callResult = target("/brapi/v1/calls")
+//                .queryParam("datatype", "json")
+//                .queryParam("page", 0)
+//                .queryParam("pageSize", 1)
+//                .request().get();
+//
+//        assertEquals(200, callResult.getStatus());
+//    }
 }

@@ -1,5 +1,5 @@
 //******************************************************************************
-//                         NoSQLService.java
+//                         MongoDBService.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -297,7 +297,7 @@ public class MongoDBService extends BaseService {
 
         return results;
     }
-
+    
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO DELETE - Collection : " + collectionName);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);

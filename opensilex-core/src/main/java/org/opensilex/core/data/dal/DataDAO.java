@@ -181,7 +181,7 @@ public class DataDAO {
             filter.put("variable", variableUri);
         }
 
-        if (!provenances.isEmpty()) {
+        if (provenances != null && !provenances.isEmpty()) {
             Document inFilter = new Document();
             
             inFilter.put("$in", provenances);
@@ -245,14 +245,48 @@ public class DataDAO {
         nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
     }
     
+    public Document buildProvenancesListFiter(Set<URI> provenances) {
+        Document listFilter = new Document();
+        listFilter.append("$in", provenances);
+        Document filter = new Document();
+        filter.append("provenance.uri", listFilter);
+        return filter;
+    }
+
+    public ListWithPagination<VariableModel> getVariablesByExperiment(URI xpUri, String language, Integer page, Integer pageSize) throws Exception {
+        Set<URI> provenances = getProvenancesByExperiment(xpUri);
+        if (provenances.size() > 0) {
+            Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, buildProvenancesListFiter(provenances));
+            int total = variableURIs.size();
+            
+            List<URI> list = new ArrayList<>(variableURIs);
+            List<URI> listToSend = new ArrayList<>();
+            if (total > 0 && (page * pageSize) < total) {
+                if (page == null || page < 0) {
+                    page = 0;
+                }                
+                int fromIndex = page*pageSize;
+                int toIndex;
+                if (total > fromIndex + pageSize) {
+                    toIndex = fromIndex + pageSize;
+                } else {
+                    toIndex = total;
+                }
+                listToSend = list.subList(fromIndex, toIndex);
+            }
+            
+            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, language);
+            return new ListWithPagination(variables, page, pageSize, total);
+            
+        } else {
+            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
+        }
+    }
+    
     public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
         Set<URI> provenances = getProvenancesByExperiment(xpUri);
         if (provenances.size() > 0) {
-            Document listFilter = new Document();
-            listFilter.append("$in", provenances);
-            Document filter = new Document();
-            filter.append("provenance.uri", listFilter);
-
+            Document filter = buildProvenancesListFiter(provenances);
             Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
 
             return sparql.getListByURIs(VariableModel.class, variableURIs, language);

@@ -197,17 +197,6 @@
                             </services>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>phis-brapi-services</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <services>
-                                <param>opensilex.service.resource.brapi.BrapiCall</param>
-                            </services>
-                        </configuration>
-                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>

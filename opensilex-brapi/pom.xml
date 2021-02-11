@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Core pom.xml
+ This module includes all core concepts for scientific experiments represention:
+ - Projects
+ - Experiments
+ - Infrastuctures
+ - Variables
+ - Scalar data and files
+ - Measurement devices
+******************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>opensilex-brapi</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-brapi</name>
+    
+    <url>https://www.opensilex.org/</url>
+    
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-module</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-module/pom.xml</relativePath>
+    </parent>
+   
+    
+       
+    
+    <build>
+        <plugins>
+            <!-- Generate swagger.json file -->
+            <!--<plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+            </plugin>-->
+            
+            <!-- Generate TypeScript library from swagger.json file -->
+            <!--<plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+            </plugin>-->
+            
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>brapi-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.brapi.api.BrapiCall</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+        </plugins>
+    </build> 
+   
+</project>
+

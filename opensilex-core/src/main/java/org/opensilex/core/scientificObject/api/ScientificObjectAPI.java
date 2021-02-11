@@ -34,7 +34,6 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
-import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -338,13 +337,13 @@ public class ScientificObjectAPI {
 
         validateContextAccess(contextURI);
         if (contextURI == null) {
-            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);;
+            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
+        ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
 
         if (model == null) {
@@ -378,7 +377,7 @@ public class ScientificObjectAPI {
         for (URI contextURI : contexts) {
             ExperimentModel experiment = getExperiment(contextURI);
 
-            ExperimentalObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
+            ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
                 ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI);
@@ -434,10 +433,11 @@ public class ScientificObjectAPI {
         try {
             URI soURI = dao.create(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
-            if (globalCopy) {
+            Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
+            if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
                 UpdateBuilder update = new UpdateBuilder();
                 Node soNode = SPARQLDeserializers.nodeURI(soURI);
-                Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
+
                 update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(soType));
                 update.addInsert(graphNode, soNode, RDFS.label, descriptionDto.getName());
                 sparql.executeUpdateQuery(update);
@@ -653,9 +653,11 @@ public class ScientificObjectAPI {
                         UpdateBuilder update = new UpdateBuilder();
                         Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
                         for (SPARQLNamedResourceModel object : objects) {
-                            Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
-                            update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
-                            update.addInsert(graphNode, soNode, RDFS.label, object.getName());
+                            if (!sparql.uriExists(graphNode, object.getUri())) {
+                                Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
+                                update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
+                                update.addInsert(graphNode, soNode, RDFS.label, object.getName());
+                            }
 
                         }
                         sparql.executeUpdateQuery(update);

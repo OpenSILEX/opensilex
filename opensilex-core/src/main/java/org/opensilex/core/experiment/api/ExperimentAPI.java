@@ -91,7 +91,6 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
@@ -1158,7 +1157,7 @@ public class ExperimentAPI {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql);
 
-        Map<String, ExperimentalObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
+        Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 
         Map<Integer, String> headerByIndex = new HashMap<>();
@@ -1238,10 +1237,10 @@ public class ExperimentAPI {
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ExperimentalObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, URI experiment) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
 
         boolean validRow = true;
-        ExperimentalObjectModel object = null;
+        ScientificObjectModel object = null;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
@@ -1301,8 +1300,8 @@ public class ExperimentAPI {
         return validRow;
     }
 
-    private ExperimentalObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
-        ExperimentalObjectModel object = null;
+    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+        ScientificObjectModel object = null;
         try {
             object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
         } catch (Exception ex) {
@@ -1310,8 +1309,8 @@ public class ExperimentAPI {
         return object;
     }
 
-    private ExperimentalObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
-        ExperimentalObjectModel object;
+    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
+        ScientificObjectModel object;
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 

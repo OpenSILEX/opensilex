@@ -408,7 +408,7 @@ class SPARQLClassQueryBuilder {
         }
 
         // if the object is stored in the same graph as the current model then try to get object name into this graph
-        if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph)) {
+        if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph) && analyzer.useDefaultGraph(field)) {
             // else fetch the object label into his proper graph
             WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
             objectGraphHandler.addOptional(objectNameDefaultOptionalHandler);

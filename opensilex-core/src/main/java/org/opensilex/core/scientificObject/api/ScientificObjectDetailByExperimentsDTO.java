@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 import java.net.URI;
@@ -49,7 +48,7 @@ public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDeta
     }
 
     @Override
-    public void toModel(ExperimentalObjectModel model) {
+    public void toModel(ScientificObjectModel model) {
         super.toModel(model);
     }
 
@@ -58,7 +57,7 @@ public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDeta
         return new ScientificObjectModel();
     }
 
-    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ExperimentalObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
+    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ScientificObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
         ScientificObjectDetailByExperimentsDTO dto = new ScientificObjectDetailByExperimentsDTO();
         dto.fromModel(model);
         if (geometryByURI != null) {

@@ -13,7 +13,6 @@ import org.geojson.GeoJsonObject;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -32,7 +31,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  * @author vmigot
  */
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "geometry"})
-public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObjectModel> {
+public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObjectModel> {
 
     @ApiModelProperty(value = "Scientific object parent URI")
     protected URI parent;
@@ -114,12 +113,12 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
     }
 
     @Override
-    public void toModel(ExperimentalObjectModel model) {
+    public void toModel(ScientificObjectModel model) {
         super.toModel(model);
     }
 
     @Override
-    public void fromModel(ExperimentalObjectModel model) {
+    public void fromModel(ScientificObjectModel model) {
         super.fromModel(model);
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
@@ -155,14 +154,14 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ExperimentalObje
         return new ScientificObjectModel();
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model) {
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model) {
         ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
         dto.fromModel(model);
 
         return dto;
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ExperimentalObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
         ScientificObjectDetailDTO dto = getDTOFromModel(model);
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));

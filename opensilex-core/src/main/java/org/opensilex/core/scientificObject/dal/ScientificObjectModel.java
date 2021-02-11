@@ -1,12 +1,12 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 
 @SPARQLResource(
         ontology = Oeso.class,
@@ -14,8 +14,25 @@ import org.opensilex.sparql.annotations.SPARQLResource;
         graph = "set/scientific-objects",
         prefix = "so"
 )
-public class ScientificObjectModel extends ExperimentalObjectModel {
 
+public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
+    
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf",
+            useDefaultGraph = false
+    )
+    protected ScientificObjectModel parent;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf",
+            inverse = true,
+            ignoreUpdateIfNull = true,
+            useDefaultGraph = false
+    )
+    protected List<ScientificObjectModel> children;
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCreationDate"

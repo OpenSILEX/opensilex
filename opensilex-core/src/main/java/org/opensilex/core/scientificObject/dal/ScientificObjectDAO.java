@@ -255,7 +255,7 @@ public class ScientificObjectDAO {
 
     private SPARQLResourceModel initObject(URI contextURI, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ExperimentalObject.getURI()), currentUser.getLanguage());
+        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
         SPARQLResourceModel object = new SPARQLResourceModel();
         object.setType(soType);
@@ -273,8 +273,8 @@ public class ScientificObjectDAO {
         return object;
     }
 
-    public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
-        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, currentUser.getLanguage());
+    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURI, currentUser.getLanguage());
     }
 
     public List<URI> getObjectContexts(URI objectURI) throws Exception {
@@ -300,12 +300,12 @@ public class ScientificObjectDAO {
         sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
     }
 
-    public ExperimentalObjectModel getByNameAndContext(String objectName, URI contextUri) throws Exception {
+    public ScientificObjectModel getByNameAndContext(String objectName, URI contextUri) throws Exception {
         Node experimentGraph = SPARQLDeserializers.nodeURI(contextUri);
 
-        ListWithPagination<ExperimentalObjectModel> searchWithPagination = sparql.searchWithPagination(
+        ListWithPagination<ScientificObjectModel> searchWithPagination = sparql.searchWithPagination(
                 experimentGraph,
-                ExperimentalObjectModel.class,
+                ScientificObjectModel.class,
                 null,
                 (SelectBuilder select) -> {
                     appendStrictNameFilter(select, objectName);
@@ -318,7 +318,7 @@ public class ScientificObjectDAO {
         return searchWithPagination.getList().get(0);
     }
 
-    public ExperimentalObjectModel getObjectURINameByNameAndContext(URI contextUri, String objectName) throws Exception {
+    public ScientificObjectModel getObjectURINameByNameAndContext(URI contextUri, String objectName) throws Exception {
         Node experimentGraph = SPARQLDeserializers.nodeURI(contextUri);
 
         ListWithPagination<SPARQLNamedResourceModel> searchWithPagination = sparql.searchWithPagination(
@@ -332,26 +332,26 @@ public class ScientificObjectDAO {
         if (searchWithPagination.getList().isEmpty()) {
             return null;
         }
-        ExperimentalObjectModel experimentalObjectModel = new ExperimentalObjectModel();
+        ScientificObjectModel experimentalObjectModel = new ScientificObjectModel();
         experimentalObjectModel.setName(searchWithPagination.getList().get(0).getName());;
         experimentalObjectModel.setUri(searchWithPagination.getList().get(0).getUri());
 
         return experimentalObjectModel;
     }
 
-    public ExperimentalObjectModel getObjectURINameByURI(URI objectURI, URI contextURI) throws Exception {
+    public ScientificObjectModel getObjectURINameByURI(URI objectURI, URI contextURI) throws Exception {
         SPARQLNamedResourceModel ObjectURIName = sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), SPARQLNamedResourceModel.class, objectURI, null);
-        ExperimentalObjectModel experimentalObjectModel = new ExperimentalObjectModel();
+        ScientificObjectModel experimentalObjectModel = new ScientificObjectModel();
         experimentalObjectModel.setName(ObjectURIName.getName());;
         experimentalObjectModel.setUri(ObjectURIName.getUri());
         return experimentalObjectModel;
     }
 
     private void appendStrictNameFilter(SelectBuilder select, String name) throws Exception {
-        select.addFilter(SPARQLQueryHelper.eq(ExperimentalObjectModel.NAME_FIELD, name));
+        select.addFilter(SPARQLQueryHelper.eq(ScientificObjectModel.NAME_FIELD, name));
     }
 
-    public ExperimentalObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
+    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
         List<URI> objectURIs = new ArrayList<>();
 
         objectURIs.add(objectURI);
@@ -361,7 +361,5 @@ public class ScientificObjectDAO {
         } else {
             return listByURIs.get(0);
         }
-        // TODO Not working
-//        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ExperimentalObjectModel.class, objectURI, null);
     }
 }

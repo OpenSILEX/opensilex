@@ -935,11 +935,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalObject -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Factor -->
 
@@ -1014,7 +1009,13 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -1155,7 +1156,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasFacility"/>
@@ -1773,13 +1773,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalObject -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Factor -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor"/>
@@ -1975,10 +1968,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:comment xml:lang="en">A set of environmental conditions, infrastructure and supporting equipment or resources necessary to conduct a given experiment and in which plants, plots or group of plants are raised</rdfs:comment>
         <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PECO?iri=http://purl.obolibrary.org/obo/PECO_0007359</dc:source>
         <rdfs:label xml:lang="fr">contexte expérimental</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalObject">
-        <rdfs:label xml:lang="en">Experimental Object</rdfs:label>
-        <rdfs:label xml:lang="fr">Objet expérimental</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Factor">
         <rdfs:comment xml:lang="fr">Un facteur d&apos;une expérience est une variable indépendante contrôlée; une variable dont les niveaux sont fixés par l&apos;expérimentateur.</rdfs:comment>

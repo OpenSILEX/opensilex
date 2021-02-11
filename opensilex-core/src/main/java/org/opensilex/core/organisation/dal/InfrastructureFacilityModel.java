@@ -5,9 +5,8 @@
  */
 package org.opensilex.core.organisation.dal;
 
+import java.util.List;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -18,7 +17,22 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         graph = "set/infrastructures",
         prefix = "infra"
 )
-public class InfrastructureFacilityModel extends ExperimentalObjectModel  {
+public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureFacilityModel> {
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf"
+    )
+    protected InfrastructureFacilityModel parent;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf",
+            inverse = true,
+            ignoreUpdateIfNull = true,
+            useDefaultGraph = false
+    )
+    protected List<InfrastructureFacilityModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -37,7 +51,7 @@ public class InfrastructureFacilityModel extends ExperimentalObjectModel  {
     }
 
     @Override
-    public String[] getUriSegments(SPARQLTreeModel<ExperimentalObjectModel> instance) {
+    public String[] getUriSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
         InfrastructureFacilityModel facility = (InfrastructureFacilityModel) instance;
         return new String[]{
             facility.getInfrastructure().getName(),

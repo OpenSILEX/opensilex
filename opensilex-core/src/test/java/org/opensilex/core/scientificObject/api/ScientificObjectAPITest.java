@@ -30,7 +30,6 @@ import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.opensilex.core.experiment.api.ExperimentAPITest.uriPath;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
 /**

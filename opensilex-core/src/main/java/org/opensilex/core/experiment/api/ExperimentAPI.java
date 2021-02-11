@@ -363,7 +363,7 @@ public class ExperimentAPI {
     }
     
     @GET
-    @Path("get-all-facilities")
+    @Path("all_facilities")
     @ApiOperation("Return all facilities for current user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)

@@ -355,13 +355,13 @@ public class ScientificObjectAPI {
     }
 
     @GET
-    @Path("experiments/{uri}")
-    @ApiOperation("Get scientific object detail, globally and by experiments")
+    @Path("{uri}/experiments")
+    @ApiOperation("Get scientific object detail for each experiments, a null value for experiment in response means a properties defined outside of any expriment (shared object).")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given context and object URI", response = ScientificObjectDetailByExperimentsDTO.class)
+        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment and object URI", response = ScientificObjectDetailByExperimentsDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDetailByExperiments(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
@@ -394,7 +394,7 @@ public class ScientificObjectAPI {
     }
 
     @POST
-    @ApiOperation("Create a scientific object for the given context")
+    @ApiOperation("Create a scientific object for the given experiment")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,

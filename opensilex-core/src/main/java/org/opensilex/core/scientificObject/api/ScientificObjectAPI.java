@@ -146,7 +146,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsListByUris(
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") URI contextURI,
@@ -222,12 +222,12 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("geometry")
-    @ApiOperation("Get scientific objet list with geometry of a given context (experiment or organization) URI")
+    @ApiOperation("Get scientific objet list with geometry of a given experiment URI")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given context URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI

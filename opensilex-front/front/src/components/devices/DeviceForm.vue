@@ -11,7 +11,7 @@
 
     <!-- rdfType -->
     <opensilex-TypeForm
-      :type.sync="form.type"
+      :type.sync="form.rdf_type"
       :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
       helpMessage="DeviceForm.type-help"    
       :required="true"
@@ -65,6 +65,22 @@
       helpMessage="DeviceForm.start_up-help"
     ></opensilex-InputForm>
 
+    <!-- removal -->
+    <opensilex-InputForm
+      :value.sync="form.removal"
+      label="DeviceForm.removal"
+      type="date"
+      helpMessage="DeviceForm.removal-help"
+    ></opensilex-InputForm>
+
+    <!-- description -->
+    <opensilex-TextAreaForm
+      :value.sync="form.description"
+      label="DeviceForm.description"
+      type="text"
+      helpMessage="DeviceForm.description-help"
+    ></opensilex-TextAreaForm>
+
   </b-form>
 </template>
 
@@ -102,7 +118,9 @@ export default class DeviceForm extends Vue {
             constructor_model: undefined,
             serial_number: undefined,
             person_in_charge: undefined,
-            start_up: undefined
+            start_up: undefined,
+            removal: undefined,
+            description: undefined
         }
       }
     }
@@ -151,6 +169,10 @@ en:
     person_in_charge-help:
     start_up: Start up
     start_up-help:
+    removal: Removal
+    removal-help:
+    description: Description
+    description-help:
 
 fr:
   DeviceForm:
@@ -170,5 +192,9 @@ fr:
     person_in_charge-help:
     start_up: Date d'obtention
     start_up-help:
+    removal: Date de mise hors service
+    removal-help:
+    description: Description
+    description-help:
 
 </i18n>

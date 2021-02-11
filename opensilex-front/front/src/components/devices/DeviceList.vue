@@ -17,7 +17,7 @@
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-TypeForm
-            :type.sync="filter.rdfTypes"
+            :type.sync="filter.rdf_type"
             :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
             placeholder="DeviceList.filter.rdfTypes-placeholder"
           ></opensilex-TypeForm>
@@ -91,6 +91,15 @@
       @onCreate="refresh()"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>
+
+    <opensilex-ModalForm
+      ref="deviceForm"
+      component="opensilex-DeviceForm"
+      editTitle="udpate"
+      icon="ik#ik-user"
+      modalSize="lg"
+      @onUpdate="refresh()"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -98,7 +107,7 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { DevicesService, DocumentsService, DeviceDTO} from "opensilex-core/index";
+import { DevicesService, DocumentsService, DeviceDTO, DeviceGetDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -110,6 +119,7 @@ export default class DeviceList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
+  @Ref("deviceForm") readonly deviceForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -146,6 +156,30 @@ export default class DeviceList extends Vue {
   updateFilter() {
     this.$opensilex.updateURLParameter("filter", this.filter, "");
     this.refresh();
+  }
+
+  editDevice(uri: string) {
+    console.debug("editDevice" + uri);
+    this.service
+      .getDevice(uri)
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDTO>>) => {
+        let device = http.response.result;
+        let form = {
+          uri: device.uri,
+          name: device.name,
+          rdf_type: device.rdf_type,
+          brand: device.brand,
+          constructor_model: device.constructor_model,
+          serial_number: device.serial_number,
+          person_in_charge: device.person_in_charge,
+          start_up: device.start_up,
+          removal: device.removal,
+          description: device.description,
+          metadata: device.metadata
+        };
+        this.deviceForm.showEditForm(form);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
     fields = [

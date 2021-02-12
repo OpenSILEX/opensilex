@@ -122,9 +122,13 @@ class SPARQLClassQueryBuilder {
         String uriFieldName = analyzer.getURIFieldName();
         WhereHandler rootWhereHandler = new WhereHandler();
 
-        Map<Node, WhereHandler> requiredHandlersByGraph = new HashMap<>();
-        Map<Node, List<WhereHandler>> optionalHandlersByGraph = new HashMap<>();
-        requiredHandlersByGraph.put(graph, rootWhereHandler);
+        Map<String, WhereHandler> requiredHandlersByGraph = new HashMap<>();
+        Map<String, List<WhereHandler>> optionalHandlersByGraph = new HashMap<>();
+        String graphKey = null;
+        if (graph != null) {
+            graphKey = graph.toString();
+        }
+        requiredHandlersByGraph.put(graphKey, rootWhereHandler);
 
         addQueryBuilderModelWhereProperties(
                 builder,
@@ -149,7 +153,7 @@ class SPARQLClassQueryBuilder {
 
         requiredHandlersByGraph.forEach((handlerGraph, handler) -> {
             if (handlerGraph != null) {
-                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(handlerGraph, handler.getElement());
+                ElementNamedGraph elementNamedGraph = new ElementNamedGraph(SPARQLDeserializers.nodeURI(handlerGraph), handler.getElement());
                 builder.getWhereHandler().getClause().addElement(elementNamedGraph);
             } else {
                 builder.getHandlerBlock().addAll(handler);
@@ -162,7 +166,7 @@ class SPARQLClassQueryBuilder {
                 WhereHandler optionalHandler = new WhereHandler();
                 handlerList.forEach(handler -> {
                     WhereHandler graphHandler = new WhereHandler();
-                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(handlerGraph, handler.getElement());
+                    ElementNamedGraph elementNamedGraph = new ElementNamedGraph(SPARQLDeserializers.nodeURI(handlerGraph), handler.getElement());
                     graphHandler.getClause().addElement(elementNamedGraph);
                     optionalHandler.addOptional(graphHandler);
                 });
@@ -314,7 +318,7 @@ class SPARQLClassQueryBuilder {
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
-            Map<Node, WhereHandler> requiredHandlersByGraph, Map<Node, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
+            Map<String, WhereHandler> requiredHandlersByGraph, Map<String, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -344,17 +348,22 @@ class SPARQLClassQueryBuilder {
 
         WhereHandler handler;
 
+        String graphKey = null;
+        if (graph != null) {
+            graphKey = graph.toString();
+        }
+        
         if (isOptional) {
-            if (!optionalHandlersByGraph.containsKey(graph)) {
-                optionalHandlersByGraph.put(graph, new ArrayList<>());
+            if (!optionalHandlersByGraph.containsKey(graphKey)) {
+                optionalHandlersByGraph.put(graphKey, new ArrayList<>());
             }
             handler = new WhereHandler();
-            optionalHandlersByGraph.get(graph).add(handler);
+            optionalHandlersByGraph.get(graphKey).add(handler);
         } else {
-            if (!requiredHandlersByGraph.containsKey(graph)) {
-                requiredHandlersByGraph.put(graph, new WhereHandler());
+            if (!requiredHandlersByGraph.containsKey(graphKey)) {
+                requiredHandlersByGraph.put(graphKey, new WhereHandler());
             }
-            handler = requiredHandlersByGraph.get(graph);
+            handler = requiredHandlersByGraph.get(graphKey);
         }
 
         handler.addWhere(triple);
@@ -384,7 +393,7 @@ class SPARQLClassQueryBuilder {
             AbstractQueryBuilder<?> select, Var propertyFieldVar, String lang,
             Node graph,
             WhereHandler handler,
-            Map<Node, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+            Map<String, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
         String objFieldName = getObjectNameVarName(field.getName());
         WhereHandler objectNameOptionalHandler = new WhereHandler();
@@ -410,7 +419,7 @@ class SPARQLClassQueryBuilder {
         // if the object is stored in the same graph as the current model then try to get object name into this graph
         if (objectPropertyGraph != null && !objectPropertyGraph.equals(graph) && analyzer.useDefaultGraph(field)) {
             // else fetch the object label into his proper graph
-            WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph, objectHandler -> new WhereHandler());
+            WhereHandler objectGraphHandler = requiredHandlersByGraph.computeIfAbsent(objectPropertyGraph.toString(), objectHandler -> new WhereHandler());
             objectGraphHandler.addOptional(objectNameDefaultOptionalHandler);
         }
 

@@ -128,6 +128,16 @@
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
+              <opensilex-AddChildButton
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                  )
+                "
+                @click="soForm.createScientificObject(node.data.uri)"
+                label="ExperimentScientificObjects.add-child"
+                :small="true"
+              ></opensilex-AddChildButton>
               <opensilex-DeleteButton
                 v-if="
                   user.hasCredential(
@@ -330,6 +340,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         this.filters.factorLevels,
         undefined,
+        [],
         page,
         pageSize
       );
@@ -339,17 +350,17 @@ export default class ExperimentScientificObjects extends Vue {
   searchParents(query, page, pageSize) {
     return this.soService
       .searchScientificObjects(
-        this.uri,
-        query,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        [],
-        page,
-        pageSize
+        this.uri, // experiment uri?: string,
+        query, // pattern?: string,
+        undefined, // rdfTypes?: Array<string>,
+        undefined, // parentURI?: string,
+        undefined, // Germplasm
+        undefined, // factors?: Array<string>,
+        undefined, // factorLevels?: Array<string>,
+        undefined, // facility?: string,
+        [], // orderBy?: ,
+        page, // page?: number,
+        pageSize // pageSize?: number
       )
       .then((http) => {
         let nodeList = [];

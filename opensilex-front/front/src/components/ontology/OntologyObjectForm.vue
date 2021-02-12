@@ -115,6 +115,11 @@ export default class OntologyObjectForm extends Vue {
     return this;
   }
 
+  initHandler = () => {};
+  setInitObjHandler(handler) {
+    this.initHandler = handler;
+  }
+
   baseType = null;
 
   typeModel = null;
@@ -260,6 +265,8 @@ export default class OntologyObjectForm extends Vue {
             }
 
             this.form.relations = relations;
+
+            this.initHandler.call(null, this.form);
           }
         });
     } else {

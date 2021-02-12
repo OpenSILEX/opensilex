@@ -1,4 +1,13 @@
 let OESO_URI = "http://www.opensilex.org/vocabulary/oeso";
+let OESO_PREFIX = "vocabulary";
+
+let getShortURI = (uri) => {
+    return uri.replace(OESO_URI + "#", OESO_PREFIX + ":")
+}
+
+let checkURIs = (uri1, uri2) => {
+    return getShortURI(uri1) == getShortURI(uri2);
+}
 
 let ontologies = {
     URI: OESO_URI,
@@ -21,8 +30,10 @@ let ontologies = {
     AREA_TYPE_URI: OESO_URI + "#Area",
     OPERATOR_TYPE_URI: OESO_URI + "#Operator",
     SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
-    DEVICE_TYPE_URI: OESO_URI + '#Device'
-
+    DEVICE_TYPE_URI: OESO_URI + '#Device',
+    IS_PART_OF: OESO_URI + "#isPartOf",
+    getShortURI: getShortURI,
+    checkURIs: checkURIs
 };
 
 export default ontologies;

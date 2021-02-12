@@ -51,11 +51,20 @@ export default class ScientificObjectForm extends Vue {
     this.$emit("refresh");
   }
 
-  createScientificObject() {
+  createScientificObject(parentURI?) {
     this.soForm
       .getFormRef()
       .setContext(this.getContext())
-      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
+      .setInitObjHandler((form) => {
+        if (parentURI) {
+          for (let relation of form.relations) {
+            if (this.$opensilex.Oeso.checkURIs(relation.property, this.$opensilex.Oeso.IS_PART_OF)) {
+              relation.value = parentURI;
+            }
+          }
+        }
+      });
 
     this.soForm.showCreateForm();
   }

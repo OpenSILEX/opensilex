@@ -175,6 +175,14 @@ public class SPARQLDeserializers {
             return null;
         }
     }
+    
+        public static Node nodeURI(String uri) {
+        try {
+            return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 
     public static Node nodeURI(Property property) {
         try {

@@ -94,7 +94,7 @@
                 path:
                   '/experiment/details/' + encodeURIComponent(value.experiment),
               }"
-              :value="value.experimentLabel"
+              :value="value.experiment_name"
               :allowCopy="false"
             ></opensilex-UriLink>
           </h3>

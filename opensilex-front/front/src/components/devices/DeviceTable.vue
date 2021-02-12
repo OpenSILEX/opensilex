@@ -290,7 +290,6 @@ export default class DeviceTable extends Vue {
         } else if (row.getData().status == "NOK") {
           row.getElement().style.backgroundColor = "#ed6661";
         }
-        row.update({"rdf_type":this.$attrs.deviceType})
       }
     });
 
@@ -314,6 +313,11 @@ export default class DeviceTable extends Vue {
     
   }
   
+  enableCheckInsert(){
+    this.disableCheck = false;
+    this.disableInsert = false;
+  }
+
   addInitialXRows(X) {
     for (let i = 1; i < X + 1; i++) {
       this.tableData.push({ rowNumber: i });
@@ -371,7 +375,7 @@ export default class DeviceTable extends Vue {
 
   addRow() {
     let size = this.tabulator.getData().length;
-    this.tabulator.addRow({ rowNumber: size + 1 , rdf_type: this.$attrs.deviceType});
+    this.tabulator.addRow({ rowNumber: size + 1});
     console.log(this.tabulator.getData().length);
   }
 
@@ -412,8 +416,8 @@ export default class DeviceTable extends Vue {
     this.showModal();
     this.tabulator.hideColumn("checkingStatus");
     this.tabulator.showColumn("insertionStatus");   
-    this.disableInsert = true;
-    this.disableCheck = true;
+    this.disableInsert = false;
+    this.disableCheck = false;
   }
 
   insertOrCheckData() {

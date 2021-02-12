@@ -107,7 +107,6 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
-  DeviceDTO,
   DevicesService,
   VariablesService,
   DeviceGetSingleDTO

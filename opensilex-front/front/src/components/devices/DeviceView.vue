@@ -44,7 +44,7 @@ import HttpResponse, {
 
 import { 
   DevicesService, 
-  DeviceDTO
+  DeviceCreationDTO
   } from "opensilex-core/index"
 import VueRouter from "vue-router";
 
@@ -78,7 +78,7 @@ export default class Device extends Vue {
     this.$router.push({ path: '/devices/create' });
   }
   
-  callCreateDeviceService(form: DeviceDTO, done) {
+  callCreateDeviceService(form: DeviceCreationDTO, done) {
     done(
       this.service
         .createDevice(false,form)

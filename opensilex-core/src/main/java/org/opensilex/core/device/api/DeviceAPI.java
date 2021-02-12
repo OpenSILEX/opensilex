@@ -133,7 +133,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of devices corresponding to the given search parameters", response = DeviceDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return list of devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
     })    
     public Response searchDevices(
             @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfTypes") @ValidURI List<URI> rdfTypes,
@@ -169,7 +169,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return device details corresponding to the devcie URI", response = DeviceDTO.class)
+        @ApiResponse(code = 200, message = "Return device details corresponding to the devcie URI", response = DeviceGetSingleDTO.class)
     })
     public Response getDevice(
             @ApiParam(value = "device URI", example = "http://example.com/", required = true)

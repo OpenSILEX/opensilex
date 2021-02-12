@@ -73,7 +73,7 @@
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-    import {DeviceDTO, DevicesService} from "opensilex-core/index";
+    import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
     import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 
@@ -97,7 +97,7 @@
             return this.$store.state.credentials;
         }
 
-        device: DeviceDTO = { 
+        device: DeviceGetDTO = { 
               uri: null,
               rdf_type: null,
               name: null,
@@ -107,7 +107,8 @@
               person_in_charge: null,
               start_up: null,
               removal: null,
-              relations: null
+              relations: null,
+              description: null
             };
             
         created() {
@@ -119,7 +120,7 @@
         loadDevice(uri: string) {
           this.service
             .getDevice(uri)
-            .then((http: HttpResponse<OpenSilexResponse<DeviceDTO>>) => {
+            .then((http: HttpResponse<OpenSilexResponse<DeviceGetDTO>>) => {
               this.device = http.response.result;
             })
             .catch(this.$opensilex.errorHandler);

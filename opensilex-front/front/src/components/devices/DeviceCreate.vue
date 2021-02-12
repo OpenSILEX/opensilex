@@ -26,7 +26,6 @@
 import Vue from "vue";
 import { Component, Ref } from "vue-property-decorator";
 import {
-  DeviceDTO,
   OntologyService,
   ResourceTreeDTO,
 } from "opensilex-core/index";

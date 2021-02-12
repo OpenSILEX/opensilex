@@ -88,7 +88,7 @@
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { DevicesService,DeviceDTO } from "opensilex-core/index"; 
+import {DevicesService} from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component

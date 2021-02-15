@@ -50,6 +50,11 @@
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
                   :uri="targets"    
+                  v-else-if="targets.includes('device')"           
+                  :to="{path: '/device/details/'+ encodeURIComponent(targets)}"
+                ></opensilex-UriLink> 
+                <opensilex-UriLink 
+                  :uri="targets"    
                   v-else-if="targets.includes('prj')"           
                   :to="{path: '/project/details/'+ encodeURIComponent(targets)}"
                 ></opensilex-UriLink> 

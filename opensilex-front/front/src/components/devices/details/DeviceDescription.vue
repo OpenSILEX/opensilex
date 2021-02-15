@@ -38,7 +38,7 @@
               <opensilex-StringView label="DeviceDescription.variables" :value="device.relations">
                 <span :key="relations" v-for="(relations) in device.relations"> 
                   <opensilex-UriLink 
-                  :uri="relations.value"    
+                  :uri="relations.value" 
                   :to="{path: '/variable/details/'+ encodeURIComponent(relations.value)}"
                 ></opensilex-UriLink><br>
                 </span>
@@ -129,7 +129,6 @@ export default class DeviceDescription extends Vue {
   addInfo = [];
 
   @Ref("modalRef") readonly modalRef!: any;
-  @Ref("deviceForm") readonly deviceForm!: any;
   @Ref("tableAtt") readonly tableAtt!: any;
 
   get user() {
@@ -186,6 +185,23 @@ export default class DeviceDescription extends Vue {
     }
   }
 
+  // variables = [];
+  // loadVariables(value : string) {
+  //   let service = this.$opensilex.getService("opensilex.VariablesService");
+  //   return service
+  //     .getVariable(value)
+  //     .then((http) => {
+  //       let variable = http.response.result;
+  //       this.variables.push({
+  //           uri: variable.uri,
+  //           value: variable.name,
+  //               to: {
+  //               path: "/variable/details/" + encodeURIComponent(variable.uri)
+  //             }
+  //         });
+  //     });
+  // }
+
   attributeFields = [
     {
       key: "attribute",
@@ -207,7 +223,9 @@ export default class DeviceDescription extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
+  @Ref("deviceForm") readonly deviceForm!: any;
   update() {
+    this.deviceForm.getFormRef().getAttributes(this.device);
     let device = {
         uri: this.device.uri,
         name: this.device.name,
@@ -219,6 +237,7 @@ export default class DeviceDescription extends Vue {
         start_up: this.device.start_up,
         removal: this.device.removal,
         description: this.device.description,
+        metadata: this.device.metadata
     }
     this.deviceForm.showEditForm(device);
   }

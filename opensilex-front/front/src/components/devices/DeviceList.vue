@@ -130,7 +130,7 @@ export default class DeviceList extends Vue {
   }
 
   filter = {
-    rdfTypes: undefined,
+    rdf_type: undefined,
     namePattern: undefined,
     start_up: undefined,
     brand: undefined,
@@ -139,7 +139,7 @@ export default class DeviceList extends Vue {
 
   resetFilters() {
     this.filter = {
-      rdfTypes: undefined,
+      rdf_type: undefined,
       namePattern: undefined,
       start_up: undefined,
       brand: undefined,
@@ -210,7 +210,7 @@ export default class DeviceList extends Vue {
 
   searchDevices(options) {
     return this.service.searchDevices(
-      this.filter.rdfTypes, // rdfTypes filter
+      this.filter.rdf_type, // rdfTypes filter
       this.filter.namePattern, // namePattern filter
       this.filter.start_up, // year filter
       this.filter.brand, // brandPattern filter

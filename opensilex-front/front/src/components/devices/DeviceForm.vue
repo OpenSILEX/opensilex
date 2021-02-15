@@ -81,6 +81,13 @@
       helpMessage="DeviceForm.description-help"
     ></opensilex-TextAreaForm>
 
+    <!-- metadata -->
+    <opensilex-DeviceAttributesTable
+      ref="deviceAttributesTable"
+      :editMode="editMode"
+      :attributesArray='attributesArray'
+    ></opensilex-DeviceAttributesTable>
+
   </b-form>
 </template>
 
@@ -99,6 +106,8 @@ export default class DeviceForm extends Vue {
   $t: any;
 
   uriGenerated = true;
+
+  @Ref("deviceAttributesTable") readonly table!: any;
 
   get user() {
     return this.$store.state.user;
@@ -120,18 +129,35 @@ export default class DeviceForm extends Vue {
             person_in_charge: undefined,
             start_up: undefined,
             removal: undefined,
-            description: undefined
+            description: undefined,
+            metadata: undefined
         }
       }
     }
   })
   form: any;
 
+  getEmptyForm() {
+    return {
+      uri: undefined,
+      name: undefined,
+      rdf_type: undefined,
+      brand: undefined,
+      constructor_model: undefined,
+      serial_number: undefined,
+      person_in_charge: undefined,
+      start_up: undefined,
+      removal: undefined,
+      description: undefined,
+      metadata: undefined
+    };
+  }
   reset() {
     this.uriGenerated = true;
   }
 
   update(form) {
+    form.metadata = this.table.pushAttributes();
     this.$opensilex
       .getService("opensilex.DevicesService")
       .updateDevice(form)
@@ -143,6 +169,20 @@ export default class DeviceForm extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
+  attributesArray = [];
+
+  getAttributes(form) {
+    this.attributesArray = [];
+    if (form.metadata != null) {   
+      for (const property in form.metadata) {
+        let att = {
+          attribute: property,
+          value: form.metadata[property]
+        }
+        this.attributesArray.push(att);
+      } 
+    }
+  }
 }
 </script>
 

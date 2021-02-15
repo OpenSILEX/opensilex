@@ -118,7 +118,8 @@
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
           :fields="fieldsSelected"
-          :items="selectedFeatures">
+          :items="selectedFeatures"
+      >
         <template v-slot:cell(name)="{data}">
           <opensilex-UriLink
               :noExternalLink="true"
@@ -415,7 +416,7 @@ export default class MapView extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
               const res = http.response.result;
               res.forEach(({name, uri}) => {
-                typeLabel.push({uri: uri, name: name});
+                typeLabel.push({uri: uri, name: name.substr(0, 1).toUpperCase() + name.substr(1)});
               });
             }
         )

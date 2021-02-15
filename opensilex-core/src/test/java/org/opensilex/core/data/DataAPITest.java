@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import jdk.nashorn.internal.runtime.arrays.ArrayLikeIterator;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
@@ -25,6 +26,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
 import org.opensilex.core.variable.api.VariableApiTest;
@@ -51,11 +53,19 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     
     @Before
     public void beforeTest() throws Exception {
+        //create experiment
+        ExperimentAPITest expAPI = new ExperimentAPITest();
+        Response postResultExp = getJsonPostResponse(target(expAPI.createPath), expAPI.getCreationDTO());
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(extractUriFromResponse(postResultExp));
+        
         //create provenance
         ProvenanceAPITest provAPI = new ProvenanceAPITest();
         Response postResultProv = getJsonPostResponse(target(provAPI.createPath), provAPI.getCreationProvDTO());
+        
         provenance = new DataProvenanceModel();
-        provenance.setUri(extractUriFromResponse(postResultProv));        
+        provenance.setUri(extractUriFromResponse(postResultProv));   
+        provenance.setExperiments(experiments);
         
         //create Variable
         VariableApiTest varAPI = new VariableApiTest();
@@ -160,12 +170,18 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         dtoList.add(creationDTO);
         final Response postResult = getJsonPostResponse(target(createPath), dtoList);
         URI uri = extractUriFromResponse(postResult);
+        
+        List<URI> provenances = new ArrayList();
+        provenances.add(creationDTO.getProvenance().getUri());
+        List<URI> variables = new ArrayList();
+        variables.add(creationDTO.getVariable());
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
                 put("start_date", "2020-06-01");
                 put("end_date", "2020-06-30");
-                put("provenance", creationDTO.getProvenance().getUri());
+                put("provenances", provenances);
+                put("variables", variables);
                 put("order_by", "date=desc");
             }
         };

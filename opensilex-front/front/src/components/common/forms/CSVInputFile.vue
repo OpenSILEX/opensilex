@@ -99,7 +99,7 @@ export default class CSVInputFile extends Vue {
           if (this.headersToCheck != null && this.headersToCheck.length > 0) {
             let objectToCheck = result.data[0];
 
-            console.log(
+            console.debug(
               CSVInputFile.equalArrays(
                 Object.keys(objectToCheck),
                 this.headersToCheck
@@ -140,7 +140,7 @@ export default class CSVInputFile extends Vue {
   }
 
   async readUploadedFileAsText(inputFile) {
-    console.log(inputFile)
+    console.debug(inputFile)
     const temporaryFileReader = new FileReader();
 
     return new Promise((resolve, reject) => {

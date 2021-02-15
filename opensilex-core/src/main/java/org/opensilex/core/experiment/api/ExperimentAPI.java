@@ -55,6 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.data.api.DataAPI;
 import static org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_MODIFICATION_ID;
 import static org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY;
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
@@ -87,6 +88,7 @@ import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;
@@ -103,8 +105,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import static org.opensilex.nosql.mongodb.MongoDBService.SIZE_MAX;
-import org.opensilex.security.authentication.ApiCredential;
+ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -462,11 +463,11 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
-            @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -512,38 +513,16 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-
-        // test prov
-        List<URI> provenancesArrayList = new ArrayList<>();
-
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        if (provenanceUri != null) {
-            try {
-                provDAO.get(provenanceUri);
-                provenancesArrayList = new ArrayList<>(Arrays.asList(provenanceUri));
-            } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Provenance URI not found: ", provenanceUri);
-
-            }
-        } else {
-
-            Set<URI> provenancesByExperiment = dao.getProvenancesByExperiment(xpUri);
-            if (provenancesByExperiment.size() > 0) {
-                provenancesArrayList = new ArrayList<>(provenancesByExperiment);
-            }
-
-        }
-
-        if (provenancesArrayList.isEmpty()) {
-            ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<>(new ArrayList<>());
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        }
+        
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(xpUri);
 
         ListWithPagination<DataModel> resultList = dao.search(
                 currentUser,
-                objectUri,
-                variableUri,
-                provenancesArrayList,
+                experiments,
+                objects,
+                variables,
+                provenances,
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -593,8 +572,8 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
-            @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
@@ -644,7 +623,10 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-
+        
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(xpUri);
+        
         // test prov
         List<URI> provenancesArrayList = new ArrayList<>();
 
@@ -678,7 +660,7 @@ public class ExperimentAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(currentUser, objectUri, variableUri, provenancesArrayList, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retreived " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -1072,8 +1054,8 @@ public class ExperimentAPI {
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
             try {
-                dao.createAll(validation.getData());
-                validation.setNbLinesImported(validation.getData().size());
+                dao.createAll(new ArrayList<>(validation.getData().keySet()));
+                validation.setNbLinesImported(validation.getData().keySet().size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
 
@@ -1081,10 +1063,11 @@ public class ExperimentAPI {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
                     int index = bulkErrors.get(i).getIndex();
-                    DataGetDTO fromModel = DataGetDTO.fromModel(validation.getData().get(index));
+                    ArrayList<DataModel> arrayList = new ArrayList<>(validation.getData().keySet());
+                    DataGetDTO fromModel = DataGetDTO.fromModel(arrayList.get(index));
                     int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
                     String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(index, validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                    CSVCell csvCell = new CSVCell(validation.getData().get(arrayList.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
             } catch (MongoCommandException e) {
@@ -1160,7 +1143,7 @@ public class ExperimentAPI {
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file));) {
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file))) {
             // Line 1
             String[] ids = csvReader.readNext();
 
@@ -1213,7 +1196,7 @@ public class ExperimentAPI {
                 boolean validateCSVRow = false;
                 while ((values = csvReader.readNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType);
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, experimentURI);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -1228,14 +1211,14 @@ public class ExperimentAPI {
             }
         }
 
-        if (csvValidation.getData().size() > SIZE_MAX) {
+        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
             csvValidation.setTooLargeDataset(true);
         }
         
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ExperimentalObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ExperimentalObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, URI experiment) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
 
         boolean validRow = true;
         ExperimentalObjectModel object = null;
@@ -1273,11 +1256,14 @@ public class ExperimentAPI {
                     break;
                 }
             } else {
-                // If Not blank
+                // If value is not blank and null
                 if(!StringUtils.isEmpty(values[colIndex])){
                     DataModel dataModel = new DataModel();
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
+                    List<URI> experiments = new ArrayList<>();
+                    experiments.add(experiment);
+                    provenanceModel.setExperiments(experiments);
                     dataModel.setDate(parsedDateTimeMongo.getInstant());
                     dataModel.setOffset(parsedDateTimeMongo.getOffset());
                     dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
@@ -1288,7 +1274,7 @@ public class ExperimentAPI {
                     URI varURI = URI.create(headerByIndex.get(colIndex));
                     dataModel.setVariable(varURI);
                     dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex], mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                    csvValidation.addData(dataModel);
+                    csvValidation.addData(dataModel,rowIndex);
                 } 
             } 
         }
@@ -1383,6 +1369,51 @@ public class ExperimentAPI {
         }
 
         return value;
+    }
+    
+    @GET
+    @Path("{uri}/provenances")
+    @ApiOperation("Get provenances involved in an experiment")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return data list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response searchExperimentProvenances(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @ApiParam(value = "Search by description") @QueryParam("description") String description,
+            @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
+            @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
+            @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
+            @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        // test exp
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        xpDAO.validateExperimentAccess(xpUri, currentUser);
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        Set<URI> provenancesURIs = dataDAO.getProvenancesByExperiment(xpUri);
+
+        ListWithPagination<ProvenanceGetDTO> provenances = new ListWithPagination(new ArrayList<ProvenanceGetDTO>());
+        if (!provenancesURIs.isEmpty()) {
+            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+            ListWithPagination<ProvenanceModel> resultList = dao.search(provenancesURIs, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
+
+            provenances = resultList.convert(
+                    ProvenanceGetDTO.class,
+                    ProvenanceGetDTO::fromModel
+            );
+
+        }
+        
+        return new PaginatedListResponse<>(provenances).getResponse();
     }
 
 }

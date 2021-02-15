@@ -21,7 +21,7 @@ import org.opensilex.core.ontology.dal.CSVValidationModel;
 public class DataCSVValidationModel extends CSVValidationModel{
 
     @JsonIgnore()
-    private List<DataModel> data = new ArrayList<>();
+    private HashMap<DataModel, Integer> data = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
 
@@ -88,17 +88,19 @@ public class DataCSVValidationModel extends CSVValidationModel{
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
-    
-    public List<DataModel> getData() {
+
+    public HashMap<DataModel, Integer> getData() {
         return data;
     }
 
-    public void setData(List<DataModel> data) {
+    public void setData(HashMap<DataModel, Integer> data) {
         this.data = data;
     }
     
-    public void addData(DataModel data){
-        this.data.add(data);
+    
+    
+    public void addData(DataModel data, Integer rowNumber){
+        this.data.put(data, rowNumber);
     }
 
     public void addDuplicatedDataError(CSVCell cell) {

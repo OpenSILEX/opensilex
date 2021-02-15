@@ -26,6 +26,9 @@ public class DataProvenanceModel {
     @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
     URI uri;
     
+    @ApiModelProperty(value = "experiments uris on which the data has been produced")
+    List<URI> experiments;
+    
     @JsonProperty("prov_used")
     @ApiModelProperty(value = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
@@ -41,6 +44,14 @@ public class DataProvenanceModel {
         this.uri = uri;
     }
 
+    public List<URI> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<URI> experiments) {
+        this.experiments = experiments;
+    }
+        
     public List<ProvEntityModel> getProvUsed() {
         return provUsed;
     }

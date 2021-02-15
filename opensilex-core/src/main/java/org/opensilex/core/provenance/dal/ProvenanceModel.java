@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
-import java.net.URI;
 import java.util.List;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -16,23 +15,14 @@ import org.opensilex.nosql.mongodb.MongoModel;
  * @author Alice Boizet
  */
 public class ProvenanceModel extends MongoModel {
-
-    //URI uri;    
+  
     String name;
     String description;
-    List<URI> experiments;
 
     List<ActivityModel> activity;
 
     List<AgentModel> agents;
 
-//    public URI getUri() {
-//        return uri;
-//    }
-//
-//    public void setUri(URI uri) {
-//        this.uri = uri;
-//    }
     public String getName() {
         return name;
     }
@@ -47,14 +37,6 @@ public class ProvenanceModel extends MongoModel {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<URI> getExperiments() {
-        return experiments;
-    }
-
-    public void setExperiments(List<URI> experiments) {
-        this.experiments = experiments;
     }
 
     public List<ActivityModel> getActivity() {

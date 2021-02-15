@@ -8,7 +8,6 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.provenance.dal.ActivityModel;
@@ -42,7 +41,6 @@ public class ProvenanceGetDTO extends ProvenanceCreationDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
-        dto.setExperiments(model.getExperiments());
         
         if (model.getActivity() != null) {
             List<ActivityGetDTO> activities = new ArrayList<>();

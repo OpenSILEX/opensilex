@@ -48,12 +48,6 @@ public class ProvenanceCreationDTO {
     protected String description;
     
     /**
-     * experiments list
-     */
-    @ApiModelProperty(value = "experiments uris list")
-    protected List<URI> experiments;
-
-    /**
      * activity
      */
     @JsonProperty("prov_activity")
@@ -89,14 +83,6 @@ public class ProvenanceCreationDTO {
         this.description = description;
     }
 
-    public List<URI> getExperiments() {
-        return experiments;
-    }
-
-    public void setExperiments(List<URI> experiments) {
-        this.experiments = experiments;
-    }
-
     public List<ActivityCreationDTO> getActivity() {
         return activity;
     }
@@ -118,7 +104,6 @@ public class ProvenanceCreationDTO {
         model.setUri(uri);
         model.setName(name);
         model.setDescription(description);
-        model.setExperiments(experiments);
         
         if (activity != null) {
             List<ActivityModel> activities = new ArrayList<>();

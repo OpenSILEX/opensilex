@@ -44,9 +44,9 @@ public class ProvenanceDAO {
     }
     
     public ListWithPagination<ProvenanceModel> search(
+            Set<URI> uris,
             String name, 
-            String description, 
-            URI experiment, 
+            String description,
             URI activityType,
             URI activityUri,
             URI agentType, 
@@ -57,6 +57,13 @@ public class ProvenanceDAO {
     ) throws NamingException, IOException, Exception {
         
         Document filter = new Document();
+        
+        if (uris != null && !uris.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", uris);
+            filter.put("uri", inFilter);
+        }
+        
         if (name != null) {
             Document regexFilter = new Document();
             regexFilter.put("$regex", ".*" + Pattern.quote(name) + ".*" );
@@ -77,10 +84,6 @@ public class ProvenanceDAO {
             filter.put("description", regexFilter);
         }
         
-        if (experiment != null) {
-            filter.put("experiments", experiment);
-        }
-
         if (activityType != null) {
             filter.put("activity.rdfType", activityType);
         }

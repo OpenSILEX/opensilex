@@ -19,6 +19,7 @@
             @clear="clear()"
           >
             <template v-slot:filters>
+              <b-row>
               <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
                 <!-- Start Date -->
                 <opensilex-DateTimeForm
@@ -46,7 +47,8 @@
                   placeholder="component.experiment.form.selector.variables.placeholder"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
-
+            </b-row>
+            <b-row>
               <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
                 <opensilex-ProvenanceSelector
                   ref="provSelector"
@@ -74,6 +76,7 @@
                   ></opensilex-ProvenanceDetails>
                 </b-collapse>
               </opensilex-FilterField>
+            </b-row>
             </template>
           </opensilex-SearchFilterField>
           <opensilex-TableAsyncView
@@ -213,9 +216,8 @@ export default class ExperimentData extends Vue {
         res.validation.dataErrors.nbLinesImported
       );
       this.resultModal.setProvenance(res.form.provenance);
-
       this.resultModal.show();
-      this.provSelector.loadOptions(".*", 0, 10);
+      this.filter.provenance = res.form.provenance.uri;
       this.refreshVariables();
     });
   }
@@ -248,7 +250,7 @@ export default class ExperimentData extends Vue {
   clear() {
     this.searchVisible = false;
     this.selectedProvenance = null;
-    this.filter.provenance = null;
+    this.resetFilters()
     this.filterProvenanceLabel = null;
   }
 
@@ -325,24 +327,19 @@ export default class ExperimentData extends Vue {
   provenances = {};
 
   searchData(options) {
-    let provUri = undefined;
+    let provUris = undefined;
     if (this.filter.provenance != null) {
-      provUri = this.filter.provenance;
+      provUris = [this.filter.provenance];
     }
 
-    let varUri = undefined;
+    let varUris = undefined;
     if (this.filter.variable != null) {
-      varUri = this.filter.variable;
+      varUris = [this.filter.variable];
     }
-    let start_date = undefined;
-    if (this.filter.start_date != null && this.filter.start_date != "") {
-      start_date = this.filter.start_date;
-    }
-
-    let end_date = undefined;
-    if (this.filter.end_date != null && this.filter.end_date != "") {
-      end_date = this.filter.end_date;
-    }
+    let start_date = this.$opensilex.prepareGetParameter(
+      this.filter.start_date
+    );
+    let end_date = this.$opensilex.prepareGetParameter(this.filter.end_date);
 
     return new Promise((resolve, reject) => {
       this.$opensilex
@@ -353,10 +350,10 @@ export default class ExperimentData extends Vue {
           end_date, // end_date
           undefined, // timezone
           undefined, // objectUri
-          varUri, // variableUri
+          varUris, // variableUri
           undefined, // min_confidence
           undefined, // max_confidence
-          provUri, // provenance_uri
+          provUris, // provenance_uri
           undefined, // metadata
           options.orderBy, // order_by
           options.currentPage,

@@ -347,8 +347,6 @@ export default class ExperimentDetail extends Vue {
       service
         .getAllSpecies()
         .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-          console.log("http.response.result");
-          console.log(http.response.result);
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(

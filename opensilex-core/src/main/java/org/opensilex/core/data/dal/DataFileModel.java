@@ -49,7 +49,7 @@ public class DataFileModel extends DataModel {
     
     @Override
     public String[] getUriSegments(MongoModel instance) {
-ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = new ObjectMapper();
         String provenanceString = "";
         try {
             provenanceString = mapper.writeValueAsString(getProvenance());

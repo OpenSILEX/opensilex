@@ -130,8 +130,9 @@ public class DataDAO {
 
     public ListWithPagination<DataModel> search(
             UserModel user,
-            URI objectUri,
-            URI variableUri,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
             List<URI> provenances,
             Instant startDate,
             Instant endDate,
@@ -142,7 +143,7 @@ public class DataDAO {
             Integer page,
             Integer pageSize) {
 
-        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+        Document filter = searchFilter(experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
         ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
@@ -152,8 +153,9 @@ public class DataDAO {
     
     public List<DataModel> search(
             UserModel user,
-            URI objectUri,
-            URI variableUri,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
             List<URI> provenances,
             Instant startDate,
             Instant endDate,
@@ -162,7 +164,7 @@ public class DataDAO {
             Document metadata,
             List<OrderBy> orderByList) {
 
-        Document filter = searchFilter(objectUri, variableUri, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+        Document filter = searchFilter(experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
         List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
 
@@ -170,20 +172,29 @@ public class DataDAO {
 
     }
     
-    private Document searchFilter(URI objectUri, URI variableUri, List<URI> provenances, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) {
+    private Document searchFilter(List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> provenances, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) {
         Document filter = new Document();
         
-        if (objectUri != null) {
-            filter.put("scientificObjects", objectUri);
+        if (experiments != null && !experiments.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", experiments);
+            filter.put("provenance.experiments", inFilter);
+        }
+        
+        if (objects != null && !objects.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", objects);
+            filter.put("scientificObjects", inFilter);
         }
 
-        if (variableUri != null) {
-            filter.put("variable", variableUri);
+        if (variables != null && !variables.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", variables);
+            filter.put("variable", inFilter);
         }
 
         if (provenances != null && !provenances.isEmpty()) {
-            Document inFilter = new Document();
-            
+            Document inFilter = new Document();            
             inFilter.put("$in", provenances);
             filter.put("provenance.uri", inFilter);
         }
@@ -284,21 +295,18 @@ public class DataDAO {
     }
     
     public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
-        Set<URI> provenances = getProvenancesByExperiment(xpUri);
-        if (provenances.size() > 0) {
-            Document filter = buildProvenancesListFiter(provenances);
-            Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-
-            return sparql.getListByURIs(VariableModel.class, variableURIs, language);
-        } else {
-            return new ArrayList<>();
-        }
+        List<URI> experiments = new ArrayList();
+        experiments.add(xpUri);                
+        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }
 
     public Set<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
-        Document filter = new Document();
-        filter.append("experiments", xpUri);
-        return nosql.distinct("uri", URI.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, filter);
+        List<URI> experiments = new ArrayList();
+        experiments.add(xpUri);
+        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
     }
 
     public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws URISyntaxException, Exception {
@@ -324,8 +332,9 @@ public class DataDAO {
 
     public ListWithPagination<DataFileModel> searchFiles(
             UserModel user,
-            URI objectUri,
-            URI provenanceUri,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> provenances,
             Instant startDate,
             Instant endDate,
             Document metadata,
@@ -333,72 +342,13 @@ public class DataDAO {
             int page,
             int pageSize) {
 
-        Document filter = searchFileFilter(objectUri, provenanceUri, startDate, endDate, metadata);
-
-        if (objectUri != null) {
-            filter.put("scientificObjects", objectUri);
-        }
-
-        if (provenanceUri != null) {
-            filter.put("provenance.uri", provenanceUri);
-        }
-
-        if (startDate != null) {
-            Document greater = new Document();
-            greater.put("$gte", startDate);
-            filter.put("date", greater);
-        }
-
-        if (endDate != null) {
-            Document less = new Document();
-            less.put("$lte", endDate);
-            filter.put("date", less);
-        }
-        
-        if (metadata != null) {
-            for (String key:metadata.keySet()) {
-                filter.put("metadata." + key, metadata.get(key));
-            }
-        }
+        Document filter = searchFilter(experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
 
         ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
                 DataFileModel.class, DATA_COLLECTION_NAME, filter, orderBy, page, pageSize);
 
         return files;
 
-    }
-    
-    private Document searchFileFilter(URI objectUri, URI provenanceUri, Instant startDate, Instant endDate, Document metadata) {
-        Document filter = new Document();
-
-        if (objectUri != null) {
-            filter.put("scientificObjects", objectUri);
-        }
-
-        if (provenanceUri != null) {
-            filter.put("provenance.uri", provenanceUri);
-        }
-
-        if (startDate != null || endDate != null) {
-            Document dateFilter = new Document();
-            if (startDate != null) {            
-                dateFilter.put("$gte", startDate);
-            }
-
-            if (endDate != null) {
-                dateFilter.put("$lte", endDate);
-
-            }
-            filter.put("date", dateFilter);
-        }   
-        
-        if (metadata != null) {
-            for (String key:metadata.keySet()) {
-                filter.put("metadata." + key, metadata.get(key));
-            }
-        }
-        
-        return filter;
     }
 
     public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
@@ -472,10 +422,17 @@ public class DataDAO {
         return checkCoherence;
     }
 
-    public DeleteResult deleteWithFilter(URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
+    public DeleteResult deleteWithFilter(URI experimentUri, URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
         List<URI> provenances = new ArrayList<>();
         provenances.add(provenanceUri);
-        Document filter = searchFilter(objectUri, variableUri, provenances, null, null, null, null, null);
+        List<URI> objects = new ArrayList<>();
+        objects.add(objectUri);
+        List<URI> variables = new ArrayList<>();
+        variables.add(variableUri);
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(experimentUri);
+        
+        Document filter = searchFilter(experiments, objects, variables, provenances, null, null, null, null, null);
         DeleteResult result = nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
         return result;
     }

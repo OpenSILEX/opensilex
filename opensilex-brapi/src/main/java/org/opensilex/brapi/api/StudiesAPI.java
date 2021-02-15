@@ -210,26 +210,22 @@ public class StudiesAPI implements BrapiCall {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
-            //TODO put back this param when possible to filter data on a list of variable
-            //@ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
+            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,            
+            @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws SQLException, URISyntaxException, Exception {
         
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(studyDbId, currentUser);
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(studyDbId);
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        Set<URI> provenancesByExperiment = dataDAO.getProvenancesByExperiment(studyDbId);
-        if (provenancesByExperiment.isEmpty()) {
-            ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<>(new ArrayList<>());
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } else {
-            ListWithPagination<DataModel> datas = dataDAO.search(currentUser, null, null, new ArrayList<>(provenancesByExperiment), null, null, null, null, null, null, page, pageSize);
-            ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
-            return new PaginatedListResponse<>(observations).getResponse();
-        }
+        ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, page, pageSize);
+        ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
+        return new PaginatedListResponse<>(observations).getResponse();
+        
     }
     
     @GET

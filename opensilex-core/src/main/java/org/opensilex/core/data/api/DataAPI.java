@@ -53,6 +53,8 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
+import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -228,11 +230,12 @@ public class DataAPI {
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
-            @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -259,12 +262,7 @@ public class DataAPI {
                 return new DateMappingExceptionResponse().toResponse(e);
             }
         }
-            
-        List<URI> provenances = new ArrayList();
-        if (provenanceUri != null) {
-            provenances.add(provenanceUri);
-        }
-        
+                    
         Document metadataFilter = null;
         if (metadata != null) {
             try {
@@ -277,8 +275,9 @@ public class DataAPI {
         
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
-                objectUri,
-                variableUri,
+                experiments,
+                objects,
+                variables,
                 provenances,
                 startInstant,
                 endInstant,
@@ -393,12 +392,13 @@ public class DataAPI {
         @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteDataOnSearch(
+            @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
             @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql,sparql, fs);
-        DeleteResult result = dao.deleteWithFilter(objectUri, variableUri, provenanceUri);
+        DeleteResult result = dao.deleteWithFilter(experimentUri, objectUri, variableUri, provenanceUri);
         return new SingleObjectResponse(result).getResponse(); 
     }
 
@@ -459,6 +459,8 @@ public class DataAPI {
         Set<URI> notFoundedObjectURIs = new HashSet<>();
         Set<URI> provenanceURIs= new HashSet<>();
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
+        Set<URI> expURIs= new HashSet<>();
+        Set<URI> notFoundedExpURIs = new HashSet<>();
         
         int dataIndex = 0;
         for (DataModel data : dataList) {
@@ -479,26 +481,37 @@ public class DataAPI {
             
             //check objects uri
             if (data.getScientificObjects() != null) {
-                if (!data.getScientificObjects().isEmpty()) {
-                    for (URI object:data.getScientificObjects()) {
-                        if (!objectURIs.contains(object)) {
-                            objectURIs.add(object);
-                            if (!sparql.uriExists(ScientificObjectModel.class, object)) {
-                                notFoundedObjectURIs.add(object);
-                            }
+                for (URI object:data.getScientificObjects()) {
+                    if (!objectURIs.contains(object)) {
+                        objectURIs.add(object);
+                        if (!sparql.uriExists(ScientificObjectModel.class, object)) {
+                            notFoundedObjectURIs.add(object);
                         }
                     }
-                }
+                }                
             }
         
-            //check provenance uri
+            //check provenance urii
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 }
-            }           
+            }  
+            
+            // check experiments uri
+            if (data.getProvenance().getExperiments() != null) {
+                for (URI exp:data.getProvenance().getExperiments()) {
+                    if (!expURIs.contains(exp)) {
+                        expURIs.add(exp);
+                        if (!sparql.uriExists(ExperimentModel.class, exp)) {
+                            notFoundedExpURIs.add(exp);
+                        }    
+                    } 
+                }
+            }
+            
         }      
         
         if (!notFoundedVariableURIs.isEmpty()) {
@@ -509,6 +522,9 @@ public class DataAPI {
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));
+        }
+        if (!notFoundedExpURIs.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong experiments uris", new ArrayList<>(provenanceURIs));
         }
 
     }

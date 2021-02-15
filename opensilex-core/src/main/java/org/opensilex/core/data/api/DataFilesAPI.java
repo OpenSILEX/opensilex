@@ -61,6 +61,8 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -410,8 +412,9 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @ApiParam(value = "Search by object uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by provenance uris list", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -452,9 +455,9 @@ public class DataFilesAPI {
         
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
-                //uri,
-                objectUri,
-                provenanceUri,
+                experiments,
+                objects,
+                provenances,
                 startInstant,
                 endInstant,
                 metadataFilter,
@@ -474,21 +477,21 @@ public class DataFilesAPI {
         Set<URI> notFoundedObjectURIs = new HashSet<>();
         Set<URI> provenanceURIs= new HashSet<>();
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
+        Set<URI> expURIs= new HashSet<>();
+        Set<URI> notFoundedExpURIs = new HashSet<>();
         
         for (DataFileCreationDTO dto : dtoList) {          
             
             //check objects uri
             if (dto.getScientificObjects() != null) {
-                if (!dto.getScientificObjects().isEmpty()) {
-                    for (URI object:dto.getScientificObjects()) {
-                        if (!objectURIs.contains(object)) {
-                            objectURIs.add(object);
-                            if (!sparql.uriExists(ScientificObjectModel.class, object)) {
-                                notFoundedObjectURIs.add(object);
-                            }
+                for (URI object:dto.getScientificObjects()) {
+                    if (!objectURIs.contains(object)) {
+                        objectURIs.add(object);
+                        if (!sparql.uriExists(ScientificObjectModel.class, object)) {
+                            notFoundedObjectURIs.add(object);
                         }
                     }
-                }
+                }                
             }
         
             //check provenance uri
@@ -498,7 +501,19 @@ public class DataFilesAPI {
                 if (!provDAO.provenanceExists(dto.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(dto.getProvenance().getUri());
                 }
-            }           
+            }        
+            
+            // check experiments uri
+            if (dto.getProvenance().getExperiments() != null) {
+                for (URI exp:dto.getProvenance().getExperiments()) {
+                    if (!expURIs.contains(exp)) {
+                        expURIs.add(exp);
+                        if (!sparql.uriExists(ExperimentModel.class, exp)) {
+                            notFoundedObjectURIs.add(exp);
+                        }    
+                    } 
+                }
+            }
         }      
         
         if (!notFoundedObjectURIs.isEmpty()) {
@@ -507,6 +522,8 @@ public class DataFilesAPI {
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));
         }
-
+        if (!notFoundedExpURIs.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong experiments uris", new ArrayList<>(provenanceURIs));
+        }
     }
 }

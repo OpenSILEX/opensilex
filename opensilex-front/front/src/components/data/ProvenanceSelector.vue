@@ -87,18 +87,30 @@ export default class ProvenanceSelector extends Vue {
     console.debug("provenancesURI loaded", provenancesURI);
 
     if (provenancesURI == undefined || provenancesURI === ".*") {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(undefined, undefined, this.experiment)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
-            return [http.response.result];
-          }
-        );
+      if (this.experiment == null) {
+        return this.$opensilex
+          .getService("opensilex.ExperimentsService")
+          .searchProvenance()
+          .then(
+            (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
+              return [http.response.result];
+            }
+          );
+      } else {
+        return this.$opensilex
+          .getService("opensilex.DataService")
+          .searchExperimentProvenances(this.experiment)
+          .then(
+            (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
+              return [http.response.result];
+            }
+          );
+      }
+        
     } else {
       return this.$opensilex
         .getService("opensilex.DataService")
-        .getProvenance(provenancesURI, this.experiment)
+        .getProvenance(provenancesURI)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
             return [http.response.result];
@@ -109,18 +121,22 @@ export default class ProvenanceSelector extends Vue {
 
   searchProvenances(label, page, pageSize) {
     this.filterLabel = label;
-    if (label == undefined || label === ".*") {
+
+    if (this.filterLabel === ".*") {
+      this.filterLabel = undefined;
+    }
+    if (this.experiment == null) {
       return this.$opensilex
         .getService("opensilex.DataService")
-        .searchProvenance(undefined, undefined, this.experiment)
+        .searchProvenance(this.filterLabel)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
             http
         );
     } else {
       return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(label, undefined, this.experiment)
+        .getService("opensilex.ExperimentsService")
+        .searchExperimentProvenances(this.experiment, this.filterLabel)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
             http
@@ -132,37 +148,50 @@ export default class ProvenanceSelector extends Vue {
     this.filterLabel = query;
 
     if (this.filterLabel === ".*") {
+      this.filterLabel = undefined;
+    }
+
+    if (this.experiment == null) {
       return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(undefined, undefined, this.experiment)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
+      .getService("opensilex.DataService")
+      .searchProvenance(this.filterLabel)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
+          http.response.result
+      )
+      .then((result: any[]) => {
+        let nodeList = [];
+
+        for (let prov of result) {
+          nodeList.push(this.provenancesToSelectNode(prov));
+        }
+        return nodeList;
+      });
     } else {
       return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(this.filterLabel, undefined, this.experiment)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
+      .getService("opensilex.ExperimentsService")
+      .searchExperimentProvenances(this.experiment, this.filterLabel)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
+          http.response.result
+      )
+      .then((result: any[]) => {
+        let nodeList = [];
 
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
+        for (let prov of result) {
+          nodeList.push(this.provenancesToSelectNode(prov));
+        }
+        return nodeList;
+      });
     }
+  }
+
+  getAllProvenances(label) {
+
+  }
+
+  getProvenancesInExperiment(label, experimentURI) {
+
   }
 
   provenancesToSelectNode(dto: ProvenanceGetDTO) {

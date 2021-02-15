@@ -81,7 +81,7 @@ export default class ExperimentSearch extends Vue {
         });
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
       });
   }
 }

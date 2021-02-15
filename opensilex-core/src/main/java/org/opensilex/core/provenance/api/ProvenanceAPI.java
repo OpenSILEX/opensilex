@@ -165,9 +165,8 @@ public class ProvenanceAPI {
         @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response searchProvenance(
-            @ApiParam(value = "Search by name") @QueryParam("name") String name,
+            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
             @ApiParam(value = "Search by description") @QueryParam("description") String description,
-            @ApiParam(value = "Search by experiment URI") @QueryParam("experiment") URI experiment,
             @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,
             @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
             @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
@@ -178,7 +177,7 @@ public class ProvenanceAPI {
     ) throws Exception {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
-        ListWithPagination<ProvenanceModel> resultList = dao.search(name, description, experiment, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
+        ListWithPagination<ProvenanceModel> resultList = dao.search(null, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
         
         // Convert paginated list to DTO
         ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
@@ -211,6 +210,7 @@ public class ProvenanceAPI {
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         ListWithPagination<DataModel> resultList = dataDAO.search(
                 currentUser,
+                null,
                 null,
                 null,
                 provenances,
@@ -275,7 +275,7 @@ public class ProvenanceAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
-    @Path("by-uris")
+    @Path("by_uris")
     @ApiOperation("Get a list of provenances by their URIs")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)

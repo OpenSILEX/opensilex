@@ -24,7 +24,6 @@
         label="DatasetForm.provenance.name-search"
         @select="loadProvenanceAndCheckUploadedData"
         @clear="resetProvenanceForm"
-        :experiment="this.form.experiment"
         :multiple="false"
         :actionHandler="showCreateForm"
         :viewHandler="showProvenanceDetails"
@@ -112,19 +111,17 @@
 
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import Oeso from "../../../ontologies/Oeso";
 import moment from "moment";
 
 import {
-  DataCreationDTO,
   AgentModel,
   ProvenanceGetDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { ExperimentsService, ExperimentGetDTO } from "opensilex-core/index";
+import { ExperimentGetDTO } from "opensilex-core/index";
 
 @Component
 export default class DatasetForm extends Vue {

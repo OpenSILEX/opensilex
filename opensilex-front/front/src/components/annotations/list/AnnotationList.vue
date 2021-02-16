@@ -20,6 +20,7 @@
                         ></opensilex-CreateButton>
                     </div>
                     <opensilex-PageContent>
+
                         <template v-slot>
 
                             <opensilex-TableAsyncView
@@ -29,22 +30,36 @@
                                     :isSelectable="isSelectable"
                             >
 
-                                <template v-slot:cell(author)="{data}">
-                                    <opensilex-StringView v-if="data.item.author"
-                                                          :value="getUserNames(data.item.author)"></opensilex-StringView>
+                                <template v-slot:cell(created)="{data}">
+                                    <opensilex-TextView
+                                            :value="new Date(data.item.created).toLocaleString()">
+                                    </opensilex-TextView>
                                 </template>
 
-                                <template v-slot:cell(created)="{data}">
-                                    <opensilex-StringView
-                                            :value="new Date(data.item.created).toLocaleString()"></opensilex-StringView>
+                                <template v-slot:cell(author)="{data}">
+                                    <opensilex-TextView v-if="data.item.author"
+                                                          :value="getUserNames(data.item.author)">
+                                    </opensilex-TextView>
+                                </template>
+
+                                <template v-slot:cell(description)="{data}">
+                                    <opensilex-TextView v-if="data.item.description" :value="data.item.description">
+                                    </opensilex-TextView>
                                 </template>
 
                                 <template v-slot:cell(motivation)="{data}">
-                                    {{ data.item.motivation.name}}
+                                    <opensilex-TextView v-if="data.item.motivation" :value="data.item.motivation.name">
+                                    </opensilex-TextView>
                                 </template>
 
                                 <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
-                                    {{ data.item.targets[0]}}
+                                    <opensilex-TextView :value="data.item.targets[0]">
+                                    </opensilex-TextView>
+                                </template>
+
+                                <template v-slot:cell(uri)="{data}">
+                                    <opensilex-TextView v-if="data.item.uri" :value="data.item.uri">
+                                    </opensilex-TextView>
                                 </template>
 
                                 <template v-slot:cell(actions)="{data}">
@@ -175,8 +190,8 @@
                     this.filter.bodyValue,
                     this.target,
                     this.filter.motivation,
-                    undefined,
-                    ["created=desc"],
+                    this.filter.author,
+                    options.orderBy,
                     options.currentPage,
                     options.pageSize
                 ).then((http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
@@ -185,7 +200,7 @@
                     if(results.length == 0){
                         resolve(http);
                     }else{
-                        let usersPromise = this.buildUsersIndex(http.response.result,reject);
+                        let usersPromise = this.buildUsersIndexPromise(http.response.result,reject);
                         Promise.resolve(usersPromise).then(() => {
                             resolve(http);
                         })
@@ -196,7 +211,7 @@
             });
         }
 
-        buildUsersIndex(annotations : Array<AnnotationGetDTO>, reject): Promise<void | HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>> {
+        buildUsersIndexPromise(annotations : Array<AnnotationGetDTO>, reject): Promise<void | HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>> {
 
             this.usersByUri = new Map();
 
@@ -204,7 +219,6 @@
             annotations.forEach(annotation => {
                 uniqueUsers.add(annotation.author);
             });
-            console.log(uniqueUsers);
 
             return this.$securityService.getUsersByURI(Array.from(uniqueUsers)).then(http => {
                 http.response.result.forEach(userDto => {
@@ -226,7 +240,8 @@
             return {
                 bodyValue: undefined,
                 motivation: undefined,
-                created: undefined
+                created: undefined,
+                author: undefined
             };
         }
 

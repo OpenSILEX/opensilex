@@ -99,19 +99,19 @@ public class DeviceDAO {
         device.setUri(deviceURI);
         
         if(device.getAttributes() != null){
-            nosql.startTransaction();
+            MongoCollection collection = getAttributesCollection();
+           // nosql.startTransaction();
             sparql.startTransaction();
             try {
                 sparql.create(device);
                 DeviceAttributeModel model = new DeviceAttributeModel();
                 model.setUri(device.getUri());
                 model.setAttribute(device.getAttributes());
-                MongoCollection collection = getAttributesCollection();
-                collection.insertOne(nosql.getSession(), model);
-                nosql.commitTransaction();
+                nosql.create(model, DeviceAttributeModel.class, ATTRIBUTES_COLLECTION_NAME,"");//collection.insertOne(nosql.getSession(), model);
+              //  nosql.commitTransaction();
                 sparql.commitTransaction();
             } catch (Exception ex) {
-                nosql.rollbackTransaction();
+                //nosql.rollbackTransaction();
                 sparql.rollbackTransaction(ex);
             } 
         }

@@ -201,14 +201,14 @@ public class ExperimentDAO {
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
         if (species != null && !species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.SPECIES_FIELD, species);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.SPECIES_FIELD, species));
         }
     }
     
     private void appendFactorsFilter(SelectBuilder select, List<URI> factors) throws Exception {
         if (factors != null && !factors.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.FACTORS_FIELD, factors);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACTORS_FIELD, factors));
         }
     }
 
@@ -265,7 +265,7 @@ public class ExperimentDAO {
 
         if (projects != null && !projects.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasProject, ExperimentModel.PROJECT_URI_FIELD);
-            SPARQLQueryHelper.addWhereValues(select, ExperimentModel.PROJECT_URI_FIELD, projects);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.PROJECT_URI_FIELD, projects));
         }
     }
 

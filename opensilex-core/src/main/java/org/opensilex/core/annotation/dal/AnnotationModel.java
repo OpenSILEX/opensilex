@@ -25,7 +25,7 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = OA.class,
         resource = "Annotation",
-        graph = "annotations"
+        graph = "set/annotations"
 )
 public class AnnotationModel extends SPARQLResourceModel implements ClassURIGenerator<AnnotationModel> {
 

@@ -88,11 +88,13 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFPropertyDTO } from "opensilex-core/index";
+import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFClassDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
 import Tabulator from 'tabulator-tables';
+import moment from 'moment';
+window.moment = moment;
 
 @Component
 export default class DeviceTable extends Vue {
@@ -204,7 +206,21 @@ export default class DeviceTable extends Vue {
         }
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  isSubClassOf(parent){
+    let ontoService: OntologyService = this.$opensilex.getService(
+      "opensilex.OntologyService"
+    );
+
+    ontoService
+      .getClass(this.$attrs.deviceType,parent)
+      .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
+        console.log(http.response.result);
+        this.measure = true;
+      });
   }*/
+  
 
   buildFinalTypeList(){
     this.deviceTypes = [];
@@ -229,15 +245,32 @@ export default class DeviceTable extends Vue {
 
   updateColumns() {
     console.log(this.$attrs.deviceType);
+
+    this.measure = false;
+    let measureType = ['SensingDevice','Actuator','SoftSensor'];
+    let idx = 0;
+    let ontoService: OntologyService = this.$opensilex.getService(
+        "opensilex.OntologyService"
+      );
+    while (!this.measure && idx < measureType.length){
+      this.measure = this.$attrs.deviceType.endsWith(measureType[idx]);
+      if(!this.measure){
+        ontoService
+        .getClass(this.$attrs.deviceType,'vocabulary:'+measureType[idx])
+        .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
+          console.log(http.response.result);
+          this.measure = true;
+        });
+      }
+      idx++;
+    }
+
     this.suppColumnsNames = [];
     this.colName = null;
     this.displayRemovalCol = true;
     this.displayPersonCol = true;
     this.nbVariableCol = 0;
-    this.measure = (  this.$attrs.deviceType.endsWith('SensingDevice') ||
-                      this.$attrs.deviceType.endsWith('Actuator') ||
-                      this.$attrs.deviceType.endsWith('SoftSensor')
-                    );
+
     
     this.buildFinalTypeList();
     //this.getTypeProperty();
@@ -483,7 +516,8 @@ export default class DeviceTable extends Vue {
         dataToInsert[idx].start_up != null &&
         dataToInsert[idx].start_up != ""
       ) {
-        form.start_up = dataToInsert[idx].start_up;
+        let startDate = moment(dataToInsert[idx].start_up, ["YYYY-MM-DD","DD-MM-YYYY","DD/MM/YYYY"]);
+        form.start_up = startDate.format("YYYY-MM-DD");
       }
 
       if (
@@ -491,7 +525,8 @@ export default class DeviceTable extends Vue {
         dataToInsert[idx].removal != null &&
         dataToInsert[idx].removal != ""
       ) {
-        form.removal = dataToInsert[idx].removal;
+        let endDate = moment(dataToInsert[idx].removal, ["YYYY-MM-DD","DD-MM-YYYY","DD/MM/YYYY"]);
+        form.removal = endDate.format("YYYY-MM-DD");
       }
 
       if (
@@ -512,6 +547,8 @@ export default class DeviceTable extends Vue {
 
         if (Object.keys(attributes).length !== 0) {
           form.metadata = attributes;
+        }else{
+          form.metadata = null;
         }
       }
 

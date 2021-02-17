@@ -474,11 +474,20 @@ public class GermplasmDAO {
         }
     }
 
-    public boolean hasRelation(URI uri, Property ontologyRelation) throws SPARQLException {
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-        return sparql.executeAskQuery(new AskBuilder()
-                .addWhere(uriVar, ontologyRelation, SPARQLDeserializers.nodeURI(uri))
+    public boolean isLinkedToSth(GermplasmModel germplasm) throws SPARQLException {
+        Var subject = makeVar("s");
+        return sparql.executeAskQuery(
+                new AskBuilder()
+                        .addWhere(subject, Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getUri()))
+                        .addUnion(new WhereBuilder()
+                                .addWhere(subject, Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm.getUri())))
+                        .addUnion(new WhereBuilder()
+                                .addWhere(subject, Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getUri())))
+                        .addUnion(new WhereBuilder()
+                                .addWhere(subject, Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm.getUri()))
+                )
         );
+        
     }
 
     public ListWithPagination<ExperimentModel> getExpFromGermplasm(

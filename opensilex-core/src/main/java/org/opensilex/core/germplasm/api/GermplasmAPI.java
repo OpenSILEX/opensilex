@@ -70,6 +70,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -639,29 +640,17 @@ public class GermplasmAPI {
         if (germplasmToDelete == null) {
             throw new SPARQLInvalidURIException(uri);
         }
-
-        boolean linkedGermplasm;
-
-        if (SPARQLDeserializers.compareURIs(germplasmToDelete.getType().toString(), Oeso.Species.getURI())) {
-            linkedGermplasm = dao.hasRelation(uri, Oeso.fromSpecies);
-        } else if (SPARQLDeserializers.compareURIs(germplasmToDelete.getType().toString(), Oeso.Variety.getURI())) {
-            linkedGermplasm = dao.hasRelation(uri, Oeso.fromVariety);
-        } else if (SPARQLDeserializers.compareURIs(germplasmToDelete.getType().toString(), Oeso.Accession.getURI())) {
-            linkedGermplasm = dao.hasRelation(uri, Oeso.fromAccession);
-        } else {
-            linkedGermplasm = false;
-        }
-
-        if (linkedGermplasm) {
+        
+        if (dao.isLinkedToSth(germplasmToDelete)) {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
-                    "The germplasm is linked to another germplasm",
-                    "You can't delete a germplasm linked to another one"
+                    "The germplasm is linked to another germplasm or a scientific object or an experiment",
+                    "You can't delete a germplasm linked to another object"
             ).getResponse();
-        } else {
-            dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        }
+        };
+        
+        dao.delete(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
     }
 

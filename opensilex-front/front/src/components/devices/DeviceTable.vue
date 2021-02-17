@@ -105,11 +105,16 @@ export default class DeviceTable extends Vue {
   $i18n: any;
   service: DevicesService;
   onlyChecking: boolean;
+
+  //add Metadata
   colName: string;
   suppColumnsNames: Array<string>;
 
+  // Optionnal column display
   displayRemovalCol: boolean = false;
   displayPersonCol: boolean = false;
+
+  // Variable
   nbVariableCol: number = 0;
   measure: boolean = false;
   
@@ -206,20 +211,25 @@ export default class DeviceTable extends Vue {
         }
       })
       .catch(this.$opensilex.errorHandler);
-  }
+  }*/
 
   isSubClassOf(parent){
     let ontoService: OntologyService = this.$opensilex.getService(
       "opensilex.OntologyService"
     );
 
-    ontoService
+    return new Promise((resolve,reject) => {ontoService
       .getClass(this.$attrs.deviceType,parent)
       .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
         console.log(http.response.result);
         this.measure = true;
-      });
-  }*/
+        resolve(this.measure);
+      })
+      .catch((error) => {
+        this.measure = false;
+        resolve(this.measure);
+      })});
+  }
   
 
   buildFinalTypeList(){
@@ -243,7 +253,7 @@ export default class DeviceTable extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  updateColumns() {
+  async updateColumns() {
     console.log(this.$attrs.deviceType);
 
     this.measure = false;
@@ -255,13 +265,9 @@ export default class DeviceTable extends Vue {
     while (!this.measure && idx < measureType.length){
       this.measure = this.$attrs.deviceType.endsWith(measureType[idx]);
       if(!this.measure){
-        ontoService
-        .getClass(this.$attrs.deviceType,'vocabulary:'+measureType[idx])
-        .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
-          console.log(http.response.result);
-          this.measure = true;
-        });
+        await this.isSubClassOf('vocabulary:'+measureType[idx]);
       }
+      
       idx++;
     }
 
@@ -473,7 +479,7 @@ export default class DeviceTable extends Vue {
         removal: null,
         description:null,
         relations: [],
-        metadata: {},
+        metadata: {}
       };
 
       if (dataToInsert[idx].rdf_type != null && dataToInsert[idx].rdf_type != ""){
@@ -547,8 +553,6 @@ export default class DeviceTable extends Vue {
 
         if (Object.keys(attributes).length !== 0) {
           form.metadata = attributes;
-        }else{
-          form.metadata = null;
         }
       }
 

@@ -98,7 +98,7 @@ public class DeviceDAO {
         
         device.setUri(deviceURI);
         
-        if(device.getAttributes() != null){
+        if(device.getAttributes() != null && !device.getAttributes().isEmpty()){
             MongoCollection collection = getAttributesCollection();
            // nosql.startTransaction();
             sparql.startTransaction();

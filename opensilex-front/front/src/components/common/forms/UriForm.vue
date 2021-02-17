@@ -2,10 +2,20 @@
   <b-form-group :required="!uriGenerated">
     <ValidationProvider :vid="id">
       <b-form-checkbox v-if="!editMode" :id="id" v-model="uriGenerated" :name="id">
-        <opensilex-FormInputLabelHelper :label="label" :labelFor="'field' + id"></opensilex-FormInputLabelHelper>
+        <opensilex-FormInputLabelHelper
+                :label="label"
+                :helpMessage="helpMessage"
+                :labelFor="'field' + id">
+        </opensilex-FormInputLabelHelper>
         <!-- helpMessage="component.common.uri.help-message" -->
       </b-form-checkbox>
-      <opensilex-FormInputLabelHelper v-else :label="label" :labelFor="'field' + id"></opensilex-FormInputLabelHelper>
+      <opensilex-FormInputLabelHelper
+              v-else
+              :label="label"
+              :helpMessage="helpMessage"
+              :labelFor="'field' + id">
+
+      </opensilex-FormInputLabelHelper>
     </ValidationProvider>
     <ValidationProvider
       :name="$t(label)"
@@ -49,6 +59,9 @@ export default class UriForm extends Vue {
 
   @Prop()
   label;
+
+  @Prop()
+  helpMessage: string;
 
   @PropSync("generated")
   uriGenerated;

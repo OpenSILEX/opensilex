@@ -132,6 +132,8 @@
 <i18n>
 en:
     UnitForm:
+        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new unit with an auto-generated URI"
+        ontologies-help: "Click on one of these reference ontologies. If an unit matches with the desired unit, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
         name: The unit
         add: Add an unit
         edit: Edit an unit
@@ -142,6 +144,8 @@ en:
         alternative-symbol-placeholder: kg/ha
 fr:
     UnitForm:
+        uri-help: "Décocher si vous souhaitez ajouter une unité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une unité avec une URI auto-generée"
+        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une unité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'unité dans le champ 'Nom'."
         name: L'unité
         add: Ajouter une unité
         edit: Éditer une unité

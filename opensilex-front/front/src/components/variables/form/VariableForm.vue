@@ -69,20 +69,20 @@
             <div class="row">
                 <div class="col-lg-6">
                     <opensilex-Button
-                        :label="$t('VariableForm.trait-button')"
-                        :title="$t('VariableForm.trait-button-placeholder')"
+                        label="VariableForm.trait-button"
+                        helpMessage="VariableForm.trait-button-help"
                         @click="showTraitForm()"
                         :small="false"
                         icon="fa#globe-americas"
-                        variant="outline-primary"
+                        variant="primary"
                     ></opensilex-Button>
                 </div>
 
                 <opensilex-WizardForm
                     ref="traitForm"
                     :steps="traitSteps"
-                    createTitle="Declare variable trait"
-                    editTitle="Edit variable trait"
+                    createTitle="VariableForm.trait-form-create-title"
+                    editTitle="VariableForm.trait-form-edit-title"
                     icon="fa#vials"
                     modalSize="full"
                     :static="false"
@@ -334,7 +334,7 @@ export default class VariableForm extends Vue {
             nameParts.push(buildLabel);
         }
         if(nameParts.length){
-            form.name = nameParts.join("_");
+            form.alternative_name = nameParts.join("_");
         }
 
         buildLabel = this.getLabel(form.method, this.loadedMethods);
@@ -347,7 +347,7 @@ export default class VariableForm extends Vue {
         }
 
         if(nameParts.length){
-            form.alternative_name = nameParts.join("_");
+            form.name = nameParts.join("_");
         }
 
     }
@@ -700,10 +700,61 @@ export default class VariableForm extends Vue {
 <i18n>
 en:
     VariableForm:
+        variable: The variable
+        add: Add variable
+        edit: Edit variable
+        altName: Alternative name
+        entity-help: "Involved object or event. e.g : Leaf, plant, rain fall"
+        entity-placeholder: Search and select an entity
+        characteristic-help: "Define what was measured/observed. e.g: temperature, infection level, weight, area"
+        characteristic-placeholder: Search and select a characteristic
+        method-placeholder: Search and select a method
+        method-help : How it was measured
+        unit-placeholder: Search and select an unit
+        time-interval: Time interval
+        time-interval-placeholder: Select an interval
+        time-interval-help: Define the time between two data recording
+        sampling-interval: Sample interval
+        sampling-interval-placeholder: Select an interval
+        sampling-interval-help: Granularity of sampling
+        synonym: Synonym
+        trait-name: Trait name
+        trait-name-help: Variable trait name (Describe the trait name if a trait uri has been specified)
+        trait-name-placeholder:  Number of grains per square meter
+        trait-uri: trait uri
+        trait-uri-help: Variable trait unique identifier (Can be used to link to an existing trait for interoperability)
+        trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
+        class-placeholder: Select a type
+        no-entity: Unknown entity. Add one with the + button.
+        no-characteristic: Unknown characteristic. Add one with the + button.
+        no-method: Unknown method. Add one with the + button.
+        no-unit: Unknown unit. Add one with the + button.
+        trait-form-create-title: Add trait
+        trait-form-edit-title: Edit trait
+        trait-button: Trait already existing in an ontology
+        trait-button-help: Add a trait (entity and characteristic) already existing in an ontology
+        datatype-help: Format of data recorded for this variable
+        datatype-placeholder: Select a datatype
+        dimension-values:
+            unique: Unique measurement
+            millisecond : Millisecond
+            second: Second
+            minute: Minutes
+            hour: Hour
+            day: Day
+            week: Week
+            month: Month
+            mm: Millimeter
+            cm: Centimeter
+            m: Meter
+            km: Kilometer
+            field: Field
+            region: Region
+        already-exist: the variable already exist
         tutorial:
             global: "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'."
-            entity: "Select the entity that is the object of the observation/mesurement. Here 'Grain'."
-            entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other orthograph - seed, crop, etc."
+            entity: "Select the entity that is the object of the observation/measurement. Here 'Grain'."
+            entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other spelling - seed, crop, etc."
             characteristic: "Select the measured characteristic. Here 'Yield' "
             characteristic-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
             method: "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester."
@@ -730,6 +781,57 @@ en:
             description: "Grain yield obtained after harvesting an experimental microplot"
 fr:
     VariableForm:
+        variable: La variable
+        add: Ajouter une variable
+        edit: Éditer une variable
+        altName: Nom alternatif
+        entity-help: "Objet ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, plante, pluie"
+        entity-placeholder: Rechercher et sélectionner une entité
+        characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
+        characteristic-placeholder: Rechercher et sélectionner une caractéristique
+        method-help: Définit comment la mesure/l'observation a été effectuée.
+        method-placeholder: Rechercher et sélectionner une méthode
+        unit-placeholder: Rechercher et sélectionner une unité
+        time-interval: Intervalle de temps
+        time-interval-placeholder: Selectionnez un intervalle
+        time-interval-help: Durée entre deux enregistrement de données
+        sampling-interval: Échantillonnage
+        sampling-interval-placeholder: Selectionnez un intervalle
+        sampling-interval-help: Granularité de l'échantillonage
+        synonym : Synonyme
+        trait-name: Nom du trait
+        trait-name-help: Nom du trait (si une URI décrivant un trait a été saisie)
+        trait-name-placeholder:  Nombre de grains par mètre carré
+        trait-uri: URI du trait
+        trait-uri-help: Identifiant unique d'un trait (Peut être utilisé pour lier cette variable avec l'URI d'un trait existant)
+        trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
+        class-placeholder: Sélectionnez un type
+        no-entity: Entité inconnue. L'ajouter avec le bouton +.
+        no-characteristic: Caractéristique inconnue. L'ajouter avec le bouton +.
+        no-method: Méthode inconnue. L'ajouter avec le bouton +.
+        no-unit: Unité inconnue. L'ajouter avec le bouton +.
+        trait-form-create-title: Ajouter un trait
+        trait-form-edit-title: Éditer un trait
+        trait-button: Trait existant déjà dans une ontologie
+        trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
+        datatype-help: Format des données enregistrées pour cette variable
+        datatype-placeholder: Selectionnez un type de donnée
+        dimension-values:
+            unique: Enregistrement unique
+            milliseconde : Milliseconde
+            second: Seconde
+            minute: Minute
+            hour: Heure
+            day: Jour
+            week: Semaine
+            month: Mois
+            mm: Millimètre
+            cm: Centimètre
+            m: Mètre
+            km: Kilomètre
+            field: Champ
+            region: Région
+        already-exist: la variable existe déjà
         tutorial:
             global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
             entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."

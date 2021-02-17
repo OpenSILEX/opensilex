@@ -493,7 +493,7 @@
             "no-relation": "Please choose a relation type",
             "no-current-relation": "No relation selected",
             "current-relation": "Current selected relation",
-            "ontologies-references-label": "References",
+            "ontologies-references-label": "References ontologies",
             "link-external": "Interoperability References",
             "link-external-button": "Add references (optional)",
             "no-external-links-provided": "No references available",

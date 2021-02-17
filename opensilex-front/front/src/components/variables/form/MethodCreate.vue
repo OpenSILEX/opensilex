@@ -135,12 +135,16 @@
 <i18n>
 en:
     MethodForm:
+        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new method with an auto-generated URI"
+        ontologies-help: "Click on one of these reference ontologies. If a method matches with the desired method, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
         name: The method
         add: Add a method
         edit: Edit a method
         name-placeholder: Image analysis
 fr:
     MethodForm:
+        uri-help: "Décocher si vous souhaitez ajouter une méthode à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une méthode avec une URI auto-generée"
+        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une méthode correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de la méthode dans le champ 'Nom'."
         name: La méthode
         add: Ajouter une méthode
         edit: Éditer une méthode

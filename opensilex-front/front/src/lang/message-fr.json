@@ -428,7 +428,7 @@
             "no-relation": "Sélectionner une relation",
             "no-current-relation": "Aucune relation sélectionnée",
             "current-relation": "Relation actuellement sélectionnée",
-            "ontologies-references-label": "Réferences",
+            "ontologies-references-label": "Ontologies de réference",
             "link-external": "Références pour l'interopérabilité",
             "link-external-button": "Ajouter des références (optionnel)",
             "no-external-links-provided": "Aucune référence disponible",

@@ -134,14 +134,18 @@
 <i18n>
 en:
     CharacteristicForm:
+        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new characteristic with an auto-generated URI"
+        ontologies-help: "Click on one of these reference ontologies. If a characteristic matches with the desired characteristic, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
         name: The characteristic
         add: Add a characteristic
         edit: Edit a characteristic
         name-placeholder: Height
 fr:
     CharacteristicForm:
-        name: La charactéristique
-        add: Ajouter une charactéristique
-        edit: Éditer une charactéristique
+        uri-help: "Décocher si vous souhaitez ajouter une caractéristique à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une caractéristique avec une URI auto-generée"
+        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une caractéristique correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de la caractéristique dans le champ 'Nom'."
+        name: La caractéristique
+        add: Ajouter une caractéristique
+        edit: Éditer une caractéristique
         name-placeholder: Hauteur
 </i18n>

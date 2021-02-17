@@ -10,60 +10,73 @@
                     :editMode="editMode"
                     :generated.sync="uriGenerated"
                     :required="true"
+                    helpMessage="CharacteristicForm.uri-help"
                 ></opensilex-UriForm>
             </div>
         </div>
 
         <div class="row">
-            <div class="col">
-                <b-form-group
-                    label="component.skos.ontologies-references-label"
-                    label-size="lg"
-                    label-class="font-weight-bold pt-0"
-                    class="mb-0"
-                >
-                    <template v-slot:label>{{ $t('component.skos.ontologies-references-label') }}</template>
-                </b-form-group>
-                <b-card-text>
-                    <ul>
-                        <li
-                            v-for="externalOntologyRef in externalOntologiesRefs"
-                            :key="externalOntologyRef.label"
-                        >
-                            <a
-                                target="_blank"
-                                v-bind:title="externalOntologyRef.label"
-                                v-bind:href="externalOntologyRef.link"
-                                v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
-                            >{{ externalOntologyRef.label }}</a>
-                        </li>
-                    </ul>
-                </b-card-text>
-            </div>
 
-            <div class="col">
+            <div class="col-lg-5">
 
                 <!-- Name -->
                 <opensilex-InputForm
-                    :value.sync="form.name"
-                    label="component.common.name"
-                    type="text"
-                    :required="true"
-                    placeholder="CharacteristicForm.name-placeholder"
+                        :value.sync="form.name"
+                        label="component.common.name"
+                        type="text"
+                        :required="true"
+                        placeholder="CharacteristicForm.name-placeholder"
                 ></opensilex-InputForm>
 
                 <!-- Comment -->
                 <opensilex-TextAreaForm
-                    :value.sync="form.description"
-                    label="component.common.description">
+                        :value.sync="form.description"
+                        label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>
+
+            <div class="col">
+                <b-form-group
+                        label="component.skos.ontologies-references-label"
+                        label-size="lg"
+                        label-class="font-weight-bold pt-0"
+                        class="mb-0"
+                >
+                    <template v-slot:label>{{ $t('component.skos.ontologies-references-label') }}</template>
+                </b-form-group>
+
+                <div class="row">
+                    <div class="col">
+                        <b-card-text>
+                            <ul>
+                                <li
+                                        v-for="externalOntologyRef in externalOntologiesRefs"
+                                        :key="externalOntologyRef.label"
+                                >
+                                    <a
+                                            target="_blank"
+                                            v-bind:title="externalOntologyRef.label"
+                                            v-bind:href="externalOntologyRef.link"
+                                            v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
+                                    >{{ externalOntologyRef.label }}</a>
+                                </li>
+                            </ul>
+                        </b-card-text>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <p> {{$t("CharacteristicForm.ontologies-help")}}</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
     </ValidationObserver>
 </template>
 
 <script lang="ts">
-    import {Component, PropSync, Ref} from "vue-property-decorator";
+    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {CharacteristicCreationDTO} from "opensilex-core/model/characteristicCreationDTO";
@@ -75,7 +88,9 @@
 
         title = "";
         uriGenerated = true;
-        editMode = false;
+
+        @Prop()
+        editMode;
 
         errorMsg: String = "";
 
@@ -101,3 +116,7 @@
         }
     }
 </script>
+
+<style scoped lang="scss">
+    a {color: #007bff;}
+</style>

@@ -72,7 +72,7 @@ export default class AreaForm extends Vue {
         description: "",
         geometry: [],
       };
-    }
+    },
   })
   form;
 
@@ -132,7 +132,7 @@ export default class AreaForm extends Vue {
           form.uri = uri;
           return uri;
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.status == 409) {
             console.error("Area of Geometry already exists", error);
             this.$opensilex.errorHandler(

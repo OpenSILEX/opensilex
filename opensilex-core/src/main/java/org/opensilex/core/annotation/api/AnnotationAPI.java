@@ -194,7 +194,7 @@ public class AnnotationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchAnnotations(
-            @ApiParam(value = "Description (regex)", example = "The pest attack") @QueryParam("description") String bodyValuePattern,
+            @ApiParam(value = "Description (regex)", example = "The pest attack") @QueryParam("description") String descriptionPattern,
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target,
             @ApiParam(value = "Motivation URI", example = "http://www.w3.org/ns/oa#describing") @QueryParam("motivation") URI motivation,
             @ApiParam(value = "Author URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("author") URI creator,
@@ -206,7 +206,7 @@ public class AnnotationAPI {
         AnnotationDao dao = new AnnotationDao(sparql);
 
         ListWithPagination<AnnotationModel> resultList = dao.search(
-                bodyValuePattern,
+                descriptionPattern,
                 target,
                 motivation,
                 creator,

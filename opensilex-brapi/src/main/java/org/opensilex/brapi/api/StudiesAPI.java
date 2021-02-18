@@ -62,19 +62,19 @@ import org.opensilex.utils.OrderBy;
 @Api("BRAPI")
 @Path("/brapi/v1")
 public class StudiesAPI implements BrapiCall {
-    
+
     @Inject
-    private SPARQLService sparql;    
-    
+    private SPARQLService sparql;
+
     @Inject
     private MongoDBService nosql;
-        
+
     @Inject
     private FileStorageService fs;
-    
+
     @CurrentUser
     UserModel currentUser;
-    
+
     /**
      * Overriding BrapiCall method
      *
@@ -101,7 +101,7 @@ public class StudiesAPI implements BrapiCall {
         calls.add(call3);
         calls.add(call4);
         calls.add(call5);
-        
+
         return calls;
     }
 
@@ -122,7 +122,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -140,16 +140,18 @@ public class StudiesAPI implements BrapiCall {
         if (!StringUtils.isEmpty(sortBy)) {
             if (null == sortBy) {
                 sortBy = "";
-            } else switch (sortBy) {
-                case "studyDbId":
-                    sortBy = "uri";
-                    break;
-                case "seasonDbId":
-                    sortBy = "campaign";
-                    break;
-                default:
-                    sortBy = "";
-                    break;
+            } else {
+                switch (sortBy) {
+                    case "studyDbId":
+                        sortBy = "uri";
+                        break;
+                    case "seasonDbId":
+                        sortBy = "campaign";
+                        break;
+                    default:
+                        sortBy = "";
+                        break;
+                }
             }
             String orderByStr;
             if (!StringUtils.isEmpty(sortOrder)) {
@@ -162,10 +164,10 @@ public class StudiesAPI implements BrapiCall {
         }
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
-        
+
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         if (studyDbId != null) {
-            ExperimentModel model = xpDao.get(studyDbId, currentUser);  
+            ExperimentModel model = xpDao.get(studyDbId, currentUser);
             if (model != null) {
                 return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
             } else {
@@ -175,15 +177,15 @@ public class StudiesAPI implements BrapiCall {
             ListWithPagination<ExperimentModel> resultList = xpDao.search(null, null, null, null, isEnded, null, null, currentUser, orderByList, page, pageSize);
             ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
             return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } 
+        }
 
     }
-    
+
     @GET
     @Path("studies/{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -192,8 +194,8 @@ public class StudiesAPI implements BrapiCall {
     ) throws Exception {
 
         ExperimentDAO dao = new ExperimentDAO(sparql);
-        ExperimentModel model = dao.get(studyDbId, currentUser);        
-        
+        ExperimentModel model = dao.get(studyDbId, currentUser);
+
         if (model != null) {
             return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
         } else {
@@ -201,38 +203,38 @@ public class StudiesAPI implements BrapiCall {
         }
 
     }
-    
+
     @GET
     @Path("studies/{studyDbId}/observations")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,            
+            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
             @ApiParam(value = "observationVariableDbIds") @QueryParam(value = "observationVariableDbIds") List<URI> observationVariableDbIds,
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws SQLException, URISyntaxException, Exception {
-        
+
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(studyDbId, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(studyDbId);
-        
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, page, pageSize);
         ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
         return new PaginatedListResponse<>(observations).getResponse();
-        
+
     }
-    
+
     @GET
     @Path("studies/{studyDbId}/observationvariables")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
@@ -240,19 +242,19 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(new URI(studyDbId), currentUser.getLanguage(), page, pageSize);
 
         ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     @GET
     @Path("studies/{studyDbId}/observationunits")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationUnits(
@@ -261,10 +263,22 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-    
+
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(studyDbId, null, null, null, null, null, null, null, page, page, null, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(
+                studyDbId,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                page, 
+                limit, 
+                null, 
+                currentUser
+        );
         ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, ObservationUnitDTO::fromModel);
-        return new PaginatedListResponse<>(observations).getResponse();        
+        return new PaginatedListResponse<>(observations).getResponse();
     }
 }

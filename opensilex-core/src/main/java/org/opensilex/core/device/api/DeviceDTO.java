@@ -26,7 +26,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 public class DeviceDTO extends RDFObjectDTO {
     
-    private String name;
+    protected String name;
     
     protected String brand;
     

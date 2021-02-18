@@ -15,14 +15,14 @@ import org.opensilex.nosql.mongodb.MongoModel;
  */
 public class DeviceAttributeModel extends MongoModel {
       
-    Map<String, String> attribute;
+    Map<String, String> attributes;
 
     public Map<String, String> getAttribute() {
-        return attribute;
+        return attributes;
     }
 
     public void setAttribute(Map<String, String> attribute) {
-        this.attribute = attribute;
+        this.attributes = attribute;
     }
 
 }

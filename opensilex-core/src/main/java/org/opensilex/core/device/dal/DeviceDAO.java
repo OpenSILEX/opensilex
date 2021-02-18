@@ -12,6 +12,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import java.util.List;
 import java.time.LocalDate;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.device.api.DeviceDTO;
@@ -23,10 +24,12 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 /**
  *
@@ -38,24 +41,20 @@ public class DeviceDAO {
     
     public static final String ATTRIBUTES_COLLECTION_NAME = "devicesAttributes";
     
-    public DeviceModel initDevice(URI deviceType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public void initDevice(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(deviceType, new URI(Oeso.Device.getURI()), currentUser.getLanguage());
-
-        DeviceModel device = new DeviceModel();
+        ClassModel model = ontologyDAO.getClassModel(devModel.getType(), new URI(Oeso.Device.getURI()), currentUser.getLanguage());
         
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 URI prop = relation.getProperty();
-                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), device)) {
+                if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
         }
 
-        device.addRelation(sparql.getDefaultGraphURI(DeviceModel.class), new URI(RDFS.label.getURI()), String.class, name);
-
-        return device;
+        devModel.addRelation(sparql.getDefaultGraphURI(DeviceModel.class), new URI(RDFS.label.getURI()), String.class, devModel.getName());
     }
     
     public MongoCollection getAttributesCollection() {
@@ -77,14 +76,12 @@ public class DeviceDAO {
         this.nosql = nosql;
     }
     
-    public URI create(DeviceCreationDTO devDTO, UserModel currentUser) throws Exception {   
-        URI deviceType = devDTO.getType();
-        URI deviceURI = devDTO.getUri();
-        String deviceName = devDTO.getName();
-        List<RDFObjectRelationDTO> relations = devDTO.getRelations();
+    public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {   
+        URI deviceType = devModel.getType();
+        URI deviceURI = devModel.getUri();
+        String deviceName = devModel.getName();
         
-        DeviceModel device = initDevice(deviceType, deviceName, relations, currentUser);
-        devDTO.toModel(device);
+        initDevice(devModel, relations, currentUser);
         
         if (deviceURI == null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -96,31 +93,41 @@ public class DeviceDAO {
                 throw new SPARQLAlreadyExistingUriException(deviceURI);
         }
         
-        device.setUri(deviceURI);
+        devModel.setUri(deviceURI);
         
-        if(device.getAttributes() != null && !device.getAttributes().isEmpty()){
+        if(devModel.getAttributes() != null && !devModel.getAttributes().isEmpty()){
             MongoCollection collection = getAttributesCollection();
-           // nosql.startTransaction();
             sparql.startTransaction();
+            nosql.startTransaction();
             try {
-                sparql.create(device);
+                sparql.create(devModel);
                 DeviceAttributeModel model = new DeviceAttributeModel();
-                model.setUri(device.getUri());
-                model.setAttribute(device.getAttributes());
-                nosql.create(model, DeviceAttributeModel.class, ATTRIBUTES_COLLECTION_NAME,"");//collection.insertOne(nosql.getSession(), model);
-              //  nosql.commitTransaction();
+                model.setUri(devModel.getUri());
+                model.setAttribute(devModel.getAttributes());
+                collection.insertOne(nosql.getSession(), model);
+                nosql.commitTransaction();
                 sparql.commitTransaction();
             } catch (Exception ex) {
-                //nosql.rollbackTransaction();
+                nosql.rollbackTransaction();
                 sparql.rollbackTransaction(ex);
             } 
         }
-        sparql.create(device,false);
+        sparql.create(devModel,false);
         
-        return device.getUri();
+        return devModel.getUri();
     }
     
-    public ListWithPagination<DeviceModel> search( String namePattern, List<URI> rdfTypes, Integer year, String brandPattern, String modelPattern, String snPattern,  UserModel currentUser, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<DeviceModel> search( 
+                String namePattern,
+                URI rdfType,
+                Integer year,
+                String brandPattern,
+                String modelPattern,
+                String snPattern,
+                UserModel currentUser,
+                List<OrderBy> orderByList,
+                Integer page,
+                Integer pageSize) throws Exception {
         LocalDate date ;
         if (year != null) {
             String yearString = Integer.toString(year);
@@ -135,8 +142,8 @@ public class DeviceDAO {
                     if (namePattern != null && !namePattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
                     }
-                    if (rdfTypes != null && rdfTypes.size() > 0) {
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.TYPE_FIELD, rdfTypes));
+                    if (rdfType != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(DeviceModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
                     }
                     if (brandPattern != null && !brandPattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.BRAND_FIELD, brandPattern));
@@ -151,7 +158,7 @@ public class DeviceDAO {
                         appendDateFilters(select, date);
                     }
                 },
-                null,
+                orderByList,
                 page,
                 pageSize);
     }
@@ -207,7 +214,19 @@ public class DeviceDAO {
         return device;
     }
     
-     public void delete(URI deviceURI, UserModel currentUser) throws Exception {
+     public void delete(URI deviceURI, UserModel currentUser) throws Exception {        
+        nosql.startTransaction();
+        sparql.startTransaction();
         sparql.delete(DeviceModel.class, deviceURI);
+        MongoCollection collection = getAttributesCollection();
+        
+        try {
+            collection.findOneAndDelete(nosql.getSession(), eq("uri", deviceURI));
+            nosql.commitTransaction();
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            nosql.rollbackTransaction();
+            sparql.rollbackTransaction(ex);
+        }
     }
 }

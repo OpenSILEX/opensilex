@@ -22,7 +22,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Device",
-        graph = "set/device",
+        graph = "set/devices",
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
@@ -66,7 +66,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "personInCharge"
     )
     URI personInCharge;
-    public static final String PERSONINCHARGE_FIELD = "personInCharge";
+    public static final String PERSON_IN_CHARGE_FIELD = "personInCharge";
     
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -80,7 +80,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             property = "removal"
     )
     LocalDate removal;
-    public static final String DATEOFLASTUSE_FIELD = "removal";
+    public static final String REMOVAL_FIELD = "removal";
     
     @SPARQLProperty(
             ontology = RDFS.class,

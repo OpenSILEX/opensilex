@@ -107,7 +107,7 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { DevicesService, DocumentsService, DeviceGetSingleDTO} from "opensilex-core/index";
+import { DevicesService, DocumentsService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -162,7 +162,7 @@ export default class DeviceList extends Vue {
     console.debug("editDevice" + uri);
     this.service
       .getDevice(uri)
-      .then((http: HttpResponse<OpenSilexResponse<DeviceGetSingleDTO>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
         let device = http.response.result;
         let form = {
           uri: device.uri,
@@ -216,6 +216,7 @@ export default class DeviceList extends Vue {
       this.filter.brand, // brandPattern filter
       this.filter.model, // model filter
       undefined, // snPattern filter
+      options.orderBy,
       options.currentPage,
       options.pageSize,
     );

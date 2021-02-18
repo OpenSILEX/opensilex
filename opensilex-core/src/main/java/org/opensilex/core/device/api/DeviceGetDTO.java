@@ -18,7 +18,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
  * @author sammy
  */
 
-@JsonPropertyOrder({"uri","type","rdf_type_name","name","brand",
+@JsonPropertyOrder({"uri","rdf_type","rdf_type_name","name","brand",
     "constructor_model","serial_number","person_in_charge","start_up",
     "removal","relations", "description"})
 public class DeviceGetDTO extends DeviceDTO{

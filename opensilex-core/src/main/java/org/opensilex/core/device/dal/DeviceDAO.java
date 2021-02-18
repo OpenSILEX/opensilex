@@ -111,8 +111,9 @@ public class DeviceDAO {
                 nosql.rollbackTransaction();
                 sparql.rollbackTransaction(ex);
             } 
+        }else{
+            sparql.create(devModel,false);
         }
-        sparql.create(devModel,false);
         
         return devModel.getUri();
     }

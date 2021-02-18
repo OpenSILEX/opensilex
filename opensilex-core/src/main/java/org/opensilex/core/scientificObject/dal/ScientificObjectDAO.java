@@ -103,7 +103,7 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factors, List<URI> factorLevels, URI facility, Integer page, Integer pageSize,  List<OrderBy> orderByList, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factorLevels, URI facility, Integer page, Integer pageSize,  List<OrderBy> orderByList, UserModel currentUser) throws Exception {
         final Node contextNode;
         if (contextURI != null) {
             contextNode = SPARQLDeserializers.nodeURI(contextURI);
@@ -128,19 +128,6 @@ public class ScientificObjectDAO {
                         select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), deepPartOf, SPARQLDeserializers.nodeURI(parentURI));
                     }
 
-                    if (factors != null && factors.size() > 0) {
-                        Var factorLevelVar = makeVar("__factorLevel");
-                        Var factorVar = makeVar("__factor");
-                        if (contextURI != null) {
-                            select.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
-                            select.addGraph(contextNode, factorLevelVar, Oeso.hasFactorLevel, factorVar);
-                        } else {
-                            select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
-                            select.addWhere(factorLevelVar, Oeso.hasFactor, factorVar);
-                        }
-
-                        select.addFilter(SPARQLQueryHelper.inURIFilter("__factor", factors));
-                    }
 
                     if (factorLevels != null && factorLevels.size() > 0) {
                         if (contextURI != null) {

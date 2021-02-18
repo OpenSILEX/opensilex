@@ -93,19 +93,29 @@
     <div class="row">
       <div class="col-md-6">
         <b-card>
-          <!-- <div class="button-zone">
-            <opensilex-Button
-              :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
-              icon="none"
-              :small="false"
-              label="Export CSV"
-              :disabled="numberOfSelectedRows == 0"
-              @click="exportCSV"
-            ></opensilex-Button>
-          </div> -->
+          <div class="card-header ">
+              <h3 class="d-inline">
+                <opensilex-Icon icon="ik#ik-target" class="title-icon" />
+                {{ $t("ScientificObjectList.selected") }}
+              </h3>
+              &nbsp;
+              <span class="badge badge-pill badge-info">{{
+                selectedObjects.length
+              }}</span>
+              <opensilex-Button
+                :variant="selectedObjects.length > 0 ? 'primary' : ''"
+                icon="none"
+                :small="false"
+                label="Export CSV"
+                :disabled="selectedObjects.length == 0"
+                @click="exportCSV"
+              ></opensilex-Button>
+          </div>
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
+            :enableSelection="true"
+            :selection.sync="selectedObjects"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
           >
             <template v-slot:node="{ node }">
@@ -225,6 +235,8 @@ export default class ExperimentScientificObjects extends Vue {
 
   public selected = null;
 
+  selectedObjects = [];
+
   @Ref("facilitySelector") readonly facilitySelector!: any;
 
   created() {
@@ -337,7 +349,6 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.types,
         this.filters.parent,
         undefined,
-        undefined,
         this.filters.factorLevels,
         undefined,
         [],
@@ -355,7 +366,6 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // rdfTypes?: Array<string>,
         undefined, // parentURI?: string,
         undefined, // Germplasm
-        undefined, // factors?: Array<string>,
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
         [], // orderBy?: ,
@@ -409,16 +419,12 @@ export default class ExperimentScientificObjects extends Vue {
       String(today.getMonth() + 1).padStart(2, "0") +
       String(today.getDate()).padStart(2, "0");
 
-    let objectURIs = [];
-    for (let select of this.soTree.getSelected()) {
-      objectURIs.push(select.uri);
-    }
     this.$opensilex.downloadFilefromPostService(
       path,
       filename,
       "csv",
       {
-        objects: objectURIs,
+        objects: this.selectedObjects,
       },
       this.lang
     );
@@ -434,6 +440,16 @@ export default class ExperimentScientificObjects extends Vue {
 .async-tree-action a:hover {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.card-header {
+  padding-top: 0!important;
+  padding-left: 0!important;
+  padding-right: 0!important;
+}
+
+.card-header  .badge {
+  margin-left: 5px;
 }
 </style>
 

@@ -8,10 +8,13 @@ package org.opensilex.core.scientificObject.api;
 import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.geojson.Geometry;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -296,7 +299,6 @@ public class ScientificObjectAPI {
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Parent URI", example = "http://example.com/") @QueryParam("parent") @ValidURI URI parentURI,
             @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
-            @ApiParam(value = "Factors URI", example = "vocabulary:Irrigation") @QueryParam("factors") @ValidURI List<URI> factors,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -312,7 +314,7 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factors, factorLevels, facility, page, pageSize, orderByList, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factorLevels, facility, page, pageSize, orderByList, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
 
@@ -663,7 +665,7 @@ public class ScientificObjectAPI {
                         sparql.executeUpdateQuery(update);
                     }
 
-                    List<GeospatialModel> geospacialModels = new ArrayList<>();
+                    List<GeospatialModel> geospatialModels = new ArrayList<>();
                     geometries.forEach((rowIndex, geometry) -> {
                         SPARQLResourceModel object = objects.get(rowIndex - 1);
                         GeospatialModel geospatialModel = new GeospatialModel();
@@ -672,10 +674,10 @@ public class ScientificObjectAPI {
                         geospatialModel.setRdfType(object.getType());
                         geospatialModel.setGraph(graphURI);
                         geospatialModel.setGeometry(geometry);
-                        geospacialModels.add(geospatialModel);
+                        geospatialModels.add(geospatialModel);
                     });
 
-                    geoDAO.createAll(geospacialModels);
+                    geoDAO.createAll(geospatialModels);
                     sparql.commitTransaction();
                     nosql.commitTransaction();
 
@@ -739,7 +741,7 @@ public class ScientificObjectAPI {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        HashMap<String, Geometry> geospacialMap = geoDAO.getGeometryByUris(null, dto.getUris());
+        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(null, dto.getUris());
 
         List<String> customColumns = new ArrayList<>();
         customColumns.add(Oeso.isPartOf.toString());
@@ -763,8 +765,8 @@ public class ScientificObjectAPI {
                 return value.getDestructionDate().toString();
             } else if (columnID.equals(GEOMETRY_COLUMN_ID)) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
-                if (geospacialMap.containsKey(uriString)) {
-                    Geometry geo = geospacialMap.get(uriString);
+                if (geospatialMap.containsKey(uriString)) {
+                    Geometry geo = geospatialMap.get(uriString);
                     try {
                         return GeospatialDAO.geometryToWkt(geo);
                     } catch (JsonProcessingException | ParseException ex) {

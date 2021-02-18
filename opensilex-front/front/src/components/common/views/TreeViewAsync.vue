@@ -15,7 +15,14 @@
     <template slot="title" slot-scope="{ node }">
       <span v-if="node.data != null">
         <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
-
+        <b-form-checkbox
+          class="selection-box"
+          v-if="enableSelection"
+          :value="getSelection(node.data.uri)"
+          unchecked-value="false"
+          @change="onSelectionChange(node.data.uri)"
+          switches
+        ></b-form-checkbox>
         <strong v-if="node.data.selected">
           <slot name="node" v-bind:node="node"></slot>
         </strong>
@@ -83,6 +90,14 @@ export default class TreeViewAsync extends Vue {
     default: 10,
   })
   pageSize: number;
+
+  @Prop({
+    default: false,
+  })
+  enableSelection;
+
+  @PropSync("selection")
+  multiSelect;
 
   copy = copy;
 
@@ -265,6 +280,26 @@ export default class TreeViewAsync extends Vue {
     }
     this.$emit("toggle", node);
   }
+
+  getSelection(uri) {
+    if (this.multiSelect) {
+      return this.multiSelect.indexOf(uri) >= 0;
+    } else {
+      return false;
+    }
+  }
+
+  onSelectionChange(uri) {
+    console.error(uri, this.multiSelect)
+    if (this.multiSelect) {
+      let uriIndex = this.multiSelect.indexOf(uri);
+      if (uriIndex >= 0) {
+        this.multiSelect.splice(uriIndex, 1);
+      } else {
+        this.multiSelect.push(uri);
+      }
+    }
+  }
 }
 </script>
 
@@ -291,6 +326,12 @@ export default class TreeViewAsync extends Vue {
 ::v-deep .sl-vue-tree-nodes-list .sl-vue-tree .sl-vue-tree-nodes-list {
   overflow-y: hidden;
   max-height: none;
+}
+
+.selection-box {
+  display: inline;
+  position: absolute;
+  margin-top: 1px;
 }
 </style>
 

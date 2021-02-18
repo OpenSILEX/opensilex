@@ -69,13 +69,20 @@
             :germplasm.sync="filter.germplasm"
           ></opensilex-GermplasmSelector>
         </opensilex-FilterField>
+        <!-- Factors levels -->
 
-        <!-- Factors -->
         <opensilex-FilterField>
-          <opensilex-FactorSelector
-            :multiple="true"
-            :factors.sync="filter.factors"
-          ></opensilex-FactorSelector>
+          <b-form-group>
+            <label for="factorLevels">
+              {{ $t("FactorLevelSelector.label") }}
+            </label>
+            <opensilex-FactorLevelSelector
+              id="factorLevels"
+              :factorLevels.sync="filter.factorLevels"
+              :multiple="true"
+              :required="false"
+            ></opensilex-FactorLevelSelector>
+          </b-form-group>
         </opensilex-FilterField>
       </template>
     </opensilex-SearchFilterField>
@@ -101,7 +108,7 @@
               @click="exportCSV"
             ></opensilex-Button>
           </template>
-          <template v-slot:cell(uri)="{ data }">
+          <template v-slot:cell(name)="{ data }">
             <opensilex-UriLink
               :uri="data.item.uri"
               :value="data.item.name"
@@ -192,7 +199,7 @@ export default class ScientificObjectList extends Vue {
 
   fields = [
     {
-      key: "uri",
+      key: "name",
       label: "component.common.name",
       sortable: true,
     },
@@ -230,7 +237,7 @@ export default class ScientificObjectList extends Vue {
     name: "",
     experiment: undefined,
     germplasm: undefined,
-    factors: [],
+    factorLevels: [],
     types: [],
   };
 
@@ -247,7 +254,7 @@ export default class ScientificObjectList extends Vue {
       name: "",
       experiment: undefined,
       germplasm: undefined,
-      factors: [],
+      factorLevels: [],
       types: [],
     };
     this.refresh();
@@ -267,8 +274,7 @@ export default class ScientificObjectList extends Vue {
       this.filter.types, // rdfTypes?: Array<string>,
       undefined, // parentURI?: string,
       this.filter.germplasm ? this.filter.germplasm : undefined,
-      this.filter.factors, // factors?: Array<string>,
-      undefined, // factorLevels?: Array<string>,
+      this.filter.factorLevels, // factorLevels?: Array<string>,
       undefined, // facility?: string,
       options.orderBy,
       options.currentPage, // page?: number,

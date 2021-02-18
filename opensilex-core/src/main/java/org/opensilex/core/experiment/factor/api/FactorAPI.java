@@ -311,6 +311,30 @@ public class FactorAPI {
             return new PaginatedListResponse<>(paginatedListResponse).getResponse();
         }
     }
+    
+    @GET
+    @Path("factor_levels")
+    @ApiOperation("Search factors levels")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return factor list with their levels", response = FactorDetailsGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)})
+    public Response searchFactorLevels(
+            @ApiParam(value = "Regex pattern for filtering on name", example = "irrigation") @QueryParam("name") String name,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(-1) int pageSize)
+            throws Exception {
+
+       FactorDAO dao = new FactorDAO(sparql);
+        ListWithPagination<FactorModel> factors = dao.search(null, name, null, null, orderByList, page, pageSize, currentUser.getLanguage());
+        ListWithPagination<FactorDetailsGetDTO> dtoList = factors.convert(FactorDetailsGetDTO.class, FactorDetailsGetDTO::fromModel);
+
+        // Return paginated list of factor DTO
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
 
     /**
      * Remove an factor

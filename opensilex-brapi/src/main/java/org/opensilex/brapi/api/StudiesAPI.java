@@ -263,9 +263,7 @@ public class StudiesAPI implements BrapiCall {
     ) throws Exception {
     
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql);
-        List<URI> contextURIs = new ArrayList<>();
-        contextURIs.add(studyDbId);
-        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(contextURIs, null, null, null, null, page, page, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(studyDbId, null, null, null, null, null, null, null, page, page, null, currentUser);
         ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, ObservationUnitDTO::fromModel);
         return new PaginatedListResponse<>(observations).getResponse();        
     }

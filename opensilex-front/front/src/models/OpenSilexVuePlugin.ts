@@ -836,7 +836,7 @@ export default class OpenSilexVuePlugin {
         let promise = fetch(url, request);
 
         return promise
-            .then(function (response) {
+            .then((response) => {
                 return response.blob();
             })
             .then((result) => {
@@ -847,10 +847,12 @@ export default class OpenSilexVuePlugin {
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
-                this.hideLoader()
+                this.hideLoader();
             })
-            .catch(function (error) {
-                console.error(error);
+            .catch((error) => {
+                this.hideLoader();
+                this.errorHandler(error);
+                throw error;
             });
     }
 
@@ -862,21 +864,21 @@ export default class OpenSilexVuePlugin {
             this.baseApi +
             servicePath;
         let headers = {};
-    
-        let user = this.getUser(); 
+
+        let user = this.getUser();
         if (user != User.ANONYMOUS()) {
-            headers["Authorization"] = user.getAuthorizationHeader();            
+            headers["Authorization"] = user.getAuthorizationHeader();
         }
-    
+
         headers["Accept-Language"] = this.getLang();
-    
-        let request: RequestInit =  {
+
+        let request: RequestInit = {
             method: "GET",
             headers: headers
         }
 
-        let promise = fetch(url, request);            
-    
+        let promise = fetch(url, request);
+
         return promise
             .then(function (response) {
                 return response.blob();
@@ -884,9 +886,9 @@ export default class OpenSilexVuePlugin {
             .then((result) => {
                 let file = result;
                 let type = "";
-                if (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "svg"){
+                if (extension == "png" || extension == "jpg" || extension == "jpeg" || extension == "svg") {
                     type = "image/" + extension;
-                } else if (extension == "pdf" || extension == "json" || extension == "xml"){
+                } else if (extension == "pdf" || extension == "json" || extension == "xml") {
                     type = "application/" + extension;
                 } else if (extension == "csv") {
                     type = "text/" + extension;
@@ -897,25 +899,23 @@ export default class OpenSilexVuePlugin {
                     let message = this.$i18n.t("component.document.nopreview");
                     let error = document.createElement("p");
                     let content = document.createTextNode(message as string);
-                    document.getElementById("preview").appendChild( error.appendChild(content));
+                    document.getElementById("preview").appendChild(error.appendChild(content));
                 }
-                let blob = new Blob([file], {type: type});
+                let blob = new Blob([file], { type: type });
                 console.log(extension);
-                if(type != null){
-                    let url =  URL.createObjectURL(blob);
+                if (type != null) {
+                    let url = URL.createObjectURL(blob);
                     let iframe = document.createElement("iframe");
                     iframe.src = url;
-                    iframe.width="600";
-                    iframe.height="600";
+                    iframe.width = "600";
+                    iframe.height = "600";
                     document.getElementById("preview").appendChild(iframe);
                 }
                 this.hideLoader()
             })
-            .catch(function (error) {
-                console.log(error);
-            });
+            .catch(this.errorHandler);
     }
-    
+
     public datatypes = [];
     private datatypesByURI = {};
 
@@ -1016,10 +1016,10 @@ export default class OpenSilexVuePlugin {
         return this.selectIconIDs;
     }
 
-    public prepareGetParameter(value){
-        if(value == null || value == '' || value == undefined){
+    public prepareGetParameter(value) {
+        if (value == null || value == '' || value == undefined) {
             return undefined;
-        }else{
+        } else {
             return value;
         }
     }

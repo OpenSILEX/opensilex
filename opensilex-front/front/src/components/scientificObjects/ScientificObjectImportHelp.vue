@@ -147,7 +147,7 @@ en :
     exceptedFormat: Expected format
     title: Generate Data template
     required: "Required : yes"
-    variables-associated : Experiment variables associated
+    variables-associated : Variables associated with the experiment
     download-template-example : Download template example
     csv-separator: CSV separator must be
     csv-decimal-separator: Decimal separator for numeric values must be 
@@ -185,7 +185,7 @@ fr :
     exceptedFormat: Format attendu
     title: Générer un gabarit de données
     required: "Requis : oui"
-    variables-associated: Variables associées à l'expériementation
+    variables-associated: Variables associées à l'expérimentation
     download-template-example: Générer un gabarit de données d'exemple
     csv-separator: Le séparateur CSV doit être
     csv-decimal-separator: Le séparateur décimal des valeurs numériques doit être

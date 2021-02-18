@@ -219,7 +219,7 @@ fr :
     objectId: Objet scientifique Nom / URI
     title: Générer un gabarit de données
     required: "Requis : oui"
-    variables-associated: Variables associées à l'expériementation
+    variables-associated: Variables associées à l'expérimentation
     download-template-example: Générer un gabarit de données d'exemple
     csv-separator: Le séparateur CSV doit être
     csv-decimal-separator: Le séparateur décimal des valeurs numériques doit être

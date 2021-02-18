@@ -51,8 +51,8 @@
             "species":"Species",
             "period":"Period",
             "year":"Year",
-            "geometry": "Geospacial coordinates",
-            "geometry-help": "Geospacial coordinates in WKT format",
+            "geometry": "Geospatial coordinates",
+            "geometry-help": "Geospatial coordinates in WKT format",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occurred, please check the validity of the submitted fields.",

@@ -355,7 +355,7 @@ public class ScientificObjectAPI {
 
     @GET
     @Path("{uri}/experiments")
-    @ApiOperation("Get scientific object detail for each experiments, a null value for experiment in response means a properties defined outside of any expriment (shared object).")
+    @ApiOperation("Get scientific object detail for each experiments, a null value for experiment in response means a properties defined outside of any experiment (shared object).")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

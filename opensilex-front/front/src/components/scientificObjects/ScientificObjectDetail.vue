@@ -462,7 +462,7 @@ export default class ScientificObjectDetail extends Vue {
 en:
     ScientificObjectDetail:
         title: Detail
-        generalInformation: Global informations
+        generalInformation: Global information
 
 fr:
     ScientificObjectDetail:

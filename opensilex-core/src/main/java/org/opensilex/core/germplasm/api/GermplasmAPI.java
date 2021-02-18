@@ -252,7 +252,7 @@ public class GermplasmAPI {
             // Otherwise return a 404 - NOT_FOUND error response
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
-                    "Germplasms not found",
+                    "Germplasm not found",
                     "Unknown germplasm URIs"
             ).getResponse();
         }

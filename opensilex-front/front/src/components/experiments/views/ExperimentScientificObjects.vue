@@ -93,7 +93,7 @@
     <div class="row">
       <div class="col-md-6">
         <b-card>
-          <div class="button-zone">
+          <!-- <div class="button-zone">
             <opensilex-Button
               :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
               icon="none"
@@ -102,7 +102,7 @@
               :disabled="numberOfSelectedRows == 0"
               @click="exportCSV"
             ></opensilex-Button>
-          </div>
+          </div> -->
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
@@ -451,7 +451,7 @@ en:
     load-more: Load more...
     export-csv: Export CSV
     geometry-label: Geometry
-    geometry-comment: Geospacial coordinates
+    geometry-comment: Geospatial coordinates
     objectType: Object type
     name-placeholder: Enter a name
 

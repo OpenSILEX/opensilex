@@ -315,7 +315,7 @@ fr :
     type-label: Types d'objets scientifiques
     required: Obligatoire
     property-list: Cette colonne peut être présente plusieurs fois pour définir plusieurs valeurs
-    property-available-for: Propriétée valable seulement pour les types
+    property-available-for: Propriété valable seulement pour les types
     example :
       column-data-type : "Type de données colonne : " 
  </i18n>

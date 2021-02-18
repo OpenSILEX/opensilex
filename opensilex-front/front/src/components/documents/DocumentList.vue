@@ -19,8 +19,7 @@
         <div class="col col-xl-12 col-sm-12 col-12">
           <opensilex-StringFilter
             style="margin-bottom:10px;"
-            :filter.sync="filter.title"
-            :value.sync="filter.keyword"
+            :filter.sync="filter.multiple"
             placeholder="DocumentList.filter.searchAll-placeholder"
           ></opensilex-StringFilter>
         </div>
@@ -45,12 +44,12 @@
           ></opensilex-TypeForm>
         </div>
 
-        <!-- keyword -->
+        <!-- keywords -->
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.keyword')}}</label>
+          <label>{{$t('DocumentList.filter.keywords')}}</label>
           <opensilex-InputForm
-            :value.sync="filter.keyword"
-            placeholder="DocumentList.filter.keyword-placeholder"
+            :value.sync="filter.keywords"
+            placeholder="DocumentList.filter.keywords-placeholder"
           ></opensilex-InputForm>
         </div>
 
@@ -194,8 +193,9 @@ export default class DocumentList extends Vue {
     date: undefined,
     rdf_type: undefined,
     authors: undefined,
-    keyword: undefined,
-    targets: undefined
+    keywords: undefined,
+    targets: undefined,
+    multiple: undefined
   };
 
   resetFilters() {
@@ -205,8 +205,9 @@ export default class DocumentList extends Vue {
       date: undefined,
       rdf_type: undefined,
       authors: undefined,
-      keyword: undefined,
-      targets: undefined
+      keywords: undefined,
+      targets: undefined,
+      multiple: undefined
     };
     this.refresh();
   }
@@ -254,7 +255,8 @@ export default class DocumentList extends Vue {
       this.filter.date, // date filter
       this.filter.targets, // targets filter
       this.filter.authors, // user filter
-      this.filter.keyword, // keyword filter
+      this.filter.keywords, // keywords filter
+      this.filter.multiple, // multiple filter
       this.filter.deprecated, // deprecated filter
       options.orderBy,
       options.currentPage,
@@ -291,7 +293,7 @@ export default class DocumentList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: document.deprecated,
-            keyword: document.keyword
+            keywords: document.keywords
           }
         };
         this.documentForm.showEditForm(form);
@@ -317,7 +319,7 @@ export default class DocumentList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: !document.deprecated,
-            keyword: document.keyword
+            keywords: document.keywords
           }
         };
       this.updateForDeprecated(form);
@@ -356,7 +358,7 @@ en:
     title: Title
     type: Document Type 
     date: Creation Date 
-    keyword: Keyword
+    keywords: Keywords
     add: Add document
     update: Update Document
     targets: Concerns
@@ -376,8 +378,8 @@ en:
       date: Date
       date-placeholder: Enter year
       deprecated: Deprecated
-      keyword: Keyword
-      keyword-placeholder: Enter Keyword
+      keywords: Keywords
+      keywords-placeholder: Enter Keywords
       type: Type
       type-placeholder: Select a document type
       author: Author
@@ -392,7 +394,7 @@ fr:
     title: Titre
     type: Type du document
     date: Date de création
-    keyword: Mot-clé
+    keywords: Mots-clés
     add: Ajouter un document
     update: Editer le document
     targets: Cible
@@ -412,8 +414,8 @@ fr:
       date: Date
       date-placeholder: Saisir une année
       deprecated: Obsolète
-      keyword: Mot-clé
-      keyword-placeholder: Saisir un mot-clé
+      keywords: Mots-clés
+      keywords-placeholder: Saisir un mot-clé
       type: Type
       type-placeholder: Selectionner un type de document
       author: Auteur

@@ -77,7 +77,7 @@ public class DocumentDAO {
         fs.delete(FS_DOCUMENT_PREFIX, uri);
     }
 
-    public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         ListWithPagination<DocumentModel> listDocumentModel = sparql.searchWithPagination(
             DocumentModel.class,
             null,
@@ -92,6 +92,7 @@ public class DocumentDAO {
                 appendTargetsFilter(multipleGraphGroupElem, targets);
                 appendAuthorsFilter(multipleGraphGroupElem, authors);
                 appendSubjectsListFilter(multipleGraphGroupElem, subject);
+                appendMultipleFilter(multipleGraphGroupElem, select, multiple);
                 appendDeprecatedFilter(select, deprecated);
             },
             orderByList,
@@ -99,6 +100,26 @@ public class DocumentDAO {
             pageSize
         );
         return listDocumentModel;
+    }
+
+    private void appendMultipleFilter(ElementGroup subjectGraphGroupElem, SelectBuilder select, String multiple){
+        if (multiple != null) {
+
+            Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+            Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);
+
+            Triple docSubjectTriple = new Triple(uriVar, DCTerms.subject.asNode(), subjectVar);
+  
+            subjectGraphGroupElem.addTriplePattern(docSubjectTriple);
+
+            Expr multipleFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, multiple),
+                SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, multiple)
+            );
+
+            subjectGraphGroupElem.addElementFilter(new ElementFilter(multipleFilter));
+
+        }
     }
 
     private void appendTitleFilter(SelectBuilder select, String title) throws Exception {
@@ -124,12 +145,6 @@ public class DocumentDAO {
             select.addFilter(SPARQLQueryHelper.eq(DocumentModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(type.toString()))));
         }
     }
-
-    // private void appendUserDocFilter(SelectBuilder select, URI user) throws Exception {
-    //     if (user != null) {
-    //         select.addFilter(SPARQLQueryHelper.eq(DocumentModel.CREATOR_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(user.toString()))));
-    //     }
-    // }
 
     private void appendAuthorsFilter(ElementGroup authorsGraphGroupElem, String authors) throws Exception {
         if (authors != null) {

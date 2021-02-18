@@ -109,7 +109,7 @@ import Vue from "vue";
 import {
   DevicesService,
   VariablesService,
-  DeviceGetSingleDTO
+  DeviceGetDetailsDTO
 } from "opensilex-core/index";
 import {
   SecurityService,
@@ -143,7 +143,7 @@ export default class DeviceDescription extends Vue {
     this.loadDevice(this.uri);
   }
 
-  device: DeviceGetSingleDTO = { 
+  device: DeviceGetDetailsDTO = { 
         uri: null,
         rdf_type: null,
         name: null,
@@ -167,7 +167,7 @@ export default class DeviceDescription extends Vue {
   loadDevice(uri: string) {
     this.service
       .getDevice(uri)
-      .then((http: HttpResponse<OpenSilexResponse<DeviceGetSingleDTO>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
         this.device = http.response.result;
         this.getAddInfo();
       })

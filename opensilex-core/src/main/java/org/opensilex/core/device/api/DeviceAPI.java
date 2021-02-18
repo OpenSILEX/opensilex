@@ -50,6 +50,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -87,8 +88,7 @@ public class DeviceAPI {
     private MongoDBService nosql;
     
     @POST
-    //@Path("create")
-    @ApiOperation("Create a devices")
+    @ApiOperation("Create a device")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
@@ -97,7 +97,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a devcie", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Create a device", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -112,7 +112,9 @@ public class DeviceAPI {
         }
         if (!checkOnly){
             try{
-                URI uri = deviceDAO.create(deviceDTO, currentUser);
+                DeviceModel devModel = new DeviceModel();
+                deviceDTO.toModel(devModel);
+                URI uri = deviceDAO.create(devModel, deviceDTO.getRelations(), currentUser);
                 return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
             }catch(SPARQLAlreadyExistingUriException ex){
                 return new ErrorResponse(
@@ -127,33 +129,34 @@ public class DeviceAPI {
     }
     
     @GET
-    //@Path("search")
-    @ApiOperation("Search list of devices")
+    @ApiOperation("Search devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
     })    
     public Response searchDevices(
-            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfTypes") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfType") @ValidURI URI rdfType,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         ListWithPagination<DeviceModel> devices = dao.search(
             namePattern,
-            rdfTypes,
+            rdfType,
             year,
             brandPattern,
             modelPattern,
             snPattern,
             currentUser,
+            orderByList,
             page,
             pageSize);
 
@@ -169,7 +172,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return device details corresponding to the devcie URI", response = DeviceGetSingleDTO.class)
+        @ApiResponse(code = 200, message = "Return device details corresponding to the devcie URI", response = DeviceGetDetailsDTO.class)
     })
     public Response getDevice(
             @ApiParam(value = "device URI", example = "http://example.com/", required = true)
@@ -182,7 +185,7 @@ public class DeviceAPI {
 
         Response response;
         if (model != null) {
-            response = new SingleObjectResponse<>(DeviceGetSingleDTO.getDTOFromModel(model)).getResponse();
+            response = new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
         } else {
             response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         }
@@ -191,7 +194,6 @@ public class DeviceAPI {
     }
     
     @PUT
-    //@Path("update")
     @ApiOperation("Update a device")
     @ApiProtected
     @ApiCredential(
@@ -208,14 +210,6 @@ public class DeviceAPI {
             @NotNull
             @Valid DeviceCreationDTO dto
     ) throws Exception {
-
-        // URI devType = dto.getType();
-
-        // DeviceDAO dao = new DeviceDAO(sparql);
-
-        // URI devURI = dao.update(devType, dto.getUri(), dto.getName(), dto.getRelations(), currentUser);
-
-        // return new ObjectUriResponse(devURI).getResponse();
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         DeviceModel DeviceModel = dto.newModel();
         deviceDAO.update(DeviceModel, currentUser);

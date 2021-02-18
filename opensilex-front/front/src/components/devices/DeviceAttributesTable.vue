@@ -103,7 +103,6 @@ export default class DeviceAttributesTable extends Vue {
   }
 
   addEmptyRow() {
-    console.debug("add row");
     let tabulatorInstance = this.tabulatorRef.getInstance();
     tabulatorInstance.addRow({
       attribute: null,
@@ -112,7 +111,6 @@ export default class DeviceAttributesTable extends Vue {
   }
 
   addRow(row) {
-    console.debug("add row", row);
     if (row.attribute != undefined && row.attribute != null && row.attribute != "") {
       this.attributesArray.unshift(row);
     }
@@ -120,7 +118,6 @@ export default class DeviceAttributesTable extends Vue {
 
   removeRow(evt, clickedCell) {
     let columnName = clickedCell.getField();
-    console.debug(columnName);
 
     if (columnName == "actions") {
       let row = clickedCell.getRow();

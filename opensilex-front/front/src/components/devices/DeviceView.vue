@@ -69,7 +69,6 @@ export default class Device extends Vue {
   @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
   created() {
-    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
@@ -84,7 +83,6 @@ export default class Device extends Vue {
         .createDevice(false,form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
-          console.debug("device created", uri);
           this.deviceList.refresh();
         })
     );

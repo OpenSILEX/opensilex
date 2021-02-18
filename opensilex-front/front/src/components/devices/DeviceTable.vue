@@ -192,27 +192,6 @@ export default class DeviceTable extends Vue {
     this.tabulator.replaceData(value);
   }
 
-  /*getTypeProperty(){
-    this.typeProperty = [];
-    let ontoService: OntologyService = this.$opensilex.getService(
-      "opensilex.OntologyService"
-    );
-
-    ontoService
-      .getProperties(this.$attrs.deviceType)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
-        for (let i = 0; i < http.response.result.length; i++) {
-            let resourceDTO = http.response.result[i];
-            this.typeProperty.push({
-                value: resourceDTO.uri,
-                label: resourceDTO.name
-            });
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }*/
-
   isSubClassOf(parent){
     let ontoService: OntologyService = this.$opensilex.getService(
       "opensilex.OntologyService"
@@ -279,7 +258,6 @@ export default class DeviceTable extends Vue {
 
     
     this.buildFinalTypeList();
-    //this.getTypeProperty();
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
@@ -309,9 +287,6 @@ export default class DeviceTable extends Vue {
       this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, checkingStatusCol, insertionStatusCol]
     }
 
-    /*for (let i = 0; i < this.typeProperty.length; i++){
-      this.tableColumns.push({title:this.typeProperty[i].label, field: this.typeProperty[i].value, visible:true, editor:true});
-    }*/
     this.tableData = [];
     this.addInitialXRows(5);
 
@@ -617,7 +592,6 @@ export default class DeviceTable extends Vue {
   }
 
   created() {
-    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 

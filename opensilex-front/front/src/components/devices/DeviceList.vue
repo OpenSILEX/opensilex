@@ -159,7 +159,6 @@ export default class DeviceList extends Vue {
   }
 
   editDevice(uri: string) {
-    console.debug("editDevice" + uri);
     this.service
       .getDevice(uri)
       .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {

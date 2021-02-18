@@ -26,20 +26,6 @@
           :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
         >{{ $t('DeviceDetails.documents') }}</b-nav-item> 
 
-        <opensilex-Button
-          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-          label="Annotation.add" variant="primary" :small="false" icon="fa#edit"
-          @click="annotationModalForm.showCreateForm()"
-        ></opensilex-Button>
-
-        <opensilex-AnnotationModalForm
-          v-if="isAnnotationTab() && user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-          ref="annotationModalForm"
-          :target="uri"
-          @onCreate="updateAnnotations"
-          @onUpdate="updateAnnotations"
-        ></opensilex-AnnotationModalForm>
-
         </template>
     </opensilex-PageActions>
 
@@ -74,7 +60,6 @@
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
     import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
-    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 
     @Component
@@ -86,7 +71,6 @@
         uri = null;
         name: string = "";
 
-        @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
         get user() {
@@ -136,12 +120,6 @@
 
         isAnnotationTab() {
             return this.$route.path.startsWith("/device/annotations/");
-        }
-
-        updateAnnotations(){
-            this.$nextTick(() => {
-                this.annotationList.refresh();
-            });
         }
 
     }

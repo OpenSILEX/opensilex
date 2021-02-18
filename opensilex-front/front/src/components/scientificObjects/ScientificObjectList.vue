@@ -330,7 +330,7 @@ export default class ScientificObjectList extends Vue {
       filename,
       "csv",
       {
-        objects: objectURIs,
+        uris: objectURIs,
       },
       this.lang
     );

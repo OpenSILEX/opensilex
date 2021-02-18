@@ -424,7 +424,7 @@ export default class ExperimentScientificObjects extends Vue {
       filename,
       "csv",
       {
-        objects: this.selectedObjects,
+        uris: this.selectedObjects,
       },
       this.lang
     );

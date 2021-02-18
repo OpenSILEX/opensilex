@@ -18,7 +18,7 @@
         <b-form-checkbox
           class="selection-box"
           v-if="enableSelection"
-          :value="getSelection(node.data.uri)"
+          :checked="getSelection(node.data.uri)"
           unchecked-value="false"
           @change="onSelectionChange(node.data.uri)"
           switches
@@ -282,15 +282,15 @@ export default class TreeViewAsync extends Vue {
   }
 
   getSelection(uri) {
+    let r = false;
     if (this.multiSelect) {
-      return this.multiSelect.indexOf(uri) >= 0;
-    } else {
-      return false;
+      r = this.multiSelect.indexOf(uri) >= 0;
     }
+    return r;
   }
 
   onSelectionChange(uri) {
-    console.error(uri, this.multiSelect)
+    console.error(uri, this.multiSelect);
     if (this.multiSelect) {
       let uriIndex = this.multiSelect.indexOf(uri);
       if (uriIndex >= 0) {

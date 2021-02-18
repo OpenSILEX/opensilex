@@ -59,7 +59,7 @@ import {
   ResourceTreeDTO,
   DataGetDTO
 } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 

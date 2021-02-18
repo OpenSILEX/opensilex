@@ -39,7 +39,6 @@ import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { Image } from "./image";
 /* import { DataService, FileDescriptionDTO } from "opensilex-phis/index"; */
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
 @Component
 export default class ImageView extends Vue {

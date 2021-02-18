@@ -30,129 +30,129 @@
 
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
+// import { Component } from "vue-property-decorator";
+// import Vue from "vue";
 
-import { EventBus } from "./../event-bus";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+// import { EventBus } from "./../event-bus";
+// import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
-@Component
-export default class ObjectSearch extends Vue {
-  $opensilex: any;
-  $store: any;
-  get user() {
-    return this.$store.state.user;
-  }
-  selectedExperiment: any;
-  selectedSoType: any;
-  alias: any = undefined;
+// @Component
+// export default class ObjectSearch extends Vue {
+//   $opensilex: any;
+//   $store: any;
+//   get user() {
+//     return this.$store.state.user;
+//   }
+//   selectedExperiment: any;
+//   selectedSoType: any;
+//   alias: any = undefined;
 
-  currentPage: number = 0;
-  pageSize: number = 8000;
-  options = [];
-  search = "";
-  value = [];
-  valueWithURI = {};
-  selectedValueWithUri = {};
+//   currentPage: number = 0;
+//   pageSize: number = 8000;
+//   options = [];
+//   search = "";
+//   value = [];
+//   valueWithURI = {};
+//   selectedValueWithUri = {};
 
-  created() {
-    this.options = [];
+//   created() {
+//     this.options = [];
 
-     EventBus.$on("imageTypeSelected", type => {
-      this.selectedExperiment = null;
-      this.selectedSoType = null;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
+//      EventBus.$on("imageTypeSelected", type => {
+//       this.selectedExperiment = null;
+//       this.selectedSoType = null;
+//       this.value = [];
+//       this.options = [];
+//       this.search = "";
+//     });
 
-    EventBus.$on("experienceHasChanged", experience => {
-      this.selectedExperiment = experience;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
+//     EventBus.$on("experienceHasChanged", experience => {
+//       this.selectedExperiment = experience;
+//       this.value = [];
+//       this.options = [];
+//       this.search = "";
+//     });
 
-    EventBus.$on("soTypeHasChanged", type => {
-      this.selectedSoType = type;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
+//     EventBus.$on("soTypeHasChanged", type => {
+//       this.selectedSoType = type;
+//       this.value = [];
+//       this.options = [];
+//       this.search = "";
+//     });
 
-  }
+//   }
 
-  onChange(selectedValue) {
-    console.log("onChange");
-    this.value.push(selectedValue);
-    this.selectedValueWithUri = {};
-    this.value.forEach(element => {
-      this.selectedValueWithUri[this.valueWithURI[element]] = element;
-    });
-    this.search = "";
-    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
-  }
+//   onChange(selectedValue) {
+//     console.log("onChange");
+//     this.value.push(selectedValue);
+//     this.selectedValueWithUri = {};
+//     this.value.forEach(element => {
+//       this.selectedValueWithUri[this.valueWithURI[element]] = element;
+//     });
+//     this.search = "";
+//     EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
+//   }
 
-  onRemove(index) {
-    this.value.splice(index, 1);
-    this.selectedValueWithUri = {};
-    this.value.forEach(element => {
-      this.selectedValueWithUri[this.valueWithURI[element]] = element;
-    });
+//   onRemove(index) {
+//     this.value.splice(index, 1);
+//     this.selectedValueWithUri = {};
+//     this.value.forEach(element => {
+//       this.selectedValueWithUri[this.valueWithURI[element]] = element;
+//     });
 
-    this.search = "";
-    EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
-  }
+//     this.search = "";
+//     EventBus.$emit("searchObjectSelected", this.selectedValueWithUri);
+//   }
 
-  onWrite(value) {
-    if (this.options.includes(value)) {
-      this.onChange(value);
+//   onWrite(value) {
+//     if (this.options.includes(value)) {
+//       this.onChange(value);
 
-    } else {
-      this.alias = value;
-      let service = this.$opensilex.getService(
-        "opensilex.ScientificObjectsService"
-      );
-      if (this.selectedExperiment === null) {
-        this.selectedExperiment = undefined;
-      }
-      if (this.selectedSoType === null) {
-        this.selectedSoType = undefined;
-      }
+//     } else {
+//       this.alias = value;
+//       let service = this.$opensilex.getService(
+//         "opensilex.ScientificObjectsService"
+//       );
+//       if (this.selectedExperiment === null) {
+//         this.selectedExperiment = undefined;
+//       }
+//       if (this.selectedSoType === null) {
+//         this.selectedSoType = undefined;
+//       }
       
-      const result = service
-        .getScientificObjectsBySearch(
-          this.pageSize,
-          this.currentPage,
-          undefined,
-          this.selectedExperiment,
-          this.alias,
-          this.selectedSoType
-        )
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<any>>>
-          ) => {
-            const res = http.response.result as any;
-            const data = res.data;
-            this.options = [];
-            data.forEach(element => {
-              this.options.push(element.label);
-              this.valueWithURI[element.label] = element.uri;
-            });
-          }
-        )
-        .catch(error => {
-          console.log(error);
-          this.options = [];
-        });
-    }
-  }
+//       const result = service
+//         .getScientificObjectsBySearch(
+//           this.pageSize,
+//           this.currentPage,
+//           undefined,
+//           this.selectedExperiment,
+//           this.alias,
+//           this.selectedSoType
+//         )
+//         .then(
+//           (
+//             http: HttpResponse<OpenSilexResponse<Array<any>>>
+//           ) => {
+//             const res = http.response.result as any;
+//             const data = res.data;
+//             this.options = [];
+//             data.forEach(element => {
+//               this.options.push(element.label);
+//               this.valueWithURI[element.label] = element.uri;
+//             });
+//           }
+//         )
+//         .catch(error => {
+//           console.log(error);
+//           this.options = [];
+//         });
+//     }
+//   }
 
-  onEnter() {
-    console.log("enter");
-  }
-}
+//   onEnter() {
+//     console.log("enter");
+//   }
+// }
 </script>
 
 

@@ -30,26 +30,9 @@
         <version>${revision}</version>
         <relativePath>../opensilex-module/pom.xml</relativePath>
     </parent>
-   
-    
-       
     
     <build>
         <plugins>
-            <!-- Generate swagger.json file -->
-            <!--<plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
-            </plugin>-->
-            
-            <!-- Generate TypeScript library from swagger.json file -->
-            <!--<plugin>
-                <groupId>org.opensilex</groupId>
-                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
-                <version>${revision}</version>
-            </plugin>-->
-            
             <plugin>
                 <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
                 <artifactId>serviceloader-maven-plugin</artifactId>

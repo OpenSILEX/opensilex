@@ -1,7 +1,0 @@
-//******************************************************************************
-//                                ${nameAndExt}
-// SILEX-PHIS
-// Copyright © INRA ${date?date?string("yyyy")}
-// Creation date: ${date}
-// Contact: ${userEmail}, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************

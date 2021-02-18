@@ -44,8 +44,6 @@ import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import { Image } from "./image";
 
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
-
 @Component
 export default class VisuImageSingle extends Vue {
   show: boolean = true;

@@ -13,87 +13,87 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
-import Vue from "vue";
-import { EventBus } from "./../event-bus";
-import { Image } from "./../image";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+// import { Component, Prop } from "vue-property-decorator";
+// import Vue from "vue";
+// import { EventBus } from "./../event-bus";
+// import { Image } from "./../image";
+// import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
-@Component
-export default class ImageSingle extends Vue {
-  @Prop()
-  image: Image;
-  @Prop()
-  index: any;
-  $opensilex: any;
-  $store: any;
-  get user() {
-    return this.$store.state.user;
-  }
+// @Component
+// export default class ImageSingle extends Vue {
+//   @Prop()
+//   image: Image;
+//   @Prop()
+//   index: any;
+//   $opensilex: any;
+//   $store: any;
+//   get user() {
+//     return this.$store.state.user;
+//   }
 
-  link: string = "";
-  objectType: string = "";
-  objectUri: string = "";
-  objectAlias: string = "";
-  formatedDateValue: string = "";
+//   link: string = "";
+//   objectType: string = "";
+//   objectUri: string = "";
+//   objectAlias: string = "";
+//   formatedDateValue: string = "";
 
-  created() {
-    this.link = this.image.uri;
+//   created() {
+//     this.link = this.image.uri;
 
-    this.formatedDateValue = this.formatedDate(this.image.date);
-    this.objectType = this.image.objectType.split("#")[1];
-    if (this.image.objectAlias) {
-      this.objectAlias = this.image.objectAlias;
-    } else {
-      this.objectUri = this.image.objectUri;
-    }
-  }
+//     this.formatedDateValue = this.formatedDate(this.image.date);
+//     this.objectType = this.image.objectType.split("#")[1];
+//     if (this.image.objectAlias) {
+//       this.objectAlias = this.image.objectAlias;
+//     } else {
+//       this.objectUri = this.image.objectUri;
+//     }
+//   }
 
-  mounted() {
-    //this.getObjectAlias();
-  }
+//   mounted() {
+//     //this.getObjectAlias();
+//   }
 
-  getObjectAlias() {
-    let service = this.$opensilex.getService(
-      "opensilex.ScientificObjectsService"
-    );
-    const result = service
-      .getScientificObjectsBySearch(
-        1,
-        0,
-        this.image.objectUri,
-        undefined,
-        undefined,
-        undefined
-      )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-          const res = http.response.result as any;
-          this.image.objectAlias = res.data[0].label;
-          this.objectAlias = res.data[0].label;
-        }
-      )
-      .catch(error => {
-        console.log(error);
-      });
-  }
+//   getObjectAlias() {
+//     let service = this.$opensilex.getService(
+//       "opensilex.ScientificObjectsService"
+//     );
+//     const result = service
+//       .getScientificObjectsBySearch(
+//         1,
+//         0,
+//         this.image.objectUri,
+//         undefined,
+//         undefined,
+//         undefined
+//       )
+//       .then(
+//         (http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+//           const res = http.response.result as any;
+//           this.image.objectAlias = res.data[0].label;
+//           this.objectAlias = res.data[0].label;
+//         }
+//       )
+//       .catch(error => {
+//         console.log(error);
+//       });
+//   }
 
-  formatedDate(date) {
-    const newDate = new Date(date);
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    };
-    return newDate.toLocaleDateString("fr-FR", options);
-  }
-  imageClicked() {
-    console.log(this.index);
-    EventBus.$emit("imageIsClicked", this.index);
-  }
-}
+//   formatedDate(date) {
+//     const newDate = new Date(date);
+//     const options = {
+//       year: "numeric",
+//       month: "short",
+//       day: "numeric",
+//       hour: "2-digit",
+//       minute: "2-digit"
+//     };
+//     return newDate.toLocaleDateString("fr-FR", options);
+//   }
+//   imageClicked() {
+//     console.log(this.index);
+//     EventBus.$emit("imageIsClicked", this.index);
+//   }
+// }
 </script>
 
 <style scoped lang="scss">

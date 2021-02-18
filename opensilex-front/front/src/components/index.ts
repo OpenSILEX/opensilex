@@ -468,30 +468,30 @@ components["opensilex-DataHelpTableView"] = DataHelpTableView;
 
 // PHIS
 //IMAGES
-import ImageList from './phis/images/ImageList.vue';
-components["opensilex-ImageList"] = ImageList;
-import ImageView from './phis/images/ImageView.vue';
-components["opensilex-ImageView"] = ImageView;
-import ImageSearch from './phis/images/ImageSearch.vue';
-components["opensilex-ImageSearch"] = ImageSearch;
-import ImageGrid from './phis/images/viewComponents/ImageGrid.vue';
-components["opensilex-ImageGrid"] = ImageGrid;
-import ImageSingle from './phis/images/viewComponents/ImageSingle.vue';
-components["opensilex-ImageSingle"] = ImageSingle;
-import ImageCarousel from './phis/images/viewComponents/ImageCarousel.vue';
-components["opensilex-ImageCarousel"] = ImageCarousel;
-import SciObjectURISearch from './phis/images/searchComponents/SciObjectURISearch.vue';
-components["opensilex-SciObjectURISearch"] = SciObjectURISearch;
-import SciObjectAliasSearch from './phis/images/searchComponents/SciObjectAliasSearch.vue';
-components["opensilex-SciObjectAliasSearch"] = SciObjectAliasSearch;
-import ImageTypeSearch from './phis/images/searchComponents/ImageTypeSearch.vue';
-components["opensilex-ImageTypeSearch"] = ImageTypeSearch;
-import ExperimentSearch from './phis/images/searchComponents/ExperimentSearch.vue';
-components["opensilex-ExperimentSearch"] = ExperimentSearch;
-import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSearch.vue';
-components["opensilex-SciObjectTypeSearch"] = SciObjectTypeSearch;
-import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
-components["opensilex-TimeSearch"] = TimeSearch;
+// import ImageList from './phis/images/ImageList.vue';
+// components["opensilex-ImageList"] = ImageList;
+// import ImageView from './phis/images/ImageView.vue';
+// components["opensilex-ImageView"] = ImageView;
+// import ImageSearch from './phis/images/ImageSearch.vue';
+// components["opensilex-ImageSearch"] = ImageSearch;
+// import ImageGrid from './phis/images/viewComponents/ImageGrid.vue';
+// components["opensilex-ImageGrid"] = ImageGrid;
+// import ImageSingle from './phis/images/viewComponents/ImageSingle.vue';
+// components["opensilex-ImageSingle"] = ImageSingle;
+// import ImageCarousel from './phis/images/viewComponents/ImageCarousel.vue';
+// components["opensilex-ImageCarousel"] = ImageCarousel;
+// import SciObjectURISearch from './phis/images/searchComponents/SciObjectURISearch.vue';
+// components["opensilex-SciObjectURISearch"] = SciObjectURISearch;
+// import SciObjectAliasSearch from './phis/images/searchComponents/SciObjectAliasSearch.vue';
+// components["opensilex-SciObjectAliasSearch"] = SciObjectAliasSearch;
+// import ImageTypeSearch from './phis/images/searchComponents/ImageTypeSearch.vue';
+// components["opensilex-ImageTypeSearch"] = ImageTypeSearch;
+// import ExperimentSearch from './phis/images/searchComponents/ExperimentSearch.vue';
+// components["opensilex-ExperimentSearch"] = ExperimentSearch;
+// import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSearch.vue';
+// components["opensilex-SciObjectTypeSearch"] = SciObjectTypeSearch;
+// import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
+// components["opensilex-TimeSearch"] = TimeSearch;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';

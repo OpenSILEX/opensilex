@@ -11,68 +11,68 @@
 </template>
 
 
-<script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
-import VueRouter from "vue-router";
-import { EventBus } from "./../event-bus";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
-import { Uri } from "opensilex-phis/model/uri";
-import { UriService } from "opensilex-phis/index";
+// <script lang="ts">
+// import { Component } from "vue-property-decorator";
+// import Vue from "vue";
+// import VueRouter from "vue-router";
+// import { EventBus } from "./../event-bus";
+// import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+// import { Uri } from "opensilex-phis/model/uri";
+// import { UriService } from "opensilex-phis/index";
 
-@Component
-export default class ImageTypeSearch extends Vue {
-  $opensilex: any;
-  $store: any;
-  $route: any;
+// @Component
+// export default class ImageTypeSearch extends Vue {
+//   $opensilex: any;
+//   $store: any;
+//   $route: any;
 
-  get user() {
-    return this.$store.state.user;
-  }
-  $router: VueRouter;
-  rdfType: string = null;
-  types: any = [];
+//   get user() {
+//     return this.$store.state.user;
+//   }
+//   $router: VueRouter;
+//   rdfType: string = null;
+//   types: any = [];
 
-  imageTypeUri: string = "http://www.opensilex.org/vocabulary/oeso#Image";
+//   imageTypeUri: string = "http://www.opensilex.org/vocabulary/oeso#Image";
 
-  update() {
-    this.$router
-      .push({
-        path: this.$route.fullPath,
-        query: {
-          rdfType: encodeURI(this.rdfType)
-        }
-      })
-      .catch(function() {});
-    EventBus.$emit("imageTypeSelected", this.rdfType);
-  }
-  created() {
-    let service: UriService = this.$opensilex.getService(
-      "opensilex.UriService"
-    );
-    const result = service
-      .getDescendants(
-        this.imageTypeUri,
-        100,
-        0
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<Uri>>>) => {
-        const res = http.response.result as any;
-        res.data.forEach(element => {
-          this.types.push({
-            value: element.uri,
-            text: element.uri.split("#")[1]
-          });
-        });
-        let query: any = this.$route.query;
-        if (query.rdfType) {
-          this.rdfType = query.rdfType;
+//   update() {
+//     this.$router
+//       .push({
+//         path: this.$route.fullPath,
+//         query: {
+//           rdfType: encodeURI(this.rdfType)
+//         }
+//       })
+//       .catch(function() {});
+//     EventBus.$emit("imageTypeSelected", this.rdfType);
+//   }
+//   created() {
+//     let service: UriService = this.$opensilex.getService(
+//       "opensilex.UriService"
+//     );
+//     const result = service
+//       .getDescendants(
+//         this.imageTypeUri,
+//         100,
+//         0
+//       )
+//       .then((http: HttpResponse<OpenSilexResponse<Array<Uri>>>) => {
+//         const res = http.response.result as any;
+//         res.data.forEach(element => {
+//           this.types.push({
+//             value: element.uri,
+//             text: element.uri.split("#")[1]
+//           });
+//         });
+//         let query: any = this.$route.query;
+//         if (query.rdfType) {
+//           this.rdfType = query.rdfType;
          
-        }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-}
+//         }
+//       })
+//       .catch(this.$opensilex.errorHandler);
+//   }
+// }
 </script>
 
 <style scoped >

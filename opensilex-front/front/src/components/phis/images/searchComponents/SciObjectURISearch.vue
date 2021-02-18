@@ -31,118 +31,118 @@
 
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
-import Vue from "vue";
+// import { Component } from "vue-property-decorator";
+// import Vue from "vue";
 
-import { EventBus } from "./../event-bus";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
+// import { EventBus } from "./../event-bus";
+// import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 
-@Component
-export default class SciObjectURISearch extends Vue {
-  $opensilex: any;
-  $store: any;
-  get user() {
-    return this.$store.state.user;
-  }
-  selectedExperiment: any;
-  selectedSoType: any;
-  uri: any = undefined;
+// @Component
+// export default class SciObjectURISearch extends Vue {
+//   $opensilex: any;
+//   $store: any;
+//   get user() {
+//     return this.$store.state.user;
+//   }
+//   selectedExperiment: any;
+//   selectedSoType: any;
+//   uri: any = undefined;
 
-  currentPage: number = 0;
-  pageSize: number = 8000;
-  options = [];
-  search = "";
-  value = [];
-  valueWithLabel = {};
+//   currentPage: number = 0;
+//   pageSize: number = 8000;
+//   options = [];
+//   search = "";
+//   value = [];
+//   valueWithLabel = {};
 
-  created() {
-    this.options = [];
-    // EventBus.$on("imageTypeSelected", type => {
-    //   this.selectedExperiment = null;
-    //   this.selectedSoType = null;
-    //   this.value = [];
-    //   this.options = [];
-    //   this.search = "";
-    // });
-    EventBus.$on("experienceHasChanged", experience => {
-      this.selectedExperiment = experience;
-      this.selectedSoType = null;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
+//   created() {
+//     this.options = [];
+//     // EventBus.$on("imageTypeSelected", type => {
+//     //   this.selectedExperiment = null;
+//     //   this.selectedSoType = null;
+//     //   this.value = [];
+//     //   this.options = [];
+//     //   this.search = "";
+//     // });
+//     EventBus.$on("experienceHasChanged", experience => {
+//       this.selectedExperiment = experience;
+//       this.selectedSoType = null;
+//       this.value = [];
+//       this.options = [];
+//       this.search = "";
+//     });
 
-    EventBus.$on("soTypeHasChanged", type => {
-      this.selectedSoType = type;
-      this.value = [];
-      this.options = [];
-      this.search = "";
-    });
-  }
+//     EventBus.$on("soTypeHasChanged", type => {
+//       this.selectedSoType = type;
+//       this.value = [];
+//       this.options = [];
+//       this.search = "";
+//     });
+//   }
 
-  onChange(selectedValue) {
-    console.log("onChange");
-    console.log("Values: " + this.value);
-    this.value.push(selectedValue);
-    this.search = "";
-    EventBus.$emit("URIObjectSelected", this.value);
-  }
+//   onChange(selectedValue) {
+//     console.log("onChange");
+//     console.log("Values: " + this.value);
+//     this.value.push(selectedValue);
+//     this.search = "";
+//     EventBus.$emit("URIObjectSelected", this.value);
+//   }
 
-  onRemove(index) {
-    console.log("onRemove");
-    console.log("Values before: " + this.value);
-    this.value.splice(index, 1);
-    console.log("Values: " + this.value);
-    this.search = "";
-    EventBus.$emit("URIObjectSelected", this.value);
-  }
+//   onRemove(index) {
+//     console.log("onRemove");
+//     console.log("Values before: " + this.value);
+//     this.value.splice(index, 1);
+//     console.log("Values: " + this.value);
+//     this.search = "";
+//     EventBus.$emit("URIObjectSelected", this.value);
+//   }
 
-  onWrite(value) {
-    if (this.options.includes(value)) {
-      this.onChange(value);
-    } else {
-      this.uri = value;
-      let service = this.$opensilex.getService(
-        "opensilex.ScientificObjectsService"
-      );
-      if (this.selectedExperiment === null) {
-        this.selectedExperiment = undefined;
-      }
-      if (this.selectedSoType === null) {
-        this.selectedSoType = undefined;
-      }
+//   onWrite(value) {
+//     if (this.options.includes(value)) {
+//       this.onChange(value);
+//     } else {
+//       this.uri = value;
+//       let service = this.$opensilex.getService(
+//         "opensilex.ScientificObjectsService"
+//       );
+//       if (this.selectedExperiment === null) {
+//         this.selectedExperiment = undefined;
+//       }
+//       if (this.selectedSoType === null) {
+//         this.selectedSoType = undefined;
+//       }
 
-      const result = service
-        .getScientificObjectsBySearch(
-          this.pageSize,
-          this.currentPage,
-          this.uri,
-          this.selectedExperiment,
-          undefined,
-          this.selectedSoType
-        )
-        .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<any>>>
-          ) => {
-            const res = http.response.result as any;
-            const data = res.data;
-            this.options = [];
-            data.forEach(element => {
-              this.options.push(element.uri);
-              this.valueWithLabel[element.uri] = element.label;
-            });
-          }
-        )
-        .catch(error => {
-          console.log(error);
-          this.options = [];
-        });
-    }
-  }
+//       const result = service
+//         .getScientificObjectsBySearch(
+//           this.pageSize,
+//           this.currentPage,
+//           this.uri,
+//           this.selectedExperiment,
+//           undefined,
+//           this.selectedSoType
+//         )
+//         .then(
+//           (
+//             http: HttpResponse<OpenSilexResponse<Array<any>>>
+//           ) => {
+//             const res = http.response.result as any;
+//             const data = res.data;
+//             this.options = [];
+//             data.forEach(element => {
+//               this.options.push(element.uri);
+//               this.valueWithLabel[element.uri] = element.label;
+//             });
+//           }
+//         )
+//         .catch(error => {
+//           console.log(error);
+//           this.options = [];
+//         });
+//     }
+//   }
 
   
-}
+// }
 </script>
 
 

@@ -101,9 +101,6 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 
 import Vue from "vue";
 
-import VueConstructor from "vue";
-import { ProvenancesService, ProvenanceDTO } from "opensilex-phis/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-phis/HttpResponse";
 import {
   VariablesService,
   VariableGetDTO,
@@ -137,7 +134,6 @@ class DataFilter {
 @Component
 export default class VisuForm extends Vue {
   $opensilex: any;
-  provenancesService: ProvenancesService;
   variablesService: VariablesService;
 
   showSearchComponent: boolean = false;

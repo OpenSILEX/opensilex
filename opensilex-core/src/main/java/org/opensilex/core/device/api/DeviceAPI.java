@@ -103,7 +103,7 @@ public class DeviceAPI {
 
     public Response createDevice(
             @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
-            @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
+            @ApiParam(value = "Checking only", example = "false", required = true) @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         ErrorResponse error = check(deviceDTO, deviceDAO);

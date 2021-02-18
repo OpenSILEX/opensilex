@@ -35,7 +35,12 @@ public class OrderBy {
         String[] orderParts = orderByStr.split("=");
         if (orderParts.length <= 2 && orderParts[0].length() > 0) {
             // "camel_case" returns "camelCase"
-            fieldName = CaseUtils.toCamelCase(orderParts[0], false, new char[]{'_'}); 
+            if (orderParts[0].contains("_")) {
+                fieldName = CaseUtils.toCamelCase(orderParts[0], false, new char[]{'_'});
+            } else {
+                fieldName = orderParts[0];
+            }
+            
             String fieldOrder = orderParts[1];
             if (fieldOrder.equalsIgnoreCase("desc") || fieldOrder.equals("1") || fieldOrder.equalsIgnoreCase("true")) {
                 order = Order.DESCENDING;
@@ -68,5 +73,5 @@ public class OrderBy {
     @Override
     public String toString() {
         return fieldName + ":" + order.toString(); //To change body of generated methods, choose Tools | Templates.
-    } 
+    }
 }

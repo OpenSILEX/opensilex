@@ -142,6 +142,8 @@ import IconForm from './common/forms/IconForm.vue'
 components["opensilex-IconForm"] = IconForm;
 import DateTimeForm from './common/forms/DateTimeForm.vue'
 components["opensilex-DateTimeForm"] = DateTimeForm;
+import DateForm from './common/forms/DateForm.vue'
+components["opensilex-DateForm"] = DateForm;
 import GeometryForm from './common/forms/GeometryForm.vue'
 components["opensilex-GeometryForm"] = GeometryForm;
 

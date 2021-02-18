@@ -54,6 +54,8 @@ export default class ScientificObjectParentPropertySelector extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
+        undefined,
         [],
         page,
         pageSize

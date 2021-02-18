@@ -6,12 +6,15 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
@@ -26,6 +29,7 @@ import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -103,7 +107,7 @@ public class ScientificObjectDAO {
                 pageSize);
     }
 
-    public ListWithPagination<ScientificObjectModel> search(URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factorLevels, URI facility, Integer page, Integer pageSize,  List<OrderBy> orderByList, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectModel> search(URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, URI germplasm, List<URI> factorLevels, URI facility, LocalDate existenceDate, LocalDate creationDate, Integer page, Integer pageSize, List<OrderBy> orderByList, UserModel currentUser) throws Exception {
         final Node contextNode;
         if (contextURI != null) {
             contextNode = SPARQLDeserializers.nodeURI(contextURI);
@@ -127,7 +131,6 @@ public class ScientificObjectDAO {
                         Path deepPartOf = new P_OneOrMore1(new P_Link(Oeso.isPartOf.asNode()));
                         select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), deepPartOf, SPARQLDeserializers.nodeURI(parentURI));
                     }
-
 
                     if (factorLevels != null && factorLevels.size() > 0) {
                         if (contextURI != null) {
@@ -167,6 +170,31 @@ public class ScientificObjectDAO {
                                 SPARQLQueryHelper.eq("__directFacility", facilityNode),
                                 SPARQLQueryHelper.eq("__parentFacility", facilityNode)
                         ));
+                    }
+
+                    DateDeserializer dateDeserializer = new DateDeserializer();
+                    ExprFactory exprFactory = new ExprFactory();
+                    if (existenceDate != null) {
+                        Node uriVar = NodeFactory.createVariable(ScientificObjectModel.URI_FIELD);
+                        Node creationDateVar = NodeFactory.createVariable(ScientificObjectModel.CREATION_DATE_FIELD);
+                        Node destructionDateVar = NodeFactory.createVariable(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
+
+                        WhereBuilder optionalDestructionDate = new WhereBuilder();
+                        optionalDestructionDate.addWhere(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+                        select.addFilter(
+                                exprFactory.and(
+                                        exprFactory.le(creationDateVar, dateDeserializer.getNode(existenceDate)),
+                                        exprFactory.or(
+                                                exprFactory.not(exprFactory.exists(optionalDestructionDate)),
+                                                exprFactory.ge(destructionDateVar, dateDeserializer.getNode(existenceDate))
+                                        )
+                                )
+                        );
+                    }
+
+                    if (creationDate != null) {
+                        Node creationDateVar = NodeFactory.createVariable(ScientificObjectModel.CREATION_DATE_FIELD);
+                        select.addFilter(exprFactory.eq(creationDateVar, dateDeserializer.getNode(creationDate)));
                     }
                 },
                 orderByList,

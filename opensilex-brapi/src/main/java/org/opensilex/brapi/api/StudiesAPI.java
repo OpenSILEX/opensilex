@@ -273,6 +273,8 @@ public class StudiesAPI implements BrapiCall {
                 null,
                 null,
                 null,
+                null,
+                null,
                 page, 
                 limit, 
                 null, 

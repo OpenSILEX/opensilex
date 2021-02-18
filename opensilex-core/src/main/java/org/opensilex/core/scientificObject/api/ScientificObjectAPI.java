@@ -66,6 +66,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -301,6 +302,8 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
@@ -314,7 +317,7 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factorLevels, facility, page, pageSize, orderByList, currentUser);
+        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factorLevels, facility, existenceDate, creationDate, page, pageSize, orderByList, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
 

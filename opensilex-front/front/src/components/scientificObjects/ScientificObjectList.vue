@@ -70,7 +70,6 @@
           ></opensilex-GermplasmSelector>
         </opensilex-FilterField>
         <!-- Factors levels -->
-
         <opensilex-FilterField>
           <b-form-group>
             <label for="factorLevels">
@@ -83,6 +82,20 @@
               :required="false"
             ></opensilex-FactorLevelSelector>
           </b-form-group>
+        </opensilex-FilterField>
+        <!-- Exists -->
+        <opensilex-FilterField>
+          <opensilex-DateForm
+            :value.sync="filter.existenceDate"
+            label="ScientificObjectList.existenceDate"
+          ></opensilex-DateForm>
+        </opensilex-FilterField>
+        <!-- Created -->
+        <opensilex-FilterField>
+          <opensilex-DateForm
+            :value.sync="filter.creationDate"
+            label="ScientificObjectList.creationDate"
+          ></opensilex-DateForm>
         </opensilex-FilterField>
       </template>
     </opensilex-SearchFilterField>
@@ -209,6 +222,16 @@ export default class ScientificObjectList extends Vue {
       sortable: true,
     },
     {
+      key: "creation_date",
+      label: "ScientificObjectList.creationDate",
+      sortable: true,
+    },
+    {
+      key: "destruction_date",
+      label: "ScientificObjectList.destructionDate",
+      sortable: true,
+    },
+    {
       key: "actions",
       label: "component.common.actions",
     },
@@ -239,6 +262,8 @@ export default class ScientificObjectList extends Vue {
     germplasm: undefined,
     factorLevels: [],
     types: [],
+    existenceDate: undefined,
+    creationDate: undefined,
   };
 
   get user() {
@@ -256,6 +281,8 @@ export default class ScientificObjectList extends Vue {
       germplasm: undefined,
       factorLevels: [],
       types: [],
+      existenceDate: undefined,
+      creationDate: undefined,
     };
     this.refresh();
   }
@@ -276,6 +303,8 @@ export default class ScientificObjectList extends Vue {
       this.filter.germplasm ? this.filter.germplasm : undefined,
       this.filter.factorLevels, // factorLevels?: Array<string>,
       undefined, // facility?: string,
+      this.filter.existenceDate ? this.filter.existenceDate : undefined,
+      this.filter.creationDate ? this.filter.creationDate : undefined,
       options.orderBy,
       options.currentPage, // page?: number,
       options.pageSize // pageSize?: number
@@ -390,6 +419,9 @@ en:
       position: Filter by Spatial Position
       factors: Filter by Factors
       dates: Filter by Dates
+    creationDate:  Creation date
+    destructionDate: Destruction date
+    existenceDate: Object exists
 fr:
   ScientificObjectList:
     name-placeholder: Saisir un nom
@@ -425,5 +457,7 @@ fr:
       position: Filtrer par Position Spaciale
       factors: Filtrer par Facteurs
       dates: Filtrer par Dates
-
+    creationDate:  Date de création
+    destructionDate: Date de destruction
+    existenceDate: Date d'existance
 </i18n>

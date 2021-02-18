@@ -368,6 +368,8 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // Germplasm
         undefined, // factorLevels?: Array<string>,
         undefined, // facility?: string,
+        undefined,
+        undefined,
         [], // orderBy?: ,
         page, // page?: number,
         pageSize // pageSize?: number

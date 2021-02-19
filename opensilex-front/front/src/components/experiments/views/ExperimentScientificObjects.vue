@@ -351,6 +351,8 @@ export default class ExperimentScientificObjects extends Vue {
         undefined,
         this.filters.factorLevels,
         undefined,
+        undefined,
+        undefined,
         [],
         page,
         pageSize

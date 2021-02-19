@@ -757,7 +757,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#ClayeyArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ClayeyArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
         <rdfs:label xml:lang="en">Clayey area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone argileuse</rdfs:label>
     </owl:Class>
@@ -970,7 +970,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
     </owl:Class>
     
 
@@ -1683,12 +1683,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureTeam"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea"/>
     
 
 

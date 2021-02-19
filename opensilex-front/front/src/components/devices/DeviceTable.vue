@@ -200,7 +200,6 @@ export default class DeviceTable extends Vue {
     return new Promise((resolve,reject) => {ontoService
       .getClass(this.$attrs.deviceType,parent)
       .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
-        console.log(http.response.result);
         this.measure = true;
         resolve(this.measure);
       })
@@ -220,7 +219,6 @@ export default class DeviceTable extends Vue {
     ontoService
       .getSubClassesOf(this.$attrs.deviceType, true)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
         for (let i = 0; i < http.response.result.length; i++) {
             let resourceDTO = http.response.result[i];
             this.deviceTypes.push({
@@ -233,8 +231,6 @@ export default class DeviceTable extends Vue {
   }
 
   async updateColumns() {
-    console.log(this.$attrs.deviceType);
-
     this.measure = false;
     let measureType = ['SensingDevice','Actuator','SoftSensor'];
     let idx = 0;
@@ -390,7 +386,6 @@ export default class DeviceTable extends Vue {
   addRow() {
     let size = this.tabulator.getData().length;
     this.tabulator.addRow({ rowNumber: size + 1});
-    console.log(this.tabulator.getData().length);
   }
 
   resetModal() {

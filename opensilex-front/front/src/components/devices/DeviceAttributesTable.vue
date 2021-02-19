@@ -50,10 +50,7 @@ export default class DeviceAttributesTable extends Vue {
   @Ref("langInput") readonly langInput!: any;
 
   @Prop()
-  editMode: boolean;
-
-  // @Prop({ default: [] })
-  // attributesArray: any[];  
+  editMode: boolean; 
 
   @Prop()
   attributesArray;
@@ -87,7 +84,6 @@ export default class DeviceAttributesTable extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DeviceService");
-    //this.getAttributes();
   }
 
   options: any = {
@@ -135,19 +131,6 @@ export default class DeviceAttributesTable extends Vue {
     }
     return attributes;
   }
-
-  // getAttributes() {
-
-  //   if (this.attributesMap != null) {   
-  //     for (const property in this.attributesMap) {
-  //       let att = {
-  //         attribute: property,
-  //         value: this.attributesMap[property]
-  //       }
-  //       this.attributesArray.push(att);
-  //     } 
-  //   }
-  // }
 }
 </script>
 

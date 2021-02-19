@@ -79,7 +79,6 @@ export default class DeviceCreate extends Vue {
     ontoService
       .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        console.log(http.response.result);
         for (let i = 0; i < http.response.result.length; i++) {
             let resourceDTO = http.response.result[i];
             this.deviceTypes.push({
@@ -93,7 +92,6 @@ export default class DeviceCreate extends Vue {
 
   refreshTable() {
     let deviceTable: any = this.deviceTable;
-    console.log(this.selectedType);    
     this.tabulatorRefresh++;
     deviceTable.updateColumns();
   }

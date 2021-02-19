@@ -97,7 +97,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a device", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "A device is created", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
     })
 

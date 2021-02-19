@@ -21,6 +21,8 @@ let ontologies = {
     AREA_TYPE_URI: OESO_URI + "#Area",
     OPERATOR_TYPE_URI: OESO_URI + "#Operator",
     SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
+    DEVICE_TYPE_URI: OESO_URI + '#Device'
+
 };
 
 export default ontologies;

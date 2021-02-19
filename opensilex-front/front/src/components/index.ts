@@ -536,5 +536,22 @@ components["opensilex-AnnotationForm"] = AnnotationForm;
 import AnnotationList from './annotations/list/AnnotationList.vue';
 components["opensilex-AnnotationList"] = AnnotationList;
 
+// DEVICES
+import DeviceView from './devices/DeviceView.vue';
+components["opensilex-DeviceView"] = DeviceView;
+import DeviceList from './devices/DeviceList.vue';
+components["opensilex-DeviceList"] = DeviceList;
+import DeviceDetails from './devices/DeviceDetails.vue';
+components["opensilex-DeviceDetails"] = DeviceDetails;
+import DeviceDescription from './devices/details/DeviceDescription.vue';
+components["opensilex-DeviceDescription"] = DeviceDescription;
+import DeviceCreate from './devices/DeviceCreate.vue';
+components["opensilex-DeviceCreate"] = DeviceCreate;
+import DeviceTable from './devices/DeviceTable.vue';
+components["opensilex-DeviceTable"] = DeviceTable;
+import DeviceAttributesTable from './devices/DeviceAttributesTable.vue';
+components["opensilex-DeviceAttributesTable"] = DeviceAttributesTable;
+import DeviceForm from './devices/DeviceForm.vue';
+components["opensilex-DeviceForm"] = DeviceForm;
 
 export default components;

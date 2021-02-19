@@ -271,10 +271,7 @@ export default class MapView extends Vue {
         (feature) => feature
     );
     if (hitFeature) {
-      this.selectPointerMove = [
-        hitFeature.values_.name,
-        this.nameType(hitFeature.values_.type),
-      ];
+      this.selectPointerMove = [hitFeature.values_.name, this.nameType(hitFeature.values_.type)];
     } else {
       this.selectPointerMove = [];
     }
@@ -483,17 +480,8 @@ export default class MapView extends Vue {
   }
 
   private areaRecovery() {
-    let coordinateExtent = transformExtent(
-        this.mapView.$view.calculateExtent(),
-        "EPSG:3857",
-        "EPSG:4326"
-    );
-    this.overlayCoordinate = [
-      coordinateExtent[0] +
-      (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
-      coordinateExtent[3] +
-      (coordinateExtent[1] - coordinateExtent[3]) * 0.025747,
-    ];
+    let coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
+    this.overlayCoordinate = [coordinateExtent[0] + (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111, coordinateExtent[3] + (coordinateExtent[1] - coordinateExtent[3]) * 0.025747];
 
     let geometry = {
       type: "Polygon",
@@ -581,7 +569,7 @@ p {
 
 .panel-content {
   background: white;
-  box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
+  box-shadow: 0 .25em .5em transparentize(#000000, 0.8);
   border-radius: 5px;
   text-indent: 2px;
 }
@@ -603,7 +591,7 @@ en:
     Legend: Legend
     LegendSO: Scientific Object
     LegendArea: Area
-    Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift + Alt + Click and move the mouse to rotate the map. Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.
+    Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift + Alt + left Click and move the mouse to rotate the map. Press Ctrl + left Click while dragging to <b>select multiple scientific objects</b>.
   Area:
     title: Area
     add: Description of the area
@@ -623,7 +611,7 @@ fr:
     Legend: Légende
     LegendSO: Objet scientifique
     LegendArea: Zone
-    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic  gauche  puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic gauche tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
   Area:
     title: Zone
     add: Description de la zone

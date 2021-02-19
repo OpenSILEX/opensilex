@@ -14,11 +14,11 @@ import java.util.List;
  */
 public class RDFObjectDTO {
 
-    private URI uri;
+    protected URI uri;
 
-    private URI type;
+    protected URI type;
 
-    private List<RDFObjectRelationDTO> relations;
+    protected List<RDFObjectRelationDTO> relations;
 
     public URI getUri() {
         return uri;

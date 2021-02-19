@@ -22,6 +22,11 @@ menu:
         route:
           path: /experiments
           component: opensilex-ExperimentListView
+      - id: devices
+        label: Devices
+        route:
+          path: /devices
+          component: opensilex-DeviceView
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -193,6 +198,17 @@ routes:
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
     credentials: []
+
+  - path: /device/details/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/documents/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/annotations/:uri
+    component: opensilex-DeviceDetails
+
+  - path: /devices/create
+    component: opensilex-DeviceCreate
+    credentials: [device-modification]
 # Route item example:
 #  - path: /users/create
 #    component: opensilex-UserCreate

@@ -41,7 +41,7 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("serial_number")
     protected String serialNumber;
     
-    @ApiModelProperty(value = "Person in charge", example = "")
+    @ApiModelProperty(value = "Person in charge", example = "http://opensilex.dev/users#Firstname.Lastname")
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
@@ -57,7 +57,7 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("rdf_type")
     protected URI type;
     
-    @ApiModelProperty(value = "comment")
+    @ApiModelProperty(value = "comment", example = "description")
     @JsonProperty("description")
     protected String description;
     

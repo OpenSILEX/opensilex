@@ -294,10 +294,10 @@ public class DataDAO {
         }
     }
     
-    public List<VariableModel> getVariablesByExperiment(URI xpUri, String language) throws Exception {
+    public List<VariableModel> getVariablesByExperiment(URI xpUri, List<URI> scientificObjects, String language) throws Exception {
         List<URI> experiments = new ArrayList();
         experiments.add(xpUri);                
-        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        Document filter = searchFilter(experiments, scientificObjects, null, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }

@@ -55,7 +55,7 @@
       ref="tableRef"
       :searchMethod="searchDevices"
       :fields="fields"
-      defaultSortBy="label"
+      defaultSortBy="name"
       :isSelectable="true"
       labelNumberOfSelectedRow="DeviceList.selected"
     >
@@ -130,8 +130,8 @@ export default class DeviceList extends Vue {
   }
 
   filter = {
-    rdf_type: undefined,
     namePattern: undefined,
+    rdf_type: undefined,
     start_up: undefined,
     brand: undefined,
     model: undefined
@@ -139,8 +139,8 @@ export default class DeviceList extends Vue {
 
   resetFilters() {
     this.filter = {
-      rdf_type: undefined,
       namePattern: undefined,
+      rdf_type: undefined,
       start_up: undefined,
       brand: undefined,
       model: undefined
@@ -209,8 +209,8 @@ export default class DeviceList extends Vue {
 
   searchDevices(options) {
     return this.service.searchDevices(
-      this.filter.rdf_type, // rdfTypes filter
       this.filter.namePattern, // namePattern filter
+      this.filter.rdf_type, // rdfTypes filter
       this.filter.start_up, // year filter
       this.filter.brand, // brandPattern filter
       this.filter.model, // model filter

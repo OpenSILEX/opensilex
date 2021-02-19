@@ -434,7 +434,7 @@ export default class ExperimentDetail extends Vue {
     return false;
   }
 
-   formatPeriod(startDateValue: string, endDateValue: string) {
+  formatPeriod(startDateValue: string, endDateValue: string) {
     let startDate = moment(startDateValue, "YYYY-MM-DD");
     let endDate;
     let result = this.$opensilex.formatDate(startDateValue);
@@ -446,6 +446,7 @@ export default class ExperimentDetail extends Vue {
       endDate = moment();
     }
 
+    endDate.add(1, 'days');
     let years = endDate.diff(startDate, 'year');
     startDate.add(years, 'years');
     let months = endDate.diff(startDate, 'months');

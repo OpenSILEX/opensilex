@@ -139,7 +139,7 @@ public class DeviceDAO {
         return sparql.searchWithPagination(
                 DeviceModel.class,
                 currentUser.getLanguage(),
-                (select) -> {
+                (SelectBuilder select) -> {
                     if (namePattern != null && !namePattern.trim().isEmpty()) {
                         select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
                     }

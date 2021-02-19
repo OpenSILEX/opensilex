@@ -185,23 +185,6 @@ export default class DeviceDescription extends Vue {
     }
   }
 
-  // variables = [];
-  // loadVariables(value : string) {
-  //   let service = this.$opensilex.getService("opensilex.VariablesService");
-  //   return service
-  //     .getVariable(value)
-  //     .then((http) => {
-  //       let variable = http.response.result;
-  //       this.variables.push({
-  //           uri: variable.uri,
-  //           value: variable.name,
-  //               to: {
-  //               path: "/variable/details/" + encodeURIComponent(variable.uri)
-  //             }
-  //         });
-  //     });
-  // }
-
   attributeFields = [
     {
       key: "attribute",

@@ -19,35 +19,45 @@ import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  *
  * @author sammy
  */
 public class DeviceDTO extends RDFObjectDTO {
-    
+
+    @ApiModelProperty(value = "Device name", example = "Sensor_01", required = true)
     protected String name;
     
+    @ApiModelProperty(value = "Device brand", example = "Campbell")
     protected String brand;
     
+    @ApiModelProperty(value = "Device model", example = "CS655")
     @JsonProperty("constructor_model")
     protected String constructorModel;
     
+    @ApiModelProperty(value = "Device serial number", example = "123456")
     @JsonProperty("serial_number")
     protected String serialNumber;
     
+    @ApiModelProperty(value = "Person in charge", example = "")
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
+    @ApiModelProperty(value = "Device date of start-up", example = "2018-12-12")
     @JsonProperty("start_up")
     protected LocalDate startUp;
-    
+
+    @ApiModelProperty(value = "Device date of removal", example = "2020-12-12")
     @JsonProperty("removal")
     protected LocalDate removal;
-    
+
+    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
     @JsonProperty("rdf_type")
     protected URI type;
     
+    @ApiModelProperty(value = "comment")
     @JsonProperty("description")
     protected String description;
     

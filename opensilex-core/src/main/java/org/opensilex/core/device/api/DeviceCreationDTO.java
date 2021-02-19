@@ -30,38 +30,33 @@ public class DeviceCreationDTO extends DeviceDTO {
     protected URI uri;
     
     @NotNull
-    @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
-    @JsonProperty("rdf_type")
-    protected URI type;
-    
+    @Override
+    public URI getType() {
+        return super.getType();
+    }
     @NotNull
-    @ApiModelProperty(value = "Device name", example = "Sensor_01", required = true)
-    protected String name;
+    @Override
+    public String getName() {
+        return super.getName();
+    }
     
-    @ApiModelProperty(value = "Device brand", example = "Campbell")
     protected String brand;
     
-    @ApiModelProperty(value = "Device model", example = "CS655")
     @JsonProperty("constructor_model")
     protected String constructorModel;
     
-    @ApiModelProperty(value = "Device serial number", example = "123456")
     @JsonProperty("serial_number")
     protected String serialNumber;
     
     @ValidURI
-    @ApiModelProperty(value = "Person in charge", example = "")
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
-    @ApiModelProperty(value = "Device date of start-up", example = "2018-12-12")
     @JsonProperty("start_up")
     protected LocalDate startUp;
     
-    @ApiModelProperty(value = "Device date of removal", example = "2020-12-12")
     protected LocalDate removal;
     
-    @ApiModelProperty(value = "comment")
     protected String description;
     
     @JsonProperty("metadata")

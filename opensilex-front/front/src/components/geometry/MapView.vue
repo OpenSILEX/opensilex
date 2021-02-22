@@ -271,7 +271,10 @@ export default class MapView extends Vue {
         (feature) => feature
     );
     if (hitFeature) {
-      this.selectPointerMove = [hitFeature.values_.name, this.nameType(hitFeature.values_.type)];
+      this.selectPointerMove = [
+        hitFeature.values_.name,
+        this.nameType(hitFeature.values_.type),
+      ];
     } else {
       this.selectPointerMove = [];
     }
@@ -374,7 +377,10 @@ export default class MapView extends Vue {
               }
             }
         )
-        .catch(this.$opensilex.errorHandler);
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.hideLoader();
+        })
   }
 
   mapCreated(map) {
@@ -412,7 +418,6 @@ export default class MapView extends Vue {
     extent[2] += 50;
     extent[3] += 50;
     this.mapView.$view.fit(extent);
-    this.$opensilex.hideLoader();
   }
 
   select(value) {
@@ -569,7 +574,7 @@ p {
 
 .panel-content {
   background: white;
-  box-shadow: 0 .25em .5em transparentize(#000000, 0.8);
+  box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
   border-radius: 5px;
   text-indent: 2px;
 }

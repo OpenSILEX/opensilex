@@ -545,8 +545,8 @@ public class ExperimentAPI {
      * @param startDate startDate
      * @param endDate endDate
      * @param timezone timezone
-     * @param objectUri objectUri
-     * @param variableUri variableUri
+     * @param objects objectUri
+     * @param variables variableUri
      * @param confidenceMin confidenceMin
      * @param confidenceMax confidenceMax
      * @param provenanceUri provenanceUri
@@ -663,7 +663,7 @@ public class ExperimentAPI {
         Instant start = Instant.now();
         List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
-        LOGGER.debug(resultList.size() + " observations retreived " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
         Response prepareCSVExport = null;
 
@@ -711,7 +711,7 @@ public class ExperimentAPI {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data convertion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
         
@@ -893,7 +893,7 @@ public class ExperimentAPI {
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data convertion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
         
@@ -1014,7 +1014,7 @@ public class ExperimentAPI {
     
     @POST
     @Path("{uri}/data/import")
-    @ApiOperation(value = "Import a CSV file for the given experiement URI and scientific object type.")
+    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
     @ApiProtected

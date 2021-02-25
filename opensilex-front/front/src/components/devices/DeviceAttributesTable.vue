@@ -83,7 +83,7 @@ export default class DeviceAttributesTable extends Vue {
   ];
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.DeviceService");
+    this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
   options: any = {

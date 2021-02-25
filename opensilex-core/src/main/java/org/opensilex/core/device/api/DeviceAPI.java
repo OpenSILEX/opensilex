@@ -212,7 +212,7 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         DeviceModel DeviceModel = dto.newModel();
-        deviceDAO.update(DeviceModel, currentUser);
+        deviceDAO.update(DeviceModel, dto.getRelations(), currentUser);
         return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
     }
 

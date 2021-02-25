@@ -169,8 +169,9 @@ public class DeviceDAO {
         select.addFilter(dateRangeExpr);
     }
 
-    public DeviceModel update(DeviceModel instance, UserModel user) throws Exception {
+    public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
+        initDevice(instance, relations, user);
 
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
             sparql.update(instance);

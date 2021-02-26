@@ -129,7 +129,7 @@ public class ScientificObjectAPI {
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
-    public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE = "oeso:Plot";
+    public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE = "vocabulary:Plot";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE_NAME = "Plot";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_NAME = "Plot 12";
 
@@ -296,8 +296,8 @@ public class ScientificObjectAPI {
     })
     public Response searchScientificObjects(
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") final URI contextURI,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
             @ApiParam(value = "Parent URI", example = "http://example.com/") @QueryParam("parent") @ValidURI URI parentURI,
             @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,

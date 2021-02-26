@@ -297,8 +297,8 @@ export default class ScientificObjectList extends Vue {
     );
     return scientificObjectsService.searchScientificObjects(
       this.filter.experiment ? this.filter.experiment : undefined, // experiment uri?: string,
-      this.filter.name, // pattern?: string,
       this.filter.types, // rdfTypes?: Array<string>,
+      this.filter.name, // pattern?: string,
       undefined, // parentURI?: string,
       this.filter.germplasm ? this.filter.germplasm : undefined,
       this.filter.factorLevels, // factorLevels?: Array<string>,

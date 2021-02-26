@@ -11194,10 +11194,10 @@ vuejs-logger@1.10.2:
   resolved "https://registry.yarnpkg.com/vuejs-logger/-/vuejs-logger-1.10.2.tgz#f5397b349e121599f110016d2704b10836bf464e"
   integrity sha512-3gOFbBUevhbGBW6l9s6bGnex7XSaRsxuDE9nmFOkgb+ImbrQmEls0dObmkrNIgIFoF8ujlqIsFHd5FxCt4RGyg==
 
-vuelayers@0.11.31:
-  version "0.11.31"
-  resolved "https://registry.yarnpkg.com/vuelayers/-/vuelayers-0.11.31.tgz#e1307a112a842cc0b5b7ddb1626e7b8db402f341"
-  integrity sha512-QxpX43j/CaLU2kJyEC59dJbni+sizfYVEm0ReasLpgihDLY2Del8jrWxmv5KcNUmwOuEZoR4jN3G9G7zXJQUTQ==
+vuelayers@0.11.30:
+  version "0.11.30"
+  resolved "https://registry.yarnpkg.com/vuelayers/-/vuelayers-0.11.30.tgz#37acade2705a02e2efc4c52ff2b36cffea05a2bf"
+  integrity sha512-2MQZfbAnqBGFWE3FHBtITq239vHB4jIDd0/2P6vaBTsMCP0sZhIwKIT2Zdy427KgyDO//qCu6ZoJJilee6xVpQ==
   dependencies:
     "@babel/runtime-corejs3" "^7.7.4"
     "@turf/point-on-feature" "^5.1.5"

@@ -345,8 +345,8 @@ export default class ExperimentScientificObjects extends Vue {
     } else {
       return this.soService.searchScientificObjects(
         this.uri,
-        this.filters.name,
         this.filters.types,
+        this.filters.name,
         this.filters.parent,
         undefined,
         this.filters.factorLevels,
@@ -364,8 +364,8 @@ export default class ExperimentScientificObjects extends Vue {
     return this.soService
       .searchScientificObjects(
         this.uri, // experiment uri?: string,
-        query, // pattern?: string,
         undefined, // rdfTypes?: Array<string>,
+        query, // pattern?: string,
         undefined, // parentURI?: string,
         undefined, // Germplasm
         undefined, // factorLevels?: Array<string>,

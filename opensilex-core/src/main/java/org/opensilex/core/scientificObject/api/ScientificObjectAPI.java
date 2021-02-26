@@ -313,6 +313,8 @@ public class ScientificObjectAPI {
         if (contextURI != null) {
             if (sparql.uriExists(ExperimentModel.class, contextURI)) {
                 xpDAO.validateExperimentAccess(contextURI, currentUser);
+            } else {
+                throw new NotFoundURIException("Experiment URI not found:", contextURI);
             }
         }
 
@@ -849,6 +851,8 @@ public class ScientificObjectAPI {
 
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        } else if (!sparql.uriExists(ExperimentModel.class, contextURI)) {
+            throw new NotFoundURIException("Experiment URI not found:", contextURI);
         }
 
         ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(contextURI);
@@ -999,6 +1003,8 @@ public class ScientificObjectAPI {
             ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
             xpDAO.validateExperimentAccess(contextURI, currentUser);
+        } else {
+            throw new NotFoundURIException("Experiment URI not found:", contextURI);
         }
     }
 

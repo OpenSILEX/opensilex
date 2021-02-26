@@ -101,6 +101,10 @@ export default class DateTimeForm extends Vue {
   padding-bottom: 7px !important;
   padding-top: 7px !important;
 }
+
+::v-deep .input-group {
+  flex-wrap: nowrap;
+}
 </style>
 
 <i18n>

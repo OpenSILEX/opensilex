@@ -32,7 +32,7 @@
             <b-td>{{ $t("ScientificObjectImportHelp.hasDestructionDate-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.hasFacility-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.isPartOf-help") }}</b-td>
-            <b-td>{{ $t("DataScientificObjectImportHelpHelp.comment-help") }}</b-td>
+            <b-td>{{ $t("ScientificObjectImportHelp.comment-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.geometry-help") }}</b-td>
             <b-td>{{ $t("ScientificObjectImportHelp.properties-help") }}</b-td>
           </b-tr>

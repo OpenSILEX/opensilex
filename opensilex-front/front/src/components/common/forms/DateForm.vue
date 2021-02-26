@@ -114,6 +114,10 @@ export default class DateForm extends Vue {
   padding-bottom: 7px !important;
   padding-top: 7px !important;
 }
+
+::v-deep .input-group {
+  flex-wrap: nowrap;
+}
 </style>
 
 <i18n>

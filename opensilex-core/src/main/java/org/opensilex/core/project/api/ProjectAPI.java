@@ -193,8 +193,8 @@ public class ProjectAPI {
     })
     public Response searchProjects(
             @ApiParam(value = "Regex pattern for filtering by name or shortname", example = "PJ17") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
-             @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("keyword") String term,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year") Integer year,
+            @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("keyword") String term,
             @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial_funding") String financial,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,

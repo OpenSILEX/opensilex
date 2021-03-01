@@ -279,7 +279,7 @@ public class ExperimentAPI {
     })
     public Response searchExperiments(
             @ApiParam(value = "Regex pattern for filtering by name", example = "ZA17") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  Integer year,
             @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factors,

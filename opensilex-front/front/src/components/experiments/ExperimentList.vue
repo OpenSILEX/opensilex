@@ -36,14 +36,13 @@
           <opensilex-FactorSelector :multiple="true" :factors.sync="filter.factors"></opensilex-FactorSelector>
         </opensilex-FilterField>
 
+        <!-- Year -->
         <opensilex-FilterField>
           <label>{{$t('ExperimentList.filter-year')}}</label>
           <opensilex-StringFilter
             placeholder="ExperimentList.filter-year-placeholder"
             :filter.sync="filter.yearFilter"
             type="number"
-            min="1000"
-            max="9999"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
       </template>

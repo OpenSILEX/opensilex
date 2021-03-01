@@ -140,8 +140,8 @@ public class ProjectDAO {
         LocalDate endDate;
         if (year != null) {
             String yearString = Integer.toString(year);
-             startDate = LocalDate.parse(yearString + "-01-01");
-             endDate = LocalDate.parse(yearString + "-12-31");
+            startDate = LocalDate.of(year, 1, 1);
+            endDate = LocalDate.of(year, 12, 31);
         }else {
             startDate=null;
             endDate=null;

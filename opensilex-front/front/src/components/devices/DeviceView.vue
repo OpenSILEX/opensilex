@@ -20,6 +20,12 @@
           :small="false"
           @click="deviceList.createDocument()"
         ></opensilex-CreateButton>
+
+        <!-- <opensilex-CreateButton
+          label="DeviceList.addVariable"
+          :small="false"
+          @click="deviceList.createVariable()"
+        ></opensilex-CreateButton> -->
       </template>
     </opensilex-PageActions>
 
@@ -103,10 +109,9 @@ en:
     delete: Delete device
 fr:
   Device:
-    title: device
+    title: Dispositif
     description: Gestion des dispositifs
     add: Ajouter un dispositif
-    addDocument: Ajout de document
     update: Editer un dispositif
     delete: Supprimer un dispositif
 </i18n>

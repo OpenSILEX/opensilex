@@ -84,17 +84,30 @@
     <!-- metadata -->
     <opensilex-DeviceAttributesTable
       ref="deviceAttributesTable"
-      :editMode="editMode"
       :attributesArray='attributesArray'
     ></opensilex-DeviceAttributesTable>
+
+    <!-- relation -->
+    <!-- <opensilex-VariableSelector 
+      :editMode="editMode"
+      label="DeviceForm.variable"
+      helpMessage="DeviceForm.variable-help"
+      :variables.sync="form.relations"
+    ></opensilex-VariableSelector> -->
+
+    <opensilex-DeviceVariablesTable
+      ref="deviceVariablesTable"
+      :editMode="editMode"
+      :relations.sync="form.relations"
+    ></opensilex-DeviceVariablesTable>
+
 
   </b-form>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import {DevicesService} from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -107,7 +120,8 @@ export default class DeviceForm extends Vue {
 
   uriGenerated = true;
 
-  @Ref("deviceAttributesTable") readonly table!: any;
+  @Ref("deviceAttributesTable") readonly attTable!: any;
+  @Ref("deviceVariablesTable") readonly varTable!: any;
 
   get user() {
     return this.$store.state.user;
@@ -130,7 +144,13 @@ export default class DeviceForm extends Vue {
             start_up: undefined,
             removal: undefined,
             description: undefined,
-            metadata: undefined
+            metadata: undefined,
+            relations: [
+              {
+                property: null,
+                value: null
+              }
+            ]
         }
       }
     }
@@ -149,15 +169,22 @@ export default class DeviceForm extends Vue {
       start_up: undefined,
       removal: undefined,
       description: undefined,
-      metadata: undefined
+      metadata: undefined,
+      relations: [
+        {
+          property: null,
+          value: null
+        }
+      ]
     };
   }
+
   reset() {
     this.uriGenerated = true;
   }
-
+  
   update(form) {
-    form.metadata = this.table.pushAttributes();
+    form.metadata = this.attTable.pushAttributes();   
     this.$opensilex
       .getService("opensilex.DevicesService")
       .updateDevice(form)
@@ -169,7 +196,6 @@ export default class DeviceForm extends Vue {
   }
 
   attributesArray = [];
-
   getAttributes(form) {
     this.attributesArray = [];
     if (form.metadata != null) {   
@@ -182,7 +208,16 @@ export default class DeviceForm extends Vue {
       } 
     }
   }
+
+  addEmptyRow() {
+    this.form.relations.unshift({
+      property: "vocabulary:measures",
+      value: null,
+    });
+  }
+
 }
+
 </script>
 
 <style scoped lang="scss">
@@ -212,6 +247,8 @@ en:
     removal-help:
     description: Description
     description-help:
+    variable: Variable
+    variable-help: Select one or several variables
 
 fr:
   DeviceForm:
@@ -235,5 +272,7 @@ fr:
     removal-help:
     description: Description
     description-help:
+    variable: Variable
+    variable-help: Selectionner une ou plusieurs variables
 
 </i18n>

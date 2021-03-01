@@ -88,8 +88,6 @@
       modalSize="lg"
       :initForm="initForm"
       icon="ik#ik-settings"
-      @onCreate="refresh()"
-      @onUpdate="refresh()"
     ></opensilex-ModalForm>
 
     <opensilex-ModalForm
@@ -106,8 +104,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import { DevicesService, DocumentsService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -120,6 +117,7 @@ export default class DeviceList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
+  @Ref("selectVar") readonly selectVar!: any;
 
   get user() {
     return this.$store.state.user;
@@ -174,7 +172,8 @@ export default class DeviceList extends Vue {
           start_up: device.start_up,
           removal: device.removal,
           description: device.description,
-          metadata: device.metadata
+          metadata: device.metadata,
+          relations: device.relations
         };
         this.deviceForm.showEditForm(form);
       })
@@ -268,6 +267,7 @@ en:
     selected: Devices
     facility: Facility
     addDocument: Add document
+    addVariable: Add variable
 
     filter:
       namePattern: Name
@@ -292,6 +292,7 @@ fr:
     selected: Dispositifs
     facility: Facility
     addDocument: Ajouter un document
+    addVariable: Ajout de variable
 
     filter:
       namePattern: Nom

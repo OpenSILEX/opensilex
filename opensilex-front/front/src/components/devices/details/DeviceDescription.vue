@@ -3,7 +3,7 @@
 
     <opensilex-PageContent>
       <b-row>
-        <b-col sm="5">
+        <b-col>
           <opensilex-Card label="DeviceDescription.description" icon="ik#ik-clipboard">            
           <template v-slot:rightHeader>
             <opensilex-EditButton
@@ -22,56 +22,17 @@
             <template v-slot:body>
               <opensilex-UriView :uri="device.uri"></opensilex-UriView>
               <opensilex-StringView label="DeviceDescription.type" :value="device.rdf_type_name"></opensilex-StringView>
+              <opensilex-StringView label="DeviceDescription.name" :value="device.name"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.brand" :value="device.brand"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.constructorModel" :value="device.constructor_model"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.serialNumber" :value="device.serial_number"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.personInCharge" :uri="device.person_in_charge"></opensilex-StringView> 
+              <opensilex-UriView label="DeviceDescription.personInCharge" :uri="device.person_in_charge"></opensilex-UriView> 
               <opensilex-StringView label="DeviceDescription.start_up" :value="device.start_up"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.removal" :value="device.removal"></opensilex-StringView>
               <opensilex-StringView label="DeviceDescription.description" :value="device.description"></opensilex-StringView>
             </template>
           </opensilex-Card>
-      </b-col>
-      <b-col sm="5">
-        <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
-            <template v-slot:body>
-              <opensilex-StringView label="DeviceDescription.variables" :value="device.relations">
-                <span :key="relations" v-for="(relations) in device.relations"> 
-                  <opensilex-UriLink 
-                  :uri="relations.value" 
-                  :to="{path: '/variable/details/'+ encodeURIComponent(relations.value)}"
-                ></opensilex-UriLink><br>
-                </span>
-              </opensilex-StringView> 
-            </template>
-        </opensilex-Card>
-      </b-col>
-      <!-- <b-col sm="5">
-        <opensilex-Card label="DeviceDescription.events" icon="ik#ik-clipboard">
-            <template v-slot:body>
-
-            </template>
-        </opensilex-Card>
-      </b-col> -->
-      </b-row>
-
-      <b-row>
-        <!-- <b-col sm="5">
-          <opensilex-Card label="DeviceDescription.localisation" icon="ik#ik-clipboard">            
-          <template v-slot:rightHeader>
-
-          </template>
-            <template v-slot:body>
-
-            </template>
-          </opensilex-Card>
-      </b-col> -->
-
-
-      </b-row>
-
-      <b-row>
-        <b-col sm="5">
+      
           <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length != 0">
             <template v-slot:body>
               <b-table
@@ -88,6 +49,50 @@
               </b-table>
             </template>
           </opensilex-Card>
+      </b-col>
+      <!-- <b-col sm="5">
+        <opensilex-Card label="DeviceDescription.events" icon="ik#ik-clipboard">
+            <template v-slot:body>
+
+            </template>
+        </opensilex-Card>
+      </b-col> -->
+
+        <!-- <b-col sm="5">
+          <opensilex-Card label="DeviceDescription.localisation" icon="ik#ik-clipboard">            
+          <template v-slot:rightHeader>
+
+          </template>
+            <template v-slot:body>
+
+            </template>
+          </opensilex-Card>
+      </b-col> -->
+        <b-col>
+        <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <opensilex-TableView
+              v-if="device.relations.length != 0"
+              :items="device.relations"
+              :fields="relationsFields"
+            >
+              <template v-slot:cell(uri)="{ data }">
+                <opensilex-UriLink
+                  :uri="data.item.value"
+                  :value="data.item.value"
+                  :to="{path: '/variable/details/'+ encodeURIComponent(data.item.value)}"
+                ></opensilex-UriLink>
+              </template>  
+            </opensilex-TableView>
+
+            <p v-else>
+              <strong>{{
+                $t("DeviceDescription.no-var-provided")
+              }}</strong>
+            </p>
+          </template>
+
+        </opensilex-Card>
         </b-col>
       </b-row>
     </opensilex-PageContent>
@@ -98,23 +103,18 @@
       editTitle="udpate"
       icon="ik#ik-user"
       modalSize="lg"
-      @onUpdate="refresh()"
+      @onUpdate="loadDevice()"
     ></opensilex-ModalForm>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   DevicesService,
-  VariablesService,
   DeviceGetDetailsDTO
 } from "opensilex-core/index";
-import {
-  SecurityService,
-  UserGetDTO
-} from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
@@ -138,10 +138,14 @@ export default class DeviceDescription extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-  
-  refresh() {
-    this.loadDevice(this.uri);
-  }
+
+  relationsFields: any[] = [
+    {
+      key: "uri",
+      label: "DeviceDescription.uri",
+      sortable: true,
+    }
+  ];
 
   device: DeviceGetDetailsDTO = { 
         uri: null,
@@ -153,20 +157,20 @@ export default class DeviceDescription extends Vue {
         person_in_charge: null,
         start_up: null,
         removal: null,
-        relations: null,
         description: null,
-        metadata: null
+        metadata: null,
+        relations: null
       };
   
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
-    this.loadDevice(this.uri);
+    this.loadDevice();
   }
 
-  loadDevice(uri: string) {
+  loadDevice() {
     this.service
-      .getDevice(uri)
+      .getDevice(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
         this.device = http.response.result;
         this.getAddInfo();
@@ -220,11 +224,11 @@ export default class DeviceDescription extends Vue {
         start_up: this.device.start_up,
         removal: this.device.removal,
         description: this.device.description,
-        metadata: this.device.metadata
+        metadata: this.device.metadata,
+        relations: this.device.relations
     }
     this.deviceForm.showEditForm(device);
   }
-
   
 }
 </script>
@@ -253,6 +257,7 @@ en:
     removal: Removal
     attribute: Attribute
     value: Value
+    no-var-provided: No variable provided
 
 fr:
   DeviceDescription:
@@ -274,5 +279,7 @@ fr:
     removal: Date de mise hors service
     attribute: Attribut
     value: Valeur
+    no-var-provided: Aucune variable associée
+
 
 </i18n>

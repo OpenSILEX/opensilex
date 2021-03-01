@@ -237,7 +237,7 @@ public final class OntologyDAO {
 
                 while ((values = csvReader.readNext()) != null) {
                     try {
-                        URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex]));
+                        URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex].trim()));
                         if (!typeRestrictions.containsKey(rdfType.toString())) {
                             ClassModel model = getClassModel(rdfType, parentClass, currentUser.getLanguage());
 

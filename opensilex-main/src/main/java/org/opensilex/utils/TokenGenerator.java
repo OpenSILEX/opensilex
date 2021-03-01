@@ -61,7 +61,9 @@ public class TokenGenerator {
                 .withExpiresAt(expirationDate);
 
         additionalClaims.forEach((claimKey, claimValue) -> {
-            tokenBuilder.withClaim(claimKey, claimValue.toString());
+            if (claimValue != null) {
+                tokenBuilder.withClaim(claimKey, claimValue.toString());
+            }
         });
 
         // Return signed token

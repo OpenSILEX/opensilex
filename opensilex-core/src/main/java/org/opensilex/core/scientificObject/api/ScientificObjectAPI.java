@@ -620,9 +620,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
         URI contextURI = descriptionDto.getExperiment();
         boolean globalCopy = false;
-        if (contextURI == null) {
-            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-        } else {
+        if (contextURI != null) {
             globalCopy = true;
         }
         String validationToken = descriptionDto.getValidationToken();
@@ -644,7 +642,12 @@ public class ScientificObjectAPI {
 
         csvValidation.setErrors(errors);
 
-        final URI graphURI = contextURI;
+        final URI graphURI;
+        if (contextURI != null) {
+            graphURI = contextURI;
+        } else {
+            graphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        }
         if (!errors.hasErrors()) {
             Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(GEOMETRY_COLUMN_ID);
             if (geometries != null && geometries.size() > 0) {
@@ -819,6 +822,7 @@ public class ScientificObjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
             @ApiParam(value = "File description with metadata", required = true, type = "string")
+            @NotNull
             @Valid
             @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file")
@@ -828,10 +832,6 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         URI contextURI = descriptionDto.getExperiment();
-
-        if (contextURI == null) {
-            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-        }
 
         CSVValidationModel csvValidationModel = getCSVValidationModel(contextURI, file, currentUser);
 

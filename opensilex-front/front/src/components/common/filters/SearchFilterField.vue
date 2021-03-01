@@ -53,7 +53,7 @@
           <slot name="search">
             <opensilex-Button
               label="component.common.search.search-button"
-              @click="$emit('search',$event)"
+              @click="validateAndSearch($event)"
               icon="ik#ik-search"
               variant="primary"
               :small="false"
@@ -105,6 +105,14 @@ export default class SearchFilterField extends Vue {
 
   toogleAdvancedSearch() {
     this.advancedSearchOpen = !this.advancedSearchOpen;
+  }
+
+  validateAndSearch($event){ 
+    this.validatorRef.validate().then(isValid => {
+      if (isValid) {
+        this.$emit('search',$event)
+      }
+    });
   }
 }
 </script>

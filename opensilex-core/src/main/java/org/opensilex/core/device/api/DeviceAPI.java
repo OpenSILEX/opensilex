@@ -228,7 +228,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = DeviceGetDetailsDTO.class)
+        @ApiResponse(code = 200, message = "Return device details corresponding to the devcie URI", response = DeviceGetDetailsDTO.class)
     })
     public Response getDevice(
             @ApiParam(value = "device URI", example = "http://example.com/", required = true)

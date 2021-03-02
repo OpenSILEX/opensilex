@@ -35,9 +35,6 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { DevicesService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
 
 
 

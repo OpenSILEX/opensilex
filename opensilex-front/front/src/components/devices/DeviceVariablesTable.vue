@@ -36,7 +36,6 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { DevicesService } from "opensilex-core/index";
-import HttpResponse from "../../../lib/HttpResponse";
 
 @Component
 export default class DeviceVariablesTable extends Vue {

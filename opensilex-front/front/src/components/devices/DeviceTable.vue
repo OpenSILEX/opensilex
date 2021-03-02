@@ -11,8 +11,9 @@
       <b-button pill v-b-toggle.collapse-1 variant="outline-secondary">{{$t('DeviceTable.help')}}</b-button>
       <b-collapse id="collapse-1" class="mb-2mt-2">
         <b-alert show>
-          <div>{{$t('DeviceTable.infoSynonyms')}}</div>
+          <div>{{$t('DeviceTable.infoVariable')}}</div>
           <div>{{$t('DeviceTable.infoAttributes')}}</div>
+          <div>{{$t('DeviceTable.infoDateFormat')}}</div>
           <div>{{$t('DeviceTable.infoMandatoryFields')}}</div>
         </b-alert>
       </b-collapse>
@@ -771,10 +772,13 @@ en:
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
     infoMessageDevInserted: device inserted
+    infoVariable: Only SensingDevice, SoftSensors and Actuator can have variable. To add variable use <Add column variable> button
+    infoAttributes: To add informations, you can add personnal column
     checkingStatusMessage: ready
     insertionStatusMessage: created
     filterLines: Filter the lines
-    infoMandatoryFields: It is mandatory to fill the brand URI column if you create varieties. If you create Accession or Lot, you have to fill at least one column between Accession URI, Variety URI and Species URI.
+    infoMandatoryFields: It is mandatory to fill the name
+    infoDateFormat:  date format YYYY-MM-DD,DD-MM-YYYY,DD/MM/YYYY
     alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
@@ -803,7 +807,7 @@ fr:
     close : Fermer
     addColumn: Ajouter colonne
     addVarColumn: Ajouter colonne variable
-    infoSynonyms: Pour ajouter plusieurs synonymes ou subtaxa, utilisez | comme séparateur
+    infoVariable: Seul les types Capteurs, Capteurs logiciel et les Actionneurs peuvent être associé a une ou plusieurs variable. Pour ajouter une variable supplémentaire utilisez le bouton <Ajouter colonne variable>
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
     infoMessageDevReady: device prêts à être insérer
@@ -814,7 +818,8 @@ fr:
     insertionStatusMessage: créé
     seeErrorLines: See lines
     seeAll : see all 
-    infoMandatoryFields: Il est obligatoire de renseigner au moins une des 3 colonnes URI de l'espèce, URI de la varieté ou URI de l'Accession.
+    infoMandatoryFields: Il est obligatoire de renseigner au moins un nom
+    infoDateFormat: format date YYYY-MM-DD,DD-MM-YYYY,DD/MM/YYYY 
     alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum

@@ -1,12 +1,27 @@
 package org.opensilex.core.device.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.StringWriter;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -28,6 +43,11 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
+import org.bson.Document;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
@@ -41,6 +61,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -140,9 +161,11 @@ public class DeviceAPI {
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
             @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfType") @ValidURI URI rdfType,
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
+            @ApiParam(value = "Search by metadata", example = "{}") @QueryParam("metadata") String metadataParam,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "namePattern=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -152,6 +175,7 @@ public class DeviceAPI {
             namePattern,
             rdfType,
             year,
+            existenceDate,
             brandPattern,
             modelPattern,
             snPattern,
@@ -298,5 +322,120 @@ public class DeviceAPI {
         }
 
         return null;
+    }
+        
+    @GET
+    @Path("export")
+    @ApiOperation("export devices")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with device list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportDevices(
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfType") @ValidURI URI rdfType,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
+            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
+            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
+            @ApiParam(value = "Search by metadata", example = "{}") @QueryParam("metadata") String metadataParam
+    ) throws Exception {
+        Document metadataFilter = null;
+        if (metadataParam != null) {
+            try {
+                metadataFilter = Document.parse(metadataParam);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();                
+            }
+        }
+
+        // Search germplasm with germplasm DAO
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        List<DeviceModel> resultList = dao.searchForExport(
+            namePattern,
+            rdfType,
+            year,
+            existenceDate,
+            brandPattern,
+            modelPattern,
+            snPattern,
+            null,
+            currentUser
+        );
+
+        // Convert list to DTO
+        List<DeviceGetDetailsDTO> resultDTOList = new ArrayList<>();
+        Set metadataKeys = new HashSet();
+        for (DeviceModel device : resultList) {
+            DeviceGetDetailsDTO dto = DeviceGetDetailsDTO.getDTOFromModel(device);
+            resultDTOList.add(dto);
+            Map metadata = dto.getMetadata();
+            if (metadata != null) {
+                 metadataKeys.addAll(metadata.keySet());
+            }           
+        }
+
+        if (resultDTOList.isEmpty()) {
+            resultDTOList.add(new DeviceGetDetailsDTO()); // to return an empty table
+        }
+        
+        //Construct manually json with metadata to convert it to csv
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
+
+        List<JsonNode> list = new ArrayList<>();
+        if(jsonTree.isArray()) {
+            for(JsonNode jsonNode : jsonTree) {
+                ObjectNode objectNode = jsonNode.deepCopy();
+                JsonNode metadata = objectNode.get("metadata");
+                objectNode.remove("metadata");
+                JsonNode value = null;
+                for (Object key:metadataKeys) {
+                    try {
+                        value = metadata.get(key.toString());
+
+                    } catch (Exception e) {
+
+                    } finally {
+                        if (value != null) {
+                            objectNode.put(key.toString(), value.asText());
+                        } else {
+                            objectNode.putNull(key.toString());
+                        }                            
+                    }
+                }
+                
+                list.add(objectNode);
+               
+            }
+         }
+        
+        ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance, list);
+
+        Builder csvSchemaBuilder = CsvSchema.builder();
+        JsonNode firstObject = arrayNode.elements().next();
+        firstObject.fieldNames().forEachRemaining(fieldName -> {
+            csvSchemaBuilder.addColumn(fieldName);
+        });
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        StringWriter str = new StringWriter();
+
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.writerFor(JsonNode.class)
+                .with(csvSchema)
+                .writeValue(str, arrayNode);
+
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String fileName = "export_device" + dtf.format(date) + ".csv";
+
+        return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                .build();
+
     }
 }

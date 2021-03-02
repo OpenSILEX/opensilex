@@ -12,6 +12,14 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import java.util.List;
 import java.time.LocalDate;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.device.api.DeviceDTO;
+import java.util.ArrayList;
+import java.util.Set;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
+import org.bson.Document;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.device.api.DeviceCreationDTO;
@@ -24,6 +32,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -122,6 +131,7 @@ public class DeviceDAO {
                 String namePattern,
                 URI rdfType,
                 Integer year,
+                LocalDate existenceDate,
                 String brandPattern,
                 String modelPattern,
                 String snPattern,
@@ -158,10 +168,125 @@ public class DeviceDAO {
                     if(date != null){
                         appendDateFilters(select, date);
                     }
+                    
+                    DateDeserializer dateDeserializer = new DateDeserializer();
+                    ExprFactory exprFactory = new ExprFactory();
+                    if (existenceDate != null) {
+                        Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
+                        Node startupVar = NodeFactory.createVariable(DeviceModel.STARTUP_FIELD);
+                        Node removalVar = NodeFactory.createVariable(DeviceModel.REMOVAL_FIELD);
+
+                        WhereBuilder optionalRemoval = new WhereBuilder();
+                        optionalRemoval.addWhere(uriVar, Oeso.removal, removalVar);
+                        select.addFilter(
+                                exprFactory.and(
+                                        exprFactory.le(startupVar, dateDeserializer.getNode(existenceDate)),
+                                        exprFactory.or(
+                                                exprFactory.not(exprFactory.exists(optionalRemoval)),
+                                                exprFactory.ge(removalVar, dateDeserializer.getNode(existenceDate))
+                                        )
+                                )
+                        );
+                    }
                 },
                 orderByList,
                 page,
                 pageSize);
+    }
+
+    private Set<URI> filterURIsOnAttributes(Document metadata) {
+        Document filter = new Document();
+        if (metadata != null) {
+            for (String key:metadata.keySet()) {
+                filter.put("attribute." + key, metadata.get(key));
+            }
+        }
+        Set<URI> devicesURIs = nosql.distinct("uri", URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
+        return devicesURIs;
+    }
+    
+    public List<DeviceModel> searchForExport(
+                String namePattern,
+                URI rdfType,
+                Integer year,
+                LocalDate existenceDate,
+                String brandPattern,
+                String modelPattern,
+                String snPattern,
+                Document metadata,
+                UserModel currentUser) throws Exception{
+        LocalDate date ;
+        if (year != null) {
+            String yearString = Integer.toString(year);
+            date = LocalDate.parse(yearString + "-01-01");
+        }else {
+            date=null;
+        }
+        
+        final Set<URI> filteredUris;
+        if (metadata != null) {
+            filteredUris = filterURIsOnAttributes(metadata);
+        } else {
+            filteredUris = null;
+        }
+        
+        List<DeviceModel> deviceList;
+        if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
+            deviceList = new ArrayList();
+        } else {
+            deviceList = sparql.search(
+                DeviceModel.class,
+                currentUser.getLanguage(),
+                (SelectBuilder select) -> {
+                    if (namePattern != null && !namePattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
+                    }
+                    if (rdfType != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(DeviceModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
+                    }
+                    if (brandPattern != null && !brandPattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.BRAND_FIELD, brandPattern));
+                    }
+                    if (modelPattern != null && !modelPattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.MODEL_FIELD, modelPattern));
+                    }
+                    if (snPattern != null && !snPattern.trim().isEmpty()) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.SERIALNUMBER_FIELD, snPattern));
+                    }
+                    if(date != null){
+                        appendDateFilters(select, date);
+                    }
+                    DateDeserializer dateDeserializer = new DateDeserializer();
+                    ExprFactory exprFactory = new ExprFactory();
+                    if (existenceDate != null) {
+                        Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
+                        Node startupVar = NodeFactory.createVariable(DeviceModel.STARTUP_FIELD);
+                        Node removalVar = NodeFactory.createVariable(DeviceModel.REMOVAL_FIELD);
+
+                        WhereBuilder optionalRemoval = new WhereBuilder();
+                        optionalRemoval.addWhere(uriVar, Oeso.removal, removalVar);
+                        select.addFilter(
+                                exprFactory.and(
+                                        exprFactory.le(startupVar, dateDeserializer.getNode(existenceDate)),
+                                        exprFactory.or(
+                                                exprFactory.not(exprFactory.exists(optionalRemoval)),
+                                                exprFactory.ge(removalVar, dateDeserializer.getNode(existenceDate))
+                                        )
+                                )
+                        );
+                    }
+                }
+            );
+        }
+        
+        //get metadata part from mongo
+        for (DeviceModel device:deviceList) {
+            DeviceAttributeModel storedAttributes = getStoredAttributes(device.getUri());
+            if (storedAttributes != null) {
+                device.setAttributes(storedAttributes.getAttribute());
+            }
+        }
+        return deviceList;
     }
 
     private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
@@ -172,13 +297,15 @@ public class DeviceDAO {
     public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
         initDevice(instance, relations, user);
-
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
-            sparql.update(instance);
+            sparql.deleteByURI(graph, instance.getUri());
+            sparql.create(instance);
         } else {
             nosql.startTransaction();
             sparql.startTransaction();
-            sparql.update(instance);
+            sparql.deleteByURI(graph, instance.getUri());
+            sparql.create(instance);
             MongoCollection collection = getAttributesCollection();
 
             try {

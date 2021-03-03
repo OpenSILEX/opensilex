@@ -8,9 +8,9 @@
     >
       <template v-slot:filters>
         <!-- Name -->
-       <opensilex-FilterField>
+        <opensilex-FilterField>
           <b-form-group>
-            <label for="name">{{$t('ExperimentList.filter-label')}}</label>
+            <label for="name">{{ $t("ExperimentList.filter-label") }}</label>
             <opensilex-StringFilter
               id="name"
               :filter.sync="filter.name"
@@ -18,7 +18,6 @@
             ></opensilex-StringFilter>
           </b-form-group>
         </opensilex-FilterField>
-
 
         <!-- Species -->
         <opensilex-FilterField>
@@ -31,14 +30,21 @@
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
-        <!-- Factors -->
+        <!-- factorCategories -->
         <opensilex-FilterField>
-          <opensilex-FactorSelector :multiple="true" :factors.sync="filter.factors"></opensilex-FactorSelector>
+           <opensilex-FactorCategorySelector
+          ref="factorCategorySelector"
+          label="ExperimentList.filter-factors-categories"
+          placeholder="ExperimentList.filter-factors-categories-placeholder"
+          helpMessage="component.factor.name-help"
+          :multiple="true" 
+          :category.sync="filter.factorCategories"
+        ></opensilex-FactorCategorySelector> 
         </opensilex-FilterField>
 
         <!-- Year -->
         <opensilex-FilterField>
-          <label>{{$t('ExperimentList.filter-year')}}</label>
+          <label>{{ $t("ExperimentList.filter-year") }}</label>
           <opensilex-StringFilter
             placeholder="ExperimentList.filter-year-placeholder"
             :filter.sync="filter.yearFilter"
@@ -57,8 +63,8 @@
             :conversionMethod="projectGetDTOToSelectNode"
             modalComponent="opensilex-ProjectModalList"
             :isModalSearch="true"
-                :clearable="false"
-                :maximumSelectedItems="1"
+            :clearable="false"
+            :maximumSelectedItems="1"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -81,29 +87,31 @@
       :fields="fields"
       :isSelectable="isSelectable"
     >
-      <template v-slot:cell(name)="{data}">
+      <template v-slot:cell(name)="{ data }">
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
+          :to="{
+            path: '/experiment/details/' + encodeURIComponent(data.item.uri),
+          }"
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(species)="{data}">
+      <template v-slot:cell(species)="{ data }">
         <span :key="index" v-for="(uri, index) in data.item.species">
           <span :title="uri">{{ getSpeciesName(uri) }}</span>
           <span v-if="index + 1 < data.item.species.length">,</span>
         </span>
       </template>
 
-      <template v-slot:cell(start_date)="{data}">
+      <template v-slot:cell(start_date)="{ data }">
         <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
       </template>
-      <template v-slot:cell(end_date)="{data}">
+      <template v-slot:cell(end_date)="{ data }">
         <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
       </template>
 
-      <template v-slot:cell(state)="{data}">
+      <template v-slot:cell(state)="{ data }">
         <i
           v-if="!isEnded(data.item)"
           class="ik ik-activity badge-icon badge-info-opensilex"
@@ -121,16 +129,22 @@
         ></i>
       </template>
 
-      <template v-slot:cell(actions)="{data}">
+      <template v-slot:cell(actions)="{ data }">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+              )
+            "
             @click="$emit('onEdit', data.item.uri)"
             label="component.experiment.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+            v-if="
+              user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)
+            "
             @click="deleteExperiment(data.item.uri)"
             label="component.experiment.delete"
             :small="true"
@@ -144,22 +158,12 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import copy from "copy-to-clipboard";
-import VueI18n from "vue-i18n";
 import moment from "moment";
 import {
-  ProjectGetDTO,
   SpeciesDTO,
-  ExperimentGetDTO,
-  ResourceTreeDTO,
-  InfrastructureGetDTO,
-  ExperimentsService,
-  OrganisationsService,
-  ProjectsService,
-  SpeciesService
+  SpeciesService,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { UserGetDTO } from "opensilex-security/index";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -168,12 +172,12 @@ export default class ExperimentList extends Vue {
   $store: any;
 
   @Prop({
-    default: false
+    default: false,
   })
   isSelectable;
 
   @Prop({
-    default: false
+    default: false,
   })
   noActions;
 
@@ -197,20 +201,20 @@ export default class ExperimentList extends Vue {
   filter = {
     name: "",
     species: [],
-    factors: [],
+    factorCategories: [],
     projects: [],
     yearFilter: undefined,
-    state: ""
+    state: "",
   };
 
   reset() {
     this.filter = {
       name: "",
       species: [],
-      factors: [],
+      factorCategories: [],
       projects: [],
       yearFilter: undefined,
-      state: ""
+      state: "",
     };
     this.refresh();
   }
@@ -238,14 +242,14 @@ export default class ExperimentList extends Vue {
 
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
-      .searchExperiments(       
+      .searchExperiments(
         this.filter.name, // label
         this.filter.yearFilter, // year
         isEnded, // isEnded
         this.filter.species, // species
-        this.filter.factors, // factors
+        this.filter.factorCategories, // factorCategories
         projects, // projects
-        isPublic, // isPublic        
+        isPublic, // isPublic
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -263,9 +267,10 @@ export default class ExperimentList extends Vue {
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      lang => {
+      (lang) => {
         this.refreshStateLabel();
         this.loadSpecies();
+        this.$opensilex.loadFactorCategories();
         this.refresh();
       }
     );
@@ -279,16 +284,16 @@ export default class ExperimentList extends Vue {
     this.experimentStates = [
       {
         id: "in-progress",
-        label: this.$i18n.t("component.experiment.common.status.in-progress")
+        label: this.$i18n.t("component.experiment.common.status.in-progress"),
       },
       {
         id: "finished",
-        label: this.$i18n.t("component.experiment.common.status.finished")
+        label: this.$i18n.t("component.experiment.common.status.finished"),
       },
       {
         id: "public",
-        label: this.$i18n.t("component.experiment.common.status.public")
-      }
+        label: this.$i18n.t("component.experiment.common.status.public"),
+      },
     ];
   }
 
@@ -307,7 +312,7 @@ export default class ExperimentList extends Vue {
           );
           this.species.push({
             id: http.response.result[i].uri,
-            label: http.response.result[i].name
+            label: http.response.result[i].name,
           });
         }
       })
@@ -333,31 +338,31 @@ export default class ExperimentList extends Vue {
       {
         key: "name",
         label: "component.common.name",
-        sortable: true
+        sortable: true,
       },
       {
         key: "species",
-        label: "component.experiment.species"
+        label: "component.experiment.species",
       },
       {
         key: "start_date",
         label: "component.experiment.startDate",
-        sortable: true
+        sortable: true,
       },
       {
         key: "end_date",
         label: "component.experiment.endDate",
-        sortable: true
+        sortable: true,
       },
       {
         key: "state",
-        label: "component.experiment.search.column.state"
-      }
+        label: "component.experiment.search.column.state",
+      },
     ];
     if (!this.noActions) {
       tableFields.push({
         key: "actions",
-        label: "component.common.actions"
+        label: "component.common.actions",
       });
     }
     return tableFields;
@@ -377,7 +382,7 @@ export default class ExperimentList extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.shortname ? dto.shortname : dto.name
+        label: dto.shortname ? dto.shortname : dto.name,
       };
     }
     return null;
@@ -402,6 +407,8 @@ en:
     filter-project-placeholder: Select a project
     filter-state: State
     filter-state-placeholder: Select an experiment state
+    filter-factors-categories: Factors categories
+    filter-factors-categories-placeholder: Select one or more categories
 
 fr:
   ExperimentList:
@@ -415,5 +422,7 @@ fr:
     filter-project-placeholder: Sélectionner un projet
     filter-state: Etat
     filter-state-placeholder: Sélectionner un état
+    filter-factors-categories: Categories de facteurs
+    filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
 
 </i18n>

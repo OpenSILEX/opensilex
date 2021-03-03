@@ -17,7 +17,6 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
@@ -29,11 +28,11 @@ export default class ExperimentForm extends Vue {
 
   steps = [
     {
-      component: "opensilex-ExperimentForm1"
+      component: "opensilex-ExperimentForm1",
     },
     {
-      component: "opensilex-ExperimentForm2"
-    }
+      component: "opensilex-ExperimentForm2",
+    },
   ];
 
   getEmptyForm() {
@@ -55,7 +54,6 @@ export default class ExperimentForm extends Vue {
       is_public: false,
       variables: [],
       sensors: [],
-      factors: []
     };
   }
 
@@ -77,7 +75,7 @@ export default class ExperimentForm extends Vue {
         console.debug("experiment created", uri);
         this.$emit("onCreate", form);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.status == 409) {
           console.error("Experiment already exists", error);
           this.$opensilex.errorHandler(

@@ -529,6 +529,7 @@ $opensilex.loadModules([
             }
 
             Promise.all([
+              $opensilex.loadFactorCategories(),
               $opensilex.loadDataTypes(),
               $opensilex.loadObjectTypes(),
               $opensilex.loadComponentModules(modulesToLoad)

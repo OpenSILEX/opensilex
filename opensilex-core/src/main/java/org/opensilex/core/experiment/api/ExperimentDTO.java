@@ -46,9 +46,6 @@ public abstract class ExperimentDTO {
     @JsonProperty("variables")  
     protected List<URI> variables = new ArrayList<>();
     
-    @JsonProperty("factors") 
-    protected List<URI> factors = new ArrayList<>();
-    
     @JsonProperty("organisations") 
     protected List<URI> infrastructures = new ArrayList<>();
      
@@ -202,14 +199,4 @@ public abstract class ExperimentDTO {
         this.variables = variables;
         return this;
     }
-
-    public List<URI> getFactors() {
-        return factors;
-    }
-
-    public ExperimentDTO setFactors(List<URI> factors) {
-        this.factors = factors;
-        return this;
-    }
-
 }

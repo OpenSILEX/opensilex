@@ -113,6 +113,7 @@ public class Oeso {
     public static final Property hasCategory = Ontology.property(NS, "hasCategory");
     // Link with experiment
     public static final Property studyEffectOf = Ontology.property(NS, "studyEffectOf");
+    public static final Property studiedEffectIn = Ontology.property(NS, "studiedEffectIn");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
     public static final Resource Operator = Ontology.resource(NS, "Operator");

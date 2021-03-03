@@ -47,11 +47,6 @@
       :multiple="true"
       :species.sync="experiment.species"
     ></opensilex-SpeciesSelector>
-    <!-- Factor -->
-    <opensilex-FactorSelector
-      :multiple="true"
-      :factors.sync="experiment.factors"
-    ></opensilex-FactorSelector>
     <!-- Objective -->
     <opensilex-TextAreaForm
       :value.sync="experiment.objective"
@@ -74,9 +69,7 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 
-import {
-  ExperimentCreationDTO,
-} from "opensilex-core/index";
+import { ExperimentCreationDTO } from "opensilex-core/index";
 
 @Component
 export default class ExperimentForm1 extends Vue {

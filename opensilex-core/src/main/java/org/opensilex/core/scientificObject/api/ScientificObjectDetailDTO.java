@@ -7,7 +7,7 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
-import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.dal.ExperimentalObjectModel;

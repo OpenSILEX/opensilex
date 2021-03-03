@@ -81,9 +81,9 @@ import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
-import org.opensilex.core.factor.api.FactorDetailsGetDTO;
-import org.opensilex.core.factor.dal.FactorDAO;
-import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
+import org.opensilex.core.experiment.factor.dal.FactorDAO;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -143,6 +143,7 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
     public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    
 
     public static final int CSV_NB_ERRORS_MAX = 100;
 
@@ -282,7 +283,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  Integer year,
             @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
-            @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factors,
+            @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factorCategories,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -295,7 +296,7 @@ public class ExperimentAPI {
                 year,
                 name,
                 species,
-                factors,
+                factorCategories,
                 isEnded,
                 projects,
                 isPublic,

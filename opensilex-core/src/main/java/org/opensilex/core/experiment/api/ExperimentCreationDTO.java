@@ -12,7 +12,6 @@ import org.opensilex.core.project.dal.ProjectModel;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.factor.dal.FactorModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.group.dal.GroupModel;
@@ -43,14 +42,6 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             speciesList.add(species);
         });
         model.setSpecies(speciesList);
-        
-        List<FactorModel> factorsList = new ArrayList<>(factors.size());
-        factors.forEach((URI u) -> {
-            FactorModel factor = new FactorModel();
-            factor.setUri(u);
-            factorsList.add(factor);
-        });
-        model.setFactors(factorsList);
         
         List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
         infrastructures.forEach((URI u) -> {

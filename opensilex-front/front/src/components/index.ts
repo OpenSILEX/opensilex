@@ -83,33 +83,33 @@ components["opensilex-InfrastructureFacilityPropertySelector"] = InfrastructureF
 
 
 // Factors
-import FactorView from './factors/FactorView.vue';
+import FactorView from './experiments/factors/FactorView.vue';
 components["opensilex-FactorView"] = FactorView;
-import FactorsView from './factors/FactorsView.vue';
-components["opensilex-FactorsView"] = FactorsView;
-import FactorList from './factors/FactorList.vue';
+import ExperimentFactors from './experiments/views/ExperimentFactors.vue';
+components["opensilex-ExperimentFactors"] = ExperimentFactors;
+import FactorList from './experiments/factors/FactorList.vue';
 components["opensilex-FactorList"] = FactorList;
-import FactorForm from './factors/FactorForm.vue';
+import FactorForm from './experiments/factors/FactorForm.vue';
 components["opensilex-FactorForm"] = FactorForm;
-import FactorDetails from './factors/FactorDetails.vue';
+import FactorDetails from './experiments/factors/FactorDetails.vue';
 components["opensilex-FactorDetails"] = FactorDetails;
-import FactorLevelTable from './factors/FactorLevelTable.vue';
+import FactorLevelTable from './experiments/factors/FactorLevelTable.vue';
 components["opensilex-FactorLevelTable"] = FactorLevelTable;
-import FactorSelector from './factors/FactorSelector.vue';
+import FactorSelector from './experiments/factors/FactorSelector.vue';
 components["opensilex-FactorSelector"] = FactorSelector;
-import FactorCategorySelector from './factors/FactorCategorySelector.vue';
+import FactorCategorySelector from './experiments/factors/FactorCategorySelector.vue';
 components["opensilex-FactorCategorySelector"] = FactorCategorySelector;
-import FactorsHelp from './factors/FactorsHelp.vue';
+import FactorsHelp from './experiments/factors/FactorsHelp.vue';
 components["opensilex-FactorsHelp"] = FactorsHelp;
-import FactorLevelPropertySelector from './factors/FactorLevelPropertySelector.vue';
+import FactorLevelPropertySelector from './experiments/factors/FactorLevelPropertySelector.vue';
 components["opensilex-FactorLevelPropertySelector"] = FactorLevelPropertySelector;
-import FactorLevelPropertyView from './factors/FactorLevelPropertyView.vue';
+import FactorLevelPropertyView from './experiments/factors/FactorLevelPropertyView.vue';
 components["opensilex-FactorLevelPropertyView"] = FactorLevelPropertyView;
-import AssociatedExperiments from './factors/AssociatedExperiments.vue';
+import AssociatedExperiments from './experiments/factors/AssociatedExperiments.vue';
 components["opensilex-AssociatedExperiments"] = AssociatedExperiments;
-import FactorModalList from './factors/FactorModalList.vue';
+import FactorModalList from './experiments/factors/FactorModalList.vue';
 components["opensilex-FactorModalList"] = FactorModalList;
-import FactorLevelSelector from './factors/FactorLevelSelector.vue';
+import FactorLevelSelector from './experiments/factors/FactorLevelSelector.vue';
 components["opensilex-FactorLevelSelector"] = FactorLevelSelector;
 
 // Geometry
@@ -504,6 +504,8 @@ import DocumentDetails from './documents/DocumentDetails.vue';
 components["opensilex-DocumentDetails"] = DocumentDetails;
 import DocumentTabList from './documents/DocumentTabList.vue';
 components["opensilex-DocumentTabList"] = DocumentTabList;
+import DocumentTabView from './common/views/DocumentTabView.vue'
+components["opensilex-DocumentTabView"] = DocumentTabView;
 
 // Map
 import MapView from './geometry/MapView.vue';

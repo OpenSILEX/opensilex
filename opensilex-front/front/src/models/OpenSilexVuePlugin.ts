@@ -940,6 +940,30 @@ export default class OpenSilexVuePlugin {
         });
     }
 
+    private factorCategories = {};
+
+    public getFactorCategoryName(uri) {
+        return this.factorCategories[uri];
+    }
+
+    public loadFactorCategories() {
+        return new Promise((resolve, reject) => {
+            this.getService<any>("opensilex.FactorsService")
+                .searchCategories(undefined, ["name=asc"])
+                .then(
+                    ( http
+                    ) => { 
+                        this.factorCategories = {};
+                        http.response.result.forEach((categoryDto) => {
+                            this.factorCategories[categoryDto.uri] = categoryDto.name;
+                        }); 
+                        resolve()
+                    }
+                )
+                .catch(reject);
+        });
+    }
+
     public objectTypes = [];
     private objectTypesByURI = {};
 

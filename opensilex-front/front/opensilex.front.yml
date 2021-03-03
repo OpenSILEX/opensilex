@@ -35,11 +35,6 @@ menu:
         route:
           path: /variables
           component: opensilex-VariablesView
-      - id: factors
-        label: component.menu.experimentalDesign.factors
-        route:
-          path: /factors
-          component: opensilex-FactorsView
       - id: germplasm
         label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain
@@ -151,6 +146,8 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/document/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/factors/:uri
+    component: opensilex-ExperimentView
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
@@ -187,12 +184,13 @@ routes:
     component: opensilex-FactorForm
     credentials:
       - factor-modification
-  - path: /factor/details/:uri
+  - path: /:xpUri/factor/details/:uri
     component: opensilex-FactorView
-  - path: /factor/experiments/:uri
+  - path: /:xpUri/factor/experiments/:uri
     component: opensilex-FactorView
-    credentials: []
-  - path: /factor/annotations/:uri
+  - path: /:xpUri/factor/annotations/:uri
+    component: opensilex-FactorView
+  - path: /:xpUri/factor/document/:uri
     component: opensilex-FactorView
 
   - path: /document/details/:uri

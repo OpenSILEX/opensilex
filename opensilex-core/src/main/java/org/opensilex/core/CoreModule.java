@@ -62,6 +62,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
+                "http://aims.fao.org/aos/agrovoc/factors",
+                "ontologies/agrovoc-factors.rdf",
+                Lang.RDFXML,
+                "agrovoc"
+        ));
+        list.add(new OntologyFileDefinition(
                 OA.NS,
                 "ontologies/oa.rdf",
                 Lang.RDFXML,

@@ -17,7 +17,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
-import org.opensilex.core.factor.dal.FactorModel;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -134,11 +134,13 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "studyEffectOf"
+            property = "studyEffectOf",
+            cascadeDelete = true
     )
     List<FactorModel> factors;
     public static final String FACTORS_FIELD = "factors";
-    
+    public static final String FACTORS_CATEGORIES_FIELD = "factorsCategories";
+   
     public String getName() {
         return name;
     }

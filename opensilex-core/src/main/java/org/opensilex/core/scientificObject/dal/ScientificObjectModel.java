@@ -1,7 +1,7 @@
 package org.opensilex.core.scientificObject.dal;
 
 import java.util.List;
-import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;

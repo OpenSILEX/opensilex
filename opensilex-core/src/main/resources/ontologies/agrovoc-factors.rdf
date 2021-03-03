@@ -1,0 +1,787 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.w3.org/2002/07/owl"
+     xmlns:dc="http://purl.org/dc/terms/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+     xmlns:void="http://rdfs.org/ns/void#"
+     xmlns:skosxl="http://www.w3.org/2008/05/skos-xl#">
+    <Ontology/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/terms/created -->
+
+    <AnnotationProperty rdf:about="http://purl.org/dc/terms/created"/>
+    
+
+
+    <!-- http://purl.org/dc/terms/modified -->
+
+    <AnnotationProperty rdf:about="http://purl.org/dc/terms/modified"/>
+    
+
+
+    <!-- http://rdfs.org/ns/void#inDataset -->
+
+    <AnnotationProperty rdf:about="http://rdfs.org/ns/void#inDataset"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#altLabel -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#altLabel"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#broader -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#broader"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#hasTopConcept -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#hasTopConcept"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#inScheme -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#inScheme"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#narrower -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#narrower"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#notation -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#notation"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#prefLabel -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#prefLabel"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#topConceptOf -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2004/02/skos/core#topConceptOf"/>
+    
+
+
+    <!-- http://www.w3.org/2008/05/skos-xl#altLabel -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2008/05/skos-xl#altLabel"/>
+    
+
+
+    <!-- http://www.w3.org/2008/05/skos-xl#literalForm -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2008/05/skos-xl#literalForm"/>
+    
+
+
+    <!-- http://www.w3.org/2008/05/skos-xl#prefLabel -->
+
+    <AnnotationProperty rdf:about="http://www.w3.org/2008/05/skos-xl#prefLabel"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/AgrovocCode -->
+
+    <rdfs:Datatype rdf:about="http://aims.fao.org/aos/agrovoc/AgrovocCode"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#Concept -->
+
+    <Class rdf:about="http://www.w3.org/2004/02/skos/core#Concept"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#ConceptScheme -->
+
+    <Class rdf:about="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+    
+
+
+    <!-- http://www.w3.org/2008/05/skos-xl#Label -->
+
+    <Class rdf:about="http://www.w3.org/2008/05/skos-xl#Label"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <skos:hasTopConcept rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_16091 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_16091">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik plonotwórczy</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Ertragsfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur de rendement</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor de rendimento</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores de rendimiento</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori della resa</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">hozamfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">verim faktörü</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">výnosové faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">výnosové faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">yield factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">фактори приноса</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">факторы продуктивности</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">чинники продуктивності</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل الإغلال</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای بازدهی</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">उपज कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยผลผลิต</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">产出率</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">収量要因</skos:prefLabel>
+        <skos:prefLabel xml:lang="ko">수량요소</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_2594 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_2594">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik środowiskowy</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur du milieu</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor ambiental</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores ambientales</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori ambientali</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Umweltbedingung</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">environmental factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">environmentální činitelé</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori de mediu</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">faktory životného prostredia</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">környezeti tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">çevresel faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">фактори животне средине</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">факторы окружающей среды</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">чинники навколишнього середовища</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">ظروف بيئية</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای زیست‌محیطی</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">वातावरणीय कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="te">పర్యావరణ కారణాంశాలు</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยสิ่งแวดล้อม</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈຂອງສະພາບແວດລ້ອມ</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">环境因素</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">環境要因</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_29554 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_29554">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik klimatyczny</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur climatique</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor climático</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores climáticos</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori climatici</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Klimafaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">climatic factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori climatici</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">iklimsel etken</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">klimatické faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">klimatické faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">éghajlati tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">климатические факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">климатски фактори</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">кліматичні чинники</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل مناخية</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای اقلیمی</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">जलवायु सम्बन्धी कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยทางภูมิอากาศ</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈຂອງພູມອາກາດ</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">კლიმატური ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">气候因素</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">気候因子</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_29621 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_29621">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik immunologiczny</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur immunologique</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor imunológico</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores inmunológicos</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori immunologici</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori imunologici</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">immunological factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">immunologischer Faktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">immunológiai tényező</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">immünolojik faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">imunologické faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">imunologické faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">иммунологические факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">имунолошки фактори</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">імунологічні чинники</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل مناعية</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای ایمنی‌شناختی</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">प्रतिरक्षक कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="te">ప్రతిరక్షక కారకాలు</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยเกี่ยวกับภูมิคุ้มกัน</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈກ່ຽວກັບພູມຕ້ານທານ</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">იმუნოლოგიური ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">免疫因子</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">免疫学因素</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_32668 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_32668">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynniki ryzyka</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur de risque</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor de risco</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores de riesgo</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori di rischio</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Risikofaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori de risc</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">kockázati tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">risk factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">risk faktörü</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">rizikové faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">rizikové faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">фактори ризика</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">факторы риска</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">чинники ризику</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای خطرپذیری</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">जोखिम कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยเสี่ยง</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈຄວາມສ່ຽງ</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">რისკის ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">危険因子、危険要素、リスクファクタ</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">风险因素</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_331093 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_331093">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2009-03-03T00:00:00Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2020-11-20T17:30:54</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:altLabel xml:lang="tr">etken</skos:altLabel>
+        <skos:altLabel xml:lang="uk">фактори</skos:altLabel>
+        <skos:inScheme rdf:resource="http://aims.fao.org/aos/agrovoc"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_16091"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_2594"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_29554"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_29621"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_32668"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_34996"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_3872"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_4f42a5b9"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_5b384c25"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_6203"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_7087"/>
+        <skos:narrower rdf:resource="http://aims.fao.org/aos/agrovoc/c_feaa7d27"/>
+        <skos:prefLabel xml:lang="de">Faktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">facteur</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">factores</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="nb">faktorer</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">фактори</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">чинники</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">因素</skos:prefLabel>
+        <skos:topConceptOf rdf:resource="http://aims.fao.org/aos/agrovoc"/>
+        <skosxl:altLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_tr_1331303141358"/>
+        <skosxl:altLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_uk_1336991357262"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_ar_2b87d5f9"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_cs_1326294671126"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_de_1331709403907"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_en_1299526715331"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_es_1299526715349"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_fr_1299526715368"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_it_1331709415186"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_ka_e416b61d"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_nb_099dc934"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_ro_bce12116"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_ru_81ce7387"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_sr_0da148be"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_tr_1331303055676"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_uk_1336991290976"/>
+        <skosxl:prefLabel rdf:resource="http://aims.fao.org/aos/agrovoc/xl_zh_1306827080886"/>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_34996 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_34996">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik antropogeniczny</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur anthropogène</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor antropogénico</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores antropogénicos</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori antropogenici</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">anthropogener Faktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">anthropogenic factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">antropogenní faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">antropogén tényező</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">antropogénne faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">antropojenik faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori antropogeni</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">антропогени фактор</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">антропогенные факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاكتورهاي انسان‌زاد</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">मानवजनित कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยจากฝีมือมนุษย์</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">人为因素</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">人類活動関係の因子、人間起源要因</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_3872 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_3872">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="es">Agentes nocivos</skos:prefLabel>
+        <skos:prefLabel xml:lang="pl">Czynnik szkodliwy</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur nuisible</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor nocivo</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori nocivi</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Schadfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori nocivi</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">injurious factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">yaralanma faktörü</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">ártalmas tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">škodlivé faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">škodlivé faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">неблагоприятные факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">несприятливі чинники</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل ضارة</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای آسیب‌رسان</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">हानिकारक कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="te">హాని కారకాలు</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยที่ทำให้เกิดความเสียหาย</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈທີ່ກໍ່ໃຫ້ເກີດຄວາມເສຍຫາຍ</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">有害因素</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">有害要因</skos:prefLabel>
+        <skos:prefLabel xml:lang="ko">재해요인</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_4f42a5b9 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_4f42a5b9">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="es">Factores bióticos</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori botici</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">biotic factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">biotischer Umweltfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">biyotik faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">facteurs biotiques</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori biotici</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">биотический фактор</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">биотички фактори</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عامل إحيائي</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">ბიოტური ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">生物因子</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_5b384c25 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_5b384c25">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="es">Factores abióticos</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori abiotici</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">abiotic factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">abiotischer Umweltfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">abiyotik faktör</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">facteurs abiotiques</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori abiotici</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">абиотический фактор</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">абиотички фактори</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عامل لاحيوى</skos:prefLabel>
+        <skos:prefLabel xml:lang="ka">აბიოტური ფაქტორი</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">非生物因素</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_6203 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_6203">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pl">Czynnik produkcji</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur de production</skos:prefLabel>
+        <skos:prefLabel xml:lang="pt">Factor de produção</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Factores de producción</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Fattori di produzione</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Produktionsfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="ro">factori de producție</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">production factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">termelési tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">ukazovatele výroby</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">výrobní faktory</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">üretim faktörü</skos:prefLabel>
+        <skos:prefLabel xml:lang="uk">виробничі чинники</skos:prefLabel>
+        <skos:prefLabel xml:lang="sr">фактори производње</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">факторы производства</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل الإنتاج</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای تولید</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">उत्पादन कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยการผลิต</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈການຜະລິດ</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">生产要素</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">生産要因</skos:prefLabel>
+        <skos:prefLabel xml:lang="ko">생산요소</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_7087 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_7087">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="pt">Característica local</skos:prefLabel>
+        <skos:prefLabel xml:lang="es">Características del sitio</skos:prefLabel>
+        <skos:prefLabel xml:lang="it">Caratteristiche del sito</skos:prefLabel>
+        <skos:prefLabel xml:lang="pl">Czynnik siedliskowy</skos:prefLabel>
+        <skos:prefLabel xml:lang="fr">Facteur lié au site</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Standortfaktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="cs">faktory prostředí</skos:prefLabel>
+        <skos:prefLabel xml:lang="sk">faktory stanovišťa</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">site factors</skos:prefLabel>
+        <skos:prefLabel xml:lang="hu">termõhelyi tényezõ</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">zemin faktörü</skos:prefLabel>
+        <skos:prefLabel xml:lang="ru">местные факторы</skos:prefLabel>
+        <skos:prefLabel xml:lang="ar">عوامل الموقع</skos:prefLabel>
+        <skos:prefLabel xml:lang="fa">فاکتورهای جایگاه</skos:prefLabel>
+        <skos:prefLabel xml:lang="hi">दिशा कारक</skos:prefLabel>
+        <skos:prefLabel xml:lang="th">ปัจจัยทางพื้นที่</skos:prefLabel>
+        <skos:prefLabel xml:lang="lo">ປັດໄຈດ້ານທີ່ຕັ້ງ</skos:prefLabel>
+        <skos:prefLabel xml:lang="zh">立地因子</skos:prefLabel>
+        <skos:prefLabel xml:lang="ja">立地要因</skos:prefLabel>
+        <skos:prefLabel xml:lang="ko">지형요인</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/c_feaa7d27 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/c_feaa7d27">
+        <rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <skos:broader rdf:resource="http://aims.fao.org/aos/agrovoc/c_331093"/>
+        <skos:prefLabel xml:lang="it">Coefficiente Ky</skos:prefLabel>
+        <skos:prefLabel xml:lang="de">Yield-Response-Faktor</skos:prefLabel>
+        <skos:prefLabel xml:lang="tr">verim tepki etmeni</skos:prefLabel>
+        <skos:prefLabel xml:lang="en">yield response factor</skos:prefLabel>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_ar_2b87d5f9 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_ar_2b87d5f9">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2020-11-20T17:30:54</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="ar">عوامل</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_cs_1326294671126 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_cs_1326294671126">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-01-11T23:11:11Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2013-08-28T21:05:06Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="cs">faktory</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_de_1331709403907 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_de_1331709403907">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-03-14T15:16:43Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-12-07T23:23:51Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="de">Faktor</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_en_1299526715331 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_en_1299526715331">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2009-03-03T00:00:00Z</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="en">factors</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_es_1299526715349 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_es_1299526715349">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2010-05-12T00:00:00Z</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="es">factores</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_fr_1299526715368 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_fr_1299526715368">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2010-05-12T00:00:00Z</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="fr">facteur</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_it_1331709415186 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_it_1331709415186">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-03-14T15:16:55Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2013-08-22T22:30:24Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="it">Fattori</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_ka_e416b61d -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_ka_e416b61d">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2017-06-06T07:56:34Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2017-06-14T14:12:09Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="ka">ფაქტორი</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_nb_099dc934 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_nb_099dc934">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2019-05-29T21:25:08.394+02:00</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="nb">faktorer</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_ro_bce12116 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_ro_bce12116">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2015-08-15T15:49:19Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2015-08-18T21:49:32Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="ro">factori</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_ru_81ce7387 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_ru_81ce7387">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2018-09-12T14:04:21.058+02:00</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="ru">факторы</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_sr_0da148be -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_sr_0da148be">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2020-02-24T08:45:35.416+01:00</dc:created>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="sr">фактори</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_tr_1331303055676 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_tr_1331303055676">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-03-09T22:24:15Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2017-09-22T14:00:06Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="tr">faktör</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_tr_1331303141358 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_tr_1331303141358">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-03-09T22:25:41Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2017-09-22T14:00:05Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">1331303141358</skos:notation>
+        <skosxl:literalForm xml:lang="tr">etken</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_uk_1336991290976 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_uk_1336991290976">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-05-14T18:28:11Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2013-08-30T17:19:35Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="uk">чинники</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_uk_1336991357262 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_uk_1336991357262">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2012-05-14T18:29:17Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2013-08-30T17:19:36Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">1336991357262</skos:notation>
+        <skosxl:literalForm xml:lang="uk">фактори</skosxl:literalForm>
+    </NamedIndividual>
+    
+
+
+    <!-- http://aims.fao.org/aos/agrovoc/xl_zh_1306827080886 -->
+
+    <NamedIndividual rdf:about="http://aims.fao.org/aos/agrovoc/xl_zh_1306827080886">
+        <rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+        <dc:created rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2011-05-31T15:31:21Z</dc:created>
+        <dc:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2011-07-19T15:57:11Z</dc:modified>
+        <void:inDataset rdf:resource="http://aims.fao.org/aos/agrovoc/void.ttl#Agrovoc"/>
+        <skos:notation rdf:datatype="http://aims.fao.org/aos/agrovoc/AgrovocCode">331093</skos:notation>
+        <skosxl:literalForm xml:lang="zh">因素</skosxl:literalForm>
+    </NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
+

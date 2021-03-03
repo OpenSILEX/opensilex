@@ -400,7 +400,9 @@ export default class ExperimentDetail extends Vue {
               uri: item.uri,
               value: item.name,
               to: {
-                path: "/factor/details/" + encodeURIComponent(item.uri)
+                path: "/" +
+                  encodeURIComponent(this.uri) +
+                  "/factor/details/" + encodeURIComponent(item.uri)
               }
             };
           });

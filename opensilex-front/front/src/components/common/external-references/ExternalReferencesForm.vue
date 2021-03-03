@@ -238,9 +238,11 @@
         }
 
         updateRelations(relation: string, references: string[]) {
-            for (let index = 0; index < references.length; index++) {
-                const element = references[index];
-                this.addRelation(relation, element);
+            if(references !== undefined){
+                for (let index = 0; index < references.length; index++) {
+                    const element = references[index];
+                    this.addRelation(relation, element);
+                }
             }
         }
 

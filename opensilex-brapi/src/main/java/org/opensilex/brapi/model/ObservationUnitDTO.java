@@ -8,7 +8,7 @@ package org.opensilex.brapi.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 /**

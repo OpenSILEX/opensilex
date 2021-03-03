@@ -158,7 +158,7 @@ public class ExperimentDAO {
             Integer year,
             String name,
             List<URI> species,
-            List<URI> factors,
+            List<URI> factorCategories,
             Boolean isEnded,
             List<URI> projects,
             Boolean isPublic,
@@ -181,7 +181,7 @@ public class ExperimentDAO {
                 (SelectBuilder select) -> {
                     appendRegexLabelFilter(select, name);
                     appendSpeciesFilter(select, species);
-                    appendFactorsFilter(select, factors);
+                    appendFactorCategoriesFilter(select, factorCategories);
                     appendIsActiveFilter(select, isEnded);
                     appendDateFilter(select, startDate, endDate);
                     appendProjectListFilter(select, projects);
@@ -205,10 +205,11 @@ public class ExperimentDAO {
         }
     }
     
-    private void appendFactorsFilter(SelectBuilder select, List<URI> factors) throws Exception {
-        if (factors != null && !factors.isEmpty()) {
+    private void appendFactorCategoriesFilter(SelectBuilder select, List<URI> factorCategories) throws Exception {
+        if (factorCategories != null && !factorCategories.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
-            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACTORS_FIELD, factors));
+            addWhere(select, ExperimentModel.FACTORS_FIELD, Oeso.hasCategory, ExperimentModel.FACTORS_CATEGORIES_FIELD);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACTORS_CATEGORIES_FIELD, factorCategories));
         }
     }
 
@@ -321,10 +322,7 @@ public class ExperimentDAO {
         String lang = user.getLanguage();
         Set<URI> userExperiments = new HashSet<>();
         List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
-            Var userProfileVar = makeVar("_userProfile");
-            select.addWhere(makeVar(ExperimentModel.URI_FIELD), SecurityOntology.hasGroup, makeVar(ExperimentModel.GROUP_FIELD));
-            select.addWhere(makeVar(ExperimentModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar);
-            select.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+            appendUserExperimentsFilter(select, user);
         });
 
         userExperiments.addAll(xps);

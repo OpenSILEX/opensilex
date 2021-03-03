@@ -12,8 +12,12 @@
                         :active="isDetailsTab()"
                         :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.details") }}
-                </b-nav-item
-                >
+                </b-nav-item>
+                <b-nav-item
+                        :active="isFactorsTab()"
+                        :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
+                >{{ $t("ExperimentView.factors") }}
+                </b-nav-item>
                 <b-nav-item
                         :active="isScientificObjectsTab()"
                         :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri),}"
@@ -53,6 +57,10 @@
                         v-if="isDetailsTab()"
                         :uri="uri"
                 ></opensilex-ExperimentDetail>
+                <opensilex-ExperimentFactors
+                        v-else-if="isFactorsTab()"
+                        :uri="uri"
+                ></opensilex-ExperimentFactors>
                 <opensilex-ExperimentScientificObjects
                         v-else-if="isScientificObjectsTab()"
                         :uri="uri"
@@ -139,6 +147,10 @@
             return this.$route.path.startsWith("/experiment/map/");
         }
 
+        isFactorsTab() {
+            return this.$route.path.startsWith("/experiment/factors/");
+        }
+
         isScientificObjectsTab() {
             return this.$route.path.startsWith("/experiment/scientific-objects/");
         }
@@ -168,11 +180,12 @@ en:
         scientific-objects: Scientific objects
         data: Data
         document: Documents
-
+        factors: Factors
 fr:
     ExperimentView:
         details: Détail
         scientific-objects: Objets scientifiques
         data: Data
         document: Documents
+        factors: Facteurs
 </i18n>

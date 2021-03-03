@@ -21,7 +21,7 @@
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
-            "details-label": "details",
+            "details-label": "Details",
             "list-label": "List",
             "element": "The element",
             "keyword": "Keyword",

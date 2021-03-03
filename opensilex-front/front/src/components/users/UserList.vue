@@ -30,17 +30,20 @@
         <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
       </template>
 
-      <template v-slot:row-details>
+      <template v-slot:row-details="{data}">
         <strong class="capitalize-first-letter">{{$t("component.user.user-groups")}}:</strong>
         <ul>
-          <li v-for="groupDetail in groupDetails" v-bind:key="groupDetail.uri">{{groupDetail.name}}</li>
+          <li
+            v-for="groupDetail in  data.item.groupDetails"
+            v-bind:key="groupDetail.uri"
+          >{{groupDetail.name}}</li>
         </ul>
       </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-DetailButton
-            @click="loadUserDetail(data)"
+            @click="data.toggleDetails()"
             label="component.user.details"
             :detailVisible="data.detailsShowing"
             :small="true"
@@ -82,31 +85,6 @@ export default class UserList extends Vue {
   service: SecurityService;
   $store: any;
   $route: any;
-
-  get user() {
-    return this.$store.state.user;
-  }
-
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  private filter: any = "";
-
-  created() {
-    let query: any = this.$route.query;
-    if (query.filter) {
-      this.filter = decodeURIComponent(query.filter);
-    }
-
-    this.service = this.$opensilex.getService("opensilex.SecurityService");
-  }
-
-  updateFilter() {
-    this.$opensilex.updateURLParameter("filter", this.filter, "");
-    this.refresh();
-  }
-
   fields = [
     {
       key: "last_name",
@@ -134,42 +112,58 @@ export default class UserList extends Vue {
       class: "table-actions"
     }
   ];
-
+  get user() {
+    return this.$store.state.user;
+  }
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+  private filter: any = "";
   @Ref("tableRef") readonly tableRef!: any;
+  currentURI = null;
+  groupDetails = [];
+  created() {
+    let query: any = this.$route.query;
+    if (query.filter) {
+      this.filter = decodeURIComponent(query.filter);
+    }
+    this.service = this.$opensilex.getService("opensilex.SecurityService");
+  }
+
+  updateFilter() {
+    this.$opensilex.updateURLParameter("filter", this.filter, "");
+    this.refresh();
+  }
 
   refresh() {
     this.tableRef.refresh();
   }
 
   searchUsers(options) {
-    return this.service.searchUsers(
-      this.filter,
-      options.orderBy,
-      options.currentPage,
-      options.pageSize
-    );
-  }
-
-  currentURI = null;
-  groupDetails = [];
-  loadUserDetail(data) {
-    if (!data.detailsShowing) {
-      this.groupDetails = [];
-      this.currentURI = data.item.uri;
-      this.$opensilex.disableLoader();
-      this.service
-        .getUserGroups(data.item.uri)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-            this.groupDetails = http.response.result;
-            data.toggleDetails();
-            this.$opensilex.enableLoader();
-          }
-        )
-        .catch(this.$opensilex.errorHandler);
-    } else {
-      data.toggleDetails();
-    }
+    let toReturn;
+    return this.service
+      .searchUsers(
+        this.filter,
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+      )
+      .then((http: any) => {
+        let promises = [],
+          promise;
+        toReturn = http;
+        toReturn.response.result.forEach((element, index) => {
+          promise = this.service
+            .getUserGroups(element.uri)
+            .then((http2: any) => {
+              element.groupDetails = http2.response.result;
+            });
+          promises.push(promise);
+        });
+        return Promise.all(promises).then(values => {
+          return toReturn;
+        });
+      });
   }
 
   deleteUser(uri: string) {

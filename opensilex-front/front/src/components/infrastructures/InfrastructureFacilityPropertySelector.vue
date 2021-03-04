@@ -53,7 +53,7 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
         });
     } else if (this.context && this.context.infrastructureURI) {
       return this.$opensilex
-        .getService("opensilex.InfrastructuresService")
+        .getService("opensilex.OrganisationsService")
         .getInfrastructure(this.context.infrastructureURI)
         .then(http => {
           let facilityNodes = [];
@@ -67,7 +67,7 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
         });
     } else {
       return this.$opensilex
-        .getService("opensilex.InfrastructuresService")
+        .getService("opensilex.OrganisationsService")
         .getAllFacilities1()
         .then(http => {
           let facilityNodes = [];

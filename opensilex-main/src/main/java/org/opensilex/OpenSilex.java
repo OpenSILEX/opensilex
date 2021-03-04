@@ -286,8 +286,6 @@ public final class OpenSilex {
      */
     public static OpenSilex createInstance(OpenSilexSetup setup, boolean autoStart) throws Exception {
         try {
-            org.glassfish.jersey.server.validation.internal.InjectingConstraintValidatorFactory z;
-            org.hibernate.validator.internal.metadata.provider.AnnotationMetaDataProvider p;
             OpenSilex instance = buildInstance(setup);
 
             instance.initialize();

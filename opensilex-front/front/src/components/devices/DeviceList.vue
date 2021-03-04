@@ -59,6 +59,9 @@
       :isSelectable="true"
       labelNumberOfSelectedRow="DeviceList.selected"
     >
+      <!---<template v-slot:export>
+        <b-button class="mb-2 mr-2" @click="exportDevices()" >{{$t('DeviceList.export')}}</b-button> 
+      </template> --->
 
       <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink :uri="data.item.uri"
@@ -88,8 +91,6 @@
       modalSize="lg"
       :initForm="initForm"
       icon="ik#ik-settings"
-      @onCreate="refresh()"
-      @onUpdate="refresh()"
     ></opensilex-ModalForm>
 
     <opensilex-ModalForm
@@ -106,8 +107,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import { DevicesService, DocumentsService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -133,18 +133,46 @@ export default class DeviceList extends Vue {
     namePattern: undefined,
     rdf_type: undefined,
     start_up: undefined,
+    existence_date: undefined,
     brand: undefined,
-    model: undefined
+    model: undefined,
+    metadataKey: undefined,
+    metadataValue: undefined
   };
+
+  exportFilter = {
+    namePattern: undefined,
+    rdf_type: undefined,
+    start_up: undefined,
+    existence_date: undefined,
+    brand: undefined,
+    model: undefined,
+    serial_number: undefined,
+    metadata: undefined
+  }
 
   resetFilters() {
     this.filter = {
       namePattern: undefined,
       rdf_type: undefined,
       start_up: undefined,
+      existence_date: undefined,
       brand: undefined,
-      model: undefined
+      model: undefined,
+      metadataKey: undefined,
+      metadataValue: undefined
     };
+
+    /*this.exportFilter = {
+      namePattern: undefined,
+      rdf_type: undefined,
+      start_up: undefined,
+      existence_date: undefined,
+      brand: undefined,
+      model: undefined,
+      serial_number: undefined,
+      metadata: undefined
+    }*/
     this.refresh();
   }
 
@@ -174,7 +202,8 @@ export default class DeviceList extends Vue {
           start_up: device.start_up,
           removal: device.removal,
           description: device.description,
-          metadata: device.metadata
+          metadata: device.metadata,
+          relations: device.relations
         };
         this.deviceForm.showEditForm(form);
       })
@@ -208,18 +237,29 @@ export default class DeviceList extends Vue {
   }
 
   searchDevices(options) {
+    //this.updateExportFilters();
     return this.service.searchDevices(
       this.filter.namePattern, // namePattern filter
       this.filter.rdf_type, // rdfTypes filter
       this.filter.start_up, // year filter
+      this.filter.existence_date, // existence filter
       this.filter.brand, // brandPattern filter
       this.filter.model, // model filter
       undefined, // snPattern filter
+      this.addMetadataFilter(), //metadata filter
       options.orderBy,
       options.currentPage,
       options.pageSize,
     );
   }
+
+  /*exportDevices() {
+    let path = "/core/devices/export";
+    let today = new Date();
+    let filename = "export_devices_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    this.$opensilex
+     .downloadFilefromService(path, filename, "csv", this.exportFilter);
+  }*/
 
   createDocument() {
     this.documentForm.showCreateForm();
@@ -249,6 +289,26 @@ export default class DeviceList extends Vue {
       }
   }
 
+  addMetadataFilter() {
+    let metadata = undefined;
+    if (this.filter.metadataKey != undefined && this.filter.metadataKey != ""
+    && this.filter.metadataValue != undefined && this.filter.metadataValue != "") {
+      metadata = '{"' + this.filter.metadataKey + '":"' + this.filter.metadataValue + '"}'
+      return metadata;
+    }
+  }
+
+  /*updateExportFilters() {
+    this.exportFilter.namePattern = this.filter.namePattern;
+    this.exportFilter.rdf_type = this.filter.rdf_type;
+    this.exportFilter.start_up = this.filter.start_up;
+    this.exportFilter.existence_date = this.filter.existence_date;
+    this.exportFilter.brand = this.filter.brand;
+    this.exportFilter.model = this.filter.model;
+    this.exportFilter.serial_number = undefined;
+    this.exportFilter.metadata = this.addMetadataFilter();
+  }*/
+
 }
 </script>
 
@@ -268,6 +328,8 @@ en:
     selected: Devices
     facility: Facility
     addDocument: Add document
+    addVariable: Add variable
+    export: Export Device list
 
     filter:
       namePattern: Name
@@ -292,6 +354,8 @@ fr:
     selected: Dispositifs
     facility: Facility
     addDocument: Ajouter un document
+    addVariable: Ajout de variable
+    export: Exporter la liste
 
     filter:
       namePattern: Nom

@@ -39,6 +39,7 @@ import HttpResponse, {
   OpenSilexResponse
 } from "opensilex-security/HttpResponse";
 
+
 @Component
 export default class DeviceAttributesTable extends Vue {
   $opensilex: any;
@@ -62,7 +63,7 @@ export default class DeviceAttributesTable extends Vue {
       formater: "string",
       editor: "input",
       validator: ["required", "unique"],
-      widthGrow: 0.5,
+      widthGrow: 0.5
     },
     {
       title: "Value",
@@ -83,7 +84,7 @@ export default class DeviceAttributesTable extends Vue {
   ];
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.DeviceService");
+    this.service = this.$opensilex.getService("opensilex.DevicesService");
   }
 
   options: any = {

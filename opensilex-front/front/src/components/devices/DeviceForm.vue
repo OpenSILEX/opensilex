@@ -84,17 +84,30 @@
     <!-- metadata -->
     <opensilex-DeviceAttributesTable
       ref="deviceAttributesTable"
-      :editMode="editMode"
       :attributesArray='attributesArray'
     ></opensilex-DeviceAttributesTable>
+
+    <!-- relation -->
+    <!-- <opensilex-VariableSelector 
+      :editMode="editMode"
+      label="DeviceForm.variable"
+      helpMessage="DeviceForm.variable-help"
+      :variables.sync="form.relations"
+    ></opensilex-VariableSelector> -->
+
+    <opensilex-DeviceVariablesTable
+      ref="deviceVariablesTable"
+      :editMode="editMode"
+      :relations.sync="form.relations"
+    ></opensilex-DeviceVariablesTable>
+
 
   </b-form>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
 import {DevicesService} from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
@@ -107,7 +120,8 @@ export default class DeviceForm extends Vue {
 
   uriGenerated = true;
 
-  @Ref("deviceAttributesTable") readonly table!: any;
+  @Ref("deviceAttributesTable") readonly attTable!: any;
+  @Ref("deviceVariablesTable") readonly varTable!: any;
 
   get user() {
     return this.$store.state.user;
@@ -130,7 +144,13 @@ export default class DeviceForm extends Vue {
             start_up: undefined,
             removal: undefined,
             description: undefined,
-            metadata: undefined
+            metadata: undefined,
+            relations: [
+              {
+                property: null,
+                value: null
+              }
+            ]
         }
       }
     }
@@ -149,15 +169,22 @@ export default class DeviceForm extends Vue {
       start_up: undefined,
       removal: undefined,
       description: undefined,
-      metadata: undefined
+      metadata: undefined,
+      relations: [
+        {
+          property: null,
+          value: null
+        }
+      ]
     };
   }
+
   reset() {
     this.uriGenerated = true;
   }
-
+  
   update(form) {
-    form.metadata = this.table.pushAttributes();
+    form.metadata = this.attTable.pushAttributes();   
     this.$opensilex
       .getService("opensilex.DevicesService")
       .updateDevice(form)
@@ -169,7 +196,6 @@ export default class DeviceForm extends Vue {
   }
 
   attributesArray = [];
-
   getAttributes(form) {
     this.attributesArray = [];
     if (form.metadata != null) {   
@@ -182,7 +208,16 @@ export default class DeviceForm extends Vue {
       } 
     }
   }
+
+  addEmptyRow() {
+    this.form.relations.unshift({
+      property: "vocabulary:measures",
+      value: null,
+    });
+  }
+
 }
+
 </script>
 
 <style scoped lang="scss">
@@ -199,19 +234,21 @@ en:
     name: Name
     name-help: A name given to the device
     brand: Brand
-    brand-help:
+    brand-help: A brand of the device
     constructor_model: Constructor model
-    constructor_model-help:
+    constructor_model-help: A constructor model of the device
     serial_number: Serial number
-    serial_number-help:
+    serial_number-help: A serial number of the device
     person_in_charge: Person in charge
-    person_in_charge-help:
+    person_in_charge-help: Person in charge of the device
     start_up: Start up
-    start_up-help:
+    start_up-help: Date of start up
     removal: Removal
-    removal-help:
+    removal-help: Date of removal
     description: Description
-    description-help:
+    description-help: Description associated of the device
+    variable: Variable
+    variable-help: Select one or several variables
 
 fr:
   DeviceForm:
@@ -221,19 +258,21 @@ fr:
     type-help: Type de dispositif 
     name: Nom
     name-help: Nom du dispositif 
-    brand: Marque
-    brand-help:
-    constructor_model: Modèle constructeur
-    constructor_model-help:
-    serial_number: Numéro de série
-    serial_number-help:
+    brand: Marque du dispositif
+    brand-help: Marque du dispositif
+    constructor_model: Modèle constructeur 
+    constructor_model-help: Modèle constructeur du dispositif
+    serial_number: Numéro de série 
+    serial_number-help: Numéro de série du dispositif  
     person_in_charge: Personne responsable
-    person_in_charge-help:
+    person_in_charge-help: Personne responsable du dispositif
     start_up: Date d'obtention
-    start_up-help:
+    start_up-help: Date d'obtention du dispositif
     removal: Date de mise hors service
-    removal-help:
+    removal-help: Date de mise hors service du dispositif
     description: Description
-    description-help:
+    description-help: Description associée au dispositif
+    variable: Variable
+    variable-help: Selectionner une ou plusieurs variables
 
 </i18n>

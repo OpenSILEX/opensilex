@@ -31,7 +31,6 @@ import {
   PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class FactorLevelSelector extends Vue {

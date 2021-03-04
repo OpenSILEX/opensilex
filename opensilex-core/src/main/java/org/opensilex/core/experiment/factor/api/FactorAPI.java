@@ -114,7 +114,7 @@ public class FactorAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createFactor(
             @ApiParam("Factor description") @Valid FactorCreationDTO dto) throws Exception {
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql); 
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
         ExperimentModel xpModel = experimentDAO.get(dto.getExperiment(), currentUser);
         FactorDAO dao = new FactorDAO(sparql);
         try {
@@ -250,8 +250,7 @@ public class FactorAPI {
      * @param category
      * @param experiment
      * @see org.opensilex.core.experiment.factor.dal.FactorDAO
-     * @param orderByList List of fields to sort as an array of
-     * fieldName=asc|desc
+     * @param orderByList List of fields to sort as an array of fieldName=asc|desc
      * @param page Page number
      * @param pageSize Page size
      * @return filtered, ordered and paginated list
@@ -279,39 +278,39 @@ public class FactorAPI {
         // Search factors with Factor DAO
         FactorDAO dao = new FactorDAO(sparql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql);
-        try{
-        List<URI> experiments = null;
-        if (experiment != null) {
-            experimentDAO.validateExperimentAccess(experiment, currentUser);
-            experiments = new ArrayList<>();
-            experiments.add(experiment);
-        } else {
-            Set<URI> userExperiments = experimentDAO.getUserExperiments(currentUser);
-            experiments = new ArrayList<>(userExperiments);
-        }
-        
-        ListWithPagination<FactorModel> resultList = dao.search( name, category, experiments, orderByList, page, pageSize,
-                currentUser.getLanguage());
+        try {
+            List<URI> experiments = null;
+            if (experiment != null) {
+                experimentDAO.validateExperimentAccess(experiment, currentUser);
+                experiments = new ArrayList<>();
+                experiments.add(experiment);
+            } else {
+                Set<URI> userExperiments = experimentDAO.getUserExperiments(currentUser);
+                experiments = new ArrayList<>(userExperiments);
+            }
 
-        List<FactorGetDTO> resultDTOList = new ArrayList<>();
+            ListWithPagination<FactorModel> resultList = dao.search(name, category, experiments, orderByList, page, pageSize,
+                    currentUser.getLanguage());
 
-        for (FactorModel factorModel : resultList.getList()) {
-            resultDTOList.add(FactorGetDTO.fromModel(factorModel));
-        }
+            List<FactorGetDTO> resultDTOList = new ArrayList<>();
 
-        ListWithPagination<FactorGetDTO> paginatedListResponse = new ListWithPagination<>(resultDTOList,
-                resultList.getPage(), resultList.getPageSize(), resultList.getTotal());
+            for (FactorModel factorModel : resultList.getList()) {
+                resultDTOList.add(FactorGetDTO.fromModel(factorModel));
+            }
+
+            ListWithPagination<FactorGetDTO> paginatedListResponse = new ListWithPagination<>(resultDTOList,
+                    resultList.getPage(), resultList.getPageSize(), resultList.getTotal());
 
             // Return paginated list of factor DTO
             return new PaginatedListResponse<>(paginatedListResponse).getResponse();
             // No access to uri
-        }catch( ForbiddenURIAccessException e){
+        } catch (ForbiddenURIAccessException e) {
             List<FactorGetDTO> resultDTOList = new ArrayList<>();
             ListWithPagination<FactorGetDTO> paginatedListResponse = new ListWithPagination<>(resultDTOList);
             return new PaginatedListResponse<>(paginatedListResponse).getResponse();
         }
     }
-    
+
     @GET
     @Path("factor_levels")
     @ApiOperation("Search factors levels")
@@ -328,8 +327,8 @@ public class FactorAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(-1) int pageSize)
             throws Exception {
 
-       FactorDAO dao = new FactorDAO(sparql);
-        ListWithPagination<FactorModel> factors = dao.search(null, name, null, null, orderByList, page, pageSize, currentUser.getLanguage());
+        FactorDAO dao = new FactorDAO(sparql);
+        ListWithPagination<FactorModel> factors = dao.search(name, null, null, orderByList, page, pageSize, currentUser.getLanguage());
         ListWithPagination<FactorDetailsGetDTO> dtoList = factors.convert(FactorDetailsGetDTO.class, FactorDetailsGetDTO::fromModel);
 
         // Return paginated list of factor DTO
@@ -340,8 +339,7 @@ public class FactorAPI {
      * Remove an factor
      *
      * @param uri the factor URI
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the deleted Factor {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the deleted Factor {@link URI}
      */
     @DELETE
     @Path("{uri}")
@@ -359,7 +357,7 @@ public class FactorAPI {
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteFactor(
             @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
-         try {
+        try {
             FactorDAO dao = new FactorDAO(sparql);
             FactorModel model = dao.get(uri);
             if (model != null) {
@@ -368,14 +366,14 @@ public class FactorAPI {
                 // Get associated experiment URIs
                 List<ExperimentModel> associatedFactorExperimentURIs = model.getAssociatedExperiments();
 
-                if (associatedFactorExperimentURIs.size() > 1 ) {
+                if (associatedFactorExperimentURIs.size() > 1) {
                     return new ErrorResponse(
                             Response.Status.BAD_REQUEST,
                             "The factor is linked to multiple experiment(s)",
                             "You can't delete a factor linked to another experiment"
                     ).getResponse();
                 }
-                
+
                 dao.delete(uri);
                 return new ObjectUriResponse(uri).getResponse();
             } else {
@@ -388,8 +386,7 @@ public class FactorAPI {
 
     /**
      * @param dto the Factor to update
-     * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the updated Factor {@link URI}
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing the updated Factor {@link URI}
      */
     @PUT
     @ApiOperation("Update a factor")
@@ -479,7 +476,7 @@ public class FactorAPI {
             ).getResponse();
         }
     }
-    
+
     @GET
     @Path("/categories")
     @ApiOperation("Search categories")
@@ -493,7 +490,7 @@ public class FactorAPI {
         )
     })
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return categories", response = FactorCategoryGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return categories", response = FactorCategoryGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

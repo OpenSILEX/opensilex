@@ -1,25 +1,30 @@
 <template>
   <b-card v-if="selected && selected.uri">
-    <a
-      class="btn btn-outline-primary mr-2 h-100 back-button"
-      href="/"
-      @click.prevent="$router.go(-1)"
-      v-if="withReturnButton"
-    >
-      <opensilex-Icon class="icon-title" icon="ik#ik-corner-up-left" />
-    </a>
-    <b-tabs
-      content-class="mt-3"
-      :value="tabsIndex"
-      @input="updateTabs"
-      :class="{ withReturnButton: withReturnButton }"
-    >
-      <b-tab :title="$t('ScientificObjectDetail.title')"></b-tab>
-      <b-tab :title="$t('Documents')"></b-tab>
-      <b-tab :title="$t('Annotation.list-title')"></b-tab>
-      <!-- <b-tab :title="$t('Event.list-title')"></b-tab> -->
-    </b-tabs>
-    <div v-if="loadDetails()">
+
+   <opensilex-PageActions :tabs=true :returnButton="withReturnButton">
+      <b-nav-item
+      :active="isDetailsTab"
+      @click.prevent="tabsValue = DETAILS_TAB"
+      >{{ $t('component.common.details-label') }}
+      </b-nav-item>
+
+      <b-nav-item
+      class="ml-3"
+      @click.prevent="tabsValue = ANNOTATIONS_TAB"
+      :active="isAnnotationTab"
+      >{{ $t("Annotation.list-title") }}
+      </b-nav-item>
+
+      <b-nav-item
+      class="ml-3"
+      @click.prevent="tabsValue = DOCUMENTS_TAB"
+      :active="isDocumentTab"
+      >{{ $t("DocumentTabList.documents") }}
+      </b-nav-item>
+
+    </opensilex-PageActions>
+
+    <div v-if="isDetailsTab">
       <b-card>
         <template v-slot:header v-if="withReturnButton">
           <h3 v-if="selected.experiment">
@@ -146,7 +151,7 @@
     </div>
     
     <opensilex-AnnotationList
-      v-if="isAnnotationTab()"
+      v-if="isAnnotationTab"
       ref="annotationList"
       :target="selected.uri"
       :enableActions="true"
@@ -160,7 +165,7 @@
 
     <opensilex-Button
       v-if="
-        isAnnotationTab() &&
+        isAnnotationTab &&
         user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
       "
       label="Annotation.add"
@@ -172,7 +177,7 @@
 
     <opensilex-AnnotationModalForm
       v-if="
-        isAnnotationTab() &&
+        isAnnotationTab &&
         user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
       "
       ref="annotationModalForm"
@@ -182,7 +187,7 @@
     ></opensilex-AnnotationModalForm>
 
     <opensilex-DocumentTabList
-      v-if="isDocumentTab()"
+      v-if="isDocumentTab"
       :uri="selected.uri"
       :modificationCredentialId="
         credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
@@ -219,20 +224,13 @@ export default class ScientificObjectDetail extends Vue {
   valueByProperties = {};
   classModel: any = {};
 
-  static DETAILS_TAB = "Details";
-  static DOCUMENTS_TAB = "Documents";
-  static ANNOTATIONS_TAB = "Annotations";
-  static EVENTS_TAB = "Events";
-
-  static tabsValues = [
-    ScientificObjectDetail.DETAILS_TAB,
-    ScientificObjectDetail.DOCUMENTS_TAB,
-    ScientificObjectDetail.ANNOTATIONS_TAB,
-    ScientificObjectDetail.EVENTS_TAB,
-  ];
+  DETAILS_TAB = "Details";
+  DOCUMENTS_TAB = "Documents";
+  ANNOTATIONS_TAB = "Annotations";
+  EVENTS_TAB = "Events";
 
   tabsIndex: number = 0;
-  tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
+  tabsValue: string = this.DETAILS_TAB;
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
   @Ref("annotationModalForm")
@@ -416,27 +414,16 @@ export default class ScientificObjectDetail extends Vue {
     }
   }
 
-  private loadDetails(): boolean {
-    return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
+  get isDetailsTab(): boolean {
+    return this.tabsValue == this.DETAILS_TAB;
   }
 
-  private isAnnotationTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
+  get isAnnotationTab(): boolean {
+    return this.tabsValue == this.ANNOTATIONS_TAB;
   }
 
-  private loadEvents(): boolean {
-    return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
-  }
-
-  private isDocumentTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
-  }
-
-  private updateTabs(tabIndex) {
-    if (tabIndex >= 0 && tabIndex < ScientificObjectDetail.tabsValues.length) {
-      this.tabsIndex = tabIndex;
-      this.tabsValue = ScientificObjectDetail.tabsValues[tabIndex];
-    }
+  get isDocumentTab(): boolean {
+    return this.tabsValue == this.DOCUMENTS_TAB;
   }
 
   updateAnnotations() {

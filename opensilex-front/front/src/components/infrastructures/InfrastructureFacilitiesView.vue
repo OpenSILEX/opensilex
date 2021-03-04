@@ -2,16 +2,22 @@
   <b-card v-if="selected">
     <template v-slot:header>
       <h3>
-         {{$t("InfrastructureFacilitiesView.facilities")}}
+        {{ $t("InfrastructureFacilitiesView.facilities") }}
         &nbsp;
         <font-awesome-icon
           icon="question-circle"
-          v-b-tooltip.hover.top="$t('InfrastructureFacilitiesView.infrastructure-facility-help')"
-        />      
+          v-b-tooltip.hover.top="
+            $t('InfrastructureFacilitiesView.infrastructure-facility-help')
+          "
+        />
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            )
+          "
           @click="facilityForm.showCreateForm()"
           label="InfrastructureFacilitiesView.add"
         ></opensilex-CreateButton>
@@ -31,29 +37,41 @@
       :fields="fields"
       @row-selected="$emit('rowSelected', $event)"
     >
-      <template v-slot:head(name)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(typeLabel)="data">{{$t(data.label)}}</template>
-      <template v-slot:head(actions)="data">{{$t(data.label)}}</template>
+      <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(typeLabel)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
 
       <template v-slot:cell(name)="data">
-        <opensilex-Icon :icon="$opensilex.getRDFIcon(data.item.rdf_type)" />&nbsp;
-        <span class="capitalize-first-letter">{{data.item.name}}</span>
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.name"
+        ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(typeLabel)="data">
-        <span class="capitalize-first-letter">{{data.item.rdf_type_name}}</span>
+        <span class="capitalize-first-letter">{{
+          data.item.rdf_type_name
+        }}</span>
       </template>
 
       <template v-slot:cell(actions)="data">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              )
+            "
             @click="facilityForm.showEditForm(data.item)"
             label="InfrastructureFacilitiesView.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              )
+            "
             @click="deleteFacility(data.item.uri)"
             label="InfrastructureFacilitiesView.delete"
             :small="true"
@@ -63,7 +81,11 @@
     </b-table>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+        )
+      "
       ref="facilityForm"
       component="opensilex-InfrastructureFacilityForm"
       createTitle="InfrastructureFacilitiesView.add"
@@ -85,7 +107,7 @@ import {
   ResourceTreeDTO,
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
-  InfrastructureTeamDTO
+  InfrastructureTeamDTO,
 } from "opensilex-core/index";
 import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 
@@ -108,25 +130,25 @@ export default class InfrastructureFacilitiesView extends Vue {
   private selected: InfrastructureGetDTO;
 
   @Prop({
-    default: false
+    default: false,
   })
   isSelectable;
-  
+
   fields = [
     {
       key: "name",
       label: "component.common.name",
-      sortable: true
+      sortable: true,
     },
     {
       key: "typeLabel",
       label: "component.common.type",
-      sortable: true
+      sortable: true,
     },
     {
       label: "component.common.actions",
-      key: "actions"
-    }
+      key: "actions",
+    },
   ];
 
   public deleteFacility(uri) {

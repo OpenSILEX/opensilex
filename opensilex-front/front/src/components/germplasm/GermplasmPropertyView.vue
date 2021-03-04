@@ -4,7 +4,7 @@
       v-if="label"
       :uri="value"
       :value="label"
-      :to="{path: '/germplasm/'+ encodeURIComponent(value)}"
+      :to="{path: '/germplasm/details/'+ encodeURIComponent(value)}"
     ></opensilex-UriLink>
   </span>
 </template>

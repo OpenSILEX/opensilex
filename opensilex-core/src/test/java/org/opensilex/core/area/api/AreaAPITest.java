@@ -42,15 +42,24 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     protected final String deletePath = path + "/{uri}";
     private int soCount = 1;
 
-    protected AreaCreationDTO getCreationDTO() throws Exception {
+    protected AreaCreationDTO getCreationDTO(boolean geometryError) throws Exception {
         AreaCreationDTO dto = new AreaCreationDTO();
         List<Position> list = new LinkedList<>();
-        list.add(new Position(3.97167246, 43.61328981));
-        list.add(new Position(3.97171243, 43.61332417));
-        list.add(new Position(3.9717427, 43.61330558));
-        list.add(new Position(3.97170272, 43.61327122));
-        list.add(new Position(3.97167246, 43.61328981));
-        list.add(new Position(3.97167246, 43.61328981));
+        if (geometryError) {
+            list.add(new Position(200.97167246, 43.61328981));
+            list.add(new Position(3.97171243, 43.61332417));
+            list.add(new Position(3.9717427, 43.61330558));
+            list.add(new Position(3.97170272, 43.61327122));
+            list.add(new Position(3.97167246, 43.61328981));
+            list.add(new Position(200.97167246, 43.61328981));
+        } else {
+            list.add(new Position(3.97167246, 43.61328981));
+            list.add(new Position(3.97171243, 43.61332417));
+            list.add(new Position(3.9717427, 43.61330558));
+            list.add(new Position(3.97170272, 43.61327122));
+            list.add(new Position(3.97167246, 43.61328981));
+            list.add(new Position(3.97167246, 43.61328981));
+        }
         Geometry geometry = new Polygon(list);
 
         dto.setName("Area " + soCount++);
@@ -62,7 +71,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -74,7 +83,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testUpdate() throws Exception {
         // create the area
-        AreaCreationDTO areaDTO = getCreationDTO();
+        AreaCreationDTO areaDTO = getCreationDTO(false);
         final Response postResult = getJsonPostResponse(target(createPath), areaDTO);
 
         // update the area
@@ -105,7 +114,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testDelete() throws Exception {
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO(false));
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
@@ -118,7 +127,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByURI() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
@@ -134,7 +143,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriBadUri() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
@@ -146,7 +155,23 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchIntersectsArea() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<AreaGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<AreaGetDTO>>() {
+        });
+        AreaGetDTO soGetDetailDTO = getResponse.getResult();
+        assertNotNull(soGetDetailDTO);
+    }
+
+    @Test(expected = Exception.class)
+    public void testSearchIntersectsAreaErrorGeometry() throws Exception {
+        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(true));
         URI uri = extractUriFromResponse(postResult);
 
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());

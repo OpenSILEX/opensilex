@@ -88,7 +88,7 @@ public class AreaGetDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setRdfType(model.getType());
-        dto.setAuthor(model.getAuthor());
+        dto.setAuthor(model.getCreator());
 
         if (model.getDescription() != null) {
             dto.setDescription(model.getDescription());

@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.area.api;
 
+import com.mongodb.MongoQueryException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import io.swagger.annotations.*;
@@ -294,9 +295,13 @@ public class AreaAPI {
 
         List<AreaGetDTO> dtoList = new ArrayList<>();
 
-        for (GeospatialModel geospatialModel : mapGeo) {
-            AreaGetDTO dtoFromModel = AreaGetDTO.fromModel(geospatialModel);
-            dtoList.add(dtoFromModel);
+        try {
+            for (GeospatialModel geospatialModel : mapGeo) {
+                AreaGetDTO dtoFromModel = AreaGetDTO.fromModel(geospatialModel);
+                dtoList.add(dtoFromModel);
+            }
+        } catch (MongoQueryException mongoException) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
 
         return new PaginatedListResponse<>(dtoList).getResponse();

@@ -36,6 +36,12 @@
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
     >
+      <opensilex-CheckboxForm
+          v-if="!editingMode"
+          :value.sync="displayAreas"
+          title="Area.displayAreas"
+      ></opensilex-CheckboxForm>
+
       <!-- "mapControls" to display the scale -->
       <vl-map
           ref="map"
@@ -81,7 +87,7 @@
             >
             </vl-source-vector>
           </vl-layer-vector>
-          <vl-layer-vector>
+          <vl-layer-vector :visible="displayAreas === 'true'">
             <vl-source-vector
                 ref="vectorSourceArea"
                 :features.sync="featuresArea"
@@ -141,7 +147,7 @@
       >
         <template v-slot:cell(name)="{ data }">
           <opensilex-UriLink
-              :noExternalLink="true"
+              :to="data.item.properties.nature === 'Area' ? {path: '/area/details/'+ encodeURIComponent(data.item.properties.uri)} : {}"
               :uri="data.item.properties.uri"
               :value="data.item.properties.name"
           ></opensilex-UriLink>
@@ -151,20 +157,49 @@
           {{ nameType(data.item.properties.type) }}
         </template>
 
+        <template v-slot:row-details="{ data }">
+          <div v-if="data.item.properties.nature === 'Area'">
+            <strong class="capitalize-first-letter">
+              {{ $t("MapView.author") }}
+            </strong>
+            <br/>
+            {{ data.item.properties.author }}
+            <br/>
+            <strong class="capitalize-first-letter">
+              {{ $t("MapView.description") }}
+            </strong>
+            <br/>
+            {{ data.item.properties.description }}
+            <br/>
+            <opensilex-GeometryView
+                v-if="data.item.geometry"
+                :value="data.item.geometry"
+                label="component.common.geometry"
+            ></opensilex-GeometryView>
+          </div>
+        </template>
+
         <template v-slot:cell(actions)="{ data }">
           <b-button-group size="sm">
             <div v-if="user.admin === true &&
                  (data.item.properties.uri.includes('-area') || data.item.properties.uri.includes('set/area#'))">
-              <opensilex-EditButton
-                  v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+              <opensilex-DetailButton
+                  :detailVisible="data['detailsShowing']"
                   :small="true"
-                  label="Area.update"
-                  @click="editArea(data.item.properties.uri)"
+                  label="MapView.details"
+                  @click="showDetails(data)"
+              ></opensilex-DetailButton>
+
+              <opensilex-EditButton v-if=" user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+                                    :small="true"
+                                    label="Area.update"
+                                    @click="edit(data)"
               ></opensilex-EditButton>
 
-              <opensilex-DeleteButton v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                                      label="MapView.delete-area-button"
-                                      @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteArea(data.item.properties.uri)"
+              <opensilex-DeleteButton
+                  v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
+                  label="MapView.delete-area-button"
+                  @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteItem(data)"
               ></opensilex-DeleteButton>
             </div>
           </b-button-group>
@@ -225,6 +260,7 @@ export default class MapView extends Vue {
   nodes = [];
 
   private editingMode: boolean = false;
+  private displayAreas: String = "true";
   private endReceipt: boolean = false;
   private errorGeometry: boolean = false;
   private typeLabel: { uri: String; name: String }[] = [];
@@ -237,6 +273,16 @@ export default class MapView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  showDetails(data) {
+    if (!data.detailsShowing) {
+      let uriResult = data.item.properties.uri;
+      if (data.item.properties.nature === "Area") {
+        this.areaDetails(uriResult);
+      }
+    }
+    data.toggleDetails = -data.toggleDetails();
   }
 
   showAreaDetails(areaUriResult: any) {
@@ -255,6 +301,7 @@ export default class MapView extends Vue {
                   name: res.name,
                   type: res.rdf_type,
                   description: res.description,
+                  nature: "Area",
                 };
                 this.featuresArea.push(res.geometry);
               }
@@ -296,6 +343,7 @@ export default class MapView extends Vue {
                   name: res.name,
                   type: res.rdf_type,
                   description: res.description,
+                  nature: "Area",
                 };
                 this.featuresArea.push(res.geometry);
               }
@@ -368,6 +416,7 @@ export default class MapView extends Vue {
                     name: element.name,
                     type: element.type,
                     description: element.description,
+                    nature: "ScientificObjects",
                   };
                   this.featuresOS.push(element.geometry);
                 }
@@ -380,7 +429,7 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler)
         .finally(() => {
           this.$opensilex.hideLoader();
-        })
+        });
   }
 
   mapCreated(map) {
@@ -464,6 +513,23 @@ export default class MapView extends Vue {
     }
   }
 
+  private areaDetails(areaUri) {
+    console.debug("areaDetails", areaUri);
+    this.$opensilex
+        .getService("opensilex.AreaService")
+        .getByURI(areaUri)
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+          let result = http.response.result;
+          this.selectedFeatures.forEach((item) => {
+            if (item.properties.uri === result.uri) {
+              item.properties.description = result.description;
+              item.properties.author = result.author;
+            }
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
   private removeFromFeaturesArea(uri, features) {
     features.forEach((item) => {
       const {uri: uriItem} = item.properties;
@@ -485,71 +551,102 @@ export default class MapView extends Vue {
   }
 
   private areaRecovery() {
-    let coordinateExtent = transformExtent(this.mapView.$view.calculateExtent(), "EPSG:3857", "EPSG:4326")
-    this.overlayCoordinate = [coordinateExtent[0] + (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111, coordinateExtent[3] + (coordinateExtent[1] - coordinateExtent[3]) * 0.025747];
+    let coordinateExtent = transformExtent(
+        this.mapView.$view.calculateExtent(),
+        "EPSG:3857",
+        "EPSG:4326"
+    );
+    this.overlayCoordinate = [
+      coordinateExtent[0] +
+      (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
+      coordinateExtent[3] +
+      (coordinateExtent[1] - coordinateExtent[3]) * 0.025747,
+    ];
 
-    let geometry = {
-      type: "Polygon",
-      coordinates: [
-        [
-          [coordinateExtent[2], coordinateExtent[1]],
-          [coordinateExtent[0], coordinateExtent[1]],
-          [coordinateExtent[0], coordinateExtent[3]],
-          [coordinateExtent[2], coordinateExtent[3]],
-          [coordinateExtent[2], coordinateExtent[1]],
+    if (
+        coordinateExtent[0] >= -180 &&
+        coordinateExtent[0] <= 180 &&
+        coordinateExtent[2] >= -180 &&
+        coordinateExtent[2] <= 180 &&
+        coordinateExtent[1] >= -90 &&
+        coordinateExtent[1] <= 90 &&
+        coordinateExtent[3] >= -90 &&
+        coordinateExtent[3] <= 90
+    ) {
+      let geometry = {
+        type: "Polygon",
+        coordinates: [
+          [
+            [coordinateExtent[2], coordinateExtent[1]],
+            [coordinateExtent[0], coordinateExtent[1]],
+            [coordinateExtent[0], coordinateExtent[3]],
+            [coordinateExtent[2], coordinateExtent[3]],
+            [coordinateExtent[2], coordinateExtent[1]],
+          ],
         ],
-      ],
-    };
+      };
 
-    this.featuresArea = [];
-    this.service = this.$opensilex.getService("opensilex.AreaService");
-    this.service
-        .searchIntersects(JSON.parse(JSON.stringify(geometry)))
-        .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
-          const res = http.response.result as any;
-          res.forEach((element) => {
-            if (element.geometry != null) {
-              element.geometry.properties = {
-                uri: element.uri,
-                name: element.name,
-                type: element.rdf_type,
-                description: element.description,
-              };
-              this.featuresArea.push(element.geometry);
-            }
-          });
-          this.endReceipt = true;
-        })
-        .catch(this.$opensilex.errorHandler);
+      this.featuresArea = [];
+      this.service = this.$opensilex.getService("opensilex.AreaService");
+      this.service
+          .searchIntersects(JSON.parse(JSON.stringify(geometry)))
+          .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
+            const res = http.response.result as any;
+            res.forEach((element) => {
+              if (element.geometry != null) {
+                element.geometry.properties = {
+                  uri: element.uri,
+                  name: element.name,
+                  type: element.rdf_type,
+                  description: element.description,
+                  nature: "Area",
+                };
+                this.featuresArea.push(element.geometry);
+              }
+            });
+            this.endReceipt = true;
+          })
+          .catch(this.$opensilex.errorHandler);
+    } else {
+      return;
+    }
   }
 
-  private editArea(uri) {
-    this.removeFromFeaturesArea(uri, this.selectedFeatures);
-    this.$opensilex
-        .getService("opensilex.AreaService")
-        .getByURI(uri)
-        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-          let form: any = http.response.result;
-          this.areaForm.showEditForm(form);
-        })
-        .catch(this.$opensilex.errorHandler);
+  private edit(data) {
+    let uri = data.item.properties.uri;
+
+    if (data.item.properties.nature === "Area") {
+      this.removeFromFeaturesArea(uri, this.selectedFeatures);
+      this.$opensilex
+          .getService("opensilex.AreaService")
+          .getByURI(uri)
+          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+            let form: any = http.response.result;
+            this.areaForm.showEditForm(form);
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
   }
 
-  private deleteArea(uri) {
-    this.$opensilex
-        .getService("opensilex.AreaService")
-        .deleteArea(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-          let message =
-              this.$i18n.t("Area.title") +
-              " " +
-              http.response.result +
-              " " +
-              this.$i18n.t("component.common.success.delete-success-message");
-          this.$opensilex.showSuccessToast(message);
-          this.removeFromFeaturesArea(uri, this.featuresArea);
-        })
-        .catch(this.$opensilex.errorHandler);
+  private deleteItem(data) {
+    let uri = data.item.properties.uri;
+
+    if (data.item.properties.nature === "Area") {
+      this.$opensilex
+          .getService("opensilex.AreaService")
+          .deleteArea(uri)
+          .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            let message =
+                this.$i18n.t("Area.title") +
+                " " +
+                http.response.result +
+                " " +
+                this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+            this.removeFromFeaturesArea(uri, this.featuresArea);
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
   }
 }
 </script>
@@ -596,11 +693,14 @@ en:
     Legend: Legend
     LegendSO: Scientific Object
     LegendArea: Area
-    Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift + Alt + left Click and move the mouse to rotate the map. Press Ctrl + left Click while dragging to <b>select multiple scientific objects</b>.
+    Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift + Alt + Click and move the mouse to rotate the map. Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.
+    details: Show or hide element details
+    author: Author
   Area:
     title: Area
     add: Description of the area
     update: Update Area
+    displayAreas: Display of areas
 fr:
   MapView:
     name: nom
@@ -616,9 +716,12 @@ fr:
     Legend: Légende
     LegendSO: Objet scientifique
     LegendArea: Zone
-    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic  gauche  puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic gauche tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    details: Afficher ou masquer les détails de l'élément
+    author: Auteur
   Area:
     title: Zone
     add: Description de la zone
     update: Mise à jour de la zone
+    displayAreas: Affichage des zones
 </i18n>

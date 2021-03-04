@@ -17,7 +17,7 @@
         <slot name="export" v-if="this.totalRow >0" >          
         </slot>
       </b-input-group>
-
+      
       <div v-if="showCount">
           <div v-if="totalRow > 0">
           <strong>
@@ -60,7 +60,7 @@
               type="checkbox"
               :value = true
               v-model="selectAll"
-              @change="onSelectAll()"
+              @change="onSelectAll"
             />
             <span v-if="!maximumSelectedRows">&nbsp;</span>
           </label>
@@ -71,7 +71,7 @@
             <slot :name="getCellTemplateName(field.key)" v-bind:data="data">{{data.item[field.key]}}</slot>
           </span>
 
-          <span v-else :key="index" class="checkbox"></span>
+          <span v-else :key="index" class="checkbox" ></span>
         </template>
 
         <template v-slot:row-details="data">
@@ -246,6 +246,7 @@ export default class TableAsyncView extends Vue {
       const idx = this.selectedItems.findIndex(it => this.selectedItem == it);
       this.selectedItems.splice(idx, 1);
     }
+    this.selectedItems = items;
     this.numberOfSelectedRows = this.selectedItems.length;
     this.$emit("row-selected", this.numberOfSelectedRows);
   }

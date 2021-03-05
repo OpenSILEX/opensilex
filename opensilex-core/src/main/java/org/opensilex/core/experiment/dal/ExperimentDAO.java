@@ -22,7 +22,6 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -30,7 +29,6 @@ import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -453,11 +451,15 @@ public class ExperimentDAO {
 
         List<InfrastructureModel> infrastructures = xp.getInfrastructures();
 
+        if (infrastructures.size() == 0) {
+            return new ArrayList<>();
+        }
+        
         List<URI> infraURIs = new ArrayList<>();
         infrastructures.forEach(infra -> {
             infraURIs.add(infra.getUri());
         });
-
+        
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
             SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
         });

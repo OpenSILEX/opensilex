@@ -208,10 +208,10 @@ public class InfrastructureDAO {
         if (infras != null && infras.size() == 0) {
             return new ArrayList<>();
         }
-        
+
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
             if (infras != null) {
-                select.addFilter(SPARQLQueryHelper.inURIFilter(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras));
+                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras);
             }
         });
     }

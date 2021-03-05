@@ -55,18 +55,10 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
             graphNode = graph;
         }
         return service.count(graphNode, genericType, lang, (SelectBuilder select) -> {
-            if (graph != null) {
-                 if (isReverseRelation) {
-                    select.addGraph(graph, makeVar(mapper.getURIFieldName()), property, nodeURI);
-                } else {
-                    select.addGraph(graph, nodeURI, property, makeVar(mapper.getURIFieldName()));
-                }
+            if (isReverseRelation) {
+                select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);
             } else {
-                if (isReverseRelation) {
-                    select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);
-                } else {
-                    select.addWhere(nodeURI, property, makeVar(mapper.getURIFieldName()));
-                }
+                select.addWhere(nodeURI, property, makeVar(mapper.getURIFieldName()));
             }
         });
     }

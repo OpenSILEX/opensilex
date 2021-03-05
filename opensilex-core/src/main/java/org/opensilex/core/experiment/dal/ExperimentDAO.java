@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -96,7 +97,6 @@ public class ExperimentDAO {
         return xp;
     }
 
-
     @Deprecated
     public ListWithPagination<ExperimentModel> search(
             URI uri,
@@ -147,7 +147,7 @@ public class ExperimentDAO {
                 page,
                 pageSize
         );
-       
+
         return xps;
 
     }
@@ -168,9 +168,9 @@ public class ExperimentDAO {
             String yearString = Integer.toString(year);
             startDate = LocalDate.of(year, 1, 1);
             endDate = LocalDate.of(year, 12, 31);
-        }else {
-            startDate=null;
-            endDate=null;
+        } else {
+            startDate = null;
+            endDate = null;
         }
 
         ListWithPagination<ExperimentModel> xps = sparql.searchWithPagination(
@@ -195,14 +195,13 @@ public class ExperimentDAO {
 
     }
 
-
     private void appendSpeciesFilter(SelectBuilder select, List<URI> species) throws Exception {
         if (species != null && !species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
             select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.SPECIES_FIELD, species));
         }
     }
-    
+
     private void appendFactorCategoriesFilter(SelectBuilder select, List<URI> factorCategories) throws Exception {
         if (factorCategories != null && !factorCategories.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
@@ -451,17 +450,21 @@ public class ExperimentDAO {
 
         List<InfrastructureModel> infrastructures = xp.getInfrastructures();
 
-        if (infrastructures.size() == 0) {
-            return new ArrayList<>();
+        if (xp.getInfrastructures().size() == 0) {
+            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql);
+            List<InfrastructureFacilityModel> infrastructuresFacilities = infraDAO.getAllFacilities(user);
+            return infrastructuresFacilities;
+        } else {
+            List<URI> infraURIs = new ArrayList<>();
+            infrastructures.forEach(infra -> {
+                infraURIs.add(infra.getUri());
+            });
+
+            return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
+                if (infraURIs.size() > 0) {
+                    SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
+                }
+            });
         }
-        
-        List<URI> infraURIs = new ArrayList<>();
-        infrastructures.forEach(infra -> {
-            infraURIs.add(infra.getUri());
-        });
-        
-        return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
-            SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
-        });
     }
 }

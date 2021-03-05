@@ -476,6 +476,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         AskBuilder ask = mapper.getAskBuilder(graph, lang);
         Field field = mapper.getFieldFromUniqueProperty(property);
         SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
+        ask.addGraph(graph,makeVar(SPARQLResourceModel.URI_FIELD), property.asNode(), makeVar(field.getName()));
         ask.setVar(field.getName(), deserializer.getNode(propertyValue));
 
         return executeAskQuery(ask);

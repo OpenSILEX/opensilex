@@ -104,8 +104,8 @@ public class FactorDAO {
         if (experimentUris != null && !experimentUris.isEmpty()) {
             Var xpsVar = makeVar(FactorModel.EXPERIMENTS_FIELD);
             Var uriVar = makeVar(FactorModel.URI_FIELD);
-            select.addOptional(new Triple(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
-            SPARQLQueryHelper.addWhereValues(select, FactorModel.EXPERIMENTS_FIELD, experimentUris); 
+            select.addWhere(new Triple(uriVar, Oeso.studiedEffectIn.asNode(),xpsVar));
+            SPARQLQueryHelper.addWhereValues(select, FactorModel.EXPERIMENTS_FIELD, experimentUris);
         }
     }
  
@@ -116,7 +116,7 @@ public class FactorDAO {
 
     public List<FactorModel> getByExperiment(URI xpUri, String lang) throws Exception {
         return sparql.search(FactorModel.class, lang, (select) -> {
-            select.addWhere(SPARQLDeserializers.nodeURI(xpUri), Oeso.studyEffectOf, makeVar(SpeciesModel.URI_FIELD));
+            select.addWhere(SPARQLDeserializers.nodeURI(xpUri), Oeso.studyEffectOf, makeVar(FactorModel.URI_FIELD));
         });
     }
     

@@ -974,28 +974,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Greenhouse -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Greenhouse">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
-        <rdfs:label xml:lang="en">Greenhouse</rdfs:label>
-        <rdfs:label xml:lang="fr">Serre</rdfs:label>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GrowthChamber -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GrowthChamber">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectedStructure"/>
-        <rdfs:label xml:lang="fr">Chambre de culture</rdfs:label>
-        <rdfs:label xml:lang="en">Growth chamber</rdfs:label>
-    </owl:Class>
-    
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>  
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Infrastructure -->

@@ -205,7 +205,7 @@ public class InfrastructureDAO {
     public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
         Set<URI> infras = getUserInfrastructures(user);
 
-        if (infras.size() == 0) {
+        if (infras != null && infras.size() == 0) {
             return new ArrayList<>();
         }
         

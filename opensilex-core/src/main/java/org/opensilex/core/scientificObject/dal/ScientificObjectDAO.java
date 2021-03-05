@@ -133,13 +133,14 @@ public class ScientificObjectDAO {
                     }
 
                     if (factorLevels != null && factorLevels.size() > 0) {
+                        Var factorLevelVar = makeVar("__factorLevel");
                         if (contextURI != null) {
-                            select.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, makeVar(ScientificObjectModel.FACTOR_LEVEL_FIELD));
+                            select.addGraph(contextNode, makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
                         } else {
-                            select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, makeVar(ScientificObjectModel.FACTOR_LEVEL_FIELD));
+                            select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasFactorLevel, factorLevelVar);
                         }
 
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.FACTOR_LEVEL_FIELD, factorLevels));
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(factorLevelVar, factorLevels));
                     }
 
                     if (germplasm != null) {

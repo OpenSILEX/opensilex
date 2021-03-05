@@ -68,7 +68,7 @@ public class SPARQLQueryHelper {
         ExprVar name = new ExprVar(varName);
         return regexFilter(name, regexPattern, regexFlag);
     }
-    
+
     public static Expr regexFilterOnURI(String varName, String regexPattern, String regexFlag) {
         ExprVar name = new ExprVar(varName);
         return regexFilter(new E_Str(name), regexPattern, regexFlag);
@@ -183,11 +183,15 @@ public class SPARQLQueryHelper {
     }
 
     public static Expr inURIFilter(String uriField, Collection<URI> uris) {
+        return inURIFilter(makeVar(uriField), uris);
+    }
+
+    public static Expr inURIFilter(Var var, Collection<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
             // get ressource with relation specified in the given list
-            return exprFactory.in(makeVar(uriField), uris.stream()
+            return exprFactory.in(var, uris.stream()
                     .map(uri -> {
                         return NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()));
                     })
@@ -305,13 +309,11 @@ public class SPARQLQueryHelper {
         }
 
     }
-    
+
     /**
-     * @param startDateVarName the name of the startDate variable , should not
-     * be null if startDate is not null
+     * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null
      * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable , should not be
-     * null if endDate is not null
+     * @param endDateVarName the name of the endDate variable , should not be null if endDate is not null
      * @param endDate the end date
      * @return an Expr according the two given LocalDate and variable names      <pre>
      *     null if startDate and endDate are both null
@@ -344,7 +346,7 @@ public class SPARQLQueryHelper {
         if (!startDateNull) {
             Node startVar = NodeFactory.createVariable(startDateVarName);
             Expr startDateExpr = exprFactory.ge(startVar, dateDeserializer.getNode(startDate));
-          
+
             if (!endDateNull) {
                 return exprFactory.and(startDateExpr, endDateExpr);
             }
@@ -352,87 +354,81 @@ public class SPARQLQueryHelper {
         }
         return endDateExpr;
     }
-    
-    
+
     /**
      * <pre>
      * INTERSECTION of interval( delimited by startDate / EndDate) AND the entity lifetime is not null
      * 3 cases :
-     *  . entity's endDate is in interval 
+     *  . entity's endDate is in interval
      *  . entity's endDate SUP  upper bound && entity's startDate INF lower bound
      *  . entity's endDate is null && entity's startDate INF upper bound
-     * 
+     *
      * </pre>
+     *
      * @param startDateVarName the name of the startDate variable
      * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable 
+     * @param endDateVarName the name of the endDate variable
      * @param endDate the end date
-     * @return an Expr according the two given LocalDate and variable names  
-     *     null if startDate and endDate are both null
-     *     an {@link E_LogicalOr} 
-     * Ex:
-     *  FILTER ( ( ( ( ?endDate <= "2020-12-31"^^xsd:date ) && ( ?endDate >= "2020-01-01"^^xsd:date ) ) 
-     *      || ( ( ?endDate >= "2020-12-31"^^xsd:date ) && ( ?startDate <= "2020-12-31"^^xsd:date ) ) ) 
-     *      || ( ( ?startDate <= "2020-12-31"^^xsd:date ) && ( ! bound(?endDate) ) ) )
- 
+     * @return an Expr according the two given LocalDate and variable names null if startDate and endDate are both null an {@link E_LogicalOr} Ex:
+     * FILTER ( ( ( ( ?endDate <= "2020-12-31"^^xsd:date ) && ( ?endDate >= "2020-01-01"^^xsd:date ) ) || ( ( ?endDate >= "2020-12-31"^^xsd:date ) &&
+     * ( ?startDate <= "2020-12-31"^^xsd:date ) ) ) || ( ( ?startDate <= "2020-12-31"^^xsd:date ) && ( ! bound(?endDate) ) ) )
+     *
      */
-    
     public static Expr intervalDateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
 
         if (startDate == null || endDate == null) {
             return null;
         }
-       
+
         DateDeserializer dateDeserializer = new DateDeserializer();
         Node startVar = NodeFactory.createVariable(startDateVarName);
         Node endVar = NodeFactory.createVariable(endDateVarName);
-        Expr firstExpr = exprFactory.and(exprFactory.le(endVar, dateDeserializer.getNode(endDate)),exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
-        
-        Expr secondExpr = exprFactory.and(exprFactory.ge(endVar, dateDeserializer.getNode(endDate)),exprFactory.le(startVar, dateDeserializer.getNode(endDate)));
-        
-        Expr endDateExpr= exprFactory.or(firstExpr, secondExpr);
+        Expr firstExpr = exprFactory.and(exprFactory.le(endVar, dateDeserializer.getNode(endDate)), exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
+
+        Expr secondExpr = exprFactory.and(exprFactory.ge(endVar, dateDeserializer.getNode(endDate)), exprFactory.le(startVar, dateDeserializer.getNode(endDate)));
+
+        Expr endDateExpr = exprFactory.or(firstExpr, secondExpr);
         Expr noEndDateExpr = exprFactory.not(exprFactory.bound(endVar));
-        
-        Expr thirdExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)),noEndDateExpr);
-        
-        
+
+        Expr thirdExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)), noEndDateExpr);
+
         return exprFactory.or(endDateExpr, thirdExpr);
     }
-    
-    
+
     public static Var makeVar(Object o) {
         return Converters.makeVar(o);
     }
 
     /**
      * Get or create a {@link ElementGroup} which is affected to the given graph into the selectBuilder
+     *
      * @param rootElementGroup the {@link ElementGroup} on which get or create the {@link ElementGroup} associated to the given graph
      * @param graph the graph to find or create
      * @return the founded {@link ElementGroup} if it exists, else create and return a new {@link ElementGroup} into the given graph
      */
-    public static ElementGroup getSelectOrCreateGraphElementGroup(ElementGroup rootElementGroup, Node graph){
+    public static ElementGroup getSelectOrCreateGraphElementGroup(ElementGroup rootElementGroup, Node graph) {
 
         Objects.requireNonNull(rootElementGroup);
         Objects.requireNonNull(graph);
 
-        for(Element element : rootElementGroup.getElements()){
+        for (Element element : rootElementGroup.getElements()) {
 
-            if( ! (element instanceof ElementNamedGraph)){
+            if (!(element instanceof ElementNamedGraph)) {
                 continue;
             }
             ElementNamedGraph elementNamedGraph = (ElementNamedGraph) element;
-            if( ! elementNamedGraph.getGraphNameNode().equals(graph)){
+            if (!elementNamedGraph.getGraphNameNode().equals(graph)) {
                 continue;
             }
 
             Element elementGroup = elementNamedGraph.getElement();
-            if(elementGroup instanceof ElementGroup){
+            if (elementGroup instanceof ElementGroup) {
                 return (ElementGroup) elementGroup;
             }
         }
 
         ElementGroup elementGroup = new ElementGroup();
-        rootElementGroup.addElement(new ElementNamedGraph(graph,elementGroup));
+        rootElementGroup.addElement(new ElementNamedGraph(graph, elementGroup));
 
         return elementGroup;
     }
@@ -441,18 +437,18 @@ public class SPARQLQueryHelper {
      * Utility function used to compute specific ordering on some field.
      *
      * @param initialOrderByList the initial list
-     * @param orderByListWithoutCustomOrders the new list which contains all elements from initialOrderByList without {@link OrderBy}
-     * which have {@link OrderBy#getFieldName()} contained into the specificExprMapping
-     * @param specificOrderMap
-     * the new list which contains custom couple ({@link Expr},{@link Order}) which could be applied
-     * to {@link SelectBuilder#addOrderBy(Expr)} method
-     * @param specificExprMapping the association between {@link OrderBy#getFieldName()} and the {@link Function} which return a Stream of {@link Expr}
+     * @param orderByListWithoutCustomOrders the new list which contains all elements from initialOrderByList without {@link OrderBy} which have
+     * {@link OrderBy#getFieldName()} contained into the specificExprMapping
+     * @param specificOrderMap the new list which contains custom couple ({@link Expr},{@link Order}) which could be applied to
+     * {@link SelectBuilder#addOrderBy(Expr)} method
+     * @param specificExprMapping the association between {@link OrderBy#getFieldName()} and the {@link Function} which return a Stream of
+     * {@link Expr}
      *
      */
     public static void computeCustomOrderByList(List<OrderBy> initialOrderByList,
-                                          List<OrderBy> orderByListWithoutCustomOrders,
-                                          Map<Expr, Order> specificOrderMap,
-                                          Map<String, Function<String, Stream<Expr>>> specificExprMapping) {
+            List<OrderBy> orderByListWithoutCustomOrders,
+            Map<Expr, Order> specificOrderMap,
+            Map<String, Function<String, Stream<Expr>>> specificExprMapping) {
 
         Objects.requireNonNull(initialOrderByList);
         Objects.requireNonNull(orderByListWithoutCustomOrders);
@@ -466,8 +462,8 @@ public class SPARQLQueryHelper {
                 orderByListWithoutCustomOrders.add(orderBy);
             } else {
                 Stream<Expr> orderByExprs = specificExprMapping.get(fieldName).apply(fieldName);
-                orderByExprs.forEach(orderByExpr ->
-                        specificOrderMap.put(orderByExpr, orderBy.getOrder())
+                orderByExprs.forEach(orderByExpr
+                        -> specificOrderMap.put(orderByExpr, orderBy.getOrder())
                 );
             }
         }

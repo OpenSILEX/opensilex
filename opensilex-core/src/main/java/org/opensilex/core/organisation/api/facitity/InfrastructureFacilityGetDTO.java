@@ -16,19 +16,19 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * DTO representing JSON for getting facility
+ *
  * @author vince
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organisation"})
 public class InfrastructureFacilityGetDTO extends NamedResourceDTO<InfrastructureFacilityModel> {
 
-    
     @JsonProperty("rdf_type")
     protected URI type;
-    
+
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
-    
+
     @JsonProperty("organisation")
     protected URI infrastructure;
 
@@ -52,7 +52,9 @@ public class InfrastructureFacilityGetDTO extends NamedResourceDTO<Infrastructur
     @Override
     public void fromModel(InfrastructureFacilityModel model) {
         super.fromModel(model);
-        setInfrastructure(model.getInfrastructure().getUri());
+        if (model.getInfrastructure() != null) {
+            setInfrastructure(model.getInfrastructure().getUri());
+        }
     }
 
     @Override

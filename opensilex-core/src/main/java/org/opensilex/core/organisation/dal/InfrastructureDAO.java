@@ -6,6 +6,7 @@
 package org.opensilex.core.organisation.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -204,6 +205,10 @@ public class InfrastructureDAO {
     public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
         Set<URI> infras = getUserInfrastructures(user);
 
+        if (infras.size() == 0) {
+            return new ArrayList<>();
+        }
+        
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
             if (infras != null) {
                 select.addFilter(SPARQLQueryHelper.inURIFilter(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras));

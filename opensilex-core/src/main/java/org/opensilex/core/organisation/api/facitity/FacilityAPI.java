@@ -54,7 +54,7 @@ import org.opensilex.server.response.PaginatedListResponse;
         groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
         groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
 )
-public class FacitityAPI {
+public class FacilityAPI {
 
     @Inject
     private SPARQLService sparql;

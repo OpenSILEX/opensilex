@@ -18,8 +18,7 @@ public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extend
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "label",
-            ignoreUpdateIfNull = true,
-            required = true
+            ignoreUpdateIfNull = true
     )
     protected String name;
     public static final String NAME_FIELD = "name";

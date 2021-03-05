@@ -293,6 +293,7 @@ export default class ExperimentScientificObjects extends Vue {
   refresh() {
     if (this.soTree) {
       this.soTree.refresh();
+      this.selected = null;
     }
   }
 

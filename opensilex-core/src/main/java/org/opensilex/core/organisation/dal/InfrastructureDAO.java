@@ -52,9 +52,9 @@ public class InfrastructureDAO {
             infras.clear();
             infras.addAll(infraRestriction);
         }
-        
+
         final Set<URI> finalInfras = infras;
-        
+
         return sparql.searchResourceTree(
                 InfrastructureModel.class,
                 user.getLanguage(),
@@ -137,24 +137,24 @@ public class InfrastructureDAO {
 
         String lang = user.getLanguage();
         Set<URI> userInfras = new HashSet<>();
-        
+
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
             Var userProfileVar = makeVar("_userProfile");
             Var userVar = makeVar("_userURI");
             Var uriVar = makeVar(InfrastructureModel.URI_FIELD);
-            
+
             WhereHandler userProfileGroup = new WhereHandler();
             userProfileGroup.addWhere(select.makeTriplePath(uriVar, SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD)));
             userProfileGroup.addWhere(select.makeTriplePath(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar));
             userProfileGroup.addWhere(select.makeTriplePath(userProfileVar, SecurityOntology.hasUser, userVar));
             select.getWhereHandler().addOptional(userProfileGroup);
-            
+
             Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
-            
+
             Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
             select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
             Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
-            
+
             select.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
         });
 

@@ -201,6 +201,16 @@ public class InfrastructureDAO {
         return sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
     }
 
+    public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
+        Set<URI> infras = getUserInfrastructures(user);
+
+        return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
+            if (infras != null) {
+                select.addFilter(SPARQLQueryHelper.inURIFilter(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras));
+            }
+        });
+    }
+
     public void deleteFacility(URI uri, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(uri, user);
         sparql.delete(InfrastructureFacilityModel.class, uri);

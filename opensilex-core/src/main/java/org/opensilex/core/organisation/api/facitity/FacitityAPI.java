@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -40,6 +42,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
+import org.opensilex.server.response.PaginatedListResponse;
 
 /**
  *
@@ -53,14 +56,12 @@ import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
 )
 public class FacitityAPI {
 
-    
     @Inject
     private SPARQLService sparql;
 
     @CurrentUser
     UserModel currentUser;
 
-    
     @POST
     @ApiOperation("Create a facility")
     @ApiProtected
@@ -85,6 +86,29 @@ public class FacitityAPI {
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Facility already exists", e.getMessage()).getResponse();
         }
+    }
+
+    @GET
+    @Path("all")
+    @ApiOperation("Get all facilities")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Facility retrieved", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
+    })
+    public Response getAllFacilities() throws Exception {
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        List<InfrastructureFacilityModel> facilities = dao.getAllFacilities(currentUser);
+
+        List<InfrastructureFacilityGetDTO> resultDTOList = new ArrayList<>(facilities.size());
+        facilities.forEach(result -> {
+            resultDTOList.add(InfrastructureFacilityGetDTO.getDTOFromModel(result));
+        });
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     @GET

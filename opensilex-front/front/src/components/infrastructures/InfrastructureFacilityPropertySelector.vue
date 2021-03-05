@@ -68,13 +68,13 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
     } else {
       return this.$opensilex
         .getService("opensilex.OrganisationsService")
-        .getAllFacilities1()
+        .getAllFacilities()
         .then(http => {
           let facilityNodes = [];
           for (let facility of http.response.result) {
             facilityNodes.push({
               id: facility.uri,
-              label: facility.name
+              label: facility.name || facility.uri
             });
           }
           return facilityNodes;

@@ -329,7 +329,7 @@ public class ExperimentDAO {
         return userExperiments;
     }
 
-    private void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
+    public static void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return;
         }
@@ -462,14 +462,4 @@ public class ExperimentDAO {
             SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
         });
     }
-
-    public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
-        return sparql.search(
-                InfrastructureFacilityModel.class,
-                null,
-                (SelectBuilder select) -> {
-                    appendUserExperimentsFilter(select, user);
-                });
-    }
-
 }

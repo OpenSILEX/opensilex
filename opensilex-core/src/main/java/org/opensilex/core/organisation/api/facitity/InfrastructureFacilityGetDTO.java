@@ -52,9 +52,7 @@ public class InfrastructureFacilityGetDTO extends NamedResourceDTO<Infrastructur
     @Override
     public void fromModel(InfrastructureFacilityModel model) {
         super.fromModel(model);
-        if (model.getInfrastructure() != null) {
-            setInfrastructure(model.getInfrastructure().getUri());
-        }
+        setInfrastructure(model.getInfrastructure().getUri());
     }
 
     @Override

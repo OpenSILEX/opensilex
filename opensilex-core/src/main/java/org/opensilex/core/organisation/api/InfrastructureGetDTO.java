@@ -5,7 +5,6 @@
  */
 package org.opensilex.core.organisation.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.api.team.InfrastructureTeamDTO;

@@ -11,9 +11,9 @@ import java.net.URI;
  *
  * @author vince
  */
-public class SPARQLMultipleObjectException  extends SPARQLException {
-    
-    public SPARQLMultipleObjectException(URI uri) {
-        super("Multiple objects for the same URI: " + uri.toString());
+public class SPARQLMultipleObjectException extends SPARQLException {
+
+    public SPARQLMultipleObjectException(URI uri, String request) {
+        super("Multiple objects for the same URI: " + uri.toString() + "\nSPARQL request : \n" + request);
     }
 }

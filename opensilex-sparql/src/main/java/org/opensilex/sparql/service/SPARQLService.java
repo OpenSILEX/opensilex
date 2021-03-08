@@ -71,7 +71,6 @@ import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import org.opensilex.utils.ClassUtils;
 
 /**
  * Implementation of SPARQLService
@@ -386,7 +385,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (results.size() == 1) {
             return mapper.createInstance(graph, results.get(0), lang, this);
         } else if (results.size() > 1) {
-            throw new SPARQLMultipleObjectException(uri);
+            throw new SPARQLMultipleObjectException(uri, select.buildString());
         } else {
             return null;
         }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  *
@@ -23,6 +24,8 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     private final URI root;
     private final boolean excludeRoot;
 
+    private final HashMap<String, T> itemParents = new HashMap<>();
+
     public SPARQLTreeListModel() {
         this(new ArrayList<>(), null, false);
     }
@@ -31,6 +34,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         this.selectionList = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
             this.selectionList.add(instance.getUri());
+            this.itemParents.put(SPARQLDeserializers.getExpandedURI(instance.getUri()), instance.getParent());
         }
         this.root = root;
         this.excludeRoot = excludeRoot;
@@ -66,8 +70,13 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         }
     }
 
+    public T getParent(T candidate) {
+        T parent = itemParents.get(SPARQLDeserializers.getExpandedURI(candidate.getUri()));
+        return parent;
+    }
+
     public void addTree(T candidate) {
-        T parent = candidate.getParent();
+        T parent = getParent(candidate);
         addTreeWithParent(candidate, parent);
     }
 
@@ -105,7 +114,14 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     private void addInMapIfExists(URI parentURI, T candidate) {
-        if (!map.get(parentURI).contains(candidate)) {
+        boolean exists = false;
+        for (T item : map.get(parentURI)) {
+            if (SPARQLDeserializers.compareURIs(candidate.getUri(), item.getUri())) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
             map.get(parentURI).add(candidate);
         }
     }

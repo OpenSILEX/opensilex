@@ -97,11 +97,13 @@ public class DataDAO {
     }
 
     public DataModel create(DataModel instance) throws Exception, MongoWriteException {
+        createIndexes();
         nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
         return instance;
     }
 
     public DataFileModel createFile(DataFileModel instance) throws Exception, MongoBulkWriteException {
+        createIndexes();
         nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, "id/file");
         return instance;
     }

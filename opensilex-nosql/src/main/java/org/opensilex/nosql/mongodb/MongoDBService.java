@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public class MongoDBService extends BaseService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
+    private final String URI_FIELD = "uri";
 
     private final String dbName;
     private MongoClient mongoClient;
@@ -135,16 +136,13 @@ public class MongoDBService extends BaseService {
         if (instance.getUri() == null) {
             generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
         }
-        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        try {
-            if (session != null) {
-                collection.insertOne(session, instance);
-            } else {
-                collection.insertOne(instance);
-            }            
-        } catch (Exception error) {
-            throw error;
-        }
+        
+        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);        
+        if (session != null) {
+            collection.insertOne(session, instance);
+        } else {
+            collection.insertOne(instance);
+        }            
     }
 
     public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix) throws Exception {
@@ -176,7 +174,7 @@ public class MongoDBService extends BaseService {
     public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO FIND BY URI - Collection : " + collectionName);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        T instance = (T) collection.find(eq("uri", uri)).first();
+        T instance = (T) collection.find(eq(URI_FIELD, uri)).first();
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
         } else {
@@ -191,7 +189,7 @@ public class MongoDBService extends BaseService {
         Document listFilter = new Document();
         listFilter.append("$in", uris);
         Document filter = new Document();
-        filter.append("uri", listFilter);
+        filter.append(URI_FIELD, listFilter);
         FindIterable<T> queryResult = collection.find(filter);
         List<T> instances = new ArrayList<>();
         for (T res : queryResult) {
@@ -215,9 +213,9 @@ public class MongoDBService extends BaseService {
         Document listFilter = new Document();
         listFilter.append("$in", uris);
         Document filter = new Document();
-        filter.append("uri", listFilter);
+        filter.append(URI_FIELD, listFilter);
 
-        Set foundedURIs = distinct("uri", URI.class, collectionName, filter);
+        Set foundedURIs = distinct(URI_FIELD, URI.class, collectionName, filter);
 
         uris.removeAll(foundedURIs);
         return uris;
@@ -312,7 +310,11 @@ public class MongoDBService extends BaseService {
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
         } else {
-            collection.deleteOne(eq("uri", uri));
+            if (session != null) {
+                collection.deleteOne(session, eq(URI_FIELD, uri));
+            } else {
+                collection.deleteOne(eq(URI_FIELD, uri));
+            }
         }
     }
 
@@ -325,7 +327,7 @@ public class MongoDBService extends BaseService {
             MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
             for (URI uri : uris) {
                 try {
-                    collection.deleteOne(session, eq("uri", uri));
+                    collection.deleteOne(session, eq(URI_FIELD, uri));
                     commitTransaction();
                 } catch (Exception exception) {
                     rollbackTransaction();
@@ -348,7 +350,12 @@ public class MongoDBService extends BaseService {
         if (instance == null) {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         } else {
-            collection.findOneAndReplace(eq("uri", newInstance.getUri()), newInstance);
+            if (session != null) {
+                collection.findOneAndReplace(session, eq(URI_FIELD, newInstance.getUri()), newInstance);
+            } else {
+                collection.findOneAndReplace(eq(URI_FIELD, newInstance.getUri()), newInstance);
+            }
+            
         }
     }
 
@@ -433,8 +440,8 @@ public class MongoDBService extends BaseService {
         Document filter = new Document();
         Document inFilter = new Document();
         inFilter.put("$in", uris);
-        filter.put("uri", inFilter);
-        foundedURIs = distinct("uri", instanceClass, collectionName, filter);
+        filter.put(URI_FIELD, inFilter);
+        foundedURIs = distinct(URI_FIELD, instanceClass, collectionName, filter);
         uris.removeAll(foundedURIs);
         return uris;
     }

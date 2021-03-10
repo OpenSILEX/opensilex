@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.core.provenance.dal;
 
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.naming.NamingException;
 import org.bson.Document;
+import static org.opensilex.core.germplasm.dal.GermplasmDAO.ATTRIBUTES_COLLECTION_NAME;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -34,6 +37,8 @@ public class ProvenanceDAO {
     }  
 
     public ProvenanceModel create(ProvenanceModel provenance) throws Exception {
+
+        nosql.getDatabase().getCollection(PROVENANCE_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
         nosql.create(provenance, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, "id/provenance");
         return provenance;
     }

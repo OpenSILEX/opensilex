@@ -30,7 +30,7 @@
 
     <!-- synonyms -->
     <opensilex-TagInputForm
-      v-if= 'form.rdf_type.endsWith("Accession") || form.rdf_type.endsWith("Variety")'
+      v-if="$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.ACCESSION_TYPE_URI)"
       :value.sync="form.synonyms"
       label="GermplasmForm.subtaxa"
       helpMessage="GermplasmForm.subtaxa-help"
@@ -52,7 +52,7 @@
 
     <!-- code -->
     <opensilex-InputForm
-      v-if= '!form.rdf_type.endsWith("Species")'
+      v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
       :value.sync="form.code"
       label="GermplasmForm.code"
       type="text"
@@ -61,8 +61,7 @@
     
     <!-- species -->
     <opensilex-InputForm
-      v-if= '!form.rdf_type.endsWith("Species")'
-      :value.sync="form.species"
+      v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
       label="GermplasmForm.species"
       type="text"
       helpMessage="GermplasmForm.species-help"
@@ -70,16 +69,17 @@
  
     <!-- variety -->
     <opensilex-InputForm
-      v-if= '! (form.rdf_type.endsWith("Species") || form.rdf_type.endsWith("Variety"))'
+      v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI))"
       :value.sync="form.variety"
       label="GermplasmForm.variety"
       type="text"
       helpMessage="GermplasmForm.variety-help"
     ></opensilex-InputForm>
     
+
     <!-- accession -->
     <opensilex-InputForm
-      v-if= '! (form.rdf_type.endsWith("Species") || form.rdf_type.endsWith("Variety") || form.rdf_type.endsWith("Accession"))'
+      v-if=" !($opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.VARIETY_TYPE_URI) || $opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.ACCESSION_TYPE_URI))"
       :value.sync="form.accession"
       label="GermplasmForm.accession"
       type="text"
@@ -88,7 +88,7 @@
     
     <!-- institute -->
     <opensilex-InputForm
-      v-if= '!form.rdf_type.endsWith("Species")'
+      v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
       :value.sync="form.institute"
       label="GermplasmForm.institute"
       type="text"
@@ -97,7 +97,7 @@
 
     <!-- website -->
     <opensilex-InputForm
-      v-if= '!form.rdf_type.endsWith("Species")'
+      v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
       :value.sync="form.website"
       label="GermplasmForm.website"
       type="url"
@@ -107,7 +107,7 @@
     
     <!-- year -->
     <opensilex-InputForm
-      v-if= '!form.rdf_type.endsWith("Species")'
+      v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
       :value.sync="form.production_year"
       label="GermplasmForm.year"
       type="text"

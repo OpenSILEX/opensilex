@@ -61,6 +61,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
@@ -70,7 +71,6 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
@@ -208,12 +208,7 @@ public class GermplasmAPI {
                     GermplasmGetSingleDTO.fromModel(model)
             ).getResponse();
         } else {
-            // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Germplasm not found",
-                    "Unknown germplasm URI: " + uri.toString()
-            ).getResponse();
+            throw new NotFoundURIException("Germplasm URI not found : ", uri);
         }
     }
 
@@ -299,43 +294,6 @@ public class GermplasmAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-//    /**
-//     *
-//     * @param uri
-//     * @return
-//     * @throws Exception
-//     */
-//    @GET
-//    @Path("get/{experimentUri}/germplasmList")
-//    @ApiOperation("Get lists of experiments where the germplasm has been used")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return profile", response = GermplasmGetAllDTO.class, responseContainer = "List"),
-//        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-//        @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
-//    })
-//    public Response getExpGermplasm(
-//            @ApiParam(value = "experiment URI", example = "", required = true) @PathParam("experimentUri") @NotNull URI uri,
-//            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
-//            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-//            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
-//    ) throws Exception {
-//        // Get germplasm from DAO by URI
-//        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-//        ListWithPagination<GermplasmModel> germplasmList = germplasmDAO.getGermplasmFromExp(currentUser, uri, orderByList, page, pageSize);
-//
-//// Convert paginated list to DTO
-//        ListWithPagination<GermplasmGetSingleDTO> resultDTOList = germplasmList.convert(
-//                GermplasmGetSingleDTO.class,
-//                GermplasmGetSingleDTO::fromModel
-//        );
-//
-//        // Return paginated list of profiles DTO
-//        return new PaginatedListResponse<>(resultDTOList).getResponse();
-//    }
-
     /**
      *
      * @param uri
@@ -416,63 +374,8 @@ public class GermplasmAPI {
                 GermplasmGetAllDTO::fromModel
         );
 
-        // Return paginated list of profiles DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-
-//    /**
-//     *
-//     * @param germplasmSearchDTO
-//     * @param orderByList
-//     * @param page
-//     * @param pageSize
-//     * @return
-//     * @throws Exception
-//     */
-//    @POST
-//    @Path("search")
-//    @ApiOperation("Search germplasm")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 200, message = "Return germplasm list", response = GermplasmGetAllDTO.class, responseContainer = "List"),
-//        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
-//    })
-//    public Response searchGermplasm(
-//            @ApiParam("Germplasm search form") GermplasmSearchDTO germplasmSearchDTO,
-//            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "alias=asc") @QueryParam("orderBy") List<OrderBy> orderByList,
-//            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-//            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
-//    ) throws Exception {
-//
-//        // Search germplasm with germplasm DAO
-//        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-//        ListWithPagination<GermplasmModel> resultList = dao.search(
-//                currentUser,
-//                germplasmSearchDTO.getUri(),
-//                germplasmSearchDTO.getType(),
-//                germplasmSearchDTO.getName(),
-//                germplasmSearchDTO.getFromSpecies(),
-//                germplasmSearchDTO.getFromVariety(),
-//                germplasmSearchDTO.getFromAccession(),
-//                germplasmSearchDTO.getInstitute(),
-//                germplasmSearchDTO.getProductionYear(),
-//                germplasmSearchDTO.getExperiment(),
-//                orderByList,
-//                page,
-//                pageSize
-//        );
-//
-//        // Convert paginated list to DTO
-//        ListWithPagination<GermplasmGetAllDTO> resultDTOList = resultList.convert(
-//                GermplasmGetAllDTO.class,
-//                GermplasmGetAllDTO::fromModel
-//        );
-//
-//        // Return paginated list of factor DTO
-//        return new PaginatedListResponse<>(resultDTOList).getResponse();
-//    }
 
     /**
      *
@@ -632,7 +535,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid or unknown Germplasm URI", response = ErrorResponse.class)})
     public Response updateGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO
-    ) {
+    ) throws Exception {
         try {
             GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
             if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
@@ -654,9 +557,7 @@ public class GermplasmAPI {
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
-            return new ErrorResponse(Response.Status.BAD_REQUEST, "Invalid or unknown Experiment URI", e.getMessage()).getResponse();
-        } catch (Exception e) {
-            return new ErrorResponse(e).getResponse();
+            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", germplasmDTO.getUri());
         }
     }
 
@@ -679,7 +580,7 @@ public class GermplasmAPI {
         GermplasmModel germplasmToDelete = dao.get(uri, currentUser);
 
         if (germplasmToDelete == null) {
-            throw new SPARQLInvalidURIException(uri);
+            throw new NotFoundURIException("Invalid or unknown Germplasm URI ", uri);
         }
         
         if (dao.isLinkedToSth(germplasmToDelete)) {
@@ -688,10 +589,10 @@ public class GermplasmAPI {
                     "The germplasm is linked to another germplasm or a scientific object or an experiment",
                     "You can't delete a germplasm linked to another object"
             ).getResponse();
-        };
-        
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        } else {        
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
 
     }
 
@@ -714,7 +615,7 @@ public class GermplasmAPI {
             if (exists) {
                 // Return error response 409 - CONFLICT if label already exists
                 return new ErrorResponse(
-                        Response.Status.PRECONDITION_FAILED,
+                        Response.Status.CONFLICT,
                         "Germplasm label already exists for this species",
                         "Duplicated label: " + germplasmDTO.getName()
                 );
@@ -770,17 +671,17 @@ public class GermplasmAPI {
         if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
             missingLink = false;
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Variety.getURI())) {
-            message = "fromSpecies";
+            message = "species";
             if (germplasmDTO.getSpecies() != null) {
                 missingLink = false;
             }
         } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Accession.getURI())) {
-            message = "fromVariety or fromSpecies";
+            message = "variety or species";
             if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null) {
                 missingLink = false;
             }
         } else {
-            message = "fromAccession, fromVariety or fromSpecies";
+            message = "accession, variety or species";
             if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null || germplasmDTO.getAccession() != null) {
                 missingLink = false;
             }

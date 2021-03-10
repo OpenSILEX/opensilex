@@ -225,7 +225,8 @@ export default class GermplasmDetails extends Vue {
     production_year: null,
     description: null,
     metadata: null,
-    website: null
+    website: null,
+    synonyms: []
   };
 
   created() {
@@ -310,7 +311,8 @@ export default class GermplasmDetails extends Vue {
       production_year: this.germplasm.production_year,
       description: this.germplasm.description,
       metadata: this.germplasm.metadata,
-      website: this.germplasm.website
+      website: this.germplasm.website,
+      synonyms: this.germplasm.synonyms
     }
     //let germplasmDtoCopy = JSON.parse(JSON.stringify(this.germplasm));
     this.germplasmForm.showEditForm(updateDTO);

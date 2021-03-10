@@ -6,25 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
-import java.net.URI;
 import java.util.Map;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  *
  * @author Alice Boizet
  */
-public class GermplasmAttributeModel {
-    URI uri;
+public class GermplasmAttributeModel extends MongoModel{
     
     Map<String, String> attribute;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public Map<String, String> getAttribute() {
         return attribute;

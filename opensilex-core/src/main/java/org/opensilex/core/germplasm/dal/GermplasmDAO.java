@@ -10,6 +10,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.MongoCollection;
 import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,6 +84,7 @@ public class GermplasmDAO {
             sparql.startTransaction();
             sparql.update(germplasm);
             MongoCollection collection = getAttributesCollection();
+            collection.createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));            
 
             try {
                 if (germplasm.getAttributes() != null && !germplasm.getAttributes().isEmpty()) {
@@ -89,9 +92,9 @@ public class GermplasmDAO {
                     model.setUri(germplasm.getUri());
                     model.setAttribute(germplasm.getAttributes());
                     if (storedAttributes != null) {
-                        collection.findOneAndReplace(nosql.getSession(), eq("uri", germplasm.getUri()), model);
+                        nosql.update(model, GermplasmAttributeModel.class, ATTRIBUTES_COLLECTION_NAME);
                     } else {
-                        collection.insertOne(nosql.getSession(), model);
+                        nosql.create(model, GermplasmAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, null);
                     }
                 } else {
                     collection.findOneAndDelete(nosql.getSession(), eq("uri", germplasm.getUri()));
@@ -168,7 +171,7 @@ public class GermplasmDAO {
 
     public GermplasmModel create(GermplasmModel germplasm, UserModel user) throws Exception {
         if (germplasm.getAttributes() != null) {
-
+            getAttributesCollection().createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
             nosql.startTransaction();
             sparql.startTransaction();
             try {
@@ -176,8 +179,7 @@ public class GermplasmDAO {
                 GermplasmAttributeModel model = new GermplasmAttributeModel();
                 model.setUri(germplasm.getUri());
                 model.setAttribute(germplasm.getAttributes());
-                MongoCollection collection = getAttributesCollection();
-                collection.insertOne(nosql.getSession(), model);
+                nosql.create(model, GermplasmAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, null);
                 nosql.commitTransaction();
                 sparql.commitTransaction();
             } catch (Exception ex) {

@@ -112,7 +112,7 @@ export default class GermplasmCreate extends Vue {
         console.log(http.response.result);
         for (let i = 0; i < http.response.result.length; i++) {
           let resourceDTO = http.response.result[i];
-          if (resourceDTO.uri.endsWith("PlantMaterialLot")) {
+          if (Oeso.checkURIs(resourceDTO.uri, Oeso.PLANT_MATERIAL_LOT_TYPE_URI)) {
             //retrieve plantMaterialLot children
             let children = resourceDTO.children;
             for (let j = 0; j < children.length; j++) {

@@ -92,6 +92,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
 import Tabulator from 'tabulator-tables';
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class GermplasmTable extends Vue {
@@ -225,12 +226,12 @@ export default class GermplasmTable extends Vue {
     let checkingStatusCol = {title:this.$t('GermplasmTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('GermplasmTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false, minWidth:400};
 
-    if (this.$attrs.germplasmType.endsWith('Species'))  {
+    if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.SPECIES_TYPE_URI))  {
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, synonymCol, commentCol, checkingStatusCol, insertionStatusCol]
-    } else if (this.$attrs.germplasmType.endsWith('Variety'))  {
+    } else if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.VARIETY_TYPE_URI)) {
       let codeVar = {title:this.$t('GermplasmTable.varietyCode'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeVar,  speciesCol, instituteCol, websiteCol, commentCol, checkingStatusCol, insertionStatusCol]
-    } else if (this.$attrs.germplasmType.endsWith('Accession')) {
+    } else if (Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)) {
       let codeAcc = {title:this.$t('GermplasmTable.accessionNumber'), field:"code", visible:true, editor:true};
       this.tableColumns = [idCol, statusCol, uriCol, labelCol, subtaxaCol, codeAcc, speciesCol, varietyCol, instituteCol, websiteCol, commentCol, checkingStatusCol, insertionStatusCol]        
     } else {

@@ -219,6 +219,7 @@ export default class ExperimentData extends Vue {
       this.resultModal.show();
       this.filter.provenance = res.form.provenance.uri;
       this.refreshVariables();
+      this.provSelector.refresh();
     });
   }
 
@@ -469,7 +470,7 @@ en:
         export-long : Export data list (long format)
 fr:
     ExperimentData:
-        object: Objet Scientific
+        object: Objet Scientifique
         date: Date
         value: Valeur
         variable : Variable

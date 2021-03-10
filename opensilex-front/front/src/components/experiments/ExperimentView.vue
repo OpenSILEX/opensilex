@@ -185,7 +185,7 @@ fr:
     ExperimentView:
         details: Détail
         scientific-objects: Objets scientifiques
-        data: Data
+        data: Données
         document: Documents
         factors: Facteurs
 </i18n>

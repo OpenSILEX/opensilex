@@ -516,7 +516,8 @@
         "scientific-objects": "Scientific objects",
         "data": "Data",
         "documents": "Documents",
-        "annotations" : "Annotations"
+        "annotations" : "Annotations",
+        "device" : "Device"
     },
     "credential": {
         "experiment": {
@@ -570,6 +571,10 @@
         "annotation": {
             "modification": "Add / update annotations",
             "delete": "Delete annotations"
+        },
+        "device": {
+            "modification": "Add / update devices",
+            "delete": "Delete devices"
         }
     },
     "validations": {

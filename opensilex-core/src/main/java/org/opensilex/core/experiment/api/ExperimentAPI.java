@@ -255,13 +255,13 @@ public class ExperimentAPI {
     /**
      * Search experiments
      *
-     * @param year
      * @param name
+     * @param year
+     * @param isEnded
      * @param species
-     * @param factors
+     * @param factorCategories
      * @param projects
      * @param isPublic
-     * @param isEnded
      * @param orderByList
      * @param page
      * @param pageSize

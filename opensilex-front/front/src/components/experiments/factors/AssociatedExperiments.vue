@@ -125,7 +125,7 @@ export default class ExperimentList extends Vue {
      
     return this.$opensilex
       .getService("opensilex.FactorsService")
-      .getFactorAssciatedExperiments(this.uri  
+      .getFactorAssociatedExperiments(this.uri
       );
   }
 

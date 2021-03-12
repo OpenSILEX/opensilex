@@ -238,7 +238,7 @@ export default class FactorLevelTable extends Vue {
       this.$opensilex.showInfoToast("Valid file. No data to add");
     }
     if (tmpLength < this.internalFactorLevels.length) {
-      this.$opensilex.showSuccessToast("Data sucessfully loaded");
+      this.$opensilex.showSuccessToast("Data successfully loaded");
     }
   }
 

@@ -73,7 +73,7 @@
         ></opensilex-UriLink>
       </template>
       <template v-slot:cell(category)="{ data }"
-        ><span class="captialize-first-letter">{{
+        ><span class="capitalize-first-letter">{{
           $opensilex.getFactorCategoryName(data.value)
         }}</span></template
       >

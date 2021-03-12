@@ -67,7 +67,7 @@ public class FactorLevelAPI {
     UserModel user;
 
     /**
-     * Retreive factor level by uri
+     * Retrieve factor level by uri
      *
      * @param factorLevelUri factor uri level
      * @return Return factor level
@@ -107,7 +107,7 @@ public class FactorLevelAPI {
     }
 
     /**
-     * Retreive factor level by uri
+     * Retrieve factor level by uri
      *
      * @param factorLevelUri factor uri level
      * @return Return factor level

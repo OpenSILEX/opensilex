@@ -177,8 +177,8 @@ public class FactorDAO {
                 null
         );
         List<URI> uriList = new ArrayList<>();
-        for (SPARQLResourceModel ressource : search) {
-            uriList.add(ressource.getUri());
+        for (SPARQLResourceModel resource : search) {
+            uriList.add(resource.getUri());
         }
 
         return uriList;

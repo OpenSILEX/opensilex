@@ -158,7 +158,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         URI createdUriExp = extractUriFromResponse(postResultExp);
         
         FactorCreationDTO creationDTO = getCreationDTO(createdUriExp);
-        int intialFactorLevelSize = creationDTO.getFactorLevels().size();
+        int initialFactorLevelSize = creationDTO.getFactorLevels().size();
         final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -189,7 +189,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         FactorDetailsGetDTO factorGetDto = getResponse.getResult();
         assertNotNull(factorGetDto);
 
-        assertTrue(factorGetDto.getFactorLevels().size() == intialFactorLevelSize + 1);
+        assertTrue(factorGetDto.getFactorLevels().size() == initialFactorLevelSize + 1);
 
     }
 

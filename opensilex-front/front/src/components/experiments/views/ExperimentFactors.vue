@@ -180,7 +180,7 @@ export default class ExperimentFactors extends Vue {
     console.debug("check Associated factor " + factor.uri);
     let isAssociated = this.$opensilex
       .getService("opensilex.FactorsService")
-      .getFactorAssciatedExperiments(factor.uri)
+      .getFactorAssociatedExperiments(factor.uri)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         if (
           http.response.metadata.pagination.totalCount > 0 &&

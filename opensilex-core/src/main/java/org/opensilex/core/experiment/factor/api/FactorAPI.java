@@ -141,7 +141,7 @@ public class FactorAPI {
     }
 
     /**
-     * Retreive factor by uri
+     * Retrieve factor by uri
      *
      * @param uri factor uri
      * @return Return factor detail
@@ -174,7 +174,7 @@ public class FactorAPI {
     }
 
     /**
-     * Retreive factor levels by factor uri
+     * Retrieve factor levels by factor uri
      *
      * @param uri factor uri levels
      * @return Return factor levels
@@ -207,7 +207,7 @@ public class FactorAPI {
     }
 
     /**
-     * Retreive experiments which study effects of this factor
+     * Retrieve experiments which study effects of this factor
      *
      * @param uri factor uri
      * @return Return factor associated experiments
@@ -222,7 +222,7 @@ public class FactorAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Experiments retrieved", response = ExperimentGetListDTO.class, responseContainer = "List"),
         @ApiResponse(code = 404, message = "Factor not found", response = ErrorResponse.class)})
-    public Response getFactorAssciatedExperiments(
+    public Response getFactorAssociatedExperiments(
             @ApiParam(value = "Factor URI", example = FACTOR_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         FactorDAO dao = new FactorDAO(sparql);

@@ -222,7 +222,7 @@ export default class FactorForm extends Vue {
   }
 
   continueFormEditing() {
-    console.debug("Reinitiliase form");
+    console.debug("Reinitialise form");
     this.form.uri = this.savedForm.uri;
     this.form.name = this.savedForm.name;
 

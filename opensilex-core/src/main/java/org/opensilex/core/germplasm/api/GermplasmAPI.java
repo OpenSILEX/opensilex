@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -128,6 +129,9 @@ public class GermplasmAPI {
 
     @CurrentUser
     UserModel currentUser;
+    
+    static final ConcurrentHashMap namesConcurrentMap = new ConcurrentHashMap();
+    static final ConcurrentHashMap uriConcurrentMap = new ConcurrentHashMap();
 
     /**
      *
@@ -155,7 +159,9 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
-
+        String name = germplasmDTO.getName();
+        URI uri = germplasmDTO.getUri();     
+              
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ErrorResponse error = check(germplasmDTO, germplasmDAO, false);
@@ -165,17 +171,46 @@ public class GermplasmAPI {
 
         if (!checkOnly) {
             try {
+                namesConcurrentMap.merge(name, true, (v1, v2)-> {throw new IllegalArgumentException();});
+            } catch (IllegalArgumentException e) {
+                return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Germplasm name already exists",
+                        "Duplicated URI: " + name
+                ).getResponse();
+            }
+
+            if (germplasmDTO.getUri() != null) {
+                try {
+                    uriConcurrentMap.merge(uri, true, (v1, v2)-> {throw new IllegalArgumentException();});
+                } catch (IllegalArgumentException e) {
+                    return new ErrorResponse(
+                        Response.Status.CONFLICT,
+                        "Germplasm URI already exists",
+                        "Duplicated URI: " + uri
+                    ).getResponse();
+                }
+            }
+
+            try {
                 germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
-                GermplasmModel germplasm = germplasmDAO.create(model, currentUser);
+                GermplasmModel germplasm = germplasmDAO.create(model, currentUser); 
                 return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
+            } finally {
+                namesConcurrentMap.remove(name);
+                if (uri != null) {
+                    uriConcurrentMap.remove(uri);
+                }  
             }
+
         } else {
             return new ObjectUriResponse().getResponse();
-        }
+        }     
+       
     }
 
     /**

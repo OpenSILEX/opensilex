@@ -189,7 +189,7 @@ export default class GermplasmTable extends Vue {
 
     let labelCol = 
       {title:this.$t('GermplasmTable.name') + '<span class="required">*</span>', field:"name", visible:true, editor:true, minWidth:150, 
-        validator: "unique"
+        //validator: "unique"
         // [{
         //   type:function(cell, value, parameters){
         //     if(value === "" || value === null || typeof value === "undefined"){

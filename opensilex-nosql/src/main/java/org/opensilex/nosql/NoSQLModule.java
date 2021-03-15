@@ -36,7 +36,7 @@ public class NoSQLModule extends OpenSilexModule {
 
     @Override
     public void install(boolean reset) throws Exception {
-//        initMongo(reset);
+        initMongo(reset);
     }
 
     /**
@@ -50,7 +50,7 @@ public class NoSQLModule extends OpenSilexModule {
 
     @Override
     public void check() throws Exception {
-        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.nosql.mongodb", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
@@ -76,4 +76,26 @@ public class NoSQLModule extends OpenSilexModule {
 
         mongo.close();
     }
+    
+    public void initMongo(boolean reset) throws Exception {
+        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoClient mongo = MongoDBService.getMongoDBClient(config);
+        LOGGER.info("Install with parameters : Reset :" + String.valueOf(reset) + ", Db : " + config.database());
+        if (reset) {            
+            MongoDatabase db = mongo.getDatabase(config.database());
+            db.drop();
+        } else {
+            try {
+                MongoDatabase adminDb = mongo.getDatabase("admin");   
+                Document runCommand = adminDb.runCommand(new Document("replSetGetStatus", 1));
+                LOGGER.info("Replica set information : " + runCommand.toJson());
+            } catch (Exception e) {
+                LOGGER.error("No configured replica set.");
+                LOGGER.error("More information at https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/databases/mongodb.md");
+                throw e; 
+            }                        
+        }       
+
+    }
+    
 }

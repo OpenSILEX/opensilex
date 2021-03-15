@@ -14,7 +14,6 @@
               <opensilex-TagInputForm
                 :value.sync="filter.concernedItems"
                 label="visuForm.search.scientificObject.label"
-                @update="updateScientificObjectsFilter"
                 :required="true"
               ></opensilex-TagInputForm>
               <!--  Waiting the new IMAGES access by provenances and the new EVENTS service-->
@@ -143,22 +142,13 @@ export default class VisuForm extends Vue {
   imageTypes: any = [];
   positions: any = [];
 
-  updateScientificObjectsFilter() {
-    this.$opensilex.updateURLParameter("concernedItems", "");
-    this.$opensilex.updateURLParameter(
-      "concernedItems",
-      this.filter.concernedItems
-    );
-  }
+  @Prop()
+  selectedExperiment;
 
   created() {
     this.variablesService = this.$opensilex.getService(
       "opensilex.VariablesService"
     );
-    let query: any = this.$route.query;
-    if (query.concernedItems) {
-      this.filter.concernedItems = [query.concernedItems];
-    }
   }
 
   scientificObjectsGetListDTOToSelectNode(dto: any) {
@@ -183,6 +173,7 @@ export default class VisuForm extends Vue {
 
   validate() {
     this.validatorRef.validate().then(isValid => {
+      console.log(this.filter);
       if (isValid) {
         this.$emit("search", this.filter);
       }

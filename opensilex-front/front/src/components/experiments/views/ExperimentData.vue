@@ -39,7 +39,7 @@
                 ></opensilex-DateTimeForm>
               </opensilex-FilterField>
 
-              <opensilex-FilterField>
+              <opensilex-FilterField :halfWidth="true">
                 <opensilex-SelectForm
                   label="Variable"
                   :selected.sync="filter.variable"
@@ -49,7 +49,7 @@
               </opensilex-FilterField>
             </b-row>
             <b-row>
-              <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
+              <opensilex-FilterField :halfWidth="true">
                 <opensilex-ProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
@@ -61,6 +61,7 @@
                   :multiple="false"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
+                  :showURI="false"
                 ></opensilex-ProvenanceSelector>
               </opensilex-FilterField>
 

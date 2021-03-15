@@ -8,7 +8,6 @@
       <b-form-tags
         :input-id="field.id"
         v-model="tags"
-        @update="updateValue($event)"
         :disabled="disabled"
         :required="required"
         :placeholder="$t(placeholder)"
@@ -34,15 +33,7 @@ export default class TagInputForm extends Vue {
 
   @PropSync("value")
   tags: Array<string>;
-
-  updateValue(newValue) {
-    if (newValue == []) {
-      this.tags = [];
-    } else {
-      this.tags = newValue;
-    }
-  }
-
+  
   @Prop({
     default: "text"
   })

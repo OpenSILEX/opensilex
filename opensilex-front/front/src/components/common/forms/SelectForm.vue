@@ -261,6 +261,10 @@ export default class SelectForm extends Vue {
   })
   resultLimit;
 
+
+  @Prop()
+  defaultSelectedValue;
+
   @Watch("selection")
   onSelectionChange() {
     this.currentValue = null;
@@ -313,6 +317,7 @@ export default class SelectForm extends Vue {
               } else {
                 this.currentValue = nodeList[0];
               }
+
               resolve(this.currentValue);
             })
             .catch((error) => {
@@ -452,6 +457,11 @@ export default class SelectForm extends Vue {
               nodeList.push(this.conversionMethod(item));
             });
             this.internalOption = nodeList;
+            if(list.length>0 && this.defaultSelectedValue){
+               this.selection=list[0].uri;
+               this.$emit("select", this.selection);
+            }
+            
             callback(null, this.internalOption);
             this.$opensilex.enableLoader();
           })

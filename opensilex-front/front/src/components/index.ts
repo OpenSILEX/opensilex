@@ -313,12 +313,12 @@ import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
 components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
-import ExperimentVariableSelector from './experiments/ExperimentVariableSelector.vue';
-components["opensilex-ExperimentVariableSelector"] = ExperimentVariableSelector;
 import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
 components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
 import ExperimentDocument from './experiments/views/ExperimentDocument.vue';
 components["opensilex-ExperimentDocument"] = ExperimentDocument;
+
+
 
 // Germplasm
 import GermplasmView from './germplasm/GermplasmView.vue';
@@ -479,6 +479,8 @@ import DataValidationReport from './data/form/DataValidationReport.vue';
 components["opensilex-DataValidationReport"] = DataValidationReport;
 import DataHelpTableView from './data/form/DataHelpTableView.vue';
 components["opensilex-DataHelpTableView"] = DataHelpTableView;
+import DataProvenanceModalView from './data/DataProvenanceModalView.vue';
+components["opensilex-DataProvenanceModalView"] = DataProvenanceModalView;
 
 // PHIS
 //IMAGES
@@ -530,6 +532,8 @@ import AreaDetails from "./geometry/AreaDetails.vue";
 components["opensilex-AreaDetails"] = AreaDetails;
 
 //VIZUALISATION
+import VisuPage from './visualization/VisuPage.vue';
+components["opensilex-VisuPage"] = VisuPage;
 import VisuView from './visualization/VisuView.vue';
 components["opensilex-VisuView"] = VisuView;
 import VisuGraphic from './visualization/VisuGraphic.vue';
@@ -545,6 +549,14 @@ components["opensilex-VisuImageCarousel"] = VisuImageCarousel;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';
 components["opensilex-VisuImageSingle"] = VisuImageSingle;
 
+import DataVisuView from './visualization/DataVisuView.vue';
+components["opensilex-DataVisuView"] = DataVisuView;
+import DataVisuForm from './visualization/DataVisuForm.vue';
+components["opensilex-DataVisuForm"] = DataVisuForm;
+import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
+components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
+import DataVisuHelp from './visualization/DataVisuHelp.vue';
+components["opensilex-DataVisuHelp"] = DataVisuHelp;
 
 // ANNOTATIONS
 import AnnotationModalForm from './annotations/form/AnnotationModalForm.vue';

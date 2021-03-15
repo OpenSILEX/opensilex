@@ -85,7 +85,7 @@ menu:
         label: component.menu.data.visualization
         route: 
           path: /visualization
-          component: opensilex-VisuView
+          component: opensilex-VisuPage
           credentials: []
 #      - id: images
 #        label: component.menu.data.images

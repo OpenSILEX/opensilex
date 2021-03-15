@@ -1,28 +1,26 @@
 <template>
-  <div class="container-fluid data-container" @click="clickEvent">
-    <opensilex-PageHeader
-      icon="ik#ik-bar-chart-line"
-      title="VisuView.title"
-      description="VisuView.description"
-    ></opensilex-PageHeader>
-
+  <div  @click="clickEvent">
+ 
     <b-collapse v-model="showSearchComponent" class="mt-2">
-      <opensilex-VisuForm @search="onSearch"></opensilex-VisuForm>
+      <opensilex-VisuForm :selectedExperiment="selectedExperiment" @search="onSearch" ></opensilex-VisuForm>
     </b-collapse>
 
     <b-collapse v-model="showGraphicComponent" class="mt-2">
+
       <opensilex-VisuImages 
       ref="visuImages"
        v-if="showImages"
       @imageIsHovered="onImageIsHovered"
       @imageIsUnHovered=" onImageIsUnHovered"
          ></opensilex-VisuImages>
+
       <opensilex-VisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
         :showEvents="showEvents"
         @search="showSearchComponent=!showSearchComponent;showGraphicComponent=!showGraphicComponent;"
       ></opensilex-VisuGraphic>
+      
     </b-collapse>
 
    <!--  <opensilex-ProvenanceView></opensilex-ProvenanceView>
@@ -65,6 +63,7 @@ import Vue from "vue";
 
 @Component
 export default class VisuView extends Vue {
+  $route: any;
   $opensilex: any;
   dataService: DataService;
  /*  eventsService: EventsService; */
@@ -83,6 +82,21 @@ export default class VisuView extends Vue {
   showSearchComponent: boolean = true;
   showGraphicComponent: boolean = false;
   /* showEventFormComponent: boolean = false; */
+
+  selectedExperiment;
+
+  @Prop()
+  selectedScientificObjects;
+
+  created() {
+    this.dataService = this.$opensilex.getService("opensilex.DataService");
+   /*  this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+    */
+    this.$opensilex.disableLoader();
+   /*  this.showEventFormComponent = true; */
+    this.selectedExperiment = decodeURIComponent(this.$route.params.uri);
+  }
+
   clickEvent() {
     if(this.visuGraphic){
         this.visuGraphic.closeContextMenu();
@@ -93,26 +107,18 @@ export default class VisuView extends Vue {
      if(this.visuGraphic){
         this.visuGraphic.onImageIsHovered(indexes);
     }
-
   }
+
   onImageIsUnHovered(indexes){
      if(this.visuGraphic){
         this.visuGraphic.onImageIsUnHovered(indexes);
     }
-
   }
 
-  created() {
-    this.dataService = this.$opensilex.getService("opensilex.DataService");
-   /*  this.eventsService = this.$opensilex.getService("opensilex.EventsService");
-    */
-
-    this.$opensilex.disableLoader();
-   /*  this.showEventFormComponent = true; */
-  }
   onEventCreate() {
     this.loadSeries();
   }
+  
   onSearch(form) {
     this.form = form;
     this.multipleVariables = this.form.variable.length > 1 ? true : false;
@@ -338,14 +344,13 @@ export default class VisuView extends Vue {
 
   buildDataSerie(concernedItem, variable, isSecondVariable, withImages) {
   
-    return this.dataService
-      .searchDataList(
+    return this.dataService.searchDataList(
         this.form.startDate,
         this.form.endDate,
         undefined,
         undefined,
-        concernedItem,
-        variable.id,
+        [concernedItem],
+        [variable.id],
         undefined,
         undefined,
         undefined,
@@ -682,15 +687,11 @@ export default class VisuView extends Vue {
 <i18n>
 en:
   VisuView:
-    title: Visualization   
-    description: ..
     eventUpdate: Add an event
     annotationUpdate: Add annotation
 
 fr:
   VisuView:
-    title: Visualisation
-    description: ..
     eventUpdate: Ajout d'un évenement
     annotationUpdate: Ajout d'une annotation
 </i18n>

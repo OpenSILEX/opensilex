@@ -28,13 +28,11 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
   OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
 import { DataService, ProvenanceGetDTO } from "opensilex-core/index";
 
-import { ASYNC_SEARCH } from "@riophae/vue-treeselect";
 
 @Component
 export default class ProvenanceSelector extends Vue {
@@ -68,6 +66,11 @@ export default class ProvenanceSelector extends Vue {
     default: false,
   })
   multiple;
+
+  @Prop({
+    default: true,
+  })
+  showURI;
 
   @Prop()
   viewHandler: Function;
@@ -197,7 +200,7 @@ export default class ProvenanceSelector extends Vue {
   provenancesToSelectNode(dto: ProvenanceGetDTO) {
     return {
       id: dto.uri,
-      label: dto.name + " (" + dto.uri + ")",
+      label: this.showURI? dto.name + " (" + dto.uri + ")":dto.name,
     };
   }
   select(value) {

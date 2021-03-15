@@ -1,13 +1,15 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="variablesURI"
     :multiple="multiple"
-    :searchMethod="loadOptions"
+    :optionsLoadingMethod="loadOptions"
     :conversionMethod="variableToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     :required="required"
+    :defaultSelectedValue="defaultSelectedValue"
     noResultsText="component.experiment.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
@@ -16,9 +18,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { NamedResourceDTO } from "opensilex-core/index";
+import { ExperimentsService, NamedResourceDTO } from "opensilex-core/index";
 
 @Component
 export default class VariableSelector extends Vue {
@@ -27,10 +29,17 @@ export default class VariableSelector extends Vue {
   @PropSync("variables")
   variablesURI: string;
 
-  @Prop({
-    default: "component.experiment.experiment",
-  })
+  @Prop()
+  experiment: string;
+
+  @Prop()
+  scientificObjects;
+
+  @Prop()
   label;
+
+  @Prop()
+  defaultSelectedValue;
 
   @Prop()
   multiple;
@@ -52,19 +61,27 @@ export default class VariableSelector extends Vue {
   loadOptions(query, page, pageSize) {
     console.debug(query);
     this.filterLabel = query;
-    return this.$opensilex
-      .getService("opensilex.VariablesService")
-      .searchVariables(this.filterLabel, null, page, pageSize)
-      .then((http) => {
-        console.log(http);
-        return http;
-      });
+    if (this.experiment) {
+      return this.$opensilex
+        .getService("opensilex.ExperimentsService")
+        .getUsedVariables(this.experiment, this.scientificObjects)
+        .then(http => {
+          return http.response.result;
+        });
+    } else {
+      return this.$opensilex
+        .getService("opensilex.VariablesService")
+        .searchVariables(this.filterLabel, null, page, pageSize)
+        .then(http => {
+          return http.response.result;
+        });
+    }
   }
 
   variableToSelectNode(dto: NamedResourceDTO) {
     return {
       id: dto.uri,
-      label: dto.name,
+      label: dto.name
     };
   }
 

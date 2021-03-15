@@ -283,7 +283,7 @@
             "filter-keywords-placeholder": "Word in description or objective",
             "filter-financial-placeholder": "Enter a financial funding",
             "selector-placeholder":"Search projects",
-            "selector-search-no-result": "Sorry, no user is matching your research.",
+            "selector-search-no-result": "Sorry, no project is matching your research.",
             "name" : "Name",
             "shortname" : "Short name",
             "description" : "Description",
@@ -474,7 +474,9 @@
                     "hasPart": "All Alias / URI",
                     "isPartOf": "All Alias / URI"
                 }
-            }
+            },
+            "selector-placeholder":"Search scientific objects",
+            "selector-search-no-result": "Sorry, no scientific object is matching your research."
         },
         "skos": {
             "uri": "Reference URI",

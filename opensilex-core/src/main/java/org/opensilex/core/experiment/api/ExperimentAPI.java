@@ -442,7 +442,9 @@ public class ExperimentAPI {
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        List<VariableModel> variables = dao.getVariablesByExperiment(xpUri, objects, currentUser.getLanguage());
+        List<URI> experiments = new ArrayList<>();
+        experiments.add(xpUri);
+        List<VariableModel> variables = dao.getUsedVariables(experiments, objects, currentUser.getLanguage());
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

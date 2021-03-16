@@ -257,21 +257,20 @@ public class DataDAO {
     public void deleteFile(URI uri) throws NoSQLInvalidURIException {
         nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
     }
-    
-    public Document buildProvenancesListFiter(Set<URI> provenances) {
-        Document listFilter = new Document();
-        listFilter.append("$in", provenances);
-        Document filter = new Document();
-        filter.append("provenance.uri", listFilter);
-        return filter;
-    }
 
     public ListWithPagination<VariableModel> getVariablesByExperiment(URI xpUri, String language, Integer page, Integer pageSize) throws Exception {
-        Set<URI> provenances = getProvenancesByExperiment(xpUri);
-        if (provenances.size() > 0) {
-            Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, buildProvenancesListFiter(provenances));
-            int total = variableURIs.size();
+        List<URI> experiments = new ArrayList();
+        experiments.add(xpUri);                
+        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        
+        if (variableURIs.isEmpty()) {
+            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
             
+        } else {
+            
+            int total = variableURIs.size();
+
             List<URI> list = new ArrayList<>(variableURIs);
             List<URI> listToSend = new ArrayList<>();
             if (total > 0 && (page * pageSize) < total) {
@@ -287,23 +286,12 @@ public class DataDAO {
                 }
                 listToSend = list.subList(fromIndex, toIndex);
             }
-            
+
             List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, language);
             return new ListWithPagination(variables, page, pageSize, total);
-            
-        } else {
-            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
         }
     }
     
-    public List<VariableModel> getVariablesByExperiment(URI xpUri, List<URI> scientificObjects, String language) throws Exception {
-        List<URI> experiments = new ArrayList();
-        experiments.add(xpUri);                
-        Document filter = searchFilter(experiments, scientificObjects, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
-    }
-
     public Set<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
         List<URI> experiments = new ArrayList();
         experiments.add(xpUri);
@@ -437,6 +425,12 @@ public class DataDAO {
         Document filter = searchFilter(experiments, objects, variables, provenances, null, null, null, null, null);
         DeleteResult result = nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
         return result;
+    }
+
+    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, String language) throws Exception {             
+        Document filter = searchFilter(experiments, objects, null, null, null, null, null, null, null);
+        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }
 
 }

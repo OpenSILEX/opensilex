@@ -81,7 +81,11 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.objects;
 import org.locationtech.jts.io.ParseException;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -93,12 +97,14 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
@@ -1042,5 +1048,28 @@ public class ScientificObjectAPI {
      * Experiment URI claim key
      */
     private static final String CLAIM_CONTEXT_URI = "context";
+    
+    @GET
+    @Path("{uri}/variables")
+    @ApiOperation("Get variables measured on this scientific object")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectVariables(
+            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+
+        DataDAO dao = new DataDAO(nosql, sparql, null);
+        List<URI> objects = new ArrayList<>();
+        objects.add(uri);
+        List<VariableModel> variables = dao.getUsedVariables(null, objects, currentUser.getLanguage());
+
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+
+    }
 
 }

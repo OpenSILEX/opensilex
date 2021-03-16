@@ -347,7 +347,7 @@ public class DataDAO {
         Document filter = searchFilter(experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
 
         ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
-                DataFileModel.class, DATA_COLLECTION_NAME, filter, orderBy, page, pageSize);
+                DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);
 
         return files;
 

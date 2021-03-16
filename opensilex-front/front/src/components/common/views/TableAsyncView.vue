@@ -65,7 +65,7 @@
             <span v-if="!maximumSelectedRows">&nbsp;</span>
           </label>
         </template>
-
+        
         <template v-for="(field, index) in fields" v-slot:[getCellTemplateName(field.key)]="data">
           <span v-if="!field.isSelect" :key="index">
             <slot :name="getCellTemplateName(field.key)" v-bind:data="data">{{data.item[field.key]}}</slot>

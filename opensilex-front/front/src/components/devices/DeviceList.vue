@@ -178,7 +178,6 @@ export default class DeviceList extends Vue {
   service: DevicesService;
   $store: any;
   $route: any;
-
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;

@@ -361,7 +361,7 @@ fr:
       namePattern: Nom
       namePattern-placeholder: Entrez un nom
       rdfTypes: Type
-      rdfTypes-placeholder: Selectionner un type de dispositif
+      rdfTypes-placeholder: Sélectionner un type de dispositif
       start_up: Date d'obtention
       start_up-placeholder: Entrer une année
       brand: Marque 

@@ -793,10 +793,10 @@ fr:
         method-placeholder: Rechercher et sélectionner une méthode
         unit-placeholder: Rechercher et sélectionner une unité
         time-interval: Intervalle de temps
-        time-interval-placeholder: Selectionnez un intervalle
+        time-interval-placeholder: Sélectionnez un intervalle
         time-interval-help: Durée entre deux enregistrement de données
         sampling-interval: Échantillonnage
-        sampling-interval-placeholder: Selectionnez un intervalle
+        sampling-interval-placeholder: Sélectionnez un intervalle
         sampling-interval-help: Granularité de l'échantillonage
         synonym : Synonyme
         trait-name: Nom du trait
@@ -815,7 +815,7 @@ fr:
         trait-button: Trait existant déjà dans une ontologie
         trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
         datatype-help: Format des données enregistrées pour cette variable
-        datatype-placeholder: Selectionnez un type de donnée
+        datatype-placeholder: Sélectionnez un type de donnée
         dimension-values:
             unique: Enregistrement unique
             milliseconde : Milliseconde

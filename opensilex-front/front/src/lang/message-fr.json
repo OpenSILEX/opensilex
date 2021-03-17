@@ -400,7 +400,7 @@
                 "projects-selection-list-title": "Liste des projets",
                 "projects-selected-list-title": "Projets de l'expérience",
                 "placeholder": {
-                    "species": "Selectionner une ou plusieurs espèces"
+                    "species": "Sélectionner une ou plusieurs espèces"
                 }
             },
             "form-wizard": {

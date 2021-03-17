@@ -97,7 +97,7 @@ en:
         form:
           selector:
             placeholder : Select one experiment
-            placeholder-multiple : Selectionner une ou plusieurs expérimentations
+            placeholder-multiple : Select one or several experiments
             filter-search-no-result : No experiment found
     
             
@@ -106,8 +106,8 @@ fr:
     experiment: 
         form: 
           selector:
-            placeholder : Selectionner une expérimentation
-            placeholder-multiple : Selectionner une ou plusieurs expérimentations
+            placeholder : Sélectionner une expérimentation
+            placeholder-multiple : Sélectionner une ou plusieurs expérimentations
             filter-search-no-result : Aucune expérimentation trouvée
 
 </i18n>

@@ -273,6 +273,6 @@ fr:
     description: Description
     description-help: Description associée au dispositif
     variable: Variable
-    variable-help: Selectionner une ou plusieurs variables
+    variable-help: Sélectionner une ou plusieurs variables
 
 </i18n>

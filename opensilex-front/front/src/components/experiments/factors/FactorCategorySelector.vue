@@ -129,7 +129,7 @@ fr:
         factor : Facteurs
         form: 
             placeholder:
-                factors : Selectionner une catégorie
+                factors : Sélectionner une catégorie
                 filter-search-no-result : Aucun facteur trouvé
     factor:
       select:

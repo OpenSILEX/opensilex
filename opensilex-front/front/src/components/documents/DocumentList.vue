@@ -417,7 +417,7 @@ fr:
       keywords: Mots-clés
       keywords-placeholder: Saisir un mot-clé
       type: Type
-      type-placeholder: Selectionner un type de document
+      type-placeholder: Sélectionner un type de document
       author: Auteur
       author-placeholder: Saisir le nom d'un auteur
       targets: Concernes

@@ -319,7 +319,7 @@ fr:
         edit: Éditer l'annotation
         delete: Supprimer l'annotation
         motivation: Motivation
-        motivation-placeholder: Selectionnez une motivation
+        motivation-placeholder: Sélectionnez une motivation
         motivation-help: "Intention ou motivation guidant la création de l'annotation"
         description: Description
         created: Créée le

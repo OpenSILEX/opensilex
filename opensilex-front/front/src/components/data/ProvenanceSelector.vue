@@ -230,8 +230,8 @@ fr:
     data: 
         form:
           selector:
-            placeholder : Selectionner une provenance
-            placeholder-multiple : Selectionner un ou plusieurs provenance(s)   
+            placeholder : Sélectionner une provenance
+            placeholder-multiple : Sélectionner un ou plusieurs provenance(s)   
             filter-search-no-result : Aucune provenance trouvée
 
 </i18n>

@@ -208,7 +208,7 @@ fr:
     factor: 
         form:
           selector:
-            placeholder: Selectionner un ou plusieurs facteurs
+            placeholder: Sélectionner un ou plusieurs facteurs
             filter-search-no-result: Aucun facteur trouvé
         unclassified: Non classé
 

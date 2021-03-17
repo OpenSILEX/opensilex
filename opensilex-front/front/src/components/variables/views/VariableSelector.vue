@@ -116,8 +116,8 @@ fr:
         form: 
           selector:
             variables:
-              placeholder : Selectionner une variable
-              placeholder-multiple : Selectionner une ou plusieurs variables
+              placeholder : Sélectionner une variable
+              placeholder-multiple : Sélectionner une ou plusieurs variables
               filter-search-no-result : Aucune variable trouvée
 
 </i18n>

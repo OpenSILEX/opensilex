@@ -818,14 +818,23 @@ export default class OpenSilexVuePlugin {
         }
 
         if (queryParams != null) {
-            Object.keys(queryParams).forEach((k) =>
-                (
-                    queryParams[k] == null
-                    || queryParams[k] == null
-                    || queryParams[k] == ""
-                ) && delete queryParams[k]
-            );
-            let params = new URLSearchParams(queryParams);
+            let params = new URLSearchParams();
+            Object.keys(queryParams).forEach((key) =>{
+                if  (
+                    queryParams[key] == undefined
+                    || queryParams[key] == null
+                    || queryParams[key] == ""
+                ){
+                    delete queryParams[key];
+                }else{
+                    let value = queryParams[key]
+                    if (Array.isArray(value)) {
+                        value.forEach(item => params.append(key, item)); 
+                    } else {
+                        params.append(key, value);
+                    }
+                }
+            }); 
             let paramsSize = [...params].length;
             if (paramsSize > 0) {
                 url = url + "?" + params.toString();
@@ -837,16 +846,23 @@ export default class OpenSilexVuePlugin {
 
         return promise
             .then((response) => {
-                return response.blob();
-            })
+                if(response.status === 500){
+                    this.errorHandler(response);
+                    return undefined;
+                }else{
+                    return response.blob();
+                }
+            }) 
             .then((result) => {
-                let objectURL = URL.createObjectURL(result);
-                let link = document.createElement("a");
-                link.href = objectURL;
-                link.setAttribute("download", name + "." + extension);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
+                if(result != undefined){
+                    let objectURL = URL.createObjectURL(result);
+                    let link = document.createElement("a");
+                    link.href = objectURL;
+                    link.setAttribute("download", name + "." + extension);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                }
                 this.hideLoader();
             })
             .catch((error) => {
@@ -1017,7 +1033,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public prepareGetParameter(value) {
-        if (value == null || value == '' || value == undefined) {
+        if (value == null || value == undefined || value == '' || value == []) {
             return undefined;
         } else {
             return value;

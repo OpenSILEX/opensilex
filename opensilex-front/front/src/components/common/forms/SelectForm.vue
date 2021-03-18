@@ -386,8 +386,12 @@ export default class SelectForm extends Vue {
 
   get hiddenValue() {
     if (this.multiple) {
-      if (this.selection.length > 0) {
-        return this.selection.join(",");
+      if(Array.isArray(this.selection)) {
+        if (this.selection.length > 0) {
+          return this.selection.join(",");
+        }else{
+          return "";
+        }
       }
     } else {
       if (this.selection) {

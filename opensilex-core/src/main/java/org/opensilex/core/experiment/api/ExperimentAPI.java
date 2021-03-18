@@ -466,11 +466,11 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -571,15 +571,15 @@ public class ExperimentAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportExperimentDataList(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri")  @ValidURI @NotNull URI xpUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") @ValidURI List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") @ValidURI List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") @ValidURI URI provenanceUri,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -690,7 +690,7 @@ public class ExperimentAPI {
 
         Map<URI, ScientificObjectModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
-        Map<Instant, Map<URI, List<DataGetDTO>>> dataByInstant = new HashMap<>();
+        Map<Instant, Map<ExportDataIndex, List<DataGetDTO>>> dataByIndexAndInstant = new HashMap<>();
 
         for (DataModel dataModel : resultList) {
             if (!objects.containsKey(dataModel.getScientificObjects().get(0))) {
@@ -703,13 +703,18 @@ public class ExperimentAPI {
             if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
                 provenances.put(dataModel.getProvenance().getUri(), null);
             }
-            if (!dataByInstant.containsKey(dataModel.getDate())) {
-                dataByInstant.put(dataModel.getDate(), new HashMap<>());
+            
+            if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
+                dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
             }
-            if (!dataByInstant.get(dataModel.getDate()).containsKey(dataModel.getProvenance().getUri())) {
-                dataByInstant.get(dataModel.getDate()).put(dataModel.getProvenance().getUri(), new ArrayList<>());
+            // add export data
+            // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
+            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(),dataModel.getScientificObjects().get(0));
+
+            if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
             }
-            dataByInstant.get(dataModel.getDate()).get(dataModel.getProvenance().getUri()).add(DataGetDTO.fromModel(dataModel));
+            dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataGetDTO.fromModel(dataModel));
         }
 
         Instant dataTransform = Instant.now();
@@ -798,12 +803,14 @@ public class ExperimentAPI {
             // headers
             writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()])); 
             
-            // Search in map indexed by date for prov and data
-            for (Map.Entry<Instant, Map<URI, List<DataGetDTO>>> instantProvUriDataEntry : dataByInstant.entrySet()) {
-                Map<URI, List<DataGetDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
+            // Search in map indexed by date for prov, object and data
+            // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
+
+            for (Map.Entry<Instant, Map<ExportDataIndex, List<DataGetDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
+                Map<ExportDataIndex, List<DataGetDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
                 // Search in map indexed by  prov and data
-                for (Map.Entry<URI, List<DataGetDTO>> provUriEntry : mapProvUriData.entrySet()) {
-                    List<DataGetDTO> val = provUriEntry.getValue();
+                for (Map.Entry<ExportDataIndex, List<DataGetDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
+                    List<DataGetDTO> val = provUriObjectEntry.getValue();
                         
                     // Each row is linked to a provenance 
                     ArrayList<String> csvRow = new ArrayList<>();
@@ -1023,7 +1030,7 @@ public class ExperimentAPI {
     @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response importCSV(
+    public Response importCSVData(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
@@ -1276,7 +1283,7 @@ public class ExperimentAPI {
                     dataModel.setProvenance(provenanceModel);
                     URI varURI = URI.create(headerByIndex.get(colIndex));
                     dataModel.setVariable(varURI);
-                    dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex], mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                    dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
                     csvValidation.addData(dataModel,rowIndex);
                 } 
             } 

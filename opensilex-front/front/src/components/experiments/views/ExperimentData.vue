@@ -20,64 +20,65 @@
           >
             <template v-slot:filters>
               <b-row>
-              <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
-                <!-- Start Date -->
-                <opensilex-DateTimeForm
-                  :value.sync="filter.start_date"
-                  label="component.experiment.startDate"
-                  vid="startDate"
-                  name="startDate"
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
+                <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
+                  <!-- Start Date -->
+                  <opensilex-DateTimeForm
+                    :value.sync="filter.start_date"
+                    label="component.experiment.startDate"
+                    vid="startDate"
+                    name="startDate"
+                  ></opensilex-DateTimeForm>
+                </opensilex-FilterField>
 
-              <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
-                <!-- End Date -->
-                <opensilex-DateTimeForm
-                  :value.sync="filter.end_date"
-                  label="component.experiment.endDate"
-                  name="endDate"
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
+                <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
+                  <!-- End Date -->
+                  <opensilex-DateTimeForm
+                    :value.sync="filter.end_date"
+                    label="component.experiment.endDate"
+                    name="endDate"
+                  ></opensilex-DateTimeForm>
+                </opensilex-FilterField>
 
-              <opensilex-FilterField :halfWidth="true">
-                <opensilex-SelectForm
-                  label="Variable"
-                  :selected.sync="filter.variable"
-                  :options="usedVariables"
-                  placeholder="component.experiment.form.selector.variables.placeholder"
-                ></opensilex-SelectForm>
-              </opensilex-FilterField>
-            </b-row>
-            <b-row>
-              <opensilex-FilterField :halfWidth="true">
-                <opensilex-ProvenanceSelector
-                  ref="provSelector"
-                  :provenances.sync="filter.provenance"
-                  :filterLabel="filterProvenanceLabel"
-                  label="ExperimentData.provenance"
-                  @select="loadProvenance"
-                  @clear="filterLabel = null"
-                  :experiment="uri"
-                  :multiple="false"
-                  :viewHandler="showProvenanceDetails"
-                  :viewHandlerDetailsVisible="visibleDetails"
-                  :showURI="false"
-                ></opensilex-ProvenanceSelector>
-              </opensilex-FilterField>
+                <opensilex-FilterField :halfWidth="true">
+                  <opensilex-SelectForm
+                    label="Variable"
+                    :multiple="true"
+                    :selected.sync="filter.variables"
+                    :options="usedVariables"
+                    placeholder="component.experiment.form.selector.variables.placeholder-multiple"
+                  ></opensilex-SelectForm>
+                </opensilex-FilterField>
+              </b-row>
+              <b-row>
+                <opensilex-FilterField :halfWidth="true">
+                  <opensilex-ProvenanceSelector
+                    ref="provSelector"
+                    :provenances.sync="filter.provenance"
+                    :filterLabel="filterProvenanceLabel"
+                    label="ExperimentData.provenance"
+                    @select="loadProvenance"
+                    @clear="filterLabel = null"
+                    :experiment="uri"
+                    :multiple="false"
+                    :viewHandler="showProvenanceDetails"
+                    :viewHandlerDetailsVisible="visibleDetails"
+                    :showURI="false"
+                  ></opensilex-ProvenanceSelector>
+                </opensilex-FilterField>
 
-              <opensilex-FilterField>
-                <b-collapse
-                  v-if="selectedProvenance"
-                  id="collapse-4"
-                  v-model="visibleDetails"
-                  class="mt-2"
-                >
-                  <opensilex-ProvenanceDetails
-                    :provenance="getSelectedProv"
-                  ></opensilex-ProvenanceDetails>
-                </b-collapse>
-              </opensilex-FilterField>
-            </b-row>
+                <opensilex-FilterField>
+                  <b-collapse
+                    v-if="selectedProvenance"
+                    id="collapse-4"
+                    v-model="visibleDetails"
+                    class="mt-2"
+                  >
+                    <opensilex-ProvenanceDetails
+                      :provenance="getSelectedProv"
+                    ></opensilex-ProvenanceDetails>
+                  </b-collapse>
+                </opensilex-FilterField>
+              </b-row>
             </template>
           </opensilex-SearchFilterField>
           <opensilex-TableAsyncView
@@ -87,12 +88,26 @@
             :fields="fields"
           >
             <template v-slot:export>
-              <b-button class="mb-2 mr-2" @click="exportData('long')">{{
-                $t("ExperimentData.export-long")
-              }}</b-button>
-              <b-button class="mb-2 mr-2" @click="exportData('wide')">{{
-                $t("ExperimentData.export-wide")
-              }}</b-button>
+              <b-dropdown
+                dropup
+                :small="false"
+                :text="$t('ExperimentData.export')"
+              >
+                <b-dropdown-item-button @click="exportData('long')">
+                  {{ $t("ExperimentData.export-long") }}
+                  <opensilex-FormInputLabelHelper
+                    :helpMessage="$t('ExperimentData.export-long-help')"
+                  >
+                  </opensilex-FormInputLabelHelper>
+                </b-dropdown-item-button>
+                <b-dropdown-item-button @click="exportData('wide')"
+                  >{{ $t("ExperimentData.export-wide") }}
+                  <opensilex-FormInputLabelHelper
+                    :helpMessage="$t('ExperimentData.export-wide-help')"
+                  >
+                  </opensilex-FormInputLabelHelper
+                ></b-dropdown-item-button>
+              </b-dropdown>
             </template>
             <template v-slot:cell(uri)="{ data }">
               {{ objects[data.item.scientific_objects[0]] }}
@@ -132,7 +147,7 @@
       :successMessage="successMessage"
     ></opensilex-ModalForm>
 
-    <opensilex-ResultModalView ref="resultModal"> </opensilex-ResultModalView>
+    <opensilex-ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"> </opensilex-ResultModalView>
   </div>
 </template>
 
@@ -159,7 +174,7 @@ export default class ExperimentData extends Vue {
     start_date: null,
     end_date: null,
     provenance: null,
-    variable: null,
+    variables: [],
     mode: null,
   };
 
@@ -188,7 +203,7 @@ export default class ExperimentData extends Vue {
   resetFilters() {
     this.filter = {
       provenance: null,
-      variable: null,
+      variables: [],
       mode: null,
       start_date: null,
       end_date: null,
@@ -196,7 +211,7 @@ export default class ExperimentData extends Vue {
     // Only if search and reset button are use in list
   }
 
-  updateFiltersAndSearch(value: string) {
+  updateFiltersAndSearch() {
     for (let [key, value] of Object.entries(this.filter)) {
       this.$opensilex.updateURLParameter(key, value, "");
     }
@@ -211,6 +226,11 @@ export default class ExperimentData extends Vue {
     return this.selectedProvenance;
   }
 
+  refreshDataAfterImportation(){
+    this.loadProvenance({id: this.filter.provenance})
+    this.updateFiltersAndSearch();
+  }
+
   afterCreateData(results) {
     results.then((res) => {
       this.resultModal.setNbLinesImported(
@@ -218,9 +238,11 @@ export default class ExperimentData extends Vue {
       );
       this.resultModal.setProvenance(res.form.provenance);
       this.resultModal.show();
+      this.clear();
       this.filter.provenance = res.form.provenance.uri;
       this.refreshVariables();
       this.provSelector.refresh();
+      this.loadProvenance({id:res.form.provenance.uri})
     });
   }
 
@@ -252,7 +274,7 @@ export default class ExperimentData extends Vue {
   clear() {
     this.searchVisible = false;
     this.selectedProvenance = null;
-    this.resetFilters()
+    this.resetFilters();
     this.filterProvenanceLabel = null;
   }
 
@@ -305,22 +327,22 @@ export default class ExperimentData extends Vue {
     {
       key: "date",
       label: "ExperimentData.date",
-       sortable: true
+      sortable: true,
     },
     {
       key: "variable",
       label: "ExperimentData.variable",
-       sortable: true
+      sortable: true,
     },
     {
       key: "value",
       label: "ExperimentData.value",
-       sortable: true
+      sortable: true,
     },
     {
       key: "provenance",
       label: "ExperimentData.provenance",
-       sortable: true
+      sortable: true,
     },
   ];
 
@@ -329,15 +351,12 @@ export default class ExperimentData extends Vue {
   provenances = {};
 
   searchData(options) {
-    let provUris = undefined;
-    if (this.filter.provenance != null) {
-      provUris = [this.filter.provenance];
+    let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
+    if (provUris != undefined) {
+      provUris = [provUris];
     }
+    let varUris = this.$opensilex.prepareGetParameter(this.filter.variables);
 
-    let varUris = undefined;
-    if (this.filter.variable != null) {
-      varUris = [this.filter.variable];
-    }
     let start_date = this.$opensilex.prepareGetParameter(
       this.filter.start_date
     );
@@ -467,8 +486,11 @@ en:
         value: Value
         variable : Variable
         provenance: Provenance
-        export-wide : Export data list (wide format)
-        export-long : Export data list (long format)
+        export : Export
+        export-wide : Wide format
+        export-wide-help : A given date, provenance, scientific object of an observation represents a row and each variable value is in a specific column.
+        export-long : Long format
+        export-long-help : Each line represent an observation (Same as the result table)
 fr:
     ExperimentData:
         object: Objet Scientifique
@@ -476,6 +498,10 @@ fr:
         value: Valeur
         variable : Variable
         provenance: Provenance
-        export-wide : Exporter la liste de données (format large)
-        export-long : Exporter la liste de données (format long)
+        export : Exporter
+        export-wide : Format large
+        export-wide-help : Une date, une provenance, un objet scientifique donné d'une observation représente une ligne et chaque valeur de variable est dans une colonne spécifique.
+        export-long : Format long
+        export-long-help : Une ligne représente une observation (identique au tableau de résultat)
+
 </i18n>

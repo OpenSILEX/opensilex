@@ -112,7 +112,6 @@
           iconNumberOfSelectedRow="ik#ik-target"
         >
           <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-          <b-button-group>
             <opensilex-Button
               :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
               icon="none"
@@ -121,15 +120,6 @@
               :disabled="numberOfSelectedRows == 0"
               @click="exportCSV"
             ></opensilex-Button>
-                 <opensilex-Button
-                 :variant="numberOfSelectedRows > 0 ? 'success' : ''"
-              icon="none"
-                :small="false"
-                label="ScientificObjectList.visualize"
-                :disabled="numberOfSelectedRows == 0"
-                @click="visualize"
-              ></opensilex-Button>
-                 </b-button-group>
           </template>
           <template v-slot:cell(name)="{ data }">
             <opensilex-UriLink

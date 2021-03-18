@@ -79,14 +79,6 @@
         </vl-overlay>
 
         <template v-if="endReceipt">
-          <vl-layer-vector>
-            <vl-source-vector
-                ref="vectorSource"
-                :features.sync="featuresOS"
-                @update:features="defineCenter"
-            >
-            </vl-source-vector>
-          </vl-layer-vector>
           <vl-layer-vector :visible="displayAreas === 'true'">
             <vl-source-vector
                 ref="vectorSourceArea"
@@ -96,6 +88,14 @@
               <vl-style-stroke color="green"></vl-style-stroke>
               <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
             </vl-style-box>
+          </vl-layer-vector>
+          <vl-layer-vector>
+            <vl-source-vector
+                ref="vectorSource"
+                :features.sync="featuresOS"
+                @update:features="defineCenter"
+            >
+            </vl-source-vector>
           </vl-layer-vector>
         </template>
 
@@ -483,12 +483,7 @@ export default class MapView extends Vue {
         .getSubClassesOf(Oeso.SCIENTIFIC_OBJECT_TYPE_URI, true)
         .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
           const res = http.response.result;
-          res.forEach(({name, uri}) => {
-            typeLabel.push({
-              uri: uri,
-              name: name.substr(0, 1).toUpperCase() + name.substr(1),
-            });
-          });
+          this.extracted(res, typeLabel);
         })
         .catch(this.$opensilex.errorHandler);
 
@@ -543,7 +538,10 @@ export default class MapView extends Vue {
 
   private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: String; name: String }[]) {
     res.forEach(({name, uri, children}) => {
-      typeLabel.push({uri: uri, name: name});
+      typeLabel.push({
+        uri: uri,
+        name: name.substr(0, 1).toUpperCase() + name.substr(1),
+      });
       if (children.length > 0) {
         this.extracted(children, typeLabel);
       }

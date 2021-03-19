@@ -63,28 +63,9 @@
                   :value="area.description"
                   label="component.area.details.description"
               ></opensilex-StringView>
-
-              <button
-                  :title="$t('component.area.copyGeometryWKT')"
-                  class="uri-copy"
-                  v-on:click.prevent.stop="copyGeometry(wktValue(area.geometry), 'WKT')"
-              >
-                {{ $t("component.area.geometryWKT") }}
-                <b-badge>
-                  <opensilex-Icon icon="ik#ik-copy"/>
-                </b-badge>
-              </button>
-              <br/>
-              <button
-                  :title="$t('component.area.copyGeometryGeoJSON')"
-                  class="uri-copy"
-                  v-on:click.prevent.stop="copyGeometry(JSON.stringify(area.geometry),'GeoJSON')"
-              >
-                {{ $t("component.area.geometryGeoJSON") }}
-                <b-badge>
-                  <opensilex-Icon icon="ik#ik-copy"/>
-                </b-badge>
-              </button>
+              <opensilex-GeometryCopy
+                  :value="area.geometry"
+              ></opensilex-GeometryCopy>
             </template>
           </opensilex-Card>
         </b-col>
@@ -129,8 +110,6 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-import copy from "copy-to-clipboard";
-import {stringify} from "wkt";
 
 @Component
 export default class AreaDetails extends Vue {
@@ -160,14 +139,6 @@ export default class AreaDetails extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-
-  wktValue(geometry) {
-    try {
-      return stringify(geometry);
-    } catch (error) {
-      return "";
-    }
   }
 
   created() {
@@ -208,20 +179,6 @@ export default class AreaDetails extends Vue {
 
   isAnnotationTab() {
     return this.$route.path.startsWith("/area/annotations/");
-  }
-
-  copyGeometry(address, standard) {
-    copy(address);
-
-    if (standard == "GeoJSON") {
-      this.$opensilex.showSuccessToast(
-          this.$t("component.area.copiedGeometryGeoJSON")
-      );
-    } else {
-      this.$opensilex.showSuccessToast(
-          this.$t("component.area.copiedGeometryWKT")
-      );
-    }
   }
 
   private rdfTypeLabel() {
@@ -276,12 +233,6 @@ en:
   component:
     area:
       title: Area
-      copyGeometryGeoJSON: Copy the geometry in GeoJSON format
-      copiedGeometryGeoJSON: The geometry has been copied in GeoJSON format.
-      geometryGeoJSON: Geometry in GeoJSON
-      copyGeometryWKT: Copy the geometry in WKT format
-      copiedGeometryWKT: The geometry has been copied in WKT format.
-      geometryWKT: Geometry in WKT
       details:
         uri: URI
         name: Name
@@ -292,12 +243,6 @@ fr:
   component:
     area:
       title: Zone
-      copyGeometryGeoJSON: Copier la géométrie au format GeoJSON
-      copiedGeometryGeoJSON: La géométrie a été copiée au format GeoJSON.
-      geometryGeoJSON: Géométrie en GeoJSON
-      copyGeometryWKT: Copier la géométrie au format WKT
-      copiedGeometryWKT: La géométrie a été copiée au format WKT.
-      geometryWKT: Géométrie en WKT
       details:
         uri: URI
         name: Nom

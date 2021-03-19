@@ -178,6 +178,8 @@ import IconView from './common/views/IconView.vue'
 components["opensilex-IconView"] = IconView;
 import GeometryView from './common/views/GeometryView.vue'
 components["opensilex-GeometryView"] = GeometryView;
+import GeometryCopy from './common/views/GeometryCopy.vue'
+components["opensilex-GeometryCopy"] = GeometryCopy;
 
 import UriView from './common/views/UriView.vue'
 components["opensilex-UriView"] = UriView;
@@ -384,6 +386,8 @@ import ScientificObjectForm from './scientificObjects/ScientificObjectForm.vue';
 components["opensilex-ScientificObjectForm"] = ScientificObjectForm;
 import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.vue';
 components["opensilex-ScientificObjectDetail"] = ScientificObjectDetail;
+import ScientificObjectDetailSimple from './scientificObjects/ScientificObjectDetailSimple.vue';
+components["opensilex-ScientificObjectDetailSimple"] = ScientificObjectDetailSimple;
 import ScientificObjectTypes from './scientificObjects/ScientificObjectTypes.vue';
 components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
 import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTypeSelector.vue';

@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="fa#sun"
+      icon="fa#seedling"
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>

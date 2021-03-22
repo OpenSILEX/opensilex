@@ -30,6 +30,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
+import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
@@ -497,6 +498,7 @@ public class GermplasmDAO {
     public ListWithPagination<ExperimentModel> getExpFromGermplasm(
             UserModel currentUser,
             URI uri,
+            String name,
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) throws Exception {
@@ -506,6 +508,10 @@ public class GermplasmDAO {
                 currentUser.getLanguage(),
                 (SelectBuilder select) -> {
                     appendGermplasmFilter(select, uri);
+                    if (!StringUtils.isEmpty(name)) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, name));
+                        appendUserExperimentsFilter(select, currentUser);
+                    }
                 },
                 orderByList,
                 page,

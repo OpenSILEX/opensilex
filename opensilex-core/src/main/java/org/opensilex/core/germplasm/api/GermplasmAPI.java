@@ -291,6 +291,7 @@ public class GermplasmAPI {
     /**
      *
      * @param uri
+     * @param name
      * @param orderByList
      * @param page
      * @param pageSize
@@ -310,14 +311,14 @@ public class GermplasmAPI {
     })
     public Response getGermplasmExperiments(
             @ApiParam(value = "germplasm URI", example = "dev-germplasm:g01", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Regex pattern for filtering experiments by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        ListWithPagination<ExperimentModel> experiments = germplasmDAO.getExpFromGermplasm(currentUser, uri, orderByList, page, pageSize);
-        // TODO: filter experiments with those accessible to current user
+        ListWithPagination<ExperimentModel> experiments = germplasmDAO.getExpFromGermplasm(currentUser, uri, name, orderByList, page, pageSize);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = experiments.convert(

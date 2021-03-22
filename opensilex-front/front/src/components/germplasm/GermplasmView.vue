@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik-folder"
+      icon="fa#seedling"
       title="GermplasmView.title"
       description="GermplasmView.description"
     ></opensilex-PageHeader>
@@ -32,7 +32,7 @@
       component="opensilex-GermplasmForm"
       createTitle="GermplasmView.add"
       editTitle="GermplasmView.update"
-      icon="ik#ik-user"
+      icon="fa#seedling"
       modalSize="lg"
       @onCreate="germplasmList.refresh()"
       @onUpdate="germplasmList.refresh()"

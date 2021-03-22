@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid" v-if="germplasm.uri">
     <opensilex-PageHeader
-      icon="fa#sun"
+      icon="fa#seedling"
       :title="germplasm.name"
       description="GermplasmDetails.title"
     ></opensilex-PageHeader>
@@ -14,7 +14,6 @@
       </b-nav-item>
 
       <b-nav-item
-      class="ml-3"
       :active="isAnnotationTab()"
       :to="{ path: '/germplasm/annotations/' + encodeURIComponent(uri) }"
       >{{ $t("Annotation.list-title") }}
@@ -64,11 +63,12 @@
                 label="GermplasmDetails.institute"
                 :value="germplasm.institute"
               ></opensilex-StringView>
-              <opensilex-StringView
+              <opensilex-UriView
                 v-if="germplasm.website != null"
-                label="GermplasmDetails.website"
+                title="GermplasmDetails.website"
                 :value="germplasm.website"
-              ></opensilex-StringView>
+                :uri="germplasm.website"
+              ></opensilex-UriView>
               <opensilex-StringView
                 v-if="germplasm.production_year != null"
                 label="GermplasmDetails.year"
@@ -121,9 +121,14 @@
         </b-col>
         <b-col>
           <opensilex-Card label="GermplasmDetails.experiment" icon="ik#ik-clipboard">
+            
             <template v-slot:body>
+              <opensilex-StringFilter
+                :filter.sync="expFilter"
+                placeholder="GermplasmDetails.experimentNameFilter"
+            ></opensilex-StringFilter>
               <opensilex-TableAsyncView
-                ref="tableRef"
+                ref="experimentsTable"
                 :searchMethod="loadExperiments"
                 :fields="expFields"
                 defaultSortBy="label"
@@ -189,6 +194,7 @@ export default class GermplasmDetails extends Vue {
 
   uri: string = null;
   addInfo = [];
+  expFilter: any = "";
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -266,6 +272,7 @@ export default class GermplasmDetails extends Vue {
   loadExperiments(options) {
     return this.service.getGermplasmExperiments(
       this.uri,
+      this.expFilter,
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -368,6 +375,7 @@ en:
     value: Value
     subtaxa: Subtaxa
     website: Web site
+    experimentNameFilter: Search on experiment name
 
 fr:
   GermplasmDetails:
@@ -393,4 +401,6 @@ fr:
     value: Valeur
     subtaxa: Subtaxa
     website: Site web
+    experimentNameFilter: Chercher sur le nom de l'expérimentation
+
 </i18n>

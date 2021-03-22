@@ -35,9 +35,7 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { GermplasmService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+import { extend } from "vee-validate";
 
 @Component
 export default class GermplasmAttributesTable extends Vue {
@@ -45,15 +43,29 @@ export default class GermplasmAttributesTable extends Vue {
   $store: any;
   $i18n: any;
   service: GermplasmService;
+  langs: any = {
+    fr: {
+      //French language definition
+      columns: {
+        attribute: "Attribut",
+        value: "Valeur",
+        actions: "Supprimer",
+      }    
+    },
+    en: {
+      columns: {
+        attribute: "Attribute",
+        value: "Value",
+        actions: "Delete",
+      }
+    },
+  };
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
   @Ref("langInput") readonly langInput!: any;
 
   @Prop()
   editMode: boolean;
-
-  // @Prop({ default: [] })
-  // attributesArray: any[];  
 
   @Prop()
   attributesArray;
@@ -84,10 +96,23 @@ export default class GermplasmAttributesTable extends Vue {
       }
     }
   ];
-
+  
   created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
-    //this.getAttributes();
+  }
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      (lang) => {
+        this.changeTableLang(lang);
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   options: any = {
@@ -96,6 +121,7 @@ export default class GermplasmAttributesTable extends Vue {
     clipboard: true,
     columns: this.tableColumns,
     maxHeight: "100%", //do not let table get bigger than the height of its parent element
+    langs: this.langs
   };
 
   resetTable() {
@@ -133,24 +159,21 @@ export default class GermplasmAttributesTable extends Vue {
     
     let data = this.tabulatorRef.getInstance().getData();
     for (let y = 0; y < data.length; y++) {
-      let key = data[y].attribute;
-      attributes[key] = data[y].value;
+      
+      if (data[y].attribute !== null) {
+        let key = data[y].attribute;
+        attributes[key] = data[y].value;
+      }
+      
     }
     return attributes;
   }
 
-  // getAttributes() {
+  changeTableLang(lang: string) {
+    let tabulatorInstance = this.tabulatorRef.getInstance();
+    tabulatorInstance.setLocale(lang);
+  }
 
-  //   if (this.attributesMap != null) {   
-  //     for (const property in this.attributesMap) {
-  //       let att = {
-  //         attribute: property,
-  //         value: this.attributesMap[property]
-  //       }
-  //       this.attributesArray.push(att);
-  //     } 
-  //   }
-  // }
 }
 </script>
 
@@ -163,11 +186,13 @@ en:
   GermplasmAttributesTable:
     title: Additional attributes
     add: Add an attribute
+    attribute: Attribute
     
 
 fr:
   GermplasmAttributesTable:
     title: Attributs supplémentaires
     add: Ajouter un attribut
+    attribute: Attribut
 
 </i18n>

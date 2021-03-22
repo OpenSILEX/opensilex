@@ -79,13 +79,13 @@
         <opensilex-FilterField>
           <opensilex-StringFilter
             :filter.sync="filter.metadataKey"
-            label="attribute key"
+            label="GermplasmList.filter.metadataKey"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
         <opensilex-FilterField>
           <opensilex-StringFilter
             :filter.sync="filter.metadataValue"
-            label="attribute value"
+            label="GermplasmList.filter.metadataValue"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
       </template>     
@@ -464,6 +464,8 @@ en:
       uri-placeholder: Enter a part of an uri
       search: Search
       reset: Reset
+      metadataKey: Attribute name
+      metadataValue: Attribute value
 
 fr:
   GermplasmList:
@@ -495,6 +497,8 @@ fr:
       uri: URI
       uri-placeholder: Entrer une partie d'une uri
       search: Rechercher
-      reset: Réinitialiser      
+      reset: Réinitialiser
+      metadataKey: Nom de l'attribut
+      metadataValue: Valeur de l'attribut
   
 </i18n>

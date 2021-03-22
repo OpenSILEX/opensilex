@@ -1219,7 +1219,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return askQuery;
     }
 
-    private static final String EXISTING_VAR = "existing";
+    public static final String EXISTING_VAR = "existing";
 
     public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
 

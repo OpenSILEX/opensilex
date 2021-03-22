@@ -15,23 +15,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -42,8 +34,10 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
-import org.opensilex.server.response.PaginatedListResponse;
+
 import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 /**
  *
@@ -126,6 +120,61 @@ public class FacilityAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureFacilityModel model = dao.getFacility(uri, currentUser);
         return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model)).getResponse();
+    }
+
+    @GET
+    @Path("by_uris")
+    @ApiOperation("Get facilities by their URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDto.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getFacilitiesByURI(
+            @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
+
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        List<InfrastructureFacilityModel> facilities = dao.getFacilitiesByURI(currentUser,uris);
+
+        if(facilities.isEmpty()){
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Facilities not found", "Unknown facilities URIs").getResponse();
+        }
+
+        List<InfrastructureFacilityNamedDto> dtoList = facilities.stream()
+                .map(InfrastructureFacilityNamedDto::new)
+                .collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+
+    @GET
+    @ApiOperation("Search facilities")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDto.class, responseContainer = "List")
+    })
+    public Response searchInfrastructureFacilities(
+            @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number") @QueryParam("page") int page,
+            @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
+
+    ) throws Exception {
+
+        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser,pattern, orderByList,page, pageSize);
+
+        List<InfrastructureFacilityNamedDto> dtoList = facilities.getList().stream()
+                .map(InfrastructureFacilityNamedDto::new)
+                .collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @DELETE

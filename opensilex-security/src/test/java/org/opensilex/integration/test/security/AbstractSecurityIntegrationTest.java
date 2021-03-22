@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.ArrayList;
 import org.junit.After;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
 import javax.ws.rs.client.Entity;
@@ -18,7 +19,9 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.core.HttpHeaders;
 import org.junit.BeforeClass;
 import org.opensilex.OpenSilex;
@@ -105,7 +108,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     * Default Abstract method to be implementted by subclasses for graph clear after tests
+     * Default Abstract method to be implemented by subclasses for graph clear after tests
      *
      * @return the List of SPARQL Model to clear after each test execution.
      */
@@ -302,6 +305,24 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
         getResult = getJsonGetByUriResponse(target(getByUriPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
+    protected <T> List<T> getResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriterias, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        if (searchCriterias == null) {
+            searchCriterias = new HashMap<>();
+        }
+        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriterias);
+        final Response getResult = appendToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<T> responseList = mapper.convertValue(node, typeReference);
+        return responseList.getResult();
+    }
+
+    protected <T> List<T> getResults(String searchPath, Map<String, Object> searchCriterias, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+      return this.getResults(searchPath,0,20,searchCriterias,typeReference);
+
     }
 
 }

@@ -6,12 +6,13 @@
 package org.opensilex.core.organisation.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
@@ -23,9 +24,14 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -106,6 +112,26 @@ public class InfrastructureDAO {
         }
     }
 
+    public void validateInfrastructureFacilityAccess(List<URI> facilityUris, UserModel user) throws Exception {
+
+        if (user.isAdmin()) {
+            return;
+        }
+
+        SelectBuilder askFacilityAccess = sparql.getUriListExistQuery(InfrastructureFacilityModel.class, facilityUris);
+        addAskInfrastructureAccess(askFacilityAccess, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+
+        for (SPARQLResult result : sparql.executeSelectQuery(askFacilityAccess)) {
+            boolean value = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
+            if (!value) {
+                URI uri = new URI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+                throw new ForbiddenURIAccessException(uri);
+            }
+        }
+
+    }
+
+
     public void validateInfrastructureFacilityAccess(URI infrastructureFacilityURI, UserModel user) throws Exception {
         if (!sparql.uriExists(InfrastructureFacilityModel.class, infrastructureFacilityURI)) {
             throw new NotFoundURIException(infrastructureFacilityURI);
@@ -123,7 +149,7 @@ public class InfrastructureDAO {
         }
     }
 
-    public void addAskInfrastructureAccess(AskBuilder ask, Object infraURIVar, UserModel user) {
+    public void addAskInfrastructureAccess(WhereClause<?> ask, Object infraURIVar, UserModel user) {
         Var userProfileVar = makeVar("_userProfile");
         Var groupVar = makeVar(InfrastructureModel.GROUP_FIELD);
         ask.addWhere(infraURIVar, SecurityOntology.hasGroup, groupVar);
@@ -200,6 +226,44 @@ public class InfrastructureDAO {
     public InfrastructureFacilityModel getFacility(URI uri, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(uri, user);
         return sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
+    }
+
+    public List<InfrastructureFacilityModel> getFacilitiesByURI(UserModel user,List<URI> uris) throws Exception {
+        validateInfrastructureFacilityAccess(uris, user);
+        return sparql.getListByURIs(InfrastructureFacilityModel.class,uris,user.getLanguage());
+    }
+
+    public ListWithPagination<InfrastructureFacilityModel> searchFacilities(UserModel user, String pattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+
+        Set<URI> infras = getUserInfrastructures(user);
+
+        if (infras != null && infras.size() == 0) {
+            return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        return sparql.searchWithPagination(
+                InfrastructureFacilityModel.class,
+                user.getLanguage(),
+                (select -> {
+                    if (infras != null) {
+                        SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras);
+                    }
+
+                    // append REGEX filter on name and uri
+                    if (!StringUtils.isEmpty(pattern)) {
+
+                        ExprFactory exprFactory = select.getExprFactory();
+                        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(InfrastructureFacilityModel.URI_FIELD));
+                        select.addFilter(SPARQLQueryHelper.regexFilter(uriStrRegex, pattern, null));
+
+                        select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureFacilityModel.NAME_FIELD, pattern));
+                    }
+                }),
+                orderByList,
+                page,
+                pageSize
+        );
+
     }
 
     public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {

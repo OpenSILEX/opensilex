@@ -253,7 +253,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     /**
      * @see #appendSearchParams(WebTarget, int, int, List,Map)
      */
-    protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, Map<String, Object> params) {
+    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, Map<String, Object> params) {
         return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);
     }
 
@@ -271,7 +271,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
      * @see WebTarget#queryParam(String, Object...)
      * @see #appendQueryParams(WebTarget, Map)
      */
-    protected WebTarget appendSearchParams(WebTarget target, int page, int pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
+    protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, List<OrderBy> orderByList, Map<String, Object> params) {
 
         target.queryParam("page", page)
                 .queryParam("pageSize", pageSize)

@@ -14,29 +14,23 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.core.Response;
 import org.bson.Document;
-import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.user.dal.UserModel;
@@ -45,9 +39,6 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.rest.validation.DateFormat;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,12 +137,67 @@ public class DataDAO {
             Integer pageSize) {
 
         Document filter = searchFilter(experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
-
+     
         ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
         return datas;
 
     }
+    
+    public ListWithPagination<DataModel> searchByDevice(
+            URI deviceURI,
+            UserModel user,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> provenances,
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize) {
+        
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        List<URI> agents = new ArrayList<>();
+        agents.add(deviceURI);
+        Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);
+        
+        if (provenances != null && !provenances.isEmpty()) {
+            deviceProvenances.retainAll(provenances);
+        }     
+        
+        ListWithPagination<DataModel> datas;
+        if (!deviceProvenances.isEmpty()) {
+            Document filter = searchFilter(experiments, objects, variables, null, startDate, endDate, confidenceMin, confidenceMax, metadata);
+            
+            //Get all data that have :
+            //    provenance.provUsed.uri = deviceURI 
+            // OR ( provenance.uri IN deviceProvenances list && provenance.provUsed.uri isEmpty or not exists)
+            
+            Document directProvFilter = new Document("provenance.provUsed.uri", deviceURI);
+
+            Document globalProvUsed = new Document("provenance.uri", new Document("$in", deviceProvenances));
+            globalProvUsed.put("$or", Arrays.asList(
+                new Document("provenance.provUsed", new Document("$exists", false)),
+                new Document("provenance.provUsed", new ArrayList())
+                )
+            );
+
+            filter.put("$or", Arrays.asList(directProvFilter, globalProvUsed));
+
+            datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
+            
+        } else {
+            datas = new ListWithPagination(new ArrayList());
+        }        
+
+        return datas;
+
+    }
+    
     
     public List<DataModel> search(
             UserModel user,

@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.naming.NamingException;
 import org.bson.Document;
-import static org.opensilex.core.germplasm.dal.GermplasmDAO.ATTRIBUTES_COLLECTION_NAME;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -124,21 +123,13 @@ public class ProvenanceDAO {
     }
     
     public boolean provenanceListExists(Set<URI> uris) throws NamingException, IOException {  
-        Document listFilter = new Document();
-        listFilter.append("$in", uris);
-        Document filter = new Document();
-        filter.append("uri",listFilter);        
-                
+        Document filter = new Document("uri", new Document("$in",uris));
         Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return (foundedURIs.size() == uris.size());
     }
     
     public Set<URI> getExistingProvenanceURIs(Set<URI> uris) throws NamingException, IOException {  
-        Document listFilter = new Document();
-        listFilter.append("$in", uris);
-        Document filter = new Document();
-        filter.append("uri",listFilter);        
-                
+        Document filter = new Document("uri", new Document("$in",uris));
         Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return foundedURIs;
     }
@@ -152,5 +143,11 @@ public class ProvenanceDAO {
     public List<ProvenanceModel> getListByURIs(List<URI> uris) throws NamingException, IOException, NoSQLInvalidUriListException{  
         List<ProvenanceModel> findByURIs = nosql.findByURIs(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME,uris);
         return findByURIs;
+    }
+    
+    public Set<URI> getProvenancesURIsByAgents(List<URI> agents) {
+        Document filter = new Document("agents.uri", new Document("$in",agents));
+        Set uris = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
+        return uris;
     }
 }

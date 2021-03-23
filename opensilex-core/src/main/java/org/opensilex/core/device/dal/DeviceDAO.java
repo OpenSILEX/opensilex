@@ -28,6 +28,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
@@ -357,5 +358,11 @@ public class DeviceDAO {
             nosql.rollbackTransaction();
             sparql.rollbackTransaction(ex);
         }
+    }
+     
+    public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {
+
+        List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(DeviceModel.class), uri, Oeso.measures, URI.class);
+        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }
 }

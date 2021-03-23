@@ -1,27 +1,17 @@
 package org.opensilex.core.device.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.StringWriter;
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -40,27 +30,41 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.Node;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
+import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.core.experiment.api.ExperimentAPI;
+import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -69,6 +73,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -438,4 +443,105 @@ public class DeviceAPI {
                 .build();
 
     }*/
+    
+    @GET
+    @Path("{uri}/data")
+    @ApiOperation("Search device data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response searchDeviceData(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,            
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, null);
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            try {
+                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        if (endDate != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+
+        ListWithPagination<DataModel> resultList = dao.searchByDevice(
+                uri,
+                currentUser,
+                experiments,
+                null,
+                variables,
+                provenances,
+                startInstant,
+                endInstant,
+                confidenceMin,
+                confidenceMax,
+                metadataFilter,
+                orderByList,
+                page,
+                pageSize
+        );
+
+        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::fromModel);
+
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    @GET
+    @Path("{uri}/variables")
+    @ApiOperation("Get variables measured by th")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+    })
+    public Response getDeviceVariables(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {        
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
 }

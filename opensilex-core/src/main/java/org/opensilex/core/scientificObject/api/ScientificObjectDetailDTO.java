@@ -19,11 +19,16 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.server.rest.serialization.CustomParamConverterProvider;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
@@ -137,6 +142,26 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
                 isPartOfRelation.setProperty(isPartOfURI);
                 isPartOfRelation.setValue(SPARQLDeserializers.formatURI(getParent()).toString());
                 relationsDTO.add(isPartOfRelation);
+            } catch (URISyntaxException ex) {
+            }
+        }
+
+        if (model.getCreationDate() != null) {
+            try {
+                RDFObjectRelationDTO dateRelation = new RDFObjectRelationDTO();
+                dateRelation.setProperty(SPARQLDeserializers.formatURI(new URI(Oeso.hasCreationDate.getURI())));
+                dateRelation.setValue(CustomParamConverterProvider.localDateConverter.toString(model.getCreationDate()));
+                relationsDTO.add(dateRelation);
+            } catch (URISyntaxException ex) {
+            }
+        }
+
+        if (model.getDestructionDate() != null) {
+            try {
+                RDFObjectRelationDTO dateRelation = new RDFObjectRelationDTO();
+                dateRelation.setProperty(SPARQLDeserializers.formatURI(new URI(Oeso.hasDestructionDate.getURI())));
+                dateRelation.setValue(CustomParamConverterProvider.localDateConverter.toString(model.getDestructionDate()));
+                relationsDTO.add(dateRelation);
             } catch (URISyntaxException ex) {
             }
         }

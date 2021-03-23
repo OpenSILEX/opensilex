@@ -5,13 +5,13 @@
  */
 package org.opensilex.core.scientificObject.api;
 
-import org.opensilex.core.ontology.api.RDFClassDTO;
+import org.opensilex.core.ontology.api.RDFTypeDTO;
 
 /**
  *
  * @author vince
  */
-public class ScientificObjectClassDTO extends RDFClassDTO {
+public class ScientificObjectClassDTO extends RDFTypeDTO {
 
     private boolean isAbstractClass;
 

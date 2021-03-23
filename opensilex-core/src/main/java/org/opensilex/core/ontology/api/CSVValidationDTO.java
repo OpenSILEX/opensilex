@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.ontology.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 
 /**
@@ -13,10 +14,12 @@ import org.opensilex.core.ontology.dal.CSVValidationModel;
  */
 public class CSVValidationDTO {
 
+    @JsonProperty("validation_token")
     private String validationToken;
 
     private CSVValidationModel errors;
 
+    @JsonProperty("nb_lines_imported")
     private Integer nbLinesImported = 0;
         
     public Integer getNbLinesImported() {

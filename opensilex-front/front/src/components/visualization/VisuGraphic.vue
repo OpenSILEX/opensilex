@@ -328,7 +328,7 @@ export default class VisuGraphic extends Vue {
               x: -3
             },
             title: {
-              text: this.variables[0].label
+              text: this.variables[0].name
             },
             height: "80%",
             lineWidth: 2,
@@ -342,7 +342,7 @@ export default class VisuGraphic extends Vue {
               x: -3
             },
             title: {
-              text: this.variables[1].label
+              text: this.variables[1].name
             },
             height: "80%",
             lineWidth: 2,
@@ -373,7 +373,7 @@ export default class VisuGraphic extends Vue {
               x: -3
             },
             title: {
-              text: this.variables[0].label
+              text: this.variables[0].name
             },
             lineWidth: 2,
             resize: {
@@ -386,7 +386,7 @@ export default class VisuGraphic extends Vue {
               x: -3
             },
             title: {
-              text: this.variables[1].label
+              text: this.variables[1].name
             },
             lineWidth: 2,
             resize: {
@@ -405,7 +405,7 @@ export default class VisuGraphic extends Vue {
               x: -3
             },
             title: {
-              text: this.variables[0].label
+              text: this.variables[0].name
             },
             height: "80%",
             lineWidth: 2,
@@ -434,7 +434,7 @@ export default class VisuGraphic extends Vue {
             x: -3
           },
           title: {
-            text: this.variables[0].label
+            text: this.variables[0].name
           }
         };
       }

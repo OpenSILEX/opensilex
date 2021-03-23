@@ -154,7 +154,7 @@ export default class FactorSelector extends Vue {
     for (var [category, factors] of Object.entries(factorMapByCategory)) {
       let categoryNode = {
         id: category,
-        label:
+        name:
           category == this.unclassifiedId
             ? this.$i18n.t(this.unclassifiedId)
             : this.categories[category],
@@ -164,7 +164,7 @@ export default class FactorSelector extends Vue {
       for (let factor of factors) {
         let factorNode = {
           id: factor.uri,
-          label: factor.name + " <" + factor.uri + ">"
+          name: factor.name + " <" + factor.uri + ">"
         };
         categoryNode.children.push(factorNode);
       }
@@ -177,7 +177,7 @@ export default class FactorSelector extends Vue {
   factorToSelectNode(dto: FactorGetDTO) {
     return {
       id: dto.uri,
-      label: dto.name + " <" + dto.uri + ">"
+      name: dto.name // + " <" + dto.uri + ">"
     };
   }
   select(value) {

@@ -6,11 +6,12 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.core.ontology.api.RDFClassTranslatedDTO;
+import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -19,17 +20,21 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author vmigot
  */
-public class VueClassDTO extends RDFClassTranslatedDTO {
+public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
 
+    @JsonProperty("is_abstract")
     protected boolean isAbstract;
 
     protected String icon;
 
-    private List<VueClassPropertyDTO> dataProperties;
+    @JsonProperty("data_properties")
+    protected List<VueRDFTypePropertyDTO> dataProperties;
 
-    private List<VueClassPropertyDTO> objectProperties;
+    @JsonProperty("object_properties")
+    protected List<VueRDFTypePropertyDTO> objectProperties;
 
-    private List<URI> propertiesOrder;
+    @JsonProperty("properties_order")
+    protected List<URI> propertiesOrder;
 
     public URI getUri() {
         return uri;
@@ -55,8 +60,8 @@ public class VueClassDTO extends RDFClassTranslatedDTO {
         this.icon = icon;
     }
 
-    public static VueClassDTO fromModel(VueClassDTO dto, ClassModel model, VueClassExtensionModel extClass) {
-        RDFClassTranslatedDTO.fromModel(dto, model);
+    public static VueRDFTypeDTO fromModel(VueRDFTypeDTO dto, ClassModel model, VueClassExtensionModel extClass) {
+        RDFTypeTranslatedDTO.fromModel(dto, model);
 
         if (extClass != null) {
             dto.setIsAbstract(extClass.getIsAbstractClass());
@@ -68,19 +73,19 @@ public class VueClassDTO extends RDFClassTranslatedDTO {
         return dto;
     }
 
-    public List<VueClassPropertyDTO> getDataProperties() {
+    public List<VueRDFTypePropertyDTO> getDataProperties() {
         return dataProperties;
     }
 
-    public void setDataProperties(List<VueClassPropertyDTO> dataProperties) {
+    public void setDataProperties(List<VueRDFTypePropertyDTO> dataProperties) {
         this.dataProperties = dataProperties;
     }
 
-    public List<VueClassPropertyDTO> getObjectProperties() {
+    public List<VueRDFTypePropertyDTO> getObjectProperties() {
         return objectProperties;
     }
 
-    public void setObjectProperties(List<VueClassPropertyDTO> objectProperties) {
+    public void setObjectProperties(List<VueRDFTypePropertyDTO> objectProperties) {
         this.objectProperties = objectProperties;
     }
 

@@ -234,7 +234,7 @@ export default class ExperimentData extends Vue {
   afterCreateData(results) {
     results.then((res) => {
       this.resultModal.setNbLinesImported(
-        res.validation.dataErrors.nbLinesImported
+        res.validation.dataErrors.nb_lines_imported
       );
       this.resultModal.setProvenance(res.form.provenance);
       this.resultModal.show();
@@ -294,7 +294,7 @@ export default class ExperimentData extends Vue {
           let variable = variables[i];
           this.usedVariables.push({
             id: variable.uri,
-            label: variable.name,
+            name: variable.name,
           });
         }
       });
@@ -418,7 +418,7 @@ export default class ExperimentData extends Vue {
                     for (let j in httpObj.response.result) {
                       let obj = httpObj.response.result[j];
                       this.objects[obj.uri] =
-                        obj.name + " (" + obj.typeLabel + ")";
+                        obj.name + " (" + obj.rdf_type_name + ")";
                     }
                   })
                   .catch(reject);

@@ -77,10 +77,10 @@
           v-for="(v, index) in getCustomTypeProperties(value)"
           v-bind:key="index"
         >
-          <div class="static-field" v-if="!v.definition.isList">
+          <div class="static-field" v-if="!v.definition.is_list">
             <span class="field-view-title">{{ v.definition.name }}</span>
             <component
-              :is="v.definition.viewComponent"
+              :is="v.definition.view_component"
               :value="v.property"
             ></component>
           </div>
@@ -96,7 +96,7 @@
                 v-bind:key="propIndex"
               >
                 <component
-                  :is="v.definition.viewComponent"
+                  :is="v.definition.view_component"
                   :value="prop"
                 ></component>
               </li>

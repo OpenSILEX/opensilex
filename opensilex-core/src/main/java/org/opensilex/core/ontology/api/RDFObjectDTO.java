@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.ontology.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class RDFObjectDTO {
 
     protected URI uri;
 
+    @JsonProperty("rdf_type")
     protected URI type;
 
     protected List<RDFObjectRelationDTO> relations;

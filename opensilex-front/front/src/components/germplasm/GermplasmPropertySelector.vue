@@ -1,8 +1,8 @@
 <template>
   <div>
     <opensilex-GermplasmSelector
-      :required="property.isRequired"
-      :multiple="property.isList"
+      :required="property.is_required"
+      :multiple="property.is_list"
       :germplasm.sync="internalValue"
       :experimentURI="context.experimentURI"
     ></opensilex-GermplasmSelector>

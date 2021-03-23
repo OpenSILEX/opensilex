@@ -436,7 +436,10 @@ export default class VariableForm extends Vue {
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 if (http && http.response) {
                     for(let dto of http.response.result){
-                        this.loadedCharacteristics.push(dto);
+                        this.loadedCharacteristics.push({
+                            id: dto.uri,
+                            label: dto.name
+                        });
                     }
                 }
                 return http;
@@ -513,7 +516,7 @@ export default class VariableForm extends Vue {
     }
 
     setLoadedUnit(created: UnitCreationDTO) {
-        this.loadedUnits = [{uri: created.uri, name: created.name}];
+        this.loadedUnits = [{uri: created.uri, label: created.name}];
         this.unitSelectForm.select({id: created.uri});
     }
 

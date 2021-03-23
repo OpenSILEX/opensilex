@@ -1,6 +1,6 @@
 <template>
     <span>
-        <span v-for="(property, index) in properties" :key="index" :title="getTitle(property.rdfType)" class="keyword badge badge-pill" v-bind:class="getClass(property.rdfType)">{{property.value}}</span>
+        <span v-for="(property, index) in properties" :key="index" :title="getTitle(property.rdfType)" class="keyword badge badge-pill" v-bind:class="getRDFType(property.rdfType)">{{property.value}}</span>
     </span>
 
 </template>
@@ -31,7 +31,7 @@
             return null;
         }
 
-        getClass(rdfType) {
+        getRDFType(rdfType) {
             let property = this.scientificObjectPropertyTypeConfiguration.filter(value => value.uri == rdfType);
             if(property && property.length > 0) {
                 if(property[0].show) {

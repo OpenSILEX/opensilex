@@ -1,5 +1,5 @@
 <template>
-  <b-form v-if="form.labelTranslations">
+  <b-form v-if="form.name_translations">
     <opensilex-InputForm
       :value.sync="form.uri"
       label="component.common.uri"
@@ -18,34 +18,34 @@
     ></opensilex-SelectForm>
 
     <opensilex-InputForm
-      :value.sync="form.labelTranslations.en"
+      :value.sync="form.name_translations.en"
       label="OntologyClassForm.labelEN"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.commentTranslations.en"
+      :value.sync="form.comment_translations.en"
       label="OntologyClassForm.commentEN"
       :required="true"
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
-      :value.sync="form.labelTranslations.fr"
+      :value.sync="form.name_translations.fr"
       label="OntologyClassForm.labelFR"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.commentTranslations.fr"
+      :value.sync="form.comment_translations.fr"
       label="OntologyClassForm.commentFR"
       :required="true"
     ></opensilex-TextAreaForm>
 
     <!-- is abstract -->
     <!-- <opensilex-CheckboxForm
-      :value.sync="form.isAbstract"
+      :value.sync="form.is_abstract"
       title="OntologyClassForm.abstract-type"
     ></opensilex-CheckboxForm> -->
     
@@ -72,12 +72,12 @@ export default class OntologyClassForm extends Vue {
       return {
         uri: null,
         parent: null,
-        label: null,
-        labelTranslations: {},
+        name: null,
+        name_translations: {},
         comment: null,
-        commentTranslations: {},
+        comment_translations: {},
         icon: null,
-        isAbstract: false
+        is_abstract: false
       };
     }
   })
@@ -87,12 +87,12 @@ export default class OntologyClassForm extends Vue {
     return {
       uri: null,
       parent: null,
-      label: null,
-      labelTranslations: {},
+      name: null,
+      name_translations: {},
       comment: null,
-      commentTranslations: {},
+      comment_translations: {},
       icon: null,
-      isAbstract: false
+      is_abstract: false
     };
   }
 
@@ -114,7 +114,7 @@ export default class OntologyClassForm extends Vue {
   create(form) {
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .createClass(form)
+      .createRDFType(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Object type created", uri);
@@ -135,7 +135,7 @@ export default class OntologyClassForm extends Vue {
   update(form) {
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .updateClass(form)
+      .updateRDFType(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Object type updated", uri);

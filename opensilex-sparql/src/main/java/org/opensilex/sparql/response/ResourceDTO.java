@@ -5,9 +5,8 @@
  */
 package org.opensilex.sparql.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
-import org.opensilex.OpenSilex;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
@@ -18,8 +17,10 @@ public abstract class ResourceDTO<T extends SPARQLResourceModel> {
 
     protected URI uri;
 
+    @JsonProperty("rdf_type")
     protected URI type;
 
+    @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
     public URI getUri() {

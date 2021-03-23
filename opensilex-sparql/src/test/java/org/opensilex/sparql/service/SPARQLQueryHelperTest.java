@@ -132,7 +132,7 @@ public class SPARQLQueryHelperTest extends AbstractUnitTest {
     @Test
     public void testWhereValuesWithStr() throws Exception {
         List<String> strings = Arrays.asList("Agrophen", "Diaphen", "Phenoarch");
-        testWhereValues(new SelectBuilder(), NodeFactory.createVariable("label"), strings);
+        testWhereValues(new SelectBuilder(), NodeFactory.createVariable("name"), strings);
     }
 
     @Test

@@ -23,14 +23,14 @@
                                 <ul>
                                     <li
                                             v-for="externalOntologyRef in externalOntologiesRefs"
-                                            :key="externalOntologyRef.label"
+                                            :key="externalOntologyRef.name"
                                     >
                                         <a
                                                 target="_blank"
-                                                v-bind:title="externalOntologyRef.label"
+                                                v-bind:title="externalOntologyRef.name"
                                                 v-bind:href="externalOntologyRef.link"
                                                 v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
-                                        >{{ externalOntologyRef.label }}</a>
+                                        >{{ externalOntologyRef.name }}</a>
                                     </li>
                                 </ul>
                             </b-card-text>

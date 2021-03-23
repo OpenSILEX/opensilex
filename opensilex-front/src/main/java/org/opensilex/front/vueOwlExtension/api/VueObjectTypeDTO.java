@@ -5,9 +5,11 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Map;
-import org.opensilex.core.ontology.api.RDFClassDTO;
+import org.opensilex.core.ontology.api.RDFTypeDTO;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
@@ -16,14 +18,26 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 public class VueObjectTypeDTO {
 
+    @ValidURI
     protected URI uri;
-    protected URI shortUri;
-    protected String inputComponent;
-    protected Map<String, String> inputComponentsByProperty;
-    protected String viewComponent;
-    protected String label;
 
-    protected RDFClassDTO rdfClass;
+    @ValidURI
+    @JsonProperty("short_uri")
+    protected URI shortUri;
+    
+    @JsonProperty("input_component")
+    protected String inputComponent;
+    
+    @JsonProperty("input_components_by_property")
+    protected Map<String, String> inputComponentsByProperty;
+    
+    @JsonProperty("view_component")
+    protected String viewComponent;
+    
+    protected String name;
+
+    @JsonProperty("rdf_type")
+    protected RDFTypeDTO rdfClass;
 
     public URI getUri() {
         return uri;
@@ -61,19 +75,19 @@ public class VueObjectTypeDTO {
         this.viewComponent = viewComponent;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public RDFClassDTO getRdfClass() {
+    public RDFTypeDTO getRdfClass() {
         return rdfClass;
     }
 
-    public void setRdfClass(RDFClassDTO rdfClass) {
+    public void setRdfClass(RDFTypeDTO rdfClass) {
         this.rdfClass = rdfClass;
     }
 

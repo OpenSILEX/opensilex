@@ -5,6 +5,7 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Map;
 
@@ -12,28 +13,35 @@ import java.util.Map;
  *
  * @author vmigot
  */
-public class VueClassPropertyDTO {
+public class VueRDFTypePropertyDTO {
 
     protected URI property;
 
+    @JsonProperty("target_property")
     protected URI targetProperty;
 
     protected String name;
 
     protected String comment;
 
+    @JsonProperty("input_component")
     protected String inputComponent;
 
+    @JsonProperty("input_components_by_property")
     protected Map<String, String> inputComponentsByProperty;
 
+    @JsonProperty("view_component")
     protected String viewComponent;
 
     protected boolean inherited;
 
+    @JsonProperty("is_list")
     protected boolean isList;
 
+    @JsonProperty("is_required")
     protected boolean isRequired;
 
+    @JsonProperty("is_custom")
     protected boolean isCustom;
 
     public URI getProperty() {

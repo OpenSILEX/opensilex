@@ -74,7 +74,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-subclass-of")
+    @Path("/subclasses_of")
     @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -83,7 +83,7 @@ public class OntologyAPI {
         @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentClass") @ValidURI URI parentClass,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
@@ -100,51 +100,51 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-class")
+    @Path("/rdf_type")
     @ApiOperation("Return class model definition with properties")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return class model definition ", response = RDFClassDTO.class)
+        @ApiResponse(code = 200, message = "Return class model definition ", response = RDFTypeDTO.class)
     })
-    public Response getClass(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
+    public Response getRDFType(
+            @ApiParam(value = "RDF type URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
-        return new SingleObjectResponse<>(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription)).getResponse();
+        return new SingleObjectResponse<>(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription)).getResponse();
     }
 
     @GET
-    @Path("/get-classes")
+    @Path("/rdf_types")
     @ApiOperation("Return classes models definitions with properties for a list of rdt types")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFClassDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return classes models definitions", response = RDFTypeDTO.class, responseContainer = "List")
     })
     public Response getClasses(
-            @ApiParam(value = "RDF classes URI") @QueryParam("rdfType") @NotNull @ValidURI List<URI> rdfTypes,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
+            @ApiParam(value = "RDF classes URI") @QueryParam("rdf_type") @NotNull @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        List<RDFClassDTO> classes = new ArrayList<>(rdfTypes.size());
+        List<RDFTypeDTO> classes = new ArrayList<>(rdfTypes.size());
         for (URI rdfType : rdfTypes) {
             ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
-            classes.add(RDFClassDTO.fromModel(new RDFClassDTO(), classDescription));
+            classes.add(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription));
         }
 
         return new PaginatedListResponse<>(classes).getResponse();
     }
 
     @POST
-    @Path("create-property")
+    @Path("property")
     @ApiOperation("Create a RDF property")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -167,7 +167,7 @@ public class OntologyAPI {
             if (isDataProperty) {
                 DatatypePropertyModel dtModel = new DatatypePropertyModel();
                 if (dto.getParent() != null) {
-                    DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), currentUser);
+                    DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser);
                     if (parentModel == null) {
                         throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                     }
@@ -186,7 +186,7 @@ public class OntologyAPI {
                 ObjectPropertyModel objModel = new ObjectPropertyModel();
 
                 if (dto.getParent() != null) {
-                    ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), currentUser);
+                    ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser);
                     if (parentModel == null) {
                         throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                     }
@@ -212,7 +212,7 @@ public class OntologyAPI {
     }
 
     @PUT
-    @Path("update-property")
+    @Path("property")
     @ApiOperation("Update a RDF property")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -233,7 +233,7 @@ public class OntologyAPI {
         if (isDataProperty) {
             DatatypePropertyModel dtModel = new DatatypePropertyModel();
             if (dto.getParent() != null) {
-                DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), currentUser);
+                DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser);
                 if (parentModel == null) {
                     throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                 }
@@ -252,7 +252,7 @@ public class OntologyAPI {
             ObjectPropertyModel objModel = new ObjectPropertyModel();
 
             if (dto.getParent() != null) {
-                ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), currentUser);
+                ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser);
                 if (parentModel == null) {
                     throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                 }
@@ -275,7 +275,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-property")
+    @Path("/property")
     @ApiOperation("Return property model definition detail")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -284,18 +284,19 @@ public class OntologyAPI {
         @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDTO.class)
     })
     public Response getProperty(
-            @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("propertyType") @ValidURI URI propertyType
+            @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
+            @ApiParam(value = "Property type") @QueryParam("rdf_type") @ValidURI URI propertyType,
+            @ApiParam(value = "Property type") @QueryParam("domain_rdf_type") @ValidURI URI domainType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         RDFPropertyDTO dto;
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
-            DatatypePropertyModel property = dao.getDataProperty(propertyURI, currentUser);
+            DatatypePropertyModel property = dao.getDataProperty(propertyURI, domainType, currentUser);
             dto = RDFPropertyDTO.fromModel(property, property.getParent());
             dto.setRange(property.getRange());
         } else {
-            ObjectPropertyModel property = dao.getObjectProperty(propertyURI, currentUser);
+            ObjectPropertyModel property = dao.getObjectProperty(propertyURI, domainType, currentUser);
             dto = RDFPropertyDTO.fromModel(property, property.getParent());
             if (property.getRange() != null) {
                 dto.setRange(property.getRange().getUri());
@@ -303,11 +304,13 @@ public class OntologyAPI {
             }
         }
 
+        dto.setDomainType(domainType);
+        
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
     @DELETE
-    @Path("/delete-property")
+    @Path("/property")
     @ApiOperation("Delete a property")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -331,7 +334,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-properties")
+    @Path("/properties")
     @ApiOperation("Search properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -352,7 +355,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-data-properties")
+    @Path("/data_properties")
     @ApiOperation("Search data properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -371,7 +374,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-object-properties")
+    @Path("/object_properties")
     @ApiOperation("Search object properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -390,8 +393,8 @@ public class OntologyAPI {
     }
 
     @POST
-    @Path("add-class-property-restriction")
-    @ApiOperation("Add a class property restriction")
+    @Path("rdf_type_property_restriction")
+    @ApiOperation("Add a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -415,8 +418,8 @@ public class OntologyAPI {
     }
 
     @DELETE
-    @Path("/delete-class-property-restriction")
-    @ApiOperation("Delete a class property restriction")
+    @Path("/rdf_type_property_restriction")
+    @ApiOperation("Delete a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -424,7 +427,7 @@ public class OntologyAPI {
         @ApiResponse(code = 200, message = "Class property restriction deleted ", response = ObjectUriResponse.class)
     })
     public Response deleteClassPropertyRestriction(
-            @ApiParam(value = "Class URI") @QueryParam("classURI") @ValidURI @NotNull URI classURI,
+            @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI @NotNull URI propertyURI
     ) throws Exception {
         Node propertyGraph = getPropertyGraph();
@@ -437,8 +440,8 @@ public class OntologyAPI {
     }
 
     @PUT
-    @Path("update-class-property-restriction")
-    @ApiOperation("Update a class property restriction")
+    @Path("rdf_type_property_restriction")
+    @ApiOperation("Update a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -460,7 +463,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/get-uri-label")
+    @Path("/uri_label")
     @ApiOperation("Return associated rdfs:label of an uri if exists")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -494,9 +497,9 @@ public class OntologyAPI {
             restriction.setMaxCardinality(1);
         }
 
-        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, currentUser);
+        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, dto.getClassURI(), currentUser);
         if (dataProp == null) {
-            URI objectRangeURI = dao.getObjectProperty(propertyURI, currentUser).getRange().getUri();
+            URI objectRangeURI = dao.getObjectProperty(propertyURI, dto.getClassURI(), currentUser).getRange().getUri();
             restriction.setOnClass(objectRangeURI);
         } else {
             URI dataRangeURI = dataProp.getRange();

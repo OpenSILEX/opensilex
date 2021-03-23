@@ -15,7 +15,7 @@
             <b-dropdown-text :key="index" v-for="(property, index) in copyOfScientificObjectPropertyTypeConfiguration">
                 <label class="custom-control custom-checkbox m-0">
                     <input type="checkbox" class="custom-control-input" :value="true" v-model="property.show">
-                    <span class="custom-control-label">{{ $t(property.label) }}</span>
+                    <span class="custom-control-label">{{ $t(property.name) }}</span>
                 </label>
             </b-dropdown-text>
 

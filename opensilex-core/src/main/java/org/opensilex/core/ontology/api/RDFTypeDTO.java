@@ -12,11 +12,11 @@ import org.opensilex.core.ontology.dal.ClassModel;
  *
  * @author vmigot
  */
-public class RDFClassDTO {
+public class RDFTypeDTO {
 
     protected URI uri;
 
-    protected String label;
+    protected String name;
 
     protected String comment;
 
@@ -30,12 +30,12 @@ public class RDFClassDTO {
         this.uri = uri;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -54,9 +54,9 @@ public class RDFClassDTO {
         this.parent = parent;
     }
 
-    public static RDFClassDTO fromModel(RDFClassDTO dto, ClassModel model) {
+    public static RDFTypeDTO fromModel(RDFTypeDTO dto, ClassModel model) {
         dto.setUri(model.getUri());
-        dto.setLabel(model.getName());
+        dto.setName(model.getName());
         if (model.getComment() != null) {
             dto.setComment(model.getComment().getDefaultValue());
         }

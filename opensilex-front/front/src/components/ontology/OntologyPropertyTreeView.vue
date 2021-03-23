@@ -76,7 +76,7 @@ export default class OntologyPropertyTreeView extends Vue {
       lang => {
         this.onDomainChange();
         if (this.selected) {
-          this.displayPropertyDetail(this.selected.uri, this.selected.type);
+          this.displayPropertyDetail(this.selected.uri, this.selected.rdf_type);
         }
       }
     );
@@ -111,19 +111,19 @@ export default class OntologyPropertyTreeView extends Vue {
 
   displayPropertyNodeDetail(node) {
     if (!this.selected || node.data.uri != this.selected.uri) {
-      this.displayPropertyDetail(node.data.uri, node.data.type);
+      this.displayPropertyDetail(node.data.uri, node.data.rdf_type);
     }
   }
 
   displayPropertyDetail(uri, type) {
-    this.ontologyService.getProperty(uri, type).then(http => {
+    this.ontologyService.getProperty(uri, type, this.domain).then(http => {
       this.selected = http.response.result;
       this.$emit("selectionChange", this.selected);
     });
   }
 
   getPropertyIcon(node) {
-    if (OWL.isDatatypeProperty(node.data.type)) {
+    if (OWL.isDatatypeProperty(node.data.rdf_type)) {
       return "fa#database";
     } else {
       return "fa#link";

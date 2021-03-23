@@ -18,17 +18,17 @@
         </div>
         <opensilex-OntologyClassTreeView
           ref="classesTree"
-          :rdfClass="rdfClass"
+          :rdfType="rdfType"
           @selectionChange="selected = $event"
           @editClass="showEditForm($event)"
           @createChildClass="showCreateForm($event)"
-          @deleteClass="deleteClass($event)"
+          @deleteRDFType="deleteRDFType($event)"
         ></opensilex-OntologyClassTreeView>
       </b-card>
     </div>
     <div class="col-md-6">
       <opensilex-OntologyClassDetail
-        :rdfClass="rdfClass"
+        :rdfType="rdfType"
         :selected="selected"
         @onDetailChange="refresh()"
       />
@@ -48,7 +48,7 @@ export default class OntologyClassView extends Vue {
   $store: any;
 
   @Prop()
-  rdfClass;
+  rdfType;
 
   @Prop()
   title;
@@ -76,7 +76,7 @@ export default class OntologyClassView extends Vue {
   showEditForm(data) {
     this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .getClass(data.uri, this.rdfClass)
+      .getRDFType(data.uri, this.rdfType)
       .then(http => {
         let form = http.response.result;
         this.classForm.getFormRef().setParentTypes(this.classesTree.getTree());
@@ -84,10 +84,10 @@ export default class OntologyClassView extends Vue {
       });
   }
 
-  deleteClass(data) {
+  deleteRDFType(data) {
     this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .deleteClass(data.uri)
+      .deleteRDFType(data.uri)
       .then(http => {
         this.refresh();
       });

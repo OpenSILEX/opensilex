@@ -948,7 +948,7 @@ export default class OpenSilexVuePlugin {
                     for (let i in this.datatypes) {
                         let datatype = this.datatypes[i];
                         this.datatypesByURI[datatype.uri] = datatype;
-                        this.datatypesByURI[datatype.shortUri] = datatype;
+                        this.datatypesByURI[datatype.short_uri] = datatype;
                     }
                     resolve();
                 })
@@ -996,7 +996,7 @@ export default class OpenSilexVuePlugin {
                     for (let i in this.objectTypes) {
                         let objectType = this.objectTypes[i];
                         this.objectTypesByURI[objectType.uri] = objectType;
-                        this.objectTypesByURI[objectType.shortUri] = objectType;
+                        this.objectTypesByURI[objectType.short_uri] = objectType;
                     }
                     resolve();
                 })

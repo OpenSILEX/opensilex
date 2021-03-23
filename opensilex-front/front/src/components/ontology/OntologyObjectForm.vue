@@ -42,10 +42,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class OntologyObjectForm extends Vue {
@@ -60,7 +58,7 @@ export default class OntologyObjectForm extends Vue {
     default: () => {
       return {
         uri: null,
-        type: null,
+        rdf_type: null,
         name: "",
         relations: []
       };
@@ -73,10 +71,10 @@ export default class OntologyObjectForm extends Vue {
   }
 
   getInputComponent(property, vp) {
-    if (property.inputComponentsByProperty && property.inputComponentsByProperty[property.property]) {
-      return property.inputComponentsByProperty[property.property];
+    if (property.input_components_by_property && property.input_components_by_property[property.property]) {
+      return property.input_components_by_property[property.property];
     }
-    return property.inputComponent;
+    return property.input_component;
   }
 
   updateRelation(value, property) {
@@ -97,7 +95,7 @@ export default class OntologyObjectForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      type: null,
+      rdf_type: null,
       name: "",
       relations: [],
     };
@@ -127,11 +125,11 @@ export default class OntologyObjectForm extends Vue {
   get typeProperties() {
     let internalTypeProperties = [];
     if (this.typeModel) {
-      for (let i in this.typeModel.dataProperties) {
-        let dataProperty = this.typeModel.dataProperties[i];
+      for (let i in this.typeModel.data_properties) {
+        let dataProperty = this.typeModel.data_properties[i];
         if (dataProperty.property != "rdfs:label") {
           let propValue = this.valueByProperties[dataProperty.property];
-          if (dataProperty.isList) {
+          if (dataProperty.is_list) {
             if (!propValue) {
               propValue = [];
             } else if (!Array.isArray(propValue)) {
@@ -145,10 +143,10 @@ export default class OntologyObjectForm extends Vue {
         }
       }
 
-      for (let i in this.typeModel.objectProperties) {
-        let objectProperty = this.typeModel.objectProperties[i];
+      for (let i in this.typeModel.object_properties) {
+        let objectProperty = this.typeModel.object_properties[i];
         let propValue = this.valueByProperties[objectProperty.property];
-        if (objectProperty.isList) {
+        if (objectProperty.is_list) {
           if (!propValue) {
             propValue = [];
           } else if (!Array.isArray(propValue)) {
@@ -164,7 +162,7 @@ export default class OntologyObjectForm extends Vue {
 
     let pOrder = [];
     if (this.typeModel) {
-      pOrder = this.typeModel.propertiesOrder;
+      pOrder = this.typeModel.properties_order;
     }
     internalTypeProperties.sort((a, b) => {
       let aProp = a.definition.property;
@@ -229,14 +227,14 @@ export default class OntologyObjectForm extends Vue {
     if (type) {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
-        .getClassProperties(this.form.rdf_type, this.baseType)
+        .getRDFTypeProperties(this.form.rdf_type, this.baseType)
         .then((http) => {
           this.typeModel = http.response.result;
           if (!this.editMode) {
             let relations = [];
-            for (let i in this.typeModel.dataProperties) {
-              let dataProperty = this.typeModel.dataProperties[i];
-              if (dataProperty.isList) {
+            for (let i in this.typeModel.data_properties) {
+              let dataProperty = this.typeModel.data_properties[i];
+              if (dataProperty.is_list) {
                 relations.push({
                   value: [],
                   property: dataProperty.property,
@@ -249,9 +247,9 @@ export default class OntologyObjectForm extends Vue {
               }
             }
 
-            for (let i in this.typeModel.objectProperties) {
-              let objectProperty = this.typeModel.objectProperties[i];
-              if (objectProperty.isList) {
+            for (let i in this.typeModel.object_properties) {
+              let objectProperty = this.typeModel.object_properties[i];
+              if (objectProperty.is_list) {
                 relations.push({
                   value: [],
                   property: objectProperty.property,
@@ -279,7 +277,7 @@ export default class OntologyObjectForm extends Vue {
       let property = properties[i];
       if (valueByProperties[property.property]) {
         if (
-          property.isList &&
+          property.is_list &&
           !Array.isArray(valueByProperties[property.property])
         ) {
           this.typeProperties.push({
@@ -292,7 +290,7 @@ export default class OntologyObjectForm extends Vue {
             property: valueByProperties[property.property],
           });
         }
-      } else if (property.isList) {
+      } else if (property.is_list) {
         this.typeProperties.push({
           definition: property,
           property: [],

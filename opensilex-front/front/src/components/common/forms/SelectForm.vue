@@ -25,10 +25,10 @@
           @open="showModal"
         >
           <template v-slot:option-label="{ node }">
-            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="option-label" v-bind:node="node">?{{ node.label }}</slot>
           </template>
           <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="value-label" v-bind:node="node">?{{ node.label }}</slot>
           </template>
         </treeselect>
         <treeselect

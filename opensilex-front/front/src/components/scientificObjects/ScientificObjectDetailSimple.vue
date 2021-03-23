@@ -4,8 +4,8 @@
     <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
     <!-- Name -->
     <opensilex-StringView
-      :value="selected.name"
       label="component.common.name"
+      :value="selected.name"
     ></opensilex-StringView>
     <!-- Type -->
     <opensilex-TypeView
@@ -14,23 +14,20 @@
     ></opensilex-TypeView>
 
     <div v-for="(v, index) in typeProperties" v-bind:key="index">
-      <div v-if="!v.definition.isList" class="static-field">
+      <div class="static-field" v-if="!v.definition.is_list">
         <span class="field-view-title">{{ v.definition.name }}</span>
         <component
-          :is="v.definition.viewComponent"
+          :is="v.definition.view_component"
           :value="v.property"
         ></component>
       </div>
-      <div
-          v-else-if="v.property && v.property.length > 0"
-          class="static-field"
-      >
+      <div class="static-field" v-else-if="v.property && v.property.length > 0">
         <span class="field-view-title">{{ v.definition.name }}</span>
         <ul>
           <br />
           <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
             <component
-              :is="v.definition.viewComponent"
+              :is="v.definition.view_component"
               :value="prop"
             ></component>
           </li>

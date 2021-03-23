@@ -3,7 +3,7 @@
     <!-- Card header -->
     <template v-slot:header>
       <h3>
-        {{$t("InfrastructureTree.infrastructure-component")}}
+        {{ $t("InfrastructureTree.infrastructure-component") }}
         &nbsp;
         <font-awesome-icon
           icon="question-circle"
@@ -12,7 +12,11 @@
       </h3>
       <div class="card-header-right">
         <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            )
+          "
           @click="createInfrastructure()"
           label="InfrastructureTree.add"
         ></opensilex-CreateButton>
@@ -29,8 +33,10 @@
     <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
       <template v-slot:node="{ node }">
         <span class="item-icon">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)" />
-        </span>&nbsp;
+          <opensilex-Icon
+            :icon="$opensilex.getRDFIcon(node.data.rdf_type)"
+          /> </span
+        >&nbsp;
         <strong v-if="node.data.selected">{{ node.title }}</strong>
         <span v-if="!node.data.selected">{{ node.title }}</span>
       </template>
@@ -42,19 +48,29 @@
           :small="true"
         ></opensilex-DetailButton>         -->
         <opensilex-EditButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            )
+          "
           @click="editInfrastructure(node.data.uri)"
           label="InfrastructureTree.edit"
           :small="true"
         ></opensilex-EditButton>
         <opensilex-AddChildButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            )
+          "
           @click="createInfrastructure(node.data.uri)"
           label="InfrastructureTree.add-child"
           :small="true"
         ></opensilex-AddChildButton>
         <opensilex-DeleteButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)"
+          v-if="
+            user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)
+          "
           @click="deleteInfrastructure(node.data.uri)"
           label="InfrastructureTree.delete"
           :small="true"
@@ -63,7 +79,11 @@
     </opensilex-TreeView>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID)"
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+        )
+      "
       ref="infrastructureForm"
       component="opensilex-InfrastructureForm"
       createTitle="InfrastructureTree.add"
@@ -86,7 +106,7 @@ import {
   InfrastructureGetDTO,
   InfrastructureFacilityGetDTO,
   InfrastructureTeamDTO,
-  InfrastructureUpdateDTO
+  InfrastructureUpdateDTO,
 } from "opensilex-core/index";
 import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 
@@ -129,7 +149,7 @@ export default class InfrastructureTree extends Vue {
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      lang => {
+      (lang) => {
         if (this.selected != null) {
           this.displayNodeDetail(this.selected.uri, true);
         }
@@ -146,9 +166,13 @@ export default class InfrastructureTree extends Vue {
       .searchInfrastructuresTree(this.filter)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
-          this.infrastructureForm
-            .getFormRef()
-            .setParentInfrastructures(http.response.result);
+          if (this.filter == "") {
+            this.infrastructureForm
+              .getFormRef()
+              .setParentInfrastructures(http.response.result);
+          } else {
+            this.infrastructureForm.getFormRef().init();
+          }
         }
         let treeNode = [];
         let first = true;
@@ -198,7 +222,7 @@ export default class InfrastructureTree extends Vue {
       isExpanded: true,
       isSelected: isSeleted,
       isDraggable: false,
-      isSelectable: true
+      isSelectable: true,
     };
   }
 
@@ -225,7 +249,9 @@ export default class InfrastructureTree extends Vue {
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
   showDetail(uri) {
-    this.$router.push({ path: '/infrastructures/details/' + encodeURIComponent(uri) });
+    this.$router.push({
+      path: "/infrastructures/details/" + encodeURIComponent(uri),
+    });
   }
 
   parentURI;

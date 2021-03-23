@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.ontology.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -13,10 +14,12 @@ import org.opensilex.core.ontology.dal.ClassModel;
  *
  * @author vmigot
  */
-public class RDFClassTranslatedDTO extends RDFClassDTO {
+public class RDFTypeTranslatedDTO extends RDFTypeDTO {
 
+    @JsonProperty("name_translations")
     protected Map<String, String> labelTranslations;
 
+    @JsonProperty("comment_translations")
     protected Map<String, String> commentTranslations;
 
     public Map<String, String> getLabelTranslations() {
@@ -35,8 +38,8 @@ public class RDFClassTranslatedDTO extends RDFClassDTO {
         this.commentTranslations = commentTranslations;
     }
 
-    public static RDFClassTranslatedDTO fromModel(RDFClassTranslatedDTO dto, ClassModel model) {
-        RDFClassDTO.fromModel(dto, model);
+    public static RDFTypeTranslatedDTO fromModel(RDFTypeTranslatedDTO dto, ClassModel model) {
+        RDFTypeDTO.fromModel(dto, model);
 
         dto.setLabelTranslations(model.getLabel().getAllTranslations());
         if (model.getComment() != null) {

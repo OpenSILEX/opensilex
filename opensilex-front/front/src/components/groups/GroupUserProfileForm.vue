@@ -141,7 +141,6 @@ export default class GroupUserProfileForm extends Vue {
     if (this.profilesList.length > 0) {
       user_profile.profile_uri = this.profilesList[0].uri;
     }
-
     this.userProfiles.push(user_profile);
   }
 

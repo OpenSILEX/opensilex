@@ -5,8 +5,11 @@
  */
 package org.opensilex.core.ontology.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import javax.validation.constraints.NotNull;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *
@@ -14,14 +17,17 @@ import org.opensilex.core.ontology.dal.OwlRestrictionModel;
  */
 public class OWLClassPropertyRestrictionDTO {
 
+    @ValidURI
+    @NotNull
+    @JsonProperty("rdf_type")
+    @ApiModelProperty(value = "RDF type", required = true, name = "rdf_type", example = "vocabulary:Plot")
     private URI classURI;
-    
+
     private URI property;
 
     private boolean required;
 
     private boolean list;
-
 
     public URI getClassURI() {
         return classURI;

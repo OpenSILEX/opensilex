@@ -344,7 +344,7 @@ public class ScientificObjectAPI {
     public Response getScientificObjectDetail(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = "Context URI", example = "http://example.com/")
+            @ApiParam(value = "Experiment URI", example = "http://example.com/")
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
 

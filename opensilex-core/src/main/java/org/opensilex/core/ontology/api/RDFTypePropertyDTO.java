@@ -6,6 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Map;
 import org.opensilex.core.ontology.dal.DatatypePropertyModel;
@@ -18,16 +19,18 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author vince
  */
-public class RDFClassPropertyDTO {
+public class RDFTypePropertyDTO {
 
     protected URI uri;
 
-    protected String label;
+    protected String name;
 
     protected String comment;
 
+    @JsonProperty("name_translations")
     protected Map<String, String> labelTranslations;
 
+    @JsonProperty("comment_translations")
     protected Map<String, String> commentTranslations;
 
     protected URI parent;
@@ -38,10 +41,13 @@ public class RDFClassPropertyDTO {
 
     protected boolean required;
 
+    @JsonProperty("type_restriction")
     protected URI typeRestriction;
 
+    @JsonProperty("min_cardinality")
     protected Integer minCardinality;
 
+    @JsonProperty("max_cardinality")
     protected Integer maxCardinality;
 
     protected Integer cardinality;
@@ -54,12 +60,12 @@ public class RDFClassPropertyDTO {
         this.uri = uri;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -150,10 +156,10 @@ public class RDFClassPropertyDTO {
         this.cardinality = cardinality;
     }
 
-    public static RDFClassPropertyDTO fromModel(PropertyModel property, OwlRestrictionModel restriction, boolean isLiteral) {
-        RDFClassPropertyDTO dto = new RDFClassPropertyDTO();
+    public static RDFTypePropertyDTO fromModel(PropertyModel property, OwlRestrictionModel restriction, boolean isLiteral) {
+        RDFTypePropertyDTO dto = new RDFTypePropertyDTO();
         dto.setUri(restriction.getOnProperty());
-        dto.setLabel(property.getName());
+        dto.setName(property.getName());
         if (property.getComment() != null) {
             dto.setComment(property.getComment().getDefaultValue());
         }
@@ -221,7 +227,7 @@ public class RDFClassPropertyDTO {
     private void getPropertyModel(PropertyModel property, String lang) {
         property.setUri(getUri());
 
-        SPARQLLabel sparqlLabel = new SPARQLLabel(getLabel(), lang);
+        SPARQLLabel sparqlLabel = new SPARQLLabel(getName(), lang);
         sparqlLabel.addAllTranslations(getLabelTranslations());
         property.setLabel(sparqlLabel);
 

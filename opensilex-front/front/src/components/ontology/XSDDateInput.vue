@@ -4,7 +4,7 @@
     :label="property.name"
     type="date"
     :disabled="false"
-    :required="property.isRequired"
+    :required="property.is_required"
   ></opensilex-InputForm>
 </template>
 

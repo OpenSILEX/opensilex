@@ -121,7 +121,7 @@ export default class ScientificObjectCSVImporter extends Vue {
   }
 
   displayReport(uploadResponse) {
-    this.nbLinesImported = uploadResponse.result.nbLinesImported;
+    this.nbLinesImported = uploadResponse.result.nb_lines_imported;
     this.resultModal.show();
   }
 }

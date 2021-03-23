@@ -2,7 +2,7 @@
    <opensilex-TextAreaForm
       :value.sync="internalValue"
       :label="property.name"
-      :required="property.isRequired"
+      :required="property.is_required"
     ></opensilex-TextAreaForm>
 </template>
 

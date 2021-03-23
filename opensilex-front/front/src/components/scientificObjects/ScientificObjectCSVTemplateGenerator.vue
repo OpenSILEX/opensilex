@@ -89,18 +89,18 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
         for (let type of this.types) {
           promises.push(
             ontoService
-              .getClassProperties(
+              .getRDFTypeProperties(
                 type,
                 this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
               )
               .then((http) => {
                 let properties = {};
-                for (let dataProp of http.response.result.dataProperties) {
+                for (let dataProp of http.response.result.data_properties) {
                   let propURI = dataProp.property;
                   properties[propURI] = dataProp;
                 }
 
-                for (let objProp of http.response.result.objectProperties) {
+                for (let objProp of http.response.result.object_properties) {
                   let propURI = objProp.property;
                   properties[propURI] = objProp;
                 }
@@ -219,19 +219,19 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
                     "\n" +
                     this.$t("ScientificObjectCSVTemplateGenerator.data-type") +
                     ": " +
-                    this.getDataTypeLabel(prop.targetProperty);
+                    this.getDataTypeLabel(prop.target_property);
                   description +=
                     "\n" +
                     this.$t("ScientificObjectCSVTemplateGenerator.required") +
                     ": ";
 
-                  if (prop.isRequired) {
+                  if (prop.is_required) {
                     description += this.$t("component.common.yes");
                   } else {
                     description += this.$t("component.common.no");
                   }
 
-                  if (prop.isList) {
+                  if (prop.is_list) {
                     description +=
                       "\n" +
                       this.$t(
@@ -280,7 +280,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
   dtoToSelectNode(dto) {
     return {
       id: dto.uri,
-      label: dto.name,
+      name: dto.name,
     };
   }
 
@@ -291,7 +291,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
     let type = this.$opensilex.getDatatype(dataTypeUri);
     let label = "URI";
     if (type) {
-      label = this.$t(type.labelKey);
+      label = this.$t(type.label_key);
     }
     return label.charAt(0).toUpperCase() + label.slice(1);
   }

@@ -13,18 +13,18 @@ import java.net.URI;
  */
 public class CSVURINotFoundError extends CSVCell {
 
-    private final URI classURI;
+    private final URI rdfType;
 
     private final URI objectURI;
 
     public CSVURINotFoundError(CSVCell cell, URI classURI, URI objectURI) {
         super(cell);
-        this.classURI = classURI;
+        this.rdfType = classURI;
         this.objectURI = objectURI;
     }
 
-    public URI getClassURI() {
-        return classURI;
+    public URI getRdfType() {
+        return rdfType;
     }
 
     public URI getObjectURI() {

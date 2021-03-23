@@ -59,7 +59,7 @@
     >
       <template v-slot:head(name)="{ data }">{{ $t(data.label) }}</template>
       <template v-slot:head(description)="{ data }">{{
-        $t(data.label)
+        $t(data.name)
       }}</template>
       <template v-slot:head(category)="{ data }">{{ $t(data.label) }}</template>
 

@@ -221,7 +221,7 @@ export default class OntologyCsvImporter extends Vue {
   }
 
   checkCSVValidation(response) {
-    this.validationToken = response.result.validationToken;
+    this.validationToken = response.result.validation_token;
     if (!this.validationToken) {
       let errors = response.result.errors;
 

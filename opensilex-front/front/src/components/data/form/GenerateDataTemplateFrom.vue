@@ -251,14 +251,14 @@ export default class GenerateDataTemplateFrom extends Vue {
   dtoToSelectNode(dto) {
     return {
       id: dto.uri,
-      label: dto.name,
+      name: dto.name,
     };
   }
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {
       return undefined;
     }
-    let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).labelKey);
+    let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).label_key);
     return label.charAt(0).toUpperCase() + label.slice(1);
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <b-form v-if="form.labelTranslations">
+  <b-form v-if="form.name_translations">
     <opensilex-InputForm
       :value.sync="form.uri"
       label="component.common.uri"
@@ -11,25 +11,25 @@
 
     <b-form-group :label="$t('OntologyPropertyForm.propertyType')">
       <b-form-radio
-        v-model="form.type"
+        v-model="form.rdf_type"
         name="propertyType"
         id="datatypeRadio"
         :value="OWL.DATATYPE_PROPERTY_URI"
       >{{$t("OntologyPropertyForm.dataProperty")}}</b-form-radio>
       <b-form-radio
-        v-model="form.type"
+        v-model="form.rdf_type"
         name="propertyType"
         :value="OWL.OBJECT_PROPERTY_URI"
       >{{$t("OntologyPropertyForm.objectProperty")}}</b-form-radio>
       <b-form-radio
-        v-model="form.type"
+        v-model="form.rdf_type"
         name="inheritedType"
         :value="null"
       >{{$t("OntologyPropertyForm.inheritedType")}}</b-form-radio>
     </b-form-group>
 
     <opensilex-SelectForm
-      v-if="form.type == OWL.DATATYPE_PROPERTY_URI"
+      v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
       label="OntologyPropertyForm.data-type"
       :required="true"
       :selected.sync="form.range"
@@ -37,7 +37,7 @@
     ></opensilex-SelectForm>
 
     <opensilex-SelectForm
-      v-if="form.type == OWL.OBJECT_PROPERTY_URI"
+      v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
       label="OntologyPropertyForm.object-type"
       :required="true"
       :selected.sync="form.range"
@@ -45,7 +45,7 @@
     ></opensilex-SelectForm>
 
     <opensilex-SelectForm
-      v-if="form.type == null"
+      v-if="form.rdf_type == null"
       label="component.common.parent"
       :required="true"
       :selected.sync="form.parent"
@@ -53,27 +53,27 @@
     ></opensilex-SelectForm>
 
     <opensilex-InputForm
-      :value.sync="form.labelTranslations.en"
+      :value.sync="form.name_translations.en"
       label="OntologyPropertyForm.labelEN"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.commentTranslations.en"
+      :value.sync="form.comment_translations.en"
       label="OntologyPropertyForm.commentEN"
       :required="true"
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
-      :value.sync="form.labelTranslations.fr"
+      :value.sync="form.name_translations.fr"
       label="OntologyPropertyForm.labelFR"
       type="text"
       :required="true"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
-      :value.sync="form.commentTranslations.fr"
+      :value.sync="form.comment_translations.fr"
       label="OntologyPropertyForm.commentFR"
       :required="true"
     ></opensilex-TextAreaForm>
@@ -98,12 +98,12 @@ export default class OntologyPropertyForm extends Vue {
     default: () => {
       return {
         uri: null,
-        type: OWL.DATATYPE_PROPERTY_URI,
+        rdf_type: OWL.DATATYPE_PROPERTY_URI,
         parent: null,
-        label: null,
-        labelTranslations: {},
+        name: null,
+        name_translations: {},
         comment: null,
-        commentTranslations: {},
+        comment_translations: {},
         domain: null,
         range: null
       };
@@ -114,12 +114,12 @@ export default class OntologyPropertyForm extends Vue {
   getEmptyForm() {
     return {
       uri: null,
-      type: OWL.DATATYPE_PROPERTY_URI,
+      rdf_type: OWL.DATATYPE_PROPERTY_URI,
       parent: null,
-      label: null,
-      labelTranslations: {},
+      name: null,
+      name_translations: {},
       comment: null,
-      commentTranslations: {},
+      comment_translations: {},
       domain: null,
       range: null
     };
@@ -128,7 +128,7 @@ export default class OntologyPropertyForm extends Vue {
   get datatypes() {
     let datatypeOptions = [];
     for (let i in this.$opensilex.datatypes) {
-      let label: any = this.$t(this.$opensilex.datatypes[i].labelKey);
+      let label: any = this.$t(this.$opensilex.datatypes[i].label_key);
       datatypeOptions.push({
         id: this.$opensilex.datatypes[i].uri,
         label: label.charAt(0).toUpperCase() + label.slice(1)
@@ -137,9 +137,9 @@ export default class OntologyPropertyForm extends Vue {
 
     datatypeOptions.sort((a, b) => {
       let comparison = 0;
-      if (a.label > b.label) {
+      if (a.name > b.name) {
         comparison = 1;
-      } else if (a.label < b.label) {
+      } else if (a.name < b.name) {
         comparison = -1;
       }
       return comparison;
@@ -153,14 +153,14 @@ export default class OntologyPropertyForm extends Vue {
     for (let i in this.$opensilex.objectTypes) {
       objectTypeOptions.push({
         id: this.$opensilex.objectTypes[i].uri,
-        label: this.$opensilex.objectTypes[i].rdfClass.label
+        label: this.$opensilex.objectTypes[i].rdf_type.name
       });
     }
     objectTypeOptions.sort((a, b) => {
       let comparison = 0;
-      if (a.label > b.label) {
+      if (a.name > b.name) {
         comparison = 1;
-      } else if (a.label < b.label) {
+      } else if (a.name < b.name) {
         comparison = -1;
       }
       return comparison;
@@ -202,19 +202,20 @@ export default class OntologyPropertyForm extends Vue {
   private computeFormToSend(form) {
     let sentForm = {
       uri: form.uri,
-      type: form.type,
+      rdf_type: form.rdf_type,
       parent: form.parent,
-      label: form.label,
-      labelTranslations: form.labelTranslations,
+      name: form.name,
+      name_translations: form.name_translations,
       comment: form.comment,
-      commentTranslations: form.commentTranslations,
+      comment_translations: form.comment_translations,
       domain: this.domain,
+      domain_rdf_type: form.domain_rdf_type,
       range: form.range
     };
 
-    if (sentForm.type == null) {
+    if (sentForm.rdf_type == null) {
       let parentType = this.parentByURI[form.parent];
-      sentForm.type = parentType.type;
+      sentForm.rdf_type = parentType.rdf_type;
     } else {
       sentForm.parent = null;
     }

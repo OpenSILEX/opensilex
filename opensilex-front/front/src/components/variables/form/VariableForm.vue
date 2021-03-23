@@ -223,7 +223,6 @@ import Tutorial from "../../common/views/Tutorial.vue";
 import { NamedResourceDTO, EntityCreationDTO, CharacteristicCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
-import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component
@@ -259,10 +258,10 @@ export default class VariableForm extends Vue {
 
     @Ref("traitForm") readonly traitForm!: ModalForm;
 
-    loadedEntities: Array<NamedResourceDTO> = [];
-    loadedUnits: Array<NamedResourceDTO> = [];
-    loadedMethods: Array<NamedResourceDTO> = [];
-    loadedCharacteristics: Array<NamedResourceDTO> = [];
+    loadedEntities = [];
+    loadedUnits = [];
+    loadedMethods = [];
+    loadedCharacteristics = [];
 
     traitSteps = [
         {component: "opensilex-TraitForm"}
@@ -308,7 +307,7 @@ export default class VariableForm extends Vue {
         return this.validatorRef.validate();
     }
 
-    getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string {
+    getLabel(dto: any, dtoList): string {
         if (!dto) {
             return "";
         }

@@ -3,7 +3,7 @@
     :label="label"
     :selected.sync="experimentsURI"
     :multiple="multiple"
-    :optionsLoadingMethod="loadExperiments"
+    :searchMethod="searchExperiments"
     :conversionMethod="experimentToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
@@ -41,20 +41,18 @@ export default class ExperimentSelector extends Vue {
   @Prop()
   clearable;
 
-  filterLabel = "";
-
   get placeholder() {
     return this.multiple
       ? "component.experiment.form.selector.placeholder-multiple"
       : "component.experiment.form.selector.placeholder";
   }
 
-  loadExperiments(options) {
+  searchExperiments(name) {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined,
-        this.filterLabel,
+        name,
+        undefined,        
         undefined,
         undefined,
         undefined,
@@ -65,9 +63,10 @@ export default class ExperimentSelector extends Vue {
         10
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) =>
-          http.response.result
+        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => 
+          http
       );
+
   }
 
   experimentToSelectNode(dto: ExperimentGetListDTO) {

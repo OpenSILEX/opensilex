@@ -14,8 +14,27 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
+import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
+import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.ResponseType;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.SerializeException;
+import com.nimbusds.oauth2.sdk.TokenErrorResponse;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.Secret;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
+import com.nimbusds.openid.connect.sdk.Nonce;
+import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +47,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.token.Tokens;
+import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
+import com.nimbusds.openid.connect.sdk.UserInfoRequest;
+import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
+import java.io.IOException;
+import javax.mail.internet.InternetAddress;
 import javax.ws.rs.core.SecurityContext;
+import net.minidev.json.JSONObject;
+import org.opensilex.security.OpenIDConfig;
 import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.service.Service;
@@ -36,6 +66,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.service.BaseService;
 
 /**
@@ -508,6 +539,121 @@ public class AuthenticationService extends BaseService implements Service {
 
     public boolean logout(UserModel user) throws Exception {
         return (removeUser(user) != null);
+    }
+
+    private static OIDCProviderMetadata providerMetadata = null;
+
+    private OIDCProviderMetadata getOpenIDProviderMetadata(OpenIDConfig config) throws Exception {
+        if (providerMetadata == null) {
+            URI issuerURI = new URI(config.providerURI());
+            URL providerConfigurationURL = issuerURI.resolve(".well-known/openid-configuration").toURL();
+            InputStream stream = providerConfigurationURL.openStream();
+
+            // Read all data from URL
+            String providerInfo = null;
+            try (java.util.Scanner s = new java.util.Scanner(stream)) {
+                providerInfo = s.useDelimiter("\\A").hasNext() ? s.next() : "";
+            }
+            providerMetadata = OIDCProviderMetadata.parse(providerInfo);
+        }
+        
+        return providerMetadata;
+    }
+
+    public UserModel authenticateWithOpenID(String code, OpenIDConfig config) throws Exception {
+        if (!config.enable()) {
+            throw new ForbiddenException("OpenID is not enabled on this server");
+        }
+
+        OIDCProviderMetadata providerMetadata = getOpenIDProviderMetadata(config);
+        Scope scope = new Scope("openid", "email", "profile");
+        TokenRequest tokenReq = new TokenRequest(
+                providerMetadata.getTokenEndpointURI(),
+                new ClientSecretBasic(new ClientID(config.clientID()), new Secret(config.clientSecret())),
+                new AuthorizationCodeGrant(new AuthorizationCode(code), new URI(config.redirectURI())),
+                scope
+        );
+
+        HTTPResponse tokenHTTPResp = null;
+        try {
+            tokenHTTPResp = tokenReq.toHTTPRequest().send();
+        } catch (SerializeException | IOException e) {
+            throw new OpenIDException("Unexpected OpenID eror", e);
+        }
+
+        TokenResponse tokenResponse = OIDCTokenResponseParser.parse(tokenHTTPResp);
+
+        if (tokenResponse instanceof TokenErrorResponse) {
+            ErrorObject error = ((TokenErrorResponse) tokenResponse).getErrorObject();
+            throw new OpenIDException("Error while getting OpenID token: " + error.getDescription());
+        }
+
+        AccessTokenResponse accessTokenResponse = (AccessTokenResponse) tokenResponse;
+        Tokens tokens = accessTokenResponse.getTokens();
+
+        UserInfoRequest userInfoReq = new UserInfoRequest(
+                providerMetadata.getUserInfoEndpointURI(),
+                tokens.getBearerAccessToken());
+
+        HTTPResponse userInfoHTTPResp = null;
+        try {
+            userInfoHTTPResp = userInfoReq.toHTTPRequest().send();
+        } catch (SerializeException | IOException e) {
+            throw new OpenIDException("Unexpected OpenID eror", e);
+        }
+
+        UserInfoResponse userInfoResponse = null;
+        userInfoResponse = UserInfoResponse.parse(userInfoHTTPResp);
+
+        if (userInfoResponse instanceof UserInfoErrorResponse) {
+            ErrorObject error = ((UserInfoErrorResponse) userInfoResponse).getErrorObject();
+            throw new OpenIDException("Error while getting OpenID user info: " + error.getDescription());
+
+        }
+
+        UserInfoSuccessResponse successResponse = (UserInfoSuccessResponse) userInfoResponse;
+        JSONObject claims = successResponse.getUserInfo().toJSONObject();
+
+        UserModel user = new UserModel();
+        user.setEmail(new InternetAddress(claims.getAsString("email")));
+        user.setFirstName(claims.getAsString("given_name"));
+        user.setLastName(claims.getAsString("family_name"));
+
+        return user;
+    }
+
+    public URI getOpenIDAuthenticationURI() throws Exception {
+        OpenIDConfig config = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
+
+        if (!config.enable()) {
+            return null;
+        }
+
+        if (config.providerURI() == null || config.providerURI().isEmpty()) {
+            return null;
+        }
+
+        OIDCProviderMetadata providerMetadata = getOpenIDProviderMetadata(config);
+
+        State state = new State();
+
+        // Generate nonce
+        Nonce nonce = new Nonce();
+
+        // Specify scope
+        Scope scope = new Scope("openid", "email", "profile");
+
+        URI redirectURI = new URI(config.redirectURI());
+
+        // Compose the request
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest(
+                providerMetadata.getAuthorizationEndpointURI(),
+                new ResponseType(ResponseType.Value.CODE),
+                scope, new ClientID(config.clientID()), redirectURI, state, nonce);
+
+        URI authReqURI = authenticationRequest.toURI();
+
+        return authReqURI;
     }
 
 }

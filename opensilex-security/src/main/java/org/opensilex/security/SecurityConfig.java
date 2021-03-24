@@ -26,4 +26,9 @@ public interface SecurityConfig {
             defaultBoolean = false
     )
     public boolean allowMultiConnection();
+
+    @ConfigDescription(
+            value = "OpenID configuration (disable by default)"
+    )
+    public OpenIDConfig openID();
 }

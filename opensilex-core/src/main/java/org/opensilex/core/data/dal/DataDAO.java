@@ -167,34 +167,26 @@ public class DataDAO {
         agents.add(deviceURI);
         Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);
         
-        if (provenances != null && !provenances.isEmpty()) {
-            deviceProvenances.retainAll(provenances);
-        }     
-        
         ListWithPagination<DataModel> datas;
-        if (!deviceProvenances.isEmpty()) {
-            Document filter = searchFilter(user, experiments, objects, variables, null, startDate, endDate, confidenceMin, confidenceMax, metadata);
-            
-            //Get all data that have :
-            //    provenance.provUsed.uri = deviceURI 
-            // OR ( provenance.uri IN deviceProvenances list && provenance.provUsed.uri isEmpty or not exists)
-            
-            Document directProvFilter = new Document("provenance.provUsed.uri", deviceURI);
 
-            Document globalProvUsed = new Document("provenance.uri", new Document("$in", deviceProvenances));
-            globalProvUsed.put("$or", Arrays.asList(
-                new Document("provenance.provUsed", new Document("$exists", false)),
-                new Document("provenance.provUsed", new ArrayList())
-                )
-            );
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
-            filter.put("$or", Arrays.asList(directProvFilter, globalProvUsed));
+        //Get all data that have :
+        //    provenance.provUsed.uri = deviceURI 
+        // OR ( provenance.uri IN deviceProvenances list && provenance.provUsed.uri isEmpty or not exists)
 
-            datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
-            
-        } else {
-            datas = new ListWithPagination(new ArrayList());
-        }        
+        Document directProvFilter = new Document("provenance.provUsed.uri", deviceURI);
+
+        Document globalProvUsed = new Document("provenance.uri", new Document("$in", deviceProvenances));
+        globalProvUsed.put("$or", Arrays.asList(
+            new Document("provenance.provUsed", new Document("$exists", false)),
+            new Document("provenance.provUsed", new ArrayList())
+            )
+        );
+
+        filter.put("$or", Arrays.asList(directProvFilter, globalProvUsed));
+
+        datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);  
 
         return datas;
 

@@ -990,7 +990,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             } catch (Exception e) {
                 rollbackTransaction();
-                throw e;
             }
 
         }

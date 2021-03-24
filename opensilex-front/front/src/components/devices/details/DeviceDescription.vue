@@ -9,7 +9,7 @@
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               label="DeviceDescription.update"
-              @click="update"
+              @click="updateDevice"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
@@ -100,10 +100,10 @@
     <opensilex-ModalForm
       ref="deviceForm"
       component="opensilex-DeviceForm"
-      editTitle="udpate"
+      editTitle="DeviceDescription.update"
       icon="ik#ik-user"
       modalSize="lg"
-      @onUpdate="loadDevice()"
+      @refresh="refresh"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -133,6 +133,10 @@ export default class DeviceDescription extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  refresh() {
+    this.loadDevice();
   }
 
   get credentials() {
@@ -211,7 +215,8 @@ export default class DeviceDescription extends Vue {
   }
 
   @Ref("deviceForm") readonly deviceForm!: any;
-  update() {
+
+  updateDevice() {
     this.deviceForm.getFormRef().getAttributes(this.device);
     let device = {
         uri: this.device.uri,
@@ -253,6 +258,7 @@ en:
     localisation: Localisation
     variables: Variables
     update: Update device
+    delete: Delete device
     additionalInfo: Additional information
     removal: Removal
     attribute: Attribute
@@ -267,14 +273,15 @@ fr:
     uri: URI
     name: Nom
     type: Type
-    start_up: Date de mide en service
+    start_up: Date de mise en service
     brand: Marque
     constructorModel: Modèle du constructeur
     serialNumber: Numéro de série
     personInCharge: Personne en charge
     localisation: Localisation
     variables: Variables
-    update: Update device
+    update: Modifier le dispositif
+    delete: Supprimer ce dispositif
     additionalInfo: Informations supplémentaires
     removal: Date de mise hors service
     attribute: Attribut

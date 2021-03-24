@@ -136,6 +136,7 @@ public class DeviceDAO {
                 String brandPattern,
                 String modelPattern,
                 String snPattern,
+                Document metadata,
                 UserModel currentUser,
                 List<OrderBy> orderByList,
                 Integer page,
@@ -147,7 +148,20 @@ public class DeviceDAO {
         }else {
             date=null;
         }
-        return sparql.searchWithPagination(
+        
+        final Set<URI> filteredUris;
+        if (metadata != null) {
+            filteredUris = filterURIsOnAttributes(metadata);
+        } else {
+            filteredUris = null;
+        }
+        
+        ListWithPagination<DeviceModel> returnList = null;
+        
+        if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
+            return new ListWithPagination<>(new ArrayList());
+        } else {
+            returnList = sparql.searchWithPagination(
                 DeviceModel.class,
                 currentUser.getLanguage(),
                 (SelectBuilder select) -> {
@@ -169,7 +183,7 @@ public class DeviceDAO {
                     if(date != null){
                         appendDateFilters(select, date);
                     }
-                    
+
                     DateDeserializer dateDeserializer = new DateDeserializer();
                     ExprFactory exprFactory = new ExprFactory();
                     if (existenceDate != null) {
@@ -189,10 +203,17 @@ public class DeviceDAO {
                                 )
                         );
                     }
+
+                    if(filteredUris != null){
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filteredUris));
+                    }
                 },
                 orderByList,
                 page,
                 pageSize);
+        }
+        
+        return returnList;
     }
 
     private Set<URI> filterURIsOnAttributes(Document metadata) {
@@ -206,7 +227,7 @@ public class DeviceDAO {
         return devicesURIs;
     }
     
-    /*public List<DeviceModel> searchForExport(
+    public List<DeviceModel> searchForExport(
                 String namePattern,
                 URI rdfType,
                 Integer year,
@@ -276,6 +297,10 @@ public class DeviceDAO {
                                 )
                         );
                     }
+                    
+                    if(filteredUris != null){
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filteredUris));
+                    }
                 }
             );
         }
@@ -288,7 +313,7 @@ public class DeviceDAO {
             }
         }
         return deviceList;
-    }*/
+    }
 
     private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
         Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date,null,null);
@@ -344,7 +369,25 @@ public class DeviceDAO {
         return device;
     }
     
-     public void delete(URI deviceURI, UserModel currentUser) throws Exception {        
+    public List<DeviceModel> getDevicesByURI(List<URI> devicesURI, UserModel currentUser) throws Exception {
+        List<DeviceModel> devices = null;
+        if(sparql.uriListExists(DeviceModel.class, devicesURI)){
+            devices = sparql.getListByURIs(DeviceModel.class, devicesURI, currentUser.getLanguage());
+        }
+        if(devices != null){
+            for(DeviceModel device: devices){
+                if (device != null) {
+                    DeviceAttributeModel storedAttributes = getStoredAttributes(device.getUri());
+                    if (storedAttributes != null) {
+                        device.setAttributes(storedAttributes.getAttribute());
+                    }
+                }
+            }
+        }
+        return devices;
+    }
+            
+    public void delete(URI deviceURI, UserModel currentUser) throws Exception {        
         nosql.startTransaction();
         sparql.startTransaction();
         sparql.delete(DeviceModel.class, deviceURI);

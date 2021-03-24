@@ -23,7 +23,7 @@ menu:
           path: /experiments
           component: opensilex-ExperimentListView
       - id: devices
-        label: Devices
+        label: component.menu.devices
         route:
           path: /devices
           component: opensilex-DeviceView

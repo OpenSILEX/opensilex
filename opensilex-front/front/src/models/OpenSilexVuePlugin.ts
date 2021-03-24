@@ -736,7 +736,16 @@ export default class OpenSilexVuePlugin {
                     || queryParams[k] == ""
                 ) && delete queryParams[k]
             );
-            let params = new URLSearchParams(queryParams);
+            let params = new URLSearchParams();
+            for(let k of Object.keys(queryParams)){
+                if(queryParams[k] instanceof Array){
+                    for(let elt of queryParams[k]){
+                        params.append(k,elt)
+                    }
+                }else{
+                    params.append(k,queryParams[k])
+                }
+            }
             let paramsSize = [...params].length;
             if (paramsSize > 0) {
                 url = url + "?" + params.toString();

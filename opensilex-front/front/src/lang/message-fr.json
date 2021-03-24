@@ -171,7 +171,8 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations techniques",
-            "scientific-organisation": "Organisation scientifique"
+            "scientific-organisation": "Organisation scientifique",
+            "devices": "Dispositifs"
         },
         "login": {
             "input": {

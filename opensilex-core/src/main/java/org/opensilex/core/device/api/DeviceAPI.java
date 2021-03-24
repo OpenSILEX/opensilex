@@ -5,12 +5,27 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
+import java.io.StringWriter;
+import static java.lang.Integer.max;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -170,11 +185,20 @@ public class DeviceAPI {
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
-            @ApiParam(value = "Search by metadata", example = "{ \"Group\" : \"station meteo\",\n" +"\"group2\" : \"parcelle A\"}") @QueryParam("metadata") String metadataParam,
+            @ApiParam(value = "Search by metadata", example = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}") @QueryParam("metadata") String metadataParam,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "namePattern=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        Document metadataFilter = null;
+        if (metadataParam != null) {
+            try {
+                metadataFilter = Document.parse(metadataParam);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();                
+            }
+        }
+        
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         ListWithPagination<DeviceModel> devices = dao.search(
             namePattern,
@@ -184,6 +208,7 @@ public class DeviceAPI {
             brandPattern,
             modelPattern,
             snPattern,
+            metadataFilter,
             currentUser,
             orderByList,
             page,
@@ -272,6 +297,7 @@ public class DeviceAPI {
         
     }
     
+    
     private ErrorResponse check(DeviceDTO deviceDTO, DeviceDAO deviceDAO) throws Exception {
 
         // check if device URI already exists
@@ -329,7 +355,7 @@ public class DeviceAPI {
         return null;
     }
         
-    /*@GET
+    @GET
     @Path("export")
     @ApiOperation("export devices")
     @ApiProtected
@@ -358,7 +384,7 @@ public class DeviceAPI {
             }
         }
 
-        // Search germplasm with germplasm DAO
+        // Search device with device DAO
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         List<DeviceModel> resultList = dao.searchForExport(
             namePattern,
@@ -368,27 +394,69 @@ public class DeviceAPI {
             brandPattern,
             modelPattern,
             snPattern,
-            null,
+            metadataFilter,
             currentUser
         );
 
+        return buildCSV(resultList);
+
+    }
+    
+    @GET
+    @Path("exportList")
+    @ApiOperation("export devices")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with device list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportList(
+            @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") @QueryParam("devices_list") @ValidURI List<URI> devList
+    ) throws Exception {
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        List<DeviceModel> resultList = dao.getDevicesByURI(devList, currentUser);
+        return buildCSV(resultList);
+    }
+    
+    private Response buildCSV(List<DeviceModel> devices) throws Exception {
         // Convert list to DTO
-        List<DeviceGetDetailsDTO> resultDTOList = new ArrayList<>();
+        List<DeviceExportDTO> resultDTOList = new ArrayList<>();
         Set metadataKeys = new HashSet();
-        for (DeviceModel device : resultList) {
-            DeviceGetDetailsDTO dto = DeviceGetDetailsDTO.getDTOFromModel(device);
+        Map<URI,Integer> relationsUsed = new HashMap();
+        for (DeviceModel device : devices) {
+            DeviceExportDTO dto = DeviceExportDTO.getDTOFromModel(device);
             resultDTOList.add(dto);
             Map metadata = dto.getMetadata();
             if (metadata != null) {
-                 metadataKeys.addAll(metadata.keySet());
-            }           
+                metadataKeys.addAll(metadata.keySet());
+            }
+            
+            List<RDFObjectRelationDTO> relations = dto.getRelations();
+            Map<URI,Integer> relationsUsed_local = new HashMap();
+            for(RDFObjectRelationDTO relation : relations){
+                URI prop = relation.getProperty();
+                if(relationsUsed_local.containsKey(prop)){
+                    relationsUsed_local.replace(prop, relationsUsed_local.get(prop)+1);
+                }else{
+                    relationsUsed_local.put(prop, 1);
+                }
+            }
+            for(URI prop: relationsUsed_local.keySet()){
+                if(relationsUsed.containsKey(prop)){
+                    relationsUsed.replace(prop, max(relationsUsed_local.get(prop), relationsUsed.get(prop)));
+                }else{
+                    relationsUsed.put(prop, relationsUsed_local.get(prop));
+                }
+            }
         }
 
         if (resultDTOList.isEmpty()) {
-            resultDTOList.add(new DeviceGetDetailsDTO()); // to return an empty table
+            resultDTOList.add(new DeviceExportDTO()); // to return an empty table
         }
         
-        //Construct manually json with metadata to convert it to csv
+        //Construct manually json with metadata and type property to convert it to csv
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
 
@@ -397,7 +465,9 @@ public class DeviceAPI {
             for(JsonNode jsonNode : jsonTree) {
                 ObjectNode objectNode = jsonNode.deepCopy();
                 JsonNode metadata = objectNode.get("metadata");
+                JsonNode relations = objectNode.get("relations");
                 objectNode.remove("metadata");
+                objectNode.remove("relations");
                 JsonNode value = null;
                 for (Object key:metadataKeys) {
                     try {
@@ -412,6 +482,25 @@ public class DeviceAPI {
                             objectNode.putNull(key.toString());
                         }                            
                     }
+                }
+                JsonNode property = null;
+                JsonNode propertyValue = null;
+                for( URI prop: relationsUsed.keySet()){
+                    for(int i = 1; i <= relationsUsed.get(prop); i++){
+                        objectNode.putNull(prop.toString()+"_"+i);
+                    }
+                }
+                
+                Map<String,Integer> relationsUsed_local = new HashMap();
+                for(JsonNode relation : relations){
+                    property = relation.get("property");
+                    if(relationsUsed_local.containsKey(property.asText())){
+                        relationsUsed_local.replace(property.asText(), relationsUsed_local.get(property.asText())+1);
+                    }else{
+                        relationsUsed_local.put(property.asText(), 1);
+                    }
+                    propertyValue = relation.get("value");
+                    objectNode.put(property.asText()+"_"+relationsUsed_local.get(property.asText()), propertyValue.asText());
                 }
                 
                 list.add(objectNode);
@@ -437,12 +526,12 @@ public class DeviceAPI {
         LocalDate date = LocalDate.now();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         String fileName = "export_device" + dtf.format(date) + ".csv";
-
+        
         return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
 
-    }*/
+    }
     
     @GET
     @Path("{uri}/data")

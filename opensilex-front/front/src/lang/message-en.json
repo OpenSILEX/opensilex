@@ -171,7 +171,8 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
             "facilitiesTypes": "Facilities types",
-            "scientific-organisation": "Scientific Organization"
+            "scientific-organisation": "Scientific Organization",
+            "devices": "Devices"
         },
         "login": {
             "input": {

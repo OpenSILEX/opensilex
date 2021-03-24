@@ -14,18 +14,6 @@
           @click="goToDeviceCreate"
           label="Device.add"
         ></opensilex-CreateButton>
-
-        <opensilex-CreateButton
-          label="DeviceList.addDocument"
-          :small="false"
-          @click="deviceList.createDocument()"
-        ></opensilex-CreateButton>
-
-        <!-- <opensilex-CreateButton
-          label="DeviceList.addVariable"
-          :small="false"
-          @click="deviceList.createVariable()"
-        ></opensilex-CreateButton> -->
       </template>
     </opensilex-PageActions>
 

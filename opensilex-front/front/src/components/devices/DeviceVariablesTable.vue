@@ -69,11 +69,11 @@ export default class DeviceVariablesTable extends Vue {
         visible: false
       },
       {
-        title: "Value",
+        title: "URI",
         field: "value",
         formater: "string",
         editor: "input",
-        widthGrow: 1,
+        widthGrow: 0.5,
       },
       {
         title: "Delete",
@@ -96,7 +96,8 @@ export default class DeviceVariablesTable extends Vue {
     cellHozAlign: "center",
     clipboard: true,
     columns: this.tableColumns,
-    maxHeight: "100%"
+    maxHeight: "100%",
+    index: 0
   };
 
   removeRow(evt, clickedCell) {
@@ -104,12 +105,18 @@ export default class DeviceVariablesTable extends Vue {
 
     if (columnName == "actions") {
       let row = clickedCell.getRow();
-
-      var index = this.tableColumns.findIndex(variable => variable.value === row.value);
+      
+      var index = 0
+      let val = ""
+      while (index < this.variablesArray.length && val != row.value){
+        val = this.tableColumns[index].value
+        index++
+      }
+      
       console.log(index);
 
-      row.delete();
       Vue.delete(this.variablesArray, index);
+      row.delete();
     }
   }
 

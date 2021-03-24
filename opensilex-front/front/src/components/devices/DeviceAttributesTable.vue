@@ -40,6 +40,7 @@ import HttpResponse, {
 } from "opensilex-security/HttpResponse";
 
 
+
 @Component
 export default class DeviceAttributesTable extends Vue {
   $opensilex: any;

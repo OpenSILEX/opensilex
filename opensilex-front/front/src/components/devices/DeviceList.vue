@@ -5,6 +5,7 @@
       @search="updateFilter()"
       @clear="resetFilters()"
       withButton="false"
+      :showAdvancedSearch="true"
     >
       <template v-slot:filters>
         <div class="col col-xl-3 col-sm-6 col-12">
@@ -49,6 +50,20 @@
         </div>
 
       </template>
+      <template v-slot:advancedSearch>
+        <opensilex-FilterField>
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataKey"
+            label="attribute key"
+          ></opensilex-StringFilter>
+        </opensilex-FilterField>
+        <opensilex-FilterField>
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataValue"
+            label="attribute value"
+          ></opensilex-StringFilter>
+        </opensilex-FilterField>
+      </template>     
     </opensilex-SearchFilterField>
 
     <opensilex-TableAsyncView
@@ -59,9 +74,40 @@
       :isSelectable="true"
       labelNumberOfSelectedRow="DeviceList.selected"
     >
-      <!---<template v-slot:export>
-        <b-button class="mb-2 mr-2" @click="exportDevices()" >{{$t('DeviceList.export')}}</b-button> 
-      </template> --->
+
+    <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+      <b-dropdown
+        dropright
+        class="mb-2 mr-2"
+        :small="true"
+        :disabled="numberOfSelectedRows == 0"
+        text=actions>
+          <b-dropdown-item-button    
+            @click="createDocument()"
+          >{{$t('DeviceList.addDocument')}}</b-dropdown-item-button>
+          <b-dropdown-item-button
+            @click="exportDevices()"
+          >{{$t('DeviceList.export')}}</b-dropdown-item-button>
+          <b-dropdown-item-button
+            disabled
+          >{{$t('DeviceList.addVariable')}}</b-dropdown-item-button>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item-button 
+            disabled
+          >{{$t('DeviceList.addEvent')}}</b-dropdown-item-button>
+          <b-dropdown-item-button 
+            disabled
+          >{{$t('DeviceList.addAnnotation')}}</b-dropdown-item-button>         
+          <b-dropdown-item-button 
+            disabled
+          >{{$t('DeviceList.addMove')}}</b-dropdown-item-button>  
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item-button 
+            disabled
+          >{{$t('DeviceList.showMap')}}</b-dropdown-item-button>
+      </b-dropdown>
+
+    </template>
 
       <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink :uri="data.item.uri"
@@ -78,6 +124,12 @@
             label="DeviceList.update"
             :small="true"
           ></opensilex-EditButton>
+          <opensilex-DeleteButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
+            label="DeviceList.delete"
+            :small="true"
+            @click="deleteDevice(data.item.uri)"
+          ></opensilex-DeleteButton>
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
@@ -86,7 +138,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
-      createTitle="DeviceList.add"
+      createTitle="DeviceList.addDocument"
       editTitle="DeviceList.update"
       modalSize="lg"
       :initForm="initForm"
@@ -96,11 +148,20 @@
     <opensilex-ModalForm
       ref="deviceForm"
       component="opensilex-DeviceForm"
-      editTitle="udpate"
+      editTitle="update"
       icon="ik#ik-user"
       modalSize="lg"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>
+
+    <!-- <opensilex-ModalForm
+      ref="deviceVarForm"
+      component="opensilex-DeviceVarForm"
+      editTitle="udpate"
+      icon="ik#ik-user"
+      modalSize="lg"
+      @onUpdate="refresh()"
+    ></opensilex-ModalForm> -->
   </div>
 </template>
 
@@ -116,10 +177,13 @@ export default class DeviceList extends Vue {
   service: DevicesService;
   $store: any;
   $route: any;
+  pageSize: number = 20;
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
+
+  // @Ref("deviceVarForm") readonly deviceVarForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -210,7 +274,17 @@ export default class DeviceList extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-    fields = [
+  deleteDevice(uri: string) {
+    this.service
+      .deleteDevice(uri)
+      .then(() => {
+        this.refresh();
+        this.$emit("onDelete", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  fields = [
     {
       key: "uri",
       label: "DeviceList.name",
@@ -249,18 +323,22 @@ export default class DeviceList extends Vue {
       this.addMetadataFilter(), //metadata filter
       options.orderBy,
       options.currentPage,
-      options.pageSize,
+      this.pageSize,
     );
   }
 
-  /*exportDevices() {
-    let path = "/core/devices/export";
+  exportDevices() {
+    let path = "/core/devices/exportList";
     let today = new Date();
     let filename = "export_devices_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
-    this.$opensilex
-     .downloadFilefromService(path, filename, "csv", this.exportFilter);
-  }*/
 
+    var exportList = []
+    for (let select of this.tableRef.getSelected()) {
+      exportList.push(select.uri);
+    }
+    this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
+  }
+  
   createDocument() {
     this.documentForm.showCreateForm();
   }
@@ -286,7 +364,7 @@ export default class DeviceList extends Vue {
         keywords: undefined
       },
       file: undefined
-      }
+    }
   }
 
   addMetadataFilter() {
@@ -298,7 +376,7 @@ export default class DeviceList extends Vue {
     }
   }
 
-  /*updateExportFilters() {
+  updateExportFilters() {
     this.exportFilter.namePattern = this.filter.namePattern;
     this.exportFilter.rdf_type = this.filter.rdf_type;
     this.exportFilter.start_up = this.filter.start_up;
@@ -307,7 +385,11 @@ export default class DeviceList extends Vue {
     this.exportFilter.model = this.filter.model;
     this.exportFilter.serial_number = undefined;
     this.exportFilter.metadata = this.addMetadataFilter();
-  }*/
+  }
+
+  // createVariable() {
+  //   this.deviceVarForm.showCreateForm();
+  // }
 
 }
 </script>
@@ -330,6 +412,12 @@ en:
     addDocument: Add document
     addVariable: Add variable
     export: Export Device list
+    alertSelectSize: The selection has too many lines, 1000 lines maximum
+    addEvent: Add event
+    addAnnotation: Add annotation
+    addMove: Move
+    showMap: Show in a map
+
 
     filter:
       namePattern: Name
@@ -356,6 +444,11 @@ fr:
     addDocument: Ajouter un document
     addVariable: Ajout de variable
     export: Exporter la liste
+    alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
+    addEvent: Ajouter un évènement
+    addAnnotation: Ajouter une annotation
+    addMove: Déplacement
+    showMap: Afficher sur une carte
 
     filter:
       namePattern: Nom

@@ -182,7 +182,7 @@ export default class DeviceForm extends Vue {
   reset() {
     this.uriGenerated = true;
   }
-  
+
   update(form) {
     form.metadata = this.attTable.pushAttributes();   
     this.$opensilex
@@ -190,6 +190,7 @@ export default class DeviceForm extends Vue {
       .updateDevice(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
+        console.debug("device updated", uri);
         this.$emit("onUpdate", form);
       })
       .catch(this.$opensilex.errorHandler);

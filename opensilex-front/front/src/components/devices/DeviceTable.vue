@@ -119,6 +119,7 @@ export default class DeviceTable extends Vue {
   nbVariableCol: number = 0;
   measure: boolean = false;
   
+  subClassResult: boolean = false;
 
   // Progress Modal
   errorNumber: number = 0;
@@ -193,26 +194,25 @@ export default class DeviceTable extends Vue {
     this.tabulator.replaceData(value);
   }
 
-  isSubClassOf(parent){
+  isSubClassOf(child,parent){
     let ontoService: OntologyService = this.$opensilex.getService(
       "opensilex.OntologyService"
     );
 
     return new Promise((resolve,reject) => {ontoService
-      .getClass(this.$attrs.deviceType,parent)
+      .getClass(child,parent)
       .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
-        this.measure = true;
+        this.subClassResult = true;
         resolve(this.measure);
       })
       .catch((error) => {
-        this.measure = false;
-        resolve(this.measure);
+        this.subClassResult = false;
+        resolve(this.subClassResult);
       })});
   }
   
 
   buildFinalTypeList(){
-    this.deviceTypes = [];
     let ontoService: OntologyService = this.$opensilex.getService(
       "opensilex.OntologyService"
     );
@@ -241,7 +241,8 @@ export default class DeviceTable extends Vue {
     while (!this.measure && idx < measureType.length){
       this.measure = this.$attrs.deviceType.endsWith(measureType[idx]);
       if(!this.measure){
-        await this.isSubClassOf('vocabulary:'+measureType[idx]);
+        await this.isSubClassOf(this.$attrs.deviceType,'vocabulary:'+measureType[idx]);
+        this.measure = this.subClassResult
       }
       
       idx++;
@@ -253,8 +254,12 @@ export default class DeviceTable extends Vue {
     this.displayPersonCol = true;
     this.nbVariableCol = 0;
 
-    
+    this.deviceTypes = [];
     this.buildFinalTypeList();
+    this.deviceTypes.push({
+                value: this.$attrs.deviceType,
+                label: this.$attrs.deviceType
+            });
 
     let idCol = {title:"", field:"rowNumber",visible:true,formatter:"rownum"};
 
@@ -660,6 +665,25 @@ export default class DeviceTable extends Vue {
       var uniqueNames = [];
       var uniqueURIs = [];
       let insertionOK = true;
+
+      let header = Object.keys(data[0]);
+      for(let idy = 0; idy < header.length; idy++){
+        if(Object.keys(this.jsonForTemplate[0]).indexOf(header[idy]) === -1){
+          if(header[idy].startsWith('variable_')){
+            if(this.measure){
+              this.addVariableCol()
+            }else{
+              insertionOK = false;
+              alert(this.$t('DeviceTable.badDeviceType')+" Select type: "+this.$attrs.deviceType);
+              break
+            }
+          }else{
+            this.colName = header[idy]
+            this.addColumn()
+          }
+        }
+      }
+
       for (let idx = 0; idx < data.length; idx++) {
         data[idx]["rowNumber"] = idx + 1;
         if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
@@ -677,18 +701,24 @@ export default class DeviceTable extends Vue {
               alert(this.$t('DeviceTable.alertDuplicateURI') + " " + data[idx]["rowNumber"] + ", uri= " + data[idx].uri);
               break
             }
-        } 
-      }
-      let header = data[0];
-      for(let idy = 0; idy < header.length; idy++){
-        if(header[idy].startsWith('variable_')){
-          this.nbVariableCol++;
         }
+       //if(data[idx].rdf_type != this.$attrs.deviceType){
+        
+        //await this.isSubClassOf(data[idx].rdf_type, this.$attrs.deviceType)
+        if(!Object.values(this.deviceTypes).indexOf(data[idx].rdf_type)){
+          insertionOK = false
+          alert(this.$t('DeviceTable.badDeviceType') + "  " + data[idx].rdf_type + " ⊄ "+this.$attrs.deviceType);
+          break
+        }
+        //}
       }
+
       if (insertionOK) {
-        this.tabulator.setData(data);
         this.displayRemovalCol = true;
+        this.tabulator.showColumn("removal")
         this.displayPersonCol = true;
+        this.tabulator.showColumn("person_in_charge")
+        this.tabulator.setData(data);
       }
     }
         
@@ -782,6 +812,7 @@ en:
     alertDuplicate: The file contains a duplicate name at line
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
+    badDeviceType: The selected type doesn't match with informations
 
 fr:
   DeviceTable:
@@ -823,4 +854,5 @@ fr:
     alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
+    badDeviceType: Le type sélectionner ne correspond pas aux informations fournis
 </i18n>

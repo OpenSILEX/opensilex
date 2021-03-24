@@ -134,8 +134,8 @@ public class EventAPI {
     @Path("/import")
     @ApiOperation(value = "Import a CSV file with one move and one concerned item per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Move file saved", response = CSVValidationDTO.class),
-            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(code = 201, message = "Event file saved", response = CSVValidationDTO.class),
+            @ApiResponse(code = 409, message = "An event with the same URI already exists", response = ErrorResponse.class)
     })
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -151,11 +151,11 @@ public class EventAPI {
 
         CSVValidationModel validation = csvImporter.getValidation();
         CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
 
         SingleObjectResponse<CSVValidationDTO> importResponse = new SingleObjectResponse<>(validationDTO);
 
         if(validation.hasErrors()) {
+            validationDTO.setErrors(validation);
             importResponse.setStatus(Response.Status.BAD_REQUEST);
         }else {
             List<EventModel> models = csvImporter.getModels();
@@ -188,11 +188,8 @@ public class EventAPI {
         CSVValidationModel validation = csvImporter.getValidation();
 
         CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
-
-        if (!validation.hasErrors()) {
-            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-            validationDTO.setValidationToken(token);
+        if(validation.hasErrors()) {
+            validationDTO.setErrors(validation);
         }
 
         return new SingleObjectResponse<>(validationDTO).getResponse();
@@ -401,12 +398,12 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a list of move", response = ObjectUriResponse.class),
-            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(code = 201, message = "Create a list of move event", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "An event with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
+    public Response createMoves(@Valid @NotNull List<MoveEventCreationDTO> dtoList) throws Exception {
         try {
             MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
@@ -414,11 +411,11 @@ public class EventAPI {
             List<MoveModel> models = modelStream.collect(Collectors.toList());
             dao.createMoveEvents(models);
 
-            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
-            return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
+            List<URI> uris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            return new PaginatedListResponse<>(Response.Status.CREATED,uris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-            return new ErrorResponse(Response.Status.CONFLICT, "Move already exists", duplicateUriException.getMessage()).getResponse();
+            return new ErrorResponse(Response.Status.CONFLICT, "Event already exists", duplicateUriException.getMessage()).getResponse();
         }
     }
 
@@ -499,13 +496,13 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated move", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Return updated event", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateMoveEvent(
-            @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
+            @ApiParam("Event description") @Valid @NotNull MoveEventUpdateDTO dto
     ) throws Exception {
 
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
@@ -527,13 +524,13 @@ public class EventAPI {
     @ApiOperation("Get a move with all it's properties")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move retrieved", response = MoveDetailsDTO.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Move event retrieved", response = MoveEventGetDTO.class),
+            @ApiResponse(code = 404, message = "Move event URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMoveEvent(
-            @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
@@ -542,7 +539,7 @@ public class EventAPI {
             throw new NotFoundURIException(uri);
         }
 
-        MoveDetailsDTO dto = new MoveDetailsDTO(model);
+        MoveEventGetDTO dto = new MoveEventGetDTO(model);
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
@@ -555,8 +552,8 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Move event deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

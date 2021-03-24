@@ -161,7 +161,7 @@ public class MoveEventDAO extends EventDAO {
             
             if (anyMoveNoSqlModelFound) {
                 mongodb.startTransaction();
-                moveEventCollection.insertMany(noSqlModels);
+                mongodb.createAll(noSqlModels, MoveEventNoSqlModel.class, moveCollectionName,null);
                 mongodb.commitTransaction();
             }
             sparql.commitTransaction();
@@ -193,7 +193,6 @@ public class MoveEventDAO extends EventDAO {
                 MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
                 if (noSqlModel != null) {
                     noSqlModels.add(noSqlModel);
-                    anyMoveNoSqlModelFound.set(true);
                 }
                 
             } catch (Exception e) {

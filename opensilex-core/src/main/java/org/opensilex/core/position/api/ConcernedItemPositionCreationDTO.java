@@ -22,7 +22,7 @@ public class ConcernedItemPositionCreationDTO {
     private PositionCreationDTO position;
 
     @Required
-    @ApiModelProperty(required = true, example = "test:plantA")
+    @ApiModelProperty(required = true, example="test:plantA")
     public URI getConcernedItem() {
         return concernedItem;
     }
@@ -40,11 +40,20 @@ public class ConcernedItemPositionCreationDTO {
         this.position = position;
     }
 
-    public ConcernedItemPositionModel toModel(){
+    public ConcernedItemPositionModel toModel() throws JsonProcessingException {
+
+        if(position == null || concernedItem == null){
+            return null;
+        }
 
         ConcernedItemPositionModel model = new ConcernedItemPositionModel();
         model.setConcernedItem(concernedItem);
-        model.setPosition(position.toModel());
+
+        PositionNoSqlModel positionModel = position.toModel();
+        if(positionModel == null){
+            return null;
+        }
+        model.setPosition(positionModel);
         return model;
     }
 

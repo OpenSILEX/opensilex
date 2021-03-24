@@ -10,9 +10,6 @@ import org.opensilex.core.event.dal.move.PositionModel;
 
 public class PositionCreationDTO {
 
-
-    private com.mongodb.client.model.geojson.Point pointModel;
-
     @JsonProperty("point")
     private Point point;
 
@@ -72,17 +69,18 @@ public class PositionCreationDTO {
         this.description = description;
     }
 
-    public void setPointModel(com.mongodb.client.model.geojson.Point pointModel) {
-        this.pointModel = pointModel;
-    }
+    public PositionNoSqlModel toModel() throws JsonProcessingException {
 
     public PositionModel toModel() {
 
         PositionModel positionNoSqlModel = new PositionModel();
 
+        // transform geo json to point model
         if (point != null) {
+            com.mongodb.client.model.geojson.Point pointModel = (com.mongodb.client.model.geojson.Point) GeospatialDAO.geoJsonToGeometry(point);
             positionNoSqlModel.setPoint(pointModel);
         }
+
         positionNoSqlModel.setX(x);
         positionNoSqlModel.setY(y);
         positionNoSqlModel.setZ(z);

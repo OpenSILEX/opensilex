@@ -411,8 +411,8 @@ public class EventAPI {
             List<MoveModel> models = modelStream.collect(Collectors.toList());
             dao.createMoveEvents(models);
 
-            List<URI> uris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
-            return new PaginatedListResponse<>(Response.Status.CREATED,uris).getResponse();
+            List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
+            return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Event already exists", duplicateUriException.getMessage()).getResponse();

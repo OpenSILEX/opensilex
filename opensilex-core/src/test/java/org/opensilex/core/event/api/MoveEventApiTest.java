@@ -226,8 +226,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         }
 
         Response postResult = getJsonPostResponse(target(createPath), dtos);
-//        JsonNode node = postResult.readEntity(JsonNode.class);
-//        SingleObjectResponse<List<URI>> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<List<URI>>>() {});
 
         List<URI> createdUris = extractUriListFromPaginatedListResponse(postResult);
         assertEquals(n,createdUris.size());
@@ -276,8 +274,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
         assertEquals(creationDTO.getEnd(), dtoFromDb.getEnd());
         assertEquals(creationDTO.getIsInstant(), dtoFromDb.getIsInstant());
-        assertEquals(creationDTO.getTo(), dtoFromDb.getTo());
-        assertEquals(creationDTO.getFrom(), dtoFromDb.getFrom());
+
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getTo(), dtoFromDb.getTo().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getFrom(), dtoFromDb.getFrom().getUri()));
+
         assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
 
         Collections.sort(creationDTO.getConcernedItems());
@@ -311,8 +311,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
         assertEquals(creationDTO.getEnd(), dtoFromDb.getEnd());
         assertEquals(creationDTO.getIsInstant(), dtoFromDb.getIsInstant());
-        assertEquals(creationDTO.getTo(), dtoFromDb.getTo());
-        assertEquals(creationDTO.getFrom(), dtoFromDb.getFrom());
+
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getTo(), dtoFromDb.getTo().getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getFrom(), dtoFromDb.getFrom().getUri()));
 
         assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
 
@@ -373,7 +374,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         newEventCreationDto.setFrom(creationDTO.getTo());
         newEventCreationDto.setTo(facilityC.getUri());
 
-        postResult = getJsonPostResponse(target(createPath), newEventCreationDto);
+        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(newEventCreationDto));
         URI newerMoveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getConcernedItems().get(0).toString());

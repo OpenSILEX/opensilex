@@ -70,7 +70,7 @@ public class MoveEventCreationDTO extends EventCreationDTO {
         }
         if(to != null && ! to.toString().isEmpty()){
             InfrastructureFacilityModel toModel = new InfrastructureFacilityModel();
-            toModel.setUri(from);
+            toModel.setUri(to);
             model.setTo(toModel);
         }
 

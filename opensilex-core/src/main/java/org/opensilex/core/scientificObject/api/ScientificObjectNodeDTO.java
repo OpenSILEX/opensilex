@@ -12,11 +12,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -92,10 +89,10 @@ public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectMo
         if (geospatialModel != null) {
             try {
                 dto.setType(geospatialModel.getRdfType());
-                dto.setUri(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri())));
+                dto.setUri(geospatialModel.getUri());
                 dto.setName(geospatialModel.getName());
                 dto.setGeometry(geometryToGeoJson(geospatialModel.getGeometry()));
-            } catch (JsonProcessingException | URISyntaxException e) {
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }

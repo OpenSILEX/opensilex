@@ -6,6 +6,12 @@
           label="MapView.add-area-button"
           @click="editingMode = true"
       ></opensilex-CreateButton>
+      <opensilex-FilterMap
+          :experiment="experiment"
+          :featureOS="featuresOS"
+          :tabLayer="tabLayer"
+      >
+      </opensilex-FilterMap>
     </div>
     <div v-if="editingMode" id="editing">
       <opensilex-Button
@@ -36,9 +42,6 @@
         @onUpdate="callScientificObjectsUpdate"
     />
 
-    <p class="alert-info">
-      <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
-    </p>
     <div
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
@@ -55,6 +58,16 @@
             class="col-lg-5"
             title="Area.display"
         ></opensilex-CheckboxForm>
+        <div v-for="layer in tabLayer" :key="layer.ref">
+          <opensilex-CheckboxForm
+              :title="layer.titleDisplay"
+              :value.sync="layer.display"
+          ></opensilex-CheckboxForm>
+          <opensilex-InputForm
+              :value.sync="layer.vlStyleFillColor"
+              type="color"
+          ></opensilex-InputForm>
+        </div>
         <span>
           <label class="alert-warning">
             <img
@@ -65,6 +78,9 @@
           </label>
         </span>
       </div>
+      <p class="alert-info">
+        <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
+      </p>
       <!-- "mapControls" to display the scale -->
       <vl-map
           ref="map"
@@ -138,6 +154,20 @@
                 @update:features="defineCenter"
             >
             </vl-source-vector>
+          </vl-layer-vector>
+          <vl-layer-vector
+              v-for="layer in tabLayer"
+              :key="layer.ref"
+              :visible="layer.display === 'true'"
+          >
+            <vl-source-vector
+                :ref="layer.ref"
+                :features.sync="layer.tabFeatures"
+            ></vl-source-vector>
+            <vl-style-box>
+              <!-- <vl-style-stroke :color="layer.vlStyleStrokeColor"></vl-style-stroke>  -->    <!-- outline color -->
+              <vl-style-fill :color="colorFeature(layer.vlStyleFillColor)"></vl-style-fill>
+            </vl-style-box>
           </vl-layer-vector>
         </template>
 
@@ -297,6 +327,7 @@ export default class MapView extends Vue {
   selectPointerMove: any[] = [];
   overlayCoordinate: any[] = [];
   centerMap: any[] = [];
+  tabLayer: any[] = [];
   fieldsSelected = [
     {
       key: "name",
@@ -586,6 +617,10 @@ export default class MapView extends Vue {
           })
           .catch(this.$opensilex.errorHandler);
     }
+  }
+
+  colorFeature(color) {
+    return "rgba(" + parseInt(color.slice(1, 3), 16) + "," + parseInt(color.slice(3, 5), 16) + "," + parseInt(color.slice(5, 7), 16) + ",0.5)"
   }
 
   private recoveryShowArea(areaUri) {

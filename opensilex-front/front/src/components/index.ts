@@ -570,6 +570,8 @@ import AreaDetails from "./geometry/AreaDetails.vue";
 components["opensilex-AreaDetails"] = AreaDetails;
 import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.vue";
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
+import FilterMap from "./geometry/FilterMap.vue";
+components["opensilex-FilterMap"] = FilterMap;
 
 //VISUALIZATION
 import VisuPage from './visualization/VisuPage.vue';

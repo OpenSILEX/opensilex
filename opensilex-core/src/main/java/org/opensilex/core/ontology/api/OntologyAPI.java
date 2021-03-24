@@ -14,6 +14,8 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -38,6 +40,8 @@ import org.opensilex.core.ontology.dal.DatatypePropertyModel;
 import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import org.opensilex.core.ontology.dal.URITypesModel;
+import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -49,6 +53,7 @@ import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
@@ -476,6 +481,26 @@ public class OntologyAPI {
         String uriLabel = dao.getURILabel(uri, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(uriLabel).getResponse();
+    }
+    
+    @GET
+    @Path("/check_rdf_types")
+    @ApiOperation("")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the URIs with the checked rdf:types", response = URITypesDTO.class, responseContainer = "List")
+    })
+    public Response checkURIsTypes(
+            @ApiParam(value = "URIs", required = true) @QueryParam("uris") @NotNull @ValidURI List<URI> uris,
+            @ApiParam(value = "rdf_types list you want to check on the given uris list") @NotNull @ValidURI @QueryParam("rdf_types") List<URI> rdfTypes
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+        
+        List<URITypesModel> checkedURIsTypes = dao.checkURIsTypes(uris,rdfTypes);
+        List<URITypesDTO> dtoList = checkedURIsTypes.stream().map(URITypesDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     private OwlRestrictionModel restrictionDtoToModel(OntologyDAO dao, OWLClassPropertyRestrictionDTO dto) throws Exception {

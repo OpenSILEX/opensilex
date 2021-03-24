@@ -14,6 +14,12 @@
       </b-nav-item>
 
       <b-nav-item
+      :active="isDocumentTab()"
+      :to="{path: '/germplasm/documents/' + encodeURIComponent(uri)}"
+      >{{ $t('component.project.documents') }}
+      </b-nav-item>
+
+      <b-nav-item
       :active="isAnnotationTab()"
       :to="{ path: '/germplasm/annotations/' + encodeURIComponent(uri) }"
       >{{ $t("Annotation.list-title") }}
@@ -145,6 +151,14 @@
         </b-col>
       </b-row>
 
+      <opensilex-DocumentTabList
+        v-else-if="isDocumentTab()"
+        ref="documentTabList"
+        :uri="uri"        
+        :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
+        :deleteCredentialId="credentials.CREDENTIAL_GERMPLASM_DELETE_ID"
+      ></opensilex-DocumentTabList>
+
       <opensilex-AnnotationList
       v-else-if="isAnnotationTab()"
       ref="annotationList"
@@ -164,8 +178,7 @@
       icon="ik#ik-user"
       modalSize="lg"
       @onUpdate="loadGermplasm()"
-    ></opensilex-ModalForm>
-    
+    ></opensilex-ModalForm>    
 
   </div>
 </template>
@@ -180,6 +193,7 @@ import {
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
+import DocumentTabList from "../documents/DocumentTabList.vue";
 
 
 @Component
@@ -198,6 +212,7 @@ export default class GermplasmDetails extends Vue {
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("annotationList") readonly annotationList!: AnnotationList;
+  @Ref("documentTabList") readonly documentTabList!: DocumentTabList;
 
   get user() {
     return this.$store.state.user;
@@ -209,6 +224,10 @@ export default class GermplasmDetails extends Vue {
 
   isDetailsTab() {
       return this.$route.path.startsWith("/germplasm/details/");
+  }
+
+  isDocumentTab() {
+      return this.$route.path.startsWith("/germplasm/documents/");
   }
 
   isAnnotationTab() {

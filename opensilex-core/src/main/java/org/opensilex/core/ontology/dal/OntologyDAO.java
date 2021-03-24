@@ -22,13 +22,20 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -42,6 +49,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -809,5 +817,86 @@ public final class OntologyDAO {
         return strWriter.toString();
 
     }
+    
+    public SPARQLResourceModel getRdfType(URI uri, String language) throws Exception {
+        return sparql.getByURI(SPARQLResourceModel.class, uri, language);
+    }
 
+//    public List<TypeModel> getRdfTypes(URI uri, String language, boolean parents) throws SPARQLException, URISyntaxException, Exception {
+//        String typeField = "type";
+//        String typeLabelField = "typeLabel";
+//        SelectBuilder select = new SelectBuilder();
+//        select.addVar(typeField);
+//        select.addVar(typeLabelField);
+//        select.setDistinct(true);
+//        
+//        if (parents) {
+//            select.addWhere(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), RDF.type, makeVar("directType"));
+//            select.addWhere(makeVar("directType"), Ontology.subClassAny, makeVar(typeField));
+//            select.addWhere(makeVar(typeField), RDFS.label, makeVar(typeLabelField));            
+//        } else {
+//            select.addWhere(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), RDF.type, makeVar(typeField));
+//            select.addWhere(makeVar(typeField), RDFS.label, makeVar(typeLabelField));
+//        }
+//        
+//        Locale locale = Locale.forLanguageTag(language);
+//        select.addFilter(SPARQLQueryHelper.langFilter(typeLabelField, locale.getLanguage()));
+//
+//        List<TypeModel> rdfTypes = new ArrayList<>();
+//        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+//        for (SPARQLResult res:results) {
+//            TypeModel model = new TypeModel();
+//            model.setType(new URI(res.getStringValue(typeField)));
+//            model.setTypeLabel(res.getStringValue(typeLabelField));
+//            rdfTypes.add(model);
+//        }
+//
+//        return rdfTypes;
+//
+//    }
+    
+    public List<URITypesModel> checkURIsTypes(List<URI> uris, List<URI> rdfTypes) throws SPARQLException, URISyntaxException, Exception {
+        List<URITypesModel> urisTypes = new ArrayList<>();
+        
+        String uriField = "_uri";
+        SelectBuilder select = new SelectBuilder();
+        select.addVar(uriField);
+        select.setDistinct(true);
+        
+        String dTypeField = "_dtype";
+        String typeField = "_type";
+
+        select.addWhere(select.makeTriplePath(makeVar(uriField), RDF.type, makeVar("type")));
+                
+        for (int i=0; i<rdfTypes.size();i++) {
+            String index = String.valueOf(i);
+            select.addVar(typeField+index);
+            WhereBuilder optionBuiler = new WhereBuilder();
+            optionBuiler.addWhere(makeVar(uriField), RDF.type, makeVar(dTypeField+index));
+            optionBuiler.addWhere(makeVar(dTypeField+index), Ontology.subClassAny, makeVar(typeField+index));
+            optionBuiler.addFilter(SPARQLQueryHelper.eq(typeField+index, rdfTypes.get(i)));
+           
+            select.addOptional(optionBuiler);
+
+        }
+        select.addFilter(SPARQLQueryHelper.inURIFilter(uriField, uris));            
+
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        
+        for (SPARQLResult res:results) {
+            URI uri = new URI(res.getStringValue(uriField));
+            List<URI> types = new ArrayList();
+            for (int i=0; i<rdfTypes.size();i++) {
+                String index = String.valueOf(i);
+                if (res.getStringValue(typeField+String.valueOf(index)) != null) {
+                    URI type = new URI(res.getStringValue(typeField+String.valueOf(index)));
+                    types.add(type);
+                }
+            }
+            URITypesModel model = new URITypesModel(uri, types);
+            urisTypes.add(model);       
+            
+        }
+        return urisTypes;
+    }
 }

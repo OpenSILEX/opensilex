@@ -179,6 +179,8 @@ routes:
     credentials: []
   - path: /germplasm/annotations/:uri
     component: opensilex-GermplasmDetails
+  - path: /germplasm/documents/:uri
+    component: opensilex-GermplasmDetails
 
   - path: /factor/create
     component: opensilex-FactorForm

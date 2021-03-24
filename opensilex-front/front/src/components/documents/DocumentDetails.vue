@@ -42,22 +42,27 @@
               <opensilex-StringView label="DocumentDetails.date" :value="document.date"></opensilex-StringView>
               <opensilex-TextView label="DocumentDetails.description" :value="document.description"></opensilex-TextView>
               <opensilex-StringView class="overflow-auto" style="height: 100px" label="DocumentDetails.targets" :uri="document.targets">
-                <span :key="targets" v-for="(targets) in document.targets"> 
+                <span :key="target" v-for="(target) in targetsTypes"> 
                 <opensilex-UriLink 
-                  :uri="targets"    
-                  v-if="targets.includes('expe')"           
-                  :to="{path: '/experiment/details/'+ encodeURIComponent(targets)}"
+                  :uri="target.uri"    
+                  v-if="target.rdf_types.includes($opensilex.Oeso.EXPERIMENT_TYPE_URI)"           
+                  :to="{path: '/experiment/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
-                  :uri="targets"    
-                  v-else-if="targets.includes('device')"           
-                  :to="{path: '/device/details/'+ encodeURIComponent(targets)}"
+                  :uri="target.uri"    
+                  v-else-if="target.rdf_types.includes($opensilex.Oeso.DEVICE_TYPE_URI)"       
+                  :to="{path: '/device/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
-                  :uri="targets"    
-                  v-else-if="targets.includes('prj')"           
-                  :to="{path: '/project/details/'+ encodeURIComponent(targets)}"
+                  :uri="target.uri"    
+                  v-else-if="target.rdf_types.includes($opensilex.Oeso.PROJECT_TYPE_URI)"           
+                  :to="{path: '/project/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
+                <opensilex-UriLink 
+                  :uri="target.uri"    
+                  v-else-if="target.rdf_types.includes($opensilex.Oeso.GERMPLASM_TYPE_URI)"           
+                  :to="{path: '/germplasm/details/'+ encodeURIComponent(target.uri)}"
+                ></opensilex-UriLink>
                 <opensilex-UriLink 
                   :uri="targets"  
                   v-else  
@@ -110,8 +115,10 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   DocumentGetDTO,
-  DocumentsService
+  DocumentsService,
+  ResourceTreeDTO
 } from "opensilex-core/index";
+import Oeso from "../../ontologies/Oeso";
 import {
   SecurityService,
   UserGetDTO
@@ -142,7 +149,7 @@ export default class DocumentDetails extends Vue {
 
   refresh() {
     this.loadDocument(this.uri);
-}
+  }
   
   document: DocumentGetDTO = { 
           uri: null,
@@ -159,10 +166,13 @@ export default class DocumentDetails extends Vue {
           keywords: null
       };
   
+  targetsTypes = [];
+
   created() {
     this.service = this.$opensilex.getService("opensilex.DocumentsService");
-    this.uri = decodeURIComponent(this.$route.params.uri);
+    this.uri = decodeURIComponent(this.$route.params.uri);   
     this.loadDocument(this.uri);
+
   }
 
   loadDocument(uri: string) {
@@ -170,6 +180,7 @@ export default class DocumentDetails extends Vue {
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
         this.document = http.response.result;
+        this.loadTargetsTypes();
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -217,6 +228,16 @@ export default class DocumentDetails extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
   
+  loadTargetsTypes() {
+    let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI);
+    ontologyService.checkURIsTypes(this.document.targets, types)
+    .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
+      this.targetsTypes = http.response.result;          
+    })
+    .catch(this.$opensilex.errorHandler); 
+    
+  }  
 }
 </script>
 

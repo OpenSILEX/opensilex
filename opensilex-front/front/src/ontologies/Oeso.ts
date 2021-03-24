@@ -11,6 +11,7 @@ let checkURIs = (uri1, uri2) => {
 
 let ontologies = {
     URI: OESO_URI,
+    PROJECT_TYPE_URI: OESO_URI + "#Project",
     EXPERIMENT_TYPE_URI: OESO_URI + "#Experiment",
     INFRASTRUCTURE_TYPE_URI: OESO_URI + "#Infrastructure",
     SCIENTIFIC_OBJECT_TYPE_URI: OESO_URI + "#ScientificObject",

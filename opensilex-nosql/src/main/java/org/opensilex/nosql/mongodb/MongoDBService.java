@@ -180,6 +180,15 @@ public class MongoDBService extends BaseService {
         return this.findByURI(collection,uri,"uri");
     }
 
+    /**
+     *
+     * @param collection the collection on which find an instance with the given uri
+     * @param uri URI of the instance to find
+     * @param uriField the name of the uri field
+     * @param <T> the instance class
+     * @return the instance which has the given uri
+     * @throws NoSQLInvalidURIException if no instance is found
+     */
     public <T> T findByURI(MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
         T instance = (T) collection.find(eq(uriField, uri)).first();
         if (instance == null) {
@@ -222,6 +231,14 @@ public class MongoDBService extends BaseService {
         }
     }
 
+    /**
+     *
+     * @param collection the collection on which find an instance with the given uri
+     * @param uri URI of the instance to check
+     * @param uriField the name of the uri field
+     * @param <T> the instance class
+     * @return if an instance with the given uri exists
+     */
     public <T> boolean uriExists(MongoCollection<T> collection, URI uri, String uriField) {
         try {
             T instance = findByURI(collection, uri, uriField);
@@ -333,6 +350,15 @@ public class MongoDBService extends BaseService {
         this.delete(collection,uri,"uri");
     }
 
+
+    /**
+     * delete the instance with the given uri
+     * @param collection the collection on which find an instance with the given uri
+     * @param uri URI of the instance to find
+     * @param uriField the name of the uri field
+     * @param <T> the instance class
+     * @throws NoSQLInvalidURIException if no instance is found
+     */
     public <T extends MongoModel> void delete(MongoCollection<T> collection , URI uri, String uriField) throws NoSQLInvalidURIException {
         T instance = findByURI(collection,uri,uriField);
         if (instance == null) {
@@ -372,6 +398,14 @@ public class MongoDBService extends BaseService {
     }
 
 
+    /**
+     * Update the given instance
+     * @param collection the collection on which the new instance is located
+     * @param newInstance  the instance to update
+     * @param uriField the name of the uri field
+     * @param <T> the instance class
+     * @throws NoSQLInvalidURIException if no instance is found
+     */
     public <T extends MongoModel> void update(T newInstance,MongoCollection<T> collection, String uriField) throws NoSQLInvalidURIException {
         T instance = findByURI(collection, newInstance.getUri(),uriField);
         if (instance == null) {

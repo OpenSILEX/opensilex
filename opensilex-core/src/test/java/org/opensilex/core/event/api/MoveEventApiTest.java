@@ -10,8 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.event.api.move.MoveEventCreationDTO;
-import org.opensilex.core.event.api.move.MoveEventGetDTO;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -124,9 +124,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     }
 
 
-    private MoveEventCreationDTO getCreationDto() {
+    private MoveCreationDTO getCreationDto() {
 
-        MoveEventCreationDTO dto = new MoveEventCreationDTO();
+        MoveCreationDTO dto = new MoveCreationDTO();
         dto.setDescription("A test event");
         dto.setIsInstant(false);
         OffsetDateTime now = OffsetDateTime.now();
@@ -170,7 +170,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
 //    @Test
     public void testCreateGetAndDelete() throws Exception {
-        super.testCreateGetAndDelete(createPath, getByUriPath, deletePath, Collections.singletonList(getCreationDto()));
+        super.testCreateListGetAndDelete(createPath, getByUriPath, deletePath, Collections.singletonList(getCreationDto()));
     }
 
     @Test
@@ -211,14 +211,14 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         int n = 10;
 
-        List<MoveEventCreationDTO> dtos = new ArrayList<>(n);
+        List<MoveCreationDTO> dtos = new ArrayList<>(n);
 
         for(int i=0; i<n;i++){
 
             InfrastructureFacilityModel fromFacility = fromFacilities.get(i);
             InfrastructureFacilityModel toFacility = toFacilities.get(i);
 
-            MoveEventCreationDTO creationDTO = getCreationDto();
+            MoveCreationDTO creationDTO = getCreationDto();
             creationDTO.setDescription("Description "+i);
             creationDTO.setFrom(fromFacility.getUri());
             creationDTO.setTo(toFacility.getUri());
@@ -233,7 +233,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
 //    @Test
     public void testUpdate() throws Exception {
-        MoveEventCreationDTO creationDTO = getCreationDto();
+        MoveCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
@@ -245,15 +245,15 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         // check that positions have been deleted
         Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<MoveEventGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveEventGetDTO>>() {
+        SingleObjectResponse<MoveGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveGetDTO>>() {
         });
-        MoveEventGetDTO dtoFromDb = getResponse.getResult();
+        MoveGetDTO dtoFromDb = getResponse.getResult();
     }
 
 //    @Test
     public void testUpdateWithNullNoSqlModel() throws Exception {
 
-        MoveEventCreationDTO creationDTO = getCreationDto();
+        MoveCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
@@ -266,9 +266,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         // check that positions have been deleted
         Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<MoveEventGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveEventGetDTO>>() {
+        SingleObjectResponse<MoveGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveGetDTO>>() {
         });
-        MoveEventGetDTO dtoFromDb = getResponse.getResult();
+        MoveGetDTO dtoFromDb = getResponse.getResult();
 
         assertNotEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
@@ -290,7 +290,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 //    @Test
     public void testGetByUri() throws Exception {
 
-        MoveEventCreationDTO creationDTO = getCreationDto();
+        MoveCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
 
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
@@ -298,15 +298,15 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<MoveEventGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveEventGetDTO>>() {
+        SingleObjectResponse<MoveGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveGetDTO>>() {
         });
-        MoveEventGetDTO dtoFromDb = getResponse.getResult();
+        MoveGetDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
 
         testEquals(dtoFromDb,creationDTO);
     }
 
-    private void testEquals(MoveEventGetDTO dtoFromDb, MoveEventCreationDTO creationDTO){
+    private void testEquals(MoveGetDTO dtoFromDb, MoveCreationDTO creationDTO){
         assertEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
         assertEquals(creationDTO.getEnd(), dtoFromDb.getEnd());
@@ -344,7 +344,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetPosition() throws Exception {
 
-        MoveEventCreationDTO creationDTO = getCreationDto();
+        MoveCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
@@ -368,7 +368,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
 
         // create a newer event
-        MoveEventCreationDTO newEventCreationDto = getCreationDto();
+        MoveCreationDTO newEventCreationDto = getCreationDto();
         OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDTO.getEnd()).plusDays(2);
         newEventCreationDto.setEnd(newerEndTime.toString());
         newEventCreationDto.setFrom(creationDTO.getTo());
@@ -400,7 +400,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetPositionHistory() throws Exception {
 
-        MoveEventCreationDTO creationDTO = getCreationDto();
+        MoveCreationDTO creationDTO = getCreationDto();
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
@@ -415,7 +415,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(creationDTO,0,history.get(0),moveEventUri);
 
         // create a newer event
-        MoveEventCreationDTO newEventCreationDto = getCreationDto();
+        MoveCreationDTO newEventCreationDto = getCreationDto();
         OffsetDateTime newerEndTime = OffsetDateTime.parse(creationDTO.getEnd()).plusDays(2);
         newEventCreationDto.setEnd(newerEndTime.toString());
         newEventCreationDto.setFrom(creationDTO.getTo());

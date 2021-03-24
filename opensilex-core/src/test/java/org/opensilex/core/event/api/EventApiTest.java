@@ -87,7 +87,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreateGetAndDelete() throws Exception {
-        super.testCreateGetAndDelete(createPath,getByUriPath, deletePath, Collections.singletonList(getCreationDto()));
+        super.testCreateListGetAndDelete(createPath,getByUriPath, deletePath, Collections.singletonList(getCreationDto()));
     }
 
     @Test

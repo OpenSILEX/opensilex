@@ -331,7 +331,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @param deletePath the path to the service which allow to delete an entity
      * @param entities the List of entity on which apply create, read and delete
      */
-    protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
+    protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
 
         final Response postResult = getJsonPostResponse(target(createPath),entities);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());

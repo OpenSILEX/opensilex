@@ -444,7 +444,7 @@ public class ExperimentAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(experiments, objects, currentUser.getLanguage());
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -643,7 +643,7 @@ public class ExperimentAPI {
 
             }
         } else {
-            Set<URI> provenancesByExperiment = dao.getProvenancesByExperiment(xpUri);
+            Set<URI> provenancesByExperiment = dao.getProvenancesByExperiment(currentUser, xpUri);
             if (provenancesByExperiment.size() > 0) {
                 provenancesArrayList = new ArrayList<>(provenancesByExperiment);
             }
@@ -1409,7 +1409,7 @@ public class ExperimentAPI {
         xpDAO.validateExperimentAccess(xpUri, currentUser);
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        Set<URI> provenancesURIs = dataDAO.getProvenancesByExperiment(xpUri);
+        Set<URI> provenancesURIs = dataDAO.getProvenancesByExperiment(currentUser, xpUri);
 
         ListWithPagination<ProvenanceGetDTO> provenances = new ListWithPagination(new ArrayList<ProvenanceGetDTO>());
         if (!provenancesURIs.isEmpty()) {

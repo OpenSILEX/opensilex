@@ -244,7 +244,7 @@ public class StudiesAPI implements BrapiCall {
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(new URI(studyDbId), currentUser.getLanguage(), page, pageSize);
+        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, new URI(studyDbId), page, pageSize);
 
         ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();

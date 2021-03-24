@@ -1065,7 +1065,7 @@ public class ScientificObjectAPI {
         DataDAO dao = new DataDAO(nosql, sparql, null);
         List<URI> objects = new ArrayList<>();
         objects.add(uri);
-        List<VariableModel> variables = dao.getUsedVariables(null, objects, currentUser.getLanguage());
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, objects);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

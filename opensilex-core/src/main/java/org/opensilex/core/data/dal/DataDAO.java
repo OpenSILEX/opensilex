@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import org.bson.Document;
 import org.opensilex.core.exception.NoVariableDataTypeException;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -39,6 +40,7 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,10 +136,10 @@ public class DataDAO {
             Document metadata,
             List<OrderBy> orderByList,
             Integer page,
-            Integer pageSize) {
+            Integer pageSize) throws Exception {
 
-        Document filter = searchFilter(experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
-     
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+
         ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
         return datas;
@@ -158,7 +160,7 @@ public class DataDAO {
             Document metadata,
             List<OrderBy> orderByList,
             Integer page,
-            Integer pageSize) {
+            Integer pageSize) throws Exception {
         
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         List<URI> agents = new ArrayList<>();
@@ -171,7 +173,7 @@ public class DataDAO {
         
         ListWithPagination<DataModel> datas;
         if (!deviceProvenances.isEmpty()) {
-            Document filter = searchFilter(experiments, objects, variables, null, startDate, endDate, confidenceMin, confidenceMax, metadata);
+            Document filter = searchFilter(user, experiments, objects, variables, null, startDate, endDate, confidenceMin, confidenceMax, metadata);
             
             //Get all data that have :
             //    provenance.provUsed.uri = deviceURI 
@@ -210,9 +212,9 @@ public class DataDAO {
             Float confidenceMin,
             Float confidenceMax,
             Document metadata,
-            List<OrderBy> orderByList) {
+            List<OrderBy> orderByList) throws Exception {
 
-        Document filter = searchFilter(experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
         List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
 
@@ -220,14 +222,11 @@ public class DataDAO {
 
     }
     
-    private Document searchFilter(List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> provenances, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) {
+    private Document searchFilter(UserModel user, List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> provenances, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) throws Exception {   
+                
         Document filter = new Document();
         
-        if (experiments != null && !experiments.isEmpty()) {
-            Document inFilter = new Document(); 
-            inFilter.put("$in", experiments);
-            filter.put("provenance.experiments", inFilter);
-        }
+        filter = appendExperimentUserAccessFilter(filter, user, experiments);                
         
         if (objects != null && !objects.isEmpty()) {
             Document inFilter = new Document(); 
@@ -281,6 +280,53 @@ public class DataDAO {
                 
         return filter;
     }    
+    
+    private Document appendExperimentUserAccessFilter(Document filter, UserModel user, List<URI> experiments) throws Exception {
+        String experimentField = "provenance.experiments";
+        
+        //user access
+        if (!user.isAdmin()) {
+            ExperimentDAO expDAO = new ExperimentDAO(sparql);
+            Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
+
+            if (experiments != null && !experiments.isEmpty()) {
+                
+                //Transform experiments and userExperiments in long format to compare the two lists
+                Set<URI> longUserExp = new HashSet<>();
+                for (URI exp:userExperiments) {
+                    longUserExp.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
+                }                
+                Set <URI> longExpURIs = new HashSet<>();
+                for (URI exp:experiments) {
+                    longExpURIs.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
+                }
+                longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
+                
+                if (longExpURIs.isEmpty()) {
+                    throw new Exception("you can't access to the given experiments");
+                } else {
+                    Document inFilter = new Document(); 
+                    inFilter.put("$in", longExpURIs);
+                    filter.put("provenance.experiments", inFilter);
+                }
+            } else {
+                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));                
+                Document notExistingExpFilter = new Document(experimentField, new Document("$exists", false));
+                Document emptyExpFilter = new Document(experimentField, new ArrayList());                
+                List<Document> expFilter = Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter);
+             
+                filter.put("$or", expFilter);  
+            }
+        } else {
+            if (experiments != null && !experiments.isEmpty()) {
+                Document inFilter = new Document(); 
+                inFilter.put("$in", experiments);
+                filter.put("provenance.experiments", inFilter);
+            }
+        }
+        
+        return filter;        
+    }
 
     public DataModel get(URI uri) throws NoSQLInvalidURIException {
         DataModel data = nosql.findByURI(DataModel.class, DATA_COLLECTION_NAME, uri);
@@ -304,15 +350,15 @@ public class DataDAO {
         nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
     }
 
-    public ListWithPagination<VariableModel> getVariablesByExperiment(URI xpUri, String language, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<VariableModel> getVariablesByExperiment(UserModel user, URI xpUri, Integer page, Integer pageSize) throws Exception {
         List<URI> experiments = new ArrayList();
         experiments.add(xpUri);                
-        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         
         if (variableURIs.isEmpty()) {
             return new ListWithPagination(new ArrayList(), page, pageSize, 0);
-            
+
         } else {
             
             int total = variableURIs.size();
@@ -333,15 +379,15 @@ public class DataDAO {
                 listToSend = list.subList(fromIndex, toIndex);
             }
 
-            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, language);
+            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, user.getLanguage());
             return new ListWithPagination(variables, page, pageSize, total);
         }
-    }
-    
-    public Set<URI> getProvenancesByExperiment(URI xpUri) throws Exception {
+    }    
+
+    public Set<URI> getProvenancesByExperiment(UserModel user, URI xpUri) throws Exception {
         List<URI> experiments = new ArrayList();
         experiments.add(xpUri);
-        Document filter = searchFilter(experiments, null, null, null, null, null, null, null, null);
+        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null);
         return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
     }
 
@@ -376,9 +422,9 @@ public class DataDAO {
             Document metadata,
             List<OrderBy> orderBy,
             int page,
-            int pageSize) {
+            int pageSize) throws Exception {
 
-        Document filter = searchFilter(experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
+        Document filter = searchFilter(user, experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
 
         ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
                 DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);
@@ -458,7 +504,7 @@ public class DataDAO {
         return checkCoherence;
     }
 
-    public DeleteResult deleteWithFilter(URI experimentUri, URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
+    public DeleteResult deleteWithFilter(UserModel user, URI experimentUri, URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
         List<URI> provenances = new ArrayList<>();
         provenances.add(provenanceUri);
         List<URI> objects = new ArrayList<>();
@@ -468,15 +514,15 @@ public class DataDAO {
         List<URI> experiments = new ArrayList<>();
         experiments.add(experimentUri);
         
-        Document filter = searchFilter(experiments, objects, variables, provenances, null, null, null, null, null);
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, null, null, null, null, null);
         DeleteResult result = nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
         return result;
     }
 
-    public List<VariableModel> getUsedVariables(List<URI> experiments, List<URI> objects, String language) throws Exception {             
-        Document filter = searchFilter(experiments, objects, null, null, null, null, null, null, null);
+    public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects) throws Exception {             
+        Document filter = searchFilter(user, experiments, objects, null, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        return sparql.getListByURIs(VariableModel.class, variableURIs, language);
+        return sparql.getListByURIs(VariableModel.class, variableURIs, user.getLanguage());
     }
 
 }

@@ -325,7 +325,7 @@ public class ExperimentDAO {
 
         return userExperiments;
     }
-
+    
     public static void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return;

@@ -54,6 +54,7 @@ import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -271,7 +272,7 @@ public class DataAPI {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
             .getResponse();
             }
-        }
+        }        
         
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
@@ -398,7 +399,7 @@ public class DataAPI {
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql,sparql, fs);
-        DeleteResult result = dao.deleteWithFilter(experimentUri, objectUri, variableUri, provenanceUri);
+        DeleteResult result = dao.deleteWithFilter(user, experimentUri, objectUri, variableUri, provenanceUri);
         return new SingleObjectResponse(result).getResponse(); 
     }
 

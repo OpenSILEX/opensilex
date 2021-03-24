@@ -29,12 +29,8 @@ public class MoveLocationOrPositionNotNullValidator implements ConstraintValidat
 
         List<ConcernedItemPositionCreationDTO> positions = moveCreationDTO.getConcernedItemPositions();
 
-        if (moveCreationDTO.getTo() == null && moveCreationDTO.getFrom() == null && CollectionUtils.isEmpty(positions)) {
-            return updateContextViolationTemplateWithMessage(context, "no location or position : to, from and targets_positions are null or empty");
-        }
-
-        if(positions == null){
-            return true;
+        if (moveCreationDTO.getTo() == null && CollectionUtils.isEmpty(positions)) {
+            return updateContextViolationTemplateWithMessage(context, "no location or position : to and targets_positions are null or empty");
         }
 
         for (int i = 0; i < positions.size(); i++) {

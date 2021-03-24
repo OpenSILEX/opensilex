@@ -16,13 +16,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Renaud COLIN
- */
 @JsonPropertyOrder({
         "uri", "rdf_type", "rdf_type_name", "start", "end", "is_instant","description","targets","author","from","to","targets_positions"
 })
-public class MoveGetDTO extends EventGetDTO {
+public class MoveEventGetDTO extends EventGetDTO {
 
     @JsonProperty("from")
     private InfrastructureFacilityNamedDTO from;
@@ -33,10 +30,10 @@ public class MoveGetDTO extends EventGetDTO {
     @JsonProperty("targets_positions")
     private List<ConcernedItemPositionGetDTO> concernedItemPositions;
 
-    public MoveGetDTO() {
+    public MoveEventGetDTO() {
     }
 
-    public MoveGetDTO(MoveModel model) throws URISyntaxException, JsonProcessingException {
+    public MoveEventGetDTO(MoveModel model) throws URISyntaxException, JsonProcessingException {
 
         super.fromModel(model);
         if(model.getFrom() != null){

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventCreationDTO;
-import org.opensilex.core.event.api.validation.MoveLocationOrPositionNotNullConstraint;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.position.api.ConcernedItemPositionCreationDTO;
@@ -14,13 +13,12 @@ import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @JsonPropertyOrder({
-    "uri", "rdf_type","start", "end", "is_instant","description","targets","relations","from","to","targets_positions"
+        "uri", "rdf_type","start", "end", "is_instant","description","targets","relations","from","to","targets_positions"
 })
-@MoveLocationOrPositionNotNullConstraint
-public class MoveCreationDTO extends EventCreationDTO {
+@Valid
+public class MoveEventCreationDTO extends EventCreationDTO {
 
     @JsonProperty("from")
     private URI from;
@@ -85,9 +83,19 @@ public class MoveCreationDTO extends EventCreationDTO {
             return null;
         }
 
-        List<ConcernedItemPositionModel> itemPositions = concernedItemPositions.stream()
-                .map(ConcernedItemPositionCreationDTO::toModel)
-                .collect(Collectors.toList());
+        List<ConcernedItemPositionModel> itemPositions = new ArrayList<>(concernedItemPositions.size());
+
+        try{
+            for (ConcernedItemPositionCreationDTO dto : concernedItemPositions) {
+                ConcernedItemPositionModel model = dto.toModel();
+                if(model != null){
+                    itemPositions.add(model);
+                }
+            }
+        }catch (JsonProcessingException e){
+            throw new RuntimeException(e);
+        }
+
 
         MoveEventNoSqlModel moveNoSql = new MoveEventNoSqlModel();
         moveNoSql.setItemPositions(itemPositions);

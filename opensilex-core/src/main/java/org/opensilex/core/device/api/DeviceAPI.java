@@ -16,7 +16,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import java.io.StringWriter;
 import static java.lang.Integer.max;
 import java.net.URI;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
@@ -45,35 +44,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
-import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.exception.UnableToParseDateException;
-import org.opensilex.core.experiment.api.ExperimentAPI;
-import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -88,16 +67,32 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+import java.time.Instant;
+import java.time.zone.ZoneRulesException;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
+import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.core.experiment.api.ExperimentAPI;
+import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
@@ -633,4 +628,5 @@ public class DeviceAPI {
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
+
 }

@@ -54,17 +54,16 @@
         <template v-for="(field, index) in fields" v-slot:[getHeadTemplateName(field.key)]="data">
           <span v-if="!field.isSelect" :key="index">{{$t(data.label)}}</span>
 
-        <!--   <label v-else :key="index" class="custom-control custom-checkbox m-0">
+          <label v-else :key="index">
             <input
               v-if="!maximumSelectedRows"
               type="checkbox"
-              :value="true"
-              class="custom-control-input select_all_child"
+              :value = true
               v-model="selectAll"
               @change="onSelectAll()"
             />
-            <span v-if="!maximumSelectedRows" class="custom-control-label">&nbsp;</span>
-          </label> -->
+            <span v-if="!maximumSelectedRows">&nbsp;</span>
+          </label>
         </template>
 
         <template v-for="(field, index) in fields" v-slot:[getCellTemplateName(field.key)]="data">
@@ -165,6 +164,11 @@ export default class TableAsyncView extends Vue {
   isSearching = false;
   selectAll = false;
 
+  @Prop({
+    default: 1000
+  })
+  selectAllLimit; 
+
   created() {
     if (this.isSelectable) {
       this.fields.unshift({
@@ -233,7 +237,6 @@ export default class TableAsyncView extends Vue {
   //second step
   // items = all selected items : if limit condition then unselect the item
   onRowSelected(items) {
-   
     if (
       this.maximumSelectedRows &&
       this.maximumSelectedRows > 1 &&
@@ -352,6 +355,47 @@ export default class TableAsyncView extends Vue {
   getCurrentItemOffset() : number {
     return (this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
   }
+
+  onSelectAll() {  
+    if (this.selectAll) {
+
+      if(this.totalRow > this.selectAllLimit) {
+        alert(this.$t('TableAsyncView.alertSelectAllLimitSize') + this.selectAllLimit);
+        this.selectAll=false;
+      }
+      else {
+        this.selectedItems = [];
+
+        let orderBy = [];
+        if (this.sortBy) {
+          let orderByText = this.sortBy + "=";
+          if (this.sortDesc) {
+            orderBy.push(orderByText + "desc");
+          } else {
+            orderBy.push(orderByText + "asc");
+          }
+        }
+
+        this.searchMethod({
+          orderBy: orderBy,
+          currentPage: 0,
+          pageSize: this.selectAllLimit
+        })
+        .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+        this.totalRow = http.response.metadata.pagination.totalCount;
+        this.selectedItems = http.response.result;
+        this.numberOfSelectedRows = this.selectedItems.length;
+        this.pagination();
+        return this.selectedItems;
+        }) 
+      }
+    }
+    else {
+      this.selectedItems = [];
+      this.numberOfSelectedRows = this.selectedItems.length;
+      this.pagination();
+    }
+  }
 }
 </script>
 
@@ -424,3 +468,12 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
   top: -5px;
 }
 </style>
+<i18n>
+en:
+  TableAsyncView:
+    alertSelectAllLimitSize: The selection has too many lines for this feature, refine your search, maximum= 
+
+fr:
+  TableAsyncView:
+    alertSelectAllLimitSize: La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum= 
+</i18n>

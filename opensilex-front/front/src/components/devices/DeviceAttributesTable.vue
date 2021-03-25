@@ -41,6 +41,7 @@ import HttpResponse, {
 
 
 
+
 @Component
 export default class DeviceAttributesTable extends Vue {
   $opensilex: any;

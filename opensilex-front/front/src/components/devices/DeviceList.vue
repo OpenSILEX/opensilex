@@ -2,7 +2,7 @@
   <div>
 
     <opensilex-SearchFilterField
-      @search="updateFilter()"
+      @search="refresh()"
       @clear="resetFilters()"
       withButton="false"
       :showAdvancedSearch="true"
@@ -90,6 +90,7 @@
           >{{$t('DeviceList.export')}}</b-dropdown-item-button>
           <b-dropdown-item-button
             disabled
+            @click="addVariable()"
           >{{$t('DeviceList.addVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item-button 
@@ -106,7 +107,6 @@
             disabled
           >{{$t('DeviceList.showMap')}}</b-dropdown-item-button>
       </b-dropdown>
-
     </template>
 
       <template v-slot:cell(uri)="{data}">
@@ -154,21 +154,22 @@
       @onUpdate="refresh()"
     ></opensilex-ModalForm>
 
-    <!-- <opensilex-ModalForm
+    <opensilex-VariableModalList
+      label="label"
       ref="deviceVarForm"
-      component="opensilex-DeviceVarForm"
-      editTitle="udpate"
-      icon="ik#ik-user"
-      modalSize="lg"
-      @onUpdate="refresh()"
-    ></opensilex-ModalForm> -->
+      :isModalSearch="true"
+      :selected.sync="variablesSelected"
+      :required="true"
+      :multiple="true"
+      @click="editDeviceVar()"
+    ></opensilex-VariableModalList>      
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO, VariableGetDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -177,13 +178,11 @@ export default class DeviceList extends Vue {
   service: DevicesService;
   $store: any;
   $route: any;
-  pageSize: number = 20;
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
-
-  // @Ref("deviceVarForm") readonly deviceVarForm!: any;
+  @Ref("deviceVarForm") readonly deviceVarForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -226,6 +225,8 @@ export default class DeviceList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
 
     /*this.exportFilter = {
       namePattern: undefined,
@@ -243,11 +244,6 @@ export default class DeviceList extends Vue {
   created() {
     let query: any = this.$route.query;
     this.service = this.$opensilex.getService("opensilex.DevicesService");
-  }
-
-  updateFilter() {
-    this.$opensilex.updateURLParameter("filter", this.filter, "");
-    this.refresh();
   }
 
   editDevice(uri: string) {
@@ -323,7 +319,7 @@ export default class DeviceList extends Vue {
       this.addMetadataFilter(), //metadata filter
       options.orderBy,
       options.currentPage,
-      this.pageSize,
+      options.pageSize,
     );
   }
 
@@ -338,7 +334,20 @@ export default class DeviceList extends Vue {
     }
     this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
   }
+
+  // addVariable() {
+  //   this.deviceVarForm.show();
+  // }
   
+  // variablesSelected = []; 
+
+  // editDeviceVar() {
+  //   console.log("result var" + this.variablesSelected);
+  //   for (let select of this.tableRef.getSelected()) {
+  //     this.variablesSelected.push(select.uri);
+  //   }
+  // }
+
   createDocument() {
     this.documentForm.showCreateForm();
   }
@@ -386,10 +395,6 @@ export default class DeviceList extends Vue {
     this.exportFilter.serial_number = undefined;
     this.exportFilter.metadata = this.addMetadataFilter();
   }
-
-  // createVariable() {
-  //   this.deviceVarForm.showCreateForm();
-  // }
 
 }
 </script>
@@ -462,3 +467,4 @@ fr:
       model: Modèle constructeur
       model-placeholder: Entrer le nom du modèle constructeur
 </i18n>
+

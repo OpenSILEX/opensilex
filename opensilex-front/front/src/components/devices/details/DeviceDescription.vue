@@ -103,7 +103,7 @@
       editTitle="DeviceDescription.update"
       icon="ik#ik-user"
       modalSize="lg"
-      @refresh="refresh"
+      @onUpdate="refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>

@@ -119,7 +119,7 @@ export default class DeviceVariablesTable extends Vue {
       row.delete();
     }
   }
-
+  
   addEmptyRow() {
       Vue.set(this.variablesArray, this.variablesArray.length, {
         property: "vocabulary:measures",

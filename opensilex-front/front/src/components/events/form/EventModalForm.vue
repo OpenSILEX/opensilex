@@ -61,7 +61,6 @@
         created() {
             this.service = this.$opensilex.getService("opensilex.EventsService");
         }
-
         showCreateForm() {
             this.modalForm.showCreateForm();
         }

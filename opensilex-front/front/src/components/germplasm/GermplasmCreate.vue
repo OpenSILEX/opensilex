@@ -5,11 +5,7 @@
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
     ></opensilex-PageHeader>
-    <opensilex-PageActions :returnButton="true" >   
-      <opensilex-HelpButton
-          @click="helpModal.show()"
-          label="component.common.help-button"
-      ></opensilex-HelpButton>    
+    <opensilex-PageActions :returnButton="true" >
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -45,9 +41,6 @@
       </b-input-group> -->
       <opensilex-GermplasmTable v-if="selectedType" ref="germplasmTable" :germplasmType="selectedType" :key="tabulatorRefresh"></opensilex-GermplasmTable>
     </opensilex-PageContent>
-    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-      <opensilex-GermplasmHelp></opensilex-GermplasmHelp>
-    </b-modal>
   </div>
 </template>
 
@@ -71,7 +64,6 @@ export default class GermplasmCreate extends Vue {
   selectedType: string = null;
   tabulatorRefresh = 0;
 
-  @Ref("helpModal") readonly helpModal!: any;
   @Ref("germplasmTable") readonly germplasmTable!: any;
 
   get user() {

@@ -47,14 +47,14 @@ export default class GermplasmAttributesTable extends Vue {
     fr: {
       //French language definition
       columns: {
-        attribute: "Attribut",
+        attribute: 'Attribut<span class="required">*</span>',
         value: "Valeur",
         actions: "Supprimer",
       }    
     },
     en: {
       columns: {
-        attribute: "Attribute",
+        attribute: 'Attribute<span class="required">*</span>',
         value: "Value",
         actions: "Delete",
       }
@@ -72,7 +72,7 @@ export default class GermplasmAttributesTable extends Vue {
 
   tableColumns: any[] = [
     {
-      title: "Attribute",
+      title: 'attribute<span class="required">*</span>',
       field: "attribute",
       formater: "string",
       editor: "input",

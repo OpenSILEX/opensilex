@@ -126,28 +126,10 @@
           </opensilex-Card>
         </b-col>
         <b-col>
-          <opensilex-Card label="GermplasmDetails.experiment" icon="ik#ik-clipboard">
-            
-            <template v-slot:body>
-              <opensilex-StringFilter
-                :filter.sync="expFilter"
-                placeholder="GermplasmDetails.experimentNameFilter"
-            ></opensilex-StringFilter>
-              <opensilex-TableAsyncView
-                ref="experimentsTable"
-                :searchMethod="loadExperiments"
-                :fields="expFields"
-                defaultSortBy="label"
-              >
-                <template v-slot:cell(uri)="{data}">
-                  <opensilex-UriLink
-                    :uri="data.item.uri"
-                    :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
-                  ></opensilex-UriLink>
-                </template>
-              </opensilex-TableAsyncView>
-            </template>
-          </opensilex-Card>
+          <opensilex-AssociatedExperimentsList
+            :searchMethod="loadExperiments"
+            :nameFilter.sync="experimentName"
+          ></opensilex-AssociatedExperimentsList>
         </b-col>
       </b-row>
 
@@ -208,7 +190,7 @@ export default class GermplasmDetails extends Vue {
 
   uri: string = null;
   addInfo = [];
-  expFilter: any = "";
+  experimentName: any = "";
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -291,7 +273,7 @@ export default class GermplasmDetails extends Vue {
   loadExperiments(options) {
     return this.service.getGermplasmExperiments(
       this.uri,
-      this.expFilter,
+      this.experimentName,
       options.orderBy,
       options.currentPage,
       options.pageSize
@@ -394,7 +376,6 @@ en:
     value: Value
     subtaxa: Subtaxa
     website: Web site
-    experimentNameFilter: Search on experiment name
 
 fr:
   GermplasmDetails:
@@ -419,7 +400,6 @@ fr:
     attribute: Attribut
     value: Valeur
     subtaxa: Subtaxa
-    website: Site web
-    experimentNameFilter: Chercher sur le nom de l'expérimentation
+    website: Site web    
 
 </i18n>

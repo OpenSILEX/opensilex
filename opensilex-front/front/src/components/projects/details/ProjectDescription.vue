@@ -79,46 +79,9 @@
       </div>
 
       <div class="col col-xl-7">
-        <opensilex-Card label="component.project.experiments" icon="ik#ik-layers">
-          <template v-slot:body>
-            <opensilex-TableAsyncView
-              ref="tableRef"
-              :searchMethod="loadExperiments"
-              :fields="fields"
-              defaultSortBy="name"
-              :defaultPageSize="6"
-            >
-              <template v-slot:cell(name)="{data}">
-                <opensilex-UriLink
-                  :uri="data.item.uri"
-                  :value="data.item.name"
-                  :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
-                ></opensilex-UriLink>
-              </template>
-              <template v-slot:cell(start_date)="{data}">
-                <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
-              </template>
-              <template v-slot:cell(end_date)="{data}">
-                <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
-              </template>
-              <template v-slot:cell(description)="{data}">
-                <span>{{textReduce(data.item.description)}}</span>
-              </template>
-              <template v-slot:cell(state)="{data}">
-                <i
-                  v-if="!isEnded(data.item)"
-                  class="ik ik-activity badge-icon badge-info-opensilex"
-                  :title="$t('component.project.common.status.in-progress')"
-                ></i>
-                <i
-                  v-else
-                  class="ik ik-archive badge-icon badge-light"
-                  :title="$t('component.project.common.status.finished')"
-                ></i>
-              </template>
-            </opensilex-TableAsyncView>
-          </template>
-        </opensilex-Card>
+        <opensilex-AssociatedExperimentsList
+          :searchMethod="loadExperiments"
+        ></opensilex-AssociatedExperimentsList>
 
         <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
           <template v-slot:body>
@@ -244,12 +207,12 @@ export default class ProjectDescription extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined, //name
+        undefined, // name
         undefined, // year
         undefined, // isEnded,
         undefined, // species,
         undefined, // factors
-         [this.uri], // projects
+        [this.uri], // projects
         undefined, // isPublic
         options.orderBy,
         options.currentPage,
@@ -407,14 +370,7 @@ export default class ProjectDescription extends Vue {
     return result;
   }
 
-  textReduce(text) {
-    if (text.length > 60) {
-      var shortname = text.substring(0, 60) + " ...";
-      return text.substring(0, 60) + " ...";
-    } else {
-      return text;
-    }
-  }
+
 }
 </script>
 

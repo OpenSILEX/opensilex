@@ -17,7 +17,6 @@
               </b-nav-item>
 
               <b-nav-item
-                      class="ml-3"
                       :active="isAnnotationTab()"
                       :to="{ path: '/project/annotations/' + encodeURIComponent(uri) }"
               >{{ $t("Annotation.list-title") }}

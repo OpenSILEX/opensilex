@@ -9,10 +9,14 @@
     <opensilex-PageActions
     v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)">
       <template v-slot>
+        <opensilex-HelpButton
+          @click="helpModal.show()"
+          label="component.common.help-button"
+        ></opensilex-HelpButton> 
         <opensilex-CreateButton
           @click="goToGermplasmCreate"
           label="GermplasmView.add"
-        ></opensilex-CreateButton>
+        ></opensilex-CreateButton> 
       </template>
     </opensilex-PageActions>
 
@@ -37,9 +41,9 @@
       @onCreate="germplasmList.refresh()"
       @onUpdate="germplasmList.refresh()"
     ></opensilex-ModalForm>
-    <!-- <opensilex-GermplasmDetails
-     ref="germplasmDetails">
-    </opensilex-GermplasmDetails> -->
+    <b-modal ref="helpModal" size="xl" hide-header ok-only>
+      <opensilex-GermplasmHelp></opensilex-GermplasmHelp>
+    </b-modal>
   </div>
 </template>
 
@@ -81,6 +85,7 @@ export default class GermplasmView extends Vue {
   @Ref("germplasmList") readonly germplasmList!: any;
   @Ref("germplasmDetails") readonly germplasmDetails!: any;
   @Ref("germplasmAttributesForm") readonly germplasmAttributesForm!: any;
+  @Ref("helpModal") readonly helpModal!: any;
 
   created() {
     console.debug("Loading form view...");

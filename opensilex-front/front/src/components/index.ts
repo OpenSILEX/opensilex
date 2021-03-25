@@ -322,6 +322,8 @@ import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue'
 components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
 import ExperimentDocument from './experiments/views/ExperimentDocument.vue';
 components["opensilex-ExperimentDocument"] = ExperimentDocument;
+import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
+components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
 
 
 

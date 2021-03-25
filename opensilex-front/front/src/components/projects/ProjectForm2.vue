@@ -14,6 +14,7 @@
       label="component.project.coordinators"
       :users.sync="form.coordinators"
       :multiple="true"
+      helpMessage="ProjectForm.coordinators"
     ></opensilex-UserSelector>
 
     <!-- Scientific contacts -->
@@ -21,6 +22,7 @@
       label="component.project.scientificContacts"
       :users.sync="form.scientific_contacts"
       :multiple="true"
+      helpMessage="ProjectForm.scientificContacts"
     ></opensilex-UserSelector>
 
     <!-- Administrative contacts -->
@@ -28,6 +30,7 @@
       label="component.project.administrativeContacts"
       :users.sync="form.administrative_contacts"
       :multiple="true"
+      helpMessage="ProjectForm.administrativeContacts"
     ></opensilex-UserSelector>
 
     <!-- Objective -->
@@ -70,5 +73,21 @@ export default class ProjectForm2 extends Vue {
   }
 }
 </script>
+
+<i18n>
+
+en:
+  ProjectForm:
+    scientificContacts: Scientists involved in the project. Only persons existing in the system. If unavailable in the predefined list, persons can be added from the Users menu, prior to the new project creation. 
+    administrativeContacts: Administrative personnel linked to the project (e.g. human ressources people). Only persons existing in the system.
+    coordinators: Project coordinators
+fr:
+  ProjectForm:
+    scientificContacts: Scientifiques impliqués dans le projet. Uniquement les personnes existant dans le système. Si elles ne sont pas disponibles dans la liste prédéfinie, les personnes peuvent être ajoutées à partir du menu Utilisateurs, avant la création du nouveau projet.
+    administrativeContacts: Personnel administratif lié au projet (par exemple, les personnes chargées des ressources humaines). Uniquement les personnes existant dans le système.
+    coordinators: Coordinateurs du projet
+
+</i18n>
+
 
 

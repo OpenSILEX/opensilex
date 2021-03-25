@@ -346,5 +346,4 @@ fr:
         list-title: Position(s)
         end: "Date d'arrivée"
 
-
 </i18n>

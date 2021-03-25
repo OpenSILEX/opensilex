@@ -131,7 +131,6 @@
               relations: null,
               description: null
             };
-
         created() {
           this.service = this.$opensilex.getService("opensilex.DevicesService");
           this.uri = decodeURIComponent(this.$route.params.uri);

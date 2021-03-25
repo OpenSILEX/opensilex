@@ -11,6 +11,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
+import AnnotationList from "../annotations/list/AnnotationList.vue";
 
 @Component
 export default class ScientificObjectDetail extends Vue {

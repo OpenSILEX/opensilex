@@ -358,8 +358,10 @@ export default class TableAsyncView extends Vue {
 
   onSelectAll() {  
     if (this.selectAll) {
+
       if(this.totalRow > this.selectAllLimit) {
         alert(this.$t('TableAsyncView.alertSelectAllLimitSize') + this.selectAllLimit);
+        console.log("limit" + this.selectAll);
         this.selectAll=false;
       }
       else {

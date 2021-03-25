@@ -41,7 +41,7 @@
 
                 <opensilex-DeleteButton
                     v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                    label="MapView.delete-area-button"
+                    label="component.area.delete"
                     @click="deleteArea()"
                 ></opensilex-DeleteButton>
               </div>
@@ -54,6 +54,10 @@
               <opensilex-StringView
                   :value="area.name"
                   label="component.area.details.name"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                  :value="authorName"
+                  label="component.area.details.author"
               ></opensilex-StringView>
               <opensilex-StringView
                   :value="nameType()"
@@ -110,6 +114,7 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+import {UserGetDTO} from "opensilex-security/model/userGetDTO";
 
 @Component
 export default class AreaDetails extends Vue {
@@ -124,12 +129,14 @@ export default class AreaDetails extends Vue {
   area: AreaGetDTO = {
     uri: null,
     name: null,
+    author: null,
     rdf_type: null,
     description: null,
     geometry: null,
   };
 
   rdf_type: string;
+  authorName: string = "";
   private uri: string;
   private lang: string;
 
@@ -153,12 +160,24 @@ export default class AreaDetails extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           this.area = http.response.result;
           this.rdf_type = this.area.rdf_type;
+          this.loadAuthor(this.area.author);
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  loadAuthor(uriAuthor) {
+    this.$opensilex
+        .getService("opensilex.SecurityService")
+        .getUser(uriAuthor)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+          const {last_name, first_name} = http.response.result;
+          this.authorName = first_name + " " + last_name;
         })
         .catch(this.$opensilex.errorHandler);
   }
 
   nameType() {
-    if (this.user.locale != this.lang) {
+    if (this.user.locale != this.lang || this.rdf_type == this.area.rdf_type) {
       this.lang = this.user.locale;
       this.rdfTypeLabel();
     }
@@ -233,9 +252,11 @@ en:
   component:
     area:
       title: Area
+      delete: Delete area
       details:
         uri: URI
         name: Name
+        author: Author
         rdfType: Type
         description: Description
         geometry: Geometry
@@ -243,9 +264,11 @@ fr:
   component:
     area:
       title: Zone
+      delete: Supprimer la zone
       details:
         uri: URI
         name: Nom
+        author: Auteur
         rdfType: Type
         description: Description
         geometry: Géométrie

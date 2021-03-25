@@ -33,7 +33,7 @@
                 <b-nav-item
                         :active="isMap()"
                         :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
-                >{{ $t("Map") }}
+                >{{ $t("ExperimentView.map") }}
                 </b-nav-item>
 
                 <b-nav-item
@@ -181,6 +181,7 @@ en:
         data: Data
         document: Documents
         factors: Factors
+        map: Map
 fr:
     ExperimentView:
         details: Détail
@@ -188,4 +189,5 @@ fr:
         data: Données
         document: Documents
         factors: Facteurs
+        map: Carte
 </i18n>

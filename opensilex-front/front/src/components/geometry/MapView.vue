@@ -42,12 +42,25 @@
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
     >
-      <opensilex-CheckboxForm
-          v-if="!editingMode"
-          :value.sync="displayAreas"
-          title="Area.displayAreas"
-      ></opensilex-CheckboxForm>
-
+      <div v-if="!editingMode" class="row">
+        {{ $t("MapView.display") + " : " }}
+        <opensilex-CheckboxForm
+            :value.sync="displaySO"
+            class="col-lg-2"
+            title="ScientificObjects.display"
+        ></opensilex-CheckboxForm>
+        <opensilex-CheckboxForm
+            :value.sync="displayAreas"
+            class="col-lg-5"
+            title="Area.display"
+        ></opensilex-CheckboxForm>
+        <span>
+          <label class="alert-warning">
+            <img alt="Warning" src="./construction.png"/>
+            {{ $t("MapView.WarningInstruction") }}
+          </label>
+        </span>
+      </div>
       <!-- "mapControls" to display the scale -->
       <vl-map
           ref="map"
@@ -95,7 +108,7 @@
               <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
             </vl-style-box>
           </vl-layer-vector>
-          <vl-layer-vector>
+          <vl-layer-vector :visible="displaySO === 'true'">
             <vl-source-vector
                 ref="vectorSource"
                 :features.sync="featuresOS"
@@ -195,11 +208,11 @@
             ></opensilex-GeometryCopy>
           </div>
           <div v-if="data.item.properties.nature === 'ScientificObjects' & detailsSO">
-            <opensilex-ScientificObjectDetailSimple
+            <opensilex-ScientificObjectDetailBasic
                 v-if="data.item.properties.OS"
-                :copyGeometryButton="true"
                 :selected="data.item.properties.OS"
-            ></opensilex-ScientificObjectDetailSimple>
+                :simpleDisplay="true"
+            ></opensilex-ScientificObjectDetailBasic>
           </div>
         </template>
 
@@ -291,6 +304,7 @@ export default class MapView extends Vue {
 
   private editingMode: boolean = false;
   private displayAreas: String = "true";
+  private displaySO: String = "true";
   private detailsSO: boolean = false;
   private endReceipt: boolean = false;
   private errorGeometry: boolean = false;
@@ -796,17 +810,20 @@ en:
     LegendSO: Scientific Object
     LegendArea: Area
     Instruction: Press Shift to <b>select item by item</b> on the map. Press and hold Shift + Alt + Click and move the mouse to rotate the map. Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.
+    WarningInstruction: Currently, the selection tool does not follow the rotation.
     details: Show or hide element details
     author: Author
     update: Update element
+    display: Display of
   Area:
     title: Area
     add: Description of the area
     update: Update Area
-    displayAreas: Display of areas
+    display: Areas
   ScientificObjects:
-    title: Scientific Objects
+    title: Scientific object
     update: Scientific object has been updated
+    display: Scientific objects
 fr:
   MapView:
     name: nom
@@ -822,16 +839,19 @@ fr:
     Legend: Légende
     LegendSO: Objet scientifique
     LegendArea: Zone
-    Instruction: Appuyez sur Shift pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Shift +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    Instruction: Appuyez sur Maj pour <b>sélectionner élément par élément</b> sur la carte. Appuyez et maintenez Maj +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte. Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.
+    WarningInstruction: Actuellement, l'outil de sélection ne suit pas la rotation.
     details: Afficher ou masquer les détails de l'élément
     author: Auteur
     update: Mise à jour de l'élément
+    display: Affichage des
   Area:
     title: Zone
     add: Description de la zone
     update: Mise à jour de la zone
-    displayAreas: Affichage des zones
+    display: Zones
   ScientificObjects:
-    title: Objets scientifiques
+    title: Objet scientifique
     update: L'objet scientifique a été mis à jour
+    display: Objets scientifiques
 </i18n>

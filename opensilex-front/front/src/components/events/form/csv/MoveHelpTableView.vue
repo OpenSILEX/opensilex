@@ -15,7 +15,7 @@
                         <b-th>isInstant<span class="required"> *</span></b-th>
                         <b-th>start</b-th>
                         <b-th>end</b-th>
-                        <b-th class="uri-field">ConcernedItem</b-th>
+                        <b-th class="uri-field">Target</b-th>
                         <b-th>description</b-th>
                         <b-th class="uri-field">From</b-th>
                         <b-th class="uri-field">To</b-th>

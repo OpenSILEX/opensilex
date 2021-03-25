@@ -75,7 +75,6 @@
 
         loadFacilities(facilitiesUris) {
 
-
             if (!facilitiesUris || facilitiesUris.length == 0) {
                 return undefined;
             }

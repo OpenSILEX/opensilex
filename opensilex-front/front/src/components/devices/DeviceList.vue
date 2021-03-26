@@ -467,6 +467,18 @@ export default class DeviceList extends Vue {
     this.exportFilter.metadata = this.addMetadataFilter();
   }
 
+  createMoves(){
+    this.updateSelectedUris();
+    this.moveCsvForm.show();
+  }
+
+  updateSelectedUris(){
+    this.selectedUris = [];
+    for (let select of this.tableRef.getSelected()) {
+      this.selectedUris.push(select.uri);
+    }
+  }
+
 }
 </script>
 

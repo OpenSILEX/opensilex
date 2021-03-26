@@ -156,15 +156,16 @@
 
     <opensilex-VariableModalList
         label="label"
-        ref="variableSelection"
+        ref="deviceVarForm"
         :isModalSearch="true"
+        :selected.sync="variablesSelected"
         :required="true"
         :multiple="true"
-        @onValidate="editDeviceVar"
+        @click="editDeviceVar()"
     ></opensilex-VariableModalList>
 
-    <opensilex-EventCsvForm
-        ref="eventCsvForm"
+    <opensilex-MoveCsvForm
+        ref="moveCsvForm"
         :targets="selectedUris"
     ></opensilex-EventCsvForm>
 
@@ -196,6 +197,9 @@ export default class DeviceList extends Vue {
   @Ref("variableSelection") readonly variableSelection!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
+  @Ref("deviceVarForm") readonly deviceVarForm!: any;
+
+  @Ref("moveCsvForm") readonly moveCsvForm!: MoveCsvForm;
 
   selectedUris: Array<string> = [];
 

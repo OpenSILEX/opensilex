@@ -151,11 +151,11 @@ public class EventAPI {
 
         CSVValidationModel validation = csvImporter.getValidation();
         CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(validation);
 
         SingleObjectResponse<CSVValidationDTO> importResponse = new SingleObjectResponse<>(validationDTO);
 
         if(validation.hasErrors()) {
-            validationDTO.setErrors(validation);
             importResponse.setStatus(Response.Status.BAD_REQUEST);
         }else {
             List<EventModel> models = csvImporter.getModels();
@@ -188,8 +188,11 @@ public class EventAPI {
         CSVValidationModel validation = csvImporter.getValidation();
 
         CSVValidationDTO validationDTO = new CSVValidationDTO();
-        if(validation.hasErrors()) {
-            validationDTO.setErrors(validation);
+        validationDTO.setErrors(validation);
+
+        if (!validation.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
         }
 
         return new SingleObjectResponse<>(validationDTO).getResponse();

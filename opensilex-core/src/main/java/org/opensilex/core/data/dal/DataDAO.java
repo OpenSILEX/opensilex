@@ -32,6 +32,7 @@ import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.user.dal.UserModel;
@@ -162,12 +163,31 @@ public class DataDAO {
             Integer page,
             Integer pageSize) throws Exception {
         
+        Document filter = searchByDeviceFilter(deviceURI, user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+
+        ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);  
+
+        return datas;
+
+    }
+    
+    private Document searchByDeviceFilter(
+            URI deviceURI,
+            UserModel user,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> provenances,
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata) throws Exception {
+        
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         List<URI> agents = new ArrayList<>();
         agents.add(deviceURI);
-        Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);
-        
-        ListWithPagination<DataModel> datas;
+        Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);        
 
         Document filter = searchFilter(user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
@@ -186,12 +206,8 @@ public class DataDAO {
 
         filter.put("$or", Arrays.asList(directProvFilter, globalProvUsed));
 
-        datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);  
-
-        return datas;
-
+        return filter;
     }
-    
     
     public List<DataModel> search(
             UserModel user,
@@ -381,6 +397,20 @@ public class DataDAO {
         experiments.add(xpUri);
         Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null);
         return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
+    }
+    
+    public List<ProvenanceModel> getProvenancesByScientificObject(UserModel user, URI uri, String collectionName) throws Exception {
+        List<URI> scientificObjects = new ArrayList();
+        scientificObjects.add(uri);
+        Document filter = searchFilter(user, null, scientificObjects, null, null, null, null, null, null, null);
+        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
+    }
+    
+    public List<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String collectionName) throws Exception {
+        Document filter = searchByDeviceFilter(uri, user, null, null, null, null, null, null, null, null, null);
+        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
     }
 
     public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws URISyntaxException, Exception {

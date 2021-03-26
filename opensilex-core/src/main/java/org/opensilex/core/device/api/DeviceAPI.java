@@ -53,6 +53,11 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -613,7 +618,7 @@ public class DeviceAPI {
     
     @GET
     @Path("{uri}/variables")
-    @ApiOperation("Get variables measured by th")
+    @ApiOperation("Get variables measured by the device")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -626,6 +631,44 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("{uri}/data/provenances")
+    @ApiOperation("Get provenances of data that have been measured on this device")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getDeviceDataProvenances(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
+        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+    
+    @GET
+    @Path("{uri}/datafiles/provenances")
+    @ApiOperation("Get provenances of datafiles linked to this device")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getDeviceDataFilesProvenances(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
+        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

@@ -81,11 +81,8 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.objects;
 import org.locationtech.jts.io.ParseException;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -95,6 +92,8 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -1070,6 +1069,44 @@ public class ScientificObjectAPI {
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 
+    }
+    
+    @GET
+    @Path("{uri}/data/provenances")
+    @ApiOperation("Get provenances of data that have been measured on this scientific object")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectDataProvenances(
+            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
+        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+    
+    @GET
+    @Path("{uri}/datafiles/provenances")
+    @ApiOperation("Get provenances of datafiles linked to this scientific object")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectDataFilesProvenances(
+            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+        ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
+        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
 }

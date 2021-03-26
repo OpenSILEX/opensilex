@@ -329,7 +329,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
     public void testSearchByType() throws Exception {
 
         EventCreationDTO dto = getCreationDto();
-        dto.setType(new URI("oeev:MoveFrom"));
+        dto.setType(new URI("oeev:Move"));
         Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
         dto.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
@@ -340,7 +340,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
         // search given a description witch match no events
         Map<String, Object> params = new HashMap<String, Object>() {{
-            put(EVENT_TYPE_QUERY_PARAM,new URI("test:MoveTo"));
+            put(EVENT_TYPE_QUERY_PARAM,new URI("test:UnknownEvent"));
         }};
         List<EventGetDTO> results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(0,results.size());

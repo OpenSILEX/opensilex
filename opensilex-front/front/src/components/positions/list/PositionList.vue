@@ -43,13 +43,13 @@
                                     ></opensilex-UriLink>
                                 </template>
 
-                                  <template v-slot:cell(uri)="{data}">
+                                <template v-slot:cell(uri)="{data}">
                                     <opensilex-UriLink
                                         :uri="data.item.event"
                                         :value="data.item.event"
                                         @click="showEventView(data.item)"
                                     ></opensilex-UriLink>
-                                  </template>
+                                </template>
 
                                 <template v-slot:cell(to)="{data}">
                                     <opensilex-StringView
@@ -353,5 +353,6 @@ fr:
     Position:
         list-title: Position(s)
         end: "Date d'arrivée"
+
 
 </i18n>

@@ -18,7 +18,7 @@
         </div>
         <opensilex-OntologyPropertyTreeView
           ref="propertiesTree"
-          :domain="rdfClass"
+          :domain="rdfType"
           @selectionChange="selected = $event"
           @editProperty="showEditForm($event)"
           @createChildProperty="showCreateForm($event)"
@@ -43,7 +43,7 @@ export default class OntologyPropertyView extends Vue {
   $opensilex: any;
 
   @Prop()
-  rdfClass;
+  rdfType;
 
   @Prop()
   title;
@@ -67,12 +67,13 @@ export default class OntologyPropertyView extends Vue {
   initForm(form) {
     form.parent = this.parentURI;
     if (OWL.hasParent(form.parent)) {
-      form.type = null;
-    } else if (OWL.isDatatypeProperty(form.type)) {
-      form.type = OWL.DATATYPE_PROPERTY_URI;
-    } else if (OWL.isObjectTypeProperty(form.type)) {
-      form.type = OWL.OBJECT_PROPERTY_URI;
+      form.rdf_type = null;
+    } else if (OWL.isDatatypeProperty(form.rdf_type)) {
+      form.rdf_type = OWL.DATATYPE_PROPERTY_URI;
+    } else if (OWL.isObjectTypeProperty(form.rdf_type)) {
+      form.rdf_type = OWL.OBJECT_PROPERTY_URI;
     }
+    form.domain_rdf_type = this.rdfType;
   }
 
   parentURI;
@@ -83,25 +84,25 @@ export default class OntologyPropertyView extends Vue {
     propertyFormComponent.setParentPropertiesTree(
       this.propertiesTree.getTree()
     );
-    propertyFormComponent.setDomain(this.rdfClass);
+    propertyFormComponent.setDomain(this.rdfType);
     this.propertyForm.showCreateForm();
   }
 
   showEditForm(data) {
-    this.ontologyService.getProperty(data.uri, data.type).then(http => {
+    this.ontologyService.getProperty(data.uri, data.rdf_type, this.rdfType).then(http => {
       let propertyFormComponent = this.propertyForm.getFormRef();
       propertyFormComponent.setParentPropertiesTree(
         this.propertiesTree.getTree()
       );
-      propertyFormComponent.setDomain(this.rdfClass);
+      propertyFormComponent.setDomain(this.rdfType);
       let form = http.response.result;
       if (OWL.hasParent(form.parent)) {
-        form.type = null;
-      } else if (OWL.isDatatypeProperty(form.type)) {
-        form.type = OWL.DATATYPE_PROPERTY_URI;
+        form.rdf_type = null;
+      } else if (OWL.isDatatypeProperty(form.rdf_type)) {
+        form.rdf_type = OWL.DATATYPE_PROPERTY_URI;
         form.range = this.$opensilex.getDatatype(form.range).uri;
-      } else if (OWL.isObjectTypeProperty(form.type)) {
-        form.type = OWL.OBJECT_PROPERTY_URI;
+      } else if (OWL.isObjectTypeProperty(form.rdf_type)) {
+        form.rdf_type = OWL.OBJECT_PROPERTY_URI;
         form.range = this.$opensilex.getObjectType(form.range).uri;
       }
       this.propertyForm.showEditForm(form);
@@ -109,7 +110,7 @@ export default class OntologyPropertyView extends Vue {
   }
 
   deleteProperty(data) {
-    this.ontologyService.deleteProperty(data.uri, data.type).then(() => {
+    this.ontologyService.deleteProperty(data.uri, data.rdf_type).then(() => {
       this.refresh();
     });
   }

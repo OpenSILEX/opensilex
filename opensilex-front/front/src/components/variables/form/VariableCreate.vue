@@ -35,8 +35,7 @@
         @Prop()
         editMode;
 
-        @Prop({default : false})
-        loadForm: boolean;
+        loadForm: boolean = false;
 
         get user() {
             return this.$store.state.user;

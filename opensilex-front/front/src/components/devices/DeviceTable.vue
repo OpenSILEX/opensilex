@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFClassDTO } from "opensilex-core/index";
+import { DeviceCreationDTO, DevicesService, OntologyService, ResourceTreeDTO, RDFTypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
@@ -200,8 +200,8 @@ export default class DeviceTable extends Vue {
     );
 
     return new Promise((resolve,reject) => {ontoService
-      .getClass(child,parent)
-      .then((http: HttpResponse<OpenSilexResponse<RDFClassDTO>>) => {
+      .getRDFType(child,parent)
+      .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => {
         this.subClassResult = true;
         resolve(this.measure);
       })

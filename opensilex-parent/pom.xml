@@ -274,6 +274,14 @@
             <version>${java.jwt.version}</version>
         </dependency>
         
+        <!-- OpenID Connect lib -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>9.2.3</version>
+            <type>jar</type>
+        </dependency>
+        
         <!--Logger--> 
         <dependency>
             <groupId>ch.qos.logback</groupId>

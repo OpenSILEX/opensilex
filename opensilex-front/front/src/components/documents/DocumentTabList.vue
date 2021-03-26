@@ -23,7 +23,7 @@
                         ref="tableRef"
                         :searchMethod="searchDocuments"
                         :fields="fields"
-                        defaultSortBy="label"
+                        defaultSortBy="name"
                       >
                         <template v-slot:cell(uri)="{data}">
                           <opensilex-UriLink :uri="data.item.uri"

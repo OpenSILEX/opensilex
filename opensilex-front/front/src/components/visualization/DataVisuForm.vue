@@ -103,7 +103,7 @@ export default class DataVisuForm extends Vue {
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   filter = {
-    variable: null,
+    variable: undefined,
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,

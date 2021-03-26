@@ -31,7 +31,7 @@
             v-if="tutorial && !editMode"
               class="ml-2"
               variant="outline-info"
-              label="component.tutorial.label"  
+              label="component.tutorial.name"  
               @click="getFormRef().tutorial()"
           ></opensilex-HelpButton> 
         </b-col>

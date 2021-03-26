@@ -168,4 +168,15 @@ public final class UserDAO {
     public int getCount() throws Exception {
         return sparql.count(UserModel.class);
     }
+
+    public UserModel getByEmailOrCreate(UserModel user, String defaultLang) throws Exception {
+        UserModel loadedUser = getByEmail(user.getEmail());
+
+        if (loadedUser == null) {
+            loadedUser = create(null, user.getEmail(), user.getFirstName(), user.getLastName(), false, null, defaultLang);
+        }
+
+        return loadedUser;
+    }
+
 }

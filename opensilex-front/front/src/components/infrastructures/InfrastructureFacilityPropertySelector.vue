@@ -4,8 +4,8 @@
       ref="selectForm"
       label="InfrastructureFacilityPropertySelector.label"
       :selected.sync="internalValue"
-      :multiple="property.isList"
-      :required="property.isRequired"
+      :multiple="property.is_list"
+      :required="property.is_required"
       :optionsLoadingMethod="loadFacilities"
       placeholder="InfrastructureFacilityPropertySelector.placeholder"
     ></opensilex-SelectForm>

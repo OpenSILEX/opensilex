@@ -65,7 +65,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")",
+            label: so.name + " (" + so.rdf_type_name + ")",
           });
         }
         http.response.result = nodeList;
@@ -87,7 +87,7 @@ export default class ScientificObjectParentPropertySelector extends Vue {
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")",
+            label: so.name + " (" + so.rdf_type_name + ")",
           });
         }
         return nodeList;

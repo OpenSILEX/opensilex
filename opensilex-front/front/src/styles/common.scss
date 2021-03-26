@@ -179,8 +179,8 @@ input:invalid {
   border-color: #D00!important;
 }
 
-.vue-treeselect__label-container,
-.vue-treeselect__single-value {
+.vue-treeselect__label-container::first-letter,
+.vue-treeselect__single-value::first-letter {
   text-transform: capitalize!important;
 }
 

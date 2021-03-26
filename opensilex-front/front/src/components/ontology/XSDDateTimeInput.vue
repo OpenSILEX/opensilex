@@ -4,7 +4,7 @@
     :value.sync="internalValue"
     :label="property.name"
     :disabled="false"
-    :required="property.isRequired"
+    :required="property.is_required"
   ></opensilex-DateTimeForm>
 </div>
 </template>

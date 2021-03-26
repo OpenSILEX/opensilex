@@ -22,7 +22,7 @@
       ></opensilex-AddChildButton>
       <opensilex-DeleteButton
         v-if="isManagedClass(node.data.uri)"
-        @click="$emit('deleteClass' ,node.data)"
+        @click="$emit('deleteRDFType' ,node.data)"
         label="OntologyClassTreeView.delete"
         :small="true"
       ></opensilex-DeleteButton>
@@ -49,7 +49,7 @@ export default class OntologyClassTreeView extends Vue {
   }
 
   @Prop()
-  rdfClass;
+  rdfType;
 
   public nodes = [];
 
@@ -75,9 +75,9 @@ export default class OntologyClassTreeView extends Vue {
     this.langUnwatcher();
   }
 
-  @Watch("rdfClass")
+  @Watch("rdfType")
   onRootClassChange() {
-    if (this.rdfClass) {
+    if (this.rdfType) {
       this.refresh();
     }
   }
@@ -94,10 +94,10 @@ export default class OntologyClassTreeView extends Vue {
     Promise.all([
       this.$opensilex
         .getService("opensilex-core.OntologyService")
-        .getSubClassesOf(this.rdfClass, false),
+        .getSubClassesOf(this.rdfType, false),
       this.$opensilex
         .getService("opensilex-front.VueJsOntologyExtensionService")
-        .getClassesParameters()
+        .getRDFTypesParameters()
     ]).then(results => {
       let classesParameters = results[1].response.result;
       this.classesParametersByURI = {};
@@ -124,7 +124,7 @@ export default class OntologyClassTreeView extends Vue {
   displayClassDetail(uri) {
     this.$opensilex
       .getService("opensilex-core.VueJsOntologyExtensionService")
-      .getClassProperties(uri, this.rdfClass)
+      .getRDFTypeProperties(uri, this.rdfType)
       .then(http => {
         this.selected = http.response.result;
         this.$emit("selectionChange", this.selected);

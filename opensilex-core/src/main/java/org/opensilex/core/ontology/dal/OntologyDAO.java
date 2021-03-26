@@ -524,12 +524,20 @@ public final class OntologyDAO {
         sparql.create(graph, objectProperty);
     }
 
-    public DatatypePropertyModel getDataProperty(URI propertyURI, UserModel user) throws Exception {
-        return sparql.getByURI(DatatypePropertyModel.class, propertyURI, user.getLanguage());
+    public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
+        return sparql.loadByURI(DatatypePropertyModel.class, propertyURI, user.getLanguage(), (select) -> {
+            if (domain != null) {
+                select.addWhere(makeVar(DatatypePropertyModel.DOMAIN_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain));
+            }
+        });
     }
 
-    public ObjectPropertyModel getObjectProperty(URI propertyURI, UserModel user) throws Exception {
-        return sparql.getByURI(ObjectPropertyModel.class, propertyURI, user.getLanguage());
+    public ObjectPropertyModel getObjectProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
+        return sparql.loadByURI(ObjectPropertyModel.class, propertyURI, user.getLanguage(), (select) -> {
+            if (domain != null) {
+                select.addWhere(makeVar(ObjectPropertyModel.DOMAIN_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain));
+            }
+        });
     }
 
     public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {

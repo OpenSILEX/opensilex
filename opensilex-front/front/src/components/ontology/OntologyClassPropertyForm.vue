@@ -9,10 +9,10 @@
     ></opensilex-SelectForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.isRequired" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm :value.sync="form.is_required" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.isList" :disabled="this.dataTypeProperties.indexOf(form.property) >= 0" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm :value.sync="form.is_list" :disabled="this.dataTypeProperties.indexOf(form.property) >= 0" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
   </b-form>
 </template>
 
@@ -34,8 +34,8 @@ export default class OntologyClassPropertyForm extends Vue {
     default: () => {
       return {
         property: null,
-        isRequired: false,
-        isList: false
+        is_required: false,
+        is_list: false
       };
     }
   })
@@ -44,8 +44,8 @@ export default class OntologyClassPropertyForm extends Vue {
   getEmptyForm() {
     return {
       property: null,
-      isRequired: false,
-      isList: false
+      is_required: false,
+      is_list: false
     };
   }
 
@@ -62,16 +62,16 @@ export default class OntologyClassPropertyForm extends Vue {
 
     this.dataTypeProperties = [];
     this.availableProperties.forEach(prop => {
-      if (prop.type == "owl:DatatypeProperty") {
+      if (prop.rdf_type == "owl:DatatypeProperty") {
         this.dataTypeProperties.push(prop.uri);
       }
     });
      
   }
 
-  classURI = null;
-  setClassURI(classURI) {
-    this.classURI = classURI;
+  rdf_type = null;
+  setClassURI(rdf_type) {
+    this.rdf_type = rdf_type;
   }
 
   get propertiesOptions() {
@@ -80,10 +80,10 @@ export default class OntologyClassPropertyForm extends Vue {
 
   create(form) {
     let propertyForm = {
-      classURI: this.classURI,
+      rdf_type: this.rdf_type,
       property: form.property,
-      required: form.isRequired,
-      list: form.isList
+      required: form.is_required,
+      list: form.is_list
     }
 
     return this.$opensilex
@@ -98,10 +98,10 @@ export default class OntologyClassPropertyForm extends Vue {
 
   update(form) {
      let propertyForm = {
-      classURI: this.classURI,
+      rdf_type: this.rdf_type,
       property: form.property,
-      required: form.isRequired,
-      list: form.isList
+      required: form.is_required,
+      list: form.is_list
     }
 
     return this.$opensilex

@@ -313,7 +313,7 @@ export default class DataView extends Vue {
   dtoToSelectNode(dto) {
     return {
       id: dto.uri,
-      label: dto.name,
+      name: dto.name,
     };
   }
 }

@@ -5,7 +5,10 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import javax.validation.constraints.NotNull;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
@@ -14,10 +17,20 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 public class VueDataTypeDTO {
 
+    @ValidURI
     protected URI uri;
+
+    @ValidURI
+    @JsonProperty("short_uri")
     protected URI shortUri;
+    
+    @JsonProperty("input_component")
     protected String inputComponent;
+    
+    @JsonProperty("view_component")
     protected String viewComponent;
+    
+    @JsonProperty("label_key")
     protected String labelKey;
 
     public URI getUri() {

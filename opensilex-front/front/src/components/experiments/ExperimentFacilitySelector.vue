@@ -24,13 +24,13 @@ import Component from "vue-class-component";
       >
         <template v-slot:option-label="{node}">
           <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.rdf_type)" />&nbsp;
-          <span class="capitalize-first-letter">{{node.label}}</span>&nbsp;
+          <span class="capitalize-first-letter">{{node.name}}</span>&nbsp;
           (
           <span class="capitalize-first-letter">{{node.raw.rdf_type_name}}</span>)
         </template>
         <template v-slot:value-label="{node}">
           <opensilex-Icon :icon="$opensilex.getRDFIcon(node.raw.rdf_type_name)" />&nbsp;
-          <span class="capitalize-first-letter">{{node.label}}</span>
+          <span class="capitalize-first-letter">{{node.name}}</span>
         </template>
       </opensilex-SelectForm>
     </b-modal>
@@ -168,9 +168,9 @@ export default class ExperimentFacilitySelector extends Vue {
 
         let facilityNode = {
           id: availableInfraFacility.uri,
-          label: availableInfraFacility.name,
+          name: availableInfraFacility.name,
           type: availableInfraFacility.rdf_type,
-          typeLabel: availableInfraFacility.rdf_type_name
+          rdf_type_name: availableInfraFacility.rdf_type_name
         };
 
         facilitiesTree.push(facilityNode);
@@ -179,12 +179,12 @@ export default class ExperimentFacilitySelector extends Vue {
 
     let node = {
       id: dto.uri,
-      label: dto.name,
+      name: dto.name,
       isDisabled: true,
       isDefaultExpanded: true,
       children: childrenDTOs.concat(facilitiesTree),
-      type: dto.type,
-      typeLabel: dto.typeLabel
+      type: dto.rdf_type,
+      rdf_type_name: dto.rdf_type_name
     };
 
     if (node.children.length == 0) {

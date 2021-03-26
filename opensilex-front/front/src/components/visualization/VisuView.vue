@@ -368,7 +368,7 @@ export default class VisuView extends Vue {
           } else {
             if (isSecondVariable) {
               return {
-                name: concernedItem + "/" + variable.label, 
+                name: concernedItem + "/" + variable.name, 
                 data: cleanData, 
                 visible: true,
                 yAxis: 1
@@ -376,7 +376,7 @@ export default class VisuView extends Vue {
             } else {
               if (this.multipleVariables) {
                 return {
-                  name: concernedItem + "/" + variable.label,
+                  name: concernedItem + "/" + variable.name,
                   data: cleanData,
                   visible: true
                 };

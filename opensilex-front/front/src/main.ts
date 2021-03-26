@@ -354,6 +354,7 @@ Vue.component("sl-vue-tree", SlVueTree);
 console.debug("Load default components...");
 import components from './components';
 import VueRouter from 'vue-router';
+import { AuthenticationService } from "opensilex-security/index";
 
 for (let componentName in components) {
   console.debug("Load default component", componentName);
@@ -447,121 +448,132 @@ $opensilex.loadModules([
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");
+    const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
+    let baseURL = window.location.href.split(/[?#]/)[0];
+    if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
+      console.debug("Identify user with OpenID Connect");
+      authService.authenticateOpenID(urlParams.get("code"))
+        .then((http) => {
+          let user = User.fromToken(http.response.result.token);
+          $opensilex.setCookieValue(user);
+          window.location = baseURL.slice(0, -7);
+        }).catch(manageError);
+    } else {
+      // Get OpenSilex configuration
+      console.debug("Start loading configuration...");
+      const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
 
-    // Get OpenSilex configuration
-    console.debug("Start loading configuration...");
-    const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
+      vueJsService.getConfig()
+        .then(function (configResponse) {
+          const config: FrontConfigDTO = configResponse.response.result;
+          $opensilex.setConfig(config);
 
-    vueJsService.getConfig()
-      .then(function (configResponse) {
-        const config: FrontConfigDTO = configResponse.response.result;
-        $opensilex.setConfig(config);
+          let themePromise: Promise<any> = loadTheme(vueJsService, config);
 
-        let themePromise: Promise<any> = loadTheme(vueJsService, config);
+          themePromise
+            .then(() => {
+              store.commit("setConfig", config);
+              console.debug("Configuration loaded", config);
 
-        themePromise
-          .then(() => {
-            store.commit("setConfig", config);
-            console.debug("Configuration loaded", config);
+              // Load only necessary component if application is embed in an iframe
+              let embed = urlParams.has('embed');
 
-            // Load only necessary component if application is embed in an iframe
-            let embed = urlParams.has('embed');
-
-            if (embed) {
-              console.debug("Application is embed");
-            } else {
-              console.debug("Application is not embed");
-            }
-
-            // Define user
-            console.debug("Define current user...");
-            let user: User | undefined = undefined;
-            if (urlParams.has("token")) {
-              let token = urlParams.get("token");
-              console.debug("Try to load user from URL token...");
-              if (token != null) {
-                user = User.fromToken(token);
-                $opensilex.setCookieValue(user);
-                console.debug("User sucessfully loaded from URL token !");
+              if (embed) {
+                console.debug("Application is embed");
+              } else {
+                console.debug("Application is not embed");
               }
-            }
 
-            if (user == undefined) {
-              console.debug("Try to load user from cookie...");
-              user = $opensilex.loadUserFromCookie();
-              console.debug("User sucessfully loaded from cookie !");
-            }
+              // Define user
+              console.debug("Define current user...");
+              let user: User | undefined = undefined;
+              if (urlParams.has("token")) {
+                let token = urlParams.get("token");
+                console.debug("Try to load user from URL token...");
+                if (token != null) {
+                  user = User.fromToken(token);
+                  $opensilex.setCookieValue(user);
+                  console.debug("User sucessfully loaded from URL token !");
+                }
+              }
 
-            if (!user.isLoggedIn()) {
-              console.debug("User is ANONYMOUS !");
-              i18n.locale = lang;
-            } else {
-              console.debug("User is:", user.getEmail());
-              i18n.locale = user.getLocale() || lang;
-            }
+              if (user == undefined) {
+                console.debug("Try to load user from cookie...");
+                user = $opensilex.loadUserFromCookie();
+                console.debug("User sucessfully loaded from cookie !");
+              }
 
-            if (i18n.locale != lang) {
-              lang = i18n.locale;
-              store.commit("lang", i18n.locale);
-            }
+              if (!user.isLoggedIn()) {
+                console.debug("User is ANONYMOUS !");
+                i18n.locale = lang;
+              } else {
+                console.debug("User is:", user.getEmail());
+                i18n.locale = user.getLocale() || lang;
+              }
 
-            // Init user
-            console.debug("Initialize global user");
-            store.commit("login", user);
+              if (i18n.locale != lang) {
+                lang = i18n.locale;
+                store.commit("lang", i18n.locale);
+              }
 
-            // Init routing
-            console.debug("Initialize routing");
-            let router: VueRouter = store.state.openSilexRouter.getRouter();
+              // Init user
+              console.debug("Initialize global user");
+              store.commit("login", user);
 
-            // Initalise main layout components from configuration
-            console.debug("Define initial modules to load...");
-            let modulesToLoad: ModuleComponentDefinition[] = [
-              ModuleComponentDefinition.fromString(config.homeComponent),
-              ModuleComponentDefinition.fromString(config.notFoundComponent)
-            ];
+              // Init routing
+              console.debug("Initialize routing");
+              let router: VueRouter = store.state.openSilexRouter.getRouter();
 
-            if (!embed) {
-              console.debug("Application is not embed");
-              modulesToLoad = modulesToLoad.concat([
-                ModuleComponentDefinition.fromString(config.footerComponent),
-                ModuleComponentDefinition.fromString(config.headerComponent),
-                ModuleComponentDefinition.fromString(config.loginComponent),
-                ModuleComponentDefinition.fromString(config.menuComponent)
-              ]);
-            } else {
-              console.debug("Application is embed");
-            }
+              // Initalise main layout components from configuration
+              console.debug("Define initial modules to load...");
+              let modulesToLoad: ModuleComponentDefinition[] = [
+                ModuleComponentDefinition.fromString(config.homeComponent),
+                ModuleComponentDefinition.fromString(config.notFoundComponent)
+              ];
 
-            Promise.all([
-              $opensilex.loadFactorCategories(),
-              $opensilex.loadDataTypes(),
-              $opensilex.loadObjectTypes(),
-              $opensilex.loadComponentModules(modulesToLoad)
-            ]).then(() => {
-              // Initialize main application rendering
-              console.debug("Initialize main application rendering");
-              let vueOptions: any = {
-                router,
-                store,
-                render: h => h(App, {
-                  props: {
-                    embed: embed,
-                    footerComponent: config.footerComponent,
-                    headerComponent: config.headerComponent,
-                    loginComponent: config.loginComponent,
-                    menuComponent: config.menuComponent
-                  }
-                },
-                ),
-                i18n
-              };
-              new Vue(vueOptions).$mount('#app').$nextTick(() => {
-                // Hide loader
-                console.debug("Hide application init loader");
-                document.getElementById('opensilex-loader').style.visibility = 'hidden';
-              });
+              if (!embed) {
+                console.debug("Application is not embed");
+                modulesToLoad = modulesToLoad.concat([
+                  ModuleComponentDefinition.fromString(config.footerComponent),
+                  ModuleComponentDefinition.fromString(config.headerComponent),
+                  ModuleComponentDefinition.fromString(config.loginComponent),
+                  ModuleComponentDefinition.fromString(config.menuComponent)
+                ]);
+              } else {
+                console.debug("Application is embed");
+              }
+
+              Promise.all([
+                $opensilex.loadFactorCategories(),
+                $opensilex.loadDataTypes(),
+                $opensilex.loadObjectTypes(),
+                $opensilex.loadComponentModules(modulesToLoad)
+              ]).then(() => {
+                // Initialize main application rendering
+                console.debug("Initialize main application rendering");
+                let vueOptions: any = {
+                  router,
+                  store,
+                  render: h => h(App, {
+                    props: {
+                      embed: embed,
+                      footerComponent: config.footerComponent,
+                      headerComponent: config.headerComponent,
+                      loginComponent: config.loginComponent,
+                      menuComponent: config.menuComponent
+                    }
+                  },
+                  ),
+                  i18n
+                };
+                new Vue(vueOptions).$mount('#app').$nextTick(() => {
+                  // Hide loader
+                  console.debug("Hide application init loader");
+                  document.getElementById('opensilex-loader').style.visibility = 'hidden';
+                });
+              }).catch(manageError);
             }).catch(manageError);
-          }).catch(manageError);
-      }).catch(manageError);
+        }).catch(manageError);
+    }
   }).catch(manageError);
 }).catch(manageError);

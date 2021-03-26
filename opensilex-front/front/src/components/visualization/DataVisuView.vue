@@ -88,17 +88,16 @@ export default class ExperimentDataVisuView extends Vue {
   onSearch(form) {
     this.form = form;
     this.showGraphicComponent = true;
-    this.$opensilex.enableLoader(); 
 
-    this.$opensilex
-      .getService("opensilex.VariablesService")
-      .getVariable(form.variable)
-      .then((http: HttpResponse<OpenSilexResponse>) => {
-        console.log(http.response.result);
-        this.selectedVariable = http.response.result;
-        console.log(this.form);
-        this.loadSeries();
-      });
+    if (form.variable) {
+        this.$opensilex
+          .getService("opensilex.VariablesService")
+          .getVariable(form.variable)
+          .then((http: HttpResponse<OpenSilexResponse>) => {
+            this.selectedVariable = http.response.result;
+            this.loadSeries();
+          });
+    }
   }
 
   loadSeries() {
@@ -136,8 +135,6 @@ export default class ExperimentDataVisuView extends Vue {
     let promises = [],
       promise;
     this.selectedScientificObjects.forEach((element, index) => {
-      console.log("element");
-      console.log(element);
       promise = this.buildDataSerie(element);
       promises.push(promise);
     });
@@ -220,6 +217,7 @@ export default class ExperimentDataVisuView extends Vue {
       };
       cleanData.push(toAdd);
     });
+
     return cleanData;
   }
 

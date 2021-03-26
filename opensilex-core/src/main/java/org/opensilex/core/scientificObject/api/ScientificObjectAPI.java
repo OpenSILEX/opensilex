@@ -341,9 +341,9 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given object URI", response = ScientificObjectDetailDTO.class)
     })
     public Response getScientificObjectDetail(
-            @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
+            @ApiParam(value = "scientific object URI", example = "http://opensilex.org/set/scientific-objects/so-1357dz_pg_34zm4384wwveg_323_37arch2017-03-30", required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = "Context URI", example = "http://example.com/")
+            @ApiParam(value = "Experiment URI", example = "http://opensilex.org/set/experiments/21ik1_cims-on")
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
 

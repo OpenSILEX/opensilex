@@ -11,7 +11,7 @@
         <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
             <template v-slot:node="{ node }">
         <span class="item-icon">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)"/>
+          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)"/>
         </span>&nbsp;
                 <strong v-if="node.data.selected">{{ node.title }}</strong>
                 <span v-if="!node.data.selected">{{ node.title }}</span>

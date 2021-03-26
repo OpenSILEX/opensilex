@@ -14,13 +14,13 @@
       <template v-slot>
         <opensilex-OntologyClassView
           v-if="isTypeTab()"
-          :rdfClass="rdfClass"
+          :rdfType="rdfType"
           :icon="icon"
           :title="typeTitle"
         ></opensilex-OntologyClassView>
         <opensilex-OntologyPropertyView
           v-else
-          :rdfClass="rdfClass"
+          :rdfType="rdfType"
           :icon="icon"
           :title="propertiesTitle"
         />
@@ -39,7 +39,7 @@ export default class OntologyTypesView extends Vue {
   $route: any;
 
   @Prop()
-  rdfClass;
+  rdfType;
 
   @Prop()
   icon;

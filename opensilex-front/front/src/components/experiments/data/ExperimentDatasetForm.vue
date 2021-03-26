@@ -325,7 +325,7 @@ export default class DatasetForm extends Vue {
                   this.insertionError = true;
                   this.$opensilex.disableLoader();
                 } else if (results.dataErrors.duplicateData) {
-                  this.importedLines = results.dataErrors.nbLinesImported;
+                  this.importedLines = results.dataErrors.nb_lines_imported;
                   this.duplicateData = true;
                   this.duplicatedData = results.dataErrors.duplicatedData;
                   this.isImported = false;
@@ -333,7 +333,7 @@ export default class DatasetForm extends Vue {
                   this.$opensilex.disableLoader();
                   resolve(false);
                 } else {
-                  this.importedLines = results.dataErrors.nbLinesImported;
+                  this.importedLines = results.dataErrors.nb_lines_imported;
                   this.isImported = true;
                   this.insertionError = false;
                   this.$opensilex.disableLoader();

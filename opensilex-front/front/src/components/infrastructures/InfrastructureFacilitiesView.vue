@@ -30,7 +30,7 @@
       small
       responsive
       sort-icon-left
-      sort-by="typeLabel"
+      sort-by="rdf_type_name"
       :selectable="isSelectable"
       selectMode="single"
       :items="selected.facilities"
@@ -38,7 +38,7 @@
       @row-selected="$emit('rowSelected', $event)"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
-      <template v-slot:head(typeLabel)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(rdf_type_name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
 
       <template v-slot:cell(name)="data">
@@ -48,7 +48,7 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(typeLabel)="data">
+      <template v-slot:cell(rdf_type_name)="data">
         <span class="capitalize-first-letter">{{
           data.item.rdf_type_name
         }}</span>
@@ -141,7 +141,7 @@ export default class InfrastructureFacilitiesView extends Vue {
       sortable: true,
     },
     {
-      key: "typeLabel",
+      key: "rdf_type_name",
       label: "component.common.type",
       sortable: true,
     },

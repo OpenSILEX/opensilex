@@ -11,7 +11,7 @@
       <!-- Value Type -->
       <opensilex-StringView label="OntologyPropertyDetail.value-type" :value="rangeValue"></opensilex-StringView>
       <!-- Name -->
-      <opensilex-StringView label="component.common.name" :value="selected.label"></opensilex-StringView>
+      <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
       <!-- Comment -->
       <opensilex-StringView label="component.common.comment" :value="selected.comment"></opensilex-StringView>
     </div>
@@ -31,7 +31,7 @@ export default class OntologyPropertyDetail extends Vue {
   selected;
 
   get typeValue() {
-    if (OWL.isDatatypeProperty(this.selected.type)) {
+    if (OWL.isDatatypeProperty(this.selected.rdf_type)) {
       return this.$t("OntologyPropertyForm.dataProperty");
     } else {
       return this.$t("OntologyPropertyForm.objectProperty");
@@ -39,15 +39,15 @@ export default class OntologyPropertyDetail extends Vue {
   }
 
   get rangeValue() {
-    if (OWL.isDatatypeProperty(this.selected.type)) {
+    if (OWL.isDatatypeProperty(this.selected.rdf_type)) {
       let dt = this.$opensilex.getDatatype(this.selected.range);
       if (dt) {
-        return this.$t(dt.labelKey);
+        return this.$t(dt.label_key);
       } else {
         return this.selected.range;
       }
     } else {
-      return this.selected.rangeLabel;
+      return this.selected.range_label;
     }
   }
 }

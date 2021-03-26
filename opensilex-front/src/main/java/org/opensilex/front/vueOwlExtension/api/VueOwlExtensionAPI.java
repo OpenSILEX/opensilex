@@ -27,7 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.ontology.api.RDFClassDTO;
+import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
@@ -48,14 +48,17 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  *
  * @author vince
  */
 @Api("Vue.js - Ontology extension")
-@Path("/vuejs/owl-extension")
+@Path("/vuejs/owl_extension")
 public class VueOwlExtensionAPI {
 
     @CurrentUser
@@ -65,16 +68,16 @@ public class VueOwlExtensionAPI {
     private SPARQLService sparql;
 
     @GET
-    @Path("get-class")
-    @ApiOperation("Return class model definition with properties")
+    @Path("rdf_type")
+    @ApiOperation("Return rdt type model definition with properties")
     @ApiProtected()
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return class model definition ", response = VueClassDTO.class)
+        @ApiResponse(code = 200, message = "Return class model definition ", response = VueRDFTypeDTO.class)
     })
-    public Response getClass(
-            @ApiParam(value = "RDF class URI") @QueryParam("rdfType") @NotNull @ValidURI URI rdfType,
+    public Response getRDFType(
+            @ApiParam(value = "RDF type URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parentType") @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -83,11 +86,11 @@ public class VueOwlExtensionAPI {
 
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
 
-        return new SingleObjectResponse<>(VueClassDTO.fromModel(new VueClassDTO(), classDescription, classExtension)).getResponse();
+        return new SingleObjectResponse<>(VueRDFTypeDTO.fromModel(new VueRDFTypeDTO(), classDescription, classExtension)).getResponse();
     }
 
     @POST
-    @Path("create-class")
+    @Path("rdf_type")
     @ApiOperation("Create a custom class")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -97,8 +100,8 @@ public class VueOwlExtensionAPI {
         @ApiResponse(code = 409, message = "A class with the same URI already exists", response = ErrorResponse.class)
     })
 
-    public Response createClass(
-            @ApiParam("Class description") @Valid VueClassDTO dto
+    public Response createRDFType(
+            @ApiParam("Class description") @Valid VueRDFTypeDTO dto
     ) throws Exception {
         try {
             VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
@@ -116,7 +119,7 @@ public class VueOwlExtensionAPI {
     }
 
     @PUT
-    @Path("update-class")
+    @Path("rdf_type")
     @ApiOperation("Update a custom class")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -124,8 +127,8 @@ public class VueOwlExtensionAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Update a RDF property", response = ObjectUriResponse.class)
     })
-    public Response updateClass(
-            @ApiParam("Class description") @Valid VueClassDTO dto
+    public Response updateRDFType(
+            @ApiParam("RDF type definition") @Valid VueRDFTypeDTO dto
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
@@ -138,7 +141,7 @@ public class VueOwlExtensionAPI {
     }
 
     @PUT
-    @Path("properties-order")
+    @Path("properties_order")
     @ApiOperation("Define properties order")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -146,8 +149,8 @@ public class VueOwlExtensionAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Define properties order", response = ObjectUriResponse.class)
     })
-    public Response setClassPropertiesOrder(
-            @ApiParam(value = "Class uri", required = true) @QueryParam("classURI") @ValidURI @NotNull URI classURI,
+    public Response setRDFTypePropertiesOrder(
+            @ApiParam(value = "RDF type", required = true) @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
             @ApiParam("Array of properties") @ValidURI List<URI> properties
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
@@ -157,16 +160,16 @@ public class VueOwlExtensionAPI {
     }
 
     @DELETE
-    @Path("/delete-class")
-    @ApiOperation("Delete a class")
+    @Path("/rdf_type")
+    @ApiOperation("Delete a RDF type")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Class deleted ", response = RDFPropertyDTO.class)
     })
-    public Response deleteClass(
-            @ApiParam(value = "Class URI") @QueryParam("classURI") @ValidURI URI classURI
+    public Response deleteRDFType(
+            @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI URI classURI
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
         dao.deleteExtendedClass(classURI);
@@ -174,32 +177,37 @@ public class VueOwlExtensionAPI {
     }
 
     @GET
-    @Path("/get-class-properties")
+    @Path("/rdf_type_properties")
     @ApiOperation("Return class model properties definitions")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return class model properties definitions ", response = VueClassDTO.class)
+        @ApiResponse(code = 200, message = "Return class model properties definitions ", response = VueRDFTypeDTO.class)
     })
-    public Response getClassProperties(
+    public Response getRDFTypeProperties(
             @ApiParam(value = "RDF class URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @NotNull @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
-        VueClassDTO classProperties = new VueClassDTO();
+        VueRDFTypeDTO classProperties = new VueRDFTypeDTO();
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
-        VueClassDTO.fromModel(classProperties, classDescription, classExtension);
+        VueRDFTypeDTO.fromModel(classProperties, classDescription, classExtension);
 
-        ClassModel parentModel = classDescription.getParent();
+        ClassModel parentModel = sparql.loadByURI(ClassModel.class, classDescription.getParent().getUri(), currentUser.getLanguage(), (select) -> {
+            if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classDescription.getParent().getUri())) {
+                select.addWhere(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentType));
+            }
+        });
+
         dao.buildProperties(parentModel, currentUser.getLanguage());
 
-        List<VueClassPropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
+        List<VueRDFTypePropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
         for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
-            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            VueRDFTypePropertyDTO pDTO = new VueRDFTypePropertyDTO();
             pDTO.setIsCustom(false);
             pDTO.setProperty(dt.getUri());
             pDTO.setName(dt.getName());
@@ -225,9 +233,9 @@ public class VueOwlExtensionAPI {
         }
         classProperties.setDataProperties(dataProperties);
 
-        List<VueClassPropertyDTO> objectProperties = new ArrayList<>(classDescription.getObjectProperties().size());
+        List<VueRDFTypePropertyDTO> objectProperties = new ArrayList<>(classDescription.getObjectProperties().size());
         for (ObjectPropertyModel obj : classDescription.getObjectProperties().values()) {
-            VueClassPropertyDTO pDTO = new VueClassPropertyDTO();
+            VueRDFTypePropertyDTO pDTO = new VueRDFTypePropertyDTO();
             pDTO.setIsCustom(false);
             pDTO.setProperty(obj.getUri());
             pDTO.setName(obj.getName());
@@ -262,7 +270,7 @@ public class VueOwlExtensionAPI {
     }
 
     @GET
-    @Path("get-data-types")
+    @Path("data_types")
     @ApiOperation("Return literal datatypes definition")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -284,7 +292,7 @@ public class VueOwlExtensionAPI {
     }
 
     @GET
-    @Path("get-object-types")
+    @Path("object_types")
     @ApiOperation("Return object types definition")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -299,32 +307,32 @@ public class VueOwlExtensionAPI {
         for (VueOntologyObjectType objectType : VueOwlExtensionDAO.getObjectTypes()) {
             VueObjectTypeDTO dto = new VueObjectTypeDTO();
             dto.setUri(new URI(objectType.getTypeUri()));
-             dto.setInputComponent(objectType.getInputComponent());
+            dto.setInputComponent(objectType.getInputComponent());
             dto.setInputComponentsByProperty(objectType.getInputComponentsMap());
             dto.setViewComponent(objectType.getViewComponent());
 
             ClassModel objectClass = dao.getClassModel(dto.getUri(), null, currentUser.getLanguage());
-            dto.setRdfClass(RDFClassDTO.fromModel(new RDFClassDTO(), objectClass));
+            dto.setRdfClass(RDFTypeDTO.fromModel(new RDFTypeDTO(), objectClass));
             datatypeDTOs.add(dto);
         }
         return new PaginatedListResponse<VueObjectTypeDTO>(datatypeDTOs).getResponse();
     }
 
     @GET
-    @Path("get-classes-parameters")
-    @ApiOperation("Return class parameters for Vue.js application")
+    @Path("rdf_types_parameters")
+    @ApiOperation("Return RDF types parameters for Vue.js application")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return class parameters", response = VueClassParameterDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return rdf types parameters", response = VueRDFTypeParameterDTO.class, responseContainer = "List")
     })
-    public Response getClassesParameters() throws Exception {
+    public Response getRDFTypesParameters() throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
         List<VueClassExtensionModel> extendedClasses = dao.getExtendedClasses(currentUser.getLanguage());
 
-        List<VueClassParameterDTO> dtoList = extendedClasses.stream().map(VueClassParameterDTO::getDTOFromModel).collect(Collectors.toList());
+        List<VueRDFTypeParameterDTO> dtoList = extendedClasses.stream().map(VueRDFTypeParameterDTO::getDTOFromModel).collect(Collectors.toList());
 
-        return new PaginatedListResponse<VueClassParameterDTO>(dtoList).getResponse();
+        return new PaginatedListResponse<VueRDFTypeParameterDTO>(dtoList).getResponse();
     }
 }

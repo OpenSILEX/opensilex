@@ -20,12 +20,12 @@ export default class ScientificObjectDetail extends Vue {
   selected;
 
   @Prop({
-    default: () => [],
+    default: () => []
   })
   objectByContext;
 
   @Prop({
-    default: false,
+    default: false
   })
   withReturnButton;
 }

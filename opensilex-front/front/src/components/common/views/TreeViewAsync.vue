@@ -38,7 +38,7 @@
             node.data.child_count > node.children.length
           "
         >
-          ({{ node.data.typeLabel }} - {{ node.children.length }}/{{
+          ({{ node.data.rdf_type_name }} - {{ node.children.length }}/{{
             node.data.child_count
           }}
           <span>
@@ -49,7 +49,7 @@
           >)
         </span>
         <span class="async-tree-action" v-else
-          >&nbsp;({{ node.data.typeLabel }})</span
+          >&nbsp;({{ node.data.rdf_type_name }})</span
         >
 
         <b-button-group v-if="!noButtons" class="tree-button-group" size="sm">
@@ -290,7 +290,6 @@ export default class TreeViewAsync extends Vue {
   }
 
   onSelectionChange(uri) {
-    console.error(uri, this.multiSelect);
     if (this.multiSelect) {
       let uriIndex = this.multiSelect.indexOf(uri);
       if (uriIndex >= 0) {

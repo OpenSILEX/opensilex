@@ -120,7 +120,7 @@
           >
             <template v-slot:node="{ node }">
               <span class="item-icon">
-                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.type)" />
+                <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)" />
               </span>&nbsp;
               <span>{{ node.title }}</span>
             </template>
@@ -208,11 +208,11 @@ export default class ExperimentScientificObjects extends Vue {
     return [
       {
         id: "geometry",
-        label: this.$t("ExperimentScientificObjects.geometry-label"),
+        name: this.$t("ExperimentScientificObjects.geometry-label"),
         type: "WKT",
         comment: this.$t("ExperimentScientificObjects.geometry-comment"),
-        isRequired: false,
-        isList: false
+        is_required: false,
+        is_list: false
       }
     ];
   }
@@ -274,7 +274,6 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   onGraphicCreated() {
-    console.log("created");
     let that = this;
     setTimeout(function() {
       that.page.scrollIntoView({
@@ -420,7 +419,7 @@ export default class ExperimentScientificObjects extends Vue {
         for (let so of http.response.result) {
           nodeList.push({
             id: so.uri,
-            label: so.name + " (" + so.typeLabel + ")"
+            label: so.name + " (" + so.rdf_type_name + ")"
           });
         }
         http.response.result = nodeList;

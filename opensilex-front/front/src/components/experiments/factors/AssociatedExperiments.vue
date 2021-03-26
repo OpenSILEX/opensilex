@@ -10,7 +10,7 @@
             ></opensilex-UriLink>
           </template>
 
-          <template v-slot:cell(label)="{data}">{{data.item.label}}</template>
+          <template v-slot:cell(name)="{data}">{{data.item.name}}</template>
 
           <template v-slot:cell(species)="{data}">
             <span :key="index" v-for="(uri, index) in data.item.species">

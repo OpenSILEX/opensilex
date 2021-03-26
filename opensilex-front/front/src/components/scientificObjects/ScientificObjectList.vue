@@ -217,7 +217,7 @@ export default class ScientificObjectList extends Vue {
       sortable: true,
     },
     {
-      key: "typeLabel",
+      key: "rdf_type_name",
       label: "component.common.type",
       sortable: true,
     },

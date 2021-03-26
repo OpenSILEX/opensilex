@@ -33,7 +33,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-entity"
                         helpMessage="VariableForm.entity-help"
-                        @select="updateName(form)"
+                        @select="updateName"
                         :actionHandler="showEntityCreateForm"
                     ></opensilex-SelectForm>
                     <opensilex-EntityCreate
@@ -56,7 +56,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-characteristic"
                         helpMessage="VariableForm.characteristic-help"
-                        @select="updateName(form)"
+                        @select="updateName"
                         :actionHandler="showCharacteristicCreateForm"
                     ></opensilex-SelectForm>
                     <opensilex-CharacteristicModalForm
@@ -109,7 +109,7 @@
                         placeholder="VariableForm.method-placeholder"
                         :conversionMethod="objectToSelectNode"
                         helpMessage="VariableForm.method-help"
-                        @select="updateName(form)"
+                        @select="updateName"
                         :actionHandler="showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
                     ></opensilex-SelectForm>
@@ -131,7 +131,7 @@
                         :itemLoadingMethod="loadUnit"
                         :conversionMethod="objectToSelectNode"
                         placeholder="VariableForm.unit-placeholder"
-                        @select="updateName(form)"
+                        @select="updateName"
                         :actionHandler="showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
                     ></opensilex-SelectForm>
@@ -223,7 +223,6 @@ import Tutorial from "../../common/views/Tutorial.vue";
 import { NamedResourceDTO, EntityCreationDTO, CharacteristicCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
-import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component
@@ -259,10 +258,10 @@ export default class VariableForm extends Vue {
 
     @Ref("traitForm") readonly traitForm!: ModalForm;
 
-    loadedEntities: Array<NamedResourceDTO> = [];
-    loadedUnits: Array<NamedResourceDTO> = [];
-    loadedMethods: Array<NamedResourceDTO> = [];
-    loadedCharacteristics: Array<NamedResourceDTO> = [];
+    loadedEntities = [];
+    loadedUnits = [];
+    loadedMethods = [];
+    loadedCharacteristics = [];
 
     traitSteps = [
         {component: "opensilex-TraitForm"}
@@ -308,7 +307,7 @@ export default class VariableForm extends Vue {
         return this.validatorRef.validate();
     }
 
-    getLabel(dto: any, dtoList: Array<NamedResourceDTO>): string {
+    getLabel(dto: any, dtoList): string {
         if (!dto) {
             return "";
         }
@@ -322,7 +321,8 @@ export default class VariableForm extends Vue {
         return "";
     }
 
-    updateName(form) {
+    updateName() {
+        let form = this.form;
         let nameParts: string[] = [];
 
         let buildLabel = this.getLabel(form.entity, this.loadedEntities);
@@ -513,7 +513,7 @@ export default class VariableForm extends Vue {
     }
 
     setLoadedUnit(created: UnitCreationDTO) {
-        this.loadedUnits = [{uri: created.uri, name: created.name}];
+        this.loadedUnits = [{uri: created.uri, label: created.name}];
         this.unitSelectForm.select({id: created.uri});
     }
 

@@ -6,6 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,20 +24,35 @@ public class RDFPropertyDTO {
 
     protected URI uri;
 
+    @JsonProperty("rdf_type")
     protected URI type;
 
-    protected String label;
+    protected String name;
 
     protected String comment;
 
+    @JsonProperty("name_translations")
     protected Map<String, String> labelTranslations;
 
+    @JsonProperty("comment_translations")
     protected Map<String, String> commentTranslations;
 
     protected URI domain;
 
+    @JsonProperty("domain_rdf_type")
+    protected URI domainType;
+
+    public URI getDomainType() {
+        return domainType;
+    }
+
+    public void setDomainType(URI domainType) {
+        this.domainType = domainType;
+    }
+        
     protected URI range;
 
+    @JsonProperty("range_label")
     protected String rangeLabel;
 
     protected URI parent;
@@ -57,12 +73,12 @@ public class RDFPropertyDTO {
         this.type = type;
     }
 
-    public String getLabel() {
-        return label;
+    public String getName() {
+        return name;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getComment() {
@@ -148,7 +164,7 @@ public class RDFPropertyDTO {
         if (parentModel != null) {
             dto.setParent(parentModel.getUri());
         }
-        dto.setLabel(model.getLabel().getDefaultValue());
+        dto.setName(model.getLabel().getDefaultValue());
         dto.setLabelTranslations(model.getLabel().getAllTranslations());
         if (model.getComment() != null) {
             dto.setComment(model.getComment().getDefaultValue());

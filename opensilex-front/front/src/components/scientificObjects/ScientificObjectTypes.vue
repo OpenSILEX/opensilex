@@ -1,6 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
-    :rdfClass="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :rdfType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
     icon="ik#ik-settings"
     typeTitle="ScientificObjectTypes.typeTitle"
     typeURI="/scientific-object-types"

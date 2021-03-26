@@ -9,7 +9,7 @@
       <!-- Name -->
       <opensilex-StringView
         label="component.common.name"
-        :value="selected.label"
+        :value="selected.name"
       ></opensilex-StringView>
       <!-- Description -->
       <opensilex-TextView
@@ -17,7 +17,7 @@
         :value="selected.comment"
       ></opensilex-TextView>
       <!-- Abstract type -->
-      <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.isAbstract"></opensilex-BooleanView> -->
+      <!-- <opensilex-BooleanView label="OntologyClassForm.abstract-type" :value="selected.is_abstract"></opensilex-BooleanView> -->
       <!-- Icon identifier -->
       <opensilex-IconView
         label="OntologyClassForm.icon"
@@ -92,21 +92,21 @@
       >
         <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
         <template v-slot:head(property)="data">{{ $t(data.label) }}</template>
-        <template v-slot:head(isList)="data">{{ $t(data.label) }}</template>
-        <template v-slot:head(isRequired)="data">{{ $t(data.label) }}</template>
+        <template v-slot:head(is_list)="data">{{ $t(data.label) }}</template>
+        <template v-slot:head(is_required)="data">{{ $t(data.label) }}</template>
         <template v-slot:head(inherited)="data">{{ $t(data.label) }}</template>
         <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
 
-        <template v-slot:cell(isList)="data">
+        <template v-slot:cell(is_list)="data">
           <span class="capitalize-first-letter">{{
-            data.item.isList
+            data.item.is_list
               ? $t("component.common.yes")
               : $t("component.common.no")
           }}</span>
         </template>
-        <template v-slot:cell(isRequired)="data">
+        <template v-slot:cell(is_required)="data">
           <span class="capitalize-first-letter">{{
-            data.item.isRequired
+            data.item.is_required
               ? $t("component.common.yes")
               : $t("component.common.no")
           }}</span>
@@ -122,7 +122,7 @@
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
             <opensilex-DeleteButton
-              v-if="!data.item.inherited && data.item.isCustom"
+              v-if="!data.item.inherited && data.item.is_custom"
               @click="deleteClassPropertyRestriction(data.item.property)"
               label="OntologyClassDetail.deleteProperty"
               :small="true"
@@ -155,7 +155,7 @@ export default class OntologyClassDetail extends Vue {
   selected;
 
   @Prop()
-  rdfClass;
+  rdfType;
 
   @Ref("classPropertyForm") readonly classPropertyForm!: any;
   @Ref("setPropertiesOrderRef") readonly setPropertiesOrderRef!: any;
@@ -170,11 +170,11 @@ export default class OntologyClassDetail extends Vue {
       label: "component.common.type",
     },
     {
-      key: "isRequired",
+      key: "is_required",
       label: "OntologyClassDetail.required",
     },
     {
-      key: "isList",
+      key: "is_list",
       label: "OntologyClassDetail.list",
     },
     {
@@ -198,10 +198,10 @@ export default class OntologyClassDetail extends Vue {
   }
 
   get properties() {
-    let allProps = this.selected.dataProperties.concat(
-      this.selected.objectProperties
+    let allProps = this.selected.data_properties.concat(
+      this.selected.object_properties
     );
-    let pOrder = this.selected.propertiesOrder;
+    let pOrder = this.selected.properties_order;
     allProps.sort((a, b) => {
       if (a.property == b.property) {
         return 0;
@@ -235,7 +235,7 @@ export default class OntologyClassDetail extends Vue {
   }
 
   addDataProperty() {
-    this.ontologyService.getProperties(this.rdfClass).then((http) => {
+    this.ontologyService.getProperties(this.rdfType).then((http) => {
       let formRef = this.classPropertyForm.getFormRef();
       formRef.setClassURI(this.selected.uri);
       formRef.setProperties(http.response.result, this.properties);
@@ -260,7 +260,7 @@ export default class OntologyClassDetail extends Vue {
 
     this.ontologyService = this.$opensilex
       .getService("opensilex-front.VueJsOntologyExtensionService")
-      .setClassPropertiesOrder(this.selected.uri, propertiesOrder)
+      .setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
       .then(() => {
         this.setPropertiesOrderRef.hide();
         this.$emit("onDetailChange");

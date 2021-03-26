@@ -258,7 +258,7 @@ export default class GenerateDataTemplateFrom extends Vue {
     if (!dataTypeUri) {
       return undefined;
     }
-    let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).labelKey);
+    let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).label_key);
     return label.charAt(0).toUpperCase() + label.slice(1);
   }
 }

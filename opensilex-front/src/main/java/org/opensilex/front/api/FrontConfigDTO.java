@@ -44,6 +44,10 @@ public class FrontConfigDTO {
 
     String themeName;
 
+    String openIDAuthenticationURI;
+
+    String openIDConnectionTitle;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -141,6 +145,23 @@ public class FrontConfigDTO {
 
     public void setThemeName(String themeName) {
         this.themeName = themeName;
+    }
+
+    @ApiModelProperty(value = "OpenID Authorization URI")
+    public String getOpenIDAuthenticationURI() {
+        return openIDAuthenticationURI;
+    }
+
+    public void setOpenIDAuthenticationURI(String openIDAuthorizationURI) {
+        this.openIDAuthenticationURI = openIDAuthorizationURI;
+    }
+
+    public String getOpenIDConnectionTitle() {
+        return openIDConnectionTitle;
+    }
+
+    public void setOpenIDConnectionTitle(String openIDConnectionTitle) {
+        this.openIDConnectionTitle = openIDConnectionTitle;
     }
 
 }

@@ -155,7 +155,7 @@ export default class VisuForm extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.label
+        label: dto.name
       };
     }
     return null;

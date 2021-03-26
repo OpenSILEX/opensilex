@@ -29,9 +29,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.opensilex.OpenSilex;
+import org.opensilex.security.SecurityConfig;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -44,6 +47,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.rest.validation.Required;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +83,12 @@ public class AuthenticationAPI {
      */
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private SecurityModule securityModule;
+
+    @Inject
+    private OpenSilex openSilex;
 
     /**
      * Authenticate a user with it's identifier (email or URI) and password returning a JWT token
@@ -224,5 +234,35 @@ public class AuthenticationAPI {
     }
 
     private static List<CredentialsGroupDTO> credentialsGroupList;
+
+    @GET
+    @Path("openid")
+    @ApiOperation("Authenticate a user and return an access token")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "User sucessfully authenticated", response = TokenGetDTO.class),
+        @ApiResponse(code = 403, message = "Invalid credentials (Bad token provided)", response = ErrorDTO.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response authenticateOpenID(
+            @ApiParam("Authorization code") @QueryParam("code") @Required String code
+    ) throws Exception {
+        // Create user DAO
+        UserDAO userDAO = new UserDAO(sparql);
+
+        // Authenticate user with provided openID token
+        UserModel user = authentication.authenticateWithOpenID(code, securityModule.getConfig(SecurityConfig.class).openID());
+
+        user = userDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
+
+        // Authenticate found user with provided password
+        if (user != null && authentication.authenticate(user, userDAO.getAccessList(user.getUri()))) {
+            // Return user token
+            return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
+        } else {
+            // Otherwise return a 403 - FORBIDDEN error response
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
+        }
+    }
 
 }

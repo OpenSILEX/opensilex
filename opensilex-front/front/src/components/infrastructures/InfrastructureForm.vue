@@ -43,7 +43,7 @@ import {
   OntologyService,
   InfrastructureGetDTO,
   InfrastructureCreationDTO,
-  ResourceTreeDTO
+  ResourceTreeDTO,
 } from "opensilex-core/index";
 
 @Component
@@ -61,9 +61,9 @@ export default class InfrastructureForm extends Vue {
         uri: null,
         rdf_type: null,
         name: "",
-        parent: null
+        parent: null,
       };
-    }
+    },
   })
   form;
 
@@ -87,7 +87,7 @@ export default class InfrastructureForm extends Vue {
       uri: null,
       rdf_type: null,
       name: "",
-      parent: null
+      parent: null,
     };
   }
 
@@ -96,10 +96,24 @@ export default class InfrastructureForm extends Vue {
     this.parentInfrastructures = infrastructures;
   }
 
+  init() {
+    if (this.parentInfrastructures == null) {
+      this.$opensilex
+        .getService("opensilex-core.OrganisationsService")
+        .searchInfrastructuresTree()
+        .then(
+          (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+            this.setParentInfrastructures(http.response.result);
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
+    }
+  }
+
   get parentOptions() {
     if (this.editMode) {
       return this.$opensilex.buildTreeListOptions(this.parentInfrastructures, {
-        disableSubTree: this.form.uri
+        disableSubTree: this.form.uri,
       });
     } else {
       return this.$opensilex.buildTreeListOptions(this.parentInfrastructures);
@@ -114,14 +128,12 @@ export default class InfrastructureForm extends Vue {
         let uri = http.response.result;
         console.debug("Infrastructure facility created", uri);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.status == 409) {
           console.error("Infrastructure already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$t(
-              "InfrastructureForm.infrastructure-already-exists"
-            )
+            this.$t("InfrastructureForm.infrastructure-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);

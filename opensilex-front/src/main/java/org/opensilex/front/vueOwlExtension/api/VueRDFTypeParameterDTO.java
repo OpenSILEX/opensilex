@@ -5,6 +5,7 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 
@@ -12,10 +13,11 @@ import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
  *
  * @author vmigot
  */
-public class VueClassParameterDTO {
+public class VueRDFTypeParameterDTO {
 
     protected URI uri;
 
+    @JsonProperty("is_abstract")
     protected boolean isAbstract;
 
     protected String icon;
@@ -44,8 +46,8 @@ public class VueClassParameterDTO {
         this.icon = icon;
     }
 
-    public static VueClassParameterDTO getDTOFromModel(VueClassExtensionModel model) {
-        VueClassParameterDTO dto = new VueClassParameterDTO();
+    public static VueRDFTypeParameterDTO getDTOFromModel(VueClassExtensionModel model) {
+        VueRDFTypeParameterDTO dto = new VueRDFTypeParameterDTO();
         dto.setUri(model.getUri());
         dto.setIcon(model.getIcon());
         dto.setIsAbstract(model.getIsAbstractClass());

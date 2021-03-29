@@ -207,8 +207,21 @@ public class GermplasmDAO {
 
     }
 
-    public List<GermplasmModel> getList(List<URI> uris) throws Exception {
-        return sparql.getListByURIs(GermplasmModel.class, uris, null);
+    public List<GermplasmModel> getList(List<URI> uris, String lang, Boolean withMetadata) throws Exception {
+        List<GermplasmModel> germplasmList = sparql.getListByURIs(GermplasmModel.class, uris, lang);
+        
+        if (withMetadata) {
+            //get metadata part from mongo
+            for (GermplasmModel germplasm:germplasmList) {
+                GermplasmAttributeModel storedAttributes = getStoredAttributes(germplasm.getUri());
+                if (storedAttributes != null) {
+                    germplasm.setAttributes(storedAttributes.getAttribute());
+                }
+            }
+        }
+        
+        return germplasmList;
+        
     }
 
     public ListWithPagination<GermplasmModel> search(

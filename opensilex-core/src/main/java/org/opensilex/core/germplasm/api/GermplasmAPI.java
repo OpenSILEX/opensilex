@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.LocalDate;
@@ -269,7 +270,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Germplasms URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> models = germplasmDAO.getList(uris);
+        List<GermplasmModel> models = germplasmDAO.getList(uris, currentUser.getLanguage(), false);
 
         if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
@@ -479,11 +480,15 @@ public class GermplasmAPI {
                 experiment,
                 metadataFilter
         );
-
-        // Convert list to DTO
+        
+        return buildCSV(resultList);
+    }
+    
+    private Response buildCSV(List<GermplasmModel> germplasmList) throws IOException {
+                // Convert list to DTO
         List<GermplasmGetSingleDTO> resultDTOList = new ArrayList<>();
         Set metadataKeys = new HashSet();
-        for (GermplasmModel germplasm : resultList) {
+        for (GermplasmModel germplasm : germplasmList) {
             GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(germplasm);
             resultDTOList.add(dto);
             Map metadata = dto.getMetadata();
@@ -549,7 +554,27 @@ public class GermplasmAPI {
         return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
-
+    }
+    
+    
+    @GET
+    @Path("export_by_uris")
+    @ApiOperation("export germplasm by list of uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with germplasm list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportGermplasmByURIs(
+            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uris") List<URI> uris
+    ) throws Exception {
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
+        List<GermplasmModel> germplasmList = dao.getList(uris, currentUser.getLanguage(), true);
+        
+        return buildCSV(germplasmList);
+        
     }
 
     /**

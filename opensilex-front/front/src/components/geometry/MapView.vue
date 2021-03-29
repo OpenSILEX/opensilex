@@ -266,6 +266,7 @@ import {defaults, ScaleLine} from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
 import MultiPolygon from "ol/geom/MultiPolygon";
+import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -315,6 +316,7 @@ export default class MapView extends Vue {
   private experiment: string;
   private scientificObjectsService = "opensilex.ScientificObjectsService";
   private areaService = "opensilex.AreaService";
+  private scientificObjectURI: string;
 
   get user() {
     return this.$store.state.user;
@@ -352,6 +354,7 @@ export default class MapView extends Vue {
                   name: res.name,
                   type: res.rdf_type,
                   description: res.description,
+                  author: res.author,
                   nature: "Area",
                 };
                 this.featuresArea.push(res.geometry);
@@ -393,9 +396,12 @@ export default class MapView extends Vue {
                   uri: res.uri,
                   name: res.name,
                   type: res.rdf_type,
+                  description: res.description,
+                  author: res.author,
                   nature: "Area",
                 };
                 this.featuresArea.push(res.geometry);
+                this.selectedFeatures.push(res.geometry);
               }
             })
             .catch(this.$opensilex.errorHandler);
@@ -405,7 +411,29 @@ export default class MapView extends Vue {
 
   callScientificObjectsUpdate() {
     if (this.callSO) {
-      this.recoveryScientificObjects();
+      this.callSO = false;
+      this.removeFromFeaturesOS(this.scientificObjectURI, this.featuresOS);
+      this.$opensilex
+          .getService(this.scientificObjectsService)
+          .getScientificObjectDetail(this.scientificObjectURI, this.experiment)
+          .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
+                const result = http.response.result as any;
+
+                if (result.geometry != null) {
+                  result.geometry.properties = {
+                    uri: result.uri,
+                    name: result.name,
+                    type: result.rdf_type,
+                    nature: "ScientificObjects",
+                  };
+
+                  this.featuresOS.push(result.geometry);
+                  this.selectedFeatures.push(result.geometry);
+                }
+              }
+          )
+          .catch(this.$opensilex.errorHandler);
+
       this.$opensilex.showSuccessToast(this.successMessageOS());
     }
   }
@@ -594,7 +622,6 @@ export default class MapView extends Vue {
                     uri: element.uri,
                     name: element.name,
                     type: element.type,
-                    description: element.description,
                     nature: "ScientificObjects",
                   };
                   this.featuresOS.push(element.geometry);
@@ -619,7 +646,7 @@ export default class MapView extends Vue {
       this.$opensilex
           .getService(this.scientificObjectsService)
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
-          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+          .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
             let result = http.response.result;
             this.selectedFeatures.forEach((item) => {
               if (item.properties.uri === result.uri) {
@@ -761,6 +788,7 @@ export default class MapView extends Vue {
     } else {
       this.callSO = true;
       this.removeFromFeaturesOS(uri, this.selectedFeatures);
+      this.scientificObjectURI = uri;
       this.soForm.editScientificObject(uri);
     }
   }

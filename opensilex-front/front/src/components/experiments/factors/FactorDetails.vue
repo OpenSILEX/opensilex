@@ -33,10 +33,10 @@
           </template>
 
           <template v-slot:body>
-            <opensilex-StringView
+            <opensilex-LabelUriView
               label="component.factor.uri"
-              :value="factor.uri"
-            ></opensilex-StringView>
+              :uri="factor.uri"
+              ></opensilex-LabelUriView> 
             <opensilex-StringView
               label="component.factor.name"
               :value="factor.name"
@@ -116,7 +116,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
-import { FactorsService, FactorCategoryGetDTO } from "opensilex-core/index";
+import { FactorsService } from "opensilex-core/index";
 import { PropSync } from "vue-property-decorator";
 
 @Component

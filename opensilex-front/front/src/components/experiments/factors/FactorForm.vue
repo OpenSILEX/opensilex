@@ -16,7 +16,7 @@
       <opensilex-UriForm
         :uri.sync="form.uri"
         label="component.factor.uri"
-        helpMessage="component.common.uri.help-message"
+        helpMessage="component.common.uri-help-message"
         :editMode="editMode"
         :generated.sync="uriGenerated"
       ></opensilex-UriForm>

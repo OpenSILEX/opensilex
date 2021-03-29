@@ -511,7 +511,7 @@ public final class ClassUtils {
     }
     
     /**
-     * Get default csv parser settings (delimiter auto detection)
+     * Get default csv parser settings (delimiter auto detection, ignore leading whitespaces, ignore leading trailing)
      * @return CsvParserSettings 
      */
     public static CsvParserSettings getCSVParserDefaultSettings() {

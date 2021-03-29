@@ -105,20 +105,20 @@ public class DocumentDAO {
     private void appendMultipleFilter(ElementGroup subjectGraphGroupElem, SelectBuilder select, String multiple){
         if (multiple != null) {
 
-            Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
-            Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);
-
-            Triple docSubjectTriple = new Triple(uriVar, DCTerms.subject.asNode(), subjectVar);
-  
-            subjectGraphGroupElem.addTriplePattern(docSubjectTriple);
-
-            Expr multipleFilter = SPARQLQueryHelper.or(
-                SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, multiple),
-                SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, multiple)
-            );
-
-            subjectGraphGroupElem.addElementFilter(new ElementFilter(multipleFilter));
-
+            if (subjectGraphGroupElem != null || select != null) {
+                Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
+                Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);
+    
+                Triple docSubjectTriple = new Triple(uriVar, DCTerms.subject.asNode(), subjectVar);
+      
+                subjectGraphGroupElem.addTriplePattern(docSubjectTriple);
+    
+                Expr multipleFilter = SPARQLQueryHelper.or(
+                    SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, multiple),
+                    SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, multiple));
+    
+                subjectGraphGroupElem.addElementFilter(new ElementFilter(multipleFilter));
+            }
         }
     }
 

@@ -86,6 +86,7 @@
             <template v-slot:body>
               <div class="button-zone">
               <b-button 
+                :disabled="firstPreview"
                 @click="previewFile(document.uri, document.title, document.format)"
               >{{ $t("DocumentDetails.preview") }}</b-button> 
               <b-button 
@@ -135,6 +136,7 @@ export default class DocumentDetails extends Vue {
   $i18n: any;
   service: DocumentsService;
   uri: string = null;
+  firstPreview = false;
 
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
@@ -193,6 +195,7 @@ export default class DocumentDetails extends Vue {
 
   previewFile(uri: string, title: string, format: string) {
     let path = "/core/documents/" + encodeURIComponent(uri);
+    this.firstPreview = true;
     this.$opensilex
      .previewFilefromGetService(path, title, format);
   }

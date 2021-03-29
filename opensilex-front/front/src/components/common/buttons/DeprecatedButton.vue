@@ -19,8 +19,16 @@ import Vue from "vue";
 
 @Component
 export default class DeprecatedButton extends Vue {
-  @Prop()
-  label: string;
+  // @Prop()
+  // label: string;
+
+    get label(){
+    if(this.deprecated == false){
+      return "DeprecatedButton.deprecated";
+    } else {
+      return  "DeprecatedButton.cancelDeprecated";
+    }
+  }
 
   @Prop()
   small: boolean;
@@ -36,3 +44,17 @@ export default class DeprecatedButton extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+  DeprecatedButton:
+    deprecated: Deprecated
+    cancelDeprecated: Cancel Deprecated
+
+fr:
+  DeprecatedButton:
+    deprecated: Obsolète
+    cancelDeprecated: Annuler Obsolète
+      
+</i18n>

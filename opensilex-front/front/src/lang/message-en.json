@@ -505,6 +505,9 @@
             "external-already-existing": "Already associated reference"
         }
     },
+    "document": {
+        "nopreview": "No preview possible"
+    },
     "credential-groups": {
         "experiments": "Experiments",
         "groups": "Groups",

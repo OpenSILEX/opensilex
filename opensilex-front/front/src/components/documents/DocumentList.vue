@@ -129,7 +129,6 @@
             v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
             @click="deprecatedDocument(data.item.uri)"
             :small="true"
-            label="DocumentList.deprecated"
             :deprecated="data.item.deprecated"
           ></opensilex-DeprecatedButton>
           <opensilex-Button

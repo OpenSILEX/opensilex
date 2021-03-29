@@ -40,6 +40,7 @@
       <opensilex-ScientificObjectDetailAdvanced
         v-if="selected"
         :selected="selected"
+        :typeProperties="typeProperties"
       ></opensilex-ScientificObjectDetailAdvanced>
     </div>
 
@@ -76,6 +77,7 @@
         <opensilex-ScientificObjectDetailAdvanced
           v-if="selected"
           :selected="selected"
+          :typeProperties="typeProperties"
         ></opensilex-ScientificObjectDetailAdvanced>
       </b-card>
 
@@ -113,7 +115,7 @@
           <div v-if="!v.definition.isList" class="static-field">
             <span class="field-view-title">{{ v.definition.name }}</span>
             <component
-              :is="v.definition.viewComponent"
+              :is="v.definition.view_component"
               :value="v.property"
             ></component>
           </div>
@@ -126,7 +128,7 @@
               <br />
               <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
                 <component
-                  :is="v.definition.viewComponent"
+                  :is="v.definition.view_component"
                   :value="prop"
                 ></component>
               </li>
@@ -172,7 +174,6 @@
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import AnnotationList from "../annotations/list/AnnotationList.vue";
 import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 
 @Component
@@ -211,9 +212,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   tabsIndex: number = 0;
   tabsValue: string = this.DETAILS_TAB;
 
-  @Ref("annotationList") readonly annotationList!: AnnotationList;
-  @Ref("annotationModalForm")
-  readonly annotationModalForm!: AnnotationModalForm;
+  @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
 
   get user() {
     return this.$store.state.user;
@@ -256,7 +255,7 @@ export default class ScientificObjectDetailBasic extends Vue {
 
     return this.$opensilex
       .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(
+      .getRDFTypeProperties(
         this.selected.rdf_type,
         this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
       )
@@ -273,16 +272,16 @@ export default class ScientificObjectDetailBasic extends Vue {
   buildTypeProperties(typeProperties, valueByProperties) {
     this.loadProperties(
       typeProperties,
-      this.classModel.dataProperties,
+      this.classModel.data_properties,
       valueByProperties
     );
     this.loadProperties(
       typeProperties,
-      this.classModel.objectProperties,
+      this.classModel.object_properties,
       valueByProperties
     );
 
-    let pOrder = this.classModel.propertiesOrder;
+    let pOrder = this.classModel.properties_order;
 
     typeProperties.sort((a, b) => {
       let aProp = a.definition.property;
@@ -322,7 +321,7 @@ export default class ScientificObjectDetailBasic extends Vue {
       let property = properties[i];
       if (valueByProperties[property.property]) {
         if (
-          property.isList &&
+          property.is_list &&
           !Array.isArray(valueByProperties[property.property])
         ) {
           typeProperties.push({
@@ -411,12 +410,6 @@ export default class ScientificObjectDetailBasic extends Vue {
         return a == b;
       }
     }
-  }
-
-  updateAnnotations() {
-    this.$nextTick(() => {
-      this.annotationList.refresh();
-    });
   }
 }
 </script>

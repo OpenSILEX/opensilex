@@ -4,7 +4,7 @@
       <div v-if="!v.definition.isList" class="static-field">
         <span class="field-view-title">{{ v.definition.name }}</span>
         <component
-          :is="v.definition.viewComponent"
+          :is="v.definition.view_component"
           :value="v.property"
         ></component>
       </div>
@@ -14,7 +14,7 @@
           <br />
           <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
             <component
-              :is="v.definition.viewComponent"
+              :is="v.definition.view_component"
               :value="prop"
             ></component>
           </li>

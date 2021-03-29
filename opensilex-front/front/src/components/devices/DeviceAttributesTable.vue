@@ -49,6 +49,22 @@ export default class DeviceAttributesTable extends Vue {
   $store: any;
   $i18n: any;
   service: DevicesService;
+  langs: any = {
+    fr: {
+      columns: {
+        attribute: 'Attribut<span class="required">*</span>',
+        value: "Valeur",
+        actions: "Supprimer",
+      }    
+    },
+    en: {
+      columns: {
+        attribute: 'Attribute<span class="required">*</span>',
+        value: "Value",
+        actions: "Delete",
+      }
+    },
+  };
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
   @Ref("langInput") readonly langInput!: any;
@@ -96,7 +112,27 @@ export default class DeviceAttributesTable extends Vue {
     clipboard: true,
     columns: this.tableColumns,
     maxHeight: "100%", //do not let table get bigger than the height of its parent element
+    langs: this.langs
   };
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      (lang) => {
+        this.changeTableLang(lang);
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
+  changeTableLang(lang: string) {
+    let tabulatorInstance = this.tabulatorRef.getInstance();
+    tabulatorInstance.setLocale(lang);
+  }
 
   resetTable() {
     this.attributesArray = [];
@@ -130,8 +166,11 @@ export default class DeviceAttributesTable extends Vue {
     
     let data = this.tabulatorRef.getInstance().getData();
     for (let y = 0; y < data.length; y++) {
-      let key = data[y].attribute;
-      attributes[key] = data[y].value;
+       if (data[y].attribute !== null) {
+        let key = data[y].attribute;
+        attributes[key] = data[y].value;
+      }
+
     }
     return attributes;
   }

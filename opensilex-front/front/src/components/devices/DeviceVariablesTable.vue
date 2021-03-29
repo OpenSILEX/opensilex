@@ -44,7 +44,23 @@ export default class DeviceVariablesTable extends Vue {
   $i18n: any;
   $papa: any;
   service: DevicesService;
-
+  langs: any = {
+    fr: {
+      columns: {
+        attribute: 'Property',
+        value: "URI",
+        actions: "Supprimer",
+      }    
+    },
+    en: {
+      columns: {
+        attribute: 'Propriété',
+        value: "URI",
+        actions: "Delete",
+      }
+    },
+  };
+  
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
 
   @Prop()
@@ -97,8 +113,28 @@ export default class DeviceVariablesTable extends Vue {
     clipboard: true,
     columns: this.tableColumns,
     maxHeight: "100%",
-    index: 0
+    index: 0,
+    langs: this.langs
   };
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      (lang) => {
+        this.changeTableLang(lang);
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
+  changeTableLang(lang: string) {
+    let tabulatorInstance = this.tabulatorRef.getInstance();
+    tabulatorInstance.setLocale(lang);
+  }
 
   removeRow(evt, clickedCell) {
     let columnName = clickedCell.getField();

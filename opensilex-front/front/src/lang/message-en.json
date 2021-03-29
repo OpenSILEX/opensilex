@@ -121,7 +121,8 @@
                     "nbEntries" : "Showing {limit} to {offset} of {totalRow} entries",
                     "noEntries" : "No entries found"
                 }
-            }
+            },
+            "addDocument": "Add document"
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",

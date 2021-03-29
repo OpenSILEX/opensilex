@@ -91,25 +91,23 @@
               selectedObjects.length
               }}
             </span>
-
-            <b-button-group>
-              <opensilex-Button
-                :variant="selectedObjects.length > 0 ? 'primary' : ''"
-                icon="none"
-                :small="false"
-                label="Export CSV"
-                :disabled="selectedObjects.length == 0"
-                @click="exportCSV"
-              ></opensilex-Button>
-              <opensilex-Button
-                :variant="selectedObjects.length > 0 ? 'success' : ''"
-                icon="none"
-                :small="false"
-                label="ExperimentScientificObjects.visualize"
-                :disabled="selectedObjects.length == 0"
-                @click="visualize"
-              ></opensilex-Button>
-            </b-button-group>
+            <b-dropdown
+              dropright
+              class="mb-2 mr-2"
+              :small="true"
+              :disabled="selectedObjects.length == 0"
+              text=actions>
+                <b-dropdown-item-button    
+                  @click="createDocument()"
+                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+                <b-dropdown-item-button
+                  @click="exportCSV"
+                >Export CSV</b-dropdown-item-button>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item-button 
+                  @click="visualize"
+                >{{$t('ExperimentScientificObjects.visualize')}}</b-dropdown-item-button>
+            </b-dropdown>
           </div>
           <opensilex-TreeViewAsync
             ref="soTree"
@@ -180,6 +178,16 @@
       :selectedScientificObjects="selectedNamedObjects"
       @graphicCreated="onGraphicCreated"
     ></opensilex-DataVisuView>
+
+    <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="component.common.addDocument"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-settings"
+    ></opensilex-ModalForm>
     
   </div>
 </template>
@@ -203,6 +211,7 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
   @Ref("importForm") readonly importForm!: any;
+  @Ref("documentForm") readonly documentForm!: any;
 
   get customColumns() {
     return [
@@ -479,6 +488,29 @@ export default class ExperimentScientificObjects extends Vue {
       },
       this.lang
     );
+  }
+
+  createDocument() {
+    this.documentForm.showCreateForm();
+  }
+
+  initForm() {
+    return {
+      description: {
+        uri: undefined,
+        identifier: undefined,
+        rdf_type: undefined,
+        title: undefined,
+        date: undefined,
+        description: undefined,
+        targets: this.selectedObjects,
+        authors: undefined,
+        language: undefined,
+        deprecated: undefined,
+        keywords: undefined
+      },
+      file: undefined
+    }
   }
 }
 </script>

@@ -84,7 +84,7 @@
         text=actions>
           <b-dropdown-item-button    
             @click="createDocument()"
-          >{{$t('DeviceList.addDocument')}}</b-dropdown-item-button>
+          >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
           <b-dropdown-item-button
             @click="exportDevices()"
           >{{$t('DeviceList.export')}}</b-dropdown-item-button>
@@ -138,8 +138,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
-      createTitle="DeviceList.addDocument"
-      editTitle="DeviceList.update"
+      createTitle="component.common.addDocument"
       modalSize="lg"
       :initForm="initForm"
       icon="ik#ik-settings"
@@ -411,9 +410,8 @@ en:
     start_up: Start up 
     update: Update Device
     delete: Delete Device
-    selected: Devices
+    selected: Selected devices
     facility: Facility
-    addDocument: Add document
     addVariable: Add variable
     export: Export Device list
     alertSelectSize: The selection has too many lines, 1000 lines maximum
@@ -443,9 +441,8 @@ fr:
     start_up: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
-    selected: Dispositifs
+    selected: Dispositifs selectionnés
     facility: Facility
-    addDocument: Ajouter un document
     addVariable: Ajout de variable
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum

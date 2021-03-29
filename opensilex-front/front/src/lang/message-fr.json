@@ -120,7 +120,8 @@
                     "nbEntries" : " Affiche {limit} à {offset} des {totalRow} éléments",
                     "noEntries" : "Aucun élément trouvé"
                 }
-            }
+            },
+            "addDocument": "Ajouter un document"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",

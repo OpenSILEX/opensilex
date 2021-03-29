@@ -23,12 +23,10 @@ import org.apache.jena.sparql.expr.E_LessThanOrEqual;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.opensilex.sparql.deserializer.DateDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.*;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -241,6 +239,32 @@ public class SPARQLQueryHelper {
     }
 
     /**
+     * Append a VALUES clause to the given select if values are not empty,
+     *
+     * @param where the WhereClause to update
+     * @param varName the variable name
+     * @param values the list of URI to put in the VALUES set
+     *
+     * @see
+     * <a href=www.w3.org/TR/2013/REC-sparql11-query-20130321/#inline-data>W3C SPARQL VALUES specifications</a>
+     * @see SelectBuilder#addWhereValueVar(Object, Object...)
+     */
+    public static void addWhereUriValues(WhereClause<?> where, String varName, Collection<URI> values) {
+
+        if (values.isEmpty()) {
+            return;
+        }
+
+        // convert list to JENA node array and return the new SelectBuilder
+        Object[] nodes = new Node[values.size()];
+        int i = 0;
+        for (URI uri : values) {
+            nodes[i++] = NodeFactory.createURI(uri.toString());
+        }
+        where.addWhereValueVar(varName, nodes);
+    }
+
+    /**
      * <pre>
      * Update the given {@link SelectBuilder} by adding a list of FILTER clause
      * or a VALUES ( ?var1 ?var2 ).
@@ -310,10 +334,40 @@ public class SPARQLQueryHelper {
 
     }
 
+    private static Expr dateRange(String startDateVarName, Object startDate, String endDateVarName, Object endDate, SPARQLDeserializer<?> deserializer) throws Exception {
+
+        boolean startDateNull = startDate == null;
+        boolean endDateNull = endDate == null;
+        if (startDateNull && endDateNull) {
+            return null;
+        }
+
+        Node endVar;
+        Expr endDateExpr = null;
+
+        if (!endDateNull) {
+            endVar = NodeFactory.createVariable(endDateVarName);
+            endDateExpr = exprFactory.le(endVar, deserializer.getNode(endDate));
+        }
+
+        if (!startDateNull) {
+            Node startVar = NodeFactory.createVariable(startDateVarName);
+            Expr startDateExpr = exprFactory.ge(startVar, deserializer.getNode(startDate));
+
+            if (!endDateNull) {
+                return exprFactory.and(startDateExpr, endDateExpr);
+            }
+            return startDateExpr;
+        }
+        return endDateExpr;
+    }
+    
     /**
-     * @param startDateVarName the name of the startDate variable , should not be null if startDate is not null
+     * @param startDateVarName the name of the startDate variable , should not
+     * be null if startDate is not null
      * @param startDate the start date
-     * @param endDateVarName the name of the endDate variable , should not be null if endDate is not null
+     * @param endDateVarName the name of the endDate variable , should not be
+     * null if endDate is not null
      * @param endDate the end date
      * @return an Expr according the two given LocalDate and variable names      <pre>
      *     null if startDate and endDate are both null
@@ -327,34 +381,32 @@ public class SPARQLQueryHelper {
      * @see ExprFactory#ge(Object, Object)
      */
     public static Expr dateRange(String startDateVarName, LocalDate startDate, String endDateVarName, LocalDate endDate) throws Exception {
-
-        boolean startDateNull = startDate == null;
-        boolean endDateNull = endDate == null;
-        if (startDateNull && endDateNull) {
-            return null;
-        }
-
-        DateDeserializer dateDeserializer = new DateDeserializer();
-        Node endVar;
-        Expr endDateExpr = null;
-
-        if (!endDateNull) {
-            endVar = NodeFactory.createVariable(endDateVarName);
-            endDateExpr = exprFactory.le(endVar, dateDeserializer.getNode(endDate));
-        }
-
-        if (!startDateNull) {
-            Node startVar = NodeFactory.createVariable(startDateVarName);
-            Expr startDateExpr = exprFactory.ge(startVar, dateDeserializer.getNode(startDate));
-
-            if (!endDateNull) {
-                return exprFactory.and(startDateExpr, endDateExpr);
-            }
-            return startDateExpr;
-        }
-        return endDateExpr;
+        return dateRange(startDateVarName,startDate,endDateVarName,endDate,new DateDeserializer());
     }
 
+    /**
+     * @param startDateVarName the name of the startDate variable , should not
+     * be null if startDate is not null
+     * @param startDate the start date
+     * @param endDateVarName the name of the endDate variable , should not be
+     * null if endDate is not null
+     * @param endDate the end date
+     * @return an Expr according the two given LocalDate and variable names      <pre>
+     *     null if startDate and endDate are both null
+     *     an {@link E_LogicalAnd} if startDate and endDate are both non null
+     *     an {@link E_GreaterThanOrEqual} if only startDate is not null
+     *     an {@link E_LessThanOrEqual} if only endDate is not null
+     * </pre>
+     *
+     * @see ExprFactory#and(Object, Object)
+     * @see ExprFactory#le(Object, Object)
+     * @see ExprFactory#ge(Object, Object)
+     */
+    public static Expr dateTimeRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws Exception {
+        return dateRange(startDateVarName,startDate,endDateVarName,endDate,new DateTimeDeserializer());
+    }
+    
+    
     /**
      * <pre>
      * INTERSECTION of interval( delimited by startDate / EndDate) AND the entity lifetime is not null

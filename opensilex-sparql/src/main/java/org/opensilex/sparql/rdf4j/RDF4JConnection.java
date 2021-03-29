@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
@@ -144,6 +146,29 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
             TupleQueryResult results = selectQuery.evaluate();
 
             return bindingSetsToSPARQLResultList(results, resultHandler);
+        } catch (RepositoryException ex) {
+            Throwable cause = ex.getCause();
+            if (cause instanceof ShaclSailValidationException) {
+                throw convertRDF4JSHACLException((ShaclSailValidationException) cause);
+            } else {
+                throw new SPARQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
+        try {
+            TupleQuery selectQuery = rdf4JConnection.prepareTupleQuery(QueryLanguage.SPARQL, select.buildString());
+            if (getTimeout() > 0) {
+                selectQuery.setMaxExecutionTime(getTimeout());
+            }
+            TupleQueryResult results = selectQuery.evaluate();
+            if( ! results.hasNext()){
+                return Stream.empty();
+            }
+            return results.stream().map(RDF4JResult::new);
+
         } catch (RepositoryException ex) {
             Throwable cause = ex.getCause();
             if (cause instanceof ShaclSailValidationException) {

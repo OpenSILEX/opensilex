@@ -369,6 +369,17 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     /**
      * @param objectFieldName the field name
+     * @return the name of the SPARQL variable which represent the object field timestamp
+     * @see org.opensilex.sparql.model.time.InstantModel
+     * @see org.opensilex.sparql.model.time.Time
+     * @see SPARQLClassQueryBuilder#getTimeStampVarName(String) ()
+     */
+    public static String getTimeStampVarName(String objectFieldName) {
+        return SPARQLClassQueryBuilder.getTimeStampVarName(objectFieldName);
+    }
+
+    /**
+     * @param objectFieldName the field name
      * @return the name of the default SPARQL variable which represent the object field name
      * @see SPARQLClassQueryBuilder#getObjectDefaultNameVarName(String) ()
      */

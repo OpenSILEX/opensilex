@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
-<rdf:RDF
+<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeev#"
      xml:base="http://www.opensilex.org/vocabulary/oeev"
-     xmlns:oeev="http://www.opensilex.org/vocabulary/oeev#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:oeev="http://www.opensilex.org/vocabulary/oeev#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:time="http://www.w3.org/2006/time#"
-     xmlns:dc="http://purl.org/dc/elements/1.1/">
+     xmlns:time="http://www.w3.org/2006/time#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeev">
         <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
-        <owl:versionInfo>Version 3.0 (2019-01-16) created by INRA</owl:versionInfo>
-        <rdfs:label xml:lang="en">OpenSILEX - Ontology of Experimental Events (OEEv)</rdfs:label>
         <rdfs:comment>INRA MISTEA
 Copyright © - INRA - 2014 - 2019
 The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
+        <rdfs:label xml:lang="en">OpenSILEX - Ontology of Experimental Events (OEEv)</rdfs:label>
+        <owl:versionInfo>Version 3.0 (2019-01-16) created by INRA</owl:versionInfo>
     </owl:Ontology>
     
 
@@ -86,7 +86,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#from">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveFrom"/>
         <owl:propertyDisjointWith rdf:resource="http://www.opensilex.org/vocabulary/oeev#to"/>
         <rdfs:label xml:lang="fr">Depuis</rdfs:label>
         <rdfs:label xml:lang="en">From</rdfs:label>
@@ -117,7 +116,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#to">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveTo"/>
         <rdfs:label xml:lang="en">to</rdfs:label>
         <rdfs:label xml:lang="fr">vers</rdfs:label>
     </owl:ObjectProperty>
@@ -290,18 +288,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#Displacement -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Displacement">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
-        <rdfs:comment xml:lang="en">Event describing the displacement in time and space of the different objects participating in experiments. For instance, plants are often transferred, during a single experiment, between installations or compartments with different environmental conditions. Similarly, sensors can be replaced or moved to different positions in the field or greenhouse.</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Evénement de déplacement général objet scientifique, équipement, etc.</rdfs:comment>
-        <rdfs:label xml:lang="en">Displacement</rdfs:label>
-        <rdfs:label xml:lang="fr">Déplacement</rdfs:label>
-    </owl:Class>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeev#Dysfunction -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Dysfunction">
@@ -425,29 +411,14 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#MoveFrom -->
+    <!-- http://www.opensilex.org/vocabulary/oeev#Move -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#MoveFrom">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#from"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <owl:disjointWith rdf:resource="http://www.opensilex.org/vocabulary/oeev#MoveTo"/>
-        <rdfs:label xml:lang="fr">Déplacement depuis</rdfs:label>
-        <rdfs:label xml:lang="en">Move from</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeev#MoveTo -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#MoveTo">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
-        <rdfs:label xml:lang="fr">Déplacement vers</rdfs:label>
-        <rdfs:label xml:lang="en">Move to</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Move">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:comment xml:lang="en">Event describing the displacement in time and space of the different objects participating in experiments. For instance, plants are often transferred, during a single experiment, between installations or compartments with different environmental conditions. Similarly, sensors can be replaced or moved to different positions in the field or greenhouse.</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Evénement de déplacement général objet scientifique, équipement, etc.</rdfs:comment>
+        <rdfs:label xml:lang="en">Move</rdfs:label>
+        <rdfs:label xml:lang="fr">Déplacement</rdfs:label>
     </owl:Class>
     
 
@@ -708,8 +679,8 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <rdf:Description>
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
         <owl:members rdf:parseType="Collection">
-            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Displacement"/>
             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
+            <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Move"/>
             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeev#Trouble"/>
         </owl:members>
@@ -718,5 +689,5 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
 
 
-<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
 

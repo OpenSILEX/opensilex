@@ -285,7 +285,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
      * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
      * @param createPath the path to the service which allow to create an entity
-     * @param delete the path to the service which allow to delete an entity
+     * @param deletePath the path to the service which allow to delete an entity
      * @param entity the entity on which apply create, read and delete
      */
     protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
@@ -306,6 +306,36 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         getResult = getJsonGetByUriResponse(target(getByUriPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
+
+    /**
+     * Call the createPath with the given entity list
+     * then for each entity : check if entity has been created, delete it and then check that the resource has been deleted
+     * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
+     * @param createPath the path to the service which allow to create an entity
+     * @param deletePath the path to the service which allow to delete an entity
+     * @param entities the List of entity on which apply create, read and delete
+     */
+    protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
+
+        final Response postResult = getJsonPostResponse(target(createPath),entities);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        List<URI> uris = extractUriListFromPaginatedListResponse(postResult);
+
+        for(URI uri : uris){
+            Response getResult = getJsonGetByUriResponse(target(getByUriPath),  uri.toString());
+            assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+            // delete object and check if URI no longer exists
+            final Response delResult = getDeleteByUriResponse(target(deletePath),  uri.toString());
+            assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+
+            getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        }
+
+    }
+
 
     protected <T> List<T> getResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriterias, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
         if (searchCriterias == null) {

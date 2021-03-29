@@ -12,6 +12,8 @@ import java.util.List;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.Time;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
@@ -91,6 +93,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, LoginEx
     @Override
     public void setup() throws Exception {
         SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
+        SPARQLService.addPrefix(Oeev.PREFIX, Oeev.NS);
+        SPARQLService.addPrefix(Time.PREFIX,Time.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }

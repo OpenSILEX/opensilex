@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
 import org.apache.jena.arq.querybuilder.DescribeBuilder;
@@ -42,6 +44,10 @@ public interface SPARQLConnection extends Service {
 
     public default List<SPARQLResult> executeSelectQuery(SelectBuilder select) throws SPARQLException {
         return executeSelectQuery(select, null);
+    }
+
+    default Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException{
+        return executeSelectQuery(select).stream();
     }
 
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException;

@@ -153,6 +153,52 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     @Test
+    public void testCreateAll() throws Exception{
+
+        int n = 5;
+
+        List<A> aList = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            A a = new A();
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setBool(true);
+            a.setCharVar('V');
+            aList.add(a);
+        }
+
+        sparql.create(null, aList,null,false);
+
+        for (int i = 0; i < n; i++) {
+            A createdA = aList.get(i);
+            A selectedA = sparql.getByURI(A.class, createdA.getUri(), null);
+            assertEquals("Instance URI must be the same", createdA.getUri(), selectedA.getUri());
+        }
+    }
+
+    @Test
+    public void testCreateAllWithQueryReuse() throws Exception{
+
+        int n = 5;
+
+        List<A> aList = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            A a = new A();
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setBool(true);
+            a.setCharVar('V');
+            aList.add(a);
+        }
+
+        sparql.create(null, aList,n,false);
+
+        for (int i = 0; i < n; i++) {
+            A createdA = aList.get(i);
+            A selectedA = sparql.getByURI(A.class, createdA.getUri(), null);
+            assertEquals("Instance URI must be the same", createdA.getUri(), selectedA.getUri());
+        }
+    }
+
+    @Test
     public void testDeleteQuery() throws Exception {
         A a = new A();
         URI aURI = new URI("http://test.opensilex.org/a/003");

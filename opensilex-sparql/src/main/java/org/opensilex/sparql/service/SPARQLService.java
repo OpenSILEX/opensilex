@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ConstructBuilder;
@@ -55,6 +56,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.core.Quad;
@@ -223,20 +226,29 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     @Override
+    public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
+        addPrefixes(select);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+        }
+        return connection.executeSelectQueryAsStream(select);
+    }
+
+    @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
-        }
+//        if (LOGGER.isDebugEnabled()) {
+//            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
+//        }
         connection.executeUpdateQuery(update);
     }
 
     @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
-        }
+//        if (LOGGER.isDebugEnabled()) {
+//            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
+//        }
         connection.executeDeleteQuery(delete);
     }
 
@@ -292,14 +304,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         } catch (URISyntaxException ex) {
             throw new SPARQLInvalidURIException("Invalid origin graph URI", oldGraphURI);
         }
-        
+
         URI fullNewURI;
         try {
             fullNewURI = new URI(SPARQLDeserializers.getExpandedURI(newGraphURI));
         } catch (URISyntaxException ex) {
             throw new SPARQLInvalidURIException("Invalid destination graph URI", newGraphURI);
         }
-        
+
         disableSHACL();
         LOGGER.debug("MOVE GRAPH " + fullOldURI + " TO " + fullNewURI);
         connection.renameGraph(fullOldURI, fullNewURI);
@@ -674,28 +686,20 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return search(getDefaultGraph(objectClass), objectClass, lang, orderByList);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, List<OrderBy> orderByList) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, Collection<OrderBy> orderByList) throws Exception {
         return search(graph, objectClass, lang, null, orderByList, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList) throws Exception {
         return search(getDefaultGraph(objectClass), objectClass, lang, filterHandler, orderByList);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList) throws Exception {
         return search(graph, objectClass, lang, filterHandler, orderByList, null, null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        String language;
-        if (lang == null) {
-            language = getDefaultLang();
-        } else {
-            language = lang;
-        }
+    private <T extends SPARQLResourceModel> SelectBuilder getSelectBuilder(SPARQLClassObjectMapper<T> mapper, Node graph, String language, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
 
-        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, language);
 
         if (filterHandler != null) {
@@ -716,12 +720,52 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             select.setLimit(limit);
         }
 
+        return select;
+    }
+
+    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+        String language;
+        if (lang == null) {
+            language = getDefaultLang();
+        } else {
+            language = lang;
+        }
+
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+        SelectBuilder select = getSelectBuilder(mapper,graph,language,filterHandler,orderByList,offset,limit);
+
         List<T> resultList = new ArrayList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
             resultList.add(mapper.createInstance(graph, result, language, this));
         }, Exception.class));
 
         return resultList;
+    }
+
+    public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
+        String language;
+        if (lang == null) {
+            language = getDefaultLang();
+        } else {
+            language = lang;
+        }
+
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+        SelectBuilder select = getSelectBuilder(mapper,graph,language,filterHandler,orderByList,offset,limit);
+
+        Stream<SPARQLResult> resultStream = executeSelectQueryAsStream(select);
+        Stream<T> modelStream = resultStream.map(result -> {
+            try {
+                return mapper.createInstance(graph, result, language, this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return modelStream;
+
     }
 
     public <T extends SPARQLResourceModel> int count(Class<T> objectClass) throws Exception {
@@ -771,11 +815,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return searchWithPagination(graph, objectClass, lang, filterHandler, null, page, pageSize);
     }
 
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         return searchWithPagination(getDefaultGraph(objectClass), objectClass, lang, filterHandler, orderByList, page, pageSize);
     }
 
-    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
         if (lang == null) {
             lang = getDefaultLang();
         }
@@ -815,25 +859,56 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance, checkUriExist, false, null);
+        create(graph, instance,null, checkUriExist, false, null);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+
+    /**
+     *
+     * @param mapper the SPARQL mapper used in order to generate query according instance fields
+     * @param subInstanceUpdateBuilder
+     * @param blankNode
+     */
+
+    /**
+     *
+     * @param graph the graph onto instance are created
+     * @param instance the instance to create
+     * @param updateBuilder an UpdateBuilder which can be updated by adding new statements if not null
+     * @param checkUriExist indicate if the service must check if instances already exist
+     * @param blankNode indicate if the instance URI must be a blank node
+     * @param createExtension additional modification to the UpdateBuilder
+     * @param <T> the SPARQLResourceModel type
+     */
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, UpdateBuilder updateBuilder, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        try {
-            startTransaction();
-            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-            prepareInstanceCreation(graph, instance, mapper, checkUriExist, blankNode);
+
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
+
+        if (updateBuilder == null) {
+            prepareInstanceCreation(graph, instance, mapper, null, checkUriExist, blankNode);
             UpdateBuilder create = mapper.getCreateBuilder(graph, instance, blankNode, createExtension);
             executeUpdateQuery(create);
-            commitTransaction();
-        } catch (Exception ex) {
-            rollbackTransaction(ex);
-            throw ex;
+        } else {
+            prepareInstanceCreation(graph, instance, mapper, updateBuilder, checkUriExist, blankNode);
+            mapper.addCreateBuilder(graph, instance, updateBuilder, blankNode);
         }
+
     }
 
-    private <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, boolean checkUriExist, boolean blankNode) throws Exception {
+
+    /**
+     *
+     * @param graph the graph onto instance are created
+     * @param instance the instances to create
+     * @param mapper the SPARQL mapper used in order to generate query according instance fields
+     * @param subInstanceUpdateBuilder an UpdateBuilder which can be updated by adding new statements if not null
+     * @param checkUriExist indicate if the service must check if instances already exist
+     * @param blankNode indicate if the instance URI must be a blank node
+     * @param <T> the SPARQLResourceModel type
+     */
+    public <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, UpdateBuilder subInstanceUpdateBuilder, boolean checkUriExist, boolean blankNode) throws Exception {
         URI rdfType = instance.getType();
         if (rdfType == null) {
             instance.setType(new URI(mapper.getRDFType().getURI()));
@@ -848,27 +923,81 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         validate(instance);
 
         for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-            create(subInstance);
+            create(getDefaultGraph(subInstance.getClass()),subInstance,subInstanceUpdateBuilder,checkUriExist,blankNode,null);
         }
     }
 
-    public <T extends SPARQLResourceModel> void create(Class<T> clazz, List<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Class<T> clazz, Collection<T> instances) throws Exception {
         create(getDefaultGraph(clazz), instances);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, List<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
+        create(graph,instances,null,true);
+    }
+
+    public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
+
+    /**
+     *
+     * @param graph the graph onto instance are created
+     * @param instances the list of instance to create
+     * @param maxInstancePerQuery number of instance to put in one query, if null then one query per instance is used
+     * @param checkUriExist indicate if the service must check if instances already exist
+     * @param <T> the SPARQLResourceModel type
+     */
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist) throws Exception {
+
+        boolean reuseSameQuery = maxInstancePerQuery != null;
+
+        if(reuseSameQuery && maxInstancePerQuery <= 0){
+            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : "+maxInstancePerQuery);
+        }
+
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         if (instances.size() > 0) {
-            UpdateBuilder create = new UpdateBuilder();
             validate(instances);
-            for (T instance : instances) {
-                SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                prepareInstanceCreation(graph, instance, mapper, true, false);
-                mapper.addCreateBuilder(graph, instance, create, false);
+
+            UpdateBuilder updateBuilder = new UpdateBuilder();
+
+            // use the same query for the instance and her sub-instance if a query batch size is specified
+            UpdateBuilder subInstanceUpdateBuilder = reuseSameQuery ? updateBuilder : null;
+
+            try {
+                // set a maximum number of instance to insert into one query in order to ensure that the INSERT query will not be too big
+                int insertedInstanceNb = 0;
+
+                startTransaction();
+
+                for (T instance : instances) {
+                    SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
+                    prepareInstanceCreation(graph, instance, mapper, subInstanceUpdateBuilder, checkUriExist, false);
+                    mapper.addCreateBuilder(graph, instance, updateBuilder, false);
+
+                    // if query limit is reached, then insert query and reset builder
+                    if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
+                        executeUpdateQuery(updateBuilder);
+                        insertedInstanceNb = 0;
+                        updateBuilder = new UpdateBuilder();
+                        subInstanceUpdateBuilder = updateBuilder;
+                    }
+                }
+
+                if(reuseSameQuery){
+                    if(insertedInstanceNb > 0){
+                        executeUpdateQuery(updateBuilder);
+                    }
+                }else{
+                    executeUpdateQuery(updateBuilder);
+                }
+
+                commitTransaction();
+
+            } catch (Exception e) {
+                rollbackTransaction();
+                throw e;
             }
 
-            executeUpdateQuery(create);
         }
     }
 
@@ -880,9 +1009,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             int retry = 0;
             String graphPrefix = getDefaultGraph(instance.getClass()).toString();
             uri = uriGenerator.generateURI(graphPrefix, instance, retry);
-            while (uriExists(graph, uri)) {
-                uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
+
+            if(checkUriExist){
+                while (uriExists(graph, uri)) {
+                    uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
+                }
             }
+
 
             mapper.setUri(instance, uri);
         } else if (checkUriExist && uriExists(graph, uri)) {
@@ -1170,7 +1303,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (uri == null) {
             return false;
         }
-        return executeAskQuery(getUriExistsQuery(objectClass, uri));
+        if(objectClass != null){
+            return executeAskQuery(getUriExistsQuery(objectClass, uri));
+        }
+        return uriExists((Node) null,uri);
+    }
+
+    public <T extends SPARQLResourceModel> boolean anyUriExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
+        if (CollectionUtils.isEmpty(uris)) {
+            return false;
+        }
+        if (uris.size() == 1) {
+            return uriExists(objectClass, uris.iterator().next());
+        }
+
+        SelectBuilder selectQuery = getUriListExistQuery(objectClass, uris);
+        for (SPARQLResult result : executeSelectQuery(selectQuery)) {
+            boolean value = Boolean.parseBoolean(result.getStringValue(EXISTING_VAR));
+            if (value) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public <T extends SPARQLResourceModel> boolean uriListExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
@@ -1205,11 +1359,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> AskBuilder getUriExistsQuery(Class<T> objectClass, URI uri) throws SPARQLException {
-        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
 
         AskBuilder askQuery = new AskBuilder();
         Node nodeUri = SPARQLDeserializers.nodeURI(uri);
 
+        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
         Var fieldType = mapper.getTypeFieldVar();
         askQuery.addWhere(nodeUri, RDF.type, fieldType);
 
@@ -1223,12 +1377,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
 
-        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
-
-        Var uriVar = mapper.getURIFieldVar();
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var existing = makeVar(EXISTING_VAR);
-        Var typeVar = mapper.getTypeFieldVar();
-        Resource typeDef = mapper.getRDFType();
 
         SelectBuilder select = new SelectBuilder();
         SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
@@ -1236,8 +1386,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         WhereBuilder where = new WhereBuilder()
                 .addWhere(uriVar, makeVar("p"), makeVar("o"));
 
-        where.addWhere(typeVar, Ontology.subClassAny, typeDef)
-                .addWhere(uriVar, RDF.type, typeVar);
+        if(objectClass != null){
+            SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
+            Var typeVar = mapper.getTypeFieldVar();
+            Resource typeDef = mapper.getRDFType();
+            where.addWhere(typeVar, Ontology.subClassAny, typeDef)
+                    .addWhere(uriVar, RDF.type, typeVar);
+        }
 
         Expr existExpr = SPARQLQueryHelper.getExprFactory().exists(where);
         select.addVar(existExpr, existing);
@@ -1415,9 +1570,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         validateReverseRelations(instance);
     }
 
-    public <T extends SPARQLResourceModel> void validate(List<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void validate(Collection<T> instances) throws Exception {
         if (!this.isShaclEnabled()) {
-//            validateRelations(instances);
+            validateRelations(instances);
         }
 
         validateReverseRelations(instances);
@@ -1441,7 +1596,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
-    private <T extends SPARQLResourceModel> void validateRelations(List<T> instances) throws Exception {
+    private <T extends SPARQLResourceModel> void validateRelations(Collection<T> instances) throws Exception {
         Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
         for (T instance : instances) {
             SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
@@ -1456,7 +1611,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         validateRelations(mapper.getReverseRelationsUrisByMapper(instance));
     }
 
-    private <T extends SPARQLResourceModel> void validateReverseRelations(List<T> instances) throws Exception {
+    private <T extends SPARQLResourceModel> void validateReverseRelations(Collection<T> instances) throws Exception {
         Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
         for (T instance : instances) {
             SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());

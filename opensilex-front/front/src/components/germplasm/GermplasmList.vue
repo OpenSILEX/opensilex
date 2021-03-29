@@ -181,6 +181,7 @@ export default class GermplasmList extends Vue {
   service: GermplasmService;
 
   @Ref("documentForm") readonly documentForm!: any;
+  @Ref("tableRef") readonly tableRef!: any;
 
   @Prop({
     default: false
@@ -237,8 +238,6 @@ export default class GermplasmList extends Vue {
   resetSearch() {
     this.resetFilters();
     //this.updateFilters();
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.refresh()
   }
 
@@ -254,7 +253,8 @@ export default class GermplasmList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     // this.exportFilter = {
     //   rdf_type: undefined,
     //   name: undefined,
@@ -331,7 +331,6 @@ export default class GermplasmList extends Vue {
     return tableFields;
   }
 
-  @Ref("tableRef") readonly tableRef!: any;
   @Ref("speciesSelector") readonly speciesSelector!: any;
 
   refresh() {
@@ -355,17 +354,17 @@ export default class GermplasmList extends Vue {
       this.addMetadataFilter(),
       options.orderBy,
       options.currentPage,
-      20
+      options.pageSize
     );
   }
 
   exportGermplasm() {
-    let path = "/core/germplasm/export";
+    let path = "/core/germplasm/export_by_uris";
     let today = new Date();
     let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
     var exportList = []
     for (let select of this.tableRef.getSelected()) {
-      exportList.push(select);
+      exportList.push(select.uri);
     }
     this.$opensilex
      .downloadFilefromService(path, filename, "csv", {germplasm_list: exportList});

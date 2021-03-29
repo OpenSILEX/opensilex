@@ -7,6 +7,13 @@
                     "x-more": "et {count} de plus"
                 }
             },
+            "csv-delimiters":{
+                "label" : "Séparateur de colonne CSV",
+                "placeholder" :"Caractère ou signe utilisé comme séparateur de colonne",
+                "comma": "Virgule (,)",
+                "semicolon" : "Point virgule (;)",
+                "tab" : "Tabulation (\\t)"
+            },
             "month": "mois",
             "months": "mois",
             "day":"jour",

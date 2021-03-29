@@ -32,7 +32,15 @@
             >
             </opensilex-VariableSelector>
           </b-col>
-          <b-col> </b-col>
+          <b-col> 
+            <opensilex-SelectForm
+              label="component.common.csv-delimiters.label"
+              helpMessage="component.common.csv-delimiters.placeholder"
+              :selected.sync="separator"
+              :options="delimiterOptions" 
+              :required="true"
+              ></opensilex-SelectForm>
+            </b-col>
         </b-row>
         <b-button @click="csvExport" variant="outline-primary">{{
           $t("OntologyCsvImporter.downloadTemplate")
@@ -54,11 +62,8 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
   VariablesService,
-} from "opensilex-core/index";
-
-import {
-  VariableDatatypeDTO,
-} from "opensilex-core/index";
+  VariableDatatypeDTO
+} from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
@@ -73,6 +78,13 @@ export default class GenerateDataTemplateFrom extends Vue {
   requiredField: boolean = false;
 
   separator = ",";
+  delimiterOptions=[{
+    id :",",
+    label: this.$t('component.common.csv-delimiters.comma')
+  },{
+    id :";",
+    label: this.$t('component.common.csv-delimiters.semicolon')
+  }]
 
   @Prop()
   editMode;
@@ -146,9 +158,17 @@ export default class GenerateDataTemplateFrom extends Vue {
   private langUnwatcher;
   mounted() {
     this.loadDatatypes();
+    if(this.$store.getters.language == "fr"){
+      this.separator = ';'
+    }
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      () => this.loadDatatypes()
+      () => this.loadDatatypes() ,
+      () => {
+        if(this.$store.getters.language == "fr"){
+          this.separator = ';'
+        }
+      }
     );
   }
   
@@ -232,7 +252,7 @@ export default class GenerateDataTemplateFrom extends Vue {
             }
           }
           arrData = [variableUriInfo, otherHeaders, otherExample];
-          this.$papa.download(this.$papa.unparse(arrData), "datasetTemplate");
+          this.$papa.download(this.$papa.unparse(arrData , { delimiter: this.separator }), "datasetTemplate");
         });
       }
     });

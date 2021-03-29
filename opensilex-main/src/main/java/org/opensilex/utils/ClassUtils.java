@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.utils;
 
+import com.univocity.parsers.csv.CsvParserSettings;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -507,5 +508,22 @@ public final class ClassUtils {
      */
     public static boolean isJarClassDirectory(Class<?> aClass) {
         return getJarFile(aClass).isDirectory();
+    }
+    
+    /**
+     * Get default csv parser settings (delimiter auto detection)
+     * @return CsvParserSettings 
+     */
+    public static CsvParserSettings getCSVParserDefaultSettings() {
+        CsvParserSettings csvParserSettings = new CsvParserSettings();
+        //You can configure the parser to automatically detect what line separator sequence is in the input
+        csvParserSettings.setLineSeparatorDetectionEnabled(true);
+        // Configures the parser to analyze the input before parsing to discover the column delimiter character.
+        csvParserSettings.setDelimiterDetectionEnabled(true);
+        // does not skip leading whitespaces
+        csvParserSettings.setIgnoreLeadingWhitespaces(false);
+        // does not skip trailing whitespaces
+        csvParserSettings.setIgnoreTrailingWhitespaces(false); 
+        return  csvParserSettings;
     }
 }

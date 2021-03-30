@@ -220,6 +220,8 @@ export default class ExperimentList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 
@@ -241,8 +243,6 @@ export default class ExperimentList extends Vue {
       yearFilter: undefined,
       state: "",
     };
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.refresh();
   }
 

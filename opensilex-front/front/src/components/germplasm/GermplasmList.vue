@@ -253,8 +253,6 @@ export default class GermplasmList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     // this.exportFilter = {
     //   rdf_type: undefined,
     //   name: undefined,
@@ -334,6 +332,8 @@ export default class GermplasmList extends Vue {
   @Ref("speciesSelector") readonly speciesSelector!: any;
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.updateFilters();
     this.tableRef.refresh();
   }

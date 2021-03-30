@@ -222,9 +222,6 @@ export default class DeviceList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
-    this.measure = false;
 
     /*this.exportFilter = {
       namePattern: undefined,
@@ -301,6 +298,8 @@ export default class DeviceList extends Vue {
   ];
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 
@@ -333,54 +332,21 @@ export default class DeviceList extends Vue {
     this.$opensilex.downloadFilefromService(path, filename, "csv", {uris: exportList});
   }
 
-  // measure: boolean = false;
-  // subClassResult: boolean = false;
-
-  // isSubClassOf(child,parent){
-  //     let ontoService: OntologyService = this.$opensilex.getService(
-  //       "opensilex.OntologyService"
-  //     );
-
-  //     return new Promise((resolve,reject) => {ontoService
-  //       .getRDFType(child,parent)
-  //       .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => {
-  //         this.subClassResult = true;
-  //         resolve(this.measure);
-  //       })
-  //       .catch((error) => {
-  //         this.subClassResult = false;
-  //         resolve(this.measure);
-  //       })});
-  //   }
-
   addVariable() {
-    // let typedev;
-    // let typeResultList = [];
-    // let measureType = ["SensingDevice", "Actuator", "SoftSensor"];
-    // let idx = 0;
-    // this.measure = false;
-   
-    // for(let select of this.tableRef.getSelected()) {
-    //   typedev = select.rdf_type_name;
-    //   console.log(typedev);
-    //   while (!this.measure && idx < measureType.length){
-    //     this.measure = typedev.endsWith(measureType[idx]);
-    //   if(!this.measure){
-    //     this.isSubClassOf(typedev,'vocabulary:' + measureType[idx]);
-    //     this.measure = this.subClassResult;
-    //   }
-    //   idx++;
-    //   console.log(this.measure);
-    //   }
-    //   typeResultList.push(this.measure);
-    // }
-    // console.log(typeResultList);
+    let typedev;
+    let mesure = [];
+    let mesureType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
+    for(let select of this.tableRef.getSelected()) {
+      typedev = select.rdf_type;
+      mesure.push(mesureType.includes(typedev));
+      console.log(typedev + mesure + mesureType);
+    }
 
-    // if (typeResultList.includes(false)) {
-    //   alert(this.$t('DeviceList.alertBadDeviceType'));
-    // } else{
+    if (mesure.includes(true)) {
+      alert(this.$t('DeviceList.alertBadDeviceType'));
+    } else{
       this.variableSelection.show();
-    // }
+    }
   }
   
   editDeviceVar(variableSelected) {

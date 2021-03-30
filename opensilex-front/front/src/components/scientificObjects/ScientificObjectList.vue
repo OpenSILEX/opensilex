@@ -302,12 +302,12 @@ export default class ScientificObjectList extends Vue {
       existenceDate: undefined,
       creationDate: undefined,
     };
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.refresh();
   }
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 

@@ -174,8 +174,6 @@ export default class ProjectList extends Vue {
     this.nameFilter = "";
     this.termFilter = "";
     this.financialFilter = "";
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.refresh();
   }
 
@@ -230,6 +228,8 @@ export default class ProjectList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 

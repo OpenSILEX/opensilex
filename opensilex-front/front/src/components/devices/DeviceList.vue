@@ -333,54 +333,54 @@ export default class DeviceList extends Vue {
     this.$opensilex.downloadFilefromService(path, filename, "csv", {uris: exportList});
   }
 
-  measure: boolean = false;
-  subClassResult: boolean = false;
+  // measure: boolean = false;
+  // subClassResult: boolean = false;
 
-  isSubClassOf(child,parent){
-      let ontoService: OntologyService = this.$opensilex.getService(
-        "opensilex.OntologyService"
-      );
+  // isSubClassOf(child,parent){
+  //     let ontoService: OntologyService = this.$opensilex.getService(
+  //       "opensilex.OntologyService"
+  //     );
 
-      return new Promise((resolve,reject) => {ontoService
-        .getRDFType(child,parent)
-        .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => {
-          this.subClassResult = true;
-          resolve(this.measure);
-        })
-        .catch((error) => {
-          this.subClassResult = false;
-          resolve(this.measure);
-        })});
-    }
+  //     return new Promise((resolve,reject) => {ontoService
+  //       .getRDFType(child,parent)
+  //       .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => {
+  //         this.subClassResult = true;
+  //         resolve(this.measure);
+  //       })
+  //       .catch((error) => {
+  //         this.subClassResult = false;
+  //         resolve(this.measure);
+  //       })});
+  //   }
 
   addVariable() {
-    let typedev;
-    let typeResultList = [];
-    let measureType = ["SensingDevice", "Actuator", "SoftSensor"];
-    let idx = 0;
-    this.measure = false;
+    // let typedev;
+    // let typeResultList = [];
+    // let measureType = ["SensingDevice", "Actuator", "SoftSensor"];
+    // let idx = 0;
+    // this.measure = false;
    
-    for(let select of this.tableRef.getSelected()) {
-      typedev = select.rdf_type_name;
-      console.log(typedev);
-      while (!this.measure && idx < measureType.length){
-        this.measure = typedev.endsWith(measureType[idx]);
-      if(!this.measure){
-        this.isSubClassOf(typedev,'vocabulary:' + measureType[idx]);
-        this.measure = this.subClassResult;
-      }
-      idx++;
-      console.log(this.measure);
-      }
-      typeResultList.push(this.measure);
-    }
-    console.log(typeResultList);
+    // for(let select of this.tableRef.getSelected()) {
+    //   typedev = select.rdf_type_name;
+    //   console.log(typedev);
+    //   while (!this.measure && idx < measureType.length){
+    //     this.measure = typedev.endsWith(measureType[idx]);
+    //   if(!this.measure){
+    //     this.isSubClassOf(typedev,'vocabulary:' + measureType[idx]);
+    //     this.measure = this.subClassResult;
+    //   }
+    //   idx++;
+    //   console.log(this.measure);
+    //   }
+    //   typeResultList.push(this.measure);
+    // }
+    // console.log(typeResultList);
 
-    if (typeResultList.includes(false)) {
-      alert(this.$t('DeviceList.alertBadDeviceType'));
-    } else{
+    // if (typeResultList.includes(false)) {
+    //   alert(this.$t('DeviceList.alertBadDeviceType'));
+    // } else{
       this.variableSelection.show();
-    }
+    // }
   }
   
   editDeviceVar(variableSelected) {

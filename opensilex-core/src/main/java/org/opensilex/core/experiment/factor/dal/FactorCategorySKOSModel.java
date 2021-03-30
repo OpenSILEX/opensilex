@@ -8,7 +8,7 @@ package org.opensilex.core.experiment.factor.dal;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  * @author Arnaud Charleroy
@@ -19,7 +19,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
         resource = "Concept",
         graph = "http://aims.fao.org/aos/agrovoc/factors"
 )
-public class FactorCategorySKOSModel extends SPARQLNamedResourceModel<FactorCategorySKOSModel> {
+public class FactorCategorySKOSModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -30,12 +30,10 @@ public class FactorCategorySKOSModel extends SPARQLNamedResourceModel<FactorCate
     protected String name;
     public static final String NAME_FIELD = "name";
 
-    @Override
-    public String getName() {
+     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }

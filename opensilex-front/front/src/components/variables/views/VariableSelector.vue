@@ -20,7 +20,12 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { ExperimentsService, NamedResourceDTO } from "opensilex-core/index";
+import {
+  ExperimentsService,
+  ScientificObjectsService,
+  NamedResourceDTO,
+  DevicesService
+} from "opensilex-core/index";
 
 @Component
 export default class VariableSelector extends Vue {
@@ -34,6 +39,9 @@ export default class VariableSelector extends Vue {
 
   @Prop()
   scientificObjects;
+
+  @Prop()
+  device;
 
   @Prop()
   label;
@@ -57,14 +65,27 @@ export default class VariableSelector extends Vue {
       ? "component.experiment.form.selector.variables.placeholder-multiple"
       : "component.experiment.form.selector.variables.placeholder";
   }
-
+  
   loadOptions(query, page, pageSize) {
-    console.debug(query);
     this.filterLabel = query;
-    if (this.experiment) {
+    if (this.device) {
+      return this.$opensilex
+        .getService("opensilex.DevicesService")
+        .getDeviceVariables(this.device)
+        .then(http => {
+          return http.response.result;
+        });
+    } else if (this.experiment) {
       return this.$opensilex
         .getService("opensilex.ExperimentsService")
         .getUsedVariables(this.experiment, this.scientificObjects)
+        .then(http => {
+          return http.response.result;
+        });
+    } else if (this.scientificObjects) {
+      return this.$opensilex
+        .getService("opensilex.ScientificObjectsService")
+        .getScientificObjectVariables(this.scientificObjects)
         .then(http => {
           return http.response.result;
         });

@@ -1,17 +1,16 @@
 <template>
   <div>
     <div class="card">
-      <opensilex-SearchFilterField ref="searchField" :withButton="false" :showAdvancedSearch="true">
+      <opensilex-SearchFilterField :withButton="false" :showAdvancedSearch="true">
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
             <opensilex-VariableSelector
-              label="DataVisuForm.search.variable.label"
+              label="DeviceVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
               :required="true"
-              :experiment="selectedExperiment"
-              :scientificObjects="scientificObjects"
+              :device="device"
               :clearable="true"
               :defaultSelectedValue="true"
               @select="onSearch"
@@ -48,8 +47,8 @@
               label="Provenance"
               @select="loadProvenance"
               @clear="clearProvenance"
-              :experiment="selectedExperiment"
               :multiple="false"
+              :device="device"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
               :showURI="false"
@@ -60,11 +59,19 @@
             <div class="row">
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
                 <label for="metadataKey">{{ $t("DataVisuForm.search.metadataKey") }}</label>
-                <opensilex-StringFilter id="metadataKey" :filter.sync="filter.metadataKey" @update="onUpdate"></opensilex-StringFilter>
+                <opensilex-StringFilter
+                  id="metadataKey"
+                  :filter.sync="filter.metadataKey"
+                  @update="onUpdate"
+                ></opensilex-StringFilter>
               </div>
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
                 <label for="metadataValue">{{ $t("DataVisuForm.search.metadataValue") }}</label>
-                <opensilex-StringFilter id="metadataValue" :filter.sync="filter.metadataValue"  @update="onUpdate"></opensilex-StringFilter>
+                <opensilex-StringFilter
+                  id="metadataValue"
+                  :filter.sync="filter.metadataValue"
+                  @update="onUpdate"
+                ></opensilex-StringFilter>
               </div>
             </div>
           </opensilex-FilterField> -->
@@ -93,17 +100,14 @@ import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
-export default class DataVisuForm extends Vue {
+export default class DeviceVisualizationForm extends Vue {
   $opensilex: any;
-  showSearchComponent: boolean = false;
+
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
-
-  @Ref("searchField") readonly searchField!: any;
-  @Ref("provSelector") readonly provSelector!: any;
   filter = {
-    variable: undefined,
+    variable: null,
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
@@ -123,10 +127,7 @@ export default class DataVisuForm extends Vue {
   }
 
   @Prop()
-  selectedExperiment;
-
-  @Prop()
-  scientificObjects;
+  device;
 
   onUpdate() {
     this.$emit("update", this.filter);
@@ -135,6 +136,7 @@ export default class DataVisuForm extends Vue {
   onSearch() {
     this.$emit("search", this.filter);
   }
+
   getProvenance(uri) {
     if (uri != undefined && uri != null) {
       return this.$opensilex
@@ -180,22 +182,14 @@ export default class DataVisuForm extends Vue {
 
 <i18n>
 en:
-  DataVisuForm:
-     search:
-       title: Search for data
-       variable:
-          label: Variable 
-          placeholder: Search for a variable
-       metadataKey : Metadata key
-       metadataValue : Metadata value
+  DeviceVisualizationForm:
+    variable:
+      label: Variable 
+      placeholder: Search for a variable
 fr:
-  DataVisuForm:
-    search: 
-       title: Recherche de données
-       variable:
-          label: Variable 
-          placeholder: Saisir une variable
-       metadataKey : Metadata key
-       metadataValue : Metadata value
+  DeviceVisualizationForm:
+    variable:
+      label: Variable 
+      placeholder: Saisir une variable
 
 </i18n>

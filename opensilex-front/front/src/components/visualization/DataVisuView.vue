@@ -5,6 +5,7 @@
         :selectedExperiment="selectedExperiment"
         :scientificObjects="scientificObjectsURI"
         @search="onSearch"
+        @update="onUpdate"
       ></opensilex-DataVisuForm>
     </b-collapse>
 
@@ -68,11 +69,9 @@ export default class ExperimentDataVisuView extends Vue {
     }
   }
   showProvenanceDetailComponent(value) {
-
     this.$opensilex.enableLoader();
     if (value.provenance != undefined && value.provenance != null) {
       this.getProvenance(value.provenance).then(provenance => {
-     
         value.provenance = provenance;
         this.dataProvenanceModalView.setProvenance(value);
         this.dataProvenanceModalView.show();
@@ -85,19 +84,25 @@ export default class ExperimentDataVisuView extends Vue {
     this.selectedExperiment = decodeURIComponent(this.$route.params.uri);
   }
 
+  onUpdate(form) {
+    this.form = form;
+    this.showGraphicComponent = true;
+    this.$opensilex.enableLoader();
+    this.loadSeries();
+  }
+
   onSearch(form) {
     this.form = form;
     this.showGraphicComponent = true;
+    this.$opensilex.enableLoader();
 
-    if (form.variable) {
-        this.$opensilex
-          .getService("opensilex.VariablesService")
-          .getVariable(form.variable)
-          .then((http: HttpResponse<OpenSilexResponse>) => {
-            this.selectedVariable = http.response.result;
-            this.loadSeries();
-          });
-    }
+    this.$opensilex
+      .getService("opensilex.VariablesService")
+      .getVariable(form.variable)
+      .then((http: HttpResponse<OpenSilexResponse>) => {
+        this.selectedVariable = http.response.result;
+        this.loadSeries();
+      });
   }
 
   loadSeries() {
@@ -151,8 +156,12 @@ export default class ExperimentDataVisuView extends Vue {
   buildDataSerie(concernedItem) {
     return this.dataService
       .searchDataList(
-        this.form.startDate != undefined && this.form.startDate != ""?this.form.startDate: undefined,
-         this.form.endDate != undefined && this.form.endDate != ""?this.form.endDate: undefined,
+        this.form.startDate != undefined && this.form.startDate != ""
+          ? this.form.startDate
+          : undefined,
+        this.form.endDate != undefined && this.form.endDate != ""
+          ? this.form.endDate
+          : undefined,
         undefined,
         [this.selectedExperiment],
         [concernedItem.uri],
@@ -160,7 +169,7 @@ export default class ExperimentDataVisuView extends Vue {
         undefined,
         undefined,
         this.form.provenance ? [this.form.provenance] : undefined,
-        this.addMetadataFilter(),
+        undefined, //this.addMetadataFilter(),
         undefined,
         0,
         1000000
@@ -178,18 +187,22 @@ export default class ExperimentDataVisuView extends Vue {
         }
       })
       .catch(error => {
-        console.log(error);
       });
   }
 
-  addMetadataFilter() {
-    let metadata = undefined;
-    if (this.form.metadataKey != undefined && this.form.metadataKey != ""
-    && this.form.metadataValue != undefined && this.form.metadataValue != "") {
-      metadata = '{"' + this.form.metadataKey + '":"' + this.form.metadataValue + '"}'
-      return metadata;
-    }
-  }
+  // addMetadataFilter() {
+  //   let metadata = undefined;
+  //   if (
+  //     this.form.metadataKey != undefined &&
+  //     this.form.metadataKey != "" &&
+  //     this.form.metadataValue != undefined &&
+  //     this.form.metadataValue != ""
+  //   ) {
+  //     metadata =
+  //       '{"' + this.form.metadataKey + '":"' + this.form.metadataValue + '"}';
+  //     return metadata;
+  //   }
+  // }
 
   // keep only date/value/uriprovenance properties
   dataTransforme(data, concernedItem) {

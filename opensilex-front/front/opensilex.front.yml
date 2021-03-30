@@ -78,26 +78,7 @@ menu:
       #         path: /users
       #         component: opensilex-UserView
 
-  - id: data
-    label: component.menu.data.label
-    children: 
-      - id: visualization
-        label: component.menu.data.visualization
-        route: 
-          path: /visualization
-          component: opensilex-VisuPage
-          credentials: []
-#      - id: images
-#        label: component.menu.data.images
-#        route:
-#          path: /images
-#          component: opensilex-ImageView
-#          credentials: []
-      # - id: data
-      #   label: component.menu.data.label
-      #   route:
-      #     path: /data
-      #     component: opensilex-DataView
+  
   - id: configuration
     label: component.menu.configuration
     children:
@@ -200,6 +181,8 @@ routes:
     credentials: []
 
   - path: /device/details/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/visualization/:uri
     component: opensilex-DeviceDetails
   - path: /device/documents/:uri
     component: opensilex-DeviceDetails

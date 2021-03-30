@@ -1,5 +1,5 @@
 <template>
-  <div  style="min-height:300px;">
+  <div style="min-height:300px;">
     <b-list-group
       v-if="contextMenuShow"
       class="contextMenu"
@@ -10,11 +10,11 @@
         @click="detailProvenanceClick"
       >{{ $t("DataVisuGraphic.provenanceDetail") }}</b-list-group-item>
       <!-- <b-list-group-item href="#">{{ $t("DataVisuGraphic.dataAnnotation") }}</b-list-group-item>
-      <b-list-group-item href="#">{{ $t("DataVisuGraphic.scientificObjectAnnotation") }}</b-list-group-item> -->
+      <b-list-group-item href="#">{{ $t("DataVisuGraphic.scientificObjectAnnotation") }}</b-list-group-item>-->
     </b-list-group>
 
     <div class="card">
-      <div ref="header" class="card-header"  v-if="chartOptions.length">
+      <div ref="header" class="card-header" v-if="chartOptions.length">
         <opensilex-HelpButton label="component.common.help-button" @click="helpModal.show()"></opensilex-HelpButton>
         <div class="card-header-right mr-4">
           <b-dropdown right size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
@@ -45,7 +45,6 @@
 
       <div v-click-outside="closeContextMenu" @click="closeContextMenu" class="card-body p-0">
         <highcharts
-          style="max-height:500px;"
           v-for="(options, index) in chartOptions"
           :options="options"
           v-bind:key="index"
@@ -106,9 +105,14 @@ export default class DataVisuGraphic extends Vue {
   private concernedItem;
   chartOptionsValues: any = [];
 
+  @Prop({
+    default: false
+  })
+  deviceType;
+
   get chartOptions() {
     let that = this;
-    if (this.series.length>0) {
+    if (this.series.length > 0) {
       return [
         {
           chart: {
@@ -121,7 +125,8 @@ export default class DataVisuGraphic extends Vue {
               },
               render: function() {
                 that.selectedPointsCount = 0;
-                this.series.forEach(element => { // limit download image
+                this.series.forEach(element => {
+                  // limit download image
                   if (element.points && element.name !== "Navigator 1") {
                     that.selectedPointsCount += element.points.length;
                   }
@@ -138,7 +143,8 @@ export default class DataVisuGraphic extends Vue {
           },
           credits: { enabled: false },
           navigation: {
-            buttonOptions: { //custom menu 
+            buttonOptions: {
+              //custom menu
               enabled: false
             }
           },
@@ -147,16 +153,33 @@ export default class DataVisuGraphic extends Vue {
             sourceHeight: 500,
             scale: 2
           },
-          rangeSelector: { //zoom menu
+          scrollbar: {
             enabled: false
           },
-          navigator: {  //zoom navigator
-            enabled: true, margin: 5, y: -4 },
-          legend: { 
-            layout: "vertical", enabled: true },
+          rangeSelector: {
+            //zoom menu
+            enabled:   false,
+         
+          },
+          navigator: {
+            //zoom navigator
+            enabled:true,
+            margin: 5,
+            y: -4
+          },
+          legend: {
+            layout: "vertical",
+            enabled: true
+          },
           xAxis: {
             type: "datetime",
             title: { text: "time" },
+            tickInterval:3600 * 1000,
+            // labels: {
+            //   formatter: function() {
+            //     return Highcharts.dateFormat("%d/%m", this.value);
+            //   }
+            // },
             ordinal: false,
             crosshair: true,
             showLastLabel: true,
@@ -261,7 +284,6 @@ export default class DataVisuGraphic extends Vue {
                     that.rightClick(e, this);
                   },
                   contextmenu: function() {
-                    console.log("right click");
                   }
                 }
               }
@@ -294,8 +316,8 @@ export default class DataVisuGraphic extends Vue {
   reload(series, variable) {
     this.variable = variable;
     this.series = series;
-    if(series.length>0){
-       this.yAxis = this.buildYAxis();
+    if (series.length > 0) {
+      this.yAxis = this.buildYAxis();
     }
   }
 
@@ -307,7 +329,6 @@ export default class DataVisuGraphic extends Vue {
         x: -3,
         events: {
           click: function() {
-            console.log(this);
           }
         }
       },
@@ -325,11 +346,10 @@ export default class DataVisuGraphic extends Vue {
   }
 
   rightClick(e, graphic) {
-    console.log("click");
     if (this.contextMenuShow) {
       this.contextMenuShow = false;
     }
-    if (e.point.dataUri && graphic.series) {
+    if (e.point.data && graphic.series) {
       var chart = graphic.series.chart;
       let chartWidth = this.highchartsRef[0].chart.chartWidth;
       if (e.pageX + 300 > chartWidth) {
@@ -353,8 +373,6 @@ export default class DataVisuGraphic extends Vue {
   }
 
   detailProvenanceClick() {
-    console.log("this.selectedProvenance");
-    console.log(this.selectedProvenance);
     this.contextMenuShow = false;
 
     let toSend = {
@@ -460,9 +478,6 @@ export default class DataVisuGraphic extends Vue {
 </script>
 
 <style scoped lang="scss">
-.container {
-  height: 400px;
-}
 .card-header {
   height: 60px;
 }

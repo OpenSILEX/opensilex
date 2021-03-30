@@ -409,6 +409,10 @@ import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSV
 components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
 import ScientificObjectCSVTemplateGenerator from './scientificObjects/ScientificObjectCSVTemplateGenerator.vue';
 components["opensilex-ScientificObjectCSVTemplateGenerator"] = ScientificObjectCSVTemplateGenerator;
+import ScientificObjectVisualizationTab from './scientificObjects/ScientificObjectVisualizationTab.vue';
+components["opensilex-ScientificObjectVisualizationTab"] = ScientificObjectVisualizationTab;
+import ScientificObjectVisualizationForm from './scientificObjects/visualization/ScientificObjectVisualizationForm.vue';
+components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -596,5 +600,9 @@ import DeviceForm from './devices/DeviceForm.vue';
 components["opensilex-DeviceForm"] = DeviceForm;
 import DeviceVariablesTable from './devices/DeviceVariablesTable.vue';
 components["opensilex-DeviceVariablesTable"] = DeviceVariablesTable;
+import DeviceVisualizationTab from './devices/DeviceVisualizationTab.vue';
+components["opensilex-DeviceVisualizationTab"] = DeviceVisualizationTab;
+import DeviceVisualizationForm from './devices/visualization/DeviceVisualizationForm.vue';
+components["opensilex-DeviceVisualizationForm"] = DeviceVisualizationForm;
 
 export default components;

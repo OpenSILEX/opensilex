@@ -27,6 +27,8 @@
             "keywords": "Mot clés",
             "startDate" : "Date de début",
             "endDate" : "Date de fin",
+            "begin":"Début",
+            "end":"Fin",
             "description": "Description",
             "objective":"Objectif",
             "contacts": "Contacts",

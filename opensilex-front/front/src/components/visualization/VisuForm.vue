@@ -173,7 +173,6 @@ export default class VisuForm extends Vue {
 
   validate() {
     this.validatorRef.validate().then(isValid => {
-      console.log(this.filter);
       if (isValid) {
         this.$emit("search", this.filter);
       }

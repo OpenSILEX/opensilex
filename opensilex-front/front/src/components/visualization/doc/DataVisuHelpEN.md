@@ -1,15 +1,13 @@
 # HELP
 
-
 **Zoom** 
-- Click and Drag on the graphic to zoom.
-- Use the navigator beneath the graphic.
+- Click and drag on the graphic to zoom.
 
-<img src="./zoom.png" class="img-fluid" width="800" >
+<img src="./clickdrag.png" class="img-fluid" width="600" >
 
  <br/>
  <br/>
-
+ 
 **Data 's contextual menu** 
 - Click on data point to see a data 's contextual menu.
 

@@ -1,15 +1,13 @@
 # AIDE
 
-
 **Zoom** 
 - Cliquer et faire glisser pour zoomer.
-- Utiliser le navigateur sous le graphique.
 
-<img src="./zoom.png" class="img-fluid" width="800" >
+<img src="./clickdrag.png" class="img-fluid" width="600" >
 
  <br/>
  <br/>
-
+ 
 **Menu contextuel de donnée** 
 - Cliquer sur le point de la donnée pour voir le menu contextuel lié à une donnée.
 
@@ -17,6 +15,7 @@
 
  <br/>
  <br/>
+
 
 **Menu contextuel** 
 - Un menu contextuel de la représentation graphique permet de : 

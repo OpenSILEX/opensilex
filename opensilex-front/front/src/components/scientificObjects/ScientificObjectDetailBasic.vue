@@ -12,6 +12,12 @@
       </b-nav-item>
 
       <b-nav-item
+        class="ml-3"
+        @click.prevent="tabsValue = VISUALIZATION_TAB"
+        :active="isVisualizationTab"
+      >{{ $t("ScientificObjectVisualizationTab.visualization") }}</b-nav-item>
+
+      <b-nav-item
         :active="isAnnotationTab"
         @click.prevent="tabsValue = ANNOTATIONS_TAB"
         >{{ $t("Annotation.list-title") }}
@@ -136,6 +142,13 @@
       ></opensilex-AnnotationList>
     </div>
 
+     <opensilex-ScientificObjectVisualizationTab
+      v-if="isVisualizationTab"
+      :scientificObject="selected.uri"
+      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+    ></opensilex-ScientificObjectVisualizationTab>
+
+
     <opensilex-DocumentTabList
       v-if="isDocumentTab"
       :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
@@ -178,6 +191,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   classModel: any = {};
 
   DETAILS_TAB = "Details";
+  VISUALIZATION_TAB = "Visualization";
   DOCUMENTS_TAB = "Documents";
   ANNOTATIONS_TAB = "Annotations";
   EVENTS_TAB = "Events";
@@ -199,6 +213,10 @@ export default class ScientificObjectDetailBasic extends Vue {
 
   get isDetailsTab(): boolean {
     return this.tabsValue == this.DETAILS_TAB;
+  }
+
+  get isVisualizationTab(): boolean {
+    return this.tabsValue == this.VISUALIZATION_TAB;
   }
 
   get isAnnotationTab(): boolean {

@@ -305,8 +305,6 @@ export default class VisuView extends Vue {
 
           const imagePointClick = event => {
 
-            console.log("event.point");
-            console.log(event.point);
             const toReturn = {
               date: event.point.date,
               serieIndex: event.point.series.index,
@@ -392,7 +390,6 @@ export default class VisuView extends Vue {
         }
       })
       .catch(error => {
-        console.log(error);
       });
   }
 
@@ -447,14 +444,11 @@ export default class VisuView extends Vue {
         return cleanImageData;
       })
       .catch(error => {
-        console.log(error);
       });
   }
 
   cleanImageData(data, concernedItem) {
     const cleanImageData = [];
-    console.log("data");
-    console.log(data);
     this.distinctDates(data).forEach(element => {
         let stringDateWithoutUTC =
         moment.parseZone(element).format("YYYYMMDD HHmmss") + "+00:00";
@@ -489,8 +483,6 @@ export default class VisuView extends Vue {
     const utcTimeStart = this.timestampToUTC(time);
     const utcTimeEnd = this.timestampToUTC(time+1000); */
     const endTime= moment(time).add(1, 's').format();
-    console.log("utcTime");
-    console.log(endTime);
     return this.dataService
       .getDataFileDescriptionsBySearch(
         "http://www.opensilex.org/vocabulary/oeso#Image",

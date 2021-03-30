@@ -355,28 +355,32 @@ export default class DeviceList extends Vue {
 
   addVariable() {
     let typedev;
+    let typeResultList = [];
     let measureType = ["SensingDevice", "Actuator", "SoftSensor"];
     let idx = 0;
-
+    this.measure = false;
+   
+    for(let select of this.tableRef.getSelected()) {
+      typedev = select.rdf_type_name;
+      console.log(typedev);
       while (!this.measure && idx < measureType.length){
-        for(let select of this.tableRef.getSelected()) {
-          typedev = select.rdf_type_name;
-          console.log(typedev);
-          this.measure = typedev.endsWith(measureType[idx]);
-          if(!this.measure){
-            this.isSubClassOf(typedev,'vocabulary:'+measureType[idx]);
-            this.measure = this.subClassResult;
-          }
-          idx++;
-          console.log(this.measure);
-        }
+        this.measure = typedev.endsWith(measureType[idx]);
+      if(!this.measure){
+        this.isSubClassOf(typedev,'vocabulary:' + measureType[idx]);
+        this.measure = this.subClassResult;
       }
-      if (!this.measure) {
-        alert(this.$t('DeviceList.alertBadDeviceType'));
-      } else{
-        this.variableSelection.show();
+      idx++;
+      console.log(this.measure);
       }
-    
+      typeResultList.push(this.measure);
+    }
+    console.log(typeResultList);
+
+    if (typeResultList.includes(false)) {
+      alert(this.$t('DeviceList.alertBadDeviceType'));
+    } else{
+      this.variableSelection.show();
+    }
   }
   
   editDeviceVar(variableSelected) {

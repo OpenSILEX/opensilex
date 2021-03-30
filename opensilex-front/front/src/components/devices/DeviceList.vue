@@ -89,7 +89,6 @@
             @click="exportDevices()"
           >{{$t('DeviceList.export')}}</b-dropdown-item-button>
           <b-dropdown-item-button
-            disabled
             @click="addVariable()"
           >{{$t('DeviceList.addVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
@@ -155,12 +154,11 @@
 
     <opensilex-VariableModalList
       label="label"
-      ref="deviceVarForm"
+      ref="variableSelection"
       :isModalSearch="true"
-      :selected.sync="variablesSelected"
       :required="true"
       :multiple="true"
-      @click="editDeviceVar()"
+      @onValidate="editDeviceVar"
     ></opensilex-VariableModalList>      
   </div>
 </template>
@@ -177,10 +175,11 @@ export default class DeviceList extends Vue {
   service: DevicesService;
   $store: any;
   $route: any;
+
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceVarForm") readonly deviceVarForm!: any;
+  @Ref("variableSelection") readonly variableSelection!: any;
 
   get user() {
     return this.$store.state.user;
@@ -333,18 +332,65 @@ export default class DeviceList extends Vue {
     this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
   }
 
-  // addVariable() {
-  //   this.deviceVarForm.show();
-  // }
+  addVariable() {
+    let typedev;
+    let mesure = [];
+    for(let select of this.tableRef.getSelected()) {
+      typedev = select.rdf_type_name.toString();
+      mesure.push(typedev.includes("SensingDevice", "Actuator", "SoftSensor"));
+      console.log(typedev + mesure);
+    }
+    if (mesure.includes(false)) {
+      alert(this.$t('DeviceList.alertBadDeviceType'));
+    } else{
+      this.variableSelection.show();
+    }
+  }
   
-  // variablesSelected = []; 
+  editDeviceVar(variableSelected) {
+  
+    for(let select of this.tableRef.getSelected()) {
+      console.log("result device" + select.uri);
+      this.service
+      .getDevice(select.uri)
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+        let varList = [];
+        for(let select of variableSelected) {
+          varList.push({ property: "vocabulary:measures", value: select.uri });
+          console.log("result device" + varList);
+        }  
+        let device = http.response.result;
+        let form = {
+          uri: device.uri,
+          name: device.name,
+          rdf_type: device.rdf_type,
+          brand: device.brand,
+          constructor_model: device.constructor_model,
+          serial_number: device.serial_number,
+          person_in_charge: device.person_in_charge,
+          start_up: device.start_up,
+          removal: device.removal,
+          description: device.description,
+          metadata: device.metadata,
+          relations: varList
+        };
+        this.updateVariable(form);
+      })
+      .catch(this.$opensilex.errorHandler);
+    }
+  }
 
-  // editDeviceVar() {
-  //   console.log("result var" + this.variablesSelected);
-  //   for (let select of this.tableRef.getSelected()) {
-  //     this.variablesSelected.push(select.uri);
-  //   }
-  // }
+  updateVariable(form) {
+    this.$opensilex
+      .getService("opensilex.DevicesService")
+      .updateDevice(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("device updated", uri);
+        this.$emit("onUpdate", form);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 
   createDocument() {
     this.documentForm.showCreateForm();
@@ -419,7 +465,7 @@ en:
     addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
-
+    alertBadDeviceType: The selected type doesn't match with add variable
 
     filter:
       namePattern: Name
@@ -443,13 +489,14 @@ fr:
     delete: Supprimer le dispositif
     selected: Dispositifs selectionnés
     facility: Facility
-    addVariable: Ajout de variable
+    addVariable: Ajouter des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement
     addAnnotation: Ajouter une annotation
     addMove: Déplacement
     showMap: Afficher sur une carte
+    alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
 
     filter:
       namePattern: Nom

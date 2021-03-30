@@ -367,7 +367,7 @@ export default class GermplasmList extends Vue {
       exportList.push(select.uri);
     }
     this.$opensilex
-     .downloadFilefromService(path, filename, "csv", {germplasm_list: exportList});
+     .downloadFilefromService(path, filename, "csv", {uris: exportList});
   }
 
 

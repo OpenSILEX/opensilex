@@ -217,22 +217,9 @@ export default class DeviceDescription extends Vue {
   @Ref("deviceForm") readonly deviceForm!: any;
 
   updateDevice() {
-    this.deviceForm.getFormRef().getAttributes(this.device);
-    let device = {
-        uri: this.device.uri,
-        name: this.device.name,
-        rdf_type: this.device.rdf_type,
-        brand: this.device.brand,
-        constructor_model: this.device.constructor_model,
-        serial_number: this.device.serial_number,
-        person_in_charge: this.device.person_in_charge,
-        start_up: this.device.start_up,
-        removal: this.device.removal,
-        description: this.device.description,
-        metadata: this.device.metadata,
-        relations: this.device.relations
-    }
-    this.deviceForm.showEditForm(device);
+    let devicetoSend = JSON.parse(JSON.stringify(this.device));
+    this.deviceForm.getFormRef().getAttributes(devicetoSend);
+    this.deviceForm.showEditForm(devicetoSend);
   }
   
 }

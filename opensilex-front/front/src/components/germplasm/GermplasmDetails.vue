@@ -156,8 +156,9 @@
     <opensilex-ModalForm      
       ref="germplasmForm"
       component="opensilex-GermplasmForm"
-      editTitle="update"
-      icon="ik#ik-user"
+      createTitle="GermplasmView.add"
+      editTitle="GermplasmView.update"
+      icon="fa#seedling"
       modalSize="lg"
       @onUpdate="loadGermplasm()"
     ></opensilex-ModalForm>    

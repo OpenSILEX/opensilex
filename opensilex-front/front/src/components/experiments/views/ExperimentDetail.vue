@@ -360,7 +360,10 @@ export default class ExperimentDetail extends Vue {
           this.speciesList = this.speciesList.map(item => {
             return {
               uri: item.uri,
-              value: item.name
+              value: item.name,
+              to: {
+                path: "/germplasm/details/" + encodeURIComponent(item.uri)
+              }
             };
           });
         })

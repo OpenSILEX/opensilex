@@ -110,7 +110,15 @@
               </b-dropdown>
             </template>
             <template v-slot:cell(uri)="{ data }">
-              {{ objects[data.item.scientific_objects[0]] }}
+                 <opensilex-UriLink v-for="scientific_object in data.item.scientific_objects" :key="scientific_object"
+                  :uri="scientific_object"
+                  :value="objects[data.item.scientific_objects[0]]"
+                  :to="{
+                    path:
+                      '/scientific-objects/details/' +
+                      encodeURIComponent(scientific_object),
+                  }"
+                ></opensilex-UriLink>
             </template>
 
             <template v-slot:cell(provenance)="{ data }">

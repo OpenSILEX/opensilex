@@ -21,14 +21,7 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  Model,
-  Provide,
-  PropSync,
-  Watch,
-} from "vue-property-decorator";
+import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import { parse, stringify } from "wkt";
 
@@ -40,6 +33,12 @@ export default class GeometryForm extends Vue {
   geoJson: any;
 
   stringValue: string = "";
+
+  mounted() {
+    if (this.geoJson) {
+      this.onGeoJsonChange(this.geoJson);
+    }
+  }
 
   @Watch("geoJson")
   onGeoJsonChange(value) {

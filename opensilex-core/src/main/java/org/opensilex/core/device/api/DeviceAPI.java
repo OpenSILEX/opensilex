@@ -405,7 +405,7 @@ public class DeviceAPI {
     }
     
     @GET
-    @Path("exportList")
+    @Path("export_by_uris")
     @ApiOperation("export devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -414,7 +414,7 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return a csv file with device list"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
-    public Response exportList(
+    public Response export_by_uris(
             @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") @QueryParam("devices_list") @ValidURI List<URI> devList
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql);

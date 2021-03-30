@@ -322,7 +322,7 @@ export default class DeviceList extends Vue {
   }
 
   exportDevices() {
-    let path = "/core/devices/exportList";
+    let path = "/core/devices/export_by_uris";
     let today = new Date();
     let filename = "export_devices_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
 
@@ -330,7 +330,7 @@ export default class DeviceList extends Vue {
     for (let select of this.tableRef.getSelected()) {
       exportList.push(select.uri);
     }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
+    this.$opensilex.downloadFilefromService(path, filename, "csv", {uris: exportList});
   }
 
   measure: boolean = false;

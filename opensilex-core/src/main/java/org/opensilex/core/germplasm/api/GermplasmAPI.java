@@ -557,7 +557,7 @@ public class GermplasmAPI {
     }
     
     
-    @GET
+    @POST
     @Path("export_by_uris")
     @ApiOperation("export germplasm by list of uris")
     @ApiProtected
@@ -568,10 +568,10 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportGermplasmByURIs(
-            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uris") List<URI> uris
+            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) GermplasmPostExportDTO dto
     ) throws Exception {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> germplasmList = dao.getList(uris, currentUser.getLanguage(), true);
+        List<GermplasmModel> germplasmList = dao.getList(dto.getUris(), currentUser.getLanguage(), true);
         
         return buildCSV(germplasmList);
         

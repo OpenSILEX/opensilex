@@ -187,12 +187,7 @@ export default class DeviceForm extends Vue {
     form.metadata = this.attTable.pushAttributes();   
     return this.$opensilex
       .getService("opensilex.DevicesService")
-      .updateDevice(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-      
-      })
-      .catch(this.$opensilex.errorHandler);
+      .updateDevice(form);
   }
 
   attributesArray = [];

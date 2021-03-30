@@ -166,7 +166,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceGetDetailsDTO, VariableGetDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO, OntologyService, RDFTypeDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -224,6 +224,7 @@ export default class DeviceList extends Vue {
     };
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
+    this.measure = false;
 
     /*this.exportFilter = {
       namePattern: undefined,
@@ -332,19 +333,50 @@ export default class DeviceList extends Vue {
     this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
   }
 
+  measure: boolean = false;
+  subClassResult: boolean = false;
+
+  isSubClassOf(child,parent){
+      let ontoService: OntologyService = this.$opensilex.getService(
+        "opensilex.OntologyService"
+      );
+
+      return new Promise((resolve,reject) => {ontoService
+        .getRDFType(child,parent)
+        .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => {
+          this.subClassResult = true;
+          resolve(this.measure);
+        })
+        .catch((error) => {
+          this.subClassResult = false;
+          resolve(this.measure);
+        })});
+    }
+
   addVariable() {
     let typedev;
-    let mesure = [];
-    for(let select of this.tableRef.getSelected()) {
-      typedev = select.rdf_type_name.toString();
-      mesure.push(typedev.includes("SensingDevice", "Actuator", "SoftSensor"));
-      console.log(typedev + mesure);
-    }
-    if (mesure.includes(false)) {
-      alert(this.$t('DeviceList.alertBadDeviceType'));
-    } else{
-      this.variableSelection.show();
-    }
+    let measureType = ["SensingDevice", "Actuator", "SoftSensor"];
+    let idx = 0;
+
+      while (!this.measure && idx < measureType.length){
+        for(let select of this.tableRef.getSelected()) {
+          typedev = select.rdf_type_name;
+          console.log(typedev);
+          this.measure = typedev.endsWith(measureType[idx]);
+          if(!this.measure){
+            this.isSubClassOf(typedev,'vocabulary:'+measureType[idx]);
+            this.measure = this.subClassResult;
+          }
+          idx++;
+          console.log(this.measure);
+        }
+      }
+      if (!this.measure) {
+        alert(this.$t('DeviceList.alertBadDeviceType'));
+      } else{
+        this.variableSelection.show();
+      }
+    
   }
   
   editDeviceVar(variableSelected) {

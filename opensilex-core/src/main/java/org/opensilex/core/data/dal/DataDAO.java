@@ -85,6 +85,7 @@ public class DataDAO {
         MongoCollection fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
+        fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("provenance", "scientificObjects", "date"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("scientificObjects", "date"));
 
@@ -166,6 +167,31 @@ public class DataDAO {
         Document filter = searchByDeviceFilter(deviceURI, user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
 
         ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);  
+
+        return datas;
+
+    }
+    
+    public ListWithPagination<DataFileModel> searchFilesByDevice(
+            URI deviceURI,
+            UserModel user,
+            URI rdfType,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> provenances,
+            Instant startDate,
+            Instant endDate,
+            Document metadata,
+            List<OrderBy> orderByList,
+            Integer page,
+            Integer pageSize) throws Exception {
+        
+        Document filter = searchByDeviceFilter(deviceURI, user, experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
+
+        if (rdfType != null) {
+            filter.put("rdfType", rdfType);
+        }      
+        ListWithPagination<DataFileModel> datas = nosql.searchWithPagination(DataFileModel.class, FILE_COLLECTION_NAME, filter, orderByList, page, pageSize);  
 
         return datas;
 
@@ -424,11 +450,11 @@ public class DataDAO {
         nosql.startTransaction();         
         try {   
             createFile(model);
-            fs.writeFile(filePath, file);
+            fs.writeFile(FS_FILE_PREFIX, filePath, file);
             nosql.commitTransaction();
         } catch (Exception e) {
             nosql.rollbackTransaction();
-            fs.deleteIfExists(filePath);
+            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
             throw e;
         } 
 
@@ -436,6 +462,7 @@ public class DataDAO {
 
     public ListWithPagination<DataFileModel> searchFiles(
             UserModel user,
+            URI rdfType,
             List<URI> experiments,
             List<URI> objects,
             List<URI> provenances,
@@ -447,6 +474,10 @@ public class DataDAO {
             int pageSize) throws Exception {
 
         Document filter = searchFilter(user, experiments, objects, null, provenances, startDate, endDate, null, null, metadata);
+        
+        if (rdfType != null) {
+            filter.put("rdfType", rdfType);
+        }        
 
         ListWithPagination<DataFileModel> files = nosql.searchWithPagination(
                 DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);

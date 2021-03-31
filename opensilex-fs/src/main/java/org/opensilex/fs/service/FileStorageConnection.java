@@ -30,4 +30,6 @@ public interface FileStorageConnection extends Service {
     boolean exist(Path filePath) throws IOException;
 
     void delete(Path filePath) throws IOException;
+    
+    Path getAbsolutePath(Path filePath) throws IOException;
 }

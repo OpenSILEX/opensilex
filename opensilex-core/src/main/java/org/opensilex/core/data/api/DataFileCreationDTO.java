@@ -46,13 +46,13 @@ public class DataFileCreationDTO {
     private String date;
     
     @JsonProperty("scientific_objects")
-    @ApiModelProperty(value = "scientific objects URIs on which the data have been collected", example = "http://plot01")
+    @ApiModelProperty(value = "scientific objects URIs on which the data have been collected")
     private List<URI> scientificObjects;
     
     @NotNull
     private DataProvenanceModel provenance;
     
-    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
+    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one", example = DataAPI.DATA_EXAMPLE_TIMEZONE)
     private String timezone;
 
     @ApiModelProperty(value = "key-value system to store additional information that can be used to query data", example = DataAPI.DATA_EXAMPLE_METADATA)

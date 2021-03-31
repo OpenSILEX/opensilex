@@ -12,10 +12,16 @@
       </b-nav-item>
 
       <b-nav-item
-        class="ml-3"
         @click.prevent="tabsValue = VISUALIZATION_TAB"
         :active="isVisualizationTab"
-      >{{ $t("ScientificObjectVisualizationTab.visualization") }}</b-nav-item>
+      >{{ $t("ScientificObjectVisualizationTab.visualization") }}
+      </b-nav-item>
+
+      <b-nav-item
+        :active="isDatafilesTab"
+        @click.prevent="tabsValue = DATAFILES_TAB"
+        >{{ $t("ScientificObjectDataFiles.datafiles") }}
+      </b-nav-item>
 
       <b-nav-item
         :active="isAnnotationTab"
@@ -130,6 +136,11 @@
       </b-card>
     </div>
 
+    <opensilex-ScientificObjectDataFiles
+          v-if="isDatafilesTab"
+          :uri="selected.uri"
+     ></opensilex-ScientificObjectDataFiles>
+
     <div v-if="isAnnotationTab">
       <opensilex-AnnotationList
         ref="annotationList"
@@ -195,6 +206,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   DOCUMENTS_TAB = "Documents";
   ANNOTATIONS_TAB = "Annotations";
   EVENTS_TAB = "Events";
+  DATAFILES_TAB = "Datafiles"
 
   tabsIndex: number = 0;
   tabsValue: string = this.DETAILS_TAB;
@@ -225,6 +237,10 @@ export default class ScientificObjectDetailBasic extends Vue {
 
   get isDocumentTab(): boolean {
     return this.tabsValue == this.DOCUMENTS_TAB;
+  }
+
+  get isDatafilesTab(): boolean {
+    return this.tabsValue == this.DATAFILES_TAB;
   }
 
   mounted() {

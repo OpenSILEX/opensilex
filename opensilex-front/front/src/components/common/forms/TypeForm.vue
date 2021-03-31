@@ -60,6 +60,11 @@ export default class TypeForm extends Vue {
   @Prop()
   rules: string | Function;
 
+  @Prop({
+    default: true
+  })
+  ignoreRoot: boolean;
+
   typesOptions = null;
 
   id: string;
@@ -89,7 +94,7 @@ export default class TypeForm extends Vue {
 
   loadTypes(callback?) {
     this.service
-      .getSubClassesOf(this.baseType, true)
+      .getSubClassesOf(this.baseType, this.ignoreRoot)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         this.typesOptions = this.$opensilex.buildTreeListOptions(
           http.response.result

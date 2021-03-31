@@ -941,6 +941,45 @@ export default class OpenSilexVuePlugin {
             .catch(this.errorHandler);
     }
 
+    viewImageFromGetService(servicePath: string) {
+        this.showLoader();
+
+        console.log(this.baseApi);
+        let url =
+            this.baseApi +
+            servicePath;
+        let headers = {};
+
+        let user = this.getUser();
+        if (user != User.ANONYMOUS()) {
+            headers["Authorization"] = user.getAuthorizationHeader();
+        }
+
+        headers["Accept-Language"] = this.getLang();
+
+        let request: RequestInit = {
+            method: "GET",
+            headers: headers
+        }
+
+        let promise = fetch(url, request);
+
+        return promise
+            .then(function (response) {
+                return response.blob();
+            })
+            .then((result) => {
+                let file = result;
+                
+                let blob = new Blob([file]);
+
+                let url = URL.createObjectURL(blob);                
+                this.hideLoader()
+                return url;
+            })
+            .catch(this.errorHandler);
+    }
+
     public datatypes = [];
     private datatypesByURI = {};
 

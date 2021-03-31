@@ -36,6 +36,8 @@ let ontologies = {
     SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
     DEVICE_TYPE_URI: OESO_URI + '#Device',
     IS_PART_OF: OESO_URI + "#isPartOf",
+    IMAGE_TYPE_URI: OESO_URI + "#Image",
+    DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };

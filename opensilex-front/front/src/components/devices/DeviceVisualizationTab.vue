@@ -28,7 +28,6 @@ import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 import {
-  DataService,
   DevicesService,
   DataGetDTO,
   ProvenanceGetDTO

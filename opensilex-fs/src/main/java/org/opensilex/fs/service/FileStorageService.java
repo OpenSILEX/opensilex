@@ -32,7 +32,7 @@ import org.apache.commons.codec.binary.Hex;
  * @author Vincent Migot
  */
 @ServiceDefaultDefinition(config = FileStorageServiceConfig.class)
-public class FileStorageService extends BaseService implements Service, FileStorageConnection {
+public class FileStorageService extends BaseService implements Service {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
@@ -133,9 +133,9 @@ public class FileStorageService extends BaseService implements Service, FileStor
         return Paths.get(getImplementedConfig().basePath());
     }
 
-    protected FileStorageConnection getConnection(Path filePath) {
+    protected FileStorageConnection getConnection(String prefix) {
         for (Path candidatePath : pathOrder) {
-            if (filePath.startsWith(candidatePath)) {
+            if (prefix.equals(candidatePath.toString())) {
                 return customPath.get(candidatePath);
             }
         }
@@ -143,50 +143,43 @@ public class FileStorageService extends BaseService implements Service, FileStor
         return this.defaultFS;
     }
 
-    public Path getAbsolutePath(Path filePath) throws IOException {
-        return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
+    public Path getAbsolutePath(String prefix, Path filePath) throws IOException {
+        return this.getConnection(prefix).getAbsolutePath(filePath);
     }
 
-    @Override
-    public String readFile(Path filePath) throws IOException {
+    public String readFile(String prefix, Path filePath) throws IOException {
         LOGGER.debug("READ FILE: " + filePath.toString());
-        return getConnection(filePath).readFile(filePath);
+        return getConnection(prefix).readFile(filePath);
     }
 
-    @Override
-    public void writeFile(Path filePath, String content) throws IOException {
+    public void writeFile(String prefix, Path filePath, String content) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
-        getConnection(filePath).writeFile(filePath, content);
+        getConnection(prefix).writeFile(filePath, content);
     }
 
-    @Override
-    public void writeFile(Path filePath, File file) throws IOException {
+    public void writeFile(String prefix, Path filePath, File file) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
-        getConnection(filePath).writeFile(filePath, file);
+        getConnection(prefix).writeFile(filePath, file);
     }
 
-    @Override
-    public void createDirectories(Path directoryPath) throws IOException {
+    public void createDirectories(String prefix, Path directoryPath) throws IOException {
         LOGGER.debug("CREATE DIRECTORIES: " + directoryPath.toString());
-        getConnection(directoryPath).createDirectories(directoryPath);
+        getConnection(prefix).createDirectories(directoryPath);
     }
 
-    @Override
-    public byte[] readFileAsByteArray(Path filePath) throws IOException {
+    public byte[] readFileAsByteArray(String prefix, Path filePath) throws IOException {
         LOGGER.debug("READ FILE BYTES: " + filePath.toString());
-        return getConnection(filePath).readFileAsByteArray(filePath);
+        return getConnection(prefix).readFileAsByteArray(filePath);
     }
 
-    @Override
-    public boolean exist(Path filePath) throws IOException {
+    public boolean exist(String prefix, Path filePath) throws IOException {
         LOGGER.debug("TEST FILE EXISTENCE: " + filePath.toString());
-        return getConnection(filePath).exist(filePath);
+        return getConnection(prefix).exist(filePath);
     }
 
-    @Override
-    public void delete(Path filePath) throws IOException {
+    public void delete(String prefix, Path filePath) throws IOException {
         LOGGER.debug("DELETE FILE: " + filePath.toString());
-        getConnection(filePath).delete(filePath);
+        getConnection(prefix).delete(filePath);
     }
     
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
@@ -194,38 +187,38 @@ public class FileStorageService extends BaseService implements Service, FileStor
     }
 
     public String readFile(String prefix, URI fileURI) throws IOException {
-        return readFile(getFilePathFromPrefixURI(prefix, fileURI));
+        return readFile(prefix, getFilePathFromPrefixURI(prefix, fileURI));
     }
 
     public void writeFile(String prefix, URI fileURI, String content) throws IOException {
-        writeFile(getFilePathFromPrefixURI(prefix, fileURI), content);
+        writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content);
     }
 
     public void writeFile(String prefix, URI fileURI, File file) throws IOException {
         Path filePath = getFilePathFromPrefixURI(prefix, fileURI);        
         try {
-            createDirectories(filePath.getParent());
+            createDirectories(prefix, filePath.getParent());
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
         }
-        writeFile(filePath, file);
+        getConnection(prefix).writeFile(filePath, file);
     }
 
     public byte[] readFileAsByteArray(String prefix, URI fileURI) throws IOException {
-        return readFileAsByteArray(getFilePathFromPrefixURI(prefix, fileURI));
+        return readFileAsByteArray(prefix, getFilePathFromPrefixURI(prefix, fileURI));
     }
 
     public boolean exist(String prefix, URI fileURI) throws IOException {
-        return exist(getFilePathFromPrefixURI(prefix, fileURI));
+        return getConnection(prefix).exist(getFilePathFromPrefixURI(prefix, fileURI));
     }
 
     public void delete(String prefix, URI fileURI) throws IOException {
-        delete(getFilePathFromPrefixURI(prefix, fileURI));
+        getConnection(prefix).delete(getFilePathFromPrefixURI(prefix, fileURI));
     }
 
-    public void deleteIfExists(Path file) {
+    public void deleteIfExists(String prefix, Path file) {
         try {
-            delete(file);
+            getConnection(prefix).delete(file);
         } catch (Exception e) {
             
         }

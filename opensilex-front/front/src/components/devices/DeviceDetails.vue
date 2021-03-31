@@ -14,10 +14,14 @@
         >{{ $t('DeviceDetails.details') }}</b-nav-item>
 
         <b-nav-item
-          class="ml-3"
           :active="isVisualizationTab()"
           :to="{ path: '/device/visualization/' + encodeURIComponent(uri) }"
         >{{ $t("DeviceDetails.visualization") }}</b-nav-item>
+
+        <b-nav-item
+          :active="isDatafilesTab()"
+          :to="{ path: '/device/datafiles/' + encodeURIComponent(uri) }"
+        >{{ $t("ScientificObjectDataFiles.datafiles") }}</b-nav-item>
 
         <b-nav-item
           :active="isAnnotationTab()"
@@ -39,6 +43,12 @@
           :device="uri"
           :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-DeviceVisualizationTab>
+
+        <opensilex-DeviceDataFiles
+          v-else-if="isDatafilesTab()"
+          :device="uri"
+          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+        ></opensilex-DeviceDataFiles>
 
         <opensilex-DocumentTabList
           v-else-if="isDocumentTab()"
@@ -124,6 +134,10 @@ export default class DeviceDetails extends Vue {
 
   isVisualizationTab() {
     return this.$route.path.startsWith("/device/visualization/");
+  }
+
+  isDatafilesTab() {
+    return this.$route.path.startsWith("/device/datafiles/");
   }
 
   isDocumentTab() {

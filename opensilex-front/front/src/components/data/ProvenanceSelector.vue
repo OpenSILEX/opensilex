@@ -309,7 +309,7 @@ fr:
         form:
           selector:
             placeholder : Sélectionner une provenance
-            placeholder-multiple : Sélectionner un ou plusieurs provenance(s)   
+            placeholder-multiple : Sélectionner une ou plusieurs provenance(s)   
             filter-search-no-result : Aucune provenance trouvée
 
 </i18n>

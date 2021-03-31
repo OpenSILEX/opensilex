@@ -413,6 +413,8 @@ import ScientificObjectVisualizationTab from './scientificObjects/ScientificObje
 components["opensilex-ScientificObjectVisualizationTab"] = ScientificObjectVisualizationTab;
 import ScientificObjectVisualizationForm from './scientificObjects/visualization/ScientificObjectVisualizationForm.vue';
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
+import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
+components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -482,6 +484,8 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
+import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
+components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
@@ -496,6 +500,8 @@ import DataHelpTableView from './data/form/DataHelpTableView.vue';
 components["opensilex-DataHelpTableView"] = DataHelpTableView;
 import DataProvenanceModalView from './data/DataProvenanceModalView.vue';
 components["opensilex-DataProvenanceModalView"] = DataProvenanceModalView;
+import ImageModal from './data/ImageModal.vue';
+components["opensilex-ImageModal"] = ImageModal;
 
 // PHIS
 //IMAGES
@@ -604,5 +610,7 @@ import DeviceVisualizationTab from './devices/DeviceVisualizationTab.vue';
 components["opensilex-DeviceVisualizationTab"] = DeviceVisualizationTab;
 import DeviceVisualizationForm from './devices/visualization/DeviceVisualizationForm.vue';
 components["opensilex-DeviceVisualizationForm"] = DeviceVisualizationForm;
+import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
+components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 
 export default components;

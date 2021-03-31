@@ -184,6 +184,8 @@ routes:
     component: opensilex-DeviceDetails
   - path: /device/visualization/:uri
     component: opensilex-DeviceDetails
+  - path: /device/datafiles/:uri
+    component: opensilex-DeviceDetails
   - path: /device/documents/:uri
     component: opensilex-DeviceDetails
   - path: /device/annotations/:uri

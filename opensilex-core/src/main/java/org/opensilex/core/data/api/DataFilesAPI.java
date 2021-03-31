@@ -49,20 +49,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
 import org.opensilex.core.data.dal.DataDAO;
+import static org.opensilex.core.data.dal.DataDAO.FS_FILE_PREFIX;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -98,7 +92,7 @@ import org.opensilex.utils.OrderBy;
 public class DataFilesAPI {
     
     public static final String DATAFILE_EXAMPLE_URI = "http://opensilex.dev/id/file/1598857852858";
-    public static final String DATAFILE_EXAMPLE_TYPE = "oeso:Image";
+    public static final String DATAFILE_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Image";
     
     @Inject
     private MongoDBService nosql;
@@ -122,7 +116,14 @@ public class DataFilesAPI {
      * @throws java.lang.Exception
      */
     @POST
-    @ApiOperation(value = "Add a data file")
+    @ApiOperation(value = "Add a data file",
+    notes = "{\"rdf_type\":\"" +  DATAFILE_EXAMPLE_TYPE + "\", "
+            + "\"date\":\"" +  DataAPI.DATA_EXAMPLE_MINIMAL_DATE + "\", "
+            + "\"timezone\":\"" +  DataAPI.DATA_EXAMPLE_TIMEZONE + "\", "
+            + "\"scientific_objects\":[\"http://plot01\"], "
+            + "\"provenance\": { \"uri\":\"" +  DataAPI.DATA_EXAMPLE_PROVENANCEURI + "\" }, "
+            + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}"
+    )
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = ObjectUriResponse.class)})
     @ApiProtected
@@ -190,8 +191,7 @@ public class DataFilesAPI {
             @Context HttpServletRequest context
     ) throws Exception {  
         
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        
+        DataDAO dao = new DataDAO(nosql, sparql, fs);        
 
         try {
             if (dtoList.size()> DataAPI.SIZE_MAX) {
@@ -202,10 +202,9 @@ public class DataFilesAPI {
             for(DataFilePathCreationDTO dto : dtoList ){            
                 DataFileModel model = dto.newModel();
                 // get the the absolute file path according to the fileStorageDirectory
-                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(Paths.get(model.getPath()));
+                java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(FS_FILE_PREFIX, Paths.get(model.getPath()));
 
-
-                if (!fs.exist(absoluteFilePath)) {
+                if (!fs.exist(FS_FILE_PREFIX, absoluteFilePath)) {
                     return new ErrorResponse(
                                 Response.Status.BAD_REQUEST,
                                 "File not found",
@@ -213,7 +212,6 @@ public class DataFilesAPI {
                     ).getResponse();
                 }
 
-                model.setPath(absoluteFilePath.toString());
                 model.setFilename(absoluteFilePath.getFileName().toString());
                 dataList.add(model);
             }
@@ -280,7 +278,7 @@ public class DataFilesAPI {
             DataFileModel description = dao.getFile(uri);
 
             java.nio.file.Path filePath = Paths.get(description.getPath());
-            byte[] fileContent = fs.readFileAsByteArray(filePath);
+            byte[] fileContent = fs.readFileAsByteArray(FS_FILE_PREFIX, filePath);
 
             if (ArrayUtils.isEmpty(fileContent)) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
@@ -321,7 +319,7 @@ public class DataFilesAPI {
     @Path("{uri}/description")
     @ApiOperation(value = "Get a data file description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve file description", response = DataFileCreationDTO.class),})
+        @ApiResponse(code = 200, message = "Retrieve file description", response = DataFileGetDTO.class),})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescription(
@@ -368,7 +366,7 @@ public class DataFilesAPI {
         
         try {
             DataFileModel description = dao.getFile(uri);
-            byte[] image = fs.readFileAsByteArray(Paths.get(description.getPath()));
+            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
             
             byte[] imageData = ImageResizer.getInstance().resize(
                 image,
@@ -410,13 +408,13 @@ public class DataFilesAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDataFileDescriptionsBySearch(
             @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by object uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Search by provenance uris list", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by object uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -456,6 +454,7 @@ public class DataFilesAPI {
         
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
+                rdfType,
                 experiments,
                 objects,
                 provenances,

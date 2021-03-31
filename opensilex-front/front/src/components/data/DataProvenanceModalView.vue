@@ -18,7 +18,8 @@
       </b-row>
     </template>
     <template>
-      <h3>{{ $t("DataProvenanceModalView.data") }}</h3>
+      <h3 v-if="datafile">{{ $t("DataProvenanceModalView.datafile") }}</h3>
+      <h3 v-else>{{ $t("DataProvenanceModalView.data") }}</h3>
       <pre>{{ data }}</pre>
       <h3>Provenance</h3>
       <pre>{{ provenance }}</pre>
@@ -32,6 +33,11 @@ import { Component, Prop } from "vue-property-decorator";
 
 @Component
 export default class DataProvenanceModalView extends Vue {
+  @Prop({
+    default: false
+  })
+  datafile: boolean;
+
   modalShow: boolean = false;
 
   info: any = null;
@@ -55,10 +61,12 @@ export default class DataProvenanceModalView extends Vue {
 <i18n>
   fr: 
     DataProvenanceModalView:
-      data : Donnnée
+      data : Donnée
+      datafile : Fichier de données
       
 
   en: 
     DataProvenanceModalView:
       data : Data
+      datafile : Datafile
 </i18n>

@@ -218,8 +218,8 @@ export default class DeviceDescription extends Vue {
   @Ref("deviceForm") readonly deviceForm!: any;
 
   updateDevice() {
+    this.deviceForm.getFormRef().getAttributes(this.device);
     let devicetoSend = JSON.parse(JSON.stringify(this.device));
-    this.deviceForm.getFormRef().getAttributes(devicetoSend);
     this.deviceForm.showEditForm(devicetoSend);
   }
   

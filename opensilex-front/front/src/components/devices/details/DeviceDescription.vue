@@ -33,7 +33,7 @@
             </template>
           </opensilex-Card>
       
-          <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length != 0">
+          <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length !== 0">
             <template v-slot:body>
               <b-table
                 ref="tableAtt"
@@ -72,7 +72,7 @@
         <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
           <template v-slot:body>
             <opensilex-TableView
-              v-if="device.relations.length != 0"
+              v-if=" device.relations.length !== 0"
               :items="device.relations"
               :fields="relationsFields"
             >
@@ -163,12 +163,13 @@ export default class DeviceDescription extends Vue {
         removal: null,
         description: null,
         metadata: null,
-        relations: null
+        relations: []
       };
   
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    this.$opensilex.hideLoader(); // TODO: don't wait on create that the form is created
     this.loadDevice();
   }
 
@@ -218,21 +219,8 @@ export default class DeviceDescription extends Vue {
 
   updateDevice() {
     this.deviceForm.getFormRef().getAttributes(this.device);
-    let device = {
-        uri: this.device.uri,
-        name: this.device.name,
-        rdf_type: this.device.rdf_type,
-        brand: this.device.brand,
-        constructor_model: this.device.constructor_model,
-        serial_number: this.device.serial_number,
-        person_in_charge: this.device.person_in_charge,
-        start_up: this.device.start_up,
-        removal: this.device.removal,
-        description: this.device.description,
-        metadata: this.device.metadata,
-        relations: this.device.relations
-    }
-    this.deviceForm.showEditForm(device);
+    let devicetoSend = JSON.parse(JSON.stringify(this.device));
+    this.deviceForm.showEditForm(devicetoSend);
   }
   
 }

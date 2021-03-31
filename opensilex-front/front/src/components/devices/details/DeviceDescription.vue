@@ -169,7 +169,7 @@ export default class DeviceDescription extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
-    this.$opensilex.hideLoader(); // TEMP: don't wait that the form is load ( users -> 2s + type -> 3s)
+    this.$opensilex.hideLoader(); // TODO: don't wait on create that the form is created
     this.loadDevice();
   }
 

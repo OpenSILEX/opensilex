@@ -437,6 +437,7 @@ export default class GermplasmList extends Vue {
     }
   }
 
+  // INFO: function used for web service exporting from search filters
   // updateExportFilters() {
   //   this.exportFilter.rdf_type = this.filter.rdf_type;
   //   this.exportFilter.name = this.filter.name;

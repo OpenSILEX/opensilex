@@ -441,7 +441,6 @@ en:
     propetiesConfiguration: Properties to display
     not-used-in-experiments: Scientific object not used in any experiments
     experiments: Scientific object used in experiment(s)
-    addDocument: Add document
     column:
       alias: Nom
       experiments: Experiment(s)
@@ -481,7 +480,6 @@ fr:
     propetiesConfiguration: Propriétés à afficher
     not-used-in-experiments: L'objet scientifique n'est utilisé dans aucune expérimentation
     experiments: L'objet scientifique est utilisé dans le/les expérimentation(s)
-    addDocument: Ajouter un document
     column:
       alias: Name
       experiments: Expérimentation(s)

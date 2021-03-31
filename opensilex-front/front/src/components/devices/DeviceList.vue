@@ -334,15 +334,14 @@ export default class DeviceList extends Vue {
 
   addVariable() {
     let typedev;
-    let mesure = [];
-    let mesureType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
+    let measure = [];
+    let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
     for(let select of this.tableRef.getSelected()) {
       typedev = select.rdf_type;
-      mesure.push(mesureType.includes(typedev));
-      console.log(typedev + mesure + mesureType);
+      measure.push(deniedType.includes(typedev));
     }
 
-    if (mesure.includes(true)) {
+    if (measure.includes(true)) {
       alert(this.$t('DeviceList.alertBadDeviceType'));
     } else{
       this.variableSelection.show();
@@ -352,30 +351,17 @@ export default class DeviceList extends Vue {
   editDeviceVar(variableSelected) {
   
     for(let select of this.tableRef.getSelected()) {
-      console.log("result device" + select.uri);
       this.service
       .getDevice(select.uri)
       .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
         let varList = [];
         for(let select of variableSelected) {
           varList.push({ property: "vocabulary:measures", value: select.uri });
-          console.log("result device" + varList);
+          console.debug("result device" + varList);
         }  
         let device = http.response.result;
-        let form = {
-          uri: device.uri,
-          name: device.name,
-          rdf_type: device.rdf_type,
-          brand: device.brand,
-          constructor_model: device.constructor_model,
-          serial_number: device.serial_number,
-          person_in_charge: device.person_in_charge,
-          start_up: device.start_up,
-          removal: device.removal,
-          description: device.description,
-          metadata: device.metadata,
-          relations: varList
-        };
+        let form = JSON.parse(JSON.stringify(device));
+        form.relations = varList;
         this.updateVariable(form);
       })
       .catch(this.$opensilex.errorHandler);

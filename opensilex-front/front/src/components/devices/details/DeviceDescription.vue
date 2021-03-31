@@ -33,7 +33,7 @@
             </template>
           </opensilex-Card>
       
-          <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length != 0">
+          <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length !== 0">
             <template v-slot:body>
               <b-table
                 ref="tableAtt"
@@ -72,7 +72,7 @@
         <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
           <template v-slot:body>
             <opensilex-TableView
-              v-if="device.relations.length != 0"
+              v-if=" device.relations.length !== 0"
               :items="device.relations"
               :fields="relationsFields"
             >
@@ -163,7 +163,7 @@ export default class DeviceDescription extends Vue {
         removal: null,
         description: null,
         metadata: null,
-        relations: null
+        relations: []
       };
   
   created() {

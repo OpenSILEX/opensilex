@@ -89,8 +89,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-import { DeviceCreationDTO, DevicesService,  OntologyService, ResourceTreeDTO, RDFTypeDTO } from "opensilex-core/index";
-//import { DeviceCreationDTO, DevicesService, EventsService, MoveCreationDTO,  OntologyService, ResourceTreeDTO, RDFTypeDTO } from "opensilex-core/index";
+import { DeviceCreationDTO, DevicesService, EventsService, MoveCreationDTO,  OntologyService, ResourceTreeDTO, RDFTypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
@@ -106,7 +105,7 @@ export default class DeviceTable extends Vue {
   $t: any;
   $i18n: any;
   service: DevicesService;
-  //serviceEvent: EventsService
+  serviceEvent: EventsService
   onlyChecking: boolean;
 
   //add Metadata
@@ -280,16 +279,16 @@ export default class DeviceTable extends Vue {
     let start_upCol =  {title:this.$t('DeviceTable.start_up') + '<span class="requiredOnCondition">*</span>', field:"start_up", visible:true, editor:true};
     let removalCol =  {title:this.$t('DeviceTable.removal'), field:"removal", visible:this.displayRemovalCol, editor:true};
     let commentCol =  {title:this.$t('DeviceTable.comment'), field:"comment", visible:true, editor:true};
-    /*let facilityCol =  {title:this.$t('DeviceTable.facility')+ '<span class="requiredOnCondition">*</span>', field:"facility", visible:true, editor:true};*/
+    let facilityCol =  {title:this.$t('DeviceTable.facility')+ '<span class="requiredOnCondition">*</span>', field:"facility", visible:true, editor:true};
     let checkingStatusCol = {title:this.$t('DeviceTable.checkingStatus'), field:"checkingStatus", visible:false, editor:false};
     let insertionStatusCol ={title:this.$t('DeviceTable.insertionStatus'), field:"insertionStatus", visible:false, editor:false};
 
     if(this.measure){
       this.nbVariableCol = 1;
       let variableCol = {title:this.$t('DeviceTable.variable')+'_1', field:"variable_1", visible:true, editor:true};
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, variableCol, checkingStatusCol, insertionStatusCol]//[idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol,facilityCol, commentCol, variableCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol,facilityCol, commentCol, variableCol, checkingStatusCol, insertionStatusCol]
     }else{
-      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, commentCol, checkingStatusCol, insertionStatusCol]//[idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, facilityCol, commentCol, checkingStatusCol, insertionStatusCol]
+      this.tableColumns = [idCol, statusCol, uriCol, typeCol, labelCol, brandCol, constructor_modelCol,  serial_numberCol, person_in_chargeCol, start_upCol,removalCol, facilityCol, commentCol, checkingStatusCol, insertionStatusCol]
     }
 
     this.tableData = [];
@@ -463,8 +462,8 @@ export default class DeviceTable extends Vue {
         metadata: {}
       };
 
-      /*let formMove: MoveCreationDTO = {
-        rdf_type: "http://www.opensilex.org/vocabulary/oeev#MoveTo",
+      let formMove: MoveCreationDTO = {
+        rdf_type: "http://www.opensilex.org/vocabulary/oeev#Move",
         start: null,
         end: null,
         is_instant: true,
@@ -474,7 +473,7 @@ export default class DeviceTable extends Vue {
         from: null,
         to: null,
         targets_positions: []
-      };*/
+      };
 
       let startDate = null
 
@@ -538,7 +537,7 @@ export default class DeviceTable extends Vue {
       ) {
         form.description = dataToInsert[idx].comment;
       }
-       /*if (
+       if (
         dataToInsert[idx].facility != null &&
         dataToInsert[idx].facility != ""
       ){
@@ -546,7 +545,7 @@ export default class DeviceTable extends Vue {
           formMove.end = startDate.format("YYYY-MM-DDTHH:mm:ssZ")
         }
         formMove.to = dataToInsert[idx].facility
-      }*/
+      }
       if (this.suppColumnsNames.length > 0) {
         let attributes = {};
         for (let y = 0; y < this.suppColumnsNames.length; y++) {
@@ -590,7 +589,7 @@ export default class DeviceTable extends Vue {
         this.progressValue = this.progressValue + 1;
       } else {
         promises.push(
-          this.callCreateDeviceService(form, idx + 1, this.onlyChecking)//, formMove)
+          this.callCreateDeviceService(form, idx + 1, this.onlyChecking, formMove)
         );
       }
     }
@@ -623,14 +622,14 @@ export default class DeviceTable extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
-    //this.serviceEvent =  this.$opensilex.getService("opensilex.EventsService");
+    this.serviceEvent =  this.$opensilex.getService("opensilex.EventsService");
   }
 
   callCreateDeviceService(
     form: DeviceCreationDTO,
     index: number,
     onlyChecking: boolean,
-    //formMove: MoveCreationDTO
+    formMove: MoveCreationDTO
   ) {
     return new Promise((resolve, reject) => {
     this.service
@@ -640,7 +639,7 @@ export default class DeviceTable extends Vue {
         this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('DeviceTable.checkingStatusMessage'), status:"OK"}])
       } else {
         this.tabulator.updateData([{rowNumber:index, insertionStatus:this.$t('DeviceTable.insertionStatusMessage'), status:"OK", uri:http.response.result}])
-        /*formMove.targets.push(http.response.result)
+        formMove.targets.push(http.response.result)
         this.serviceEvent.createMoves([formMove]).then().catch(error => {
           let errorMessage: string;
           let failure = true;
@@ -674,7 +673,7 @@ export default class DeviceTable extends Vue {
           row.reformat();
           this.errorNumber = this.errorNumber + 1;
           resolve();
-        });*/
+        });
       }
       
       let row = this.tabulator.getRow(index);
@@ -768,15 +767,11 @@ export default class DeviceTable extends Vue {
               break
             }
         }
-       //if(data[idx].rdf_type != this.$attrs.deviceType){
-        
-        //await this.isSubClassOf(data[idx].rdf_type, this.$attrs.deviceType)
         if(!Object.values(this.deviceTypes).indexOf(data[idx].rdf_type)){
           insertionOK = false
           alert(this.$t('DeviceTable.badDeviceType') + "  " + data[idx].rdf_type + " ⊄ "+this.$attrs.deviceType);
           break
         }
-        //}
       }
 
       if (insertionOK) {

@@ -36,11 +36,11 @@ public class SPARQLResourceModel implements SPARQLModel {
     public static final String URI_FIELD = "uri";
 
     @SPARQLTypeRDF()
-    protected URI type;
-    public static final String TYPE_FIELD = "type";
+    protected URI rdfType;
+    public static final String TYPE_FIELD = "rdfType";
 
     @SPARQLTypeRDFLabel()
-    protected SPARQLLabel typeLabel;
+    protected SPARQLLabel rdfTypeName;
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -60,19 +60,19 @@ public class SPARQLResourceModel implements SPARQLModel {
     }
 
     public URI getType() {
-        return type;
+        return rdfType;
     }
 
     public void setType(URI type) {
-        this.type = type;
+        this.rdfType = type;
     }
 
     public SPARQLLabel getTypeLabel() {
-        return typeLabel;
+        return rdfTypeName;
     }
 
     public void setTypeLabel(SPARQLLabel typeLabel) {
-        this.typeLabel = typeLabel;
+        this.rdfTypeName = typeLabel;
     }
 
     public List<SPARQLModelRelation> getRelations() {

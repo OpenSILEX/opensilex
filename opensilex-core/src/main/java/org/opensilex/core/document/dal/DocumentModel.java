@@ -37,10 +37,6 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class DocumentModel extends SPARQLResourceModel implements ClassURIGenerator<DocumentModel> {
 
-    @SPARQLTypeRDF()
-    URI type;
-    public static final String TYPE_FIELD = "type";
-
     @SPARQLProperty(
             ontology = OA.class,
             property = "hasTarget",
@@ -112,14 +108,6 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     )
     String identifier;
     public static final String IDENTIFIER_FIELD = "identifier";
-
-    public URI getType() {
-        return type;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
-    }
 
     public List<URI> getTargets() {
         return targets;

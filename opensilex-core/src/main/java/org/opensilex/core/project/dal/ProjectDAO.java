@@ -163,8 +163,6 @@ public class ProjectDAO {
                     }
 
                     appendDateFilters(select, startDate, endDate);
-
-                    appendUserProjectsFilter(select, user);
                 },
                 orderByList,
                 page,
@@ -188,38 +186,6 @@ public class ProjectDAO {
 
     }
 
-    private void appendUserProjectsFilter(SelectBuilder select, UserModel user) throws Exception {
-        if (user == null || user.isAdmin()) {
-            return;
-        }
-
-        Var uriVar = makeVar(ExperimentModel.URI_FIELD);
-
-        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-
-        Var coordinatorVar = makeVar(ProjectModel.COORDINATORS_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasCoordinator.asNode(), coordinatorVar));
-        Expr hasCoordinator = SPARQLQueryHelper.eq(coordinatorVar, userNodeURI);
-
-        Var scientificSupervisorVar = makeVar(ProjectModel.SCIENTIFIC_CONTACTS_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasScientificContact.asNode(), scientificSupervisorVar));
-        Expr hasScientificContact = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
-
-        Var technicalSupervisorVar = makeVar(ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD);
-        select.addOptional(new Triple(uriVar, Oeso.hasAdministrativeContact.asNode(), technicalSupervisorVar));
-        Expr hasAdministrativeContact = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
-
-        Var creatorVar = makeVar(ProjectModel.CREATOR_FIELD);
-        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
-
-        
-        select.addFilter(SPARQLQueryHelper.or(
-                hasCoordinator,
-                hasScientificContact,
-                hasAdministrativeContact,
-                isCreator
-        ));
-    }
 
     public void validateProjectAccess(URI projectURI, UserModel user) throws Exception {
         if (!sparql.uriExists(ProjectModel.class, projectURI)) {

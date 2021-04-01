@@ -45,10 +45,22 @@
       :searchMethod="loadData"
       :fields="fields"
       defaultSortBy="start_date"
-      :isSelectable="isSelectable"
+      :isSelectable="true"
       :maximumSelectedRows="maximumSelectedRows"
       labelNumberOfSelectedRow="component.project.selectedLabel"
     >
+      <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :disabled="numberOfSelectedRows == 0"
+          text=actions>
+            <b-dropdown-item-button    
+              @click="createDocument()"
+            >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+        </b-dropdown>
+      </template>
       <template v-slot:cell(name)="{ data }">
         <opensilex-UriLink
 
@@ -102,6 +114,16 @@
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
+
+    <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="component.common.addDocument"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-settings"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -119,6 +141,9 @@ export default class ProjectList extends Vue {
   $store: any;
 
   service: ProjectsService;
+  
+  @Ref("documentForm") readonly documentForm!: any;
+  
   get user() {
     return this.$store.state.user;
   }
@@ -203,6 +228,8 @@ export default class ProjectList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 
@@ -238,8 +265,37 @@ export default class ProjectList extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  createDocument() {
+    this.documentForm.showCreateForm();
+  }
+
+  initForm() {
+    let targetURI = [];
+    for (let select of this.tableRef.getSelected()) {
+      targetURI.push(select.uri);
+    }
+
+    return {
+      description: {
+        uri: undefined,
+        identifier: undefined,
+        rdf_type: undefined,
+        title: undefined,
+        date: undefined,
+        description: undefined,
+        targets: targetURI,
+        authors: undefined,
+        language: undefined,
+        deprecated: undefined,
+        keywords: undefined
+      },
+      file: undefined
+    }
+  }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+

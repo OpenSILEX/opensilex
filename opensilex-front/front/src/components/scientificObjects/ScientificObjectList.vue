@@ -112,15 +112,21 @@
           iconNumberOfSelectedRow="ik#ik-target"
         >
           <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-            <opensilex-Button
-              :variant="numberOfSelectedRows > 0 ? 'primary' : ''"
-              icon="none"
-              :small="false"
-              label="Export CSV"
+            <b-dropdown
+              dropright
+              class="mb-2 mr-2"
+              :small="true"
               :disabled="numberOfSelectedRows == 0"
-              @click="exportCSV"
-            ></opensilex-Button>
+              text=actions>
+                <b-dropdown-item-button    
+                  @click="createDocument()"
+                >{{$t('ScientificObjectList.addDocument')}}</b-dropdown-item-button>
+                <b-dropdown-item-button
+                  @click="exportCSV"
+                >Export CSV</b-dropdown-item-button>
+            </b-dropdown>
           </template>
+
           <template v-slot:cell(name)="{ data }">
             <opensilex-UriLink
               :uri="data.item.uri"
@@ -183,6 +189,14 @@
       </template>
     </opensilex-PageContent>
     <!-- End results table -->
+      <opensilex-ModalForm
+        ref="documentForm"
+        component="opensilex-DocumentForm"
+        createTitle="ScientificObjectList.addDocument"
+        modalSize="lg"
+        :initForm="initForm"
+        icon="ik#ik-settings"
+      ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -209,6 +223,7 @@ export default class ScientificObjectList extends Vue {
   @Ref("soForm") readonly soForm!: any;
   @Ref("importForm") readonly importForm!: any;
   @Ref("templateGenerator") readonly templateGenerator!: any;
+  @Ref("documentForm") readonly documentForm!: any;
 
   fields = [
     {
@@ -291,6 +306,8 @@ export default class ScientificObjectList extends Vue {
   }
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 
@@ -378,6 +395,34 @@ export default class ScientificObjectList extends Vue {
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  createDocument() {
+    this.documentForm.showCreateForm();
+  }
+
+  initForm() {
+    let targetURI = [];
+    for (let select of this.tableRef.getSelected()) {
+      targetURI.push(select.uri);
+    }
+
+    return {
+      description: {
+        uri: undefined,
+        identifier: undefined,
+        rdf_type: undefined,
+        title: undefined,
+        date: undefined,
+        description: undefined,
+        targets: targetURI,
+        authors: undefined,
+        language: undefined,
+        deprecated: undefined,
+        keywords: undefined
+      },
+      file: undefined
+    }
   }
 }
 </script>

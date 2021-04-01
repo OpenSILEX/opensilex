@@ -84,12 +84,11 @@
         text=actions>
           <b-dropdown-item-button    
             @click="createDocument()"
-          >{{$t('DeviceList.addDocument')}}</b-dropdown-item-button>
+          >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
           <b-dropdown-item-button
             @click="exportDevices()"
           >{{$t('DeviceList.export')}}</b-dropdown-item-button>
           <b-dropdown-item-button
-            disabled
             @click="addVariable()"
           >{{$t('DeviceList.addVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
@@ -138,8 +137,7 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
-      createTitle="DeviceList.addDocument"
-      editTitle="DeviceList.update"
+      createTitle="component.common.addDocument"
       modalSize="lg"
       :initForm="initForm"
       icon="ik#ik-settings"
@@ -156,12 +154,11 @@
 
     <opensilex-VariableModalList
       label="label"
-      ref="deviceVarForm"
+      ref="variableSelection"
       :isModalSearch="true"
-      :selected.sync="variablesSelected"
       :required="true"
       :multiple="true"
-      @click="editDeviceVar()"
+      @onValidate="editDeviceVar"
     ></opensilex-VariableModalList>      
   </div>
 </template>
@@ -169,7 +166,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceGetDetailsDTO, VariableGetDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO, OntologyService, RDFTypeDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
@@ -182,7 +179,7 @@ export default class DeviceList extends Vue {
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceVarForm") readonly deviceVarForm!: any;
+  @Ref("variableSelection") readonly variableSelection!: any;
 
   get user() {
     return this.$store.state.user;
@@ -225,8 +222,6 @@ export default class DeviceList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
 
     /*this.exportFilter = {
       namePattern: undefined,
@@ -303,6 +298,8 @@ export default class DeviceList extends Vue {
   ];
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.tableRef.refresh();
   }
 
@@ -324,7 +321,7 @@ export default class DeviceList extends Vue {
   }
 
   exportDevices() {
-    let path = "/core/devices/exportList";
+    let path = "/core/devices/export_by_uris";
     let today = new Date();
     let filename = "export_devices_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
 
@@ -332,21 +329,56 @@ export default class DeviceList extends Vue {
     for (let select of this.tableRef.getSelected()) {
       exportList.push(select.uri);
     }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
+    this.$opensilex.downloadFilefromService(path, filename, "csv", {uris: exportList});
   }
 
-  // addVariable() {
-  //   this.deviceVarForm.show();
-  // }
-  
-  // variablesSelected = []; 
+  addVariable() {
+    let typeDevice;
+    let measure = [];
+    let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
+    for(let select of this.tableRef.getSelected()) {
+      typeDevice = select.rdf_type;
+      measure.push(deniedType.includes(typeDevice));
+    }
 
-  // editDeviceVar() {
-  //   console.log("result var" + this.variablesSelected);
-  //   for (let select of this.tableRef.getSelected()) {
-  //     this.variablesSelected.push(select.uri);
-  //   }
-  // }
+    if (measure.includes(true)) {
+      alert(this.$t('DeviceList.alertBadDeviceType'));
+    } else{
+      this.variableSelection.show();
+    }
+  }
+  
+  editDeviceVar(variableSelected) {
+  
+    for(let select of this.tableRef.getSelected()) {
+      this.service
+      .getDevice(select.uri)
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+        let varList = [];
+        for(let select of variableSelected) {
+          varList.push({ property: "vocabulary:measures", value: select.uri });
+          console.debug("result device" + varList);
+        }  
+        let device = http.response.result;
+        let form = JSON.parse(JSON.stringify(device));
+        form.relations = varList;
+        this.updateVariable(form);
+      })
+      .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  updateVariable(form) {
+    this.$opensilex
+      .getService("opensilex.DevicesService")
+      .updateDevice(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("device updated", uri);
+        this.$emit("onUpdate", form);
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
 
   createDocument() {
     this.documentForm.showCreateForm();
@@ -412,9 +444,8 @@ en:
     start_up: Start up 
     update: Update Device
     delete: Delete Device
-    selected: Devices
+    selected: Selected devices
     facility: Facility
-    addDocument: Add document
     addVariable: Add variable
     export: Export Device list
     alertSelectSize: The selection has too many lines, 1000 lines maximum
@@ -422,7 +453,7 @@ en:
     addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
-
+    alertBadDeviceType: The selected type doesn't match with add variable
 
     filter:
       namePattern: Name
@@ -444,16 +475,16 @@ fr:
     start_up: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
-    selected: Dispositifs
+    selected: Dispositifs selectionnés
     facility: Facility
-    addDocument: Ajouter un document
-    addVariable: Ajout de variable
+    addVariable: Ajouter des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement
     addAnnotation: Ajouter une annotation
     addMove: Déplacement
     showMap: Afficher sur une carte
+    alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
 
     filter:
       namePattern: Nom

@@ -96,14 +96,26 @@
       ref="tableRef"
       :searchMethod="searchGermplasm"
       :fields="fields"
-      :isSelectable="isSelectable"
+      :isSelectable="true"
       defaultSortBy="name"
       labelNumberOfSelectedRow="GermplasmList.selected"
       iconNumberOfSelectedRow="ik#ik-feather"
     >
-      <template v-slot:export>
-        <b-button class="mb-2 mr-2" @click="exportGermplasm()" >{{$t('GermplasmList.export')}}</b-button> 
-      </template>  
+      <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :disabled="numberOfSelectedRows == 0"
+          text=actions>
+            <b-dropdown-item-button    
+              @click="createDocument()"
+            >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+            <b-dropdown-item-button
+              @click="exportGermplasm()"
+          >{{$t('GermplasmList.export')}}</b-dropdown-item-button>
+        </b-dropdown>
+      </template>
       <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
@@ -130,6 +142,15 @@
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
+    <opensilex-ModalForm
+      v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="component.common.addDocument"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-settings"
+    ></opensilex-ModalForm>
   </div>
 </template>
 
@@ -158,6 +179,9 @@ export default class GermplasmList extends Vue {
   $route: any;
   $router: VueRouter;
   service: GermplasmService;
+
+  @Ref("documentForm") readonly documentForm!: any;
+  @Ref("tableRef") readonly tableRef!: any;
 
   @Prop({
     default: false
@@ -200,16 +224,16 @@ export default class GermplasmList extends Vue {
     metadataValue: undefined
   };
 
-  exportFilter = {
-    rdf_type: undefined,
-    name: undefined,
-    species: undefined,
-    production_year: undefined,
-    institute: undefined,
-    experiment: undefined,
-    uri: undefined,
-    metadata: undefined
-  };
+  // exportFilter = {
+  //   rdf_type: undefined,
+  //   name: undefined,
+  //   species: undefined,
+  //   production_year: undefined,
+  //   institute: undefined,
+  //   experiment: undefined,
+  //   uri: undefined,
+  //   metadata: undefined
+  // };
 
   resetSearch() {
     this.resetFilters();
@@ -229,17 +253,16 @@ export default class GermplasmList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    
-    this.exportFilter = {
-      rdf_type: undefined,
-      name: undefined,
-      species: undefined,
-      production_year: undefined,
-      institute: undefined,
-      experiment: undefined,
-      uri: undefined,
-      metadata: undefined
-    };
+    // this.exportFilter = {
+    //   rdf_type: undefined,
+    //   name: undefined,
+    //   species: undefined,
+    //   production_year: undefined,
+    //   institute: undefined,
+    //   experiment: undefined,
+    //   uri: undefined,
+    //   metadata: undefined
+    // };
   }
 
   getSelected() {
@@ -306,16 +329,17 @@ export default class GermplasmList extends Vue {
     return tableFields;
   }
 
-  @Ref("tableRef") readonly tableRef!: any;
   @Ref("speciesSelector") readonly speciesSelector!: any;
 
   refresh() {
+    this.tableRef.selectAll = false;
+    this.tableRef.onSelectAll();
     this.updateFilters();
     this.tableRef.refresh();
   }
 
   searchGermplasm(options) {
-    this.updateExportFilters();
+    // this.updateExportFilters();
     return this.service.searchGermplasm(
       this.filter.uri,
       this.filter.rdf_type,
@@ -330,16 +354,20 @@ export default class GermplasmList extends Vue {
       this.addMetadataFilter(),
       options.orderBy,
       options.currentPage,
-      20
+      options.pageSize
     );
   }
 
   exportGermplasm() {
-    let path = "/core/germplasm/export";
+    let path = "/core/germplasm/export_by_uris";
     let today = new Date();
     let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    var exportList = []
+    for (let select of this.tableRef.getSelected()) {
+      exportList.push(select.uri);
+    }
     this.$opensilex
-     .downloadFilefromService(path, filename, "csv", this.exportFilter);
+     .downloadFilefromPostService(path, filename, "csv", {uris: exportList}, this.lang);
   }
 
 
@@ -409,15 +437,43 @@ export default class GermplasmList extends Vue {
     }
   }
 
-  updateExportFilters() {
-    this.exportFilter.rdf_type = this.filter.rdf_type;
-    this.exportFilter.name = this.filter.name;
-    this.exportFilter.species = this.filter.species;
-    this.exportFilter.production_year = this.filter.production_year;
-    this.exportFilter.institute = this.filter.institute;
-    this.exportFilter.experiment = this.filter.experiment;
-    this.exportFilter.uri = this.filter.uri;
-    this.exportFilter.metadata = this.addMetadataFilter();
+  // INFO: function used for web service exporting from search filters
+  // updateExportFilters() {
+  //   this.exportFilter.rdf_type = this.filter.rdf_type;
+  //   this.exportFilter.name = this.filter.name;
+  //   this.exportFilter.species = this.filter.species;
+  //   this.exportFilter.production_year = this.filter.production_year;
+  //   this.exportFilter.institute = this.filter.institute;
+  //   this.exportFilter.experiment = this.filter.experiment;
+  //   this.exportFilter.uri = this.filter.uri;
+  //   this.exportFilter.metadata = this.addMetadataFilter();
+  // }
+    createDocument() {
+    this.documentForm.showCreateForm();
+  }
+
+  initForm() {
+    let targetURI = [];
+    for (let select of this.tableRef.getSelected()) {
+      targetURI.push(select.uri);
+    }
+
+    return {
+      description: {
+        uri: undefined,
+        identifier: undefined,
+        rdf_type: undefined,
+        title: undefined,
+        date: undefined,
+        description: undefined,
+        targets: targetURI,
+        authors: undefined,
+        language: undefined,
+        deprecated: undefined,
+        keywords: undefined
+      },
+      file: undefined
+    }
   }
 
 }

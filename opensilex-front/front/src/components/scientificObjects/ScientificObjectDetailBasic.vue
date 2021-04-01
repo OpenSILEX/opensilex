@@ -1,46 +1,34 @@
 <template>
   <div v-if="selected && selected.uri">
-    <opensilex-PageActions
-      v-if="!simpleDisplay"
-      :returnButton="withReturnButton"
-      :tabs="true"
-    >
+    <opensilex-PageActions v-if="!simpleDisplay" :returnButton="withReturnButton" :tabs="true">
       <b-nav-item
         :active="isDetailsTab"
         @click.prevent="tabsValue = DETAILS_TAB"
-        >{{ $t("component.common.details-label") }}
-      </b-nav-item>
+      >{{ $t("component.common.details-label") }}</b-nav-item>
 
       <b-nav-item
         @click.prevent="tabsValue = VISUALIZATION_TAB"
         :active="isVisualizationTab"
-      >{{ $t("ScientificObjectVisualizationTab.visualization") }}
-      </b-nav-item>
+      >{{ $t("ScientificObjectVisualizationTab.visualization") }}</b-nav-item>
 
       <b-nav-item
         :active="isDatafilesTab"
         @click.prevent="tabsValue = DATAFILES_TAB"
-        >{{ $t("ScientificObjectDataFiles.datafiles") }}
-      </b-nav-item>
+      >{{ $t("ScientificObjectDataFiles.datafiles") }}</b-nav-item>
 
       <b-nav-item
         :active="isAnnotationTab"
         @click.prevent="tabsValue = ANNOTATIONS_TAB"
-        >{{ $t("Annotation.list-title") }}
-      </b-nav-item>
+      >{{ $t("Annotation.list-title") }}</b-nav-item>
 
       <b-nav-item
         :active="isDocumentTab"
         @click.prevent="tabsValue = DOCUMENTS_TAB"
-        >{{ $t("DocumentTabList.documents") }}
-      </b-nav-item>
+      >{{ $t("DocumentTabList.documents") }}</b-nav-item>
     </opensilex-PageActions>
 
     <div v-if="simpleDisplay">
-      <opensilex-ScientificObjectDetailAdvanced
-        v-if="selected"
-        :selected="selected"
-      ></opensilex-ScientificObjectDetailAdvanced>
+      <opensilex-ScientificObjectDetailAdvanced v-if="selected" :selected="selected"></opensilex-ScientificObjectDetailAdvanced>
     </div>
 
     <div v-if="isDetailsTab && !simpleDisplay">
@@ -63,20 +51,11 @@
         <!-- URI -->
         <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
         <!-- Name -->
-        <opensilex-StringView
-          :value="selected.name"
-          label="component.common.name"
-        ></opensilex-StringView>
+        <opensilex-StringView :value="selected.name" label="component.common.name"></opensilex-StringView>
         <!-- Type -->
-        <opensilex-TypeView
-          :type="selected.rdf_type"
-          :typeLabel="selected.rdf_type_name"
-        ></opensilex-TypeView>
+        <opensilex-TypeView :type="selected.rdf_type" :typeLabel="selected.rdf_type_name"></opensilex-TypeView>
 
-        <opensilex-ScientificObjectDetailAdvanced
-          v-if="selected"
-          :selected="selected"
-        ></opensilex-ScientificObjectDetailAdvanced>
+        <opensilex-ScientificObjectDetailAdvanced v-if="selected" :selected="selected"></opensilex-ScientificObjectDetailAdvanced>
       </b-card>
 
       <b-card v-for="(value, index) in objectByContext" :key="index">
@@ -106,29 +85,17 @@
           :typeLabel="value.rdf_type_name"
         ></opensilex-TypeView>
 
-        <div
-          v-for="(v, index) in getCustomTypeProperties(value)"
-          v-bind:key="index"
-        >
+        <div v-for="(v, index) in getCustomTypeProperties(value)" v-bind:key="index">
           <div v-if="!v.definition.isList" class="static-field">
             <span class="field-view-title">{{ v.definition.name }}</span>
-            <component
-              :is="v.definition.viewComponent"
-              :value="v.property"
-            ></component>
+            <component :is="v.definition.viewComponent" :value="v.property"></component>
           </div>
-          <div
-            v-else-if="v.property && v.property.length > 0"
-            class="static-field"
-          >
+          <div v-else-if="v.property && v.property.length > 0" class="static-field">
             <span class="field-view-title">{{ v.definition.name }}</span>
             <ul>
               <br />
               <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
-                <component
-                  :is="v.definition.viewComponent"
-                  :value="prop"
-                ></component>
+                <component :is="v.definition.viewComponent" :value="prop"></component>
               </li>
             </ul>
           </div>
@@ -136,10 +103,7 @@
       </b-card>
     </div>
 
-    <opensilex-ScientificObjectDataFiles
-          v-if="isDatafilesTab"
-          :uri="selected.uri"
-     ></opensilex-ScientificObjectDataFiles>
+    <opensilex-ScientificObjectDataFiles v-if="isDatafilesTab" :uri="selected.uri"></opensilex-ScientificObjectDataFiles>
 
     <div v-if="isAnnotationTab">
       <opensilex-AnnotationList
@@ -153,12 +117,11 @@
       ></opensilex-AnnotationList>
     </div>
 
-     <opensilex-ScientificObjectVisualizationTab
+    <opensilex-ScientificObjectVisualizationTab
       v-if="isVisualizationTab"
       :scientificObject="selected.uri"
       :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
     ></opensilex-ScientificObjectVisualizationTab>
-
 
     <opensilex-DocumentTabList
       v-if="isDocumentTab"
@@ -183,17 +146,17 @@ export default class ScientificObjectDetailBasic extends Vue {
   selected;
 
   @Prop({
-    default: () => [],
+    default: () => []
   })
   objectByContext;
 
   @Prop({
-    default: false,
+    default: false
   })
   withReturnButton;
 
   @Prop({
-    default: false,
+    default: false
   })
   simpleDisplay;
 
@@ -206,7 +169,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   DOCUMENTS_TAB = "Documents";
   ANNOTATIONS_TAB = "Annotations";
   EVENTS_TAB = "Events";
-  DATAFILES_TAB = "Datafiles"
+  DATAFILES_TAB = "Datafiles";
 
   tabsIndex: number = 0;
   tabsValue: string = this.DETAILS_TAB;
@@ -254,20 +217,20 @@ export default class ScientificObjectDetailBasic extends Vue {
     this.typeProperties = [];
     this.valueByProperties = {};
 
-    return this.$opensilex
-      .getService("opensilex.VueJsOntologyExtensionService")
-      .getClassProperties(
-        this.selected.rdf_type,
-        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-      )
-      .then((http) => {
-        this.classModel = http.response.result;
-        let valueByProperties = this.buildValueByProperties(
-          this.selected.relations
-        );
-        this.buildTypeProperties(this.typeProperties, valueByProperties);
-        this.valueByProperties = valueByProperties;
-      });
+    // return this.$opensilex
+    //   .getService("opensilex.VueJsOntologyExtensionService")
+    //   .getClassProperties(
+    //     this.selected.rdf_type,
+    //     this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+    //   )
+    //   .then((http) => {
+    //     this.classModel = http.response.result;
+    //     let valueByProperties = this.buildValueByProperties(
+    //       this.selected.relations
+    //     );
+    //     this.buildTypeProperties(this.typeProperties, valueByProperties);
+    //     this.valueByProperties = valueByProperties;
+    //   });
   }
 
   buildTypeProperties(typeProperties, valueByProperties) {
@@ -327,12 +290,12 @@ export default class ScientificObjectDetailBasic extends Vue {
         ) {
           typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]],
+            property: [valueByProperties[property.property]]
           });
         } else {
           typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property],
+            property: valueByProperties[property.property]
           });
         }
       }
@@ -348,7 +311,7 @@ export default class ScientificObjectDetailBasic extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
+          valueByProperties[relation.property]
         ];
       }
 
@@ -391,7 +354,7 @@ export default class ScientificObjectDetailBasic extends Vue {
         if (a.length != b.length) {
           return false;
         } else {
-          let intersect = a.filter((x) => {
+          let intersect = a.filter(x => {
             let hasMatch = false;
             for (let y of b) {
               if (this.checkRelationValueEquality(x, y)) {

@@ -1,11 +1,11 @@
 <template>
   <div ref="page">
-    
     <opensilex-ScientificObjectVisualizationForm
-          :scientificObject="scientificObject"
-          @search="onSearch"
-          @update="onUpdate"
-        ></opensilex-ScientificObjectVisualizationForm>
+      v-if="renderComponent"
+      :scientificObject="scientificObject"
+      @search="onSearch"
+      @update="onUpdate"
+    ></opensilex-ScientificObjectVisualizationForm>
 
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
@@ -49,7 +49,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   @Prop()
   scientificObject;
-
+  renderComponent = true;
   isGraphicLoaded = false;
   form;
   selectedVariable;
@@ -61,16 +61,25 @@ export default class ScientificObjectVisualizationTab extends Vue {
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
   }
+  @Watch("scientificObject")
+  test() {
+    this.renderComponent = false;
+
+    this.$nextTick(() => {
+      // Add the component back in
+      this.renderComponent = true;
+    });
+  }
 
   onGraphicCreated() {
-    let that = this;
-    setTimeout(function() {
-      that.page.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest"
-      });
-    }, 500);
+    // let that = this;
+    // setTimeout(function() {
+    //   that.page.scrollIntoView({
+    //     behavior: "smooth",
+    //     block: "end",
+    //     inline: "nearest"
+    //   });
+    // }, 500);
   }
 
   getProvenance(uri) {
@@ -102,6 +111,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
     this.form = form;
     let promise = this.buildDataSerie();
+
     promise
       .then(value => {
         let serie;

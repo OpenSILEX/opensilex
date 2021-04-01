@@ -9,7 +9,6 @@
               label="DeviceVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :device="device"
               :clearable="true"
               :defaultSelectedValue="true"

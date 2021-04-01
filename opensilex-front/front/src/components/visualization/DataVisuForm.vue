@@ -9,7 +9,6 @@
               label="DataVisuForm.search.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :experiment="selectedExperiment"
               :scientificObjects="scientificObjects"
               :clearable="true"

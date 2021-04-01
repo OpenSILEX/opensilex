@@ -9,7 +9,6 @@
               label="ScientificObjectVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :scientificObjects="scientificObject"
               :clearable="true"
               :defaultSelectedValue="true"
@@ -74,7 +73,7 @@
                 ></opensilex-StringFilter>
               </div>
             </div>
-          </opensilex-FilterField> -->
+          </opensilex-FilterField>-->
 
           <opensilex-FilterField>
             <b-collapse
@@ -93,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import VueConstructor from "vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
@@ -102,15 +101,15 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ScientificObjectVisualizationForm extends Vue {
   $opensilex: any;
-
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
+
   filter = {
     variable: null,
     startDate: undefined,
     endDate: undefined,
-    provenance: undefined,
+    provenance: undefined
     // metadataKey: undefined,
     // metadataValue: undefined
   };

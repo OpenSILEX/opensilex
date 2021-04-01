@@ -179,7 +179,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceGetDetailsDTO, OntologyService, RDFTypeDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
@@ -198,6 +198,7 @@ export default class DeviceList extends Vue {
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
 
   selectedUris: Array<string> = [];
+
 
   get user() {
     return this.$store.state.user;
@@ -374,6 +375,54 @@ export default class DeviceList extends Vue {
             let device = http.response.result;
             let form = JSON.parse(JSON.stringify(device));
             form.relations = form.relations.concat(varList);
+            this.updateVariable(form);
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  updateVariable(form) {
+    this.$opensilex
+        .getService("opensilex.DevicesService")
+        .updateDevice(form)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let uri = http.response.result;
+          console.debug("device updated", uri);
+          this.$emit("onUpdate", form);
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  addVariable() {
+    let typeDevice;
+    let measure = [];
+    let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
+    for(let select of this.tableRef.getSelected()) {
+      typeDevice = select.rdf_type;
+      measure.push(deniedType.includes(typeDevice));
+    }
+
+    if (measure.includes(true)) {
+      alert(this.$t('DeviceList.alertBadDeviceType'));
+    } else{
+      this.variableSelection.show();
+    }
+  }
+
+  editDeviceVar(variableSelected) {
+
+    for(let select of this.tableRef.getSelected()) {
+      this.service
+          .getDevice(select.uri)
+          .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+            let varList = [];
+            for(let select of variableSelected) {
+              varList.push({ property: "vocabulary:measures", value: select.uri });
+              console.debug("result device" + varList);
+            }
+            let device = http.response.result;
+            let form = JSON.parse(JSON.stringify(device));
+            form.relations = varList;
             this.updateVariable(form);
           })
           .catch(this.$opensilex.errorHandler);

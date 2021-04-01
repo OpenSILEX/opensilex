@@ -358,7 +358,23 @@ export default class FactorLevelTable extends Vue {
   }
 
   resetTable() {
-    this.internalFactorLevels = [];
+    this.$bvModal
+      .msgBoxConfirm(
+        this.$i18n
+          .t("component.factorLevel.delete-confirmation-table")
+          .toString(),
+        {
+          cancelTitle: this.$i18n.t("component.common.cancel").toString(),
+          okTitle: this.$i18n.t("component.common.delete").toString(),
+          okVariant: "danger",
+          centered: true,
+        }
+      )
+      .then((confirmation) => {
+        if (confirmation) {
+          this.internalFactorLevels = [];
+        }
+      });
   }
 
   addEmptyRow() {
@@ -416,6 +432,7 @@ en:
       factor: factor
       description: description
       hasFactor: has factor
+      delete-confirmation-table: This action is final, are you sure you want to empty this table?
       errors:
         factor-already-exists: Factor level already exists with this URI.
         factor-empty-row: You can't add several empty rows
@@ -440,6 +457,7 @@ fr:
       factor: facteur
       description: description
       hasFactor: est lié au facteur
+      delete-confirmation-table: Cette action est définitive, merci de confirmer la suppression des éléments du tableau.
       errors:
         factor-already-exists: URI du niveau de facteur déjà existante.
         factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides

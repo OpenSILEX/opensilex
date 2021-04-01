@@ -128,6 +128,7 @@
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
         <logstash-logback-encoder>6.5</logstash-logback-encoder>
+        <csv.parser.version>2.9.1</csv.parser.version>
     </properties>
 
     <dependencyManagement>
@@ -540,6 +541,12 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>${mongodb.version}</version>
         </dependency> 
+        <!--CSV parser-->
+        <dependency>
+            <groupId>com.univocity</groupId>
+            <artifactId>univocity-parsers</artifactId>
+            <version>${csv.parser.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

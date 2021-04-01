@@ -1,29 +1,27 @@
 <template>
   <div>
-    <b-button @click="importCsv" class="mb-2 mr-2" variant="outline-success">{{$t(buttonLabel)}}</b-button>
+    <b-button @click="importCsv" class="mb-2 mr-2" variant="outline-success">{{
+      $t(buttonLabel)
+    }}</b-button>
     <slot name="error">
-      <span v-if="errors" class="error-message alert alert-danger mb-2 mr-2">{{this.errors[0]}}</span>
+      <span v-if="errors" class="error-message alert alert-danger mb-2 mr-2">{{
+        this.errors[0]
+      }}</span>
     </slot>
     <b-form-file
       ref="inputFile"
       accept="text/csv, .csv"
       @input="fileUpdated"
       hidden
-      style="display:none"
+      style="display: none"
     ></b-form-file>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  Ref,
-  Model,
-  Provide,
-  PropSync
-} from "vue-property-decorator";
+import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
+import * as CSV from "csv-string";
 
 @Component
 export default class CSVInputFile extends Vue {
@@ -46,13 +44,9 @@ export default class CSVInputFile extends Vue {
   errors: any = [];
 
   @Prop({
-    default: "component.common.import-files.csv-file"
+    default: "component.common.import-files.csv-file",
   })
   buttonLabel: string;
-
-  get lang() {
-    return this.$store.getters.language;
-  }
 
   @Prop()
   delimiterOption: string;
@@ -64,27 +58,15 @@ export default class CSVInputFile extends Vue {
   importCsv() {
     this.inputFile.$el.childNodes[0].click();
   }
-  fileUpdated(file)  : any{ 
+  fileUpdated(file): any {
     this.$opensilex.showLoader();
     this.$nextTick(() => {
-       this.readUploadedFileAsText(file).then(text => {
-        console.debug("text", text);
-        // delimiter per local
-        if (this.delimiterOption == null) {
-          switch (this.lang) {
-            case "en":
-              this.delimiter = ",";
-              break;
-            case "fr":
-              this.delimiter = ";";
-              break;
-            default:
-              this.delimiter = ",";
-          }
-        }
+      this.readUploadedFileAsText(file).then((text) => {
+        console.debug("Input file text", text);
+
         let result = this.$papa.parse(text, {
           header: true,
-          delimiter: this.delimiter
+          delimiter: CSV.detect(text.toString()),
         });
 
         console.debug("result.data", result.data);
@@ -123,10 +105,10 @@ export default class CSVInputFile extends Vue {
             }
           }
         }
-        if(this.errors.length ==0){
-            this.data = result.data;
-            this.$emit("updated", result.data);
-        } 
+        if (this.errors.length == 0) {
+          this.data = result.data;
+          this.$emit("updated", result.data);
+        }
         this.$opensilex.hideLoader();
       });
     });
@@ -134,13 +116,13 @@ export default class CSVInputFile extends Vue {
 
   static equalArrays(arr1, arr2): boolean {
     const containsAll = (arr1, arr2) =>
-      arr2.every(arr2Item => arr1.includes(arr2Item));
+      arr2.every((arr2Item) => arr1.includes(arr2Item));
 
     return containsAll(arr1, arr2) && containsAll(arr2, arr1);
   }
 
   async readUploadedFileAsText(inputFile) {
-    console.debug(inputFile)
+    console.debug("inputFile", inputFile);
     const temporaryFileReader = new FileReader();
 
     return new Promise((resolve, reject) => {
@@ -154,7 +136,6 @@ export default class CSVInputFile extends Vue {
       };
       temporaryFileReader.readAsText(inputFile);
     });
-    
   }
 }
 </script>

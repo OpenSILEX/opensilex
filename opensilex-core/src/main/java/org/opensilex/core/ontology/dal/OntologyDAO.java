@@ -5,13 +5,16 @@
  */
 package org.opensilex.core.ontology.dal;
 
-import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,20 +25,16 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -49,13 +48,13 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,8 +196,13 @@ public final class OntologyDAO {
         Map<String, ClassModel> typeModels = new HashMap<>();
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file));) {
-            String[] ids = csvReader.readNext();
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
+            CsvParser csvReader = new CsvParser(csvParserSettings);
+            csvReader.beginParsing(inputReader);
+            LOGGER.debug("Import Ontology objects - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+       
+            String[] ids = csvReader.parseNext();
 
             int uriIndex = -1;
             int typeIndex = -1;
@@ -217,7 +221,11 @@ public final class OntologyDAO {
             }
 
             if (firstRow > 2) {
-                csvReader.skip(firstRow - 2);
+                int skipLines = 0;
+                while (skipLines < (firstRow - 2)) {                    
+                    csvReader.parseNext();
+                    skipLines++;
+                } 
             }
 
             int rowIndex = 1;
@@ -243,7 +251,7 @@ public final class OntologyDAO {
                 Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
                 Map<URI, Integer> checkedURIs = new HashMap<>();
 
-                while ((values = csvReader.readNext()) != null) {
+                while ((values = csvReader.parseNext()) != null) {
                     try {
                         URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex].trim()));
                         if (!typeRestrictions.containsKey(rdfType.toString())) {
@@ -300,17 +308,17 @@ public final class OntologyDAO {
             if (colIndex == typeIndex) {
                 continue;
             } else if (colIndex == nameIndex) {
-                name = values[colIndex].trim();
-                if (name.isEmpty()) {
+                name = values[colIndex];
+                if (StringUtils.isEmpty(name)) {
                     CSVCell cell = new CSVCell(rowIndex, colIndex, name, CSV_NAME_KEY);
                     csvValidation.addMissingRequiredValue(cell);
                 } else {
                     object.setName(name);
                 }
             } else if (colIndex == uriIndex) {
-                String value = values[colIndex].trim();
+                String value = values[colIndex];
                 CSVCell cell = new CSVCell(rowIndex, colIndex, value, CSV_URI_KEY);
-                if (value != null && !value.isEmpty()) {
+                if (!StringUtils.isEmpty(value)) {
                     if (URIDeserializer.validateURI(value)) {
                         URI objectURI = new URI(value);
                         if (checkedURIs.containsKey(objectURI)) {
@@ -327,7 +335,7 @@ public final class OntologyDAO {
                 }
             } else if (headerByIndex.containsKey(colIndex)) {
                 String header = headerByIndex.get(colIndex);
-                String value = values[colIndex].trim();
+                String value = values[colIndex];
                 if (restrictionsByID.containsKey(header)) {
                     OwlRestrictionModel restriction = restrictionsByID.get(header);
                     URI propertyURI = restriction.getOnProperty();
@@ -381,11 +389,11 @@ public final class OntologyDAO {
     ) throws SPARQLException {
         String value = cell.getValue();
 
-        if (restriction.isRequired() && (value == null || value.isEmpty())) {
+        if (restriction.isRequired() && (StringUtils.isEmpty(value))) {
             csvValidation.addMissingRequiredValue(cell);
         } else if (model.isDatatypePropertyRestriction(propertyURI)) {
             try {
-                if (!value.isEmpty()) {
+                if (!StringUtils.isEmpty(value)) {
                     SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
                     if (!deserializer.validate(value)) {
                         csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
@@ -402,7 +410,7 @@ public final class OntologyDAO {
             }
         } else if (model.isObjectPropertyRestriction(propertyURI)) {
             try {
-                if (!value.isEmpty()) {
+                if (!StringUtils.isEmpty(value)) {
                     if (URIDeserializer.validateURI(value)) {
                         URI objectURI = new URI(value);
 

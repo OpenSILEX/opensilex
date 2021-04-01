@@ -7,6 +7,13 @@
                     "x-more": "and {count} more"
                 }
             },
+            "csv-delimiters":{
+                "label" : "CSV column delimiter",
+                "placeholder" : "Character or sign used as column separator ",
+                "comma": "Comma (,)",
+                "semicolon" : "Semicolon (;)",
+                "tab" : "Tab (\\t)"
+            },
             "month": "month",
             "months": "months",
             "day":"day",

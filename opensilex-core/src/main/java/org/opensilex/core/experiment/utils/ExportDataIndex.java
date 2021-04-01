@@ -5,10 +5,9 @@
  *  Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  * ******************************************************************************
  */
-package org.opensilex.core.experiment.api;
+package org.opensilex.core.experiment.utils;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.Objects;
 
 /**

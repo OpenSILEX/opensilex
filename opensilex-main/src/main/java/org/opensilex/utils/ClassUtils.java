@@ -5,6 +5,8 @@
 //******************************************************************************
 package org.opensilex.utils;
 
+import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.csv.UnescapedQuoteHandling;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -508,4 +510,29 @@ public final class ClassUtils {
     public static boolean isJarClassDirectory(Class<?> aClass) {
         return getJarFile(aClass).isDirectory();
     }
+    
+    /**
+     * Get default csv parser settings (delimiter auto detection, ignore leading whitespaces, ignore leading trailing)
+     * @return CsvParserSettings 
+     */
+    public static CsvParserSettings getCSVParserDefaultSettings() {
+        CsvParserSettings csvParserSettings = new CsvParserSettings();
+         // Configures the parser to analyze the input before parsing to discover the column delimiter character.
+        csvParserSettings.setQuoteDetectionEnabled(true);
+        csvParserSettings.setDelimiterDetectionEnabled(true, ',', ';', '\t', '|');
+        csvParserSettings.setLineSeparatorDetectionEnabled(true);
+        csvParserSettings.setUnescapedQuoteHandling(UnescapedQuoteHandling.STOP_AT_CLOSING_QUOTE);
+        // detect separator on the first line
+        csvParserSettings.setFormatDetectorRowSampleCount(1);
+        // keep quote
+//        csvParserSettings.setKeepQuotes(true);
+        // trim
+        csvParserSettings.trimValues(true); 
+        // does not skip leading whitespaces 
+        // does not skip trailing whitespaces 
+        csvParserSettings.trimQuotedValues(true); 
+        
+        return  csvParserSettings;
+    }
+    
 }

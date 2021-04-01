@@ -6,14 +6,17 @@
 //******************************************************************************
 package org.opensilex.core.experiment.api;
 
+import org.opensilex.core.experiment.utils.ExportDataIndex;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
-import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import static java.lang.Float.NaN;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -36,6 +39,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -84,6 +88,7 @@ import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
+import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -114,6 +119,7 @@ import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1053,6 +1059,9 @@ public class ExperimentAPI {
         } 
 
         DataCSVValidationModel validation;
+        
+        
+        
         validation = validateWholeCSV(xpUri, provenanceModel, file, currentUser);
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
@@ -1153,9 +1162,16 @@ public class ExperimentAPI {
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file))) {
+        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>(); 
+
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
+            CsvParser csvReader = new CsvParser(csvParserSettings);
+            csvReader.beginParsing(inputReader);
+            LOGGER.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+
             // Line 1
-            String[] ids = csvReader.readNext();
+            String[] ids = csvReader.parseNext();
 
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
@@ -1165,7 +1181,7 @@ public class ExperimentAPI {
 
                 for (int i = 0; i < ids.length; i++) {
                     if (i > 1) {
-                        String header = ids[i].trim();
+                        String header = ids[i];
                         try {
                             if (header == null || !URIDeserializer.validateURI(header)) {
                                 csvValidation.addInvalidHeaderURI(i, header);
@@ -1196,17 +1212,17 @@ public class ExperimentAPI {
                 String[] values;
 
                 // Line 2
-                String[] headersLabels = csvReader.readNext();
+                String[] headersLabels = csvReader.parseNext();
                 csvValidation.setHeadersLabelsFromArray(headersLabels);
 
                 // Line 3
-                csvReader.readNext();
+                csvReader.parseNext();
                 // Line 4
                 int nbError = 0;
                 boolean validateCSVRow = false;
-                while ((values = csvReader.readNext()) != null) {
+                while ((values = csvReader.parseNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType);
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType,duplicateDataByIndex);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -1228,7 +1244,7 @@ public class ExperimentAPI {
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType,List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
 
         boolean validRow = true;
         ScientificObjectModel object = null;
@@ -1236,13 +1252,13 @@ public class ExperimentAPI {
         ParsedDateTimeMongo parsedDateTimeMongo = null;
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (colIndex == 0) {
-                String objectNameOrUri = values[colIndex].trim();
+                String objectNameOrUri = values[colIndex];
                 // test in uri list
-                if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
+                if (!StringUtils.isEmpty(objectNameOrUri) && nameURIScientificObjects.containsKey(objectNameOrUri)) {
                     object = nameURIScientificObjects.get(objectNameOrUri);
                 } else {
                     // test not in uri list
-                    if (!scientificObjectsNotInXp.contains(objectNameOrUri)) {
+                    if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
                         object = getObjectByNameOrURI(scientificObjectDAO, experimentURI, objectNameOrUri);
                     }
                     if (object == null) {
@@ -1268,6 +1284,7 @@ public class ExperimentAPI {
             } else {
                 // If value is not blank and null
                 if(!StringUtils.isEmpty(values[colIndex])){
+                    
                     DataModel dataModel = new DataModel();
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
@@ -1285,6 +1302,15 @@ public class ExperimentAPI {
                     dataModel.setVariable(varURI);
                     dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
                     csvValidation.addData(dataModel,rowIndex);
+                    // check for duplicate data
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI,experimentURI,object.getUri());
+                    if (!duplicateDataByIndex.contains(importDataIndex)) { 
+                        duplicateDataByIndex.add(importDataIndex);
+                    }else{
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
+                    }    
                 } 
             } 
         }

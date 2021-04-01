@@ -4,7 +4,7 @@
     :label="label"
     :selected.sync="variablesURI"
     :multiple="multiple"
-    :optionsLoadingMethod="loadOptions"
+    :searchMethod="searchVariables"
     :conversionMethod="variableToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
@@ -95,6 +95,30 @@ export default class VariableSelector extends Vue {
         .searchVariables(this.filterLabel, null, page, pageSize)
         .then(http => {
           return http.response.result;
+        });
+    }
+  }
+
+  searchVariables(query, page, pageSize) {
+    this.filterLabel = query;
+
+    if (this.filterLabel === ".*") {
+      this.filterLabel = undefined;
+    }
+    console.debug(query); 
+    if (this.experiment) {
+      return this.$opensilex
+        .getService("opensilex.ExperimentsService")
+        .getUsedVariables(this.experiment, this.scientificObjects)
+        .then(http => {
+          return http;
+        });
+    } else {
+      return this.$opensilex
+        .getService("opensilex.VariablesService")
+        .searchVariables(this.filterLabel, null, page, pageSize)
+        .then(http => {
+          return http;
         });
     }
   }

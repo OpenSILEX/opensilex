@@ -2,7 +2,8 @@ package org.opensilex.core.event.api.move.csv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Point;
-import com.opencsv.CSVReader;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -18,13 +19,20 @@ import org.opensilex.core.position.dal.PositionNoSqlModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import org.opensilex.utils.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MoveEventCsvImporter {
+
+    Logger LOGGER = LoggerFactory.getLogger(MoveEventCsvImporter.class);
 
     private final InputStream file;
     private final CSVValidationModel validation;
@@ -53,7 +61,11 @@ public class MoveEventCsvImporter {
 
     private void readFile() throws ParseException, IOException, URISyntaxException {
 
-        try(CSVReader csvReader = new CSVReader(new InputStreamReader(file))) {
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
+            CsvParser csvReader = new CsvParser(csvParserSettings);
+            csvReader.beginParsing(inputReader);
+            LOGGER.debug("Import moves - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
 
             readAndValidateHeader(csvReader);
 
@@ -67,9 +79,9 @@ public class MoveEventCsvImporter {
 
     }
 
-    private void readAndValidateHeader(CSVReader csvReader) throws IOException {
+    private void readAndValidateHeader(CsvParser csvReader) throws IOException {
 
-        String[] csvFileHeader = csvReader.readNext();
+        String[] csvFileHeader = csvReader.parseNext();
         List<String> missingHeaders = new LinkedList<>();
 
         if(csvFileHeader == null || csvFileHeader.length == 0){
@@ -100,17 +112,17 @@ public class MoveEventCsvImporter {
         }
 
         // skip the header description row
-        csvReader.readNext();
+        csvReader.parseNext();
     }
 
-    private void readAndValidateBody(CSVReader csvReader) throws IOException, URISyntaxException, ParseException {
+    private void readAndValidateBody(CsvParser csvReader) throws IOException, URISyntaxException, ParseException {
 
         String[] row;
 
         // start at the 2nd row after two header rows
         int rowIndex = 2;
 
-        while((row = csvReader.readNext()) != null){
+        while((row = csvReader.parseNext()) != null){
             this.models.add(readAndValidateRow(row,rowIndex));
             rowIndex++;
         }

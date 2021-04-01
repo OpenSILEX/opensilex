@@ -62,6 +62,7 @@
     <!-- species -->
     <opensilex-InputForm
       v-if="!$opensilex.Oeso.checkURIs(form.rdf_type, $opensilex.Oeso.SPECIES_TYPE_URI)"
+      :value.sync="form.species"
       label="GermplasmForm.species"
       type="text"
       helpMessage="GermplasmForm.species-help"

@@ -33,10 +33,11 @@
           <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
                 <opensilex-EditButton
-                  v-if="!germplasm.rdf_type.endsWith('Species')"
+                  v-if="!germplasm.rdf_type.endsWith('Species') && user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
                   @click="updateGermplasm"
                 ></opensilex-EditButton>
                 <opensilex-DeleteButton
+                  v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_DELETE_ID)"
                   @click="deleteGermplasm"
                 ></opensilex-DeleteButton>
             </template>
@@ -215,6 +216,16 @@ export default class GermplasmDetails extends Vue {
 
   isAnnotationTab() {
       return this.$route.path.startsWith("/germplasm/annotations/");
+  }
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.loadGermplasm();
+      }
+    );
   }
 
   germplasm: GermplasmGetSingleDTO = {

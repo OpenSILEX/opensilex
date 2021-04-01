@@ -60,7 +60,6 @@
         <opensilex-FilterField>
           <opensilex-ExperimentSelector
             label="GermplasmList.filter.experiment"
-            :multiple="false"
             :experiments.sync="filter.experiment"
           ></opensilex-ExperimentSelector>
         </opensilex-FilterField> 
@@ -532,8 +531,8 @@ fr:
     speciesLabel: Espèce
     update: Editer le germplasm
     delete: Supprimer le germplasm
-    selectLabel: Sélection de Matériel Génétiques
-    selected: Matériel Génétique(s) Sélectionné(s)
+    selectLabel: Sélection de Ressources Génétiques
+    selected: Ressource(s) Génétique(s) Sélectionnée(s)
     export: Exporter la liste
 
     filter:

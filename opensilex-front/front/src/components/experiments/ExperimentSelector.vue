@@ -4,6 +4,7 @@
     :selected.sync="experimentsURI"
     :multiple="multiple"
     :searchMethod="searchExperiments"
+    :itemLoadingMethod="loadExperiments"
     :conversionMethod="experimentToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
@@ -47,6 +48,21 @@ export default class ExperimentSelector extends Vue {
       : "component.experiment.form.selector.placeholder";
   }
 
+  experimentsByUriCache: Map<string, ExperimentGetListDTO>;
+
+  created() {
+    this.experimentsByUriCache = new Map();
+  }
+
+  loadExperiments(experimentsUris) {
+    let experimentsToReturn = [];
+    experimentsUris.forEach(exp => {
+        let loadedExp = this.experimentsByUriCache.get(exp);
+        experimentsToReturn.push(loadedExp);
+    });
+    return experimentsToReturn;
+  }
+
   searchExperiments(name) {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
@@ -63,8 +79,17 @@ export default class ExperimentSelector extends Vue {
         10
       )
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => 
-          http
+        (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {
+
+          if (http && http.response) {
+            this.experimentsByUriCache.clear();
+            http.response.result.forEach(dto => {
+                this.experimentsByUriCache.set(dto.uri, dto);
+            })
+          }
+          return http;
+        }
+          
       );
 
   }

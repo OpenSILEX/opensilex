@@ -329,7 +329,7 @@ export default class DeviceList extends Vue {
     for (let select of this.tableRef.getSelected()) {
       exportList.push(select.uri);
     }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", {uris: exportList});
+    this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
   }
 
   addVariable() {

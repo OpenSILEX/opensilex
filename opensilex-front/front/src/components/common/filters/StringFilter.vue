@@ -131,5 +131,19 @@ export default class StringFilter extends Vue {
   background-color: transparent !important;
   border-left: none !important;
 }
+
+// Remove arrows on number filter
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 </style>
 

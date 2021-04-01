@@ -37,16 +37,18 @@
                 </b-nav-item>
 
                 <b-nav-item
+                        :active="isAnnotationTab()"
+                        :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
+                >{{ $t("Annotation.list-title") }}
+                </b-nav-item>
+                
+                <b-nav-item
                   :active="isDocumentTab()"
                   :to="{path: '/experiment/document/' + encodeURIComponent(uri)}"
                 >{{ $t('ExperimentView.document') }}
                 </b-nav-item>
 
-                <b-nav-item
-                        :active="isAnnotationTab()"
-                        :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
-                >{{ $t("Annotation.list-title") }}
-                </b-nav-item>
+
 
             </template>
         </opensilex-PageActions>

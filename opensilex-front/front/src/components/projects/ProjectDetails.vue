@@ -9,6 +9,12 @@
                       :to="{path: '/project/details/' + encodeURIComponent(uri)}"
               >{{ $t('component.project.details') }}
               </b-nav-item>
+              
+              <b-nav-item
+                      :active="isAnnotationTab()"
+                      :to="{ path: '/project/annotations/' + encodeURIComponent(uri) }"
+              >{{ $t("Annotation.list-title") }}
+              </b-nav-item>
 
               <b-nav-item
                       :active="isDocumentTab()"
@@ -16,11 +22,7 @@
               >{{ $t('component.project.documents') }}
               </b-nav-item>
 
-              <b-nav-item
-                      :active="isAnnotationTab()"
-                      :to="{ path: '/project/annotations/' + encodeURIComponent(uri) }"
-              >{{ $t("Annotation.list-title") }}
-              </b-nav-item>
+
 
           </template>
       </opensilex-PageActions>

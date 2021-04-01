@@ -9,13 +9,11 @@
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>
                 <b-nav-item
-                        class="ml-3"
                         :active="isDetailsTab()"
                         :to="{ path: '/variable/details/' + encodeURIComponent(uri) }"
                 >{{ $t('component.common.details-label') }}
                 </b-nav-item>
                 <b-nav-item
-                        class="ml-3"
                         :active="isAnnotationTab()"
                         :to="{ path: '/variable/annotations/' + encodeURIComponent(uri) }"
                 >{{ $t("Annotation.list-title") }}

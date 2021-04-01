@@ -83,5 +83,19 @@ export default class InputForm extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+// Remove arrows on number input
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 </style>
 

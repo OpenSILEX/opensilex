@@ -99,7 +99,7 @@
       :isSelectable="true"
       defaultSortBy="name"
       labelNumberOfSelectedRow="GermplasmList.selected"
-      iconNumberOfSelectedRow="ik#ik-feather"
+      iconNumberOfSelectedRow="fa#seedling"
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
         <b-dropdown

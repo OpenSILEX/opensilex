@@ -14,15 +14,15 @@
       </b-nav-item>
 
       <b-nav-item
-      :active="isDocumentTab()"
-      :to="{path: '/germplasm/documents/' + encodeURIComponent(uri)}"
-      >{{ $t('component.project.documents') }}
-      </b-nav-item>
-
-      <b-nav-item
       :active="isAnnotationTab()"
       :to="{ path: '/germplasm/annotations/' + encodeURIComponent(uri) }"
       >{{ $t("Annotation.list-title") }}
+      </b-nav-item>
+
+      <b-nav-item
+      :active="isDocumentTab()"
+      :to="{path: '/germplasm/documents/' + encodeURIComponent(uri)}"
+      >{{ $t('component.project.documents') }}
       </b-nav-item>
 
     </opensilex-PageActions>

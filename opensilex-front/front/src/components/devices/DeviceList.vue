@@ -333,12 +333,12 @@ export default class DeviceList extends Vue {
   }
 
   addVariable() {
-    let typedev;
+    let typeDevice;
     let measure = [];
     let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
     for(let select of this.tableRef.getSelected()) {
-      typedev = select.rdf_type;
-      measure.push(deniedType.includes(typedev));
+      typeDevice = select.rdf_type;
+      measure.push(deniedType.includes(typeDevice));
     }
 
     if (measure.includes(true)) {

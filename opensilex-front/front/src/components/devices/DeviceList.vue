@@ -241,16 +241,6 @@ export default class DeviceList extends Vue {
       metadataValue: undefined
     };
 
-    /*this.exportFilter = {
-      namePattern: undefined,
-      rdf_type: undefined,
-      start_up: undefined,
-      existence_date: undefined,
-      brand: undefined,
-      model: undefined,
-      serial_number: undefined,
-      metadata: undefined
-    }*/
     this.refresh();
   }
 

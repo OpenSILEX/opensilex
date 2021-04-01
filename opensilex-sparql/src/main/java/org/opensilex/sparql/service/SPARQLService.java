@@ -46,16 +46,11 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -1327,6 +1322,31 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return false;
     }
 
+    /**
+     * @param objectClass the models class
+     * @param uris the URIs to check
+     * @param checkExist indicates if we check the existence or the non-existence of the given URI collection
+     * @param <T> the SPARQLResourceModel type
+     * @return the Set of unknown or existing URI from the given URI collection
+     */
+    public <T extends SPARQLResourceModel> Set<URI> getExistingUris(Class<T> objectClass, Collection<URI> uris, boolean checkExist) throws Exception {
+
+        if (CollectionUtils.isEmpty(uris)) {
+            return Collections.emptySet();
+        }
+
+        SelectBuilder selectQuery = getUnknownUrisQuery(objectClass,uris,checkExist);
+
+        return executeSelectQueryAsStream(selectQuery).map(result -> {
+            try {
+                return new URI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toSet());
+
+    }
+
     public <T extends SPARQLResourceModel> boolean uriListExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
         if (uris == null || uris.isEmpty()) {
             return false;
@@ -1399,6 +1419,39 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         return select;
     }
+
+    /**
+     * @param objectClass the models class
+     * @param uris the URIs to check
+     * @param checkExist indicates if we check the existence or the non-existence of the given URI collection
+     * @param <T> the SPARQLResourceModel type
+     * @return the query which return the set of existing/non-existing URIS
+     */
+    public <T extends SPARQLResourceModel> SelectBuilder getUnknownUrisQuery(Class<T> objectClass, Collection<URI> uris, boolean checkExist) throws Exception {
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+
+        SelectBuilder select = new SelectBuilder();
+        SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
+
+        WhereBuilder where = new WhereBuilder()
+                .addWhere(uriVar, makeVar("p"), makeVar("o"));
+
+        if(objectClass != null){
+            SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
+            Var typeVar = mapper.getTypeFieldVar();
+            Resource typeDef = mapper.getRDFType();
+            where.addWhere(typeVar, Ontology.subClassAny, typeDef)
+                    .addWhere(uriVar, RDF.type, typeVar);
+        }
+
+        Expr notExistsExpr = checkExist ?
+                SPARQLQueryHelper.getExprFactory().exists(where):
+                SPARQLQueryHelper.getExprFactory().notexists(where);
+
+        return select.addFilter(notExistsExpr);
+    }
+
 
     public void insertPrimitive(Node graph, URI subject, Property property, Object value) throws Exception {
         UpdateBuilder insertQuery = new UpdateBuilder();
@@ -1583,9 +1636,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
             Set<URI> uris = urisByMapper.getValue();
 
-            if (!uriListExists(modelMapper.getObjectClass(), uris)) {
-                // TODO: better exception for validation
-                throw new Exception("Invalid URI list !!");
+            Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(),uris,false);
+            if(! unknownUris.isEmpty()){
+                // #TODO append property for which URI are unknown
+                throw new SPARQLInvalidUriListException("["+modelMapper.getObjectClass()+"] Unknown URIS : ",unknownUris);
             }
         }
     }

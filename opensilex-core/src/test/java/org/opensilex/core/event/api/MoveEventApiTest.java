@@ -174,6 +174,39 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testFailWithUnknownTo() throws Exception {
+
+        MoveCreationDTO creationDTO = getCreationDto();
+        creationDTO.setTo(new URI("test:unknownFacilityA"));
+
+        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+    }
+
+    @Test
+    public void testFailWithUnknownFrom() throws Exception {
+        MoveCreationDTO creationDTO = getCreationDto();
+        creationDTO.setFrom(new URI("test:unknownFacilityA"));
+
+        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+    }
+
+    @Test
+    public void testFailWithConcernedItems() throws Exception {
+        MoveCreationDTO creationDTO = getCreationDto();
+
+        creationDTO.setConcernedItems(Arrays.asList(
+                new URI("test:unknown_target1"),
+                new URI("test:unknown_target2")
+        ));
+
+        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+    }
+
+
+    @Test
     public void testCreateAll() throws Exception {
 
         int n = 10;

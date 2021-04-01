@@ -14,6 +14,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,14 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
                     Response.Status.NOT_FOUND, "URI not found",
                     exception.getMessage()
             ).getResponse();
-        } else if (exception instanceof WebApplicationException) {
+        } else if(exception instanceof SPARQLInvalidUriListException){
+            response = new ErrorResponse(
+                    Response.Status.NOT_FOUND, "URIs not found",
+                    exception.getMessage()
+            ).getResponse();
+        }
+
+        else if (exception instanceof WebApplicationException) {
             WebApplicationException webAppException = (WebApplicationException) exception;
             Response exceptionResponse = webAppException.getResponse();
             response = new ErrorResponse(

@@ -21,6 +21,7 @@ import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -79,33 +80,41 @@ public class MoveEventDao extends EventDao {
 
         for(MoveModel model : models){
 
+            // generate of check move URI
             URI uri = model.getUri();
             if(uri != null){
-
                 if (model.getUri().toString().isEmpty()) {
                     throw new IllegalArgumentException("Empty model uri at index " + 0);
                 }
 
                 uris.add(model.getUri());
                 if(uris.size() >= batchSize || i == models.size()-1){
+
+                    Set<URI> alreadyExistingMoveUris = sparql.getExistingUris(null,uris,true);
+                    if(! alreadyExistingMoveUris.isEmpty()){
+                        throw new SPARQLInvalidUriListException("["+MoveModel.class+"] already existing URIs : ",alreadyExistingMoveUris);
+                    }
+
                     if (sparql.anyUriExists(null, uris)) {
                         throw new IllegalArgumentException("One move URI already exist");
                     }
                     uris.clear();
                 }
 
-                concernedItemUris.addAll(model.getConcernedItems());
-                if(concernedItemUris.size() >= batchSize || i == models.size()-1){
-                    if (!sparql.uriListExists(null, concernedItemUris)) {
-                        throw new IllegalArgumentException("One URI from concerned items was not found");
-                    }
-                    concernedItemUris.clear();
-                }
-
-                // #TODO add checking on FROM/TO
             }else{
                 uri = model.generateURI(eventGraph.toString(), model, 0);
                 model.setUri(uri);
+            }
+
+            // check concerned items
+            concernedItemUris.addAll(model.getConcernedItems());
+            if(concernedItemUris.size() >= batchSize || i == models.size()-1){
+
+                Set<URI> unknownConcernedItemUris = sparql.getExistingUris(null,concernedItemUris,false);
+                if(! unknownConcernedItemUris.isEmpty()){
+                    throw new SPARQLInvalidUriListException("["+MoveModel.class+"] Unknown concerned item URIs : ",unknownConcernedItemUris);
+                }
+                concernedItemUris.clear();
             }
 
             MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();

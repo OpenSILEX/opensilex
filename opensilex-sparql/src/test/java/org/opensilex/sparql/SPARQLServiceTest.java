@@ -13,23 +13,22 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
-import org.opensilex.sparql.model.A;
-import org.opensilex.sparql.model.B;
-import org.opensilex.sparql.model.TEST_ONTOLOGY;
+import org.opensilex.sparql.model.*;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import org.apache.jena.vocabulary.OWL2;
 
 import static org.junit.Assert.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.C;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -251,6 +250,54 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertTrue("URI must exists and be of type B", sparql.uriExists(B.class, bURI));
     }
+
+    @Test
+    public void testUriListExistsAll() throws Exception {
+
+        List<A> aList = new ArrayList<>();
+        A a = new A();
+        a.setUri(new URI("http://test.opensilex.org/a/testUriListExistsAll"));
+        a.setBool(true);
+        a.setCharVar('V');
+        aList.add(a);
+
+        A a2 = new A();
+        a2.setUri(new URI("http://test.opensilex.org/a/testUriListExistsAll2"));
+        a2.setBool(true);
+        a2.setCharVar('V');
+        aList.add(a2);
+
+        sparql.create(A.class,Arrays.asList(a,a2));
+
+        List<URI> uris = aList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+
+        assertEquals(existingUris.size(),uris.size());
+        for (URI uri : uris) {
+            URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
+            assertTrue(existingUris.contains(expandedURI));
+        }
+    }
+
+    @Test
+    public void testUriListExistsNone() throws Exception {
+
+        List<URI> uris = new ArrayList<>();
+        uris.add(new URI("test:unknownUri1"));
+        uris.add(new URI("test:unknownUri2"));
+
+        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+        assertTrue(existingUris.isEmpty());
+
+        Set<URI> unknownUris = sparql.getExistingUris(A.class,uris,false);
+        assertEquals(unknownUris.size(),uris.size());
+        for (URI uri : uris) {
+            URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
+            assertTrue(unknownUris.contains(expandedURI));
+        }
+
+    }
+
 
     @Test
     public void testRenameGraph() throws Exception {

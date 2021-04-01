@@ -171,7 +171,7 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" :lightTab="true" />
       </div>
     </div>
 

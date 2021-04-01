@@ -4,6 +4,7 @@
       :objectByContext="objectByContext"
       :selected="selected"
       :withReturnButton="withReturnButton"
+      :lightTab="lightTab"
     ></opensilex-ScientificObjectDetailBasic>
   </b-card>
 </template>
@@ -19,6 +20,9 @@ export default class ScientificObjectDetail extends Vue {
   @Prop()
   selected;
 
+  @Prop()
+  lightTab;
+
   @Prop({
     default: () => []
   })
@@ -28,5 +32,6 @@ export default class ScientificObjectDetail extends Vue {
     default: false
   })
   withReturnButton;
+
 }
 </script>

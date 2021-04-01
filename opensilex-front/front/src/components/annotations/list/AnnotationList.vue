@@ -19,7 +19,8 @@
                                 @click="annotationModalForm.showCreateForm([target])"
                         ></opensilex-CreateButton>
                     </div>
-                    <opensilex-PageContent>
+                    <opensilex-PageContent 
+                           v-if="renderComponent">
 
                         <template v-slot>
 
@@ -83,6 +84,7 @@
                     </opensilex-PageContent>
 
                     <opensilex-AnnotationModalForm
+
                             ref="annotationModalForm"
                             @onCreate="refresh"
                             @onUpdate="refresh"
@@ -94,7 +96,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Ref, Prop} from "vue-property-decorator";
+    import {Component, Ref, Prop, Watch} from "vue-property-decorator";
     import Vue from "vue";
 
     import {AnnotationsService} from "opensilex-core/api/annotations.service";
@@ -136,9 +138,11 @@
         columnsToDisplay: Set<string>;
 
         usersByUri: Map<string,UserGetDTO>;
+        renderComponent = true;
 
         @Ref("tableRef") readonly tableRef!: any;
         @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+
 
         static getDefaultColumns(){
             return new Set(["created","description","author","motivation","uri"]);
@@ -161,6 +165,16 @@
 
         @Prop()
         target;
+
+        @Watch("target")
+        gogogo() {
+            this.renderComponent = false;
+
+            this.$nextTick(() => {
+            // Add the component back in
+            this.renderComponent = true;
+            });
+        }
 
         private langUnwatcher;
         mounted() {

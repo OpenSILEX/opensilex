@@ -1,7 +1,6 @@
 <template>
   <div ref="page">
     <opensilex-ScientificObjectVisualizationForm
-      v-if="renderComponent"
       :scientificObject="scientificObject"
       @search="onSearch"
       @update="onUpdate"
@@ -49,7 +48,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   @Prop()
   scientificObject;
-  renderComponent = true;
   isGraphicLoaded = false;
   form;
   selectedVariable;
@@ -61,25 +59,16 @@ export default class ScientificObjectVisualizationTab extends Vue {
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
   }
-  @Watch("scientificObject")
-  test() {
-    this.renderComponent = false;
-
-    this.$nextTick(() => {
-      // Add the component back in
-      this.renderComponent = true;
-    });
-  }
 
   onGraphicCreated() {
-    // let that = this;
-    // setTimeout(function() {
-    //   that.page.scrollIntoView({
-    //     behavior: "smooth",
-    //     block: "end",
-    //     inline: "nearest"
-    //   });
-    // }, 500);
+    let that = this;
+    setTimeout(function() {
+      that.page.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "nearest"
+      });
+    }, 500);
   }
 
   getProvenance(uri) {

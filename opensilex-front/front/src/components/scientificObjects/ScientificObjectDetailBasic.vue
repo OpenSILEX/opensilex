@@ -7,12 +7,14 @@
       >{{ $t("component.common.details-label") }}</b-nav-item>
 
       <b-nav-item
+         v-if="!lightTab"
         @click.prevent="tabsValue = VISUALIZATION_TAB"
-        :active="isVisualizationTab"
+        :active="isVisualizationTab "
       >{{ $t("ScientificObjectVisualizationTab.visualization") }}</b-nav-item>
 
       <b-nav-item
-        :active="isDatafilesTab"
+        v-if="!lightTab"
+        :active="isDatafilesTab "
         @click.prevent="tabsValue = DATAFILES_TAB"
       >{{ $t("ScientificObjectDataFiles.datafiles") }}</b-nav-item>
 
@@ -103,7 +105,7 @@
       </b-card>
     </div>
 
-    <opensilex-ScientificObjectDataFiles v-if="isDatafilesTab" :uri="selected.uri"></opensilex-ScientificObjectDataFiles>
+    <opensilex-ScientificObjectDataFiles v-if="isDatafilesTab && !lightTab" :uri="selected.uri"></opensilex-ScientificObjectDataFiles>
 
     <div v-if="isAnnotationTab">
       <opensilex-AnnotationList
@@ -118,7 +120,7 @@
     </div>
 
     <opensilex-ScientificObjectVisualizationTab
-      v-if="isVisualizationTab"
+      v-if="isVisualizationTab && !lightTab"
       :scientificObject="selected.uri"
       :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
     ></opensilex-ScientificObjectVisualizationTab>
@@ -159,6 +161,9 @@ export default class ScientificObjectDetailBasic extends Vue {
     default: false
   })
   simpleDisplay;
+
+  @Prop()
+  lightTab;
 
   typeProperties = [];
   valueByProperties = {};
@@ -217,20 +222,20 @@ export default class ScientificObjectDetailBasic extends Vue {
     this.typeProperties = [];
     this.valueByProperties = {};
 
-    // return this.$opensilex
-    //   .getService("opensilex.VueJsOntologyExtensionService")
-    //   .getClassProperties(
-    //     this.selected.rdf_type,
-    //     this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-    //   )
-    //   .then((http) => {
-    //     this.classModel = http.response.result;
-    //     let valueByProperties = this.buildValueByProperties(
-    //       this.selected.relations
-    //     );
-    //     this.buildTypeProperties(this.typeProperties, valueByProperties);
-    //     this.valueByProperties = valueByProperties;
-    //   });
+     return this.$opensilex
+       .getService("opensilex.VueJsOntologyExtensionService")
+       .getClassProperties(
+        this.selected.rdf_type,
+        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+     )
+      .then((http) => {
+        this.classModel = http.response.result;
+       let valueByProperties = this.buildValueByProperties(
+          this.selected.relations
+        );
+        this.buildTypeProperties(this.typeProperties, valueByProperties);
+         this.valueByProperties = valueByProperties;
+       });
   }
 
   buildTypeProperties(typeProperties, valueByProperties) {

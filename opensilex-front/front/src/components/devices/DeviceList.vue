@@ -409,26 +409,6 @@ export default class DeviceList extends Vue {
     }
   }
 
-  editDeviceVar(variableSelected) {
-
-    for(let select of this.tableRef.getSelected()) {
-      this.service
-          .getDevice(select.uri)
-          .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
-            let varList = [];
-            for(let select of variableSelected) {
-              varList.push({ property: "vocabulary:measures", value: select.uri });
-              console.debug("result device" + varList);
-            }
-            let device = http.response.result;
-            let form = JSON.parse(JSON.stringify(device));
-            form.relations = varList;
-            this.updateVariable(form);
-          })
-          .catch(this.$opensilex.errorHandler);
-    }
-  }
-
   updateVariable(form) {
     this.$opensilex
         .getService("opensilex.DevicesService")
@@ -440,6 +420,7 @@ export default class DeviceList extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
   }
+
 
   createDocument() {
     this.documentForm.showCreateForm();

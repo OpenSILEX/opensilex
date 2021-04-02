@@ -24,7 +24,7 @@
                   <!-- Start Date -->
                   <opensilex-DateTimeForm
                     :value.sync="filter.start_date"
-                    label="component.experiment.startDate"
+                    label="component.common.begin"
                     vid="startDate"
                     name="startDate"
                   ></opensilex-DateTimeForm>
@@ -34,7 +34,7 @@
                   <!-- End Date -->
                   <opensilex-DateTimeForm
                     :value.sync="filter.end_date"
-                    label="component.experiment.endDate"
+                    label="component.common.end"
                     name="endDate"
                   ></opensilex-DateTimeForm>
                 </opensilex-FilterField>

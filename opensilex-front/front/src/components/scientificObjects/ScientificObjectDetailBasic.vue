@@ -112,7 +112,7 @@
           v-for="(v, index) in getCustomTypeProperties(value)"
           v-bind:key="index"
         >
-          <div v-if="!v.definition.isList" class="static-field">
+          <div v-if="!Array.isArray(v.property)" class="static-field">
             <span class="field-view-title">{{ v.definition.name }}</span>
             <component
               :is="v.definition.view_component"

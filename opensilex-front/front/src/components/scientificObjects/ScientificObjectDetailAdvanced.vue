@@ -1,13 +1,14 @@
 <template>
   <div v-if="selected && selected.uri">
     <div v-for="(v, index) in typeProperties" v-bind:key="index">
-      <div v-if="!v.definition.isList" class="static-field">
+      <div v-if="!Array.isArray(v.property)" class="static-field">
         <span class="field-view-title">{{ v.definition.name }}</span>
         <component
           :is="v.definition.view_component"
           :value="v.property"
         ></component>
       </div>
+        
       <div v-else-if="v.property && v.property.length > 0" class="static-field">
         <span class="field-view-title">{{ v.definition.name }}</span>
         <ul>

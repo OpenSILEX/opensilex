@@ -621,7 +621,7 @@ export default class MapView extends Vue {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
-                    type: element.type,
+                    type: element.rdf_type,
                     nature: "ScientificObjects",
                   };
                   this.featuresOS.push(element.geometry);

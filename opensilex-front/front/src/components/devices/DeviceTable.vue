@@ -639,41 +639,42 @@ export default class DeviceTable extends Vue {
         this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('DeviceTable.checkingStatusMessage'), status:"OK"}])
       } else {
         this.tabulator.updateData([{rowNumber:index, insertionStatus:this.$t('DeviceTable.insertionStatusMessage'), status:"OK", uri:http.response.result}])
-        formMove.targets.push(http.response.result)
-        this.serviceEvent.createMoves([formMove]).then().catch(error => {
-          let errorMessage: string;
-          let failure = true;
-          try {
-            errorMessage = error.response.result.message;
-            failure = false;
-          } catch(e1) {
-            failure = true;
-          }
-
-          if (failure) {
-              try {
-                errorMessage =
-                  error.response.metadata.status[0].exception.details;
-              } catch (e2) {
-                errorMessage = "uncatched move error";
-              }
+        if(formMove.to != null){
+          formMove.targets.push(http.response.result)
+          this.serviceEvent.createMoves([formMove]).then().catch(error => {
+            let errorMessage: string;
+            let failure = true;
+            try {
+              errorMessage = error.response.result.message;
+              failure = false;
+            } catch(e1) {
+              failure = true;
             }
-            
-          if (onlyChecking) {
-            this.tabulator.updateData([
-              { rowNumber: index, checkingStatus: errorMessage, status: "WARN" }
-            ]);
-          } else {
-            this.tabulator.updateData([
-              { rowNumber: index, insertionStatus: errorMessage, status: "WARN" }
-            ]);
-          }
 
-          let row = this.tabulator.getRow(index);
-          row.reformat();
-          this.errorNumber = this.errorNumber + 1;
-          resolve();
-        });
+            if (failure) {
+                try {
+                  errorMessage =
+                    error.response.metadata.status[0].exception.details;
+                } catch (e2) {
+                  errorMessage = "uncatched move error";
+                }
+              }
+              
+            if (onlyChecking) {
+              this.tabulator.updateData([
+                { rowNumber: index, checkingStatus: errorMessage, status: "WARN" }
+              ]);
+            } else {
+              this.tabulator.updateData([
+                { rowNumber: index, insertionStatus: errorMessage, status: "WARN" }
+              ]);
+            }
+
+            let row = this.tabulator.getRow(index);
+            row.reformat();
+            resolve();
+          });
+        }
       }
       
       let row = this.tabulator.getRow(index);

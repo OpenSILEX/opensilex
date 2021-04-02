@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.germplasm.api;
 
+import org.opensilex.core.URIsListPostDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -568,7 +569,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportGermplasmByURIs(
-            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) GermplasmPostExportDTO dto
+            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) URIsListPostDTO dto
     ) throws Exception {
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
         List<GermplasmModel> germplasmList = dao.getList(dto.getUris(), currentUser.getLanguage(), true);

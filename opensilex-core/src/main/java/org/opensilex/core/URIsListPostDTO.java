@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.germplasm.api;
+package org.opensilex.core;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
@@ -14,10 +14,9 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Alice Boizet
  */
-public class GermplasmPostExportDTO {
+public class URIsListPostDTO {
     
     @ValidURI
-    @ApiModelProperty(value = "List of germplasm URI to export")
     protected List<URI> uris;
 
     public List<URI> getUris() {

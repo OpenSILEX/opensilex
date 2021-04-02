@@ -235,7 +235,7 @@ export default class DocumentList extends Vue {
     {
       key: "authors",
       label: "DocumentList.author",
-      sortable: true
+      sortable: false
     },
     {
       key: "actions",
@@ -374,7 +374,7 @@ en:
       title-placeholder: Enter title
       search: Search
       reset: Reset
-      date: Date
+      date: Year
       date-placeholder: Enter year
       deprecated: Deprecated
       keywords: Keywords
@@ -384,7 +384,7 @@ en:
       author: Author
       author-placeholder: Enter Author's title
       targets: Target
-      targets-placeholder: Enter targets's URI
+      targets-placeholder: Enter target's URI
       searchAll-placeholder: Search by title and keyword 
 
 fr:
@@ -410,7 +410,7 @@ fr:
       title-placeholder: Saisir un titre
       search: Rechercher
       reset: Réinitialiser
-      date: Date
+      date: Année
       date-placeholder: Saisir une année
       deprecated: Obsolète
       keywords: Mots-clés
@@ -420,7 +420,7 @@ fr:
       author: Auteur
       author-placeholder: Saisir le nom d'un auteur
       targets: Concernes
-      targets-placeholder: Entrez l'URI concernés
+      targets-placeholder: Entrez l'URI concerné
       searchAll-placeholder: Recherche par titre et mot-clé
       
 </i18n>

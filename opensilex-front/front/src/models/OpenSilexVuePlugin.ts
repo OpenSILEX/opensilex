@@ -915,8 +915,6 @@ export default class OpenSilexVuePlugin {
                     type = "image/" + extension;
                 } else if (extension == "pdf" || extension == "json" || extension == "xml") {
                     type = "application/" + extension;
-                } else if (extension == "csv") {
-                    type = "text/" + extension;
                 } else if (extension == "mp4" || extension == "mpeg") {
                     type = "video/" + extension;
                 } else {

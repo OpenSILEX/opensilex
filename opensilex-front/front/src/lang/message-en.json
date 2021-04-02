@@ -513,10 +513,10 @@
             "link-external-button": "Add references (optional)",
             "no-external-links-provided": "No references available",
             "external-already-existing": "Already associated reference"
+        },
+        "document": {
+            "nopreview": "No preview possible"
         }
-    },
-    "document": {
-        "nopreview": "No preview possible"
     },
     "credential-groups": {
         "experiments": "Experiments",

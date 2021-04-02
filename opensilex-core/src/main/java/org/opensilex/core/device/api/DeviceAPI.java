@@ -100,6 +100,7 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.core.URIsListPostDTO;
 
 /**
  *
@@ -404,7 +405,7 @@ public class DeviceAPI {
 
     }
     
-    @GET
+    @POST
     @Path("export_by_uris")
     @ApiOperation("export devices")
     @ApiProtected
@@ -414,11 +415,11 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return a csv file with device list"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
-    public Response export_by_uris(
-            @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") @QueryParam("devices_list") @ValidURI List<URI> devList
+    public Response exportList(
+            @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
-        List<DeviceModel> resultList = dao.getDevicesByURI(devList, currentUser);
+        List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
         return buildCSV(resultList);
     }
     

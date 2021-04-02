@@ -17,6 +17,24 @@
               label="DocumentTabList.add"
             ></opensilex-CreateButton>
             </div>
+
+            <opensilex-SearchFilterField
+              @search="refresh()"
+              @clear="resetFilters()"
+              withButton="false"
+            >
+              <template v-slot:filters>
+                <!-- title -->
+                <div class="col col-xl-12 col-sm-12 col-12">
+                  <opensilex-StringFilter
+                    style="margin-bottom:10px;"
+                    :filter.sync="filter.title"
+                    placeholder="DocumentList.filter.title-placeholder"
+                  ></opensilex-StringFilter>
+                </div>
+              </template>
+            </opensilex-SearchFilterField>
+
             <opensilex-PageContent>
                 <template v-slot>
                   <opensilex-TableAsyncView
@@ -156,13 +174,37 @@ export default class DocumentTabList extends Vue {
     }
   ];
   
+  filter = {
+    title: undefined,
+    deprecated: "false",
+    date: undefined,
+    rdf_type: undefined,
+    authors: undefined,
+    keywords: undefined,
+    targets: undefined,
+    multiple: undefined
+  };
+
+  resetFilters() {
+    this.filter = {
+      title: undefined,
+      deprecated: "false",
+      date: undefined,
+      rdf_type: undefined,
+      authors: undefined,
+      keywords: undefined,
+      targets: undefined,
+      multiple: undefined
+    };
+    this.refresh();
+  }
 
   searchDocuments(options) {  
     return this.$opensilex
       .getService("opensilex.DocumentsService")
       .searchDocuments(
       undefined, // type filter
-      undefined, //title filter
+      this.filter.title, //title filter
       undefined, // date filter
       this.uri, // targets filter
       undefined, // authors filter

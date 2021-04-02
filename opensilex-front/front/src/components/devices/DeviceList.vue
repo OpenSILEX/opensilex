@@ -89,8 +89,8 @@
             @click="exportDevices()"
           >{{$t('DeviceList.export')}}</b-dropdown-item-button>
           <b-dropdown-item-button
-            @click="addVariable()"
-          >{{$t('DeviceList.addVariable')}}</b-dropdown-item-button>
+            @click="linkVariable()"
+          >{{$t('DeviceList.linkVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
           <b-dropdown-item-button 
             disabled
@@ -101,10 +101,6 @@
           <b-dropdown-item-button 
             disabled
           >{{$t('DeviceList.addMove')}}</b-dropdown-item-button>  
-          <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item-button 
-            disabled
-          >{{$t('DeviceList.showMap')}}</b-dropdown-item-button>
       </b-dropdown>
     </template>
 
@@ -320,6 +316,10 @@ export default class DeviceList extends Vue {
     );
   }
 
+  get lang() {
+    return this.$store.state.lang;
+  }
+  
   exportDevices() {
     let path = "/core/devices/export_by_uris";
     let today = new Date();
@@ -329,10 +329,10 @@ export default class DeviceList extends Vue {
     for (let select of this.tableRef.getSelected()) {
       exportList.push(select.uri);
     }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", {devices_list: exportList});
+    this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: exportList}, this.lang);
   }
 
-  addVariable() {
+  linkVariable() {
     let typeDevice;
     let measure = [];
     let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
@@ -361,7 +361,7 @@ export default class DeviceList extends Vue {
         }  
         let device = http.response.result;
         let form = JSON.parse(JSON.stringify(device));
-        form.relations = varList;
+        form.relations = form.relations.concat(varList);
         this.updateVariable(form);
       })
       .catch(this.$opensilex.errorHandler);
@@ -446,7 +446,7 @@ en:
     delete: Delete Device
     selected: Selected devices
     facility: Facility
-    addVariable: Add variable
+    linkVariable: Link variables
     export: Export Device list
     alertSelectSize: The selection has too many lines, 1000 lines maximum
     addEvent: Add event
@@ -477,7 +477,7 @@ fr:
     delete: Supprimer le dispositif
     selected: Dispositifs selectionnés
     facility: Facility
-    addVariable: Ajouter des variables
+    linkVariable: Lier des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement

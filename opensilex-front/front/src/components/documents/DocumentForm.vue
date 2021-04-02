@@ -285,8 +285,8 @@ fr:
     date-help: Date de création
     format: Format 
     format-help: Le format de fichier, le support physique ou les dimensions de la ressource
-    comment: Commentaire
-    comment-help: Description associée aux métadonnées du document
+    description: Description
+    description-help: Description associée aux métadonnées du document
     keywords: Mots-clés
     keywords-help: Le(s) sujet(s) de la ressource. En règle générale, le sujet sera représenté à l'aide de mots-clés, d'expressions clés ou de codes de classification. La meilleure pratique recommandée consiste à utiliser un vocabulaire contrôlé.
     targets: Cible

@@ -181,8 +181,10 @@ export default class DocumentDetails extends Vue {
     this.service
       .getDocumentMetadata(uri)
       .then((http: HttpResponse<OpenSilexResponse<DocumentGetDTO>>) => {
-        this.document = http.response.result;
-        this.loadTargetsTypes();
+        this.document = http.response.result;        
+        if (this.document.targets.length>0) {
+          this.loadTargetsTypes();
+        }  
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -234,13 +236,15 @@ export default class DocumentDetails extends Vue {
   loadTargetsTypes() {
     let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI);
-    ontologyService.checkURIsTypes(this.document.targets, types)
+    let body = {
+      uris: this.document.targets
+    }
+    ontologyService.checkURIsTypes(types, body)
     .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
       this.targetsTypes = http.response.result;          
     })
     .catch(this.$opensilex.errorHandler); 
-    
-  }  
+  }   
 }
 </script>
 

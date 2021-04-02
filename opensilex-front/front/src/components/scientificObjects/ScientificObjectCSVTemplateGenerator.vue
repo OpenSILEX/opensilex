@@ -15,7 +15,7 @@
     <div>
       <ValidationObserver ref="validatorRefTemplate">
         <b-row>
-          <b-col cols="9">
+          <b-col cols="8">
             <opensilex-ScientificObjectTypeSelector
               label="ScientificObjectCSVTemplateGenerator.type-label"
               :multiple="true"
@@ -24,7 +24,10 @@
             >
             </opensilex-ScientificObjectTypeSelector>
           </b-col>
-          <b-col> </b-col>
+          <b-col>
+            <opensilex-CSVSelectorInputForm :separator.sync="separator">
+            </opensilex-CSVSelectorInputForm>
+          </b-col>
         </b-row>
         <b-button @click="csvExport" variant="outline-primary">{{
           $t("OntologyCsvImporter.downloadTemplate")
@@ -48,7 +51,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
 
   requiredField: boolean = false;
 
-  separator = ",";
+  separator : string;
 
   @Ref("validatorRefTemplate") readonly validatorRefTemplate!: any;
 
@@ -269,7 +272,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
           console.error(arrData);
 
           this.$papa.download(
-            this.$papa.unparse(arrData),
+            this.$papa.unparse(arrData, { delimiter: this.separator }),
             "scientificObjectTemplate"
           );
         });

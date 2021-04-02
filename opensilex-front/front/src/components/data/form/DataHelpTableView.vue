@@ -1,10 +1,10 @@
 <template>
   <div>
-    <p @click="visible = !visible" style="cursor: pointer;" >
+    <p @click="visible = !visible" style="cursor: pointer">
       <strong>{{ $t("DataHelp.exceptedFormat") }} </strong>
       <opensilex-Icon v-if="!visible" icon="fa#eye" class="text-primary" />
-      <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="text-primary"/>
-     </p>
+      <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="text-primary" />
+    </p>
     <b-collapse id="collapse-4" v-model="visible" class="mt-2">
       <b-table-simple responsive>
         <b-thead>
@@ -77,8 +77,11 @@
               colspan="4"
               v-html="
                 $t('DataHelp.text-help', {
-                  decimalSeparator: '.',
-                  separator: ',',
+                  decimalSeparator: '<strong>.</strong>',
+                  comma: this.$t('component.common.csv-delimiters.comma'),
+                  semicolon: this.$t(
+                    'component.common.csv-delimiters.semicolon'
+                  ),
                 })
               "
             >
@@ -206,7 +209,7 @@ en :
             you can add new ones as long as you don't change the variable URI \n
             the of the first row. \n
             <br /> \n
-            CSV separator is <strong>\"{separator}\"</strong><br /> \n
+            Accepted CSV separators : <strong>{comma} or {semicolon}</strong><br /> \n
             Decimal separator is  <strong>\"{decimalSeparator}\"</strong><br /> \n
             <strong> If you don't specify offsets of date, the system will use the \n
             default timezone of the system.</strong>\n
@@ -239,7 +242,7 @@ fr :
             <strong>Vous ne pouvez pas changer l'ordre des deux premières colonnes  \n
             et vous pouvez en ajouter de nouvelles tant que vous ne changez pas l'URI variable de la première ligne.</strong> \n
             <br /> \n
-            Le séparateur CSV est le suivant :<strong>\"{separator}\"</strong><br /> \n
+            Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n
             Le séparateur décimal est le suivant : <strong>\"{decimalSeparator}\"</strong><br /> \n
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n

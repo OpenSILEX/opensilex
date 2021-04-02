@@ -32,15 +32,10 @@
             >
             </opensilex-VariableSelector>
           </b-col>
-          <b-col> 
-            <opensilex-SelectForm
-              label="component.common.csv-delimiters.label"
-              helpMessage="component.common.csv-delimiters.placeholder"
-              :selected.sync="separator"
-              :options="delimiterOptions" 
-              :required="true"
-              ></opensilex-SelectForm>
-            </b-col>
+          <b-col>
+            <opensilex-CSVSelectorInputForm :separator.sync="separator">
+            </opensilex-CSVSelectorInputForm>
+          </b-col>
         </b-row>
         <b-button @click="csvExport" variant="outline-primary">{{
           $t("OntologyCsvImporter.downloadTemplate")
@@ -60,10 +55,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  VariablesService,
-  VariableDatatypeDTO
-} from "opensilex-core/index"; 
+import { VariablesService, VariableDatatypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
@@ -78,16 +70,6 @@ export default class GenerateDataTemplateFrom extends Vue {
   requiredField: boolean = false;
 
   separator = ",";
-  
-  get delimiterOptions(){
-    return [{
-      id :",",
-      label: this.$t('component.common.csv-delimiters.comma')
-    },{
-      id :";",
-      label: this.$t('component.common.csv-delimiters.semicolon')
-    }]
-  }
 
   @Prop()
   editMode;
@@ -161,25 +143,15 @@ export default class GenerateDataTemplateFrom extends Vue {
   private langUnwatcher;
   mounted() {
     this.loadDatatypes();
-    if(this.$store.getters.language == "fr"){
-      this.separator = ';'
-    }else{
-      this.separator = ','
-    }
-    console.log(this.$store.getters.language)
+
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       () => {
-        this.loadDatatypes();  
-        if(this.$store.getters.language == "fr"){
-          this.separator = ';'
-        }else{
-          this.separator = ','
-        }
+        this.loadDatatypes();
       }
     );
   }
-  
+
   beforeDestroy() {
     this.langUnwatcher();
   }
@@ -260,7 +232,10 @@ export default class GenerateDataTemplateFrom extends Vue {
             }
           }
           arrData = [variableUriInfo, otherHeaders, otherExample];
-          this.$papa.download(this.$papa.unparse(arrData , { delimiter: this.separator }), "datasetTemplate");
+          this.$papa.download(
+            this.$papa.unparse(arrData, { delimiter: this.separator }),
+            "datasetTemplate"
+          );
         });
       }
     });

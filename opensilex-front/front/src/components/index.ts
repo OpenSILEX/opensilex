@@ -162,6 +162,9 @@ components["opensilex-UriForm"] = UriForm;
 import TypeForm from './common/forms/TypeForm.vue'
 components["opensilex-TypeForm"] = TypeForm;
 
+import CSVSelectorInputForm from './common/forms/CSVSelectorInputForm.vue'
+components["opensilex-CSVSelectorInputForm"] = CSVSelectorInputForm;
+
 import LabelUriView from './common/views/LabelUriView.vue'
 components["opensilex-LabelUriView"] = LabelUriView;
 import StringView from './common/views/StringView.vue'

@@ -43,6 +43,10 @@
               v-html="
                 $t('ScientificObjectImportHelp.text-help', {
                   decimalSeparator: '.',
+                  comma: this.$t('component.common.csv-delimiters.comma'),
+                  semicolon: this.$t(
+                    'component.common.csv-delimiters.semicolon'
+                  ),
                 })
               "
             >
@@ -175,7 +179,7 @@ en :
             If a property has multiple values, add a column for each with the same URI.<br /> \n
             Column orders doesn't matter.<br /> \n
             CSV separator is <strong>\",\"</strong><br /> \n
-            Decimal separator is  <strong>\"{decimalSeparator}\"</strong><br /> \n
+            Accepted CSV separators : <strong>{comma} or {semicolon}</strong><br /> \n
             <strong> If you don't specify offsets of date, the system will use the \n
             default timezone of the system.</strong>\n
             <br /> \n
@@ -212,7 +216,7 @@ fr :
             <strong>Vous pouvez ajouter de nouvelles colonnes correspondant aux propriétés particulières des objets scientifiques</strong><br /> \n
             Si une propriété peut avoir plusieurs valeurs, ajoutez une colonne pour chaque avec la même URI.<br /> \n
             L'ordre des colonnes n'a pas d'importance.<br /> \n
-            Le séparateur CSV est le suivant :<strong>\";\"</strong><br /> \n
+            Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n
             Le séparateur décimal est le suivant : <strong>\"{decimalSeparator}\"</strong><br /> \n
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n

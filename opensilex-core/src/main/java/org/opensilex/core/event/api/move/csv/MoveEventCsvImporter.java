@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
-    private final static LinkedHashSet<String> header = new LinkedHashSet<>(Arrays.asList(
+    private final static LinkedHashSet<String> MOVE_HEADER = new LinkedHashSet<>(Arrays.asList(
             "URI", "Type", "IsInstant", "Start", "End", "Target", "Description", "From", "To", "Coordinates", "X", "Y", "Z", "TextualPosition"
     ));
 
@@ -38,7 +38,8 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         return MOVE_HEADER;
     }
 
-    private void readAndValidateBody(CsvParser csvReader) throws IOException, URISyntaxException, ParseException {
+    @Override
+    protected void readAndValidateRow(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
 
         String[] row;
 

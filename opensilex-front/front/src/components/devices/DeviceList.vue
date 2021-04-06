@@ -487,6 +487,11 @@ export default class DeviceList extends Vue {
     this.exportFilter.metadata = this.addMetadataFilter();
   }
 
+  createEvents(){
+      this.updateSelectedUris();
+      this.eventCsvForm.show();
+  }
+
   createMoves(){
     this.updateSelectedUris();
     this.moveCsvForm.show();
@@ -557,7 +562,7 @@ fr:
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
     addEvent: Ajouter un évènement
     addAnnotation: Ajouter une annotation
-    addMove: Déplacement
+    addMove: Déplacer
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
 

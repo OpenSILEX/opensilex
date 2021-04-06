@@ -755,6 +755,8 @@
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:label xml:lang="en">Camera</rdfs:label>
+        <rdfs:label xml:lang="fr">Camera</rdfs:label>
     </owl:Class>
     
 
@@ -766,6 +768,7 @@
         <dc:source>skos:closeMatch capacitance sensor [ET-AWS] http://www.hydrometeoindustry.org/Meetings2010/ET-AWS-6/Doc8[1]-AWS-MetadataCatalogues.pdf</dc:source>
         <rdfs:comment>certain materials interact with water vapour and undergo a change in capacitance, in relation to ambient humidity.</rdfs:comment>
         <rdfs:label xml:lang="en">capacitance sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">capacitance sensor</rdfs:label>
     </owl:Class>
     
 
@@ -776,6 +779,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#CapacitanceSensor"/>
         <rdfs:comment>certain materials interact with water vapour and undergo a change in capacitance, in relation to ambient humidity.</rdfs:comment>
         <rdfs:label xml:lang="en">capacitive - thin film polymer</rdfs:label>
+        <rdfs:label xml:lang="fr">capacitive - thin film polymer</rdfs:label>
     </owl:Class>
     
 
@@ -797,6 +801,7 @@
         <dc:source>skos:closeMatch Cup anemometer [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>the angular velocity of the cup is directly proportional to the component of the wind speed parallel to the axis of rotation.</rdfs:comment>
         <rdfs:label xml:lang="en">cup anemometer</rdfs:label>
+        <rdfs:label xml:lang="fr">cup anemometer</rdfs:label>
     </owl:Class>
     
 
@@ -832,6 +837,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
         <dc:source>skos:closeMatch electric sensor, which exploits the conductivity variation as a function of wetness [GAMP 2.4.1.6.3] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:label xml:lang="en">electric sensor, which exploits the conductivity variation as a function of wetness</rdfs:label>
+        <rdfs:label xml:lang="fr">electric sensor, which exploits the conductivity variation as a function of wetness</rdfs:label>
     </owl:Class>
     
 
@@ -842,6 +848,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
         <dc:source>skos:closeMatch Electrical resistance block [GAMP 2.4.1.6.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:label xml:lang="en">electrical resistance block</rdfs:label>
+        <rdfs:label xml:lang="fr">electrical resistance block</rdfs:label>
     </owl:Class>
     
 
@@ -853,6 +860,7 @@
         <dc:source>skos:closeMatch electrical resistance humidity sensor [ET-AWS] http://www.hydrometeoindustry.org/Meetings2010/ET-AWS-6/Doc8[1]-AWS-MetadataCatalogues.pdf</dc:source>
         <rdfs:comment>certain materials interact with water vapour and undergo a change in electrical resistance, in relation to ambient humidity.</rdfs:comment>
         <rdfs:label xml:lang="en">electrical resistance humidity sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">electrical resistance humidity sensor</rdfs:label>
     </owl:Class>
     
 
@@ -864,6 +872,7 @@
         <dc:source>skos:closeMatch Resistance thermometer [GAMP 2.4.1.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>For small temperature changes, the increase in resistance of pure metals is proportional to the change in temperature. Often made in Platinum.</rdfs:comment>
         <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
+        <rdfs:label xml:lang="fr">electrical resistance thermometer</rdfs:label>
     </owl:Class>
     
 
@@ -912,6 +921,7 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FiberGlassBlock">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
         <rdfs:label xml:lang="en">fiber-glass block</rdfs:label>
+        <rdfs:label xml:lang="fr">fiber-glass block</rdfs:label>
     </owl:Class>
     
 
@@ -950,6 +960,7 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GreenSeeker">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Spectroradiometer"/>
         <rdfs:label xml:lang="en">green seeker</rdfs:label>
+        <rdfs:label xml:lang="fr">green seeker</rdfs:label>
     </owl:Class>
     
 
@@ -981,6 +992,7 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GypsumBlock">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
         <rdfs:label xml:lang="en">gypsum block</rdfs:label>
+        <rdfs:label xml:lang="fr">gypsum block</rdfs:label>
     </owl:Class>
     
 
@@ -1084,6 +1096,8 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ImagingCabin">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
+        <rdfs:label xml:lang="en">Imaging cabin</rdfs:label>
+        <rdfs:label xml:lang="fr">Imaging cabin</rdfs:label>
     </owl:Class>
     
 
@@ -1157,6 +1171,7 @@
         <dc:source>skos:closeMatch Level measurement rain gauge (LRG) [IOM-99_FI-RI 2.2.1e] http://www.wmo.int/pages/prog/www/IMOP/publications/IOM-99_FI-RI.pdf</dc:source>
         <rdfs:comment>Measuring the water level in a tube</rdfs:comment>
         <rdfs:label xml:lang="en">level measurement rain gauge</rdfs:label>
+        <rdfs:label xml:lang="fr">level measurement rain gauge</rdfs:label>
     </owl:Class>
     
 
@@ -1177,6 +1192,8 @@
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:label xml:lang="en">LiDAR</rdfs:label>
+        <rdfs:label xml:lang="fr">LiDAR</rdfs:label>
     </owl:Class>
     
 
@@ -1282,6 +1299,7 @@
         <dc:source>skos:closeMatch Net radiometers or net pyrradiometers or net exchange radiometers or balancemeters [GAMP 2.4.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>Net all-wave radiation (net flux of downward and upward total radiation i.e. solar, terrestrial and atmospheric)</rdfs:comment>
         <rdfs:label xml:lang="en">net radiometer or net pyrradiometer or net exchange radiometer or balancemeter</rdfs:label>
+        <rdfs:label xml:lang="fr">net radiometer or net pyrradiometer or net exchange radiometer or balancemeter</rdfs:label>
     </owl:Class>
     
 
@@ -1291,6 +1309,7 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NylonUnit">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ElectricalResistanceBlock"/>
         <rdfs:label xml:lang="en">nylon unit</rdfs:label>
+        <rdfs:label xml:lang="fr">nylon unit</rdfs:label>
     </owl:Class>
     
 
@@ -1357,6 +1376,7 @@
         <dc:source>skos:closeMatch Propeller and vane anemometer [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>the angular velocity of the propeller rotor is directly proportional to the component of the wind speed parallel to the axis of rotation.</rdfs:comment>
         <rdfs:label xml:lang="en">propeller anemometer</rdfs:label>
+        <rdfs:label xml:lang="fr">propeller anemometer</rdfs:label>
     </owl:Class>
     
 
@@ -1378,6 +1398,7 @@
         <dc:source>skos:closeMatch solarimeter (pyranometer) [GAMP 2.3.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>total solar irradiance on a horizontal surface</rdfs:comment>
         <rdfs:label xml:lang="en">pyranometer</rdfs:label>
+        <rdfs:label xml:lang="fr">pyranometer</rdfs:label>
     </owl:Class>
     
 
@@ -1388,6 +1409,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiationSensor"/>
         <dc:source>skos:broaderMatch solarimeter (pyranometer) [GAMP 2.3.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:label xml:lang="en">pyranometer with shade ring</rdfs:label>
+        <rdfs:label xml:lang="fr">pyranometer with shade ring</rdfs:label>
     </owl:Class>
     
 
@@ -1399,6 +1421,7 @@
         <dc:source>skos:closeMatch quantum sensor [GAMP 2.4.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>measure the PAR directly in the range 0.4 to 0.7 micrometers</rdfs:comment>
         <rdfs:label xml:lang="en">quantum sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">quantum sensor</rdfs:label>
     </owl:Class>
     
 
@@ -1618,6 +1641,7 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Spectroradiometer">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:label xml:lang="en">spectroradiometer</rdfs:label>
+        <rdfs:label xml:lang="fr">spectroradiometre</rdfs:label>
     </owl:Class>
     
 
@@ -1629,6 +1653,7 @@
         <dc:source>skos:closeMatch surface temperature radiometer [GAMP 2.4.1.1] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>measurements of infra-red radiation emitted from near or remote surfaces</rdfs:comment>
         <rdfs:label xml:lang="en">surface temperature radiometer</rdfs:label>
+        <rdfs:label xml:lang="fr">surface temperature radiometer</rdfs:label>
     </owl:Class>
     
 
@@ -1700,6 +1725,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#HumiditySensor"/>
         <dc:source>skos:closeMatch Tensiometer [GAMP 2.4.1.6.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:label xml:lang="en">tensiometer</rdfs:label>
+        <rdfs:label xml:lang="fr">tensiomètre</rdfs:label>
     </owl:Class>
     
 
@@ -1711,6 +1737,7 @@
         <dc:source>skos:closeMatch Thermistor [GAMP 2.4.1.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>Based on the variation of resistance of a semiconductor with a relatively large temperature coefficient of resistance, either positive (PTC) or negative (NTC) depending upon the actual material</rdfs:comment>
         <rdfs:label xml:lang="en">thermistor</rdfs:label>
+        <rdfs:label xml:lang="fr">thermistor</rdfs:label>
     </owl:Class>
     
 
@@ -1722,6 +1749,7 @@
         <dc:source>skos:closeMatch Thermocouple [GAMP 2.4.1.2] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>Based on the generation of an electromotive force at the junction between two metals in contact, which is function of the temperature of the two metals</rdfs:comment>
         <rdfs:label xml:lang="en">thermocouple</rdfs:label>
+        <rdfs:label xml:lang="fr">thermocouple</rdfs:label>
     </owl:Class>
     
 
@@ -1733,6 +1761,7 @@
         <dc:source>skos:closeMatch Tipping bucket rain gauge [IOM-99_FI-RI 2.2.1a-d] http://www.wmo.int/pages/prog/www/IMOP/publications/IOM-99_FI-RI.pdf</dc:source>
         <rdfs:comment>Tipping balance of two buckets</rdfs:comment>
         <rdfs:label xml:lang="en">Tipping bucket rain gauge</rdfs:label>
+        <rdfs:label xml:lang="fr">Tipping bucket rain gauge</rdfs:label>
     </owl:Class>
     
 
@@ -1743,6 +1772,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TippingBucketRainGauge"/>
         <rdfs:comment>Tipping balance of two buckets</rdfs:comment>
         <rdfs:label xml:lang="en">Tipping-bucket rain gauge (TBRG) without correction</rdfs:label>
+        <rdfs:label xml:lang="fr">Tipping-bucket rain gauge (TBRG) without correction</rdfs:label>
     </owl:Class>
     
 
@@ -1753,6 +1783,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TippingBucketRainGauge"/>
         <rdfs:comment>Tipping balance of two buckets</rdfs:comment>
         <rdfs:label xml:lang="en">Tipping-bucket rain gauge with correction algorithm (TBRG-SC)</rdfs:label>
+        <rdfs:label xml:lang="fr">Tipping-bucket rain gauge with correction algorithm (TBRG-SC)</rdfs:label>
     </owl:Class>
     
 
@@ -1763,6 +1794,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TippingBucketRainGauge"/>
         <rdfs:comment>Tipping balance of two buckets</rdfs:comment>
         <rdfs:label xml:lang="en">Tipping-bucket rain gauge with extra pulse correction (TBRG-PC)</rdfs:label>
+        <rdfs:label xml:lang="fr">Tipping-bucket rain gauge with extra pulse correction (TBRG-PC)</rdfs:label>
     </owl:Class>
     
 
@@ -1773,6 +1805,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TippingBucketRainGauge"/>
         <rdfs:comment>Tipping balance of two buckets</rdfs:comment>
         <rdfs:label xml:lang="en">Tipping-bucket rain gauge with mechanical correction (TBRG-MC)</rdfs:label>
+        <rdfs:label xml:lang="fr">Tipping-bucket rain gauge with mechanical correction (TBRG-MC)</rdfs:label>
     </owl:Class>
     
 
@@ -1815,6 +1848,7 @@
         <dc:source>skos:closeMatch Sonic anemometer [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>A sonic signal is emitted by sensor transducers</rdfs:comment>
         <rdfs:label xml:lang="en">ultrasonic wind sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">ultrasonic wind sensor</rdfs:label>
     </owl:Class>
     
 
@@ -1837,7 +1871,10 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
+        <rdfs:label xml:lang="fr">Vecteur</rdfs:label>
+        <rdfs:label xml:lang="en">Vector</rdfs:label>
+    </owl:Class>
     
 
 
@@ -1878,6 +1915,7 @@
         <dc:source>skos:closeMatch Wind Vane [GAMP 2.4.1.5] http://www.wmo.int/pages/prog/wcp/agm/gamp/gamp_en.html</dc:source>
         <rdfs:comment>The signal generator is a shaft angle transducer: potentiometers, alternating and direct current synchros, digital angle-encoder disks, direct reading dials, and rotary switches</rdfs:comment>
         <rdfs:label xml:lang="en">Wind Vane</rdfs:label>
+        <rdfs:label xml:lang="fr">Wind Vane</rdfs:label>
     </owl:Class>
     
 

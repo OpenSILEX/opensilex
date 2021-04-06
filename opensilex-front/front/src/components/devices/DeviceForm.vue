@@ -248,7 +248,7 @@ en:
     description: Description
     description-help: Description associated of the device
     variable: Variable
-    variable-help: Select one or several variables
+    variable-help: Insert one or several URI's variables
 
 fr:
   DeviceForm:
@@ -273,6 +273,6 @@ fr:
     description: Description
     description-help: Description associée au dispositif
     variable: Variable
-    variable-help: Sélectionner une ou plusieurs variables
+    variable-help: Insérer une ou plusieurs URI de variables
 
 </i18n>

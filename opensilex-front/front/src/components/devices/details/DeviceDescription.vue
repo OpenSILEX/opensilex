@@ -75,6 +75,7 @@
               v-if=" device.relations.length !== 0"
               :items="device.relations"
               :fields="relationsFields"
+              :globalFilterField="true"
             >
               <template v-slot:cell(uri)="{ data }">
                 <opensilex-UriLink
@@ -265,7 +266,7 @@ fr:
     brand: Marque
     constructorModel: Modèle du constructeur
     serialNumber: Numéro de série
-    personInCharge: Personne en charge
+    personInCharge: Personne responsable
     localisation: Localisation
     variables: Variables
     update: Modifier le dispositif

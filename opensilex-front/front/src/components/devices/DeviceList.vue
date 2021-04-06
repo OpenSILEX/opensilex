@@ -51,18 +51,20 @@
 
       </template>
       <template v-slot:advancedSearch>
-        <opensilex-FilterField>
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.metadataKey')}}</label>          
           <opensilex-StringFilter
             :filter.sync="filter.metadataKey"
-            label="attribute key"
+            placeholder="DeviceList.filter.metadataKey-placeholder"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
-        <opensilex-FilterField>
+        </div>
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DeviceList.filter.metadataValue')}}</label>          
           <opensilex-StringFilter
             :filter.sync="filter.metadataValue"
-            label="attribute value"
+            placeholder="DeviceList.filter.metadataValue-placeholder"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        </div>
       </template>     
     </opensilex-SearchFilterField>
 
@@ -78,6 +80,7 @@
 
     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
       <b-dropdown
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
         dropright
         class="mb-2 mr-2"
         :small="true"
@@ -467,6 +470,10 @@ en:
       brand-placeholder: Enter brand
       model: Constructor model
       model-placeholder: Enter constructor model
+      metadataValue: Value
+      metadataKey: Key
+      metadataValue-placeholder: Enter value
+      metadataKey-placeholder: Enter key
 
 fr:
   DeviceList:
@@ -477,7 +484,7 @@ fr:
     update: Editer le dispositif
     delete: Supprimer le dispositif
     selected: Dispositifs selectionnés
-    facility: Facility
+    facility: Installation technique
     linkVariable: Lier des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
@@ -489,7 +496,7 @@ fr:
 
     filter:
       namePattern: Nom
-      namePattern-placeholder: Entrez un nom
+      namePattern-placeholder: Entrer un nom
       rdfTypes: Type
       rdfTypes-placeholder: Sélectionner un type de dispositif
       start_up: Date d'obtention
@@ -498,5 +505,9 @@ fr:
       brand-placeholder: Entrer une marque
       model: Modèle constructeur
       model-placeholder: Entrer le nom du modèle constructeur
+      metadataValue: Valeur
+      metadataKey: Attribut
+      metadataValue-placeholder: Entrer une valeur
+      metadataKey-placeholder: Entrer un attribut
 </i18n>
 

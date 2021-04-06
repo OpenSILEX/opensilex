@@ -20,7 +20,6 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-DeviceList
-          v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_READ_ID)"
           ref="deviceList"
           v-bind:credentialsGroups="credentialsGroups"
         ></opensilex-DeviceList>

@@ -62,7 +62,7 @@
                 credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
               )
             "
-            @click="facilityForm.showEditForm(data.item)"
+            @click="editFacility(data.item)"
             label="InfrastructureFacilitiesView.update"
             :small="true"
           ></opensilex-EditButton>
@@ -101,20 +101,16 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {
   OrganisationsService,
-  ResourceTreeDTO,
   InfrastructureGetDTO,
-  InfrastructureFacilityGetDTO,
-  InfrastructureTeamDTO,
 } from "opensilex-core/index";
-import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
+  $service: OrganisationsService;
 
   @Ref("facilityForm") readonly facilityForm!: any;
 
@@ -152,9 +148,7 @@ export default class InfrastructureFacilitiesView extends Vue {
   ];
 
   public deleteFacility(uri) {
-    this.$opensilex
-      .getService("opensilex-core.OrganisationsService")
-      .deleteInfrastructureFacility(uri)
+    this.$service.deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
       });
@@ -162,6 +156,11 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   setInfrastructure(form) {
     form.organisation = this.selected.uri;
+  }
+
+  editFacility(facility){
+    let copy = JSON.parse(JSON.stringify(facility));
+    this.facilityForm.showEditForm(copy)
   }
 }
 </script>

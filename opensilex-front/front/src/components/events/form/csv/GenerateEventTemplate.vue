@@ -50,6 +50,7 @@
         @Prop({default: false})
         isMove: boolean;
 
+
         get user() {
             return this.$store.state.user;
         }

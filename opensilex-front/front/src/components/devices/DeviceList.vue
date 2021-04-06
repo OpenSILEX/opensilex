@@ -525,7 +525,6 @@ en:
     linkVariable: Link variables
     export: Export Device list
     alertSelectSize: The selection has too many lines, 1000 lines maximum
-    addEvent: Add event
     addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
@@ -560,7 +559,6 @@ fr:
     linkVariable: Lier des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
-    addEvent: Ajouter un évènement
     addAnnotation: Ajouter une annotation
     addMove: Déplacer
     showMap: Afficher sur une carte

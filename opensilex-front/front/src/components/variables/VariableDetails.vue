@@ -217,7 +217,7 @@ en:
         method-name: Method name
         unit-name: Unit name
         structure: Structure
-        advanced: Advanced informations
+        advanced: Advanced information
         edit: Edit variable
         edit-references: Edit references
 fr:

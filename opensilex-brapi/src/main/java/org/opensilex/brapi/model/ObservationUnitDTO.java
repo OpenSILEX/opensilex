@@ -238,6 +238,7 @@ public class ObservationUnitDTO {
             treatments.add(treatment);
         }
         observationUnit.setTreatments(treatments);
+        observationUnit.setObservationLevel(model.getTypeLabel().toString());
         
         return observationUnit;
     }

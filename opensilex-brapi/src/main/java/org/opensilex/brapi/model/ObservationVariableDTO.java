@@ -206,7 +206,6 @@ public class ObservationVariableDTO {
         Method method = new Method();
         if (model.getMethod() != null) {
             method.setMethodName(model.getMethod().getName());
-            method.setDescription(model.getMethod().getDescription());
             if (model.getMethod().getUri() != null) {
                 method.setMethodDbId(model.getMethod().getUri().toString());
             }   

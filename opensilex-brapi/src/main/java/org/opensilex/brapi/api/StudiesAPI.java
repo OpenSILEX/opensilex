@@ -40,6 +40,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -238,13 +239,13 @@ public class StudiesAPI implements BrapiCall {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
-            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull String studyDbId,
+            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, new URI(studyDbId), page, pageSize);
+        ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, studyDbId, page, pageSize);
 
         ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
@@ -263,12 +264,18 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
+        
+        List<URI> rdfTypes =new ArrayList<>();
+        if (observationLevel != null) {
+            URI rdfType = new URI(Oeso.DOMAIN + "#" + observationLevel.substring(0, 1).toUpperCase() + observationLevel.substring(1));
+            rdfTypes.add(rdfType);
+        }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql);
         ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(
                 studyDbId,
                 null,
-                null,
+                rdfTypes,
                 null,
                 null,
                 null,

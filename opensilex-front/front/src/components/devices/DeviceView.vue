@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik#ik-file-text"
+      icon="ik#ik-thermometer"
       title="Device.title"
       description="Device.description"
     ></opensilex-PageHeader>

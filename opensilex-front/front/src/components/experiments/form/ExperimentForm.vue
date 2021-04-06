@@ -4,7 +4,7 @@
     :steps="steps"
     createTitle="ExperimentForm.create"
     editTitle="ExperimentForm.update"
-    icon="fa#vials"
+    icon="ik#ik-layers"
     modalSize="lg"
     :initForm="getEmptyForm"
     :createAction="create"

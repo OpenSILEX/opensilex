@@ -87,6 +87,7 @@
       :fields="fields"
       :isSelectable="true"
       labelNumberOfSelectedRow="ExperimentList.selected"
+      iconNumberOfSelectedRow="ik#ik-layers"
     >
 
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">

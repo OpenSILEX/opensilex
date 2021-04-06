@@ -101,7 +101,7 @@
       ref="deviceForm"
       component="opensilex-DeviceForm"
       editTitle="DeviceDescription.update"
-      icon="ik#ik-user"
+      icon="ik#ik-thermometer"
       modalSize="lg"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>

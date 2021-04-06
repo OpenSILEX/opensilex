@@ -4,7 +4,7 @@
     :steps="steps"
     createTitle="ProjectForm.create"
     editTitle="ProjectForm.update"
-    icon="fa#vials"
+    icon="ik#ik-folder"
     modalSize="lg"
     :initForm="getEmptyForm"
     :createAction="create"

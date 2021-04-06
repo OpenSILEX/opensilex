@@ -73,6 +73,7 @@
       defaultSortBy="name"
       :isSelectable="true"
       labelNumberOfSelectedRow="DeviceList.selected"
+      iconNumberOfSelectedRow="ik#ik-thermometer"
     >
 
     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
@@ -143,7 +144,7 @@
       ref="deviceForm"
       component="opensilex-DeviceForm"
       editTitle="update"
-      icon="ik#ik-user"
+      icon="ik#ik-thermometer"
       modalSize="lg"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>

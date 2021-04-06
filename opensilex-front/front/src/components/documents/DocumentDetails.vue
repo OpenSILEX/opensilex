@@ -104,7 +104,7 @@
       ref="documentForm"
       component="opensilex-DocumentForm"
       editTitle="DocumentList.update"
-      icon="ik#ik-user"
+      icon="ik#ik-file-text"
       modalSize="lg"
       @onUpdate="refresh()"
       ></opensilex-ModalForm>

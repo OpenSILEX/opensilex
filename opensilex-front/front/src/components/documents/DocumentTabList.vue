@@ -99,7 +99,7 @@
               editTitle="DocumentTabList.update"
               modalSize="lg"
               :initForm="initForm"
-              icon="ik#ik-settings"
+              icon="ik#ik-file-text"
               @onCreate="refresh()"
               @onUpdate="refresh()"
             ></opensilex-ModalForm>

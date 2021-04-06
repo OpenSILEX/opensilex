@@ -153,7 +153,7 @@
       component="opensilex-DocumentForm"
       editTitle="DocumentList.update"
       createTitle="DocumentList.add"
-      icon="ik#ik-user"
+      icon="ik#ik-file-text"
       modalSize="lg"
       @onCreate="refresh()"
       @onUpdate="refresh()"

@@ -5,17 +5,16 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-VariableSelector
-              label="DataVisuForm.search.variable.label"
+            <opensilex-ExperimentVariableSelector
+              label="ExperimentDataVisuForm.search.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :experiment="selectedExperiment"
               :scientificObjects="scientificObjects"
               :clearable="true"
               :defaultSelectedValue="true"
               @select="onSearch"
-            ></opensilex-VariableSelector>
+            ></opensilex-ExperimentVariableSelector>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
             <div class="row">
@@ -93,7 +92,7 @@ import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
-export default class DataVisuForm extends Vue {
+export default class ExperimentDataVisuForm extends Vue {
   $opensilex: any;
   showSearchComponent: boolean = false;
   filterProvenanceLabel: string = null;
@@ -180,7 +179,7 @@ export default class DataVisuForm extends Vue {
 
 <i18n>
 en:
-  DataVisuForm:
+  ExperimentDataVisuForm:
      search:
        title: Search for data
        variable:
@@ -189,7 +188,7 @@ en:
        metadataKey : Metadata key
        metadataValue : Metadata value
 fr:
-  DataVisuForm:
+  ExperimentDataVisuForm:
     search: 
        title: Recherche de données
        variable:

@@ -5,16 +5,15 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-VariableSelector
+            <opensilex-DeviceVariableSelector
               label="DeviceVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :device="device"
               :clearable="true"
               :defaultSelectedValue="true"
               @select="onSearch"
-            ></opensilex-VariableSelector>
+            ></opensilex-DeviceVariableSelector>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
             <div class="row">

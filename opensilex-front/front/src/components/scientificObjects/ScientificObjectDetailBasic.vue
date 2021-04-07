@@ -12,12 +12,14 @@
       </b-nav-item>
 
       <b-nav-item
+        v-if="!lightTab"
         @click.prevent="tabsValue = VISUALIZATION_TAB"
         :active="isVisualizationTab"
       >{{ $t("ScientificObjectVisualizationTab.visualization") }}
       </b-nav-item>
 
       <b-nav-item
+         v-if="!lightTab"
         :active="isDatafilesTab"
         @click.prevent="tabsValue = DATAFILES_TAB"
         >{{ $t("ScientificObjectDataFiles.datafiles") }}
@@ -139,7 +141,7 @@
     </div>
 
     <opensilex-ScientificObjectDataFiles
-          v-if="isDatafilesTab"
+          v-if="isDatafilesTab && !lightTab"
           :uri="selected.uri"
      ></opensilex-ScientificObjectDataFiles>
 
@@ -156,7 +158,7 @@
     </div>
 
      <opensilex-ScientificObjectVisualizationTab
-      v-if="isVisualizationTab"
+      v-if="isVisualizationTab  && !lightTab"
       :scientificObject="selected.uri"
       :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
     ></opensilex-ScientificObjectVisualizationTab>
@@ -197,6 +199,9 @@ export default class ScientificObjectDetailBasic extends Vue {
     default: false,
   })
   simpleDisplay;
+
+  @Prop()
+  lightTab;
 
   typeProperties = [];
   valueByProperties = {};

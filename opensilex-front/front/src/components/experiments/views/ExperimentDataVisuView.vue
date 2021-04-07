@@ -1,12 +1,12 @@
 <template>
   <div>
     <b-collapse v-model="showSearchComponent" class="mt-2">
-      <opensilex-DataVisuForm
+      <opensilex-ExperimentDataVisuForm
         :selectedExperiment="selectedExperiment"
         :scientificObjects="scientificObjectsURI"
         @search="onSearch"
         @update="onUpdate"
-      ></opensilex-DataVisuForm>
+      ></opensilex-ExperimentDataVisuForm>
     </b-collapse>
 
     <b-collapse v-model="showGraphicComponent" class="mt-2">

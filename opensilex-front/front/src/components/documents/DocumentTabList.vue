@@ -35,7 +35,8 @@
               </template>
             </opensilex-SearchFilterField>
 
-            <opensilex-PageContent>
+            <opensilex-PageContent
+                v-if="renderComponent">
                 <template v-slot>
                   <opensilex-TableAsyncView
                         ref="tableRef"
@@ -110,7 +111,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import {
   DocumentGetDTO,
@@ -130,9 +131,20 @@ export default class DocumentTabList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("documentForm") readonly documentForm!: any;
+  renderComponent = true;
 
-    @Prop()
-    uri;
+  @Prop()
+  uri;
+  
+  @Watch("uri")
+  onTargetChange() {
+      this.renderComponent = false;
+
+      this.$nextTick(() => {
+      // Add the component back in
+      this.renderComponent = true;
+      });
+  }
 
   get user() {
     return this.$store.state.user;

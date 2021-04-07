@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <b-modal size="lg" ref="helpModal" scrollable hide-header ok-only>
+    <b-modal size="lg" ref="helpModal" scrollable centered>
       <opensilex-DataVisuHelp></opensilex-DataVisuHelp>
     </b-modal>
   </div>

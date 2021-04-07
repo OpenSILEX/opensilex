@@ -303,6 +303,10 @@ import ExperimentForm1 from './experiments/form/ExperimentForm1.vue';
 components["opensilex-ExperimentForm1"] = ExperimentForm1;
 import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 components["opensilex-ExperimentForm2"] = ExperimentForm2;
+import ExperimentDataVisuForm from './experiments/form/ExperimentDataVisuForm.vue';
+components["opensilex-ExperimentDataVisuForm"] = ExperimentDataVisuForm;
+import ExperimentVariableSelector from './experiments/form/ExperimentVariableSelector.vue';
+components["opensilex-ExperimentVariableSelector"] = ExperimentVariableSelector;
 import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
 import ExperimentListView from './experiments/ExperimentListView.vue';
@@ -315,6 +319,8 @@ import ExperimentScientificObjects from './experiments/views/ExperimentScientifi
 components["opensilex-ExperimentScientificObjects"] = ExperimentScientificObjects;
 import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
+import ExperimentDataVisuView from './experiments/views/ExperimentDataVisuView.vue';
+components["opensilex-ExperimentDataVisuView"] = ExperimentDataVisuView;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
@@ -416,6 +422,8 @@ import ScientificObjectVisualizationTab from './scientificObjects/ScientificObje
 components["opensilex-ScientificObjectVisualizationTab"] = ScientificObjectVisualizationTab;
 import ScientificObjectVisualizationForm from './scientificObjects/visualization/ScientificObjectVisualizationForm.vue';
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
+import ScientificObjectVariableSelector from './scientificObjects/visualization/ScientificObjectVariableSelector.vue';
+components["opensilex-ScientificObjectVariableSelector"] = ScientificObjectVariableSelector;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
 
@@ -573,10 +581,6 @@ components["opensilex-VisuImageCarousel"] = VisuImageCarousel;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';
 components["opensilex-VisuImageSingle"] = VisuImageSingle;
 
-import DataVisuView from './visualization/DataVisuView.vue';
-components["opensilex-DataVisuView"] = DataVisuView;
-import DataVisuForm from './visualization/DataVisuForm.vue';
-components["opensilex-DataVisuForm"] = DataVisuForm;
 import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
@@ -613,6 +617,8 @@ import DeviceVisualizationTab from './devices/DeviceVisualizationTab.vue';
 components["opensilex-DeviceVisualizationTab"] = DeviceVisualizationTab;
 import DeviceVisualizationForm from './devices/visualization/DeviceVisualizationForm.vue';
 components["opensilex-DeviceVisualizationForm"] = DeviceVisualizationForm;
+import DeviceVariableSelector from './devices/visualization/DeviceVariableSelector.vue';
+components["opensilex-DeviceVariableSelector"] = DeviceVariableSelector;
 import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 

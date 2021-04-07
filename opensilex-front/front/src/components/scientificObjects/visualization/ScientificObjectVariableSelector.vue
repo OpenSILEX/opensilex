@@ -1,10 +1,9 @@
 <template>
   <opensilex-SelectForm
-    ref="selectForm"
     :label="label"
     :selected.sync="variablesURI"
     :multiple="multiple"
-    :searchMethod="searchVariables"
+    :optionsLoadingMethod="loadOptions"
     :conversionMethod="variableToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
@@ -21,15 +20,20 @@
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {
+  ExperimentsService,
+  ScientificObjectsService,
   NamedResourceDTO
 } from "opensilex-core/index";
 
 @Component
-export default class VariableSelector extends Vue {
+export default class ScientificObjectVariableSelector extends Vue {
   $opensilex: any;
 
   @PropSync("variables")
-  variablesURI: string;
+  variablesURI: any;
+
+  @Prop()
+  scientificObjects;
 
   @Prop()
   label;
@@ -54,20 +58,16 @@ export default class VariableSelector extends Vue {
       : "component.experiment.form.selector.variables.placeholder";
   }
 
-  searchVariables(query, page, pageSize) {
-    this.filterLabel = query;
 
-    if (this.filterLabel === ".*") {
-      this.filterLabel = undefined;
-    }
-    console.debug(query);
-
-    return this.$opensilex
-      .getService("opensilex.VariablesService")
-      .searchVariables(this.filterLabel, null, page, pageSize)
-      .then(http => {
-        return http;
-      });
+  loadOptions() {
+    if (this.scientificObjects) {
+      return this.$opensilex
+        .getService("opensilex.ScientificObjectsService")
+        .getScientificObjectVariables(this.scientificObjects)
+        .then(http => {
+          return http.response.result;
+        });
+    } 
   }
 
   variableToSelectNode(dto: NamedResourceDTO) {

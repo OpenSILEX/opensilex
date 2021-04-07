@@ -169,15 +169,15 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected"  :lightTab="true" />
       </div>
     </div>
 
-    <opensilex-DataVisuView
+    <opensilex-ExperimentDataVisuView
       v-if="showDataVisuView"
       :selectedScientificObjects="selectedNamedObjects"
       @graphicCreated="onGraphicCreated"
-    ></opensilex-DataVisuView>
+    ></opensilex-ExperimentDataVisuView>
 
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"

@@ -1,7 +1,7 @@
 <template>
   <div class="header-top" header-theme="light">
     <div class="app-logo">
-      <router-link class="header-brand" to="/">
+      <div class="header-brand" to="/">
         <div class="logo-img">
           <img
             v-bind:src="$opensilex.getResourceURI('images/logo-phis.svg')"
@@ -13,7 +13,7 @@
           PHIS
           <span class="instance-name"></span>
         </span>
-      </router-link>
+      </div>
     </div>
 
     <div class="container-fluid boxed-layout">

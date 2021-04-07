@@ -5,16 +5,15 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-VariableSelector
+            <opensilex-ScientificObjectVariableSelector
               label="ScientificObjectVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :required="true"
               :scientificObjects="scientificObject"
               :clearable="true"
               :defaultSelectedValue="true"
               @select="onSearch"
-            ></opensilex-VariableSelector>
+            ></opensilex-ScientificObjectVariableSelector>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
             <div class="row">
@@ -74,7 +73,7 @@
                 ></opensilex-StringFilter>
               </div>
             </div>
-          </opensilex-FilterField> -->
+          </opensilex-FilterField>-->
 
           <opensilex-FilterField>
             <b-collapse
@@ -102,15 +101,15 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ScientificObjectVisualizationForm extends Vue {
   $opensilex: any;
-
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
+
   filter = {
     variable: null,
     startDate: undefined,
     endDate: undefined,
-    provenance: undefined,
+    provenance: undefined
     // metadataKey: undefined,
     // metadataValue: undefined
   };

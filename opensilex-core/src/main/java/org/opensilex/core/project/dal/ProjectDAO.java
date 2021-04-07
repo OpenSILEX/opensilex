@@ -69,7 +69,6 @@ public class ProjectDAO {
     }
 
     public ProjectModel get(URI uri, UserModel user) throws Exception {
-        validateProjectAccess(uri, user);
         return sparql.getByURI(ProjectModel.class, uri, user.getLanguage());
     }
 

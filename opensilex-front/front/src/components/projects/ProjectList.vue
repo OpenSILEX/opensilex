@@ -2,42 +2,42 @@
   <div>
     <opensilex-SearchFilterField @clear="reset()" @search="refresh()">
       <template v-slot:filters>
-
-          <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="nameFilter"
-            label="component.common.name"
-            type="text"
+        <opensilex-FilterField>
+          <label for="name">{{ $t("component.common.name") }}</label>
+          <opensilex-StringFilter
+            id="name"
+            :filter.sync="nameFilter"
             placeholder="component.project.filter-label-placeholder"
-          ></opensilex-InputForm>
+          ></opensilex-StringFilter>
         </opensilex-FilterField>
-      
+
         <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="yearFilter"
-            label="component.common.year"
-            type="number"
+          <label>{{ $t("component.common.year") }}</label>
+          <opensilex-StringFilter
             placeholder="component.project.filter-year-placeholder"
-          ></opensilex-InputForm>
-        </opensilex-FilterField>
-
-          <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="termFilter"
-            label="component.common.keyword"
-            type="text"
-            placeholder="component.project.filter-keywords-placeholder"
-          ></opensilex-InputForm>
+            :filter.sync="yearFilter"
+            type="number"
+          ></opensilex-StringFilter>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
-          <opensilex-InputForm
-            :value.sync="financialFilter"
-            label="component.project.financialFunding"
-            type="text"
-            placeholder="component.project.filter-financial-placeholder"
-          ></opensilex-InputForm>
+          <label for="term">{{ $t("component.common.keyword") }}</label>
+          <opensilex-StringFilter
+            id="term"
+            :filter.sync="termFilter"
+            placeholder="component.project.filter-keywords-placeholder"
+          ></opensilex-StringFilter>
         </opensilex-FilterField>
+
+        <opensilex-FilterField>
+          <label for="financial">{{ $t("component.project.financialFunding") }}</label>
+          <opensilex-StringFilter
+            id="financial"
+            :filter.sync="financialFilter"
+            placeholder="component.project.filter-financial-placeholder"
+          ></opensilex-StringFilter>
+        </opensilex-FilterField>
+        
       </template>
     </opensilex-SearchFilterField>
     <opensilex-TableAsyncView
@@ -55,15 +55,13 @@
           class="mb-2 mr-2"
           :small="true"
           :disabled="numberOfSelectedRows == 0"
-          text=actions>
-            <b-dropdown-item-button    
-              @click="createDocument()"
-            >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+          text="actions"
+        >
+          <b-dropdown-item-button @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>
         </b-dropdown>
       </template>
       <template v-slot:cell(name)="{ data }">
         <opensilex-UriLink
-
           v-if="!noActions"
           :uri="data.item.uri"
           :value="data.item.name"
@@ -141,9 +139,9 @@ export default class ProjectList extends Vue {
   $store: any;
 
   service: ProjectsService;
-  
+
   @Ref("documentForm") readonly documentForm!: any;
-  
+
   get user() {
     return this.$store.state.user;
   }
@@ -152,12 +150,12 @@ export default class ProjectList extends Vue {
   }
 
   @Prop({
-    default: false,
+    default: false
   })
   isSelectable;
 
   @Prop({
-    default: false,
+    default: false
   })
   noActions;
 
@@ -186,37 +184,37 @@ export default class ProjectList extends Vue {
       {
         key: "name",
         label: "component.common.name",
-        sortable: true,
+        sortable: true
       },
       {
         key: "shortname",
         label: "component.project.shortname",
-        sortable: true,
+        sortable: true
       },
       {
         key: "start_date",
         label: "component.common.startDate",
-        sortable: true,
+        sortable: true
       },
       {
         key: "end_date",
         label: "component.common.endDate",
-        sortable: true,
+        sortable: true
       },
       {
         key: "financial_funding",
         label: "component.project.financialFunding",
-        sortable: true,
+        sortable: true
       },
       {
         key: "state",
-        label: "component.common.state",
-      },
+        label: "component.common.state"
+      }
     ];
     if (!this.noActions) {
       tableFields.push({
         key: "actions",
-        label: "component.common.actions",
+        label: "component.common.actions"
       });
     }
     return tableFields;
@@ -291,7 +289,7 @@ export default class ProjectList extends Vue {
         keywords: undefined
       },
       file: undefined
-    }
+    };
   }
 }
 </script>

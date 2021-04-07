@@ -533,6 +533,8 @@ label | string | *-* | Translation key of the input form label
 helpMessage | string | *-* | Optional translation key for tooltip help message
 disabled | boolean | *false* | Flag to determine if form field is disabled or not
 required | boolean | *false* | Flag to determine if form field is required
+minDate | Date | *-* | Used to deactivate the days before the specified date
+maxDate | Date | *-* | Used to disable days after the specified date
 variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/)
 
 Overloaded properties of vue-datetime
@@ -555,7 +557,7 @@ format | string | dd-MMM-yyyy HH:mm ZZ | Input date format. Luxon presets or tok
       label="Form.date"
       helpMessage="Form.date-help"
       :required="true"
-   ></opensilex-FileInputForm>
+    ></opensilex-DateTimeForm>
 ```
 
 

@@ -143,10 +143,13 @@ Vue.component('GlobalEvents', GlobalEvents)
 import VuePapaParse from "vue-papa-parse";
 Vue.use(VuePapaParse);
 
-//Initialize Vue Datetime
-import { Datetime } from 'vue-datetime'
-import 'vue-datetime/dist/vue-datetime.css'
-Vue.component('datetime', Datetime);
+//Initialize VCalendar
+import VCalendar from 'v-calendar';
+
+// Use v-calendar & v-date-picker components
+Vue.use(VCalendar, {
+  componentPrefix: 'vc',  // Use <vc-calendar /> instead of <v-calendar />
+});
 
 import vSelect from "vue-select";
 vSelect.props.components.default = () => ({
@@ -493,14 +496,14 @@ $opensilex.loadModules([
                 if (token != null) {
                   user = User.fromToken(token);
                   $opensilex.setCookieValue(user);
-                  console.debug("User sucessfully loaded from URL token !");
+                  console.debug("User successfully loaded from URL token !");
                 }
               }
 
               if (user == undefined) {
                 console.debug("Try to load user from cookie...");
                 user = $opensilex.loadUserFromCookie();
-                console.debug("User sucessfully loaded from cookie !");
+                console.debug("User successfully loaded from cookie !");
               }
 
               if (!user.isLoggedIn()) {
@@ -524,7 +527,7 @@ $opensilex.loadModules([
               console.debug("Initialize routing");
               let router: VueRouter = store.state.openSilexRouter.getRouter();
 
-              // Initalise main layout components from configuration
+              // Initialise main layout components from configuration
               console.debug("Define initial modules to load...");
               let modulesToLoad: ModuleComponentDefinition[] = [
                 ModuleComponentDefinition.fromString(config.homeComponent),

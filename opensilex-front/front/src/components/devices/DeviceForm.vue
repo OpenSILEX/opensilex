@@ -57,21 +57,15 @@
       helpMessage="DeviceForm.person_in_charge-help"
     ></opensilex-UserSelector>
 
-    <!-- start_up -->
-    <opensilex-InputForm
-      :value.sync="form.start_up"
-      label="DeviceForm.start_up"
-      type="date"
-      helpMessage="DeviceForm.start_up-help"
-    ></opensilex-InputForm>
-
-    <!-- removal -->
-    <opensilex-InputForm
-      :value.sync="form.removal"
-      label="DeviceForm.removal"
-      type="date"
-      helpMessage="DeviceForm.removal-help"
-    ></opensilex-InputForm>
+    <!-- Period -->
+    <opensilex-DateRangePickerForm
+        :start.sync="form.start_up"
+        :end.sync="form.removal"
+        labelStart="DeviceForm.start_up"
+        labelEnd="DeviceForm.removal"
+        helpMessageStart="DeviceForm.start_up-help"
+        helpMessageEnd="DeviceForm.removal-help"
+    ></opensilex-DateRangePickerForm>
 
     <!-- description -->
     <opensilex-TextAreaForm

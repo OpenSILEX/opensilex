@@ -23,19 +23,19 @@
                 <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
                   <!-- Start Date -->
                   <opensilex-DateTimeForm
-                    :value.sync="filter.start_date"
-                    label="component.common.begin"
-                    vid="startDate"
-                    name="startDate"
+                      :value.sync="filter.start_date"
+                      label="component.common.begin"
+                      name="startDate"
                   ></opensilex-DateTimeForm>
                 </opensilex-FilterField>
 
                 <opensilex-FilterField class="col col-xl-3 col-sm-6 col-12">
                   <!-- End Date -->
                   <opensilex-DateTimeForm
-                    :value.sync="filter.end_date"
-                    label="component.common.end"
-                    name="endDate"
+                      :isTime="true"
+                      :value.sync="filter.end_date"
+                      label="component.common.end"
+                      name="endDate"
                   ></opensilex-DateTimeForm>
                 </opensilex-FilterField>
 

@@ -44,6 +44,7 @@
                 <opensilex-DateTimeForm
                         :value.sync="form.start"
                         label="Event.start"
+                        :maxDate="form.end"
                         :required="startRequired"
                         @change="updateRequiredProps"
                         helpMessage="Event.start-help"
@@ -53,6 +54,7 @@
             <div class="col">
                 <opensilex-DateTimeForm
                         :value.sync="form.end"
+                        :minDate="form.start"
                         label="Event.end"
                         :required="endRequired"
                         @change="updateRequiredProps"

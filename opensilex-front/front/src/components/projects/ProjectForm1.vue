@@ -27,28 +27,14 @@
     ></opensilex-InputForm>
 
     <!-- Period -->
-    <div class="row">
-      <!-- Start Date -->
-      <div class="col-lg-6">
-        <opensilex-InputForm
-          :value.sync="form.start_date"
-          label="component.common.startDate"
-          type="date"
-          :required="true"
-          vid="startDate"
-        ></opensilex-InputForm>
-      </div>
-
-      <!-- End Date -->
-      <div class="col-lg-6">
-        <opensilex-InputForm
-          :value.sync="form.end_date"
-          label="component.common.endDate"
-          type="date"
-          rules="dateDiff:@startDate"
-        ></opensilex-InputForm>
-      </div>
-    </div>
+    <opensilex-DateRangePickerForm
+        :start.sync="form.start_date"
+        :end.sync="form.end_date"
+        labelStart="component.common.startDate"
+        labelEnd="component.common.endDate"
+        type="date"
+        :requiredStart="true"
+    ></opensilex-DateRangePickerForm>
 
     <!-- Financial funding -->
 

@@ -1,33 +1,42 @@
 <template>
   <opensilex-FormField
-    :required="required"
-    :label="label"
     :helpMessage="helpMessage"
+    :label="label"
+    :required="isRequired"
   >
     <template v-slot:field="field">
       <b-input-group>
-        <template #append
-          ><opensilex-Button
-            @click="clearValue()"
+        <vc-date-picker
+          v-model="date"
+          :locale="user.locale"
+          :max-date="maxDate"
+          :min-date="minDate"
+          :model-config="modelConfig"
+          class="inline-block h-full"
+          is24hr
+          mode="datetime"
+        >
+          <template v-slot="{ inputValue, inputEvents }">
+            <b-form-input
+              :id="field.id"
+              v-on="inputEvents"
+              :disabled="disabled"
+              :placeholder="$t(placeholder)"
+              :required="isRequired"
+              :type="text"
+              :value="inputValue"
+            ></b-form-input>
+          </template>
+        </vc-date-picker>
+        <template #append>
+          <b-btn
             class="clear-btn"
             variant="outline-secondary"
-            icon="fa#times"
-            :small="true"
-            :label="$t('DateTime.clear')"
-          ></opensilex-Button>
+            @click="date = undefined"
+          >
+            <opensilex-Icon icon="fa#times" />
+          </b-btn>
         </template>
-        <datetime
-          v-model="datetime"
-          :type="type"
-          :zone="zone"
-          :value-zone="valueZone"
-          :flow="flow"
-          :format="format"
-          :phrases="$t('DateTime.phrases')"
-          @input="$emit('input', $event)"
-          @close="$emit('close', $event)"
-        >
-        </datetime>
       </b-input-group>
     </template>
   </opensilex-FormField>
@@ -36,31 +45,12 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-import { Settings } from "luxon";
 
 @Component
 export default class DateTimeForm extends Vue {
   $opensilex: any;
+  $store: any;
   $t: any;
-
-  private langUnwatcher;
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      (lang) => {
-        Settings.defaultLocale = lang;
-      }
-    );
-    let vdatetimeInputlist = this.$el.getElementsByClassName("vdatetime-input");
-    for (var i = 0; i < vdatetimeInputlist.length; ++i) {
-      vdatetimeInputlist[i].classList.add("form-control");
-    }
-  }
-
-  clearValue() {
-    this.datetime = "";
-    this.$emit("clear");
-  }
 
   @Prop()
   label: string;
@@ -68,56 +58,50 @@ export default class DateTimeForm extends Vue {
   @Prop()
   helpMessage: string;
 
-  @Prop()
+  @Prop({ default: "DateTimeForm.placeholder" })
   placeholder: string;
 
-  @PropSync("required")
+  @PropSync("required", { default: false })
   isRequired: boolean;
 
   @Prop({ default: false })
   disabled: boolean;
 
   @PropSync("value")
-  datetime: string;
+  date: string;
 
-  @Prop({ default: "datetime" })
-  type: string;
+  @Prop()
+  maxDate: Date;
 
-  @Prop({ default: "local" })
-  zone: string;
+  @Prop()
+  minDate: Date;
 
   @Prop({ default: "local" })
   valueZone: string;
 
-  @Prop({ default: "dd-MMM-yyyy HH:mm ZZ" })
-  format: string;
+  private modelConfig = {
+    type: "string",
+    mask: "iso",
+    timeAdjust: "now",
+  };
 
-  flow: Array<string> = ["date", "time"];
+  get user() {
+    return this.$store.state.user;
+  }
 }
 </script>
 
-<style scoped lang="scss">
-::v-deep .vdatetime-input {
-  padding-bottom: 7px !important;
-  padding-top: 7px !important;
-}
-
+<style lang="scss" scoped>
 ::v-deep .input-group {
   flex-wrap: nowrap;
 }
 </style>
 
 <i18n>
-en :
-    DateTime :
-        phrases :
-            ok: Ok
-            cancel: Cancel
-        clear : Effacer
-fr :
-    DateTime :
-        phrases :
-            ok: Ok
-            cancel: Annuler
-        clear : Clear
+en:
+  DateTimeForm:
+    placeholder: MM/DD/YYYY hh:mm
+fr:
+  DateTimeForm:
+    placeholder: JJ/MM/AAAA hh:mm
 </i18n>

@@ -18,28 +18,14 @@
       placeholder="component.experiment.label-placeholder"
     ></opensilex-InputForm>
 
-    <div class="row">
-      <!-- Start Date -->
-      <div class="col-lg-6">
-        <opensilex-InputForm
-          :value.sync="experiment.start_date"
-          label="component.experiment.startDate"
-          type="date"
-          :required="true"
-          vid="startDate"
-        ></opensilex-InputForm>
-      </div>
-
-      <!-- End Date -->
-      <div class="col-lg-6">
-        <opensilex-InputForm
-          :value.sync="experiment.end_date"
-          label="component.experiment.endDate"
-          type="date"
-          rules="dateDiff:@startDate"
-        ></opensilex-InputForm>
-      </div>
-    </div>
+    <!-- Period -->
+    <opensilex-DateRangePickerForm
+        :start.sync="form.start_date"
+        :end.sync="form.end_date"
+        labelStart="component.common.startDate"
+        labelEnd="component.common.endDate"
+        :requiredStart="true"
+    ></opensilex-DateRangePickerForm>
 
     <!-- Species -->
     <opensilex-SpeciesSelector

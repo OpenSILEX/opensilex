@@ -1,19 +1,16 @@
 <template>
-  <opensilex-InputForm
-    :value.sync="internalValue"
-    :label="property.name"
-    type="date"
+  <opensilex-DateForm
     :disabled="false"
+    :label="property.name"
     :required="property.is_required"
-  ></opensilex-InputForm>
+    :value.sync="internalValue"
+  ></opensilex-DateForm>
 </template>
 
 <script lang="ts">
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";

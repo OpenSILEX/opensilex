@@ -36,12 +36,11 @@
     ></opensilex-InputForm>
 
     <!-- date -->
-    <opensilex-InputForm
-      :value.sync="form.description.date"
-      label="DocumentForm.date"
-      type="date"
-      helpMessage="DocumentForm.date-help"
-    ></opensilex-InputForm>
+    <opensilex-DateForm
+        :value.sync="form.description.date"
+        helpMessage="DocumentForm.date-help"
+        label="DocumentForm.date"
+    ></opensilex-DateForm>
 
     <!-- description -->
     <opensilex-TextAreaForm

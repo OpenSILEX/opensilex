@@ -237,6 +237,7 @@ export default class OntologyClassDetail extends Vue {
   addDataProperty() {
     this.ontologyService.getProperties(this.rdfType).then((http) => {
       let formRef = this.classPropertyForm.getFormRef();
+      formRef.setDomain(this.rdfType);
       formRef.setClassURI(this.selected.uri);
       formRef.setProperties(http.response.result, this.properties);
       this.classPropertyForm.showCreateForm();
@@ -282,6 +283,10 @@ export default class OntologyClassDetail extends Vue {
 <style scoped lang="scss">
 .align-right {
   float: right;
+}
+
+::v-deep td > span {
+  white-space: nowrap;
 }
 </style>
 

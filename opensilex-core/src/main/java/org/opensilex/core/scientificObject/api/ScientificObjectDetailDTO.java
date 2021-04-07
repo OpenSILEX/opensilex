@@ -185,19 +185,21 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         if (lastMove != null && lastMove.getTo() != null) {
             facilityURI = lastMove.getTo().getUri();
         }
-        for (RDFObjectRelationDTO relation : this.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFacility.getURI())) {
-                hasFacility = true;
-                relation.setValue(facilityURI.toString());
-                break;
+        if (facilityURI != null) {
+            for (RDFObjectRelationDTO relation : this.getRelations()) {
+                if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFacility.getURI())) {
+                    hasFacility = true;
+                    relation.setValue(facilityURI.toString());
+                    break;
+                }
             }
-        }
 
-        if (!hasFacility && facilityURI != null) {
-            SPARQLModelRelation relation = new SPARQLModelRelation();
-            relation.setProperty(Oeso.hasFacility);
-            relation.setValue(facilityURI.toString());
-            this.getRelations().add(RDFObjectRelationDTO.getDTOFromModel(relation));
+            if (!hasFacility) {
+                SPARQLModelRelation relation = new SPARQLModelRelation();
+                relation.setProperty(Oeso.hasFacility);
+                relation.setValue(facilityURI.toString());
+                this.getRelations().add(RDFObjectRelationDTO.getDTOFromModel(relation));
+            }
         }
     }
 

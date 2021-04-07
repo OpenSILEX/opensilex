@@ -81,8 +81,8 @@
 
                                 <template v-slot:cell(textual_position)="{data}">
                                     <opensilex-StringView
-                                        v-if="data.item.position && data.item.position.description"
-                                        :value="data.item.position.description">
+                                        v-if="data.item.position && data.item.position.text"
+                                        :value="data.item.position.text">
                                     </opensilex-StringView>
                                 </template>
 

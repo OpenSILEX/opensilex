@@ -169,7 +169,7 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected"  :lightTab="true" />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected"  :tabs="detailTabs" />
       </div>
     </div>
 
@@ -197,6 +197,7 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ScientificObjectsService } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
+import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
@@ -208,6 +209,7 @@ export default class ExperimentScientificObjects extends Vue {
   showDataVisuView = false;
   numberOfSelectedRows = 0;
 
+  
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: any;
   @Ref("importForm") readonly importForm!: any;
@@ -232,6 +234,15 @@ export default class ExperimentScientificObjects extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get detailTabs() {
+    return [
+      ScientificObjectDetail.DOCUMENTS_TAB,
+      ScientificObjectDetail.ANNOTATIONS_TAB,
+      ScientificObjectDetail.EVENTS_TAB,
+      ScientificObjectDetail.POSITIONS_TAB
+    ]
   }
 
   public nodes = [];

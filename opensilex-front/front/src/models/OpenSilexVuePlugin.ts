@@ -741,13 +741,13 @@ export default class OpenSilexVuePlugin {
                 ) && delete queryParams[k]
             );
             let params = new URLSearchParams();
-            for(let k of Object.keys(queryParams)){
-                if(queryParams[k] instanceof Array){
-                    for(let elt of queryParams[k]){
-                        params.append(k,elt)
+            for (let k of Object.keys(queryParams)) {
+                if (queryParams[k] instanceof Array) {
+                    for (let elt of queryParams[k]) {
+                        params.append(k, elt)
                     }
-                }else{
-                    params.append(k,queryParams[k])
+                } else {
+                    params.append(k, queryParams[k])
                 }
             }
             let paramsSize = [...params].length;
@@ -832,22 +832,22 @@ export default class OpenSilexVuePlugin {
 
         if (queryParams != null) {
             let params = new URLSearchParams();
-            Object.keys(queryParams).forEach((key) =>{
-                if  (
+            Object.keys(queryParams).forEach((key) => {
+                if (
                     queryParams[key] == undefined
                     || queryParams[key] == null
                     || queryParams[key] == ""
-                ){
+                ) {
                     delete queryParams[key];
-                }else{
+                } else {
                     let value = queryParams[key]
                     if (Array.isArray(value)) {
-                        value.forEach(item => params.append(key, item)); 
+                        value.forEach(item => params.append(key, item));
                     } else {
                         params.append(key, value);
                     }
                 }
-            }); 
+            });
             let paramsSize = [...params].length;
             if (paramsSize > 0) {
                 url = url + "?" + params.toString();
@@ -859,15 +859,15 @@ export default class OpenSilexVuePlugin {
 
         return promise
             .then((response) => {
-                if(response.status === 500){
+                if (response.status === 500) {
                     this.errorHandler(response);
                     return undefined;
-                }else{
+                } else {
                     return response.blob();
                 }
-            }) 
+            })
             .then((result) => {
-                if(result != undefined){
+                if (result != undefined) {
                     let objectURL = URL.createObjectURL(result);
                     let link = document.createElement("a");
                     link.href = objectURL;
@@ -972,10 +972,10 @@ export default class OpenSilexVuePlugin {
             })
             .then((result) => {
                 let file = result;
-                
+
                 let blob = new Blob([file]);
 
-                let url = URL.createObjectURL(blob);                
+                let url = URL.createObjectURL(blob);
                 this.hideLoader()
                 return url;
             })
@@ -1017,12 +1017,12 @@ export default class OpenSilexVuePlugin {
             this.getService<any>("opensilex.FactorsService")
                 .searchCategories(undefined, ["name=asc"])
                 .then(
-                    ( http
-                    ) => { 
+                    (http
+                    ) => {
                         this.factorCategories = {};
                         http.response.result.forEach((categoryDto) => {
                             this.factorCategories[categoryDto.uri] = categoryDto.name;
-                        }); 
+                        });
                         resolve()
                     }
                 )

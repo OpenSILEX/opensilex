@@ -73,6 +73,12 @@
                 if(! event.concerned_item_positions || event.concerned_item_positions.length == 0){
                     move.concerned_item_positions = PositionsView.getEmptyForm();
                 }
+                if (move.from && move.from.uri) {
+                    move.from = move.from.uri;
+                }
+                if (move.to && move.to.uri) {
+                    move.to = move.to.uri;
+                }
                 this.modalForm.showEditForm(move)
             }else {
                 this.modalForm.showEditForm(event);

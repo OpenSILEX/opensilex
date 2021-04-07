@@ -41,11 +41,11 @@ export default class FactorLevelPropertyView extends Vue {
           this.factorLevel = http.response.result;
           this.label =
             this.factorLevel.name + " (" + this.factorLevel.factor_name + ")";
-          this.to = {
-            path:
-              "/factor/details/" +
-              encodeURIComponent(this.factorLevel.factor)
-          };
+          // this.to = {
+          //   path:
+          //     "/factor/details/" +
+          //     encodeURIComponent(this.factorLevel.factor)
+          // };
         })
         .catch(() => {
           this.label = this.value;

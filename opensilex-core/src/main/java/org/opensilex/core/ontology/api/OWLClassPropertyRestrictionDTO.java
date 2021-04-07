@@ -23,6 +23,12 @@ public class OWLClassPropertyRestrictionDTO {
     @ApiModelProperty(value = "RDF type", required = true, name = "rdf_type", example = "vocabulary:Plot")
     private URI classURI;
 
+    @ValidURI
+    @NotNull
+    @JsonProperty("domain")
+    @ApiModelProperty(value = "Domain URI", required = true, name = "domain", example = "vocabulary:ScientificObject")
+    private URI domain;
+
     private URI property;
 
     private boolean required;
@@ -59,6 +65,14 @@ public class OWLClassPropertyRestrictionDTO {
 
     public void setList(boolean list) {
         this.list = list;
+    }
+
+    public URI getDomain() {
+        return domain;
+    }
+
+    public void setDomain(URI domain) {
+        this.domain = domain;
     }
 
 }

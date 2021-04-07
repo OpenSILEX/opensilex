@@ -9,10 +9,17 @@
     ></opensilex-SelectForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.is_required" title="OntologyClassDetail.required"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm
+      :value.sync="form.is_required"
+      title="OntologyClassDetail.required"
+    ></opensilex-CheckboxForm>
 
     <!-- is abstract -->
-    <opensilex-CheckboxForm :value.sync="form.is_list" :disabled="this.dataTypeProperties.indexOf(form.property) >= 0" title="OntologyClassDetail.list"></opensilex-CheckboxForm>
+    <opensilex-CheckboxForm
+      :value.sync="form.is_list"
+      :disabled="this.dataTypeProperties.indexOf(form.property) >= 0"
+      title="OntologyClassDetail.list"
+    ></opensilex-CheckboxForm>
   </b-form>
 </template>
 
@@ -35,9 +42,9 @@ export default class OntologyClassPropertyForm extends Vue {
       return {
         property: null,
         is_required: false,
-        is_list: false
+        is_list: false,
       };
-    }
+    },
   })
   form;
 
@@ -45,7 +52,7 @@ export default class OntologyClassPropertyForm extends Vue {
     return {
       property: null,
       is_required: false,
-      is_list: false
+      is_list: false,
     };
   }
 
@@ -56,17 +63,16 @@ export default class OntologyClassPropertyForm extends Vue {
     this.availableProperties = properties;
 
     this.excludedProperties = [];
-    excludedProperties.forEach(prop => {
+    excludedProperties.forEach((prop) => {
       this.excludedProperties.push(prop.property);
     });
 
     this.dataTypeProperties = [];
-    this.availableProperties.forEach(prop => {
+    this.availableProperties.forEach((prop) => {
       if (prop.rdf_type == "owl:DatatypeProperty") {
         this.dataTypeProperties.push(prop.uri);
       }
     });
-     
   }
 
   rdf_type = null;
@@ -74,8 +80,16 @@ export default class OntologyClassPropertyForm extends Vue {
     this.rdf_type = rdf_type;
   }
 
+  domain = null;
+  setDomain(domain) {
+    this.domain = domain;
+  }
+
   get propertiesOptions() {
-    return this.buildTreeListOptions(this.availableProperties, this.excludedProperties);
+    return this.buildTreeListOptions(
+      this.availableProperties,
+      this.excludedProperties
+    );
   }
 
   create(form) {
@@ -83,8 +97,9 @@ export default class OntologyClassPropertyForm extends Vue {
       rdf_type: this.rdf_type,
       property: form.property,
       required: form.is_required,
-      list: form.is_list
-    }
+      list: form.is_list,
+      domain: this.domain
+    };
 
     return this.$opensilex
       .getService("opensilex.OntologyService")
@@ -97,12 +112,13 @@ export default class OntologyClassPropertyForm extends Vue {
   }
 
   update(form) {
-     let propertyForm = {
+    let propertyForm = {
       rdf_type: this.rdf_type,
       property: form.property,
       required: form.is_required,
-      list: form.is_list
-    }
+      list: form.is_list,
+      domain: this.domain
+    };
 
     return this.$opensilex
       .getService("opensilex.OntologyService")
@@ -114,44 +130,43 @@ export default class OntologyClassPropertyForm extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-   buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {
-        let options = [];
+  buildTreeListOptions(resourceTrees: Array<any>, excludeProperties) {
+    let options = [];
 
-        if (resourceTrees != null) {
-            resourceTrees.forEach((resourceTree: any) => {
-                let subOption = this.buildTreeOptions(resourceTree, excludeProperties);
-                options.push(subOption);
-            });
-        }
-
-        return options;
+    if (resourceTrees != null) {
+      resourceTrees.forEach((resourceTree: any) => {
+        let subOption = this.buildTreeOptions(resourceTree, excludeProperties);
+        options.push(subOption);
+      });
     }
 
-    buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
+    return options;
+  }
 
-        let option = {
-            id: resourceTree.uri,
-            label: resourceTree.name,
-            isDefaultExpanded: true,
-            isDisabled: excludeProperties.indexOf(resourceTree.uri) >= 0,
-            children: []
-        };
+  buildTreeOptions(resourceTree: any, excludeProperties: Array<string>) {
+    let option = {
+      id: resourceTree.uri,
+      label: resourceTree.name,
+      isDefaultExpanded: true,
+      isDisabled: excludeProperties.indexOf(resourceTree.uri) >= 0,
+      children: [],
+    };
 
-        resourceTree.children.forEach(child => {
-            let subOption = this.buildTreeOptions(child, excludeProperties);
-            option.children.push(subOption);
-        });
+    resourceTree.children.forEach((child) => {
+      let subOption = this.buildTreeOptions(child, excludeProperties);
+      option.children.push(subOption);
+    });
 
-        if (resourceTree.disabled) {
-            option.isDisabled = true;
-        }
-
-        if (option.children.length == 0) {
-            delete option.children;
-        }
-
-        return option;
+    if (resourceTree.disabled) {
+      option.isDisabled = true;
     }
+
+    if (option.children.length == 0) {
+      delete option.children;
+    }
+
+    return option;
+  }
 }
 </script>
 

@@ -208,11 +208,11 @@
             ></opensilex-GeometryCopy>
           </div>
           <div v-if="data.item.properties.nature === 'ScientificObjects' & detailsSO">
-            <opensilex-ScientificObjectDetailBasic
+            <opensilex-ScientificObjectDetailProperties
                 v-if="data.item.properties.OS"
                 :selected="data.item.properties.OS"
-                :simpleDisplay="true"
-            ></opensilex-ScientificObjectDetailBasic>
+                :withBasicProperties="false"
+            ></opensilex-ScientificObjectDetailProperties>
           </div>
         </template>
 

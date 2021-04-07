@@ -10,6 +10,7 @@
       v-if="selected"
       :selected="selected"
       :objectByContext="objectByContext"
+      :globalView="true"
       :withReturnButton="true"
     ></opensilex-ScientificObjectDetail>
   </div>

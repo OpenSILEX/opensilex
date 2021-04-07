@@ -20,7 +20,7 @@
         :isSelectable="true"
         :noActions="true"
         :maximumSelectedRows="maximumSelectedRows"
-        iconNumberOfSelectedRow="fa#vials"
+        iconNumberOfSelectedRow="ik#ik-globe"
       ></opensilex-VariableList>
     </div>
   </b-modal>
@@ -71,4 +71,3 @@ export default class VariableModalList extends Vue {
   }
 }
 </style>
-

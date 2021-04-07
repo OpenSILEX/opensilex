@@ -174,7 +174,7 @@
       createTitle="component.common.addDocument"
       modalSize="lg"
       :initForm="initForm"
-      icon="ik#ik-settings"
+      icon="ik#ik-file-text"
     ></opensilex-ModalForm>
   </div>
 </template>

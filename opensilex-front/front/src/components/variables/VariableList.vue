@@ -10,8 +10,9 @@
             <template v-slot>
                 <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchVariables" :fields="fields"
                                           defaultSortBy="name" :isSelectable="isSelectable"
-          :maximumSelectedRows="maximumSelectedRows"
-          :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
+                :maximumSelectedRows="maximumSelectedRows"
+                labelNumberOfSelectedRow="VariableList.selected"
+                :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
@@ -183,10 +184,12 @@ en:
         label-filter: Search variables
         label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc.
             This filter apply on URI, name, alternative name, or on entity/characteristic/method/unit name."
+        selected: Selected Variables
 fr:
     VariableList:
         label-filter: Chercher une variable
         label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc.
             Ce filtre s'applique à l'URI, au nom, au nom alternatif et au nom de l'entité/caractéristique/méthode/unité."
+        selected: Variables Sélectionnées
 
 </i18n>

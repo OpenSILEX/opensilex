@@ -30,6 +30,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.utils.OrderBy;
@@ -75,7 +76,9 @@ public class CharacteristicAPI {
             model.setCreator(currentUser.getUri());
 
             dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+            return new ObjectUriResponse(Response.Status.CREATED,shortUri).getResponse();
+
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Characteristic already exists", duplicateUriException.getMessage()).getResponse();
         }
@@ -124,7 +127,8 @@ public class CharacteristicAPI {
 
         CharacteristicModel model = dto.newModel();
         dao.update(model);
-        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
 
     @DELETE

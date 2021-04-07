@@ -19,6 +19,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -75,7 +76,8 @@ public class EntityAPI {
             model.setCreator(currentUser.getUri());
 
             dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+            return new ObjectUriResponse(Response.Status.CREATED,shortUri).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Entity already exists", duplicateUriException.getMessage()).getResponse();
@@ -126,7 +128,8 @@ public class EntityAPI {
 
         EntityModel model = dto.newModel();
         dao.update(model);
-        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
+        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
 
     @DELETE

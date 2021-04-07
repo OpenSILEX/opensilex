@@ -19,6 +19,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -84,7 +85,8 @@ public class VariableAPI {
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+            return new ObjectUriResponse(Response.Status.CREATED,shortUri).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Variable already exists", duplicateUriException.getMessage()).getResponse();
@@ -131,9 +133,10 @@ public class VariableAPI {
     ) throws Exception {
         VariableDAO dao = new VariableDAO(sparql);
 
-        VariableModel variable = dto.newModel();
-        dao.update(variable);
-        return new ObjectUriResponse(Response.Status.OK, variable.getUri()).getResponse();
+        VariableModel model = dto.newModel();
+        dao.update(model);
+        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
 
     @DELETE

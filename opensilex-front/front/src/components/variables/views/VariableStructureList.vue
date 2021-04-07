@@ -120,7 +120,6 @@ export default class VariableStructureList extends Vue {
             return;
         }
 
-        // if the type is updated, then no name filter
         if(updateType){
             this.nameFilter = "";
         }
@@ -137,7 +136,6 @@ export default class VariableStructureList extends Vue {
 
                     if(uri == null){
                         if(first){
-                            this.displayNodeDetail(node.data.uri, true,false);
                             first = false;
                         }
                     }else{
@@ -148,6 +146,7 @@ export default class VariableStructureList extends Vue {
                 }
 
                 if (uri != null) {
+                    // display the node detail in head on list, only if the node is not already included into the search results
                     this.displayNodeDetail(uri, true, ! uriFoundInSearch);
                 }
 
@@ -226,15 +225,9 @@ export default class VariableStructureList extends Vue {
 
     edit(uri) {
         if(this.type != VariablesView.VARIABLE_TYPE){
-            if(this.selected){
-                let selectedCopy = JSON.parse(JSON.stringify(this.selected));
-                this.$emit("onEdit",selectedCopy);
-            }else{
-                this.getDetails(uri).then((http: HttpResponse<OpenSilexResponse>) => {
-                    this.$emit("onEdit", http.response.result);
-                    // this.getForm().showEditForm(http.response.result);
-                });
-            }
+            this.getDetails(uri).then((http: HttpResponse<OpenSilexResponse>) => {
+              this.$emit("onEdit", http.response.result);
+            });
         }
     }
 

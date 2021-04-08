@@ -20,8 +20,7 @@ Steps :
 
 - Extract ``template_config.zip`` to ``template_config``
 
-- Define module parameters in  ``./generateModule.sh``
+- Go to ``opensilex-dev-tools/src/main/resources/module/skeleton`` folder
 
-- Go to ``opensilex-doc/src/main/resources/examples/module/skeleton/`` folder
-
-- Execute ``chmod +u generateModule.sh`` and run ``./generateModule.sh`` script
+- Execute ``chmod +u generateModule.sh`` and run ``./generateModule.sh organisation module`` script
+Where organisation => inrae or ifv or google and module is module name exemple sinfonia, sixtine other

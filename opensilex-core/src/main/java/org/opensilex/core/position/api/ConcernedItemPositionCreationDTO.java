@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.position.dal.ConcernedItemPositionModel;
-import org.opensilex.core.position.dal.PositionNoSqlModel;
+import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.server.rest.validation.Required;
 
 import javax.validation.Valid;

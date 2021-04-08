@@ -1,8 +1,8 @@
-package org.opensilex.core.position.dal;
+package org.opensilex.core.event.dal.move;
 
 import com.mongodb.client.model.geojson.Point;
 
-public class PositionNoSqlModel {
+public class PositionModel {
 
     private Point point;
     private Integer x;

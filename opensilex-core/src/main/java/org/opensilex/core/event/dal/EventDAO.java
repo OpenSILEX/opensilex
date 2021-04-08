@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          EventDao.java
+//                          EventDAO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 /**
  * @author Renaud COLIN
  */
-public class EventDao {
+public class EventDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService mongodb;
@@ -86,7 +86,7 @@ public class EventDao {
         endInstantTimeStampTriple = new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), endInstantTimeStampVar);
     }
 
-    public EventDao(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException {
+    public EventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException {
         this.sparql = sparql;
         this.mongodb = mongodb;
 

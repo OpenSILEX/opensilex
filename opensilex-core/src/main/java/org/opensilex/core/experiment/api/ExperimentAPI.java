@@ -779,7 +779,7 @@ public class ExperimentAPI {
 
         Instant variableTime = Instant.now();
         LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
-        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(xpUri, new ArrayList<>(objects.keySet()), currentUser);
         for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
             objects.put(scientificObjectModel.getUri(), scientificObjectModel);
@@ -933,7 +933,7 @@ public class ExperimentAPI {
             variables.put(variableModel.getUri(), variableModel);
         }
         LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
-        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(xpUri, new ArrayList<>(objects.keySet()), currentUser);
         for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
             objects.put(scientificObjectModel.getUri(), scientificObjectModel);
@@ -1155,7 +1155,7 @@ public class ExperimentAPI {
 
     private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
 
         Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();

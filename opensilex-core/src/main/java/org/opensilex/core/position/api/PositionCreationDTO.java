@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.geojson.Point;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.position.dal.PositionNoSqlModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 
 public class PositionCreationDTO {
 
@@ -76,9 +76,9 @@ public class PositionCreationDTO {
         this.pointModel = pointModel;
     }
 
-    public PositionNoSqlModel toModel() {
+    public PositionModel toModel() {
 
-        PositionNoSqlModel positionNoSqlModel = new PositionNoSqlModel();
+        PositionModel positionNoSqlModel = new PositionModel();
 
         if (point != null) {
             positionNoSqlModel.setPoint(pointModel);

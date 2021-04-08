@@ -7,9 +7,9 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDto;
+import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDTO;
 import org.opensilex.core.position.api.ConcernedItemPositionGetDTO;
-import org.opensilex.core.position.dal.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 
 import java.net.URISyntaxException;
@@ -25,10 +25,10 @@ import java.util.List;
 public class MoveGetDTO extends EventGetDTO {
 
     @JsonProperty("from")
-    private InfrastructureFacilityNamedDto from;
+    private InfrastructureFacilityNamedDTO from;
 
     @JsonProperty("to")
-    private InfrastructureFacilityNamedDto to;
+    private InfrastructureFacilityNamedDTO to;
 
     @JsonProperty("targets_positions")
     private List<ConcernedItemPositionGetDTO> concernedItemPositions;
@@ -40,10 +40,10 @@ public class MoveGetDTO extends EventGetDTO {
 
         super.fromModel(model);
         if(model.getFrom() != null){
-            from = new InfrastructureFacilityNamedDto(model.getFrom());
+            from = new InfrastructureFacilityNamedDTO(model.getFrom());
         }
         if(model.getTo() != null){
-            to = new InfrastructureFacilityNamedDto(model.getTo());
+            to = new InfrastructureFacilityNamedDTO(model.getTo());
         }
 
         MoveEventNoSqlModel moveEventNoSqlModel = model.getNoSqlModel();
@@ -63,19 +63,19 @@ public class MoveGetDTO extends EventGetDTO {
 
     }
 
-    public InfrastructureFacilityNamedDto getFrom() {
+    public InfrastructureFacilityNamedDTO getFrom() {
         return from;
     }
 
-    public void setFrom(InfrastructureFacilityNamedDto from) {
+    public void setFrom(InfrastructureFacilityNamedDTO from) {
         this.from = from;
     }
 
-    public InfrastructureFacilityNamedDto getTo() {
+    public InfrastructureFacilityNamedDTO getTo() {
         return to;
     }
 
-    public void setTo(InfrastructureFacilityNamedDto to) {
+    public void setTo(InfrastructureFacilityNamedDTO to) {
         this.to = to;
     }
 

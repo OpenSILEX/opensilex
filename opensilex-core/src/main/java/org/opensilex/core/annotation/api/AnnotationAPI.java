@@ -8,7 +8,7 @@
 package org.opensilex.core.annotation.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.annotation.dal.AnnotationDao;
+import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -75,7 +75,7 @@ public class AnnotationAPI {
     public Response createAnnotation(@Valid AnnotationCreationDTO dto) throws Exception {
 
         try {
-            AnnotationDao dao = new AnnotationDao(sparql);
+            AnnotationDAO dao = new AnnotationDAO(sparql);
             AnnotationModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
@@ -102,7 +102,7 @@ public class AnnotationAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateAnnotation(@ApiParam("Annotation description") @Valid AnnotationUpdateDTO dto) throws Exception {
 
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
         dao.update(dto.newModel());
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
@@ -124,7 +124,7 @@ public class AnnotationAPI {
     public Response deleteAnnotation(
             @ApiParam(value = "Annotation URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -142,7 +142,7 @@ public class AnnotationAPI {
     public Response getAnnotation(
             @ApiParam(value = "Event URI", example = "http://www.opensilex.org/annotations/12590c87-1c34-426b-a231-beb7acb33415", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
         AnnotationModel model = dao.get(uri, currentUser);
         if (model == null) {
             throw new NotFoundURIException(uri);
@@ -168,7 +168,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
 
         ListWithPagination<MotivationModel> resultList = dao.searchMotivations(
                 namePattern,
@@ -203,7 +203,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
 
         ListWithPagination<AnnotationModel> resultList = dao.search(
                 descriptionPattern,
@@ -236,7 +236,7 @@ public class AnnotationAPI {
     public Response countAnnotations(
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
 
-        AnnotationDao dao = new AnnotationDao(sparql);
+        AnnotationDAO dao = new AnnotationDAO(sparql);
         int annotationCount = dao.countAnnotations(target);
 
         return new SingleObjectResponse<>(annotationCount).getResponse();

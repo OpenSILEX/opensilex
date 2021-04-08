@@ -25,7 +25,6 @@
     import {OrganisationsService} from "opensilex-core/api/organisations.service";
     import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
     import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
-    import {InfrastructureFacilityNamedDto} from "opensilex-core/model/infrastructureFacilityNamedDto";
 
     @Component
     export default class InfrastructureFacilitySelector extends Vue {
@@ -33,7 +32,7 @@
         $opensilex: any;
         $service: OrganisationsService;
 
-        @PropSync("facilities", { default: () => [] })
+        @PropSync("facilities", {default: () => []})
         facilitiesURI;
 
         @Prop()
@@ -45,7 +44,7 @@
         @Prop()
         helpMessage;
 
-        @Prop({default : "InfrastructureFacilitySelector.placeholder"})
+        @Prop({default: "InfrastructureFacilitySelector.placeholder"})
         placeholder;
 
         facilitiesByUriCache: Map<string, NamedResourceDTO>;
@@ -74,19 +73,35 @@
             }).catch(this.$opensilex.errorHandler);
         }
 
-        loadFacilities(facilitiesUris){
+        loadFacilities(facilitiesUris) {
 
-            if(! facilitiesUris || facilitiesUris.length == 0){
+
+            if (!facilitiesUris || facilitiesUris.length == 0) {
                 return undefined;
             }
 
-            // if no facilities have been loaded, then call the GET{uris} service
+            // if no facilities have been loaded, then call the GET{uris} service or just return facilities if they are DTOs
 
             if (this.facilitiesByUriCache.size == 0) {
+
+                let facilitiesDTOs = [];
+                facilitiesUris.forEach(facility => {
+
+                    // if facility are object with an already filled name and uri, then no need to call service
+                    if (facility.name && facility.name.length > 0 && facility.uri && facility.uri.length > 0) {
+                        facilitiesDTOs.push(facility);
+                    }
+                })
+
+                // if facilities are objects then just return them
+                if (facilitiesDTOs.length > 0) {
+                    return facilitiesDTOs;
+                }
+
                 return this.$service.getFacilitiesByURI(facilitiesUris)
-                .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityNamedDto>>>) =>
-                    (http && http.response) ? http.response.result : undefined
-                );
+                    .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) =>
+                        (http && http.response) ? http.response.result : undefined
+                    );
             }
 
             // if facilities have been loaded, then it's not needed to call the GET{uri} service just for retrieve the facility name
@@ -102,6 +117,9 @@
         }
 
         facilityToSelectNode(dto: NamedResourceDTO) {
+            if(! dto){
+                return undefined;
+            }
             return {
                 label: dto.name,
                 id: dto.uri

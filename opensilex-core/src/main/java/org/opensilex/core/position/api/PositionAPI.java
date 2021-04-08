@@ -2,11 +2,7 @@ package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
-import org.opensilex.core.event.api.EventAPI;
-import org.opensilex.core.position.dal.PositionDao;
-import org.opensilex.core.position.dal.PositionModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -16,7 +12,6 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 
@@ -27,10 +22,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 
 /**
  * @author Renaud COLIN
@@ -61,27 +59,29 @@ public class PositionAPI {
     @ApiOperation("Get the position of an object")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Position retrieved", response = PositionGetDto.class),
-            @ApiResponse(code = 404, message = "No position found for this object", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Position retrieved", response = PositionGetDTO.class),
+        @ApiResponse(code = 404, message = "No position found for this object", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPosition(
             @ApiParam(value = "Object URI", example = "http://opensilex.dev/plant/plant5841", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
-            ) throws Exception {
+    ) throws Exception {
 
-        PositionDao positionDao = new PositionDao(sparql,nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        PositionModel position = positionDao.getPosition(
+        MoveModel model = moveDAO.getMoveEvent(
                 uri,
                 time != null ? OffsetDateTime.parse(time) : null
         );
 
-        if(position == null){
-            throw new NotFoundURIException("No position found",uri);
+        PositionModel position = moveDAO.getPosition(uri, model.getUri());
+
+        if (model == null) {
+            throw new NotFoundURIException("No position found", uri);
         }
-        return new SingleObjectResponse<>(new PositionGetDto(position)).getResponse();
+        return new SingleObjectResponse<>(new PositionGetDTO(model, position)).getResponse();
 
     }
 
@@ -90,7 +90,7 @@ public class PositionAPI {
     @ApiOperation("Search history of position of an object")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return position list", response = PositionGetDto.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return position list", response = PositionGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -103,26 +103,30 @@ public class PositionAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        PositionDao positionDao = new PositionDao(sparql,nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        LinkedHashMap<URI,PositionModel> positionHistory = positionDao.getPositionsHistory(
-                concernedItem,
-                null,
-                startDate != null ? OffsetDateTime.parse(startDate) : null,
-                endDate != null ? OffsetDateTime.parse(endDate) : null,
-                orderByList,
-                page,
-                pageSize
-        );
+        MoveModel moveEvent = moveDAO.getMoveEvent(concernedItem, null);
 
-        List<PositionGetDto> resultDTOList = new ArrayList<>();
-        positionHistory.forEach((event,position) -> {
-            try {
-                resultDTOList.add(new PositionGetDto(position));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        List<PositionGetDTO> resultDTOList = new ArrayList<>();
+        if (moveEvent != null) {
+            LinkedHashMap<MoveModel, PositionModel> positionHistory = moveDAO.getPositionsHistory(
+                    concernedItem,
+                    null,
+                    startDate != null ? OffsetDateTime.parse(startDate) : null,
+                    endDate != null ? OffsetDateTime.parse(endDate) : null,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+
+            positionHistory.forEach((move, position) -> {
+                try {
+                    resultDTOList.add(new PositionGetDTO(move, position));
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

@@ -1,12 +1,11 @@
 <template>
-  <div v-if="selected && selected.uri">
+  <b-card v-if="selected && selected.uri">
     <opensilex-ScientificObjectDetailBasic
-      :objectByContext="objectByContext"
-      :selected="selected"
-      :withReturnButton="withReturnButton"
-      :lightTab="lightTab"
+        :objectByContext="objectByContext"
+        :selected="selected"
+        :withReturnButton="withReturnButton"
     ></opensilex-ScientificObjectDetailBasic>
-  </div>
+  </b-card>
 </template>
 
 <script lang="ts">
@@ -32,6 +31,5 @@ export default class ScientificObjectDetail extends Vue {
     default: false
   })
   withReturnButton;
-
 }
 </script>

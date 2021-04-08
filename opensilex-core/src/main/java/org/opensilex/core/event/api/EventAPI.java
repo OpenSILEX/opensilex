@@ -11,14 +11,14 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.event.api.csv.EventCsvImporter;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveDetailsDTO;
-import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
-import org.opensilex.core.event.dal.EventDao;
+import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.event.dal.move.MoveEventDao;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
@@ -78,8 +78,8 @@ public class EventAPI {
 
     public static final String PATH = "/core/events";
 
-    public static final String MOVE_PATH_SUFFIX = "moves";
-    public static final String MOVE_PATH = PATH + "/" + MOVE_PATH_SUFFIX;
+    public static final String MOVE_PATH_PREFIX = "moves";
+    public static final String MOVE_PATH = PATH + "/" + MOVE_PATH_PREFIX;
 
     public static final String CREDENTIAL_EVENT_GROUP_ID = "Events";
     public static final String CREDENTIAL_EVENT_GROUP_LABEL_KEY = "credential-groups.events";
@@ -116,7 +116,7 @@ public class EventAPI {
     public Response createEvents(@Valid @NotNull List<EventCreationDTO> dtoList) throws Exception {
 
         try {
-            EventDao dao = new EventDao(sparql, nosql);
+            EventDAO dao = new EventDAO(sparql, nosql);
             URI eventGraph = dao.getGraph();
 
             List<EventModel> models = getEventModels(dtoList, eventGraph).collect(Collectors.toList());
@@ -130,9 +130,8 @@ public class EventAPI {
         }
     }
 
-
     @POST
-    @Path(MOVE_PATH_SUFFIX + "/import")
+    @Path("/import")
     @ApiOperation(value = "Import a CSV file with one move and one concerned item per line")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Move file saved", response = CSVValidationDTO.class),
@@ -141,13 +140,14 @@ public class EventAPI {
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response importMoveCSV(
-            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+    public Response importEventCSV(
+            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveEventDao dao = new MoveEventDao(sparql,nosql);
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(file,currentUser.getUri());
+        EventDAO dao = new EventDAO(sparql,nosql);
+        EventCsvImporter csvImporter = new EventCsvImporter(file,currentUser.getUri());
+        csvImporter.readFile(false);
 
         CSVValidationModel validation = csvImporter.getValidation();
         CSVValidationDTO validationDTO = new CSVValidationDTO();
@@ -158,8 +158,8 @@ public class EventAPI {
         if(validation.hasErrors()) {
             importResponse.setStatus(Response.Status.BAD_REQUEST);
         }else {
-            List<MoveModel> models = csvImporter.getModels();
-            dao.createMoveEvents(models);
+            List<EventModel> models = csvImporter.getModels();
+            dao.create(models);
             validationDTO.setNbLinesImported(models.size());
 
             String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
@@ -171,18 +171,20 @@ public class EventAPI {
     }
 
     @POST
-    @Path(MOVE_PATH_SUFFIX + "/import_validation")
+    @Path("/import_validation")
     @ApiOperation(value = "Check a CSV file with one move and one concerned item per line")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Event file checked", response = CSVValidationDTO.class)})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response validateCSV(
-            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+    public Response validateEventCSV(
+            @ApiParam(value = "Event file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(file,currentUser.getUri());
+        EventCsvImporter csvImporter = new EventCsvImporter(file,currentUser.getUri());
+        csvImporter.readFile(true);
+
         CSVValidationModel validation = csvImporter.getValidation();
 
         CSVValidationDTO validationDTO = new CSVValidationDTO();
@@ -259,7 +261,7 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull EventUpdateDTO dto
     ) throws Exception {
 
-        EventDao dao = new EventDao(sparql, nosql);
+        EventDAO dao = new EventDAO(sparql, nosql);
         EventModel model = dto.toModel();
         model.setCreator(currentUser.getUri());
 
@@ -290,7 +292,7 @@ public class EventAPI {
     public Response deleteEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDao dao = new EventDao(sparql, nosql);
+        EventDAO dao = new EventDAO(sparql, nosql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -308,7 +310,7 @@ public class EventAPI {
     public Response getEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDao dao = new EventDao(sparql, nosql);
+        EventDAO dao = new EventDAO(sparql, nosql);
         EventModel model = dao.get(uri, currentUser);
         if (model == null) {
             throw new NotFoundURIException(uri);
@@ -333,7 +335,7 @@ public class EventAPI {
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        EventDao dao = new EventDao(sparql, nosql);
+        EventDAO dao = new EventDAO(sparql, nosql);
 
         EventModel model = dao.get(uri, currentUser);
         if (model == null) {
@@ -364,7 +366,7 @@ public class EventAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        EventDao dao = new EventDao(sparql, nosql);
+        EventDAO dao = new EventDAO(sparql, nosql);
 
         ListWithPagination<EventModel> resultList = dao.search(
                 concernedItem,
@@ -391,7 +393,7 @@ public class EventAPI {
 
 
     @POST
-    @Path(MOVE_PATH_SUFFIX)
+    @Path(MOVE_PATH_PREFIX)
     @ApiOperation("Create a list of move event")
     @ApiProtected
     @ApiCredential(
@@ -406,7 +408,7 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveEventDao dao = new MoveEventDao(sparql, nosql);
+            MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
             Stream<MoveModel> modelStream = (Stream<MoveModel>) getEventModels(dtoList, dao.getGraph());
             List<MoveModel> models = modelStream.collect(Collectors.toList());
@@ -420,8 +422,76 @@ public class EventAPI {
         }
     }
 
+    @POST
+    @Path(MOVE_PATH_PREFIX + "/import")
+    @ApiOperation(value = "Import a CSV file with one move and one concerned item per line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Move file saved", response = CSVValidationDTO.class),
+            @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
+    })
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response importMoveCSV(
+            @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(file,currentUser.getUri());
+        csvImporter.readFile(false);
+
+        CSVValidationModel validation = csvImporter.getValidation();
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(validation);
+
+        SingleObjectResponse<CSVValidationDTO> importResponse = new SingleObjectResponse<>(validationDTO);
+
+        if(validation.hasErrors()) {
+            importResponse.setStatus(Response.Status.BAD_REQUEST);
+        }else {
+            List<MoveModel> models = csvImporter.getModels();
+            dao.createMoveEvents(models);
+            validationDTO.setNbLinesImported(models.size());
+
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+
+            importResponse.setStatus(Response.Status.CREATED);
+        }
+        return importResponse.getResponse();
+    }
+
+    @POST
+    @Path(MOVE_PATH_PREFIX + "/import_validation")
+    @ApiOperation(value = "Check a CSV file with one move and one concerned item per line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Event file checked", response = CSVValidationDTO.class)})
+    @ApiProtected
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateMoveCSV(
+            @ApiParam(value = "Move file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
+
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(file,currentUser.getUri());
+        csvImporter.readFile(true);
+
+        CSVValidationModel validation = csvImporter.getValidation();
+
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(validation);
+
+        if (!validation.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+        }
+
+        return new SingleObjectResponse<>(validationDTO).getResponse();
+    }
+
     @PUT
-    @Path(MOVE_PATH_SUFFIX)
+    @Path(MOVE_PATH_PREFIX)
     @ApiOperation("Update a move event")
     @ApiProtected
     @ApiCredential(
@@ -438,7 +508,7 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
 
-        MoveEventDao dao = new MoveEventDao(sparql, nosql);
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         MoveModel model = dto.toModel();
         model.setCreator(currentUser.getUri());
 
@@ -453,7 +523,7 @@ public class EventAPI {
     }
 
     @GET
-    @Path(MOVE_PATH_SUFFIX + "/{uri}")
+    @Path(MOVE_PATH_PREFIX + "/{uri}")
     @ApiOperation("Get a move with all it's properties")
     @ApiProtected
     @ApiResponses(value = {
@@ -465,9 +535,9 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDao dao = new MoveEventDao(sparql, nosql);
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
-        MoveModel model = dao.getMoveEvent(uri, currentUser);
+        MoveModel model = dao.getMoveEventByURI(uri, currentUser);
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
@@ -477,7 +547,7 @@ public class EventAPI {
     }
 
     @DELETE
-    @Path(MOVE_PATH_SUFFIX + "/{uri}")
+    @Path(MOVE_PATH_PREFIX + "/{uri}")
     @ApiOperation("Delete a move event")
     @ApiProtected
     @ApiCredential(
@@ -493,7 +563,7 @@ public class EventAPI {
     public Response deleteMoveEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDao dao = new MoveEventDao(sparql, nosql);
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }

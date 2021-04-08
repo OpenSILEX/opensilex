@@ -13,6 +13,7 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 import java.net.URI;
+import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -57,9 +58,9 @@ public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDeta
         return new ScientificObjectModel();
     }
 
-    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ScientificObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI) throws JsonProcessingException {
+    static ScientificObjectDetailByExperimentsDTO getDTOFromModel(ScientificObjectModel model, ExperimentModel experiment, GeospatialModel geometryByURI, MoveModel lastMove) throws JsonProcessingException {
         ScientificObjectDetailByExperimentsDTO dto = new ScientificObjectDetailByExperimentsDTO();
-        dto.fromModel(model);
+        dto.fromModel(model, lastMove);
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }

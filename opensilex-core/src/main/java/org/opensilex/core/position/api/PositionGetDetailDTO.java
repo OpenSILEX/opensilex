@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.Point;
-import org.opensilex.core.position.dal.PositionNoSqlModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
-public class PositionNoSqlGetDto {
+public class PositionGetDetailDTO {
 
     @JsonProperty("point")
     private Point point;
@@ -24,7 +24,7 @@ public class PositionNoSqlGetDto {
     @JsonProperty("text")
     private String description;
 
-    public PositionNoSqlGetDto(PositionNoSqlModel model) throws JsonProcessingException {
+    public PositionGetDetailDTO(PositionModel model) throws JsonProcessingException {
 
         com.mongodb.client.model.geojson.Point coordinatesModel = model.getPoint();
         if(coordinatesModel != null){
@@ -38,7 +38,7 @@ public class PositionNoSqlGetDto {
         description = model.getDescription();
     }
 
-    public PositionNoSqlGetDto() {
+    public PositionGetDetailDTO() {
     }
 
     public Point getPoint() {

@@ -129,7 +129,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDto.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
@@ -143,8 +143,8 @@ public class FacilityAPI {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Facilities not found", "Unknown facilities URIs").getResponse();
         }
 
-        List<InfrastructureFacilityNamedDto> dtoList = facilities.stream()
-                .map(InfrastructureFacilityNamedDto::new)
+        List<InfrastructureFacilityNamedDTO> dtoList = facilities.stream()
+                .map(InfrastructureFacilityNamedDTO::new)
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -157,7 +157,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDto.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructureFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -170,8 +170,8 @@ public class FacilityAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser,pattern, orderByList,page, pageSize);
 
-        List<InfrastructureFacilityNamedDto> dtoList = facilities.getList().stream()
-                .map(InfrastructureFacilityNamedDto::new)
+        List<InfrastructureFacilityNamedDTO> dtoList = facilities.getList().stream()
+                .map(InfrastructureFacilityNamedDTO::new)
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();

@@ -9,6 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import org.apache.jena.rdf.model.Property;
 
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL2;
@@ -77,6 +79,18 @@ public class SPARQLResourceModel implements SPARQLModel {
 
     public List<SPARQLModelRelation> getRelations() {
         return relations;
+    }
+    
+    public SPARQLModelRelation getRelation(Property relation) {
+        Optional<SPARQLModelRelation> result = relations.stream().filter((r) -> {
+            return SPARQLDeserializers.compareURIs(r.getProperty().getURI(), relation.getURI());
+        }).findFirst();
+        
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            return null;
+        }
     }
 
     public void setRelations(List<SPARQLModelRelation> relations) {

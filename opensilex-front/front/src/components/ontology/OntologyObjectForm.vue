@@ -118,6 +118,11 @@ export default class OntologyObjectForm extends Vue {
     this.initHandler = handler;
   }
 
+  propertyFilter = (property) => property;
+  setTypePropertyFilterHandler(handler) {
+    this.propertyFilter = handler;
+  }
+
   baseType = null;
 
   typeModel = null;
@@ -195,6 +200,8 @@ export default class OntologyObjectForm extends Vue {
         }
       }
     });
+
+    internalTypeProperties = this.propertyFilter.call(null, internalTypeProperties);
 
     return internalTypeProperties;
   }

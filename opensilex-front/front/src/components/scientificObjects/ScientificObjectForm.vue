@@ -54,22 +54,41 @@ export default class ScientificObjectForm extends Vue {
   createScientificObject(parentURI?) {
     this.soForm
       .getFormRef()
+      .setTypePropertyFilterHandler((properties) => properties);
+
+    this.soForm
+      .getFormRef()
       .setContext(this.getContext())
-      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
-      .setInitObjHandler((form) => {
-        if (parentURI) {
-          for (let relation of form.relations) {
-            if (this.$opensilex.Oeso.checkURIs(relation.property, this.$opensilex.Oeso.IS_PART_OF)) {
-              relation.value = parentURI;
-            }
+      .setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+
+    this.soForm.getFormRef().setInitObjHandler((form) => {
+      if (parentURI) {
+        for (let relation of form.relations) {
+          if (
+            this.$opensilex.Oeso.checkURIs(
+              relation.property,
+              this.$opensilex.Oeso.IS_PART_OF
+            )
+          ) {
+            relation.value = parentURI;
           }
         }
-      });
+      }
+    });
 
     this.soForm.showCreateForm();
   }
 
   editScientificObject(objectURI) {
+    this.soForm.getFormRef().setTypePropertyFilterHandler((properties) => {
+      return properties.filter((propertyDef) => {
+        return !this.$opensilex.Oeso.checkURIs(
+          propertyDef.definition.property,
+          this.$opensilex.Oeso.HAS_FACILITY
+        );
+      });
+    });
+
     this.soForm
       .getFormRef()
       .setContext(this.getContext())
@@ -115,18 +134,21 @@ export default class ScientificObjectForm extends Vue {
       }
     }
 
-    return this.soService.createScientificObject({
-      uri: form.uri,
-      name: form.name,
-      rdf_type: form.rdf_type,
-      geometry: form.geometry,
-      experiment: this.getExperimentURI(),
-      relations: definedRelations,
-    }).then(() => {
-      this.$emit("refresh");
-    }).catch(error => {
-      throw error;
-    });
+    return this.soService
+      .createScientificObject({
+        uri: form.uri,
+        name: form.name,
+        rdf_type: form.rdf_type,
+        geometry: form.geometry,
+        experiment: this.getExperimentURI(),
+        relations: definedRelations,
+      })
+      .then(() => {
+        this.$emit("refresh");
+      })
+      .catch((error) => {
+        throw error;
+      });
   }
 
   callScientificObjectUpdate(form) {
@@ -147,18 +169,21 @@ export default class ScientificObjectForm extends Vue {
       }
     }
 
-    return this.soService.updateScientificObject({
-      uri: form.uri,
-      name: form.name,
-      rdf_type: form.rdf_type,
-      geometry: form.geometry,
-      experiment: this.getExperimentURI(),
-      relations: definedRelations,
-    }).then(() => {
-      this.$emit("refresh");
-    }).catch(error => {
-      throw error;
-    });
+    return this.soService
+      .updateScientificObject({
+        uri: form.uri,
+        name: form.name,
+        rdf_type: form.rdf_type,
+        geometry: form.geometry,
+        experiment: this.getExperimentURI(),
+        relations: definedRelations,
+      })
+      .then(() => {
+        this.$emit("refresh");
+      })
+      .catch((error) => {
+        throw error;
+      });
   }
 }
 </script>

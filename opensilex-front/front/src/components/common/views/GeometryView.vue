@@ -1,6 +1,7 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{ $t(label) }}</span>
+
+    <span v-if="displayLabel" class="field-view-title">{{ $t(label) }}</span>
     <span class="static-field-line capitalize-first-letter">
       <slot>{{ wktValue }}</slot>
     </span>
@@ -19,6 +20,9 @@ export default class StringView extends Vue {
 
   @Prop()
   value: string;
+
+  @Prop({ default: true })
+  displayLabel : boolean;
 
   get wktValue() {
     try {

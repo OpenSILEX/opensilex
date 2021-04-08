@@ -1,5 +1,5 @@
 <template>
-  <b-form>
+  <b-form v-if="form.description">
     <!-- URI or URL-->
     <opensilex-UriForm
       :uri.sync="form.description.uri" 

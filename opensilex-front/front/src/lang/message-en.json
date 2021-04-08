@@ -183,7 +183,8 @@
             "scientificObjectTypes": "Scientific object types",
             "facilitiesTypes": "Facilities types",
             "scientific-organisation": "Scientific Organization",
-            "devices": "Devices"
+            "devices": "Devices",
+            "events" : "Events"
         },
         "login": {
             "input": {

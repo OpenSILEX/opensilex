@@ -27,6 +27,11 @@ menu:
         route:
           path: /devices
           component: opensilex-DeviceView
+      - id: events
+        label: component.menu.events
+        route:
+          path: /events
+          component: opensilex-EventsView
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -189,6 +194,10 @@ routes:
   - path: /device/documents/:uri
     component: opensilex-DeviceDetails
   - path: /device/annotations/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/events/:uri
+    component: opensilex-DeviceDetails
+  - path: /device/positions/:uri
     component: opensilex-DeviceDetails
 
   - path: /devices/create

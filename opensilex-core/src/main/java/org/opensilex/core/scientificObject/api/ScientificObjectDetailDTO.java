@@ -19,16 +19,13 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.opensilex.core.event.dal.move.MoveModel;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.rest.serialization.CustomParamConverterProvider;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
@@ -181,20 +178,43 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
     }
 
+    public void fromModel(ScientificObjectModel model, MoveModel lastMove) {
+        this.fromModel(model);
+        boolean hasFacility = false;
+        URI facilityURI = null;
+        if (lastMove != null && lastMove.getTo() != null) {
+            facilityURI = lastMove.getTo().getUri();
+        }
+        for (RDFObjectRelationDTO relation : this.getRelations()) {
+            if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFacility.getURI())) {
+                hasFacility = true;
+                relation.setValue(facilityURI.toString());
+                break;
+            }
+        }
+
+        if (!hasFacility && facilityURI != null) {
+            SPARQLModelRelation relation = new SPARQLModelRelation();
+            relation.setProperty(Oeso.hasFacility);
+            relation.setValue(facilityURI.toString());
+            this.getRelations().add(RDFObjectRelationDTO.getDTOFromModel(relation));
+        }
+    }
+
     @Override
     public ScientificObjectModel newModelInstance() {
         return new ScientificObjectModel();
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model) {
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, MoveModel lastMove) {
         ScientificObjectDetailDTO dto = new ScientificObjectDetailDTO();
-        dto.fromModel(model);
+        dto.fromModel(model, lastMove);
 
         return dto;
     }
 
-    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI) throws JsonProcessingException {
-        ScientificObjectDetailDTO dto = getDTOFromModel(model);
+    public static ScientificObjectDetailDTO getDTOFromModel(ScientificObjectModel model, GeospatialModel geometryByURI, MoveModel lastMove) throws JsonProcessingException {
+        ScientificObjectDetailDTO dto = getDTOFromModel(model, lastMove);
         if (geometryByURI != null) {
             dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
         }

@@ -7,6 +7,9 @@ package org.opensilex.core.scientificObject.dal;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,24 +19,32 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_OneOrMore1;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.rest.serialization.CustomParamConverterProvider;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -51,8 +62,11 @@ public class ScientificObjectDAO {
 
     private final SPARQLService sparql;
 
-    public ScientificObjectDAO(SPARQLService sparql) {
+    private final MongoDBService nosql;
+
+    public ScientificObjectDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
+        this.nosql = nosql;
     }
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
@@ -236,9 +250,54 @@ public class ScientificObjectDAO {
         }
         object.setUri(objectURI);
 
-        sparql.create(SPARQLDeserializers.nodeURI(contextURI), object);
+        try {
+            sparql.startTransaction();
+            nosql.startTransaction();
+            sparql.create(SPARQLDeserializers.nodeURI(contextURI), object);
+            objectURI = object.getUri();
 
-        return object.getUri();
+            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+            MoveModel facilityMoveEvent = new MoveModel();
+            fillFacilityMoveEvent(facilityMoveEvent, object);
+            moveDAO.create(facilityMoveEvent);
+            nosql.commitTransaction();
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            nosql.rollbackTransaction();
+            sparql.rollbackTransaction(ex);
+        }
+
+        return objectURI;
+    }
+
+    private void fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
+        List<URI> concernedItems = new ArrayList<>();
+        concernedItems.add(object.getUri());
+        facilityMoveEvent.setConcernedItems(concernedItems);
+
+        facilityMoveEvent.setCreator(object.getCreator());
+
+        facilityMoveEvent.setIsInstant(true);
+
+        for (SPARQLModelRelation relation : object.getRelations()) {
+            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFacility.getURI())) {
+                InfrastructureFacilityModel infraModel = new InfrastructureFacilityModel();
+                infraModel.setUri(new URI(relation.getValue()));
+                facilityMoveEvent.setTo(infraModel);
+            } else if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasCreationDate.getURI())) {
+                InstantModel end = new InstantModel();
+                SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
+                LocalDate date = dateDeserializer.fromString(relation.getValue());
+                end.setDateTimeStamp(OffsetDateTime.of(date, LocalTime.MIN, ZoneOffset.UTC));
+                facilityMoveEvent.setEnd(end);
+            }
+        }
+
+        InstantModel end = facilityMoveEvent.getEnd();
+        if (end != null && end.getDateTimeStamp() == null) {
+            end.setDateTimeStamp(OffsetDateTime.now());
+        }
+
     }
 
     public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -254,16 +313,73 @@ public class ScientificObjectDAO {
                 (select) -> {
                     select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
                 });
+
+        boolean hasFacilityURI = false;
+        for (SPARQLModelRelation relation : object.getRelations()) {
+            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFacility.getURI())) {
+                hasFacilityURI = true;
+                break;
+            }
+        }
+
         try {
             sparql.startTransaction();
+            nosql.startTransaction();
             sparql.deleteByURI(graphNode, objectURI);
             sparql.create(graphNode, object);
             if (childrenURIs.size() > 0) {
                 sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
             }
+
+            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+            MoveModel event = moveDAO.getLastMoveEvent(objectURI);
+
+            if (hasFacilityURI) {
+                if (event != null) {
+                    fillFacilityMoveEvent(event, object);
+                    moveDAO.update(event);
+                } else {
+                    event = new MoveModel();
+                    fillFacilityMoveEvent(event, object);
+                    moveDAO.create(event);
+                }
+            } else {
+                if (event != null) {
+                    List<URI> newConcernedItems = new ArrayList<>();
+                    for (URI item : event.getConcernedItems()) {
+                        if (!SPARQLDeserializers.compareURIs(item, objectURI)) {
+                            newConcernedItems.add(item);
+                        }
+                    }
+                    if (newConcernedItems.size() == 0) {
+                        moveDAO.delete(event.getUri());
+                    } else {
+                        event.setConcernedItems(newConcernedItems);
+
+                        if (event.getNoSqlModel() != null) {
+                            List<ConcernedItemPositionModel> newConcernedPositions = new ArrayList<>();
+                            for (ConcernedItemPositionModel position : event.getNoSqlModel().getItemPositions()) {
+                                if (!SPARQLDeserializers.compareURIs(position.getConcernedItem(), objectURI)) {
+                                    newConcernedPositions.add(position);
+                                }
+                            }
+                            event.getNoSqlModel().setItemPositions(newConcernedPositions);
+                        }
+                        moveDAO.update(event);
+                    }
+                } else {
+                    fillFacilityMoveEvent(event, object);
+                    moveDAO.update(event);
+
+                }
+            }
+
             sparql.commitTransaction();
+            nosql.commitTransaction();
         } catch (Exception ex) {
+            nosql.rollbackTransaction();
             sparql.rollbackTransaction(ex);
+
         }
 
         return object.getUri();
@@ -280,6 +396,8 @@ public class ScientificObjectDAO {
             for (RDFObjectRelationDTO relation : relations) {
                 if (!ontologyDAO.validateObjectValue(contextURI, model, relation.getProperty(), relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+                } else if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFacility.getURI())) {
+
                 }
             }
         }

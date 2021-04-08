@@ -271,7 +271,7 @@ public class StudiesAPI implements BrapiCall {
             rdfTypes.add(rdfType);
         }
 
-        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
         ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(
                 studyDbId,
                 null,

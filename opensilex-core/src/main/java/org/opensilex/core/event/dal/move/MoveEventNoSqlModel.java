@@ -1,7 +1,6 @@
 package org.opensilex.core.event.dal.move;
 
 import org.bson.codecs.pojo.annotations.BsonId;
-import org.opensilex.core.position.dal.ConcernedItemPositionModel;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.net.URI;

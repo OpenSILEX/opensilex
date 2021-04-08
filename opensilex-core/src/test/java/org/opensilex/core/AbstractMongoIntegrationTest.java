@@ -30,7 +30,7 @@ import org.bson.Document;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
-import org.opensilex.core.event.dal.move.MoveEventDao;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
 

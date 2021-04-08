@@ -15,7 +15,7 @@
         v-if="!lightTab"
         @click.prevent="tabsValue = VISUALIZATION_TAB"
         :active="isVisualizationTab"
-      >{{ $t("ScientificObjectVisualizationTab.visualization") }}
+        >{{ $t("ScientificObjectVisualizationTab.visualization") }}
       </b-nav-item>
 
       <b-nav-item
@@ -35,6 +35,16 @@
         :active="isDocumentTab"
         @click.prevent="tabsValue = DOCUMENTS_TAB"
         >{{ $t("DocumentTabList.documents") }}
+      </b-nav-item>
+
+      <b-nav-item :active="isEventTab" @click.prevent="tabsValue = EVENTS_TAB"
+        >{{ $t("Event.list-title") }}
+      </b-nav-item>
+
+      <b-nav-item
+        :active="isPositionTab"
+        @click.prevent="tabsValue = POSITIONS_TAB"
+        >{{ $t("Position.list-title") }}
       </b-nav-item>
     </opensilex-PageActions>
 
@@ -128,7 +138,10 @@
             <span class="field-view-title">{{ v.definition.name }}</span>
             <ul>
               <br />
-              <li v-for="(prop, propIndex) in v.property" v-bind:key="propIndex">
+              <li
+                v-for="(prop, propIndex) in v.property"
+                v-bind:key="propIndex"
+              >
                 <component
                   :is="v.definition.view_component"
                   :value="prop"
@@ -141,9 +154,9 @@
     </div>
 
     <opensilex-ScientificObjectDataFiles
-          v-if="isDatafilesTab && !lightTab"
-          :uri="selected.uri"
-     ></opensilex-ScientificObjectDataFiles>
+      v-if="isDatafilesTab"
+      :uri="selected.uri"
+    ></opensilex-ScientificObjectDataFiles>
 
     <div v-if="isAnnotationTab">
       <opensilex-AnnotationList
@@ -151,32 +164,59 @@
         :columnsToDisplay="new Set(['creator', 'motivation', 'created'])"
         :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
         :enableActions="true"
-        :modificationCredentialId=" credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+        :modificationCredentialId="
+          credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+        "
         :target="selected.uri"
-        @onEdit="annotationModalForm.showEditForm($event)"
       ></opensilex-AnnotationList>
     </div>
 
-     <opensilex-ScientificObjectVisualizationTab
-      v-if="isVisualizationTab  && !lightTab"
+    <opensilex-ScientificObjectVisualizationTab
+      v-if="isVisualizationTab"
       :scientificObject="selected.uri"
-      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+      :modificationCredentialId="
+        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+      "
     ></opensilex-ScientificObjectVisualizationTab>
-
 
     <opensilex-DocumentTabList
       v-if="isDocumentTab"
       :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-      :modificationCredentialId=" credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+      :modificationCredentialId="
+        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+      "
       :uri="selected.uri"
     ></opensilex-DocumentTabList>
+
+    <opensilex-EventList
+      v-if="isEventTab"
+      ref="eventList"
+      :target="selected.uri"
+      :columnsToDisplay="new Set(['type', 'start', 'end', 'description'])"
+      :modificationCredentialId="
+        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+      "
+      :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+    ></opensilex-EventList>
+
+    <opensilex-PositionList
+      v-if="isPositionTab"
+      ref="positionList"
+      :target="selected.uri"
+      :modificationCredentialId="
+        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+      "
+      :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+    ></opensilex-PositionList>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
+import AnnotationList from "../annotations/list/AnnotationList.vue";
+import PositionList from "../positions/list/PositionList.vue";
+import EventList from "../events/list/EventList.vue";
 
 @Component
 export default class ScientificObjectDetailBasic extends Vue {
@@ -212,12 +252,15 @@ export default class ScientificObjectDetailBasic extends Vue {
   DOCUMENTS_TAB = "Documents";
   ANNOTATIONS_TAB = "Annotations";
   EVENTS_TAB = "Events";
-  DATAFILES_TAB = "Datafiles"
+  POSITIONS_TAB = "Positions";
+  DATAFILES_TAB = "Datafiles";
 
   tabsIndex: number = 0;
   tabsValue: string = this.DETAILS_TAB;
 
-  @Ref("annotationModalForm") readonly annotationModalForm!: AnnotationModalForm;
+  @Ref("annotationList") readonly annotationList!: AnnotationList;
+  @Ref("eventList") readonly eventList!: EventList;
+  @Ref("positionList") readonly positionList!: PositionList;
 
   get user() {
     return this.$store.state.user;
@@ -243,7 +286,15 @@ export default class ScientificObjectDetailBasic extends Vue {
     return this.tabsValue == this.DOCUMENTS_TAB;
   }
 
-  get isDatafilesTab(): boolean {
+  get isEventTab(): boolean {
+    return this.tabsValue == this.EVENTS_TAB;
+  }
+
+  get isPositionTab(): boolean {
+    return this.tabsValue == this.POSITIONS_TAB;
+  }
+
+  get isDatafilesTab() {
     return this.tabsValue == this.DATAFILES_TAB;
   }
 
@@ -258,20 +309,27 @@ export default class ScientificObjectDetailBasic extends Vue {
     this.typeProperties = [];
     this.valueByProperties = {};
 
-    return this.$opensilex
-      .getService("opensilex.VueJsOntologyExtensionService")
-      .getRDFTypeProperties(
-        this.selected.rdf_type,
-        this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-      )
-      .then((http) => {
-        this.classModel = http.response.result;
-        let valueByProperties = this.buildValueByProperties(
-          this.selected.relations
-        );
-        this.buildTypeProperties(this.typeProperties, valueByProperties);
-        this.valueByProperties = valueByProperties;
-      });
+    return Promise.all([
+      this.$opensilex
+        .getService("opensilex.VueJsOntologyExtensionService")
+        .getRDFTypeProperties(
+          this.selected.rdf_type,
+          this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+        ),
+      this.$opensilex
+        .getService("opensilex.PositionsService")
+        .getPosition(this.selected.uri),
+    ]).then((result) => {
+      this.classModel = result[0].response.result;
+      let lastMove = result[1].response.result;
+
+      let valueByProperties = this.buildValueByProperties(
+        this.selected.relations,
+        lastMove
+      );
+      this.buildTypeProperties(this.typeProperties, valueByProperties);
+      this.valueByProperties = valueByProperties;
+    });
   }
 
   buildTypeProperties(typeProperties, valueByProperties) {
@@ -324,6 +382,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   loadProperties(typeProperties, properties, valueByProperties) {
     for (let i in properties) {
       let property = properties[i];
+
       if (valueByProperties[property.property]) {
         if (
           property.is_list &&
@@ -343,10 +402,22 @@ export default class ScientificObjectDetailBasic extends Vue {
     }
   }
 
-  buildValueByProperties(relationArray) {
+  buildValueByProperties(relationArray, lastMove) {
     let valueByProperties = {};
     for (let i in relationArray) {
       let relation = relationArray[i];
+      if (
+        lastMove
+        && lastMove.to
+        && lastMove.to.uri,
+        this.$opensilex.Oeso.checkURIs(
+          relation.property,
+          this.$opensilex.Oeso.HAS_FACILITY
+        )
+      ) {
+        relation.value = lastMove.to.uri
+      }
+
       if (
         valueByProperties[relation.property] &&
         !Array.isArray(valueByProperties[relation.property])
@@ -367,7 +438,7 @@ export default class ScientificObjectDetailBasic extends Vue {
   }
 
   getCustomTypeProperties(customObjet) {
-    let valueByProperties = this.buildValueByProperties(customObjet.relations);
+    let valueByProperties = this.buildValueByProperties(customObjet.relations, null);
 
     for (let propUri in valueByProperties) {
       if (this.valueByProperties[propUri]) {

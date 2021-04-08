@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          AnnotationDao.java
+//                          AnnotationDAO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -20,7 +20,6 @@ import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -40,7 +39,7 @@ import java.util.stream.Stream;
 /**
  * @author Renaud COLIN
  */
-public class AnnotationDao {
+public class AnnotationDAO {
 
     protected final SPARQLService sparql;
     protected final Node annotationGraph;
@@ -50,7 +49,7 @@ public class AnnotationDao {
     protected final static Var motivationNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(AnnotationModel.MOTIVATION_FIELD));
     protected final static Var motivationDefaultNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(AnnotationModel.MOTIVATION_FIELD));
 
-    public AnnotationDao(SPARQLService sparql) throws SPARQLException, URISyntaxException {
+    public AnnotationDAO(SPARQLService sparql) throws SPARQLException, URISyntaxException {
         this.sparql = sparql;
         annotationGraph = sparql.getDefaultGraph(AnnotationModel.class);
         annotationGraphURI = new URI(annotationGraph.toString());

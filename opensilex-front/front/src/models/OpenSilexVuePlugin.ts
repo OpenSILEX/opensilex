@@ -8,6 +8,8 @@ import { Store } from 'vuex';
 import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration, ThemeConfigDTO } from '../lib';
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
+import Oeev from '../ontologies/Oeev';
+
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
@@ -31,6 +33,8 @@ export default class OpenSilexVuePlugin {
     public $bvToast: any;
 
     public Oeso = Oeso;
+    public Oeev = Oeev;
+
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
         this.container.bind<OpenSilexVuePlugin>(OpenSilexVuePlugin).toConstantValue(this);

@@ -83,6 +83,8 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -165,7 +167,7 @@ public class ScientificObjectAPI {
         }
         validateContextAccess(contextURI);
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> scientificObjects = dao.searchByURIs(contextURI, objectsURI, currentUser);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
@@ -281,7 +283,7 @@ public class ScientificObjectAPI {
 
         validateContextAccess(experimentURI);
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         if (experimentURI == null) {
             experimentURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
@@ -323,7 +325,7 @@ public class ScientificObjectAPI {
             }
         }
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factorLevels, facility, existenceDate, creationDate, page, pageSize, orderByList, currentUser);
 
         ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
@@ -351,9 +353,12 @@ public class ScientificObjectAPI {
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
 
         ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -362,7 +367,7 @@ public class ScientificObjectAPI {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI)).getResponse();
+        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove)).getResponse();
     }
 
     @GET
@@ -379,20 +384,24 @@ public class ScientificObjectAPI {
             @PathParam("uri") @ValidURI @NotNull URI objectURI
     ) throws Exception {
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
+
+        MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
+
         for (URI contextURI : contexts) {
             ExperimentModel experiment = getExperiment(contextURI);
 
             ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
-                ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI);
+                ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
                 dtoList.add(dto);
             }
         }
@@ -436,7 +445,7 @@ public class ScientificObjectAPI {
 
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
@@ -511,7 +520,7 @@ public class ScientificObjectAPI {
         }
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
@@ -575,7 +584,7 @@ public class ScientificObjectAPI {
 
         validateContextAccess(contextURI);
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
@@ -742,7 +751,6 @@ public class ScientificObjectAPI {
         URI contextURI = dto.getExperiment();
         validateContextAccess(contextURI);
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql);
         Node contextNode;
         if (contextURI == null) {
             contextNode = sparql.getDefaultGraph(ScientificObjectModel.class);
@@ -762,6 +770,8 @@ public class ScientificObjectAPI {
         customColumns.add(Oeso.hasDestructionDate.toString());
         customColumns.add(GEOMETRY_COLUMN_ID);
 
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+
         BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
             if (value == null) {
                 return null;
@@ -776,6 +786,16 @@ public class ScientificObjectAPI {
                 return value.getCreationDate().toString();
             } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
                 return value.getDestructionDate().toString();
+            } else if (columnID.equals(Oeso.hasFacility.toString())) {
+                try {
+                    MoveModel lastMove = moveDAO.getLastMoveEvent(value.getUri());
+                    if (lastMove != null && lastMove.getTo() != null) {
+                        return lastMove.getTo().getUri().toString();
+                    }
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+                return null;
             } else if (columnID.equals(GEOMETRY_COLUMN_ID)) {
                 String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
                 if (geospatialMap.containsKey(uriString)) {
@@ -1047,7 +1067,7 @@ public class ScientificObjectAPI {
      * Experiment URI claim key
      */
     private static final String CLAIM_CONTEXT_URI = "context";
-    
+
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables measured on this scientific object")
@@ -1059,7 +1079,7 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectVariables(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
-        ) throws Exception {
+    ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
         List<URI> objects = new ArrayList<>();
@@ -1070,7 +1090,7 @@ public class ScientificObjectAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
 
     }
-    
+
     @GET
     @Path("{uri}/data/provenances")
     @ApiOperation("Get provenances of data that have been measured on this scientific object")
@@ -1082,14 +1102,14 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectDataProvenances(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
-        ) throws Exception {
-        
+    ) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-    
+
     @GET
     @Path("{uri}/datafiles/provenances")
     @ApiOperation("Get provenances of datafiles linked to this scientific object")
@@ -1101,8 +1121,8 @@ public class ScientificObjectAPI {
     })
     public Response getScientificObjectDataFilesProvenances(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
-        ) throws Exception {
-        
+    ) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());

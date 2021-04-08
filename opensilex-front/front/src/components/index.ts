@@ -622,4 +622,43 @@ components["opensilex-DeviceVariableSelector"] = DeviceVariableSelector;
 import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 
+
+// EVENTS
+import EventModalForm from './events/form/EventModalForm.vue';
+components["opensilex-EventModalForm"] = EventModalForm;
+import EventForm from './events/form/EventForm.vue';
+components["opensilex-EventForm"] = EventForm;
+import EventList from './events/list/EventList.vue';
+components["opensilex-EventList"] = EventList;
+import EventModalView from './events/view/EventModalView.vue';
+components["opensilex-EventModalView"] = EventModalView;
+import EventsView from './events/EventsView.vue';
+components["opensilex-EventsView"] = EventsView;
+import EventTypes from './events/ontology/EventTypes.vue';
+components["opensilex-EventTypes"] = EventTypes;
+
+// EVENTS CSV
+import EventCsvForm from './events/form/csv/EventCsvForm.vue';
+components["opensilex-EventCsvForm"] = EventCsvForm;
+import EventHelpTableView from './events/form/csv/EventHelpTableView.vue';
+components["opensilex-EventHelpTableView"] = EventHelpTableView;
+import GenerateEventTemplate from './events/form/csv/GenerateEventTemplate.vue';
+components["opensilex-GenerateEventTemplate"] = GenerateEventTemplate;
+
+// MOVE
+import MoveForm from './events/form/MoveForm.vue';
+components["opensilex-MoveForm"] = MoveForm;
+import MoveView from './events/view/MoveView.vue';
+components["opensilex-MoveView"] = MoveView;
+
+
+// POSITION
+import PositionForm from './positions/form/PositionForm.vue';
+components["opensilex-PositionForm"] = PositionForm;
+import PositionsView from './positions/view/PositionsView.vue';
+components["opensilex-PositionsView"] = PositionsView;
+import PositionList from './positions/list/PositionList.vue';
+components["opensilex-PositionList"] = PositionList;
+
+
 export default components;

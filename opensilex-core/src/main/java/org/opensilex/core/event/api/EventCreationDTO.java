@@ -121,16 +121,19 @@ public class EventCreationDTO extends RDFObjectDTO {
         model.setDescription(description);
         model.setIsInstant(isInstant);
 
-        if (!StringUtils.isEmpty(start)) {
-            InstantModel instant = new InstantModel();
-            instant.setDateTimeStamp(OffsetDateTime.parse(start));
-            model.setStart(instant);
-        }
 
         if (!StringUtils.isEmpty(end)) {
             InstantModel endInstant = new InstantModel();
             endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
             model.setEnd(endInstant);
+        }
+
+        if (!StringUtils.isEmpty(start)) {
+            InstantModel instant = new InstantModel();
+            instant.setDateTimeStamp(OffsetDateTime.parse(start));
+            model.setStart(instant);
+        }else{
+            start = end;
         }
 
         return model;

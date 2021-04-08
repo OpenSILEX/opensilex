@@ -2,8 +2,6 @@ package org.opensilex.core.event.api.move;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventCreationDTO;
@@ -11,12 +9,10 @@ import org.opensilex.core.event.api.validation.MoveLocationOrPositionNotNullCons
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.position.api.ConcernedItemPositionCreationDTO;
-import org.opensilex.core.position.dal.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 
-import javax.validation.Valid;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

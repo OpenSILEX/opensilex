@@ -17,7 +17,8 @@
               <slot name="icon">
                 <opensilex-Icon icon="fa#eye" class="icon-title" />
               </slot>
-              <span>{{ $t("OntologyCsvImporter.import") }}</span>
+                <span>{{$t(title)}}</span>
+
             </h4>
           </i>
         </b-col>
@@ -37,10 +38,9 @@
     </template>
     <div class="container-fluid">
       <ValidationObserver ref="validatorRef">
-        <label
-          >{{ $t("OntologyCsvImporter.import") }}
-          <span class="required">*</span></label
-        >
+        <label>{{$t(title)}}
+          <span class="required">*</span>
+        </label>
         <div class="row">
           <div class="col-md-4">
             <b-form-file
@@ -151,6 +151,9 @@ export default class OntologyCsvImporter extends Vue {
 
   @Prop()
   baseType;
+
+  @Prop({default : "OntologyCsvImporter.import"})
+  title;
 
   @Prop({
     default: () => Promise.reject("validateCSV property is mandatory"),

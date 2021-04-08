@@ -2,279 +2,124 @@ package org.opensilex.core.event.api.move.csv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Point;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
+import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
-import org.opensilex.core.position.dal.ConcernedItemPositionModel;
-import org.opensilex.core.position.dal.PositionNoSqlModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import org.opensilex.utils.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class MoveEventCsvImporter {
+public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
-    Logger LOGGER = LoggerFactory.getLogger(MoveEventCsvImporter.class);
-
-    private final InputStream file;
-    private final CSVValidationModel validation;
-    private final List<MoveModel> models;
-    private final URI creator;
-
-    private final static LinkedHashSet<String> header = new LinkedHashSet<>(Arrays.asList(
-        "URI", "Type", "IsInstant", "Start", "End", "Target", "Description", "From", "To", "Coordinates", "X", "Y", "Z", "TextualPosition"
+    private final static LinkedHashSet<String> MOVE_HEADER = new LinkedHashSet<>(Arrays.asList(
+            "URI", "Type", "IsInstant", "Start", "End", "Target", "Description", "From", "To", "Coordinates", "X", "Y", "Z", "TextualPosition"
     ));
 
-    public MoveEventCsvImporter(InputStream file, URI creator) throws ParseException, IOException, URISyntaxException {
-        this.file = file;
-        this.creator = creator;
-        models = new ArrayList<>();
-        validation = new CSVValidationModel();
-        readFile();
+    public MoveEventCsvImporter(InputStream file, URI creator){
+        super(file, creator);
     }
 
-    public List<MoveModel> getModels() {
-        return models;
+    @Override
+    protected LinkedHashSet<String> getHeader() {
+        return MOVE_HEADER;
     }
 
-    public CSVValidationModel getValidation() {
-        return validation;
+    @Override
+    protected MoveModel getNewModel() {
+        return new MoveModel();
     }
 
-    private void readFile() throws ParseException, IOException, URISyntaxException {
+    @Override
+    protected void readAndValidateRow(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
 
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
-            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
-            CsvParser csvReader = new CsvParser(csvParserSettings);
-            csvReader.beginParsing(inputReader);
-            LOGGER.debug("Import moves - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+        // first call super method in order to init properties of any Event
+        super.readAndValidateRow(model, row, rowIndex, colIndex);
 
-            readAndValidateHeader(csvReader);
-
-            if(! validation.hasErrors()){
-                readAndValidateBody(csvReader);
-            }
-
-        }catch (IOException | URISyntaxException | ParseException e){
-            throw e;
-        }
-
-    }
-
-    private void readAndValidateHeader(CsvParser csvReader) throws IOException {
-
-        String[] csvFileHeader = csvReader.parseNext();
-        List<String> missingHeaders = new LinkedList<>();
-
-        if(csvFileHeader == null || csvFileHeader.length == 0){
-            throw new IllegalArgumentException("Empty csv header");
-        }
-
-        // ensure header is equals to the expected header
-        Iterator<String> headerIt = header.iterator();
-        int i = 0;
-
-        while (headerIt.hasNext()){
-            String expectedHeader = headerIt.next();
-
-            if(i < csvFileHeader.length){
-                String fileHeader = csvFileHeader[i];
-                if(! expectedHeader.equals(fileHeader)){
-                    validation.addInvalidHeaderURI(i,fileHeader);
-                }
-                i++;
-            }
-            else{
-                missingHeaders.add(expectedHeader);
-            }
-        }
-
-        if(! missingHeaders.isEmpty()){
-            validation.addMissingHeaders(missingHeaders);
-        }
-
-        // skip the header description row
-        csvReader.parseNext();
-    }
-
-    private void readAndValidateBody(CsvParser csvReader) throws IOException, URISyntaxException, ParseException {
-
-        String[] row;
-
-        // start at the 2nd row after two header rows
-        int rowIndex = 2;
-
-        while((row = csvReader.parseNext()) != null){
-            this.models.add(readAndValidateRow(row,rowIndex));
-            rowIndex++;
-        }
-
-        if(this.models.isEmpty()){
-            CSVCell csvCell = new CSVCell(rowIndex, 0, null, "Empty row");
-            validation.addMissingRequiredValue(csvCell);
-        }
-    }
-
-    private MoveModel readAndValidateRow(String[] row, int rowIndex) throws URISyntaxException {
-
-        MoveModel sparqlModel = new MoveModel();
-
-        int colIndex = 0;
-        String uri = row[colIndex++];
-        if(!StringUtils.isEmpty(uri)){
-            sparqlModel.setUri(new URI(uri));
-        }
-
-        String type = row[colIndex++];
-        if(!StringUtils.isEmpty(type)){
-            sparqlModel.setType(new URI(type));
-        }
-
-        String isInstant = row[colIndex++];
-        if (StringUtils.isEmpty(isInstant)) {
-            CSVCell cell = new CSVCell(rowIndex,colIndex-1, isInstant,"isInstant");
-            validation.addMissingRequiredValue(cell);
-        }else{
-            sparqlModel.setIsInstant(Boolean.parseBoolean(isInstant));
-        }
-
-        String start = row[colIndex++];
-        if(! StringUtils.isEmpty(start)) {
-            InstantModel startModel = new InstantModel();
-            try{
-                startModel.setDateTimeStamp(OffsetDateTime.parse(start));
-                sparqlModel.setStart(startModel);
-            }catch (DateTimeParseException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex-1, start,"start");
-                validation.addInvalidValueError(cell);
-            }
-        }
-
-        String end = row[colIndex++];
-        if (StringUtils.isEmpty(end)) {
-
-            if(sparqlModel.getIsInstant()){
-                CSVCell cell = new CSVCell(rowIndex,colIndex-1, end,"end");
-                validation.addMissingRequiredValue(cell);
-            }
-            else if (StringUtils.isEmpty(start)) {
-                CSVCell cell = new CSVCell(rowIndex,colIndex-2, start,"start");
-                validation.addMissingRequiredValue(cell);
-            }
-
-        }else{
-            InstantModel endModel = new InstantModel();
-            try {
-                endModel.setDateTimeStamp(OffsetDateTime.parse(end));
-                sparqlModel.setEnd(endModel);
-            }catch (DateTimeParseException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex-1, end,"end");
-                validation.addInvalidValueError(cell);
-            }
-
-        }
-
-        String concernedItem = row[colIndex++];
-        URI concernedItemUri = null;
-
-        if(StringUtils.isEmpty(concernedItem )){
-            CSVCell cell = new CSVCell(rowIndex,colIndex-1, concernedItem,"Target");
-            validation.addMissingRequiredValue(cell);
-        }else{
-            concernedItemUri = new URI(concernedItem);
-            sparqlModel.setConcernedItems(Collections.singletonList(concernedItemUri));
-        }
-
-        String description = row[colIndex++];
-        sparqlModel.setDescription(description);
-        sparqlModel.setCreator(creator);
-
+        // then fill move specific properties
 
         boolean anyMoveFieldNonNull = false;
         MoveEventNoSqlModel noSqlModel = new MoveEventNoSqlModel();
 
-        String from = row[colIndex++];
+        // parse from and to properties
+        String from = row[colIndex.getAndIncrement()];
         if(!StringUtils.isEmpty(from)) {
             InfrastructureFacilityModel fromModel = new InfrastructureFacilityModel();
             fromModel.setUri(new URI(from));
-            sparqlModel.setFrom(fromModel);
+            model.setFrom(fromModel);
             anyMoveFieldNonNull = true;
         }
 
-        String to = row[colIndex++];
+        String to = row[colIndex.getAndIncrement()];
         if(!StringUtils.isEmpty(to)) {
             InfrastructureFacilityModel toModel = new InfrastructureFacilityModel();
             toModel.setUri(new URI(to));
-            sparqlModel.setTo(toModel);
+            model.setTo(toModel);
             anyMoveFieldNonNull = true;
         }
 
-        ConcernedItemPositionModel itemPositionModel = new ConcernedItemPositionModel();
+        // parse all properties which define a position : point,x,y,z,positionDescription
+        if(!CollectionUtils.isEmpty(model.getConcernedItems())){
 
-        if(concernedItem != null){
-
+            URI concernedItemUri = model.getConcernedItems().get(0);
+            ConcernedItemPositionModel itemPositionModel = new ConcernedItemPositionModel();
             itemPositionModel.setConcernedItem(concernedItemUri);
 
-            PositionNoSqlModel position = new PositionNoSqlModel();
+            PositionModel position = new PositionModel();
             itemPositionModel.setPosition(position);
             List<ConcernedItemPositionModel> itemPositionModels = Collections.singletonList(itemPositionModel);
             noSqlModel.setItemPositions(itemPositionModels);
 
-            String coordinates = row[colIndex++];
+            String coordinates = row[colIndex.getAndIncrement()];
             if(!StringUtils.isEmpty(coordinates)){
                 try{
                     position.setPoint((Point) GeospatialDAO.wktToGeometry(coordinates));
                     anyMoveFieldNonNull = true;
                 }catch (ParseException | JsonProcessingException e){
-                    CSVCell cell = new CSVCell(rowIndex,colIndex-1, coordinates,"coordinates");
+                    CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, coordinates,"coordinates");
                     validation.addInvalidValueError(cell);
                 }
 
             }
 
             try{
-                String x = row[colIndex++];
+                String x = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(x)){
                     position.setX(Integer.parseInt(x));
                     anyMoveFieldNonNull = true;
                 }
 
-                String y = row[colIndex++];
+                String y = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(y)){
                     position.setY(Integer.parseInt(y));
                     anyMoveFieldNonNull = true;
                 }
 
-                String z = row[colIndex++];
+                String z = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(z)){
                     position.setZ(Integer.parseInt(z));
                     anyMoveFieldNonNull = true;
                 }
 
             }catch (NumberFormatException e){
-                CSVCell cell = new CSVCell(rowIndex,colIndex-1, null,"x y or z");
+                CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"x y or z");
                 validation.addMissingRequiredValue(cell);
             }
 
-            String positionDescription = row[colIndex];
+            String positionDescription = row[colIndex.get()];
             if(!StringUtils.isEmpty(positionDescription)){
                 position.setDescription(positionDescription);
                 anyMoveFieldNonNull = true;
@@ -283,13 +128,11 @@ public class MoveEventCsvImporter {
         }
 
         if(anyMoveFieldNonNull){
-            sparqlModel.setNoSqlModel(noSqlModel);
+            model.setNoSqlModel(noSqlModel);
         }else {
-            CSVCell cell = new CSVCell(rowIndex,colIndex-1, null,"from, to, x, y, z or positionDescription");
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, null,"from, to, x, y, z or positionDescription");
             validation.addMissingRequiredValue(cell);
         }
-
-        return sparqlModel;
     }
 
 }

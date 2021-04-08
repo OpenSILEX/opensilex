@@ -6,12 +6,12 @@ import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 
 import java.net.URI;
 
-public class InfrastructureFacilityNamedDto extends ObjectNamedResourceDTO  {
+public class InfrastructureFacilityNamedDTO extends ObjectNamedResourceDTO  {
 
-    public InfrastructureFacilityNamedDto() {
+    public InfrastructureFacilityNamedDTO() {
     }
 
-    public InfrastructureFacilityNamedDto(InfrastructureFacilityModel model) {
+    public InfrastructureFacilityNamedDTO(InfrastructureFacilityModel model) {
         super(model);
     }
 

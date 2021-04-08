@@ -6,7 +6,7 @@
       :description="device.name"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true">
+    <opensilex-PageActions :tabs="true" :returnButton="true" >
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"
@@ -32,122 +32,150 @@
           :active="isDocumentTab()"
           :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
         >{{ $t('DeviceDetails.documents') }}</b-nav-item>
-      </template>
+
+        <b-nav-item
+            :active="isEventTab()"
+            :to="{ path: '/device/events/' + encodeURIComponent(uri) }"
+        >{{ $t('Event.list-title') }}
+        </b-nav-item>
+
+        <b-nav-item
+            :active="isPositionTab()"
+            :to="{ path: '/device/positions/' + encodeURIComponent(uri) }"
+        >{{ $t('Position.list-title') }}
+        </b-nav-item>
+
+        </template>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <template v-slot>
-        <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
-        <opensilex-DeviceVisualizationTab
-          v-else-if="isVisualizationTab()"
-          :device="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-        ></opensilex-DeviceVisualizationTab>
+        <template v-slot>
+          <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+          <opensilex-DocumentTabList
+            v-else-if="isDocumentTab()"
+            :uri="uri"
+            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+          ></opensilex-DocumentTabList>
 
-        <opensilex-DeviceDataFiles
-          v-else-if="isDatafilesTab()"
-          :device="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-        ></opensilex-DeviceDataFiles>
+          <opensilex-AnnotationList
+            v-else-if="isAnnotationTab()"
+            ref="annotationList"
+            :target="uri"
+            :displayTargetColumn="false"
+            :enableActions="true"
+            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+            ></opensilex-AnnotationList>
 
-        <opensilex-DocumentTabList
-          v-else-if="isDocumentTab()"
-          :uri="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-          :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
-        ></opensilex-DocumentTabList>
+          <opensilex-EventList
+              v-if="isEventTab()"
+              ref="eventList"
+              :target="uri"
+              :columnsToDisplay="new Set(['uri','type','start','end','description'])"
+              :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+              :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+              :displayFilters="true"
+          ></opensilex-EventList>
 
-        <opensilex-AnnotationList
-          v-else-if="isAnnotationTab()"
-          ref="annotationList"
-          :target="uri"
-          :displayTargetColumn="false"
-          :enableActions="true"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-          :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
-          @onEdit="annotationModalForm.showEditForm($event)"
-        ></opensilex-AnnotationList>
-      </template>
+          <opensilex-PositionList
+              v-if="isPositionTab()"
+              ref="positionList"
+              :target="uri"
+              :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+              :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+          ></opensilex-PositionList>
+
+        </template>
     </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import VueRouter from "vue-router";
-import { Component, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { DeviceGetDTO, DevicesService } from "opensilex-core/index";
-import AnnotationList from "../annotations/list/AnnotationList.vue";
+    import VueRouter from "vue-router";
+    import {Component, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+    import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
 
-@Component
-export default class DeviceDetails extends Vue {
-  $opensilex: any;
-  $route: any;
+    @Component
+    export default class DeviceDetails extends Vue {
+        $opensilex: any;
+        $route: any;
 
-  service: DevicesService;
-  uri = null;
-  name: string = "";
+        service: DevicesService;
+        uri = null;
+        name: string = "";
 
-  @Ref("annotationList") readonly annotationList!: AnnotationList;
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
 
-  get user() {
-    return this.$store.state.user;
-  }
+        get user() {
+            return this.$store.state.user;
+        }
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+        get credentials() {
+            return this.$store.state.credentials;
+        }
 
-  device: DeviceGetDTO = {
-    uri: null,
-    rdf_type: null,
-    name: null,
-    brand: null,
-    constructor_model: null,
-    serial_number: null,
-    person_in_charge: null,
-    start_up: null,
-    removal: null,
-    relations: null,
-    description: null
-  };
+        device: DeviceGetDTO = {
+              uri: null,
+              rdf_type: null,
+              name: null,
+              brand: null,
+              constructor_model: null,
+              serial_number: null,
+              person_in_charge: null,
+              start_up: null,
+              removal: null,
+              relations: null,
+              description: null
+            };
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.DevicesService");
-    this.uri = decodeURIComponent(this.$route.params.uri);
-    this.loadDevice(this.uri);
-  }
+        created() {
+          this.service = this.$opensilex.getService("opensilex.DevicesService");
+          this.uri = decodeURIComponent(this.$route.params.uri);
+          this.loadDevice(this.uri);
+        }
 
-  loadDevice(uri: string) {
-    this.service
-      .getDevice(uri)
-      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDTO>>) => {
-        this.device = http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+        loadDevice(uri: string) {
+          this.service
+            .getDevice(uri)
+            .then((http: HttpResponse<OpenSilexResponse<DeviceGetDTO>>) => {
+              this.device = http.response.result;
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
 
-  isDetailsTab() {
-    return this.$route.path.startsWith("/device/details/");
-  }
+        isDetailsTab() {
+            return this.$route.path.startsWith("/device/details/");
+        }
 
-  isVisualizationTab() {
-    return this.$route.path.startsWith("/device/visualization/");
-  }
+        isVisualizationTab() {
+            return this.$route.path.startsWith("/device/visualization/");
+        }
 
-  isDatafilesTab() {
-    return this.$route.path.startsWith("/device/datafiles/");
-  }
+        isDatafilesTab() {
+          return this.$route.path.startsWith("/device/datafiles/");
+        }
+      
+        isDocumentTab() {
+            return this.$route.path.startsWith("/device/documents/");
+        }
 
-  isDocumentTab() {
-    return this.$route.path.startsWith("/device/documents/");
-  }
+        isAnnotationTab() {
+            return this.$route.path.startsWith("/device/annotations/");
+        }
 
-  isAnnotationTab() {
-    return this.$route.path.startsWith("/device/annotations/");
-  }
-}
+        isEventTab(): boolean {
+            return this.$route.path.startsWith("/device/events/");
+        }
+
+        isPositionTab(): boolean {
+              return this.$route.path.startsWith("/device/positions/");
+          }
+
+    }
 </script>
 
 <style lang="scss">

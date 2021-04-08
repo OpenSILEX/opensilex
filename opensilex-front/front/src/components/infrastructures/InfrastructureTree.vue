@@ -324,5 +324,5 @@ fr:
     add-child:  Ajouter une sous-organisation
     delete: Supprimer l'organisation
     infrastructure-component: Organisations
-    infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulières et/ou avec des équipes dédiées."
+    infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
 </i18n>

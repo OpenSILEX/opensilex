@@ -495,6 +495,7 @@ export default class ExperimentScientificObjects extends Vue {
       filename,
       "csv",
       {
+        experiment: this.uri,
         uris: this.selectedObjects
       },
       this.lang

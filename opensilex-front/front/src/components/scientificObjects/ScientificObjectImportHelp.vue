@@ -157,8 +157,8 @@ en :
     csv-decimal-separator: Decimal separator for numeric values must be 
     alias: Scientific object name
     type-help: "URI of the scientific object type"
-    hasCreationDate-help: "Creation date"
-    hasDestructionDate-help: "Destruction date"
+    hasCreationDate-help: "Creation date (format: AAAA-MM-DD)"
+    hasDestructionDate-help: "Destruction date (format: AAAA-MM-DD)"
     hasFacility-help: "Initial facility"
     isPartOf-help: "Parent URI or name"
     comment-help: "Description"

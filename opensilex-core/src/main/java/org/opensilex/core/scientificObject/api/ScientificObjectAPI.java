@@ -680,6 +680,7 @@ public class ScientificObjectAPI {
                         if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                             moveDAO.create(facilityMoveEvent);
                         }
+                        sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.hasFacility);
                     }
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();

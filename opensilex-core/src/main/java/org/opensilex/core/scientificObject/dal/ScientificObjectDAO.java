@@ -261,6 +261,7 @@ public class ScientificObjectDAO {
             if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moveDAO.create(facilityMoveEvent);
             }
+            sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.hasFacility);
             nosql.commitTransaction();
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -297,8 +298,14 @@ public class ScientificObjectDAO {
         }
 
         InstantModel end = facilityMoveEvent.getEnd();
-        if (end != null && end.getDateTimeStamp() == null) {
+        if (end != null) {
+            if (end.getDateTimeStamp() == null) {
+                end.setDateTimeStamp(OffsetDateTime.now());
+            }
+        } else if (hasFacility) {
+            end = new InstantModel();
             end.setDateTimeStamp(OffsetDateTime.now());
+            facilityMoveEvent.setEnd(end);
         }
 
         return hasFacility;
@@ -374,7 +381,8 @@ public class ScientificObjectDAO {
                     }
                 }
             }
-
+            sparql.deletePrimitives(graphNode, objectURI, Oeso.hasFacility);
+            
             sparql.commitTransaction();
             nosql.commitTransaction();
         } catch (Exception ex) {

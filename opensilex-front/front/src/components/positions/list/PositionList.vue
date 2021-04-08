@@ -43,14 +43,6 @@
                                     ></opensilex-UriLink>
                                 </template>
 
-                                <template v-slot:cell(uri)="{data}">
-                                    <opensilex-UriLink
-                                        :uri="data.item.event"
-                                        :value="data.item.event"
-                                        @click="showEventView(data.item)"
-                                    ></opensilex-UriLink>
-                                </template>
-
                                 <template v-slot:cell(to)="{data}">
                                     <opensilex-StringView
                                         v-if="data.item.to"

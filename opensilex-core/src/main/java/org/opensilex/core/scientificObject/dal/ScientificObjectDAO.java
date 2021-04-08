@@ -258,8 +258,9 @@ public class ScientificObjectDAO {
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
             MoveModel facilityMoveEvent = new MoveModel();
-            fillFacilityMoveEvent(facilityMoveEvent, object);
-            moveDAO.create(facilityMoveEvent);
+            if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
+                moveDAO.create(facilityMoveEvent);
+            }
             nosql.commitTransaction();
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -270,7 +271,7 @@ public class ScientificObjectDAO {
         return objectURI;
     }
 
-    private void fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
+    private boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
         List<URI> concernedItems = new ArrayList<>();
         concernedItems.add(object.getUri());
         facilityMoveEvent.setConcernedItems(concernedItems);
@@ -279,11 +280,13 @@ public class ScientificObjectDAO {
 
         facilityMoveEvent.setIsInstant(true);
 
+        boolean hasFacility = false;
         for (SPARQLModelRelation relation : object.getRelations()) {
             if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFacility.getURI())) {
                 InfrastructureFacilityModel infraModel = new InfrastructureFacilityModel();
                 infraModel.setUri(new URI(relation.getValue()));
                 facilityMoveEvent.setTo(infraModel);
+                hasFacility = true;
             } else if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasCreationDate.getURI())) {
                 InstantModel end = new InstantModel();
                 SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
@@ -298,6 +301,7 @@ public class ScientificObjectDAO {
             end.setDateTimeStamp(OffsetDateTime.now());
         }
 
+        return hasFacility;
     }
 
     public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -340,8 +344,9 @@ public class ScientificObjectDAO {
                     moveDAO.update(event);
                 } else {
                     event = new MoveModel();
-                    fillFacilityMoveEvent(event, object);
-                    moveDAO.create(event);
+                    if (fillFacilityMoveEvent(event, object)) {
+                        moveDAO.create(event);
+                    }
                 }
             } else {
                 if (event != null) {

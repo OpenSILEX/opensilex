@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDTO;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
-import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 

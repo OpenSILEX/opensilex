@@ -55,6 +55,7 @@
         :globalView="globalView"
         :selected="selected"
         :objectByContext="objectByContext"
+        :experiment="experiment"
       ></opensilex-ScientificObjectDetailProperties>
     </div>
 
@@ -144,6 +145,11 @@ export default class ScientificObjectDetail extends Vue {
     default: false,
   })
   globalView;
+
+  @Prop({
+    default: null,
+  })
+  experiment;
 
   @Prop({
     default: () => {

@@ -1,6 +1,11 @@
 <template>
   <span class="static-field-line">
-    <opensilex-UriLink v-if="label" :uri="value" :value="label" :to="to"></opensilex-UriLink>
+    <opensilex-UriLink
+      v-if="label"
+      :uri="value"
+      :value="label"
+      :to="to"
+    ></opensilex-UriLink>
   </span>
 </template>
 
@@ -11,7 +16,7 @@ import {
   Model,
   Provide,
   PropSync,
-  Watch
+  Watch,
 } from "vue-property-decorator";
 import Vue from "vue";
 
@@ -21,6 +26,11 @@ export default class FactorLevelPropertyView extends Vue {
 
   @Prop()
   value;
+
+  @Prop({
+    default: null,
+  })
+  experiment;
 
   label = "";
   factorLevel = null;
@@ -37,15 +47,19 @@ export default class FactorLevelPropertyView extends Vue {
       this.$opensilex
         .getService("opensilex.FactorsService")
         .getFactorLevelDetail(this.value)
-        .then(http => {
+        .then((http) => {
           this.factorLevel = http.response.result;
           this.label =
             this.factorLevel.name + " (" + this.factorLevel.factor_name + ")";
-          // this.to = {
-          //   path:
-          //     "/factor/details/" +
-          //     encodeURIComponent(this.factorLevel.factor)
-          // };
+          if (this.experiment != null) {
+            this.to = {
+              path:
+                "/" +
+                encodeURIComponent(this.experiment) +
+                "/factor/details/" +
+                encodeURIComponent(this.factorLevel.factor),
+            };
+          }
         })
         .catch(() => {
           this.label = this.value;

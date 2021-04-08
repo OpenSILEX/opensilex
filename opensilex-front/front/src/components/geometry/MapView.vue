@@ -212,6 +212,7 @@
                 v-if="data.item.properties.OS"
                 :selected="data.item.properties.OS"
                 :withBasicProperties="false"
+                :experiment="experiment"
             ></opensilex-ScientificObjectDetailProperties>
           </div>
         </template>

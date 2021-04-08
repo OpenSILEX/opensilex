@@ -29,6 +29,7 @@
             <component
               :is="v.definition.view_component"
               :value="v.property"
+              :experiment="experiment"
             ></component>
           </div>
 
@@ -46,6 +47,7 @@
                 <component
                   :is="v.definition.view_component"
                   :value="prop"
+                  :experiment="experiment"
                 ></component>
               </li>
             </ul>
@@ -96,6 +98,7 @@
           <component
             :is="v.definition.view_component"
             :value="v.property"
+            :experiment="experiment"
           ></component>
         </div>
         <div
@@ -109,6 +112,7 @@
               <component
                 :is="v.definition.view_component"
                 :value="prop"
+                :experiment="experiment"
               ></component>
             </li>
           </ul>
@@ -147,6 +151,12 @@ export default class ScientificObjectDetailProperties extends Vue {
     default: true,
   })
   withBasicProperties;
+
+
+  @Prop({
+    default: null,
+  })
+  experiment;
 
   mounted() {
     if (this.selected) {

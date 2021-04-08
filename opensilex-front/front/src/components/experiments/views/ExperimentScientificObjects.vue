@@ -169,7 +169,7 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected"  :tabs="detailTabs" />
+        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" :tabs="detailTabs" :experiment="uri"/>
       </div>
     </div>
 

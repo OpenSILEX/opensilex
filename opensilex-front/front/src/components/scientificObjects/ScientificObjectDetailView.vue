@@ -44,6 +44,7 @@ export default class ScientificObjectDetailView extends Vue {
           this.objectByContext = [];
           http.response.result.forEach((scientificObject) => {
             if (scientificObject.experiment == null) {
+              scientificObject.relations = [];
               this.selected = scientificObject;
             } else {
               this.objectByContext.push(scientificObject);

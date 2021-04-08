@@ -98,7 +98,7 @@
           <component
             :is="v.definition.view_component"
             :value="v.property"
-            :experiment="experiment"
+            :experiment="value.experiment"
           ></component>
         </div>
         <div
@@ -112,7 +112,7 @@
               <component
                 :is="v.definition.view_component"
                 :value="prop"
-                :experiment="experiment"
+                :experiment="value.experiment"
               ></component>
             </li>
           </ul>

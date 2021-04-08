@@ -6,8 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.document.dal;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
+
+import org.apache.jena.atlas.io.IO;
 import org.opensilex.core.ontology.Oeso;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.security.user.dal.UserModel;
@@ -54,13 +59,29 @@ public class DocumentDAO {
     }
 
     public DocumentModel create(DocumentModel instance, File file) throws Exception {
+
+        if(file.length() == 0){
+            throw new IOException(instance.getUri()+ " : empty document "+file.getPath());
+        }
+
+        sparql.startTransaction();
         sparql.create(instance);
-        fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
+        try{
+            fs.writeFile(FS_DOCUMENT_PREFIX, instance.getUri(), file);
+            sparql.commitTransaction();
+        }catch (IOException e){
+            sparql.rollbackTransaction(e);
+        }
+
         return instance;
     }
 
     public byte[] getFile(URI uri) throws Exception {
-        return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
+        try {
+            return fs.readFileAsByteArray(FS_DOCUMENT_PREFIX, uri);
+        }catch (NoSuchFileException | FileNotFoundException ex){
+            throw new NotFoundURIException(ex.getMessage(),uri);
+        }
     }
 
     public DocumentModel getMetadata(URI uri, UserModel user) throws Exception {
@@ -73,8 +94,19 @@ public class DocumentDAO {
     }
 
     public void delete(URI uri, UserModel user) throws Exception {
+
+        if(! fs.exist(FS_DOCUMENT_PREFIX,uri)){
+            throw new NotFoundURIException(uri);
+        }
+
+        sparql.startTransaction();
         sparql.delete(DocumentModel.class, uri);
-        fs.delete(FS_DOCUMENT_PREFIX, uri);
+        try {
+            fs.delete(FS_DOCUMENT_PREFIX, uri);
+            sparql.commitTransaction();
+        }catch (IOException e){
+            sparql.rollbackTransaction(e);
+        }
     }
 
     public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {

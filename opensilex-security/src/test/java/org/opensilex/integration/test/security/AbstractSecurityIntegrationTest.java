@@ -8,6 +8,8 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import org.junit.After;
@@ -237,6 +239,20 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      */
     protected Response getJsonGetByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).get();
+    }
+    /**
+     *
+     * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
+     *
+     * @param target the {@link WebTarget} on which get an entity with the given URI
+     * @param uri the URI of the resource to fetch from the given target.
+     * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
+     * @throws Exception in case of error during token retrieval
+     */
+    protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception{
+        return appendToken(target.resolveTemplate("uri", uri))
+                .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                .get();
     }
 
     /**

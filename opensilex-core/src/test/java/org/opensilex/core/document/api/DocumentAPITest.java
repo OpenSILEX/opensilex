@@ -8,37 +8,42 @@ package org.opensilex.core.document.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.opensilex.core.document.dal.DocumentModel;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import org.opensilex.core.document.dal.DocumentModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.core.ontology.Oeso;
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
-import java.io.*;
-import java.net.URI;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import javax.ws.rs.core.MediaType;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import java.net.URL;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.*;
+import static org.opensilex.core.document.dal.DocumentDAO.FS_DOCUMENT_PREFIX;
 
 /**
  * @author Emilie FERNANDEZ
@@ -50,8 +55,19 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
+    protected FileStorageService fs;
+
     protected String uriPath = path + "/{uri}/description";
+    protected String getFilePath = path + "/{uri}";
     protected String deletePath = path + "/{uri}";
+
+    FileStorageService getFs(){
+
+        if(fs == null){
+            fs = getOpensilex().getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+        }
+        return fs;
+    }
 
     protected DocumentCreationDTO getCreationDTO() {
 
@@ -80,6 +96,30 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         URI createdUri = extractUriFromResponse(postResult);
         final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+    }
+
+    @Test
+    public void testCreateFsFail() throws Exception{
+
+        File file = tmpFolder.newFile("testCreateFsFail.txt");
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+
+        DocumentCreationDTO creationDTO = getCreationDTO();
+        creationDTO.setUri(new URI("http://opensilex.org/testCreateFsFail"));
+
+        MultiPart multipart = new FormDataMultiPart().field("description", creationDTO, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+        // try to insert a empty file
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        // ensure that the document model has not been inserted
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+
+        // ensure that the file has not been inserted
+        final Response getFileResult = getOctetStreamByUriResponse(target(getFilePath),creationDTO.getUri().toString());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getFileResult.getStatus());
     }
 
     @Test
@@ -138,6 +178,43 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
+    public void testDeleteFail() throws Exception{
+
+        // create object and check if URI exists
+
+        File file = tmpFolder.newFile("testFile.txt");
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write("test".getBytes());
+        }
+        DocumentCreationDTO creationDTO = getCreationDTO();
+        creationDTO.setUri(new URI("http://opensilex.org/testDeleteFail"));
+
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+        MultiPart multipart = new FormDataMultiPart().field("description", creationDTO, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+        Response postResponse = getJsonPostResponseMultipart(target(path), multipart);
+
+        Response getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to get the file path and to delete file, outside of the document API
+        getFs().delete(FS_DOCUMENT_PREFIX,creationDTO.getUri());
+
+        // try to delete document : delete must fail because the file has been deleted
+        final Response delResult = getDeleteByUriResponse(target(deletePath), creationDTO.getUri().toString());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), delResult.getStatus());
+
+        // check that file download failed
+        final Response getFileResult = getOctetStreamByUriResponse(target(getFilePath), creationDTO.getUri().toString());
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getFileResult.getStatus());
+
+        // check that the document model is still present
+        getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+    }
+
+    @Test
     public void testGetByUri() throws Exception {
 
         File file = tmpFolder.newFile("testFile.txt"); 
@@ -162,6 +239,30 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
+    public void testGetFileByUri() throws Exception{
+
+        File file = tmpFolder.newFile("testFile.txt");
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write("test".getBytes());
+        }
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+        MultiPart multipart = new FormDataMultiPart().field("description", getCreationDTO(), MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+        final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getOctetStreamByUriResponse(target(getFilePath), uri.toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        byte[] fileBytes = IOUtils.toByteArray(getResult.readEntity(InputStream.class));
+        assertNotNull(fileBytes);
+        assertEquals(4,fileBytes.length);
+
+        byte[] initialFileBytes = Files.readAllBytes(Paths.get(file.getPath()));
+        assertArrayEquals(fileBytes, initialFileBytes);
+    }
+
+    @Test
     public void testGetByUriFail() throws Exception {
 
         File file = tmpFolder.newFile("testFile.txt"); 
@@ -178,6 +279,26 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
         // call the service with a non existing pseudo random URI
         final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
+        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
+    @Test
+    public void testGetFileByUriFail() throws Exception{
+        File file = tmpFolder.newFile("testFile.txt");
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write("test".getBytes());
+        }
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+        DocumentCreationDTO creationDTO = getCreationDTO();
+        creationDTO.setUri(new URI("http://opensilex.org/testGetFileFail"));
+        MultiPart multipart = new FormDataMultiPart().field("description",creationDTO, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+
+        final Response postResponse = getJsonPostResponseMultipart(target(path), multipart);
+
+        // try to get the file path and to delete file, outside of the document API
+        getFs().delete(FS_DOCUMENT_PREFIX,creationDTO.getUri());
+
+        Response getResult = getOctetStreamByUriResponse(target(getFilePath), creationDTO.getUri().toString());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 

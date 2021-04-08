@@ -22,20 +22,6 @@
       </b-nav-item>
 
       <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.ANNOTATIONS_TAB)"
-        :active="isAnnotationTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.ANNOTATIONS_TAB"
-        >{{ $t("Annotation.list-title") }}
-      </b-nav-item>
-
-      <b-nav-item
-        v-if="includeTab(ScientificObjectDetail.DOCUMENTS_TAB)"
-        :active="isDocumentTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.DOCUMENTS_TAB"
-        >{{ $t("DocumentTabList.documents") }}
-      </b-nav-item>
-
-      <b-nav-item
         v-if="includeTab(ScientificObjectDetail.EVENTS_TAB)"
         :active="isEventTab"
         @click.prevent="tabsValue = ScientificObjectDetail.EVENTS_TAB"
@@ -47,6 +33,20 @@
         :active="isPositionTab"
         @click.prevent="tabsValue = ScientificObjectDetail.POSITIONS_TAB"
         >{{ $t("Position.list-title") }}
+      </b-nav-item>
+
+      <b-nav-item
+        v-if="includeTab(ScientificObjectDetail.ANNOTATIONS_TAB)"
+        :active="isAnnotationTab"
+        @click.prevent="tabsValue = ScientificObjectDetail.ANNOTATIONS_TAB"
+        >{{ $t("Annotation.list-title") }}
+      </b-nav-item>
+
+      <b-nav-item
+        v-if="includeTab(ScientificObjectDetail.DOCUMENTS_TAB)"
+        :active="isDocumentTab"
+        @click.prevent="tabsValue = ScientificObjectDetail.DOCUMENTS_TAB"
+        >{{ $t("DocumentTabList.documents") }}
       </b-nav-item>
     </opensilex-PageActions>
 

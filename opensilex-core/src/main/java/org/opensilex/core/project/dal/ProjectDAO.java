@@ -53,7 +53,6 @@ public class ProjectDAO {
     }
 
     public ProjectModel update(ProjectModel instance, UserModel user) throws Exception {
-        validateProjectAccess(instance.getUri(), user);
         sparql.update(instance);
         return instance;
     }
@@ -64,7 +63,6 @@ public class ProjectDAO {
     }
 
     public void delete(URI uri, UserModel user) throws Exception {
-        validateProjectAccess(uri, user);
         sparql.delete(ProjectModel.class, uri);
     }
 
@@ -183,65 +181,6 @@ public class ProjectDAO {
             }
         }
 
-    }
-
-
-    public void validateProjectAccess(URI projectURI, UserModel user) throws Exception {
-        if (!sparql.uriExists(ProjectModel.class, projectURI)) {
-            throw new NotFoundURIException(projectURI);
-        }
-
-        if (user.isAdmin()) {
-            return;
-        }
-
-        Node userNodeURI = SPARQLDeserializers.nodeURI(user.getUri());
-        Node uriVar = SPARQLDeserializers.nodeURI(projectURI);
-
-        AskBuilder ask = sparql.getUriExistsQuery(ProjectModel.class, projectURI);
-
-        Var creatorVar = makeVar(ProjectModel.CREATOR_FIELD);
-        ask.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
-        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
-
-        Var coordinatorVar = makeVar(ProjectModel.COORDINATORS_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.hasCoordinator.asNode(), coordinatorVar));
-        Expr hasCoordinator = SPARQLQueryHelper.eq(coordinatorVar, userNodeURI);
-
-        Var scientificSupervisorVar = makeVar(ProjectModel.SCIENTIFIC_CONTACTS_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.hasScientificContact.asNode(), scientificSupervisorVar));
-        Expr hasScientificContact = SPARQLQueryHelper.eq(scientificSupervisorVar, userNodeURI);
-
-        Var technicalSupervisorVar = makeVar(ProjectModel.ADMINISTRATIVE_CONTACTS_FIELD);
-        ask.addOptional(new Triple(uriVar, Oeso.hasAdministrativeContact.asNode(), technicalSupervisorVar));
-        Expr hasAdministrativeContact = SPARQLQueryHelper.eq(technicalSupervisorVar, userNodeURI);
-
-        ask.addFilter(
-                SPARQLQueryHelper.or(
-                        isCreator,
-                        hasCoordinator,
-                        hasScientificContact,
-                        hasAdministrativeContact
-                )
-        );
-
-        if (!sparql.executeAskQuery(ask)) {
-            // check related project experiment
-            List<URI> xpUris = sparql.searchURIs(ExperimentModel.class, user.getLanguage(), (select) -> {
-                select.addWhere(makeVar(ExperimentModel.URI_FIELD), Oeso.hasProject.asNode(), SPARQLDeserializers.nodeURI(projectURI));
-            });
-
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-            for (URI xpUri : xpUris) {
-                try {
-                    xpDAO.validateExperimentAccess(xpUri, user);
-                    return;
-                } catch (Exception ex) {
-                    // Ignore exception
-                }
-            }
-            throw new ForbiddenURIAccessException(projectURI);
-        }
     }
 
     public List<ProjectModel> getList(List<URI> uris, UserModel user) throws Exception {

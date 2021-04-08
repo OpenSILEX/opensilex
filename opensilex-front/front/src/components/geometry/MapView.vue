@@ -819,6 +819,14 @@ p {
   border-radius: 5px;
   text-indent: 2px;
 }
+
+::v-deep .b-table-details .card {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
 </style>
 
 <i18n>

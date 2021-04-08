@@ -76,9 +76,13 @@ public class PositionAPI {
                 time != null ? OffsetDateTime.parse(time) : null
         );
 
+        if (model == null) {
+            throw new NotFoundURIException("No position found", uri);
+        }
+
         PositionModel position = moveDAO.getPosition(uri, model.getUri());
 
-        if (model == null) {
+        if (position == null) {
             throw new NotFoundURIException("No position found", uri);
         }
         return new SingleObjectResponse<>(new PositionGetDTO(model, position)).getResponse();

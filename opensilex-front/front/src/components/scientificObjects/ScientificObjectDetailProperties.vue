@@ -168,10 +168,14 @@ export default class ScientificObjectDetailProperties extends Vue {
         ),
       this.$opensilex
         .getService("opensilex.PositionsService")
-        .getPosition(this.selected.uri),
+        .getPosition(this.selected.uri)
+        .catch(() => null),
     ]).then((result) => {
       this.classModel = result[0].response.result;
-      let lastMove = result[1].response.result;
+      let lastMove = null;
+      if (result[1] != null) {
+        lastMove = result[1].response.result;
+      }
 
       let valueByProperties = this.buildValueByProperties(
         this.selected.relations,

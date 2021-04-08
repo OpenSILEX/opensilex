@@ -39,22 +39,8 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
     }
 
     @Override
-    protected void readAndValidateRow(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
-
-        String[] row;
-
-        // start at the 2nd row after two header rows
-        int rowIndex = 2;
-
-        while((row = csvReader.parseNext()) != null){
-            this.models.add(readAndValidateRow(row,rowIndex));
-            rowIndex++;
-        }
-
-        if(this.models.isEmpty()){
-            CSVCell csvCell = new CSVCell(rowIndex, 0, null, "Empty row");
-            validation.addMissingRequiredValue(csvCell);
-        }
+    protected MoveModel getNewModel() {
+        return new MoveModel();
     }
 
     @Override

@@ -163,10 +163,10 @@
         @onValidate="editDeviceVar"
     ></opensilex-VariableModalList>
 
-    <opensilex-MoveCsvForm
-        ref="moveCsvForm"
+    <opensilex-EventCsvForm
+        ref="eventCsvForm"
         :targets="selectedUris"
-    ></opensilex-MoveCsvForm>
+    ></opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
         ref="moveCsvForm"
@@ -179,7 +179,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO, OntologyService, RDFTypeDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
@@ -196,10 +196,8 @@ export default class DeviceList extends Vue {
   @Ref("variableSelection") readonly variableSelection!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
-  @Ref("deviceVarForm") readonly deviceVarForm!: any;
 
   selectedUris: Array<string> = [];
-
 
   get user() {
     return this.$store.state.user;
@@ -243,6 +241,16 @@ export default class DeviceList extends Vue {
       metadataValue: undefined
     };
 
+    /*this.exportFilter = {
+      namePattern: undefined,
+      rdf_type: undefined,
+      start_up: undefined,
+      existence_date: undefined,
+      brand: undefined,
+      model: undefined,
+      serial_number: undefined,
+      metadata: undefined
+    }*/
     this.refresh();
   }
 
@@ -394,34 +402,6 @@ export default class DeviceList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  addVariable() {
-    let typeDevice;
-    let measure = [];
-    let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
-    for(let select of this.tableRef.getSelected()) {
-      typeDevice = select.rdf_type;
-      measure.push(deniedType.includes(typeDevice));
-    }
-
-    if (measure.includes(true)) {
-      alert(this.$t('DeviceList.alertBadDeviceType'));
-    } else{
-      this.variableSelection.show();
-    }
-  }
-
-  updateVariable(form) {
-    this.$opensilex
-        .getService("opensilex.DevicesService")
-        .updateDevice(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("device updated", uri);
-          this.$emit("onUpdate", form);
-        })
-        .catch(this.$opensilex.errorHandler);
-  }
-
   createDocument() {
     this.documentForm.showCreateForm();
   }
@@ -487,23 +467,6 @@ export default class DeviceList extends Vue {
     this.exportFilter.metadata = this.addMetadataFilter();
   }
 
-  createEvents(){
-      this.updateSelectedUris();
-      this.eventCsvForm.show();
-  }
-
-  createMoves(){
-    this.updateSelectedUris();
-    this.moveCsvForm.show();
-  }
-
-  updateSelectedUris(){
-    this.selectedUris = [];
-    for (let select of this.tableRef.getSelected()) {
-      this.selectedUris.push(select.uri);
-    }
-  }
-
 }
 </script>
 
@@ -525,6 +488,7 @@ en:
     linkVariable: Link variables
     export: Export Device list
     alertSelectSize: The selection has too many lines, 1000 lines maximum
+    addEvent: Add event
     addAnnotation: Add annotation
     addMove: Move
     showMap: Show in a map
@@ -559,8 +523,9 @@ fr:
     linkVariable: Lier des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum
+    addEvent: Ajouter un évènement
     addAnnotation: Ajouter une annotation
-    addMove: Déplacer
+    addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
 

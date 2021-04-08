@@ -112,7 +112,7 @@ public class DataAPI {
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
-    public static final int SIZE_MAX = 20000;
+    public static final int SIZE_MAX = 50000;
     
 
 

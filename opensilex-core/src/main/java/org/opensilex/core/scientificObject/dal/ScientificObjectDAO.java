@@ -271,7 +271,7 @@ public class ScientificObjectDAO {
         return objectURI;
     }
 
-    private boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
+    public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
         List<URI> concernedItems = new ArrayList<>();
         concernedItems.add(object.getUri());
         facilityMoveEvent.setConcernedItems(concernedItems);

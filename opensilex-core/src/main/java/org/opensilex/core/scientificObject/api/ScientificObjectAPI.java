@@ -388,7 +388,7 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-        
+
         List<URI> contexts = dao.getObjectContexts(objectURI);
 
         List<ScientificObjectDetailByExperimentsDTO> dtoList = new ArrayList<>();
@@ -671,8 +671,16 @@ public class ScientificObjectAPI {
                 sparql.startTransaction();
                 try {
                     List<SPARQLNamedResourceModel> objects = errors.getObjects();
+
                     sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
+                    MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+                    for (SPARQLNamedResourceModel object : objects) {
+                        MoveModel facilityMoveEvent = new MoveModel();
+                        if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+                            moveDAO.create(facilityMoveEvent);
+                        }
+                    }
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();
                         Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
@@ -712,6 +720,13 @@ public class ScientificObjectAPI {
                 List<SPARQLNamedResourceModel> objects = errors.getObjects();
                 sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
+                MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+                for (SPARQLNamedResourceModel object : objects) {
+                    MoveModel facilityMoveEvent = new MoveModel();
+                    if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
+                        moveDAO.create(facilityMoveEvent);
+                    }
+                }
                 if (globalCopy) {
                     UpdateBuilder update = new UpdateBuilder();
                     Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));

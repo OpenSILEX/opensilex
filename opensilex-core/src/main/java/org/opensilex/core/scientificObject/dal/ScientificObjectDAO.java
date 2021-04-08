@@ -372,10 +372,6 @@ public class ScientificObjectDAO {
                         }
                         moveDAO.update(event);
                     }
-                } else {
-                    fillFacilityMoveEvent(event, object);
-                    moveDAO.update(event);
-
                 }
             }
 

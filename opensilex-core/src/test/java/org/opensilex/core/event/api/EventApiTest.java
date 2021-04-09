@@ -297,26 +297,31 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
         // search given a concernedItem witch match both events
         Map<String, Object> params = new HashMap<String, Object>() {{
-            put(CONCERNED_ITEM_QUERY_PARAM,new URI("test:scientificObject2"));
+            put(CONCERNED_ITEM_QUERY_PARAM,"test:scientificObject2");
         }};
         List<EventGetDTO> results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(2,results.size());
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(),uri)));
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(),uri2)));
 
+        // search given a concernedItem witch partial match both events
+        params.put(CONCERNED_ITEM_QUERY_PARAM,"scientificObject2");
+        results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
+        assertEquals(2,results.size());
+
         // search given a concernedItem witch match no events
-        params.put(CONCERNED_ITEM_QUERY_PARAM,new URI("test:scientificObject4"));
+        params.put(CONCERNED_ITEM_QUERY_PARAM,"test:scientificObject4");
         results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(0,results.size());
 
         // search given a concernedItem witch match only the first event
-        params.put(CONCERNED_ITEM_QUERY_PARAM,new URI("test:scientificObject1"));
+        params.put(CONCERNED_ITEM_QUERY_PARAM,"test:scientificObject1");
         results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(1,results.size());
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(),uri)));
 
         // search given a concernedItem witch match only the second event
-        params.put(CONCERNED_ITEM_QUERY_PARAM,new URI("test:scientificObject3"));
+        params.put(CONCERNED_ITEM_QUERY_PARAM,"test:scientificObject3");
         results = getResults(searchPath,params,new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(1,results.size());
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(),uri2)));

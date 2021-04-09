@@ -600,6 +600,7 @@ export default class DeviceTable extends Vue {
       } else {
         this.summary = this.okNumber + " " + this.$t('DeviceTable.infoMessageDevInserted') +", " + this.errorNumber + " " + this.$t('DeviceTable.infoMessageErrors') + ", " + this.emptyLines + " " + this.$t('DeviceTable.infoMessageEmptyLines');
       }
+      this.tabulator.redraw(true);
       this.infoMessage = true;
       this.disableCloseButton = false;
       this.$opensilex.enableLoader();
@@ -625,101 +626,109 @@ export default class DeviceTable extends Vue {
     this.serviceEvent =  this.$opensilex.getService("opensilex.EventsService");
   }
 
+
   callCreateDeviceService(
-    form: DeviceCreationDTO,
-    index: number,
-    onlyChecking: boolean,
-    formMove: MoveCreationDTO
+      form: DeviceCreationDTO,
+      index: number,
+      onlyChecking: boolean,
+      formMove: MoveCreationDTO
   ) {
     return new Promise((resolve, reject) => {
-    this.service
-    .createDevice(onlyChecking,form)
-    .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-      if(onlyChecking) {
-        this.tabulator.updateData([{rowNumber:index, checkingStatus:this.$t('DeviceTable.checkingStatusMessage'), status:"OK"}])
-      } else {
-        this.tabulator.updateData([{rowNumber:index, insertionStatus:this.$t('DeviceTable.insertionStatusMessage'), status:"OK", uri:http.response.result}])
-        formMove.targets.push(http.response.result)
-        this.serviceEvent.createMoves([formMove]).then().catch(error => {
-          let errorMessage: string;
-          let failure = true;
-          try {
-            errorMessage = error.response.result.message;
-            failure = false;
-          } catch(e1) {
-            failure = true;
-          }
+      this.service
+          .createDevice(onlyChecking, form)
+          .then((http: HttpResponse<OpenSilexResponse<any>>) => {
 
-          if (failure) {
-              try {
-                errorMessage =
-                  error.response.metadata.status[0].exception.details;
-              } catch (e2) {
-                errorMessage = "uncatched move error";
+            if (onlyChecking) {
+              this.tabulator.updateData([{
+                rowNumber: index, checkingStatus: this.$t('DeviceTable.checkingStatusMessage'), status: "OK"
+              }])
+            } else {
+              this.tabulator.updateData([{
+                rowNumber: index,
+                insertionStatus: this.$t('DeviceTable.insertionStatusMessage'),
+                status: "OK",
+                uri: http.response.result
+              }])
+              formMove.targets.push(http.response.result)
+
+              let errorMessage: string;
+
+              // check if Facility is filled before calling move create
+              if (!formMove.to) {
+                errorMessage = this.$t('DeviceTable.insertionStatusMessage') +". "+ this.$t('DeviceTable.no-move-inserted') +". "+this.$t('DeviceTable.no-move-missing-facility');
+                this.tabulator.updateData([{rowNumber: index, insertionStatus: errorMessage, status: "WARN"}])
+
+              // check if StartUp date is filled before calling move create
+              } else if (!formMove.end) {
+                errorMessage = this.$t('DeviceTable.insertionStatusMessage') +". "+ this.$t('DeviceTable.no-move-inserted') +". "+ this.$t('DeviceTable.no-move-missing-date');
+                this.tabulator.updateData([{rowNumber: index, insertionStatus: errorMessage, status: "WARN"}])
+
+              } else {
+                this.serviceEvent.createMoves([formMove]).then().catch(error => {
+
+                  if (error.response.result.message) {
+                    errorMessage = error.response.result.message;
+                  } else if (error.response[0].message) {
+                    errorMessage = errorMessage = error.response[0].message
+                  } else {
+                    errorMessage = "Uncaught move error";
+                  }
+
+                  this.tabulator.updateData([{rowNumber: index, insertionStatus: errorMessage, status: "WARN"}])
+
+                  let row = this.tabulator.getRow(index);
+                  row.reformat();
+                  this.errorNumber = this.errorNumber + 1;
+                  resolve();
+                });
               }
             }
-            
-          if (onlyChecking) {
-            this.tabulator.updateData([
-              { rowNumber: index, checkingStatus: errorMessage, status: "WARN" }
-            ]);
-          } else {
-            this.tabulator.updateData([
-              { rowNumber: index, insertionStatus: errorMessage, status: "WARN" }
-            ]);
-          }
 
-          let row = this.tabulator.getRow(index);
-          row.reformat();
-          this.errorNumber = this.errorNumber + 1;
-          resolve();
-        });
-      }
-      
-      let row = this.tabulator.getRow(index);
-      row.reformat();
-      this.okNumber = this.okNumber + 1;
-      this.progressValue = this.progressValue + 1;
-      
-      resolve();
-      
-    }).catch(error => {
-        let errorMessage: string;
-        let failure = true;
-        try {
-          errorMessage = error.response.result.message;
-          failure = false;
-        } catch(e1) {
-          failure = true;
-        }
+            let row = this.tabulator.getRow(index);
+            row.reformat();
+            this.okNumber = this.okNumber + 1;
+            this.progressValue = this.progressValue + 1;
 
-        if (failure) {
+            resolve();
+
+          })
+          .catch(error => {
+            let errorMessage: string;
+            let failure = true;
             try {
-              errorMessage =
-                error.response.metadata.status[0].exception.details;
-            } catch (e2) {
-              errorMessage = "uncatched error";
+              errorMessage = error.response.result.message;
+              failure = false;
+            } catch (e1) {
+              failure = true;
             }
-          }
-          
-        if (onlyChecking) {
-          this.tabulator.updateData([
-            { rowNumber: index, checkingStatus: errorMessage, status: "NOK" }
-          ]);
-        } else {
-          this.tabulator.updateData([
-            { rowNumber: index, insertionStatus: errorMessage, status: "NOK" }
-          ]);
-        }
 
-        let row = this.tabulator.getRow(index);
-        row.reformat();
-        this.errorNumber = this.errorNumber + 1;
-        this.progressValue = this.progressValue + 1;
-        this.disableInsert = false;
-        this.disableCheck = false;
-        resolve();
-      });
+            if (failure) {
+              try {
+                errorMessage =
+                    error.response.metadata.status[0].exception.details;
+              } catch (e2) {
+                errorMessage = "uncatched error";
+              }
+            }
+
+            if (onlyChecking) {
+              this.tabulator.updateData([
+                {rowNumber: index, checkingStatus: errorMessage, status: "NOK"}
+              ]);
+            } else {
+              this.tabulator.updateData([
+                {rowNumber: index, insertionStatus: errorMessage, status: "NOK"}
+              ]);
+            }
+
+            let row = this.tabulator.getRow(index);
+            row.reformat();
+            this.errorNumber = this.errorNumber + 1;
+            this.progressValue = this.progressValue + 1;
+            this.disableInsert = false;
+            this.disableCheck = false;
+            resolve();
+          });
     });
   }
 
@@ -868,6 +877,9 @@ en:
     infoAttributes: To add informations, you can add personnal column
     checkingStatusMessage: ready
     insertionStatusMessage: created
+    no-move-inserted: No move created.
+    no-move-missing-facility: The field <Facility> is required
+    no-move-missing-date: The field <Start-up date> is required
     filterLines: Filter the lines
     infoMandatoryFields: It is mandatory to fill the name
     infoDateFormat:  date format YYYY-MM-DD,DD-MM-YYYY,DD/MM/YYYY
@@ -910,6 +922,9 @@ fr:
     infoMessageDevInserted: device insérés
     checkingStatusMessage: validé
     insertionStatusMessage: créé
+    no-move-inserted: Pas de déplacement crée.
+    no-move-facility: Le champ <Installation> est requis
+    no-move-missing-date: Le champ <Date de mise en service> est requis
     seeErrorLines: See lines
     seeAll : see all 
     infoMandatoryFields: Il est obligatoire de renseigner au moins un nom

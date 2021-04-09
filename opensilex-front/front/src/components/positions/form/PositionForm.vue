@@ -101,12 +101,12 @@ en:
         coordinates-help: "Arrival coordinates at WKT format"
         custom-coordinates: Custom coordinates
         x-help: "1th dimension of a custom coordinate system"
-        x: x
+        x: X
         x-placeholder: "10"
-        y: y
+        y: Y
         y-help: "2nd dimension of a custom coordinate system"
         y-placeholder: "10"
-        z: z
+        z: Z
         z-placeholder: "10"
         z-help: "3rd dimension of a custom coordinate system"
         textual-position: Textual position
@@ -114,10 +114,10 @@ en:
         textual-position-help: Description of the position with text
         from: From
         from-placeholder: dev-infra:greenHouseA
-        from-help: Starting facility
+        from-help: "Starting facility URI (The facility must exists)."
         to: To
         to-placeholder: dev-infra:greenHouseB
-        to-help: Arrival facility
+        to-help: "Arrival facility URI (The facility must exists)."
 fr:
     Position:
         title: Position
@@ -126,12 +126,12 @@ fr:
         coordinates-help: "Coordonnées d'arrivée au format WKT"
         custom-coordinates: "Coordonnées personnalisées"
         x-help: "1ère dimension d'un système de coordonnées"
-        x: x
+        x: X
         x-placeholder: "10"
-        y: y
+        y: Y
         y-help: "2ème dimension d'un système de coordonnées"
         y-placeholder: "10"
-        z: z
+        z: Z
         z-placeholder: "10"
         z-help: "3ème dimension d'un système de coordonnées"
         textual-position: Positition textuelle
@@ -139,8 +139,8 @@ fr:
         textual-position-help: Description textuelle de la position
         from: De
         from-placeholder: dev-infra:serreA
-        from-help: "Installation technique de départ"
+        from-help: "URI de l'installation technique de départ (L'installation doit exister)."
         to: Vers
         to-placeholder: dev-infra:serreB
-        to-help: "Installation technique d'arrivée"
+        to-help: "URI de l'installation technique d'arrivée (L'installation doit exister)."
 </i18n>

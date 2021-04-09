@@ -18,11 +18,11 @@ import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.time.Time;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -56,6 +56,8 @@ public class EventDAO {
     protected static final Var endInstantTimeStampVar;
     protected static final Var fromVar;
     protected static final Var toVar;
+    protected static final Var concernedItemVar;
+
 //    protected static final Var effectiveEventEndTimeVar;
 
     // SPARQL triple
@@ -63,6 +65,8 @@ public class EventDAO {
     protected static final Triple beginInstantTimeStampTriple;
     protected static final Triple endTriple;
     protected static final Triple endInstantTimeStampTriple;
+    protected static final Triple concernedItemTriple;
+
 
     // SPARQL EXPR
 //    protected static final Expr bindDateExpr;
@@ -71,7 +75,7 @@ public class EventDAO {
 
         uriVar = SPARQLQueryHelper.makeVar(SPARQLResourceModel.URI_FIELD);
         descriptionVar = SPARQLQueryHelper.makeVar(EventModel.DESCRIPTION_FIELD);
-
+        concernedItemVar = SPARQLQueryHelper.makeVar(EventModel.CONCERNED_ITEM_FIELD);
         fromVar = SPARQLQueryHelper.makeVar(MoveModel.FROM_FIELD);
         toVar = SPARQLQueryHelper.makeVar(MoveModel.TO_FIELD);
 
@@ -84,6 +88,8 @@ public class EventDAO {
         beginInstantTimeStampTriple = new Triple(beginInstantVar, Time.inXSDDateTimeStamp.asNode(), beginInstantTimeStampVar);
         endTriple = new Triple(uriVar, Time.hasEnd.asNode(), endInstantVar);
         endInstantTimeStampTriple = new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), endInstantTimeStampVar);
+
+        concernedItemTriple = new Triple(uriVar,Oeev.concerns.asNode(),concernedItemVar);
     }
 
     public EventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException {
@@ -120,9 +126,7 @@ public class EventDAO {
         return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
     }
 
-
     protected void appendConcernedItemFilter(ElementGroup eventGraphGroupElem, URI concernedItem) {
-
 
         // append where between event uri and the multi-valued "concernedItem" property because
         // the sparql service don't fetch multi-valued property during the search call
@@ -132,6 +136,23 @@ public class EventDAO {
             eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), concernedItemNode));
         }
 
+    }
+
+    protected void appendConcernedItemRegexFilter(ElementGroup eventGraphGroupElem, String concernedItemPattern) throws URISyntaxException {
+
+        if(!StringUtils.isEmpty(concernedItemPattern)){
+
+            // append where between event uri and the multi-valued "concernedItem" property because
+            // the sparql service don't fetch multi-valued property during the search call
+            eventGraphGroupElem.addTriplePattern(concernedItemTriple);
+
+            URI concernedItemURI = new URI(concernedItemPattern);
+
+            // if the patten include an URI with a prefix, then we must expand URI in order to match with the concerned item str
+            String exprConcernedItemPattern = concernedItemURI.getScheme() != null ? SPARQLDeserializers.getExpandedURI(concernedItemPattern) : concernedItemPattern;
+            Expr concernedItemRegexFilter = SPARQLQueryHelper.regexStrFilter(concernedItemVar.getVarName(),exprConcernedItemPattern);
+            eventGraphGroupElem.addElementFilter(new ElementFilter(concernedItemRegexFilter));
+        }
     }
 
     /**
@@ -204,7 +225,7 @@ public class EventDAO {
 
     }
 
-    public ListWithPagination<EventModel> search(URI concernedItem,
+    public ListWithPagination<EventModel> search(String concernedItemPattern,
                                                  String descriptionPattern,
                                                  URI type,
                                                  OffsetDateTime start, OffsetDateTime end,
@@ -230,7 +251,7 @@ public class EventDAO {
 
                             appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
                             appendTypeFilter(eventGraphGroupElem, type);
-                            appendConcernedItemFilter(eventGraphGroupElem, concernedItem);
+                            appendConcernedItemRegexFilter(eventGraphGroupElem, concernedItemPattern);
                             appendTimeFilterAndOrder(eventGraphGroupElem, start, end, exprOrderIndex, defaultOrderIndex);
 
                             exprOrderIndex.forEach(select::addOrderBy);

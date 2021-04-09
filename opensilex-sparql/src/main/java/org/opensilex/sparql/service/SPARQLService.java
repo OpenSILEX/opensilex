@@ -1639,7 +1639,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(),uris,false);
             if(! unknownUris.isEmpty()){
                 // #TODO append property for which URI are unknown
-                throw new SPARQLInvalidUriListException("["+modelMapper.getObjectClass()+"] Unknown URIS : ",unknownUris);
+                throw new SPARQLInvalidUriListException("["+modelMapper.getObjectClass().getSimpleName()+"] Unknown URIS : ",unknownUris);
             }
         }
     }

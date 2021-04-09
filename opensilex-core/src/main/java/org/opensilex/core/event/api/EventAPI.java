@@ -359,8 +359,8 @@ public class EventAPI {
             @ApiParam(value = "Event type", example = "http://www.opensilex.org/vocabulary/oeev#MoveFrom") @QueryParam("rdf_type") URI type,
             @ApiParam(value = "Start date : match event after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
             @ApiParam(value = "End date : match event before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
-            @ApiParam(value = "Concerned item URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI concernedItem,
-            @ApiParam(value = "Event description regex pattern", example = "The pest attack") @QueryParam("description") String descriptionPattern,
+            @ApiParam(value = "Concerned item URI regex pattern", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") String concernedItemPattern,
+            @ApiParam(value = "Description regex pattern", example = "The pest attack") @QueryParam("description") String descriptionPattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
@@ -369,7 +369,7 @@ public class EventAPI {
         EventDAO dao = new EventDAO(sparql, nosql);
 
         ListWithPagination<EventModel> resultList = dao.search(
-                concernedItem,
+                concernedItemPattern,
                 descriptionPattern,
                 type,
                 start != null ? OffsetDateTime.parse(start) : null,

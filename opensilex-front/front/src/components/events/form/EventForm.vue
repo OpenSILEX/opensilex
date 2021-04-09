@@ -31,10 +31,10 @@
                 <opensilex-TagInputForm
                         :value.sync="form.targets"
                         :baseType="$opensilex.Oeev.CONCERNS"
-                        label="Event.concerned-items"
+                        label="Event.targets"
                         type="text"
                         :required="true"
-                        helpMessage="Event.concerned-items-help"
+                        helpMessage="Event.targets-help"
                 ></opensilex-TagInputForm>
             </div>
         </div>
@@ -290,7 +290,7 @@
                         let relations = [];
                         for (let i in this.typeModel.data_properties) {
                             let dataProperty = this.typeModel.data_properties[i];
-                            if (dataProperty.isList) {
+                            if (dataProperty.is_list) {
                                 relations.push({
                                     value: [],
                                     property: dataProperty.property

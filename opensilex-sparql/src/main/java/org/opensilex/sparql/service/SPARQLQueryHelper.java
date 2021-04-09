@@ -51,6 +51,10 @@ public class SPARQLQueryHelper {
         return regexFilter(varName, regexPattern, null);
     }
 
+    public static Expr regexStrFilter(String varName, String regexPattern){
+        return regexFilter(exprFactory.str(exprFactory.asVar(varName)),regexPattern,null);
+    }
+
     public static Expr regexFilter(Expr expr, String regexPattern, String regexFlag) {
         if (StringUtils.isEmpty(regexPattern)) {
             return null;

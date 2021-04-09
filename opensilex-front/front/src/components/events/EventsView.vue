@@ -1,25 +1,29 @@
 <template>
-    <opensilex-EventList
+  <div class="container-fluid">
+    <opensilex-PageHeader
+        icon="ik#ik-activity"
+        title="Event.list-title"
+        description="EventsView.description"
+    ></opensilex-PageHeader>
+
+
+    <opensilex-PageContent>
+      <template v-slot>
+        <opensilex-EventList
             ref="eventList"
             :enableActions="true"
             :columnsToDisplay="new Set(['type','start','end','description', 'targets'])"
             :displayTitle="false"
-            :displayFilters="true"
-            :maxPageSize=10
-    ></opensilex-EventList>
+        ></opensilex-EventList>
+      </template>
+    </opensilex-PageContent>
+  </div>
 </template>
+
 
 <script lang="ts">
     import { Component, Ref } from "vue-property-decorator";
     import Vue from "vue";
-    import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-    import {
-        FactorCreationDTO,
-        FactorsService,
-        FactorGetDTO,
-        FactorDetailsGetDTO,
-        FactorUpdateDTO,
-    } from "opensilex-core/index";
     import EventList from "./list/EventList.vue";
     import {EventsService} from "opensilex-core/api/events.service";
 
@@ -34,7 +38,6 @@
 
         @Ref("eventList") readonly eventList!: EventList;
 
-
         get user() {
             return this.$store.state.user;
         }
@@ -48,11 +51,19 @@
             this.service = this.$opensilex.getService("opensilex.EventsService");
         }
 
-
-
     }
 </script>
+
 
 <style scoped lang="scss">
 </style>
 
+
+<i18n>
+en:
+  EventsView:
+    description: Manage and configure events
+fr:
+  EventsView:
+    description: Gérer et configurer les événementS
+</i18n>

@@ -75,7 +75,7 @@
               :columnsToDisplay="new Set(['uri','type','start','end','description'])"
               :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
               :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
-              :displayFilters="true"
+              :displayTargetFilter="false"
           ></opensilex-EventList>
 
           <opensilex-PositionList

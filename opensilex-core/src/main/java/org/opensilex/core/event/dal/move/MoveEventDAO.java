@@ -501,7 +501,7 @@ public class MoveEventDAO extends EventDAO {
             
         }
         
-        LinkedHashMap<MoveModel, PositionModel> result = new LinkedHashMap();
+        LinkedHashMap<MoveModel, PositionModel> result = new LinkedHashMap<>();
         positionList.forEach((uri, position) -> {
             result.put(moveByURI.get(uri), position);
         });
@@ -554,7 +554,7 @@ public class MoveEventDAO extends EventDAO {
     }
 
     /**
-     * @param objectUri the object on which we get the last move event
+     * @param concernedItem the object on which we get the last move event
      * @return the last move event of the given object, null if no move event was found.
      */
     public MoveModel getLastMoveEvent(URI concernedItem) throws Exception {

@@ -31,15 +31,15 @@
                             <template v-slot>
 
                                 <opensilex-SearchFilterField
-                                        v-if="displayFilters"
                                         @search="refresh()"
                                         @clear="reset()"
                                         label="component.experiment.search.label"
                                         :showAdvancedSearch="true"
                                 >
                                     <template v-slot:filters>
-                                        <opensilex-FilterField>
 
+                                        <!-- type -->
+                                        <opensilex-FilterField>
                                             <opensilex-TypeForm
                                                     :type.sync="filter.type"
                                                     :baseType="baseType"
@@ -48,24 +48,25 @@
 
                                         </opensilex-FilterField>
 
-                                        <opensilex-FilterField>
-                                            <opensilex-InputForm
-                                                    :value.sync="filter.target"
-                                                    label="Event.targets"
-                                                    type="text"
-                                                    placeholder="ExperimentList.filter-label-placeholder"
-                                            ></opensilex-InputForm>
+                                        <!-- target -->
+                                        <opensilex-FilterField v-if="displayTargetFilter">
+                                            <label for="target">{{ $t("Event.targets") }}</label>
+                                            <opensilex-StringFilter
+                                                id="target"
+                                                :filter.sync="filter.target"
+                                                placeholder="GermplasmList.filter.uri-placeholder"
+                                            ></opensilex-StringFilter>
                                         </opensilex-FilterField>
 
                                         <!-- description -->
-                                        <opensilex-FilterField>
-                                            <opensilex-InputForm
-                                                    :value.sync="filter.description"
-                                                    label="component.common.description"
-                                                    type="text"
-                                                    placeholder="ExperimentList.filter-label-placeholder"
-                                            ></opensilex-InputForm>
-                                        </opensilex-FilterField>
+                                          <opensilex-FilterField>
+                                            <label for="description">{{ $t("component.common.description") }}</label>
+                                            <opensilex-StringFilter
+                                                id="description"
+                                                :filter.sync="filter.description"
+                                                placeholder="ExperimentList.filter-label-placeholder"
+                                            ></opensilex-StringFilter>
+                                          </opensilex-FilterField>
 
                                     </template>
 
@@ -104,7 +105,7 @@
                                         ></opensilex-UriLink>
                                     </template>
 
-                                    <template v-slot:cell(type_label)="{data}">
+                                    <template v-slot:cell(rdf_type_name)="{data}">
                                       <opensilex-TextView :value="data.item.rdf_type_name"></opensilex-TextView>
                                     </template>
 
@@ -120,7 +121,7 @@
                                     <template v-slot:cell(targets)="{data}">
                                         <span :key="index" v-for="(uri, index) in getItemsToDisplay(data.item.targets)">
                                             <span :title="uri">{{uri}}</span>
-                                            <span v-if="index < 2"> , </span>
+                                            <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
                                             <span v-if="index >= 2"> ... </span>
                                         </span>
                                     </template>
@@ -220,8 +221,8 @@
         @Prop({default: 10})
         maxPageSize: number;
 
-        @Prop({default : false})
-        displayFilters : boolean;
+        @Prop({default : true})
+        displayTargetFilter : boolean;
 
         @Prop({default : false})
         displayTitle: boolean;
@@ -314,7 +315,7 @@
             tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
 
             if(this.columnsToDisplay.has("type")){
-                tableFields.push({key: "type_label", label: "component.common.type", sortable: true});
+                tableFields.push({key: "rdf_type_name", label: "component.common.type", sortable: true});
             }
             if(this.columnsToDisplay.has("start")){
                 tableFields.push({key: "start", label: "Event.start", sortable: true});
@@ -324,7 +325,7 @@
             }
 
             if(this.columnsToDisplay.has("targets")){
-                tableFields.push({key: "targets", label: "Event.concerned-items", sortable: true});
+                tableFields.push({key: "targets", label: "Event.targets", sortable: true});
             }
             if(this.columnsToDisplay.has("description")){
                 tableFields.push({key: "description", label: "Event.description", sortable: true});

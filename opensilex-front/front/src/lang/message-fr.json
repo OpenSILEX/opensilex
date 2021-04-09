@@ -540,7 +540,8 @@
         "data": "Data",
         "documents": "Documents",
         "annotations" : "Annotations",
-        "device" : "Dispositifs"
+        "device" : "Dispositifs",
+        "events": "Événements"
     },
     "credential": {
         "experiment": {
@@ -598,6 +599,10 @@
         "device": {
             "modification": "Ajout / Modification des dispositifs",
             "delete": "Suppression des dispositifs"
+        },
+        "event": {
+            "modification": "Ajout / Modification des événements",
+            "delete": "Suppression des événements"
         }
     },
     "validations": {

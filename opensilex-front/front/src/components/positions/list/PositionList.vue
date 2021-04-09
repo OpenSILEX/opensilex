@@ -339,11 +339,11 @@ export default class PositionList extends Vue {
 
 en:
     Position:
-        list-title: Position(s)
+        list-title: Positions
         end: Arrival date
 fr:
     Position:
-        list-title: Position(s)
+        list-title: Positions
         end: "Date d'arrivée"
 
 

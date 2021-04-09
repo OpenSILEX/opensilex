@@ -22,7 +22,7 @@
     <opensilex-ProjectForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectForm"
-      @onCreate="projectList.refresh()"
+      @onCreate="redirectToCreatedProject"
       @onUpdate="projectList.refresh()"
     ></opensilex-ProjectForm>
   </div>
@@ -44,6 +44,13 @@ export default class ProjectView extends Vue {
   }
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  redirectToCreatedProject(project) {
+    this.$router.push({
+      path: '/project/details/' + encodeURIComponent(project.uri)
+    })
+    
   }
 }
 </script>

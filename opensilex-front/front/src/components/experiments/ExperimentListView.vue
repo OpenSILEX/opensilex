@@ -30,7 +30,7 @@
     <opensilex-ExperimentForm
       v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
       ref="experimentForm"
-      @onCreate="refresh()"
+      @onCreate="redirectToCreatedExperiment"
       @onUpdate="refresh()"
     ></opensilex-ExperimentForm>
 
@@ -111,6 +111,12 @@ export default class ExperimentListView extends Vue {
       );
     }
     return convertedExperiment;
+  }
+
+  redirectToCreatedExperiment(experiment) {
+    this.$router.push({
+      path: '/experiment/details/' + encodeURIComponent(experiment.uri)
+    })
   }
 
 }

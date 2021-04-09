@@ -149,7 +149,6 @@ You need to the new module to the full build stage you need to add it to the glo
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
         <module>opensilex-security</module>
-        <module>{module_name}</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
         

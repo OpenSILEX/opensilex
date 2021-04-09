@@ -19,6 +19,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
@@ -63,11 +64,11 @@ public class FactorDAO {
         return sparql.getByURI(FactorModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<FactorModel> search( String name, URI category, List<URI> experiments,
+    public ListWithPagination<FactorModel> search( String name, String factorLevelName, URI category, List<URI> experiments,
             List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
             return sparql.searchWithPagination(FactorModel.class, lang, (SelectBuilder select) -> {
                 // TODO implements filters
-                appendFilters( name, category, experiments, select);
+                appendFilters( name, factorLevelName, category, experiments, select);
             }, orderByList, page, pageSize);
     }
 
@@ -80,18 +81,29 @@ public class FactorDAO {
      * {@link List} from the {@link FactorSearchDTO}
      *
      * @param name name search attribute
+     * @param factorLevelName name search factorLevel attribute
      * @param category category of the factor
      * @param experimentUris experiment uris
      * @param select search query
      * @throws java.lang.Exception can throw an exception
      * @see SPARQLQueryHelper the utility class used to build Expr
      */
-    protected void appendFilters(String name, URI category, List<URI> experimentUris, SelectBuilder select)
+    protected void appendFilters(String name, String factorLevelName,  URI category, List<URI> experimentUris, SelectBuilder select)
             throws Exception {
         // build regex filters
         if (!StringUtils.isEmpty(name)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(FactorModel.NAME_FIELD, name));
         }
+        
+        if (!StringUtils.isEmpty(factorLevelName)) {
+            Var factorLevelVars = makeVar(FactorModel.FACTORLEVELS_SPARQL_VAR);
+            Var factorLevelNameVar = makeVar(FactorLevelModel.NAME_FIELD + "factorLevel");
+            Var uriVar = makeVar(FactorModel.URI_FIELD);
+            select.addWhere(new Triple(factorLevelVars, Oeso.hasFactor.asNode(),uriVar));
+            select.addWhere(new Triple(factorLevelVars, RDFS.label.asNode(),factorLevelNameVar));
+            select.addFilter(SPARQLQueryHelper.regexFilter(FactorLevelModel.NAME_FIELD + "factorLevel", factorLevelName)); 
+        }
+
 
         if (category != null) {
             Var uriVar = makeVar(FactorModel.URI_FIELD);
@@ -127,14 +139,14 @@ public class FactorDAO {
             Var xpsVar = makeVar(FactorModel.EXPERIMENTS_FIELD);
             Var xpVar = makeVar(FactorModel.EXPERIMENT_FIELD);
             Var uriVar = makeVar(FactorModel.URI_FIELD);
-            select.addWhere(new Triple(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
+            
             Expr experimentFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.eq(xpsVar, SPARQLDeserializers.nodeURI(xpUri)),
                 SPARQLQueryHelper.eq(xpVar, SPARQLDeserializers.nodeURI(xpUri))
             );
-            select.addFilter(experimentFilter);
-            select.addFilter(experimentFilter);
-//            select.addWhere(makeVar(FactorModel.URI_FIELD), Oeso.studiedEffectIn, SPARQLDeserializers.nodeURI(xpUri));
+            select.addFilter(experimentFilter); 
+            select.addWhere(makeVar(FactorModel.URI_FIELD), Oeso.studiedEffectIn, SPARQLDeserializers.nodeURI(xpUri));
+            select.addOptional(new Triple(xpsVar, Oeso.studyEffectOf.asNode(),uriVar));
         });
     }
     

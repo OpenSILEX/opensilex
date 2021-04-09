@@ -34,9 +34,10 @@
 
           <template v-slot:body>
             <opensilex-LabelUriView
+              class="fix-uri-p"
               label="component.factor.uri"
               :uri="factor.uri"
-              ></opensilex-LabelUriView> 
+            ></opensilex-LabelUriView>
             <opensilex-StringView
               label="component.factor.name"
               :value="factor.name"
@@ -218,6 +219,9 @@ export default class FactorDetails extends Vue {
   margin-top: -35px;
   margin-left: -15px;
   margin-right: 15px;
+}
+.fix-uri-p {
+  padding-left: 0px;
 }
 </style>
 <i18n>

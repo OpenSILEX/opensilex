@@ -204,9 +204,14 @@ public class ExperimentDAO {
 
     private void appendFactorCategoriesFilter(SelectBuilder select, List<URI> factorCategories) throws Exception {
         if (factorCategories != null && !factorCategories.isEmpty()) {
-            addWhere(select, ExperimentModel.URI_FIELD, Oeso.studyEffectOf, ExperimentModel.FACTORS_FIELD);
-            addWhere(select, ExperimentModel.FACTORS_FIELD, Oeso.hasCategory, ExperimentModel.FACTORS_CATEGORIES_FIELD);
-            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACTORS_CATEGORIES_FIELD, factorCategories));
+            Var factors = makeVar(ExperimentModel.FACTORS_FIELD);
+            Var xpUri = makeVar(ExperimentModel.URI_FIELD);
+            Var category = makeVar( ExperimentModel.FACTORS_CATEGORIES_FIELD);
+            
+            select.addWhere(factors, Oeso.studiedEffectIn,xpUri );
+            select.addOptional(xpUri, Oeso.studyEffectOf, factors);
+            select.addWhere(factors, Oeso.hasCategory, category);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(category, factorCategories));
         }
     }
 

@@ -11,7 +11,6 @@
         </div>
         <span class="text">
           PHIS
-          <span class="instance-name"></span>
         </span>
       </div>
     </div>
@@ -27,7 +26,8 @@
           >
             <template v-slot:button-content>
               <i class="icon ik ik-globe"></i>
-              {{ $t("component.header.language." + language) }}
+              <span class="hidden-phone">{{ $t("component.header.language." + language) }}</span>
+              <span class="show-phone">{{ $t("component.header.language." + language).substring(0,2) }}</span>
               <i class="ik ik-chevron-down"></i>
             </template>
 
@@ -48,10 +48,12 @@
           >
             <template v-slot:button-content>
               <i class="icon ik ik-user"></i>
+              <span class="hidden-phone">
               {{ user.getFirstName() }} {{ user.getLastName() }}
               <strong v-if="user.isAdmin()"
                 >({{ $t("component.header.user.admin") }})</strong
               >
+              </span>
               <i class="ik ik-chevron-down"></i>
             </template>
             <b-dropdown-item href="#" @click.prevent="logout">
@@ -109,6 +111,33 @@ export default class DefaultHeaderComponent extends Vue {
    */
   logout() {
     this.$store.commit("logout");
+  }
+
+  width;
+  created() {
+    window.addEventListener("resize", this.handleResize);
+    this.handleResize();
+  }
+
+  beforeDestroy() {
+    window.removeEventListener("resize", this.handleResize);
+  }
+
+  handleResize() {
+    const minSize = 768;
+    if (
+      document.body.clientWidth <= minSize &&
+      (this.width == null || this.width > minSize)
+    ) {
+      this.width = document.body.clientWidth;
+      this.$store.commit("hideMenu");
+    } else if (
+      document.body.clientWidth > minSize &&
+      (this.width == null || this.width <= minSize)
+    ) {
+      this.width = document.body.clientWidth;
+      this.$store.commit("showMenu");
+    }
   }
 }
 </script>

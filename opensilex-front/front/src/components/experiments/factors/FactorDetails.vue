@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <b-row>
-      <b-col sm="5">
+      <b-col md="5">
         <opensilex-Card label="component.factor.details.description">
           <template v-slot:rightHeader>
             <div class="ml-3">

@@ -129,6 +129,22 @@ label::first-letter {
 $textSize: 12; 
 @import "~vue-tabulator/dist/scss/bootstrap/tabulator_bootstrap4.scss";
 
+@media (max-width: 768px) {
+  .hidden-phone {
+    display: none;
+  }
+}
+
+.show-phone {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .show-phone {
+    display: inline;
+  }
+}
+
 .error-message {
   margin-top: 2px;
   padding: 10px;
@@ -136,7 +152,7 @@ $textSize: 12;
 
 .error-message:empty
 {
-  display:none;
+  display: none;
 }
 
 #main-content {

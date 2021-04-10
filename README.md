@@ -13,6 +13,8 @@ First you need to have these software installed :
 - [docker 19.03.1+](https://docs.docker.com/install/)
 - [docker-compose 1.24.1+](https://docs.docker.com/compose/install/)
 
+Maybe you need to install npm package
+
 Note: the ```<BASE_DIR>``` variable referenced in this documentation is the root folder of your installation whee your user must have read and write permissions.
 
 # Check your installated softwares

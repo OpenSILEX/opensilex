@@ -9,12 +9,12 @@
      xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:time="http://www.w3.org/2006/time#">
-    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeev">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2020
             Oeso extention ontology for PHIS is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
-        <rdfs:label xml:lang="en">OpenSILEX - Phenome</rdfs:label>
+        <rdfs:label xml:lang="en">OpenSILEX - Vegetal Experiment Ontology</rdfs:label>
         <owl:versionInfo>Version 3.0 (2020-04-01) created by INRA</owl:versionInfo>
     </owl:Ontology>
     
@@ -97,36 +97,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasContact -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasContact"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasDate -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasDocument -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDocument">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="fr">financement</rdfs:label>
-        <rdfs:label xml:lang="en">financial funding</rdfs:label>
-    </owl:ObjectProperty>
     
 
 
@@ -151,29 +124,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasContact"/>
-        <rdfs:domain>
-            <owl:Class>
-                <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Device"/>
-                    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-                    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Project"/>
-                </owl:unionOf>
-            </owl:Class>
-        </rdfs:domain>
-        <rdfs:label xml:lang="fr">contact technique</rdfs:label>
-        <rdfs:label xml:lang="en">technical contact</rdfs:label>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasTrait -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasTrait">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Trait"/>
         <rdfs:label xml:lang="en">trait</rdfs:label>
         <rdfs:label xml:lang="fr">trait</rdfs:label>
@@ -349,7 +302,6 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#hasAcronym -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasAcronym">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
         <rdfs:label xml:lang="en">acronym</rdfs:label>
         <rdfs:label xml:lang="fr">acronyme</rdfs:label>
         <owl:deprecated xml:lang="fr"></owl:deprecated>
@@ -371,19 +323,9 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasExperimentModalities -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasExperimentModalities">
-        <rdfs:label xml:lang="en">experimental modalities</rdfs:label>
-        <rdfs:label xml:lang="fr">modalité expérimentale</rdfs:label>
-    </owl:DatatypeProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialReference -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFinancialReference">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Project"/>
         <rdfs:label xml:lang="en">financial reference</rdfs:label>
         <rdfs:label xml:lang="fr">référence financière</rdfs:label>
     </owl:DatatypeProperty>
@@ -713,6 +655,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#AgriculturalField -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#AgriculturalField">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
+        <rdfs:label xml:lang="en">Agricultural field</rdfs:label>
+        <rdfs:label xml:lang="fr">Champ cultural</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#AirConditioning -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#AirConditioning">
@@ -729,6 +681,19 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
         <rdfs:label xml:lang="en">air mixer</rdfs:label>
         <rdfs:label xml:lang="fr">brassage air</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
+        <rdfs:label xml:lang="en">Area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone au sens large.
+Peut définir une zone au sens physique ou théorique</rdfs:label>
+        <rdfs:label xml:lang="en">Zone in the broadest sense.
+Can define a zone in the physical or theoretical sense</rdfs:label>
     </owl:Class>
     
 
@@ -784,12 +749,12 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Compartment -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#ClayeyArea -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Compartment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="fr">compartiment</rdfs:label>
-        <rdfs:label xml:lang="en">compartment</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ClayeyArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
+        <rdfs:label xml:lang="en">Clayey area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone argileuse</rdfs:label>
     </owl:Class>
     
 
@@ -806,27 +771,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Document">
-        <rdfs:label xml:lang="en">Document</rdfs:label>
-        <rdfs:label xml:lang="fr">Document</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ElaboratedVariable">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
-        <rdfs:label xml:lang="en">elaborated variable</rdfs:label>
-        <rdfs:label xml:lang="fr">variable élaborée</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
     </owl:Class>
     
 
@@ -877,9 +831,19 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Entity -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Entity">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+    </owl:Class>
     
 
 
@@ -888,21 +852,23 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
         <rdfs:comment xml:lang="en">The ESFRI listed project EMPHASIS aims at a synergistic development and long-term operation of plant phenotyping infrastructure in Europe (https://emphasis.plant-phenotyping.eu/) by developing tools and methods for multi-scale phenotyping, allowing one to analyze genotype performance and trait diversity in current and future European environmental conditions.</rdfs:comment>
-        <rdfs:label xml:lang="en">european infrastructure</rdfs:label>
-        <rdfs:label xml:lang="fr">infrastructure européenne</rdfs:label>
+        <rdfs:label xml:lang="en">European infrastructure</rdfs:label>
+        <rdfs:label xml:lang="fr">Infrastructure européenne</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure"/>
+    </owl:Class>
     
 
 
@@ -936,11 +902,10 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#FinancialFunding -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#FloodableArea -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FinancialFunding">
-        <rdfs:label xml:lang="en">financial funding</rdfs:label>
-        <rdfs:label xml:lang="fr">support financier</rdfs:label>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodableArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
     </owl:Class>
     
 
@@ -970,8 +935,8 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Greenhouse">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="en">greenhouse</rdfs:label>
-        <rdfs:label xml:lang="fr">serre</rdfs:label>
+        <rdfs:label xml:lang="en">Greenhouse</rdfs:label>
+        <rdfs:label xml:lang="fr">Serre</rdfs:label>
     </owl:Class>
     
 
@@ -981,8 +946,8 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GrowthChamber">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ProtectiveStructure"/>
-        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
-        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
+        <rdfs:label xml:lang="fr">Chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">Growth chamber</rdfs:label>
     </owl:Class>
     
 
@@ -1086,6 +1051,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Image -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Image">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
         <rdfs:label xml:lang="en">image</rdfs:label>
         <rdfs:label xml:lang="fr">image</rdfs:label>
     </owl:Class>
@@ -1114,6 +1080,14 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Institut -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Institut">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#IrrigationSystem -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#IrrigationSystem">
@@ -1130,8 +1104,8 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000036</dc:source>
         <rdfs:comment xml:lang="en">A phyllome vascular system (PO:0025206) that includes the totality of the portions of  vascular tissue in their specific arrangement in a vascular leaf  (PO:0009025). [database_cross_reference:  POC:Ramona_Walls]</rdfs:comment>
-        <rdfs:label xml:lang="fr">feuille</rdfs:label>
-        <rdfs:label xml:lang="en">leaf</rdfs:label>
+        <rdfs:label xml:lang="fr">Feuille</rdfs:label>
+        <rdfs:label xml:lang="en">Leaf</rdfs:label>
     </owl:Class>
     
 
@@ -1208,13 +1182,23 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#LimestoneArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LimestoneArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SoilArea"/>
+        <rdfs:label xml:lang="en">Limestone area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone calcaire</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
         <rdfs:comment xml:lang="en">A LOCAL INFRASTRUCTURE is a group of installations located in one site depending on one institution (or more), which share governance committees, a common (or at least highly interoperable) information system, common principles for cost calculation and pricing and a common tool for user access.</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure locale</rdfs:label>
-        <rdfs:label xml:lang="en">local infrastructure</rdfs:label>
+        <rdfs:label xml:lang="fr">Infrastructure locale</rdfs:label>
+        <rdfs:label xml:lang="en">Local infrastructure</rdfs:label>
     </owl:Class>
     
 
@@ -1286,8 +1270,8 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
         <rdfs:comment xml:lang="en">A NATIONAL INFRASTRUCTURE is an organized group of local infrastructures with governance recognised by national authorities (e.g. respective ministry or national structures).</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure nationale</rdfs:label>
-        <rdfs:label xml:lang="en">national infrastructure</rdfs:label>
+        <rdfs:label xml:lang="fr">Infrastructure nationale</rdfs:label>
+        <rdfs:label xml:lang="en">National infrastructure</rdfs:label>
     </owl:Class>
     
 
@@ -1320,23 +1304,8 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000003</dc:source>
         <rdfs:comment xml:lang="en">the continuous organism originating from a single seed, callus, rhizome or any other propagation mean</rdfs:comment>
-        <rdfs:label xml:lang="en">plant</rdfs:label>
-        <rdfs:label xml:lang="fr">plante</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Platform -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Platform">
-        <rdfs:label xml:lang="fr">plateforme</rdfs:label>
-        <rdfs:label xml:lang="en">platform</rdfs:label>
+        <rdfs:label xml:lang="en">Plant</rdfs:label>
+        <rdfs:label xml:lang="fr">Plante</rdfs:label>
     </owl:Class>
     
 
@@ -1344,11 +1313,9 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Plot -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:comment>A community of plants located on a defined area of a field.</rdfs:comment>
-        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
-        <rdfs:label xml:lang="en">plot</rdfs:label>
+        <rdfs:label xml:lang="fr">Parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">Plot</rdfs:label>
     </owl:Class>
     
 
@@ -1360,12 +1327,6 @@
         <rdfs:label xml:lang="fr">capteur de précipitation</rdfs:label>
         <rdfs:label xml:lang="en">precipitation sensor</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Project"/>
     
 
 
@@ -1493,23 +1454,21 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ResearchUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ResearchUnit">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Rootstock -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Rootstock">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:comment xml:lang="en">Grape variety used as the underground portion of a grafted vine onto which the scion is grafted. Bred to provide pest resistance and/or adaptability to unfavorable soil or environmental conditions.</rdfs:comment>
-        <rdfs:label xml:lang="fr">porte-greffe</rdfs:label>
-        <rdfs:label xml:lang="en">rootstock</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RootstockLot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RootstockLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-        <rdfs:label xml:lang="fr">Lot de Porte-greffe</rdfs:label>
-        <rdfs:label xml:lang="en">Rootstock Lot</rdfs:label>
+        <rdfs:label xml:lang="fr">Porte-greffe</rdfs:label>
+        <rdfs:label xml:lang="en">Rootstock</rdfs:label>
     </owl:Class>
     
 
@@ -1525,18 +1484,8 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Scion">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:comment xml:lang="en">Is the part of the vine, usually Vitis vinifera, that is grafted on the rootstock and from which wine grapes will be harvested from</rdfs:comment>
-        <rdfs:label xml:lang="fr">greffon</rdfs:label>
-        <rdfs:label xml:lang="en">scion</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ScionLot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScionLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-        <rdfs:label xml:lang="fr">Lot de greffon</rdfs:label>
-        <rdfs:label xml:lang="en">Scion Lot</rdfs:label>
+        <rdfs:label xml:lang="fr">Greffon</rdfs:label>
+        <rdfs:label xml:lang="en">Scion</rdfs:label>
     </owl:Class>
     
 
@@ -1548,25 +1497,17 @@
         <dc:source>skos:exactMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0009010</dc:source>
         <rdfs:comment xml:lang="en">A multi-tissue plant  structure (PO:0025496) that develops from a plant ovule   (PO:0020003) and has as parts a plant embryo (PO:0009009)  enclosed in a seed coat (PO:0009088). [database_cross_reference: POC:curators]</rdfs:comment>
         <rdfs:comment xml:lang="fr">Structure végétale multi-tissulaire (PO:0025496) qui se développe à partir d&apos;un ovule (PO:0020003) et contient l&apos;embryon (PO:0009009) qui est protégé par un tégument (PO:0009088).</rdfs:comment>
-        <rdfs:label xml:lang="fr">graine</rdfs:label>
-        <rdfs:label xml:lang="en">seed</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#SeedLot -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SeedLot">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-        <rdfs:label xml:lang="fr">Lot de semence</rdfs:label>
-        <rdfs:label xml:lang="en">Seed Lot</rdfs:label>
+        <rdfs:label xml:lang="fr">Graine</rdfs:label>
+        <rdfs:label xml:lang="en">Seed</rdfs:label>
     </owl:Class>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#SensingDevice -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+    </owl:Class>
     
 
 
@@ -1596,8 +1537,18 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <dc:source>skos:exactMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0006488</dc:source>
         <rdfs:comment xml:lang="en">A collective organ part   structure (PO:0025269) that has as parts an elongated stigma (PO:0009073) with stigma papilla (GO:0090397), and an elongated   style (PO:0009074). [database_cross_reference: MID:21345919][database_cross_reference: POC:Laurel_Cooper]</rdfs:comment>
-        <rdfs:label xml:lang="en">silk</rdfs:label>
-        <rdfs:label xml:lang="fr">soie</rdfs:label>
+        <rdfs:label xml:lang="en">Silk</rdfs:label>
+        <rdfs:label xml:lang="fr">Soie</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#SoilArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoilArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Soil area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone de sol</rdfs:label>
     </owl:Class>
     
 
@@ -1642,6 +1593,26 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:label xml:lang="en">spectroradiometer</rdfs:label>
         <rdfs:label xml:lang="fr">spectroradiometre</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Station -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Station">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#StructuralArea -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#StructuralArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
+        <rdfs:label xml:lang="en">Structural area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone structurelle</rdfs:label>
+        <rdfs:label xml:lang="fr">grande durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:label>
+        <rdfs:label xml:lang="fr">large lifetime, building, cadastral, floodable, etc.</rdfs:label>
     </owl:Class>
     
 
@@ -1813,20 +1784,10 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#Trait -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Trait">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
         <rdfs:isDefinedBy>http://purl.org/ppeo/PPEO.owl#PPEO_000009</rdfs:isDefinedBy>
         <rdfs:label xml:lang="en">trait</rdfs:label>
         <rdfs:label xml:lang="fr">trait</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Treatment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Treatment">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-        <rdfs:isDefinedBy>http://purl.org/ppeo/PPEO.owl#PPEO_000018</rdfs:isDefinedBy>
-        <rdfs:label xml:lang="fr">traitement</rdfs:label>
-        <rdfs:label xml:lang="en">treatment</rdfs:label>
     </owl:Class>
     
 
@@ -1863,27 +1824,18 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#Variable -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variable"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:label xml:lang="fr">Vecteur</rdfs:label>
         <rdfs:label xml:lang="en">Vector</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vitroplant -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#PlantMaterialLot"/>
-        <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
-        <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
     </owl:Class>
     
 
@@ -1920,62 +1872,13 @@
     
 
 
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#WindyArea -->
 
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#anrsupport -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#anrsupport">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>ANR</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#europeanfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#europeanfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">European</rdfs:label>
-        <rdfs:label xml:lang="fr">Européen</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label>INRA</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#internationalfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#internationalfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">International</rdfs:label>
-        <rdfs:label xml:lang="fr">International</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#researchunitfunding -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#researchunitfunding">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
-        <rdfs:label xml:lang="en">Research Unit</rdfs:label>
-        <rdfs:label xml:lang="fr">Unité de recherche</rdfs:label>
-    </owl:NamedIndividual>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindyArea">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Windy area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone venteuse</rdfs:label>
+    </owl:Class>
     
 
 

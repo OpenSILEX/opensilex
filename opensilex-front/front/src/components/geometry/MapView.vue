@@ -56,7 +56,7 @@
         ></opensilex-CheckboxForm>
         <span>
           <label class="alert-warning">
-            <img alt="Warning" src="./construction.png"/>
+            <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
             {{ $t("MapView.WarningInstruction") }}
           </label>
         </span>

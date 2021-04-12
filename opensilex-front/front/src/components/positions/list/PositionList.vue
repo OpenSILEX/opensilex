@@ -24,6 +24,15 @@
                             label="OntologyCsvImporter.import"
                             @click="showCsvForm"
                         ></opensilex-CreateButton>
+
+                        <span style="padding-left:1%"></span>
+                        <span>
+                            <label class="alert-warning">
+                                <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
+                                {{ $t("EventList.WarningInstruction") }}
+                            </label>
+                        </span>
+
                     </opensilex-PageActions>
 
                     <opensilex-PageContent>

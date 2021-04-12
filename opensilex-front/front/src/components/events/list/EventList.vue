@@ -11,7 +11,6 @@
                     </div>
 
                     <div class="card-body">
-
                         <opensilex-PageActions>
 
                             <opensilex-CreateButton
@@ -25,6 +24,15 @@
                                 label="OntologyCsvImporter.import"
                                 @click="showCsvForm"
                             ></opensilex-CreateButton>
+
+                            <span style="padding-left:1%"></span>
+                            <span>
+                                <label class="alert-warning">
+                                    <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
+                                    {{ $t("EventList.WarningInstruction") }}
+                                </label>
+                            </span>
+
                         </opensilex-PageActions>
 
                         <opensilex-PageContent>
@@ -392,5 +400,11 @@
 </style>
 
 <i18n>
-
+en:
+    EventList:
+        WarningInstruction: Experimental feature
+fr:
+    EventList:
+        WarningInstruction: Fonctionnalité experimentale
 </i18n>
+

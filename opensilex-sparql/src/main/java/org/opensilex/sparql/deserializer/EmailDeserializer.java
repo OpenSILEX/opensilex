@@ -38,12 +38,12 @@ public class EmailDeserializer
 
     @Override
     public InternetAddress fromString(String value) throws AddressException {
-        return new InternetAddress(value);
+        return new InternetAddress(value.toLowerCase());
     }
 
     @Override
     public Node getNode(Object value) throws Exception {
-        return NodeFactory.createLiteral(value.toString());
+        return NodeFactory.createLiteral(value.toString().toLowerCase());
     }
 
     private class EmailDeserializationException extends JsonProcessingException {

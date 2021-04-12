@@ -11,6 +11,7 @@
         <opensilex-DocumentList
           ref="documentList"
           v-bind:credentialsGroups="credentialsGroups"
+          :redirectAfterCreation="true"
         ></opensilex-DocumentList>
       </template>
     </opensilex-PageContent>

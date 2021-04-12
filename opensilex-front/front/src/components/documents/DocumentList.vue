@@ -153,7 +153,7 @@
       createTitle="DocumentList.add"
       icon="ik#ik-file-text"
       modalSize="lg"
-      @onCreate="refresh()"
+      @onCreate="refreshOrRedirectAfterCreation()"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>
   </div>
@@ -176,8 +176,23 @@ export default class DocumentList extends Vue {
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
 
+  @Prop({
+    default: false
+  })
+  redirectAfterCreation;
+
   refresh() {
     this.tableRef.refresh();
+  }
+
+  refreshOrRedirectAfterCreation(document) {
+    if (this.redirectAfterCreation) {
+      this.$router.push({
+        path: '/document/details/' + encodeURIComponent(document.uri)
+      })
+    } else {
+      this.refresh();
+    }
   }
   
   get user() {

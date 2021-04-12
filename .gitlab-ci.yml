@@ -77,7 +77,7 @@ variables:
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   artifacts:
@@ -250,7 +250,7 @@ update:nightly:builds:branch:
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - mvn install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:

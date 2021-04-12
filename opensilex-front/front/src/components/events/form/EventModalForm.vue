@@ -180,7 +180,7 @@
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                event.uri = http.response.result;
+                event.uri = http.response.result.toString();
                 this.$emit("onCreate", event);
             }).catch(this.$opensilex.errorHandler);
         }

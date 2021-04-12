@@ -73,7 +73,7 @@
                             ></opensilex-EditButton>
                             <opensilex-DeprecatedButton
                               v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-                              label="DocumentTabList.deprecated"
+                              :deprecated="data.item.deprecated"
                               @click="deprecatedDocument(data.item.uri)"
                               :small="true"
                             ></opensilex-DeprecatedButton>

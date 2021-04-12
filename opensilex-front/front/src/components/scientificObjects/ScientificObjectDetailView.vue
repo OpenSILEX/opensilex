@@ -12,6 +12,7 @@
       :objectByContext="objectByContext"
       :globalView="true"
       :withReturnButton="true"
+      @onUpdate="refresh"
     ></opensilex-ScientificObjectDetail>
   </div>
 </template>
@@ -31,6 +32,10 @@ export default class ScientificObjectDetailView extends Vue {
   uri;
 
   created() {
+    this.refresh();
+  }
+
+  refresh() {
     let service = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
@@ -38,10 +43,10 @@ export default class ScientificObjectDetailView extends Vue {
     this.uri = decodeURIComponent(this.$route.params.uri);
     if (this.uri) {
       service.getScientificObjectDetailByExperiments(this.uri).then((http) => {
+        this.objectByContext = [];
         if (http.response.result.length == 1) {
           this.selected = http.response.result[0];
         } else {
-          this.objectByContext = [];
           http.response.result.forEach((scientificObject) => {
             if (scientificObject.experiment == null) {
               scientificObject.relations = [];

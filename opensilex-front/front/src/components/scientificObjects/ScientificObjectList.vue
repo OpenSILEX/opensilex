@@ -6,7 +6,9 @@
       description="ScientificObjectList.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions>
+    <opensilex-PageActions 
+      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+    > 
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
@@ -174,11 +176,13 @@
                 :small="true"
               ></opensilex-DetailButton>
               <opensilex-EditButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                 @click="soForm.editScientificObject(data.item.uri)"
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
               <opensilex-DeleteButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
                 label="ExperimentScientificObjects.delete-scientific-object"
                 @click="deleteScientificObject(data.item.uri)"
                 :small="true"
@@ -261,9 +265,6 @@ export default class ScientificObjectList extends Vue {
       }
     );
   }
-   visualize() {
-   
-  }
 
   beforeDestroy() {
     this.langUnwatcher();
@@ -290,6 +291,10 @@ export default class ScientificObjectList extends Vue {
 
   get lang() {
     return this.$store.state.lang;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
   }
 
   reset() {

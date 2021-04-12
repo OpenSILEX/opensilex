@@ -143,9 +143,6 @@ export default class ScientificObjectForm extends Vue {
         experiment: this.getExperimentURI(),
         relations: definedRelations,
       })
-      .then(() => {
-        this.$emit("refresh");
-      })
       .catch((error) => {
         throw error;
       });
@@ -177,9 +174,6 @@ export default class ScientificObjectForm extends Vue {
         geometry: form.geometry,
         experiment: this.getExperimentURI(),
         relations: definedRelations,
-      })
-      .then(() => {
-        this.$emit("refresh");
       })
       .catch((error) => {
         throw error;

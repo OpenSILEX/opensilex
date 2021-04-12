@@ -3,7 +3,28 @@
     <b-card>
       <template v-slot:header v-if="globalView">
         <h3>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
+        <div class="card-header-right">
+          <b-button-group>
+            <opensilex-EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+              @click="soForm.editScientificObject(selected.uri)"
+              label="ExperimentScientificObjects.edit-scientific-object"
+              :small="true"
+            ></opensilex-EditButton>
+            <opensilex-DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+              label="ExperimentScientificObjects.delete-scientific-object"
+              @click="deleteScientificObject(selected.uri)"
+              :small="true"
+            ></opensilex-DeleteButton>
+          </b-button-group>
+          <opensilex-ScientificObjectForm
+            ref="soForm"
+            @refresh="$emit('onUpdate', selected.uri)"
+          ></opensilex-ScientificObjectForm>
+        </div>
       </template>
+
       <!-- URI -->
       <opensilex-UriView
         v-if="withBasicProperties"
@@ -123,7 +144,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -152,7 +173,6 @@ export default class ScientificObjectDetailProperties extends Vue {
   })
   withBasicProperties;
 
-
   @Prop({
     default: null,
   })
@@ -164,10 +184,21 @@ export default class ScientificObjectDetailProperties extends Vue {
     }
   }
 
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  @Ref("soForm") readonly soForm!: any;
+
   @Watch("selected")
   onSelectionChange() {
     this.typeProperties = [];
     this.valueByProperties = {};
+    this.classModel = {};
 
     return Promise.all([
       this.$opensilex
@@ -353,6 +384,20 @@ export default class ScientificObjectDetailProperties extends Vue {
     }
 
     return valueByProperties;
+  }
+
+  deleteScientificObject(uri) {
+    let scientificObjectsService = this.$opensilex.getService(
+      "opensilex.ScientificObjectsService"
+    );
+    scientificObjectsService
+      .deleteScientificObject(uri)
+      .then(() => {
+        this.$router.push({
+          path: "/scientific-objects",
+        });
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

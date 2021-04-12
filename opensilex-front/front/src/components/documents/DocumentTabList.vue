@@ -12,7 +12,7 @@
           <div class="card-body">
             <div class="button-zone">
             <opensilex-CreateButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              v-if="user.hasCredential(modificationCredentialId)"
               @click="createDocument()"
               label="DocumentTabList.add"
             ></opensilex-CreateButton>
@@ -66,13 +66,13 @@
                         <template v-slot:cell(actions)="{data}">
                           <b-button-group size="sm">
                             <opensilex-EditButton
-                              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+                              v-if="user.hasCredential(modificationCredentialId)"
                               @click="editDocument(data.item.uri)"
                               label="DocumentTabList.update"
                               :small="true"
                             ></opensilex-EditButton>
                             <opensilex-DeprecatedButton
-                              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+                              v-if="user.hasCredential(modificationCredentialId)"
                               :deprecated="data.item.deprecated"
                               @click="deprecatedDocument(data.item.uri)"
                               :small="true"
@@ -93,7 +93,7 @@
             </opensilex-PageContent>
      
             <opensilex-ModalForm
-              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              v-if="user.hasCredential(modificationCredentialId)"
               ref="documentForm"
               component="opensilex-DocumentForm"
               createTitle="DocumentTabList.add"
@@ -135,6 +135,9 @@ export default class DocumentTabList extends Vue {
 
   @Prop()
   uri;
+
+  @Prop()
+  modificationCredentialId;
   
   @Watch("uri")
   onTargetChange() {
@@ -148,15 +151,6 @@ export default class DocumentTabList extends Vue {
 
   get user() {
     return this.$store.state.user;
-  }
-
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-  created() {
-      if (this.uri == null){
-        this.uri = decodeURIComponent(this.$route.params.uri);
-      }
   }
 
   fields = [

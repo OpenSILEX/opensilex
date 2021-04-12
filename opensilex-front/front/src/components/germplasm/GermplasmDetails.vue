@@ -139,7 +139,6 @@
         ref="documentTabList"
         :uri="uri"        
         :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
-        :deleteCredentialId="credentials.CREDENTIAL_GERMPLASM_DELETE_ID"
       ></opensilex-DocumentTabList>
 
       <opensilex-AnnotationList

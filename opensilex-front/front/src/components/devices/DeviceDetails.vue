@@ -68,7 +68,6 @@
             v-else-if="isDocumentTab()"
             :uri="uri"
             :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
           ></opensilex-DocumentTabList>
 
           <opensilex-AnnotationList

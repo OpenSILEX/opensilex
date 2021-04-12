@@ -6,6 +6,7 @@
             :static="true"
             no-close-on-backdrop
             no-close-on-esc
+            ok-only
             :title="$t('Event.event')"
     >
         <div v-if="event">

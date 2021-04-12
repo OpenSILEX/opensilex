@@ -133,7 +133,7 @@ export default class ModalForm extends Vue {
             }
             this.$nextTick(() => {
               if (result !== false) {
-                this.$emit(successEvent, submitResult);
+                this.$emit(successEvent, result);
               }
               this.hide();
             });

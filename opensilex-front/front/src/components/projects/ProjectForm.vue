@@ -15,15 +15,14 @@
 </template>
 
 <script lang="ts">
-import { Component,Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 
 import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
 import HttpResponse, {
-  OpenSilexResponse
+  OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
-
 
 @Component
 export default class ProjectForm extends Vue {
@@ -34,11 +33,11 @@ export default class ProjectForm extends Vue {
 
   steps = [
     {
-      component: "opensilex-ProjectForm1"
+      component: "opensilex-ProjectForm1",
     },
     {
-      component: "opensilex-ProjectForm2"
-    }
+      component: "opensilex-ProjectForm2",
+    },
   ];
 
   getEmptyForm() {
@@ -56,7 +55,7 @@ export default class ProjectForm extends Vue {
       administrative_contacts: [],
       coordinators: [],
       scientific_contacts: [],
-      related_projects: []
+      related_projects: [],
     };
   }
 
@@ -70,7 +69,6 @@ export default class ProjectForm extends Vue {
   }
 
   create(form) {
-
     this.$opensilex
       .getService("opensilex.ProjectsService")
       .createProject(form)
@@ -78,9 +76,9 @@ export default class ProjectForm extends Vue {
         let uri = http.response.result;
         form.uri = uri;
         console.debug("project created", uri);
-        this.$emit("onCreate", form);
+        return form;
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.status == 409) {
           console.error("Project already exists", error);
           this.$opensilex.errorHandler(
@@ -94,9 +92,8 @@ export default class ProjectForm extends Vue {
   }
 
   update(form) {
-
-    if(form.website===""){
-      form.website=undefined;
+    if (form.website === "") {
+      form.website = undefined;
     }
     this.$opensilex
       .getService("opensilex.ProjectsService")
@@ -104,7 +101,7 @@ export default class ProjectForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("project updated", uri);
-        this.$emit("onUpdate", form);
+        return form;
       })
       .catch(this.$opensilex.errorHandler);
   }

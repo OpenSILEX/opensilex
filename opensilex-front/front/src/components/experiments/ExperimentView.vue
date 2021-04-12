@@ -77,11 +77,12 @@
                         :uri="uri"
                 ></opensilex-MapView>
 
-                <opensilex-ExperimentDocument 
-                  v-else-if="isDocumentTab()" 
-                  :uri="uri"
-                ></opensilex-ExperimentDocument>
-
+                <opensilex-DocumentTabList
+                        v-else-if="isDocumentTab()"
+                        :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+                        :uri="uri"
+                ></opensilex-DocumentTabList>
+                
                 <opensilex-AnnotationList
                         v-else-if="isAnnotationTab()"
                         ref="annotationList"

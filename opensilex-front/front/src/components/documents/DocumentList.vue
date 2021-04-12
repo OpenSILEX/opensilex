@@ -103,8 +103,6 @@
         :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
-      
-
 
      <template v-slot:cell(authors)="{data}">
        <span v-if="data.item.authors">
@@ -153,7 +151,7 @@
       createTitle="DocumentList.add"
       icon="ik#ik-file-text"
       modalSize="lg"
-      @onCreate="refreshOrRedirectAfterCreation()"
+      @onCreate="refreshOrRedirectAfterCreation"
       @onUpdate="refresh()"
     ></opensilex-ModalForm>
   </div>

@@ -78,7 +78,6 @@
       <opensilex-DocumentTabList
           v-else-if="isDocumentTab()"
           ref="documentList"
-          :deleteCredentialId="credentials.CREDENTIAL_AREA_DELETE_ID"
           :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
           :uri="uri"
       ></opensilex-DocumentTabList>

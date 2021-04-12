@@ -87,10 +87,11 @@
           @onEdit="annotationModalForm.showEditForm($event)"
         ></opensilex-AnnotationList>
 
-        <opensilex-DocumentTabView
+        <opensilex-DocumentTabList
           v-else-if="isDocumentTab()"
           :uri="uri"
-        ></opensilex-DocumentTabView>
+          :modificationCredentialId="credentials.CREDENTIAL_FACTOR_MODIFICATION_ID"
+        ></opensilex-DocumentTabList>
       </template>
     </opensilex-PageContent>
   </div>

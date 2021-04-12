@@ -19,10 +19,8 @@ import Vue from "vue";
 
 @Component
 export default class DeprecatedButton extends Vue {
-  // @Prop()
-  // label: string;
 
-    get label(){
+  get label(){
     if(this.deprecated == false){
       return "DeprecatedButton.deprecated";
     } else {

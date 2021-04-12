@@ -180,7 +180,8 @@
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                this.$emit("onCreate", http.response.result.toString());
+                event.uri = http.response.result;
+                this.$emit("onCreate", event);
             }).catch(this.$opensilex.errorHandler);
         }
 
@@ -198,7 +199,7 @@
                 let message = this.$i18n.t("Event.name") + " " + event.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
 
-                this.$emit("onUpdate", event.uri);
+                this.$emit("onUpdate", event);
             }).catch(this.$opensilex.errorHandler);
         }
     }

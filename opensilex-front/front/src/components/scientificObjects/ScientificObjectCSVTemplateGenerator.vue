@@ -51,7 +51,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
 
   requiredField: boolean = false;
 
-  separator : string;
+  separator : string = ",";
 
   @Ref("validatorRefTemplate") readonly validatorRefTemplate!: any;
 

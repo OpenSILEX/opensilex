@@ -329,8 +329,6 @@ import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector
 components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
 import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
 components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
-import ExperimentDocument from './experiments/views/ExperimentDocument.vue';
-components["opensilex-ExperimentDocument"] = ExperimentDocument;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
 
@@ -380,8 +378,6 @@ import ProjectDetails from './projects/ProjectDetails.vue';
 components["opensilex-ProjectDetails"] = ProjectDetails;
 import ProjectDescription from './projects/details/ProjectDescription.vue';
 components["opensilex-ProjectDescription"] = ProjectDescription;
-import ProjectDocuments from './projects/details/ProjectDocuments.vue';
-components["opensilex-ProjectDocuments"] = ProjectDocuments;
 
 // Species
 import SpeciesSelector from './species/SpeciesSelector.vue';
@@ -550,8 +546,6 @@ import DocumentDetails from './documents/DocumentDetails.vue';
 components["opensilex-DocumentDetails"] = DocumentDetails;
 import DocumentTabList from './documents/DocumentTabList.vue';
 components["opensilex-DocumentTabList"] = DocumentTabList;
-import DocumentTabView from './common/views/DocumentTabView.vue'
-components["opensilex-DocumentTabView"] = DocumentTabView;
 
 // Map
 import MapView from './geometry/MapView.vue';

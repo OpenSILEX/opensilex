@@ -1369,8 +1369,8 @@ Examples include lists, tables, and databases. A dataset may be useful for direc
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#StructuralArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
-        <rdfs:comment xml:lang="fr">durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:comment>
-        <rdfs:comment xml:lang="en">lifetime, building, cadastral, floodable, etc.</rdfs:comment>
+        <rdfs:comment xml:lang="en">long lifetime, building, cadastral, floodable, etc.</rdfs:comment>
+        <rdfs:comment xml:lang="fr">longue durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:comment>
         <rdfs:label xml:lang="en">Structural area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone structurelle</rdfs:label>
     </owl:Class>

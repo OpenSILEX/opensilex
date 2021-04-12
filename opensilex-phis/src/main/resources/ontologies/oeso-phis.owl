@@ -687,14 +687,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
-        <rdfs:label xml:lang="en">Area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone au sens large.
-Peut définir une zone au sens physique ou théorique</rdfs:label>
-        <rdfs:label xml:lang="en">Zone in the broadest sense.
-Can define a zone in the physical or theoretical sense</rdfs:label>
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area"/>
     
 
 
@@ -906,6 +899,8 @@ Can define a zone in the physical or theoretical sense</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodableArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
+        <rdfs:label xml:lang="en">Floodable area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
     </owl:Class>
     
 
@@ -1609,10 +1604,6 @@ Can define a zone in the physical or theoretical sense</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#StructuralArea">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
-        <rdfs:label xml:lang="en">Structural area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone structurelle</rdfs:label>
-        <rdfs:label xml:lang="fr">grande durée de vie, bâtiment, cadastre, inondable, etc.</rdfs:label>
-        <rdfs:label xml:lang="fr">large lifetime, building, cadastral, floodable, etc.</rdfs:label>
     </owl:Class>
     
 

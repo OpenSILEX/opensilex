@@ -1033,7 +1033,12 @@ public class ExperimentAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
+    @ApiCredential(
+        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
+        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
@@ -1113,7 +1118,12 @@ public class ExperimentAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
     @ApiProtected
-    @ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
+    @ApiCredential(
+        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
+        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(

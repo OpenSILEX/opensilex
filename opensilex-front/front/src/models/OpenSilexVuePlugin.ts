@@ -283,9 +283,9 @@ export default class OpenSilexVuePlugin {
                 }
 
                 self.initAsyncComponents(plugin.components)
-                    .then(function (_module) {
+                    .then(function () {
                         self.hideLoader();
-                        resolve(_module);
+                        resolve(plugin);
                     })
                     .catch(function (error) {
                         self.hideLoader();
@@ -325,7 +325,7 @@ export default class OpenSilexVuePlugin {
             Promise.all(promises)
                 .then(() => {
                     console.debug("All components in module are initialized !");
-                    resolve(window[name]);
+                    resolve(true);
                 })
                 .catch(reject);
         });
@@ -378,7 +378,13 @@ export default class OpenSilexVuePlugin {
     public setCookieValue(user: User) {
         let secure: boolean = ('https:' == document.location.protocol);
         console.debug("Set cookie value:", this.getCookieName(), user.getToken());
-        $cookies.set(this.getCookieName(), user.getToken(), user.getExpiration() + "s", "/", undefined, secure);
+        let domain = location.hostname;
+        let pathPrefix = "/";
+        if (this.getConfig().pathPrefix && this.getConfig().pathPrefix != "") {
+            pathPrefix = this.getConfig().pathPrefix;
+        }
+        $cookies.set(this.getCookieName(), user.getToken(), user.getExpiration() + "s", pathPrefix, domain, secure);
+
     }
 
     public static hashCode(str: string) {
@@ -1000,7 +1006,7 @@ export default class OpenSilexVuePlugin {
                         this.datatypesByURI[datatype.uri] = datatype;
                         this.datatypesByURI[datatype.short_uri] = datatype;
                     }
-                    resolve();
+                    resolve(this.datatypes);
                 })
                 .catch(reject);
         });
@@ -1023,7 +1029,7 @@ export default class OpenSilexVuePlugin {
                         http.response.result.forEach((categoryDto) => {
                             this.factorCategories[categoryDto.uri] = categoryDto.name;
                         });
-                        resolve()
+                        resolve(this.factorCategories)
                     }
                 )
                 .catch(reject);
@@ -1048,7 +1054,7 @@ export default class OpenSilexVuePlugin {
                         this.objectTypesByURI[objectType.uri] = objectType;
                         this.objectTypesByURI[objectType.short_uri] = objectType;
                     }
-                    resolve();
+                    resolve(this.objectTypes);
                 })
                 .catch(reject);
         });

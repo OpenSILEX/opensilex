@@ -425,19 +425,19 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
             link.setAttribute("type", "text/css");
             link.onload = function () {
               console.debug("CSS theme style loaded !");
-              resolve();
+              resolve(true);
             };
             link.onerror = reject;
             link.setAttribute("href", cssURI);
             document.getElementsByTagName("head")[0].appendChild(link);
           } else {
-            resolve();
+            resolve(true);
           }
         })
         .catch(reject)
     } else {
       console.debug("No theme defined !");
-      resolve();
+      resolve(true);
     }
   })
 }

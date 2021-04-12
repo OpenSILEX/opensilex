@@ -1,26 +1,26 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
      xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:terms="http://purl.org/dc/terms/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#"
-     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#">
+     xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+     xmlns:terms="http://purl.org/dc/terms/"
+     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
+     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
+     xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
-        <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
-        <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
-        <owl:versionInfo>Version 2.1 (2019-07-26) created by INRA</owl:versionInfo>
+        <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2019
             The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by/4.0/legalcode)</rdfs:comment>
-        <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
+        <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
+        <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
+        <owl:versionInfo>Version 2.1 (2019-07-26) created by INRA</owl:versionInfo>
     </owl:Ontology>
     
 
@@ -963,6 +963,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalProtocol -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalProtocol">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument"/>
+        <rdfs:label xml:lang="en">Experimental protocol</rdfs:label>
+        <rdfs:label xml:lang="fr">Protocole expérimental</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Facility -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility"/>
@@ -1008,6 +1018,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ITKDocument -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ITKDocument">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument"/>
+        <rdfs:label xml:lang="fr">ITK</rdfs:label>
+        <rdfs:label xml:lang="en">Technical itinerary</rdfs:label>
+    </owl:Class>
     
 
 
@@ -1933,8 +1953,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:comment xml:lang="en">An account of the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Description</rdfs:label>
@@ -1946,8 +1966,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
@@ -1999,8 +2019,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:label xml:lang="en">Flood area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
+        <rdfs:label xml:lang="en">Flood area</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>
@@ -2052,8 +2072,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Variety</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Vitroplant">
-        <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
         <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
+        <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFactorLevel">
         <rdfs:label xml:lang="fr">Modalité de facteur</rdfs:label>
@@ -2083,5 +2103,5 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
 

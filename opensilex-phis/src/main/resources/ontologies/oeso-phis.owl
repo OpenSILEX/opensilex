@@ -130,6 +130,14 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#hasLens -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasLens">
@@ -955,6 +963,12 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#GreenSeeker -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GreenSeeker">
@@ -1346,6 +1360,12 @@
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plot">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
         <rdfs:comment>A community of plants located on a defined area of a field.</rdfs:comment>
         <rdfs:label xml:lang="fr">parcelle</rdfs:label>
         <rdfs:label xml:lang="en">plot</rdfs:label>

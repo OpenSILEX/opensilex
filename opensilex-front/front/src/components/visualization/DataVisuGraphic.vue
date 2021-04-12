@@ -254,7 +254,7 @@ export default class DataVisuGraphic extends Vue {
               turboThreshold: 100000,
               cursor: "pointer",
               dataGrouping: {
-                enabled: false
+                enabled: true
               },
               lineWidth: this.lineWidth ? 2 : 0, //scatter plot
               stickyTracking: false, //tooltip only on hover

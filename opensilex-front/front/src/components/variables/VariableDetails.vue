@@ -42,7 +42,7 @@
 
                     <template v-slot:body>
                         <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
-                                           :url="variable.uri"></opensilex-UriView>
+                        ></opensilex-UriView>
                         <opensilex-StringView label="component.common.name"
                                               :value="variable.name"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.altName"

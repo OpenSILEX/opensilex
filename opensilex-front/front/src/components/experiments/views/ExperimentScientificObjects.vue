@@ -141,7 +141,7 @@
                   )
                 "
                 @click="soForm.createScientificObject(node.data.uri)"
-                label="ExperimentScientificObjects.add-child"
+                label="ExperimentScientificObjects.add-scientific-object-child"
                 :small="true"
               ></opensilex-AddChildButton>
               <opensilex-DeleteButton

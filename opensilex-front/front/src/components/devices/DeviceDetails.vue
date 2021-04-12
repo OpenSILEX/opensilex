@@ -51,6 +51,19 @@
     <opensilex-PageContent>
         <template v-slot>
           <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+
+         <opensilex-DeviceVisualizationTab
+          v-else-if="isVisualizationTab()"
+          :device="uri"
+          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+          ></opensilex-DeviceVisualizationTab>
+
+         <opensilex-DeviceDataFiles
+          v-else-if="isDatafilesTab()"
+          :device="uri"
+          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+        ></opensilex-DeviceDataFiles>
+        
           <opensilex-DocumentTabList
             v-else-if="isDocumentTab()"
             :uri="uri"

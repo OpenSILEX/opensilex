@@ -448,26 +448,26 @@ $opensilex.loadModules([
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");
-    const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
-    let baseURL = window.location.href.split(/[?#]/)[0];
-    if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
-      console.debug("Identify user with OpenID Connect");
-      authService.authenticateOpenID(urlParams.get("code"))
-        .then((http) => {
-          let user = User.fromToken(http.response.result.token);
-          $opensilex.setCookieValue(user);
-          window.location = baseURL.slice(0, -7);
-        }).catch(manageError);
-    } else {
-      // Get OpenSilex configuration
-      console.debug("Start loading configuration...");
-      const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
+    // Get OpenSilex configuration
+    console.debug("Start loading configuration...");
+    const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
 
-      vueJsService.getConfig()
-        .then(function (configResponse) {
-          const config: FrontConfigDTO = configResponse.response.result;
-          $opensilex.setConfig(config);
+    vueJsService.getConfig()
+      .then(function (configResponse) {
+        const config: FrontConfigDTO = configResponse.response.result;
+        $opensilex.setConfig(config);
 
+        const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
+        let baseURL = window.location.href.split(/[?#]/)[0];
+        if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
+          console.debug("Identify user with OpenID Connect");
+          authService.authenticateOpenID(urlParams.get("code"))
+            .then((http) => {
+              let user = User.fromToken(http.response.result.token);
+              $opensilex.setCookieValue(user);
+              window.location = baseURL.slice(0, -7);
+            }).catch(manageError);
+        } else {
           let themePromise: Promise<any> = loadTheme(vueJsService, config);
 
           themePromise
@@ -573,7 +573,7 @@ $opensilex.loadModules([
                 });
               }).catch(manageError);
             }).catch(manageError);
-        }).catch(manageError);
-    }
+        }
+      }).catch(manageError);
   }).catch(manageError);
 }).catch(manageError);

@@ -221,7 +221,7 @@ export default class FactorDetails extends Vue {
   margin-right: 15px;
 }
 .fix-uri-p {
-  padding-left: 0px;
+  padding-left: 0px !important;
 }
 </style>
 <i18n>

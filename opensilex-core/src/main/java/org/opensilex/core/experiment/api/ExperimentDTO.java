@@ -60,6 +60,9 @@ public abstract class ExperimentDTO {
 
     @JsonProperty("groups")
     protected List<URI> groups = new ArrayList<>();
+    
+    @JsonProperty("factors")
+    protected List<URI> factors = new ArrayList<>();
 
     @JsonProperty("is_public")
     protected Boolean isPublic;

@@ -179,7 +179,7 @@ public class ExperimentDAO {
                 (SelectBuilder select) -> {
                     appendRegexLabelFilter(select, name);
                     appendSpeciesFilter(select, species);
-                    appendFactorCategoriesFilter(select, factorCategories);
+                    appendFactorFilter(select, factorCategories);
                     appendIsActiveFilter(select, isEnded);
                     appendDateFilter(select, startDate, endDate);
                     appendProjectListFilter(select, projects);
@@ -202,12 +202,12 @@ public class ExperimentDAO {
         }
     }
 
-    private void appendFactorCategoriesFilter(SelectBuilder select, List<URI> factorCategories) throws Exception {
+    private void appendFactorFilter(SelectBuilder select, List<URI> factorCategories) throws Exception {
         if (factorCategories != null && !factorCategories.isEmpty()) {
             Var factors = makeVar(ExperimentModel.FACTORS_FIELD);
             Var xpUri = makeVar(ExperimentModel.URI_FIELD);
-            Var category = makeVar( ExperimentModel.FACTORS_CATEGORIES_FIELD);
-            
+            Var category = makeVar(ExperimentModel.FACTORS_CATEGORIES_FIELD);
+
             select.addWhere(factors, Oeso.studiedEffectIn,xpUri );
             select.addOptional(xpUri, Oeso.studyEffectOf, factors);
             select.addWhere(factors, Oeso.hasCategory, category);

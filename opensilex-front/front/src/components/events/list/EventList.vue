@@ -168,7 +168,7 @@
                         <opensilex-EventModalForm
                                 ref="eventModalForm"
                                 :target="target"
-                                @onCreate="refresh"
+                                @onCreate="displayAfterCreation"
                                 @onUpdate="refresh"
                         ></opensilex-EventModalForm>
 
@@ -264,6 +264,11 @@
 
         refresh() {
             this.tableRef.refresh();
+        }
+
+        displayAfterCreation(event) {
+            this.refresh();
+            this.showEventView(event);
         }
 
         static newFilter() {

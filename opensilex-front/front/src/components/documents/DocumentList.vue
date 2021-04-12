@@ -18,7 +18,6 @@
         <!-- title -->
         <div class="col col-xl-12 col-sm-12 col-12">
           <opensilex-StringFilter
-            style="margin-bottom:10px;"
             :filter.sync="filter.multiple"
             placeholder="DocumentList.filter.searchAll-placeholder"
           ></opensilex-StringFilter>
@@ -26,15 +25,6 @@
       </template>
 
       <template v-slot:advancedSearch>
-        <!-- title -->
-        <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.title')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="filter.title"
-            placeholder="DocumentList.filter.title-placeholder"
-          ></opensilex-StringFilter>
-        </div>
-
         <!-- type -->
         <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-TypeForm
@@ -44,23 +34,14 @@
           ></opensilex-TypeForm>
         </div>
 
-        <!-- keywords -->
+        <!-- title -->
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.keywords')}}</label>
-          <opensilex-InputForm
-            :value.sync="filter.keywords"
-            placeholder="DocumentList.filter.keywords-placeholder"
-          ></opensilex-InputForm>
+          <label>{{$t('DocumentList.filter.title')}}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.title"
+            placeholder="DocumentList.filter.title-placeholder"
+          ></opensilex-StringFilter>
         </div>
-
-        <!-- author -->
-        <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DocumentList.filter.author')}}</label>
-            <opensilex-InputForm
-              :value.sync="filter.authors"
-              placeholder="DocumentList.filter.author-placeholder"
-            ></opensilex-InputForm>
-        </div>  
 
         <!-- date -->   
         <div class="col col-xl-3 col-sm-6 col-12">
@@ -82,6 +63,24 @@
             placeholder="DocumentList.filter.targets-placeholder"
           ></opensilex-StringFilter>
         </div>
+
+        <!-- author -->
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DocumentList.filter.author')}}</label>
+            <opensilex-InputForm
+              :value.sync="filter.authors"
+              placeholder="DocumentList.filter.author-placeholder"
+            ></opensilex-InputForm>
+        </div>
+
+        <!-- keywords -->
+        <div class="col col-xl-3 col-sm-6 col-12">
+          <label>{{$t('DocumentList.filter.keywords')}}</label>
+          <opensilex-InputForm
+            :value.sync="filter.keywords"
+            placeholder="DocumentList.filter.keywords-placeholder"
+          ></opensilex-InputForm>
+        </div>  
         
         <!-- deprecated -->
         <div class="col col-xl-3 col-sm-6 col-12">
@@ -105,8 +104,7 @@
         ></opensilex-UriLink>
       </template>
       
-      <template v-slot:row-details>
-      </template>
+
 
      <template v-slot:cell(authors)="{data}">
        <span v-if="data.item.authors">
@@ -178,6 +176,10 @@ export default class DocumentList extends Vue {
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
 
+  refresh() {
+    this.tableRef.refresh();
+  }
+  
   get user() {
     return this.$store.state.user;
   }
@@ -187,26 +189,26 @@ export default class DocumentList extends Vue {
   }
 
   filter = {
-    title: undefined,
-    deprecated: "false",
-    date: undefined,
     rdf_type: undefined,
+    title: undefined,
+    date: undefined,
+    targets: undefined,
     authors: undefined,
     keywords: undefined,
-    targets: undefined,
-    multiple: undefined
+    multiple: undefined,
+    deprecated: "false"
   };
 
   resetFilters() {
     this.filter = {
-      title: undefined,
-      deprecated: "false",
-      date: undefined,
       rdf_type: undefined,
+      title: undefined,
+      date: undefined,
+      targets: undefined,
       authors: undefined,
       keywords: undefined,
-      targets: undefined,
-      multiple: undefined
+      multiple: undefined,
+      deprecated: "false"
     };
     this.refresh();
   }
@@ -216,12 +218,7 @@ export default class DocumentList extends Vue {
     this.service = this.$opensilex.getService("opensilex.DocumentsService");
   }
 
-  updateFilter() {
-    this.$opensilex.updateURLParameter("filter", this.filter, "");
-    this.refresh();
-  }
-
-    fields = [
+  fields = [
     {
       key: "uri",
       label: "DocumentList.title",
@@ -242,10 +239,6 @@ export default class DocumentList extends Vue {
       label: "component.common.actions"
     }
   ];
-
-  refresh() {
-      this.tableRef.refresh();
-  }
 
   searchDocuments(options) {
     return this.service.searchDocuments(

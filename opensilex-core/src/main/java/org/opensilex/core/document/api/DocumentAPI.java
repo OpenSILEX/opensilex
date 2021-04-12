@@ -257,7 +257,6 @@ public class DocumentAPI {
 
     /**
      * Search documents
-     * @param name
      * @param orderByList
      * @param page
      * @param pageSize
@@ -286,6 +285,7 @@ public class DocumentAPI {
     ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, fs);
         ListWithPagination<DocumentModel> resultList = documentDAO.search(
+                currentUser,
                 type,
                 title,
                 date,

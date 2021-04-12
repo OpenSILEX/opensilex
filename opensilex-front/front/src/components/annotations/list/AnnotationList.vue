@@ -59,8 +59,8 @@
                                 </template>
 
                                 <template v-slot:cell(uri)="{data}">
-                                    <opensilex-TextView v-if="data.item.uri" :value="data.item.uri">
-                                    </opensilex-TextView>
+                                    <opensilex-UriLink :uri="data.item.uri" :value="data.item.uri">
+                                    </opensilex-UriLink>
                                 </template>
 
                                 <template v-slot:cell(actions)="{data}">
@@ -272,7 +272,7 @@
                 tableFields.push({key: "created", label: "Annotation.created", sortable: true});
             }
             if(this.columnsToDisplay.has("author")){
-                tableFields.push({key: "author", label: "Annotation.author", sortable: true});
+                tableFields.push({key: "author", label: "Annotation.author", sortable: false});
             }
             if(this.columnsToDisplay.has("description")){
                 tableFields.push({key: "description", label: "Annotation.description", sortable: true});

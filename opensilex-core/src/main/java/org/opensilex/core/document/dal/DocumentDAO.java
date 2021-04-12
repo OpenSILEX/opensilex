@@ -42,6 +42,8 @@ import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * @author Emilie Fernandez
@@ -109,10 +111,11 @@ public class DocumentDAO {
         }
     }
 
-    public ListWithPagination<DocumentModel> search(URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
-        ListWithPagination<DocumentModel> listDocumentModel = sparql.searchWithPagination(
+    public ListWithPagination<DocumentModel> search(UserModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+        
+        return sparql.searchWithPagination(
             DocumentModel.class,
-            null,
+            user.getLanguage(),
             (SelectBuilder select) -> {
                 Node docGraph = sparql.getDefaultGraph(DocumentModel.class);
                 ElementGroup rootElementGroup = select.getWhereHandler().getClause();
@@ -131,11 +134,10 @@ public class DocumentDAO {
             page,
             pageSize
         );
-        return listDocumentModel;
     }
 
     private void appendMultipleFilter(SelectBuilder select, String multiple){
-        if (multiple != null) {
+        if (!StringUtils.isEmpty(multiple)) {
             select.addFilter(SPARQLQueryHelper.or(
                     SPARQLQueryHelper.regexFilter(DocumentModel.SUBJECT_FIELD, multiple),
                     SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, multiple)
@@ -144,19 +146,19 @@ public class DocumentDAO {
     }
 
     private void appendTitleFilter(SelectBuilder select, String title) throws Exception {
-        if (title != null) {
+        if (!StringUtils.isEmpty(title)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.TITLE_FIELD, title));
         }
     }
    
     private void appendDeprecatedFilter(SelectBuilder select, String deprecated) throws Exception {        
-        if (deprecated != null) {
+        if (!StringUtils.isEmpty(deprecated)) {
             select.addFilter(SPARQLQueryHelper.eq(DocumentModel.DEPRECATED_FIELD, deprecated));
         }
     }
 
     private void appendDateFilter(SelectBuilder select, String date) throws Exception {
-        if (date != null) {
+        if (!StringUtils.isEmpty(date)) {
             select.addFilter(SPARQLQueryHelper.regexFilter(DocumentModel.DATE_FIELD, date));
         }
     }
@@ -168,7 +170,7 @@ public class DocumentDAO {
     }
 
     private void appendAuthorsFilter(ElementGroup authorsGraphGroupElem, String authors) throws Exception {
-        if (authors != null) {
+        if (!StringUtils.isEmpty(authors)) {
             Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
             Var authorsVar = SPARQLQueryHelper.makeVar(DocumentModel.AUTHORS_FIELD);
 
@@ -183,7 +185,7 @@ public class DocumentDAO {
     }
 
     private void appendSubjectsListFilter(ElementGroup subjectGraphGroupElem, String subject) throws Exception {
-        if (subject != null) {
+        if (!StringUtils.isEmpty(subject)) {
 
             Var uriVar = SPARQLQueryHelper.makeVar(DocumentModel.URI_FIELD);
             Var subjectVar = SPARQLQueryHelper.makeVar(DocumentModel.SUBJECT_FIELD);

@@ -10,6 +10,7 @@
                         :editMode="editMode"
                         :generated.sync="uriGenerated"
                         :required="true"
+                        helpMessage="component.common.uri-help-message"
                 ></opensilex-UriForm>
             </div>
         </div>

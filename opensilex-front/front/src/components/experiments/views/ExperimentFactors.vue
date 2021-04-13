@@ -132,18 +132,30 @@ export default class ExperimentFactors extends Vue {
     );
   }
   showFactorDetails(factorUriResult: any) {
-    console.log(factorUriResult);
-    factorUriResult.then((factorUri) => {
-      console.debug("showFactorDetails", factorUri);
+    if (factorUriResult instanceof Promise) {
+      console.log(factorUriResult);
+      factorUriResult.then((factorUri) => {
+        console.debug("showFactorDetails", factorUri);
+        this.$store.commit("storeReturnPage", this.$router);
+        this.$router.push({
+          path:
+            "/" +
+            encodeURIComponent(this.uri) +
+            "/factor/details/" +
+            encodeURIComponent(factorUri),
+        });
+      });
+    } else {
+      console.debug("showFactorDetails", factorUriResult);
       this.$store.commit("storeReturnPage", this.$router);
       this.$router.push({
         path:
           "/" +
           encodeURIComponent(this.uri) +
           "/factor/details/" +
-          encodeURIComponent(factorUri),
+          encodeURIComponent(factorUriResult),
       });
-    });
+    }
   }
 
   showSkosReferences(uri: string) {

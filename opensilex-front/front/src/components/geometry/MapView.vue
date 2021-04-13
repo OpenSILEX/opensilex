@@ -56,7 +56,10 @@
         ></opensilex-CheckboxForm>
         <span>
           <label class="alert-warning">
-            <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
+            <img
+                alt="Warning"
+                src="../../../theme/phis/images/construction.png"
+            />
             {{ $t("MapView.WarningInstruction") }}
           </label>
         </span>
@@ -340,13 +343,38 @@ export default class MapView extends Vue {
   }
 
   showAreaDetails(areaUriResult: any) {
-    areaUriResult.then((areaUri) => {
-      if (areaUri != undefined) {
+    if (areaUriResult instanceof Promise) {
+      areaUriResult.then((areaUri) => {
+        if (areaUri != undefined) {
+          this.editingMode = false;
+          console.debug("showAreaDetails", areaUri);
+          this.$opensilex
+              .getService(this.areaService)
+              .getByURI(areaUri.toString())
+              .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+                const res = http.response.result as any;
+                if (res.geometry != null) {
+                  res.geometry.properties = {
+                    uri: res.uri,
+                    name: res.name,
+                    type: res.rdf_type,
+                    description: res.description,
+                    author: res.author,
+                    nature: "Area",
+                  };
+                  this.featuresArea.push(res.geometry);
+                }
+              })
+              .catch(this.$opensilex.errorHandler);
+        }
+      });
+    } else {
+      if (areaUriResult != undefined) {
         this.editingMode = false;
-        console.debug("showAreaDetails", areaUri);
+        console.debug("showAreaDetails", areaUriResult);
         this.$opensilex
             .getService(this.areaService)
-            .getByURI(areaUri)
+            .getByURI(areaUriResult)
             .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
               const res = http.response.result as any;
               if (res.geometry != null) {
@@ -363,7 +391,7 @@ export default class MapView extends Vue {
             })
             .catch(this.$opensilex.errorHandler);
       }
-    });
+    }
   }
 
   onMapPointerMove({pixel}: any) {
@@ -827,7 +855,6 @@ p {
   background-color: transparent;
   box-shadow: none;
 }
-
 </style>
 
 <i18n>

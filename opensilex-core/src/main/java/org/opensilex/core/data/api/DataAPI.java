@@ -72,6 +72,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -174,7 +175,7 @@ public class DataAPI {
                 int index = errors.get(i).getIndex();
                 datas.add(dtoList.get(index));
             }                    
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
             String json = mapper.writeValueAsString(datas);
 
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)

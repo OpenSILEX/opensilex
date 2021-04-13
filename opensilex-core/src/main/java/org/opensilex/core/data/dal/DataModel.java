@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  *
@@ -115,7 +116,7 @@ public class DataModel extends MongoModel {
            
     @Override
     public String[] getUriSegments(MongoModel instance) {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         String provenanceString = "";
         try {
             provenanceString = mapper.writeValueAsString(getProvenance());

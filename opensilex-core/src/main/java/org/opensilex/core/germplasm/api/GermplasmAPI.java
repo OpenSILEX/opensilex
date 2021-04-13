@@ -72,6 +72,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -503,7 +504,7 @@ public class GermplasmAPI {
         }
         
         //Construct manually json with metadata to convert it to csv
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
 
         List<JsonNode> list = new ArrayList<>();

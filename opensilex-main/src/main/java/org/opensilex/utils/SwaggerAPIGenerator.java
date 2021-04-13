@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -185,8 +186,7 @@ public final class SwaggerAPIGenerator {
         Swagger swagger = generate(source, localRef);
 
         if (swagger != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(Include.NON_NULL);
+            ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
             File swaggerFile = new File(destination);
             swaggerFile.createNewFile();
             mapper.writeValue(swaggerFile, swagger);

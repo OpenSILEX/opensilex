@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.Required;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  * @author Emilie Fernandez
@@ -49,7 +50,7 @@ public class DocumentCreationDTO extends DocumentDTO {
      * @throws IOException 
      */
     public static DocumentCreationDTO fromString(String param) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         return mapper.readValue(param, DocumentCreationDTO.class);
     }
 

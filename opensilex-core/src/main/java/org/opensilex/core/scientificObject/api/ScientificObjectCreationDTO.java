@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -79,7 +80,7 @@ public class ScientificObjectCreationDTO extends RDFObjectDTO {
     }
 
     public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         return mapper.readValue(param, ScientificObjectCsvDescriptionDTO.class);
     }
 

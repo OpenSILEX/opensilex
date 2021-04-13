@@ -101,6 +101,7 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  *
@@ -460,7 +461,7 @@ public class DeviceAPI {
         }
         
         //Construct manually json with metadata and type property to convert it to csv
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
 
         List<JsonNode> list = new ArrayList<>();

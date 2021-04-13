@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  * DataFileModel
@@ -49,7 +50,7 @@ public class DataFileModel extends DataModel {
     
     @Override
     public String[] getUriSegments(MongoModel instance) {
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         String provenanceString = "";
         try {
             provenanceString = mapper.writeValueAsString(getProvenance());

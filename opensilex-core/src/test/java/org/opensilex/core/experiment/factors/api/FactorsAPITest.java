@@ -33,6 +33,7 @@ import org.opensilex.core.skos.model.SkosModelTest;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
@@ -139,7 +140,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
                 new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
@@ -181,7 +182,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
                 new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });
@@ -216,7 +217,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         JsonNode node1 = getResult1.readEntity(JsonNode.class);
 
         // System.out.println(node1.toPrettyString());
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         PaginatedListResponse<FactorGetDTO> factorListResponse1 = mapper.convertValue(node1,
                 new TypeReference<PaginatedListResponse<FactorGetDTO>>() {
         });
@@ -295,7 +296,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         SingleObjectResponse<FactorDetailsGetDTO> getResponse = mapper.convertValue(node,
                 new TypeReference<SingleObjectResponse<FactorDetailsGetDTO>>() {
         });

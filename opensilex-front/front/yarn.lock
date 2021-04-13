@@ -4798,10 +4798,20 @@ dashify@^2.0.0:
   resolved "https://registry.yarnpkg.com/dashify/-/dashify-2.0.0.tgz#fff270ca2868ca427fee571de35691d6e437a648"
   integrity sha512-hpA5C/YrPjucXypHPPc0oJ1l9Hf6wWbiOL7Ik42cxnsUOhWiCB/fylKbKqqJalW9FgkNQCw16YO8uW9Hs0Iy1A==
 
+date-fns-tz@^1.0.12:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/date-fns-tz/-/date-fns-tz-1.1.3.tgz#8783489c9d90e5785548869af5bb8c4642a03855"
+  integrity sha512-mD26WkejWz842RggjFrKsY6ehGgyBQSJ209mn83/vsjhgQ5WbdVvBzJ0CuosnGdklDxOvOppQ/wn1UgvTOPKPw==
+
 date-fns@^1.29.0:
   version "1.30.1"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-1.30.1.tgz#2e71bf0b119153dbb4cc4e88d9ea5acfb50dc05c"
   integrity sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==
+
+date-fns@^2.8.1:
+  version "2.20.3"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.20.3.tgz#5a28718edb95a80db96187b25340959867d36bc8"
+  integrity sha512-BbiJSlfmr1Fnfi1OHY8arklKdwtZ9n3NkjCeK8G9gtEe0ZSUwJuwHc6gYBl0uoC0Oa5RdpJV1gBBdXcZi8Efdw==
 
 dateformat@^1.0.7-1.2.3:
   version "1.0.12"
@@ -7439,6 +7449,11 @@ lodash.values@~2.4.1:
   integrity sha1-q/UUQ2s8twUAFieXjLzzCxKA7qQ=
   dependencies:
     lodash.keys "~2.4.1"
+
+lodash@4.17.20:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
+  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
 
 lodash@^4.0.0, lodash@^4.1.0, lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.3:
   version "4.17.21"
@@ -10876,10 +10891,15 @@ uuid@~1.4.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-1.4.2.tgz#453019f686966a6df83cdc5244e7c990ecc332fc"
   integrity sha1-RTAZ9oaWam34PNxSROfJkOzDMvw=
 
-v-click-outside@^2.0.1:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/v-click-outside/-/v-click-outside-2.1.5.tgz#aa69172fb41fcc79b26b9a4bc72a30ccf03f7a3c"
-  integrity sha512-VPNCOTZK6WZy73lcWc+R7IW1uaBFEO3/Csrs5CzWVOdvE30V8Y1+BE/BtTlcEmeDGx0eqdE7bSCg55Jj37PMJg==
+v-calendar@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/v-calendar/-/v-calendar-2.3.0.tgz#5709d2b0028db9d464b7e06c700894735400d564"
+  integrity sha512-OMZJaE45deO5+W5+xueVEHpwhfOGUb2sKjM7w56lCBFaEHQxeYuz3if1zMa65BI3EXU5iKizNVZM6BD8bymWyQ==
+  dependencies:
+    core-js "^3.6.5"
+    date-fns "^2.8.1"
+    date-fns-tz "^1.0.12"
+    lodash "4.17.20"
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
@@ -10920,13 +10940,6 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
-vue-airbnb-style-datepicker@^2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/vue-airbnb-style-datepicker/-/vue-airbnb-style-datepicker-2.7.1.tgz#d04d7334be4aec962abc3c432fca2af8d8bed969"
-  integrity sha512-3ipqsZvP0OwIleX1NKsxl+Swi6BaU7BHee1+7OHL+FrmVodbhzfoVt5tbCodA3DFpDiWTRdGa+Tt/LhSAf+DmQ==
-  dependencies:
-    v-click-outside "^2.0.1"
-
 vue-async-computed-decorator@0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/vue-async-computed-decorator/-/vue-async-computed-decorator-0.0.5.tgz#ca29d39c587a4c3fc310772511f32208020a2593"
@@ -10966,11 +10979,6 @@ vue-date-fns@^1.1.0:
   integrity sha512-9xgVtDtK97C5ztLAelecfd+lfUpYn6nGRVxuD6SCk/FiN9pr7C81qP83STcsFw4hz0MfcOinfqd8ctBarMsmpA==
   dependencies:
     date-fns "^1.29.0"
-
-vue-datetime@^1.0.0-beta.14:
-  version "1.0.0-beta.14"
-  resolved "https://registry.yarnpkg.com/vue-datetime/-/vue-datetime-1.0.0-beta.14.tgz#791e724500929cdfeb31395154d9a26fd27ffb46"
-  integrity sha512-n25LqldE1xryeoweohiqlxy8iUsi+UwZnKLaN4gXjk7xxGL6rUl1y/GGvkoMwJUzRKttw+QnQV4oFAYupUQdug==
 
 vue-eslint-parser@^7.0.0:
   version "7.5.0"
@@ -11180,8 +11188,10 @@ watchpack@^1.7.4:
   resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.7.5.tgz#1267e6c55e0b9b5be44c2023aed5437a2c26c453"
   integrity sha512-9P3MWk6SrKjHsGkLT2KHXdQ/9SNkyoJbabxnKOoJepsvJjJG8uYTR3yTPxPQvNDI3w4Nz1xnE0TLHK4RIVe/MQ==
   dependencies:
+    chokidar "^3.4.1"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
+    watchpack-chokidar2 "^2.0.1"
   optionalDependencies:
     chokidar "^3.4.1"
     watchpack-chokidar2 "^2.0.1"

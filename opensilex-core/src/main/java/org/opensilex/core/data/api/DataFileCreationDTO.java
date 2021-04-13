@@ -22,6 +22,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -139,7 +140,7 @@ public class DataFileCreationDTO {
      * @throws com.fasterxml.jackson.core.JsonProcessingException
      */
     public static DataFileCreationDTO fromString(String param) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         return mapper.readValue(param, DataFileCreationDTO.class);
     }
 }

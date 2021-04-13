@@ -76,7 +76,7 @@ export default class ProjectForm extends Vue {
         let uri = http.response.result;
         form.uri = uri;
         console.debug("project created", uri);
-        return form;
+        this.$emit("onCreate", form);
       })
       .catch((error) => {
         if (error.status == 409) {
@@ -101,7 +101,7 @@ export default class ProjectForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("project updated", uri);
-        return form;
+        this.$emit("onUpdate", form);
       })
       .catch(this.$opensilex.errorHandler);
   }

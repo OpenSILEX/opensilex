@@ -128,7 +128,8 @@
                     "noEntries" : "Aucun élément trouvé"
                 }
             },
-            "addDocument": "Ajouter un document"
+            "addDocument": "Ajouter un document",
+            "warningInstruction" : "Fonctionnalité expérimentale"
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",

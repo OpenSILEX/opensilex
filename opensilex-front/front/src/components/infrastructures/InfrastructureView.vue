@@ -4,6 +4,7 @@
       icon="ik#ik-globe"
       title="component.menu.infrastructures"
       description="InfrastructureView.description"
+      :isExperimentalFeature="true"
     ></opensilex-PageHeader>
     <div class="row">
       <div class="col-md-6">

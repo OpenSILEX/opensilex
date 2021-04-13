@@ -4,8 +4,8 @@
         icon="ik#ik-activity"
         title="Event.list-title"
         description="EventsView.description"
+        :isExperimentalFeature="true"
     ></opensilex-PageHeader>
-
 
     <opensilex-PageContent>
       <template v-slot>
@@ -14,6 +14,7 @@
             :enableActions="true"
             :columnsToDisplay="new Set(['type','start','end','description', 'targets'])"
             :displayTitle="false"
+            :isExperimentalFeature="false"
         ></opensilex-EventList>
       </template>
     </opensilex-PageContent>

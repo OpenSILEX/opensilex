@@ -129,7 +129,8 @@
                     "noEntries" : "No entries found"
                 }
             },
-            "addDocument": "Add document"
+            "addDocument": "Add document",
+            "warningInstruction" : "Experimental feature"
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",

@@ -11,14 +11,6 @@
         />
       </h3>
 
-      <span style="padding-left:1%"></span>
-      <span>
-          <label class="alert-warning">
-              <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
-              {{ $t("EventList.WarningInstruction") }}
-          </label>
-      </span>
-
       <div class="card-header-right">
         <opensilex-CreateButton
           v-if="

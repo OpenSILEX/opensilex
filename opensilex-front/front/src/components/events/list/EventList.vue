@@ -26,12 +26,12 @@
                             ></opensilex-CreateButton>
 
                             <span style="padding-left:1%"></span>
-                            <span>
-                                <label class="alert-warning">
-                                    <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
-                                    {{ $t("EventList.WarningInstruction") }}
-                                </label>
-                            </span>
+                            <span v-if="isExperimentalFeature">
+                                  <label class="alert-warning">
+                                      <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
+                                      {{ $t("component.common.warningInstruction") }}
+                                  </label>
+                              </span>
 
                         </opensilex-PageActions>
 
@@ -245,6 +245,9 @@
 
         baseType: string;
 
+        @Prop({default: true})
+        isExperimentalFeature: boolean;
+
         showCsvForm() {
             this.eventCsvForm.show();
         }
@@ -403,13 +406,3 @@
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-    EventList:
-        WarningInstruction: Experimental feature
-fr:
-    EventList:
-        WarningInstruction: Fonctionnalité experimentale
-</i18n>
-

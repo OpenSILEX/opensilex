@@ -29,7 +29,7 @@
                         <span>
                             <label class="alert-warning">
                                 <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
-                                {{ $t("EventList.WarningInstruction") }}
+                                {{ $t("component.common.warningInstruction") }}
                             </label>
                         </span>
 

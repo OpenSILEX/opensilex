@@ -97,16 +97,28 @@
               :small="true"
               :disabled="selectedObjects.length == 0"
               text=actions>
-                <b-dropdown-item-button    
-                  @click="createDocument()"
-                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-                <b-dropdown-item-button
-                  @click="exportCSV"
-                >Export CSV</b-dropdown-item-button>
-                <b-dropdown-divider></b-dropdown-divider>
+
+                <b-dropdown-item-button @click="createDocument()" >
+                  {{$t('component.common.addDocument')}}
+                </b-dropdown-item-button>
+                <b-dropdown-item-button @click="exportCSV">
+                  Export CSV
+                </b-dropdown-item-button>
+
+                <b-dropdown-item-button @click="createEvents()">
+                  {{$t('Event.add-multiple')}}
+                </b-dropdown-item-button>
+
+                <b-dropdown-item-button @click="createMoves()">
+                  {{$t('Move.add')}}
+                </b-dropdown-item-button>
+
+                <b-dropdown-divider
+                ></b-dropdown-divider>
                 <b-dropdown-item-button 
                   @click="visualize"
-                >{{$t('ExperimentScientificObjects.visualize')}}</b-dropdown-item-button>
+                >{{$t('ExperimentScientificObjects.visualize')}}
+                </b-dropdown-item-button>
             </b-dropdown>
           </div>
           <opensilex-TreeViewAsync
@@ -188,6 +200,17 @@
       :initForm="initForm"
       icon="ik#ik-settings"
     ></opensilex-ModalForm>
+
+    <opensilex-EventCsvForm
+        ref="eventCsvForm"
+        :targets="selectedObjects"
+    ></opensilex-EventCsvForm>
+
+    <opensilex-EventCsvForm
+        ref="moveCsvForm"
+        :targets="selectedObjects"
+        :isMove="true"
+    ></opensilex-EventCsvForm>
     
   </div>
 </template>
@@ -198,6 +221,7 @@ import Vue from "vue";
 import { ScientificObjectsService } from "opensilex-core/index";
 import HttpResponse from "opensilex-core/HttpResponse";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
+import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
@@ -214,6 +238,8 @@ export default class ExperimentScientificObjects extends Vue {
   @Ref("soTree") readonly soTree!: any;
   @Ref("importForm") readonly importForm!: any;
   @Ref("documentForm") readonly documentForm!: any;
+  @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
+  @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
 
   get customColumns() {
     return [
@@ -504,6 +530,14 @@ export default class ExperimentScientificObjects extends Vue {
 
   createDocument() {
     this.documentForm.showCreateForm();
+  }
+
+  createEvents(){
+    this.eventCsvForm.show();
+  }
+
+  createMoves(){
+    this.moveCsvForm.show();
   }
 
   initForm() {

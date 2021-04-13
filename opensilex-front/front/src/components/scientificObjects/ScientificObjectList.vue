@@ -120,12 +120,20 @@
               :small="true"
               :disabled="numberOfSelectedRows == 0"
               text=actions>
-                <b-dropdown-item-button    
-                  @click="createDocument()"
-                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-                <b-dropdown-item-button
-                  @click="exportCSV"
-                >Export CSV</b-dropdown-item-button>
+                <b-dropdown-item-button @click="createDocument()">
+                  {{$t('component.common.addDocument')}}
+                </b-dropdown-item-button>
+                <b-dropdown-item-button @click="exportCSV">
+                  Export CSV
+                </b-dropdown-item-button>
+
+              <b-dropdown-item-button @click="createEvents()">
+                {{$t('Event.add-multiple')}}
+              </b-dropdown-item-button>
+              <b-dropdown-item-button @click="createMoves()">
+                {{$t('Move.add')}}
+              </b-dropdown-item-button>
+
             </b-dropdown>
           </template>
 
@@ -201,6 +209,17 @@
         :initForm="initForm"
         icon="ik#ik-file-text"
       ></opensilex-ModalForm>
+
+      <opensilex-EventCsvForm
+          ref="eventCsvForm"
+          :targets="selectedUris"
+      ></opensilex-EventCsvForm>
+
+      <opensilex-EventCsvForm
+          ref="moveCsvForm"
+          :targets="selectedUris"
+          :isMove="true"
+      ></opensilex-EventCsvForm>
   </div>
 </template>
 
@@ -216,6 +235,7 @@ import {
   ScientificObjectDetailDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
 @Component
 export default class ScientificObjectList extends Vue {
@@ -228,6 +248,10 @@ export default class ScientificObjectList extends Vue {
   @Ref("importForm") readonly importForm!: any;
   @Ref("templateGenerator") readonly templateGenerator!: any;
   @Ref("documentForm") readonly documentForm!: any;
+  @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
+  @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
+
+  selectedUris: Array<string> = [];
 
   fields = [
     {
@@ -404,6 +428,24 @@ export default class ScientificObjectList extends Vue {
 
   createDocument() {
     this.documentForm.showCreateForm();
+  }
+
+
+  createEvents(){
+    this.updateSelectedUris();
+    this.eventCsvForm.show();
+  }
+
+  createMoves(){
+    this.updateSelectedUris();
+    this.moveCsvForm.show();
+  }
+
+  updateSelectedUris(){
+    this.selectedUris = [];
+    for (let select of this.tableRef.getSelected()) {
+      this.selectedUris.push(select.uri);
+    }
   }
 
   initForm() {

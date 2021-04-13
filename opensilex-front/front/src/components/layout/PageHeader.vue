@@ -9,6 +9,15 @@
               <slot name="title">&nbsp;{{ $t(title) }}</slot>
             </h5>
             <span><slot name="description">{{ $t(description) }}</slot></span>
+
+            <span v-if="isExperimentalFeature">
+                <span style="padding-left:1%"></span>
+                <label class="alert-warning">
+                    <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
+                    {{ $t("component.common.warningInstruction") }}
+                </label>
+              </span>
+
           </div>
         </div>
       </div>
@@ -24,6 +33,7 @@
             <li class="breadcrumb-item active">
               <opensilex-Icon :icon="icon" />
               <span class="navbar-title">&nbsp;{{ $t(title) }}</span>
+
             </li>
           </ol>
         </nav>
@@ -48,6 +58,10 @@ export default class PageHeader extends Vue {
 
   @Prop()
   description;
+
+  @Prop({default: false})
+  isExperimentalFeature: boolean;
+
 }
 </script>
 

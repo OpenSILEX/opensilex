@@ -122,7 +122,7 @@
               text=actions>
                 <b-dropdown-item-button    
                   @click="createDocument()"
-                >{{$t('ScientificObjectList.addDocument')}}</b-dropdown-item-button>
+                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
                 <b-dropdown-item-button
                   @click="exportCSV"
                 >Export CSV</b-dropdown-item-button>
@@ -196,7 +196,7 @@
       <opensilex-ModalForm
         ref="documentForm"
         component="opensilex-DocumentForm"
-        createTitle="ScientificObjectList.addDocument"
+        createTitle="component.common.addDocument"
         modalSize="lg"
         :initForm="initForm"
         icon="ik#ik-file-text"

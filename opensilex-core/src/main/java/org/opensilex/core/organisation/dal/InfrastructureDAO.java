@@ -289,7 +289,8 @@ public class InfrastructureDAO {
         validateInfrastructureFacilityAccess(instance.getUri(), user);
         InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
         instance.setInfrastructure(infra);
-        sparql.update(instance);
+        sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
+        sparql.create(instance);
         return instance;
     }
 

@@ -20,6 +20,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -75,8 +79,20 @@ public class FacilityAPI {
     ) throws Exception {
         try {
             InfrastructureDAO dao = new InfrastructureDAO(sparql);
-            InfrastructureFacilityModel model = dao.createFacility(dto.newModel(), currentUser);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            InfrastructureFacilityModel facility = dto.newModel();
+
+            if (dto.getRelations() != null) {
+                OntologyDAO ontoDAO = new OntologyDAO(sparql);
+                ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+                URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
+                for (RDFObjectRelationDTO relation : dto.getRelations()) {
+                    ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility);
+                }
+            }
+
+            facility = dao.createFacility(facility, currentUser);
+
+            return new ObjectUriResponse(Response.Status.CREATED, facility.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Facility already exists", e.getMessage()).getResponse();
@@ -119,7 +135,7 @@ public class FacilityAPI {
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         InfrastructureFacilityModel model = dao.getFacility(uri, currentUser);
-        return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model)).getResponse();
+        return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model, true)).getResponse();
     }
 
     @GET
@@ -129,17 +145,17 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
 
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        List<InfrastructureFacilityModel> facilities = dao.getFacilitiesByURI(currentUser,uris);
+        List<InfrastructureFacilityModel> facilities = dao.getFacilitiesByURI(currentUser, uris);
 
-        if(facilities.isEmpty()){
+        if (facilities.isEmpty()) {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Facilities not found", "Unknown facilities URIs").getResponse();
         }
 
@@ -150,25 +166,23 @@ public class FacilityAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
-
     @GET
     @ApiOperation("Search facilities")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructureFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
-
     ) throws Exception {
 
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser,pattern, orderByList,page, pageSize);
+        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, orderByList, page, pageSize);
 
         List<InfrastructureFacilityNamedDTO> dtoList = facilities.getList().stream()
                 .map(InfrastructureFacilityNamedDTO::new)
@@ -218,10 +232,20 @@ public class FacilityAPI {
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        Response response;
-        InfrastructureFacilityModel infrastructure = dao.updateFacility(dto.newModel(), currentUser);
+        InfrastructureFacilityModel facility = dto.newModel();
 
-        response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
+        if (dto.getRelations() != null) {
+            OntologyDAO ontoDAO = new OntologyDAO(sparql);
+            ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+            URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
+            for (RDFObjectRelationDTO relation : dto.getRelations()) {
+                ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility);
+            }
+        }
+
+        facility = dao.updateFacility(facility, currentUser);
+
+        Response response = new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
 
         return response;
     }

@@ -43,11 +43,11 @@
       </template>
 
       <template v-slot:buttons="{ node }">
-        <!-- <opensilex-DetailButton
+        <opensilex-DetailButton
           @click="showDetail(node.data.uri)"
-          label="InfrastructureTree.edit"
+          label="InfrastructureTree.showDetail"
           :small="true"
-        ></opensilex-DetailButton>         -->
+        ></opensilex-DetailButton>
         <opensilex-EditButton
           v-if="
             user.hasCredential(
@@ -251,7 +251,7 @@ export default class InfrastructureTree extends Vue {
 
   showDetail(uri) {
     this.$router.push({
-      path: "/infrastructures/details/" + encodeURIComponent(uri),
+      path: "/infrastructure/details/" + encodeURIComponent(uri),
     });
   }
 
@@ -316,6 +316,7 @@ en:
     delete: Delete organization
     infrastructure-component: Organizations
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
+    showDetail: Organization details
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des organisations...
@@ -326,4 +327,5 @@ fr:
     delete: Supprimer l'organisation
     infrastructure-component: Organisations
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
+    showDetail: Détail de l'organisation
 </i18n>

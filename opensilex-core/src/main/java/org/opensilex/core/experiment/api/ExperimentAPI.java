@@ -109,7 +109,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
- import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -148,7 +148,6 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
     public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
-    
 
     public static final int CSV_NB_ERRORS_MAX = 100;
 
@@ -285,7 +284,7 @@ public class ExperimentAPI {
     })
     public Response searchExperiments(
             @ApiParam(value = "Regex pattern for filtering by name", example = "ZA17") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  Integer year,
+            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year") Integer year,
             @ApiParam(value = "Search ended(false) or active experiments(true)") @QueryParam("is_ended") Boolean isEnded,
             @ApiParam(value = "Search by involved species", example = "http://www.phenome-fppn.fr/id/species/zeamays") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factorCategories,
@@ -346,7 +345,6 @@ public class ExperimentAPI {
         return new ObjectUriResponse(xpUri).getResponse();
     }
 
-    
     @GET
     @Path("{uri}/facilities")
     @ApiOperation("Get facilities involved in an experiment")
@@ -363,10 +361,12 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         List<InfrastructureFacilityModel> facilities = xpDao.getFacilities(xpUri, currentUser);
 
-        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map((item) -> {
+            return InfrastructureFacilityGetDTO.getDTOFromModel(item, false);
+        }).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-    
+
     @GET
     @Path("{uri}/available_facilities")
     @ApiOperation("Get facilities available for an experiment")
@@ -383,7 +383,9 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         List<InfrastructureFacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
 
-        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map(InfrastructureFacilityGetDTO::getDTOFromModel).collect(Collectors.toList());
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map((item) -> {
+            return InfrastructureFacilityGetDTO.getDTOFromModel(item, false);
+        }).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -456,7 +458,7 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
 
     }
-  
+
     @GET
     @Path("{uri}/data")
     @ApiOperation("Search data")
@@ -522,7 +524,7 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-        
+
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
 
@@ -577,7 +579,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportExperimentDataList(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri")  @ValidURI @NotNull URI xpUri,
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -632,10 +634,10 @@ public class ExperimentAPI {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-        
+
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        
+
         // test prov
         List<URI> provenancesArrayList = new ArrayList<>();
 
@@ -709,13 +711,13 @@ public class ExperimentAPI {
             if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
                 provenances.put(dataModel.getProvenance().getUri(), null);
             }
-            
+
             if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
                 dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
             }
             // add export data
             // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
-            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(),dataModel.getScientificObjects().get(0));
+            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(), dataModel.getScientificObjects().get(0));
 
             if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                 dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
@@ -727,12 +729,12 @@ public class ExperimentAPI {
         LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
-        
+
         // first static columns
         defaultColumns.add("Experiment");
-        defaultColumns.add("Scientific Object"); 
-        defaultColumns.add("Date"); 
-        
+        defaultColumns.add("Scientific Object");
+        defaultColumns.add("Date");
+
         List<String> methods = new ArrayList<>();
         for (int i = 0; i < (defaultColumns.size() - 1); i++) {
             methods.add("");
@@ -774,7 +776,7 @@ public class ExperimentAPI {
         // static supplementary columns
         defaultColumns.add("Data Description");
         defaultColumns.add("Experiment URI");
-        defaultColumns.add("Scientific Object URI"); 
+        defaultColumns.add("Scientific Object URI");
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
@@ -807,53 +809,52 @@ public class ExperimentAPI {
             // empty line
             writer.writeNext(new String[defaultColumns.size()]);
             // headers
-            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()])); 
-            
+            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+
             // Search in map indexed by date for prov, object and data
             // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
-
             for (Map.Entry<Instant, Map<ExportDataIndex, List<DataGetDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
                 Map<ExportDataIndex, List<DataGetDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
                 // Search in map indexed by  prov and data
                 for (Map.Entry<ExportDataIndex, List<DataGetDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
                     List<DataGetDTO> val = provUriObjectEntry.getValue();
-                        
+
                     // Each row is linked to a provenance 
                     ArrayList<String> csvRow = new ArrayList<>();
                     boolean first = true;
                     for (DataGetDTO dataGetDTO : val) {
                         if (first == true) {
                             ScientificObjectModel os = objects.get(dataGetDTO.getScientificObjects().get(0));
-                            
+
                             // experiment
                             csvRow.add(xp.getName());
-                            
+
                             // object
                             csvRow.add(os.getName());
-                            
+
                             // date
                             csvRow.add(dataGetDTO.getDate());
                             // write blank columns
                             for (int i = 0; i < variables.size(); i++) {
                                 csvRow.add("");
                             }
-                            
+
                             // provenance
                             if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
                                 csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
                             } else {
                                 csvRow.add("");
                             }
-                       
+
                             // experiment URI
                             csvRow.add(xp.getUri().toString());
-                                 
+
                             // object URI
                             csvRow.add(os.getUri().toString());
-                            
+
                             // provenance Uri
                             csvRow.add(dataGetDTO.getProvenance().getUri().toString());
-                            
+
                             first = false;
 
                         }
@@ -864,8 +865,7 @@ public class ExperimentAPI {
                             csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
                         }
                     }
-                    
-                    
+
                     String[] row = csvRow.toArray(new String[csvRow.size()]);
                     writer.writeNext(row);
                 }
@@ -916,7 +916,7 @@ public class ExperimentAPI {
         LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
-        
+
         defaultColumns.add("Experiment");
         defaultColumns.add("Scientific Object");
         defaultColumns.add("Date");
@@ -1014,7 +1014,7 @@ public class ExperimentAPI {
                     csvRow.add(dataGetDTO.getVariable().toString());
                     // provenance Uri
                     csvRow.add(dataGetDTO.getProvenance().getUri().toString());
-                    
+
                     String[] row = csvRow.toArray(new String[csvRow.size()]);
                     writer.writeNext(row);
                 }
@@ -1035,8 +1035,7 @@ public class ExperimentAPI {
 
         }
     }
-    
-    
+
     @POST
     @Path("{uri}/data/import")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
@@ -1044,10 +1043,10 @@ public class ExperimentAPI {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
     @ApiProtected
     @ApiCredential(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
-        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1066,24 +1065,22 @@ public class ExperimentAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql); 
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Provenance URI not found: ", provenance);
-        } 
+        }
 
         DataCSVValidationModel validation;
-        
-        
-        
+
         validation = validateWholeCSV(xpUri, provenanceModel, file, currentUser);
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
         validation.setInsertionStep(true);
-        validation.setValidCSV(!validation.hasErrors()); 
-        validation.setNbLinesToImport(validation.getData().size()); 
+        validation.setValidCSV(!validation.hasErrors());
+        validation.setNbLinesToImport(validation.getData().size());
 
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
@@ -1115,10 +1112,10 @@ public class ExperimentAPI {
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
             LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-            
+
             validation.setValidCSV(!validation.hasErrors());
         }
-        csvValidation.setDataErrors(validation); 
+        csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1129,10 +1126,10 @@ public class ExperimentAPI {
         @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
     @ApiProtected
     @ApiCredential(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
-        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1153,7 +1150,7 @@ public class ExperimentAPI {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Provenance URI not found: ", provenance);
-        } 
+        }
 
         DataCSVValidationModel validation;
 
@@ -1163,13 +1160,13 @@ public class ExperimentAPI {
         long timeElapsed = Duration.between(start, finish).toMillis();
         LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
-        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO(); 
-        
+        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
+
         validation.setValidCSV(!validation.hasErrors());
         validation.setValidationStep(true);
         validation.setNbLinesToImport(validation.getData().size());
         csvValidation.setDataErrors(validation);
-        
+
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
@@ -1182,20 +1179,20 @@ public class ExperimentAPI {
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>(); 
+        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
             CsvParser csvReader = new CsvParser(csvParserSettings);
             csvReader.beginParsing(inputReader);
-            LOGGER.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+            LOGGER.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat() + "'");
 
             // Line 1
             String[] ids = csvReader.parseNext();
 
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
- 
+
             VariableDAO dao = new VariableDAO(sparql);
             if (ids != null) {
 
@@ -1242,7 +1239,7 @@ public class ExperimentAPI {
                 boolean validateCSVRow = false;
                 while ((values = csvReader.parseNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType,duplicateDataByIndex);
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURI, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType, duplicateDataByIndex);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -1257,14 +1254,14 @@ public class ExperimentAPI {
             }
         }
 
-        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
+        if (csvValidation.getData().keySet().size() > DataAPI.SIZE_MAX) {
             csvValidation.setTooLargeDataset(true);
         }
-        
+
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType,List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
 
         boolean validRow = true;
         ScientificObjectModel object = null;
@@ -1303,8 +1300,8 @@ public class ExperimentAPI {
                 }
             } else {
                 // If value is not blank and null
-                if(!StringUtils.isEmpty(values[colIndex])){
-                    
+                if (!StringUtils.isEmpty(values[colIndex])) {
+
                     DataModel dataModel = new DataModel();
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
@@ -1321,18 +1318,18 @@ public class ExperimentAPI {
                     URI varURI = URI.create(headerByIndex.get(colIndex));
                     dataModel.setVariable(varURI);
                     dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                    csvValidation.addData(dataModel,rowIndex);
+                    csvValidation.addData(dataModel, rowIndex);
                     // check for duplicate data
-                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI,experimentURI,object.getUri());
-                    if (!duplicateDataByIndex.contains(importDataIndex)) { 
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri());
+                    if (!duplicateDataByIndex.contains(importDataIndex)) {
                         duplicateDataByIndex.add(importDataIndex);
-                    }else{
+                    } else {
                         String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
                         CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
                         csvValidation.addDuplicatedDataError(duplicateCell);
-                    }    
-                } 
-            } 
+                    }
+                }
+            }
         }
         return validRow;
     }
@@ -1426,7 +1423,7 @@ public class ExperimentAPI {
 
         return value;
     }
-    
+
     @GET
     @Path("{uri}/provenances")
     @ApiOperation("Get provenances involved in an experiment")
@@ -1453,7 +1450,7 @@ public class ExperimentAPI {
         // test exp
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
-        
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         Set<URI> provenancesURIs = dataDAO.getProvenancesByExperiment(currentUser, xpUri);
 
@@ -1468,7 +1465,7 @@ public class ExperimentAPI {
             );
 
         }
-        
+
         return new PaginatedListResponse<>(provenances).getResponse();
     }
 

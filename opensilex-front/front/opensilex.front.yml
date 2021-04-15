@@ -130,7 +130,10 @@ menu:
             - is-admin
 
 routes:
-
+  - path: /infrastructure/details/:uri
+    component: opensilex-InfrastructureDetailView
+  - path: /infrastructure/facility/details/:uri
+    component: opensilex-InfrastructureFacilityView    
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
   - path: /experiment/scientific-objects/:uri

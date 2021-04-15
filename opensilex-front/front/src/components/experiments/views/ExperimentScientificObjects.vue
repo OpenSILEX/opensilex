@@ -176,7 +176,8 @@
             "
             ref="soForm"
             :context="{ experimentURI: this.uri }"
-            @refresh="refresh"
+            @onUpdate="refresh"
+            @onCreate="refresh"
           ></opensilex-ScientificObjectForm>
         </b-card>
       </div>

@@ -20,7 +20,8 @@
           </b-button-group>
           <opensilex-ScientificObjectForm
             ref="soForm"
-            @refresh="$emit('onUpdate', selected.uri)"
+            @onUpdate="$emit('onUpdate', selected.uri)"
+            @onCreate="$emit('onCreate', selected.uri)"
           ></opensilex-ScientificObjectForm>
         </div>
       </template>

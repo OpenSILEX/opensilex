@@ -3,7 +3,8 @@
     <opensilex-UriLink
       v-if="label"
       :to="{
-        path: '/infrastructure/facility/details/' + encodeURIComponent(value),
+        path:
+          '/scientific-objects/details/' + encodeURIComponent(value),
       }"
       :uri="value"
       :value="label"
@@ -23,15 +24,13 @@ import {
 import Vue from "vue";
 
 @Component
-export default class InfrastructureFacilityPropertyView extends Vue {
+export default class ScientificObjectUriView extends Vue {
   $opensilex: any;
 
   @Prop()
   value;
 
   label = "";
-  infrastructure = null;
-  to = null;
 
   mounted() {
     this.onValueChange();
@@ -40,19 +39,14 @@ export default class InfrastructureFacilityPropertyView extends Vue {
   @Watch("value")
   onValueChange() {
     if (this.value) {
-      this.$opensilex.disableLoader();
       this.$opensilex
-        .getService("opensilex.OrganisationsService")
-        .getInfrastructureFacility(this.value)
+        .getService("opensilex.OntologyService")
+        .getURILabel(this.value)
         .then((http) => {
-          this.infrastructure = http.response.result;
-          this.label = this.infrastructure.name;
+          this.label = http.response.result;
         })
         .catch(() => {
           this.label = this.value;
-        })
-        .finally(() => {
-          this.$opensilex.enableLoader();
         });
     }
   }

@@ -8,8 +8,8 @@
     icon="ik#ik-target"
     :createAction="callScientificObjectCreation"
     :updateAction="callScientificObjectUpdate"
-    @onCreate="triggerRefresh"
-    @onUpdate="triggerRefresh"
+    @onCreate="$emit('onCreate', $event)"
+    @onUpdate="$emit('onUpdate', $event)"
   >
     <template v-slot:customFields="{ form }">
       <opensilex-GeometryForm
@@ -45,10 +45,6 @@ export default class ScientificObjectForm extends Vue {
     this.soService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
-  }
-
-  triggerRefresh() {
-    this.$emit("refresh");
   }
 
   createScientificObject(parentURI?) {

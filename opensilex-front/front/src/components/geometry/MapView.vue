@@ -32,7 +32,8 @@
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
         ref="soForm"
         :context="{ experimentURI: this.experiment }"
-        @refresh="callScientificObjectsUpdate"
+        @onUpdate="callScientificObjectsUpdate"
+        @onCreate="callScientificObjectsUpdate"
     />
 
     <p class="alert-info">

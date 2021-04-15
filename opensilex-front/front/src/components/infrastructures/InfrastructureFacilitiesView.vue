@@ -38,11 +38,18 @@
       @row-selected="$emit('rowSelected', $event)"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
-      <template v-slot:head(rdf_type_name)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(rdf_type_name)="data">{{
+        $t(data.label)
+      }}</template>
       <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
 
       <template v-slot:cell(name)="data">
         <opensilex-UriLink
+          :to="{
+            path:
+              '/infrastructure/facility/details/' +
+              encodeURIComponent(data.item.uri),
+          }"
           :uri="data.item.uri"
           :value="data.item.name"
         ></opensilex-UriLink>
@@ -80,21 +87,17 @@
       </template>
     </b-table>
 
-    <opensilex-ModalForm
+    <opensilex-InfrastructureFacilityForm
+      ref="facilityForm"
       v-if="
         user.hasCredential(
           credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
         )
       "
-      ref="facilityForm"
-      component="opensilex-InfrastructureFacilityForm"
-      createTitle="InfrastructureFacilitiesView.add"
-      editTitle="InfrastructureFacilitiesView.update"
-      icon="ik#ik-map"
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
-      :initForm="setInfrastructure"
-    ></opensilex-ModalForm>
+      :infrastructure="selected.uri"
+    ></opensilex-InfrastructureFacilityForm>
   </b-card>
 </template>
 
@@ -110,7 +113,6 @@ import {
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
-  $service: OrganisationsService;
 
   @Ref("facilityForm") readonly facilityForm!: any;
 
@@ -148,19 +150,17 @@ export default class InfrastructureFacilitiesView extends Vue {
   ];
 
   public deleteFacility(uri) {
-    this.$service.deleteInfrastructureFacility(uri)
+    this.$opensilex
+      .getService("opensilex.OrganisationsService")
+      .deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
       });
   }
 
-  setInfrastructure(form) {
-    form.organisation = this.selected.uri;
-  }
-
-  editFacility(facility){
+  editFacility(facility) {
     let copy = JSON.parse(JSON.stringify(facility));
-    this.facilityForm.showEditForm(copy)
+    this.facilityForm.showEditForm(copy);
   }
 }
 </script>

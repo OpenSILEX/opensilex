@@ -1,79 +1,71 @@
 <template>
-  <b-form>
-    <!-- URI -->
-    <opensilex-UriForm
-      :uri.sync="form.uri"
-      label="InfrastructureFacilityForm.facility-uri"
-      :editMode="editMode"
-      :generated.sync="uriGenerated"
-    ></opensilex-UriForm>
-
-    <!-- Name -->
-    <opensilex-InputForm
-      :value.sync="form.name"
-      label="component.common.name"
-      type="text"
-      :required="true"
-      placeholder="InfrastructureFacilityForm.form-name-placeholder"
-    ></opensilex-InputForm>
-
-    <!-- Type -->
-    <opensilex-TypeForm
-      :type.sync="form.rdf_type"
-      :baseType="$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI"
-      :required="true"
-      placeholder="InfrastructureFacilityForm.form-type-placeholder"
-    ></opensilex-TypeForm>
-  </b-form>
+  <opensilex-ModalForm
+    ref="facilityForm"
+    component="opensilex-OntologyObjectForm"
+    createTitle="InfrastructureFacilitiesView.add"
+    editTitle="InfrastructureFacilitiesView.update"
+    icon="ik#ik-map"
+    :createAction="callInfrastructureFacilityCreation"
+    :updateAction="callInfrastructureFacilityUpdate"
+    @onCreate="$emit('onCreate', $event)"
+    @onUpdate="$emit('onUpdate', $event)"
+  ></opensilex-ModalForm>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
-import {
-  InfrastructureGetDTO,
-  InfrastructureCreationDTO,
-  ResourceTreeDTO,
-  InfrastructureFacilityCreationDTO
-} from "opensilex-core/index";
 
 @Component
 export default class InfrastructureFacilityForm extends Vue {
   $opensilex: any;
 
-  uriGenerated = true;
-
   @Prop()
-  editMode;
+  infrastructure;
 
-  @Prop({
-    default: () => {
-      return {
-        uri: null,
-        rdf_type: null,
-        name: "",
-        organisation: null
-      };
+  @Ref("facilityForm") readonly facilityForm!: any;
+
+  showEditForm(form) {
+    this.$opensilex
+      .getService("opensilex.OrganisationsService")
+      .getInfrastructureFacility(form.uri)
+      .then((http) => {
+        this.facilityForm
+          .getFormRef()
+          .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
+        this.facilityForm.showEditForm(http.response.result);
+      }).catch(this.$opensilex.errorHandler);
+  }
+
+  showCreateForm() {
+    this.facilityForm
+      .getFormRef()
+      .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
+    this.facilityForm.showCreateForm();
+  }
+
+  callInfrastructureFacilityCreation(form) {
+    let definedRelations = [];
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.value != null) {
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j],
+            });
+          }
+        } else {
+          definedRelations.push(relation);
+        }
+      }
     }
-  })
-  form;
 
-  reset() {
-    this.uriGenerated = true;
-  }
+    form.organisation = this.infrastructure;
+    form.relations = definedRelations;
 
-  getEmptyForm() {
-    return {
-      uri: null,
-      rdf_type: null,
-      name: "",
-      organisation: null
-    };
-  }
-
-  create(form) {
     return this.$opensilex
       .getService("opensilex.OrganisationsService")
       .createInfrastructureFacility(form)
@@ -81,7 +73,7 @@ export default class InfrastructureFacilityForm extends Vue {
         let uri = http.response.result;
         console.debug("Infrastructure facility created", uri);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.status == 409) {
           console.error("Infrastructure facility already exists", error);
           this.$opensilex.errorHandler(
@@ -96,8 +88,26 @@ export default class InfrastructureFacilityForm extends Vue {
       });
   }
 
-  update(form) {
-    delete form.rdf_type_name;
+  callInfrastructureFacilityUpdate(form) {
+    let definedRelations = [];
+    for (let i in form.relations) {
+      let relation = form.relations[i];
+      if (relation.value != null) {
+        if (Array.isArray(relation.value)) {
+          for (let j in relation.value) {
+            definedRelations.push({
+              property: relation.property,
+              value: relation.value[j],
+            });
+          }
+        } else {
+          definedRelations.push(relation);
+        }
+      }
+    }
+
+    form.organisation = this.infrastructure;
+    form.relations = definedRelations;
     return this.$opensilex
       .getService("opensilex.OrganisationsService")
       .updateInfrastructureFacility(form)

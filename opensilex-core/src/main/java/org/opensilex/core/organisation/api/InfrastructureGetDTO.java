@@ -69,8 +69,8 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         List<InfrastructureFacilityGetDTO> facilities;
         if (model.getFacilities() != null) {
             facilities = new ArrayList<>(model.getFacilities().size());
-            model.getFacilities().forEach(device -> {
-                facilities.add(InfrastructureFacilityGetDTO.getDTOFromModel(device));
+            model.getFacilities().forEach(facility -> {
+                facilities.add(InfrastructureFacilityGetDTO.getDTOFromModel(facility, false));
             });
         } else {
             facilities = new ArrayList<>();

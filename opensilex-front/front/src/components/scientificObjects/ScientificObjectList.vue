@@ -6,16 +6,21 @@
       description="ScientificObjectList.description"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions 
-      v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-    > 
+    <opensilex-PageActions
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
+        )
+      "
+    >
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
       ></opensilex-CreateButton>
       <opensilex-ScientificObjectForm
         ref="soForm"
-        @refresh="refresh"
+        @onUpdate="redirectToDetail"
+        @onCreate="redirectToDetail"
       ></opensilex-ScientificObjectForm>
       &nbsp;
       <opensilex-CreateButton
@@ -119,21 +124,21 @@
               class="mb-2 mr-2"
               :small="true"
               :disabled="numberOfSelectedRows == 0"
-              text=actions>
-                <b-dropdown-item-button @click="createDocument()">
-                  {{$t('component.common.addDocument')}}
-                </b-dropdown-item-button>
-                <b-dropdown-item-button @click="exportCSV">
-                  Export CSV
-                </b-dropdown-item-button>
+              text="actions"
+            >
+              <b-dropdown-item-button @click="createDocument()">
+                {{ $t("component.common.addDocument") }}
+              </b-dropdown-item-button>
+              <b-dropdown-item-button @click="exportCSV">
+                Export CSV
+              </b-dropdown-item-button>
 
               <b-dropdown-item-button @click="createEvents()">
-                {{$t('Event.add-multiple')}}
+                {{ $t("Event.add-multiple") }}
               </b-dropdown-item-button>
               <b-dropdown-item-button @click="createMoves()">
-                {{$t('Move.add')}}
+                {{ $t("Move.add") }}
               </b-dropdown-item-button>
-
             </b-dropdown>
           </template>
 
@@ -184,13 +189,21 @@
                 :small="true"
               ></opensilex-DetailButton>
               <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
+                  )
+                "
                 @click="soForm.editScientificObject(data.item.uri)"
                 label="ExperimentScientificObjects.edit-scientific-object"
                 :small="true"
               ></opensilex-EditButton>
               <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
+                  )
+                "
                 label="ExperimentScientificObjects.delete-scientific-object"
                 @click="deleteScientificObject(data.item.uri)"
                 :small="true"
@@ -201,25 +214,25 @@
       </template>
     </opensilex-PageContent>
     <!-- End results table -->
-      <opensilex-ModalForm
-        ref="documentForm"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="ik#ik-file-text"
-      ></opensilex-ModalForm>
+    <opensilex-ModalForm
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="component.common.addDocument"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-file-text"
+    ></opensilex-ModalForm>
 
-      <opensilex-EventCsvForm
-          ref="eventCsvForm"
-          :targets="selectedUris"
-      ></opensilex-EventCsvForm>
+    <opensilex-EventCsvForm
+      ref="eventCsvForm"
+      :targets="selectedUris"
+    ></opensilex-EventCsvForm>
 
-      <opensilex-EventCsvForm
-          ref="moveCsvForm"
-          :targets="selectedUris"
-          :isMove="true"
-      ></opensilex-EventCsvForm>
+    <opensilex-EventCsvForm
+      ref="moveCsvForm"
+      :targets="selectedUris"
+      :isMove="true"
+    ></opensilex-EventCsvForm>
   </div>
 </template>
 
@@ -365,6 +378,14 @@ export default class ScientificObjectList extends Vue {
     this.tableRef.refresh();
   }
 
+  redirectToDetail(http) {
+    this.$router.push({
+      path:
+        "/scientific-objects/details/" +
+        encodeURIComponent(http.response.result),
+    });
+  }
+
   searchScientificObject(options) {
     let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
@@ -455,18 +476,17 @@ export default class ScientificObjectList extends Vue {
     this.documentForm.showCreateForm();
   }
 
-
-  createEvents(){
+  createEvents() {
     this.updateSelectedUris();
     this.eventCsvForm.show();
   }
 
-  createMoves(){
+  createMoves() {
     this.updateSelectedUris();
     this.moveCsvForm.show();
   }
 
-  updateSelectedUris(){
+  updateSelectedUris() {
     this.selectedUris = [];
     for (let select of this.tableRef.getSelected()) {
       this.selectedUris.push(select.uri);
@@ -491,10 +511,10 @@ export default class ScientificObjectList extends Vue {
         authors: undefined,
         language: undefined,
         deprecated: undefined,
-        keywords: undefined
+        keywords: undefined,
       },
-      file: undefined
-    }
+      file: undefined,
+    };
   }
 }
 </script>

@@ -60,6 +60,8 @@ components["opensilex-GroupSelector"] = GroupSelector;
 // Infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';
 components["opensilex-InfrastructureView"] = InfrastructureView;
+import InfrastructureDetailView from './infrastructures/InfrastructureDetailView.vue';
+components["opensilex-InfrastructureDetailView"] = InfrastructureDetailView;
 import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 components["opensilex-InfrastructureTree"] = InfrastructureTree;
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
@@ -82,7 +84,10 @@ import InfrastructureFacilityPropertySelector from './infrastructures/Infrastruc
 components["opensilex-InfrastructureFacilityPropertySelector"] = InfrastructureFacilityPropertySelector;
 import InfrastructureFacilitySelector from './infrastructures/InfrastructureFacilitySelector.vue';
 components["opensilex-InfrastructureFacilitySelector"] = InfrastructureFacilitySelector;
-
+import InfrastructureUriView from './infrastructures/InfrastructureUriView.vue';
+components["opensilex-InfrastructureUriView"] = InfrastructureUriView;
+import InfrastructureFacilityView from './infrastructures/InfrastructureFacilityView.vue';
+components["opensilex-InfrastructureFacilityView"] = InfrastructureFacilityView;
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';
@@ -420,6 +425,8 @@ import ScientificObjectVariableSelector from './scientificObjects/visualization/
 components["opensilex-ScientificObjectVariableSelector"] = ScientificObjectVariableSelector;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
+import ScientificObjectUriView from './scientificObjects/ScientificObjectUriView.vue';
+components["opensilex-ScientificObjectUriView"] = ScientificObjectUriView;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

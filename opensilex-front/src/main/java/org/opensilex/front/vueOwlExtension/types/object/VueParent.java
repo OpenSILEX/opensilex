@@ -35,7 +35,7 @@ public class VueParent implements VueOntologyObjectType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-XSDUriView";
+        return "opensilex-ScientificObjectUriView";
     }
 
 }

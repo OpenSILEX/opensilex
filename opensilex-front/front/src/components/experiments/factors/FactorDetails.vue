@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="factor.uri">
     <b-row>
       <b-col md="5">
         <opensilex-Card label="component.factor.details.description">

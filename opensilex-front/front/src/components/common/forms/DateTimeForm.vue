@@ -17,15 +17,16 @@
           mode="datetime"
         >
           <template v-slot="{ inputValue, inputEvents }">
-            <b-form-input
+            <input
               :id="field.id"
               v-on="inputEvents"
               :disabled="disabled"
               :placeholder="$t(placeholder)"
               :required="isRequired"
-              :type="text"
+              type="text"
               :value="inputValue"
-            ></b-form-input>
+              class="form-control"
+            />
           </template>
         </vc-date-picker>
         <template #append>

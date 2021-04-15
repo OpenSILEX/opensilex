@@ -28,6 +28,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -158,7 +159,19 @@ public class ScientificObjectDAO {
                     }
 
                     if (germplasm != null) {
-                        select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm));
+                        
+                        select.addWhere(
+                            new WhereBuilder()
+                                .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, SPARQLDeserializers.nodeURI(germplasm))
+                                .addUnion(new WhereBuilder()
+                                    .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g1"))
+                                    .addWhere(makeVar("_g1"), Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm)))                                
+                                .addUnion(new WhereBuilder()
+                                    .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g2"))
+                                    .addWhere(makeVar("_g2"), Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm)))
+                                .addUnion(new WhereBuilder()
+                                    .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g2"))
+                                    .addWhere(makeVar("_g2"), Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm))));
                     }
 
                     if (facility != null) {

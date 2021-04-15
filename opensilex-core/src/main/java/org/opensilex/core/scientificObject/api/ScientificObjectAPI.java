@@ -1038,9 +1038,7 @@ public class ScientificObjectAPI {
 
     private void validateContextAccess(URI contextURI) throws Exception {
         if (contextURI == null) {
-            if (!currentUser.isAdmin()) {
-                throw new ForbiddenException("You must be an administrator to add global scientific object");
-            }
+            // INFO :  no need to validate with no context defined
         } else if (sparql.uriExists(ExperimentModel.class, contextURI)) {
             ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 

@@ -117,19 +117,24 @@
                 }
 
 
-                // check that each position is correct else, validation fail
-                let valid_targets_positions: Array<ConcernedItemPositionCreationDTO> = [];
-
-                // for the moment the form only handle on position for the first target
-                if (eventUpdate.targets_positions && eventUpdate.targets_positions[0]) {
-                    eventUpdate.targets_positions[0].target = this.target;
+                // to the moment the form only handle on position for the first or for all targets
+                if (eventUpdate.targets_positions && eventUpdate.targets_positions.length == 1) {
 
                     let position = eventUpdate.targets_positions[0].position;
+
                     if (this.isPositionValid(position)) {
-                        valid_targets_positions.push(eventUpdate.targets_positions[0]);
+
+                        // one position on one target
+                        if(eventUpdate.targets.length == 1) {
+                            eventUpdate.targets_positions[0].target = eventUpdate.targets[0];
+                        }else {
+                            // one position unique for each target
+                            eventUpdate.targets_positions = eventUpdate.targets.map(target => ({target: target, position: position}));
+                        }
+                    }else{
+                        eventUpdate.targets_positions = undefined;
                     }
                 }
-                eventUpdate.targets_positions = valid_targets_positions.length > 0 ? eventUpdate.targets_positions : undefined;
 
             } else {
                 eventUpdate = Object.assign(EventForm.getEmptyForm(), event);
@@ -148,6 +153,7 @@
             }
             return eventUpdate;
         }
+
 
 
         initForm(event: EventCreationDTO){

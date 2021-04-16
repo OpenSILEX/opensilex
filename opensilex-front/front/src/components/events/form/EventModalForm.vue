@@ -93,7 +93,7 @@
         }
 
 
-        private isPositionValid(position : PositionCreationDTO) : boolean{
+        private static isPositionValid(position : PositionCreationDTO) : boolean{
             if(!position){
                 return false;
             }
@@ -122,7 +122,7 @@
 
                     let position = eventUpdate.targets_positions[0].position;
 
-                    if (this.isPositionValid(position)) {
+                    if (EventModalForm.isPositionValid(position)) {
 
                         // one position on one target
                         if(eventUpdate.targets.length == 1) {

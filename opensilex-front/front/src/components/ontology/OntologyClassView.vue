@@ -3,7 +3,7 @@
     <div class="col-md-6">
       <b-card>
         <div class="button-zone">
-          <opensilex-CreateButton @click="showCreateForm()" label="OntologyClassView.add"></opensilex-CreateButton>
+          <opensilex-CreateButton v-if="user.isAdmin()" @click="showCreateForm()" label="OntologyClassView.add"></opensilex-CreateButton>
           <opensilex-ModalForm
             ref="classForm"
             component="opensilex-OntologyClassForm"
@@ -17,7 +17,7 @@
           ></opensilex-ModalForm>
         </div>
         <opensilex-OntologyClassTreeView
-          ref="classesTree"
+          ref="classesTree "
           :rdfType="rdfType"
           @selectionChange="selected = $event"
           @editClass="showEditForm($event)"
@@ -26,12 +26,14 @@
         ></opensilex-OntologyClassTreeView>
       </b-card>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6 ">
+      <div class="sticky">
       <opensilex-OntologyClassDetail
         :rdfType="rdfType"
         :selected="selected"
         @onDetailChange="refresh()"
       />
+      </div>
     </div>
   </div>
 </template>
@@ -46,6 +48,10 @@ import OWL from "../../ontologies/OWL";
 export default class OntologyClassView extends Vue {
   $opensilex: any;
   $store: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   @Prop()
   rdfType;
@@ -114,6 +120,11 @@ export default class OntologyClassView extends Vue {
 </script>
 
 <style scoped lang="scss">
+   div.sticky {
+        position: -webkit-sticky; /* Safari */
+        position: sticky;
+        top: 0;
+    }
 </style>
 
 

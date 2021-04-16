@@ -183,9 +183,12 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations techniques",
+            "deviceTypes": "Types de capteurs",
+            "eventTypes": "Types d'évènements",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Dispositifs",
-            "events" : "Évènements"
+            "events" : "Évènements",
+            "vocabulary" : "Vocabulaire"
 
         },
         "login": {

@@ -613,7 +613,8 @@ import DeviceVariableSelector from './devices/visualization/DeviceVariableSelect
 components["opensilex-DeviceVariableSelector"] = DeviceVariableSelector;
 import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
-
+import  DeviceTypes from './devices/DeviceTypes.vue';
+components["opensilex-DeviceTypes"] = DeviceTypes;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';
@@ -652,5 +653,6 @@ components["opensilex-PositionsView"] = PositionsView;
 import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 
-
+ 
+ 
 export default components;

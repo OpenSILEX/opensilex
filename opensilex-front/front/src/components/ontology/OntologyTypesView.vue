@@ -3,10 +3,10 @@
     <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle"></opensilex-PageHeader>
     <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle"></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="false">
+    <opensilex-PageActions :returnButton="false" >
       <template v-slot>
         <b-nav-item :active="isTypeTab()" :to="{path: typeURI}">{{ $t("OntologyTypesView.typeTitle") }}</b-nav-item>
-        <b-nav-item :active="isPropertiesType()" :to="{path: propertiesURI}">{{ $t("OntologyTypesView.propertiesTitle") }}</b-nav-item>
+        <b-nav-item  v-if="withProperties" :active="isPropertiesType()" :to="{path: propertiesURI}">{{ $t("OntologyTypesView.propertiesTitle") }}</b-nav-item>
       </template>
     </opensilex-PageActions>
 
@@ -19,7 +19,7 @@
           :title="typeTitle"
         ></opensilex-OntologyClassView>
         <opensilex-OntologyPropertyView
-          v-else
+          v-else-if="withProperties"
           :rdfType="rdfType"
           :icon="icon"
           :title="propertiesTitle"
@@ -56,6 +56,9 @@ export default class OntologyTypesView extends Vue {
   @Prop()
   propertiesURI;
 
+  @Prop({default:true})
+  withProperties;
+
   isTypeTab() {
     return this.$route.path.startsWith(this.typeURI) && !this.isPropertiesType();
   }
@@ -67,6 +70,10 @@ export default class OntologyTypesView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.active{
+  color: #007bff; 
+}
 </style>
 
 <i18n>

@@ -10,18 +10,19 @@
 
     <template v-slot:buttons="{ node }">
       <opensilex-EditButton
-        v-if="isManagedClass(node.data.uri)"
+        v-if="isManagedClass(node.data.uri) && user.isAdmin()"
         @click="$emit('editClass' ,node.data)"
         label="OntologyClassTreeView.edit"
         :small="true"
       ></opensilex-EditButton>
       <opensilex-AddChildButton
+        v-if="user.isAdmin()"
         @click="$emit('createChildClass' ,node.data.uri)"
         label="OntologyClassTreeView.add-child"
         :small="true"
       ></opensilex-AddChildButton>
       <opensilex-DeleteButton
-        v-if="isManagedClass(node.data.uri)"
+        v-if="isManagedClass(node.data.uri) && user.isAdmin()"
         @click="$emit('deleteRDFType' ,node.data)"
         label="OntologyClassTreeView.delete"
         :small="true"

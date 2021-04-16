@@ -3,7 +3,7 @@
     <div class="col-md-6">
       <b-card>
         <div class="button-zone">
-          <opensilex-CreateButton @click="showCreateForm()" label="OntologyPropertyView.add"></opensilex-CreateButton>
+          <opensilex-CreateButton  v-if="user.isAdmin()" @click="showCreateForm()" label="OntologyPropertyView.add"></opensilex-CreateButton>
           <opensilex-ModalForm
             ref="propertyForm"
             component="opensilex-OntologyPropertyForm"
@@ -41,6 +41,13 @@ import OWL from "../../ontologies/OWL";
 @Component
 export default class OntologyPropertyView extends Vue {
   $opensilex: any;
+
+   /**
+   * Return the current connected user
+   */
+  get user() {
+    return this.$store.state.user;
+  }
 
   @Prop()
   rdfType;

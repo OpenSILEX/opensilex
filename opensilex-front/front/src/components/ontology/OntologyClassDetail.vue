@@ -31,6 +31,7 @@
       </div>
       <div>
         <opensilex-Button
+          v-if="user.isAdmin()"
           @click="addDataProperty"
           variant="primary"
           icon="ik#ik-plus"
@@ -39,6 +40,7 @@
         ></opensilex-Button>
         &nbsp;
         <opensilex-Button
+          v-if="user.isAdmin()"
           @click="startSetPropertiesOrder"
           variant="primary"
           icon="fa#pencil-alt"
@@ -122,7 +124,7 @@
         <template v-slot:cell(actions)="data">
           <b-button-group size="sm">
             <opensilex-DeleteButton
-              v-if="!data.item.inherited && data.item.is_custom"
+              v-if="!data.item.inherited && data.item.is_custom && user.isAdmin()"
               @click="deleteClassPropertyRestriction(data.item.property)"
               label="OntologyClassDetail.deleteProperty"
               :small="true"
@@ -150,6 +152,10 @@ import { OntologyService } from "opensilex-core/index";
 @Component
 export default class OntologyClassDetail extends Vue {
   $opensilex: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   @Prop()
   selected;

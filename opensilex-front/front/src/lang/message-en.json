@@ -183,9 +183,12 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
             "facilitiesTypes": "Facilities types",
+            "deviceTypes": "Device object types",
+            "eventTypes": "Event types",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
-            "events" : "Events"
+            "events" : "Events",
+            "vocabulary" : "Vocabulary"
         },
         "login": {
             "input": {

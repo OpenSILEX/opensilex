@@ -1,11 +1,12 @@
 <template>
     <opensilex-OntologyTypesView
-            :rdfClass="$opensilex.Oeev.EVENT_TYPE_URI"
-            icon="ik#ik-settings"
-            typeTitle="EventTypes.typeTitle"
-            typeURI="/event-types"
-            propertiesTitle="EventTypes.propertiesTitle"
-            propertiesURI="/event-types/properties"
+        :rdfType="$opensilex.Oeev.EVENT_TYPE_URI"
+        icon="ik#ik-settings"
+        typeTitle="EventTypes.typeTitle"
+        typeURI="/event-types"
+        propertiesTitle="EventTypes.propertiesTitle"
+        propertiesURI="/event-types/properties"
+        :withProperties="false"
     ></opensilex-OntologyTypesView>
 </template>
 

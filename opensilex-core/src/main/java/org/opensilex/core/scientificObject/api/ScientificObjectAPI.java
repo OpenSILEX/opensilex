@@ -698,14 +698,18 @@ public class ScientificObjectAPI {
 
                     List<GeospatialModel> geospatialModels = new ArrayList<>();
                     geometries.forEach((rowIndex, geometry) -> {
-                        SPARQLResourceModel object = objects.get(rowIndex - 1);
-                        GeospatialModel geospatialModel = new GeospatialModel();
-                        geospatialModel.setUri(object.getUri());
-                        geospatialModel.setName(object.getRelations().get(0).getValue());
-                        geospatialModel.setRdfType(object.getType());
-                        geospatialModel.setGraph(graphURI);
-                        geospatialModel.setGeometry(geometry);
-                        geospatialModels.add(geospatialModel);
+                        SPARQLNamedResourceModel<?> object = objects.get(rowIndex - 1);
+                        if (object instanceof SPARQLNamedResourceModel) {
+                            GeospatialModel geospatialModel = new GeospatialModel();
+                            geospatialModel.setUri(object.getUri());
+                            geospatialModel.setName(object.getName());
+                            geospatialModel.setRdfType(object.getType());
+                            geospatialModel.setGraph(graphURI);
+                            geospatialModel.setGeometry(geometry);
+                            geospatialModels.add(geospatialModel);
+                        } else {
+                            throw new IllegalArgumentException();
+                        }
                     });
 
                     geoDAO.createAll(geospatialModels);

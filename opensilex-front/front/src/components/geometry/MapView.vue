@@ -213,9 +213,9 @@
           <div v-if="data.item.properties.nature === 'ScientificObjects' & detailsSO">
             <opensilex-ScientificObjectDetailProperties
                 v-if="data.item.properties.OS"
+                :experiment="experiment"
                 :selected="data.item.properties.OS"
                 :withBasicProperties="false"
-                :experiment="experiment"
             ></opensilex-ScientificObjectDetailProperties>
           </div>
         </template>
@@ -345,52 +345,10 @@ export default class MapView extends Vue {
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then((areaUri) => {
-        if (areaUri != undefined) {
-          this.editingMode = false;
-          console.debug("showAreaDetails", areaUri);
-          this.$opensilex
-              .getService(this.areaService)
-              .getByURI(areaUri.toString())
-              .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-                const res = http.response.result as any;
-                if (res.geometry != null) {
-                  res.geometry.properties = {
-                    uri: res.uri,
-                    name: res.name,
-                    type: res.rdf_type,
-                    description: res.description,
-                    author: res.author,
-                    nature: "Area",
-                  };
-                  this.featuresArea.push(res.geometry);
-                }
-              })
-              .catch(this.$opensilex.errorHandler);
-        }
+        this.recoveryShowArea(areaUri);
       });
     } else {
-      if (areaUriResult != undefined) {
-        this.editingMode = false;
-        console.debug("showAreaDetails", areaUriResult);
-        this.$opensilex
-            .getService(this.areaService)
-            .getByURI(areaUriResult)
-            .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-              const res = http.response.result as any;
-              if (res.geometry != null) {
-                res.geometry.properties = {
-                  uri: res.uri,
-                  name: res.name,
-                  type: res.rdf_type,
-                  description: res.description,
-                  author: res.author,
-                  nature: "Area",
-                };
-                this.featuresArea.push(res.geometry);
-              }
-            })
-            .catch(this.$opensilex.errorHandler);
-      }
+      this.recoveryShowArea(areaUriResult);
     }
   }
 
@@ -411,37 +369,24 @@ export default class MapView extends Vue {
   }
 
   callAreaUpdate(areaUriResult) {
-    areaUriResult.then((areaUri) => {
-      if (areaUri != undefined) {
-        this.removeFromFeaturesArea(areaUri, this.featuresArea);
-
-        this.$opensilex
-            .getService(this.areaService)
-            .getByURI(areaUri)
-            .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-              const res = http.response.result as any;
-              if (res.geometry != null) {
-                res.geometry.properties = {
-                  uri: res.uri,
-                  name: res.name,
-                  type: res.rdf_type,
-                  description: res.description,
-                  author: res.author,
-                  nature: "Area",
-                };
-                this.featuresArea.push(res.geometry);
-                this.selectedFeatures.push(res.geometry);
-              }
-            })
-            .catch(this.$opensilex.errorHandler);
-      }
-    });
+    if (areaUriResult instanceof Promise) {
+      areaUriResult.then((areaUri) => {
+        this.recoveryArea(areaUri);
+      });
+    } else {
+      this.recoveryArea(areaUriResult);
+    }
   }
 
   callScientificObjectsUpdate() {
     if (this.callSO) {
       this.callSO = false;
       this.removeFromFeaturesOS(this.scientificObjectURI, this.featuresOS);
+      this.removeFromFeaturesOS(
+          this.scientificObjectURI,
+          this.selectedFeatures
+      );
+
       this.$opensilex
           .getService(this.scientificObjectsService)
           .getScientificObjectDetail(this.scientificObjectURI, this.experiment)
@@ -462,8 +407,6 @@ export default class MapView extends Vue {
               }
           )
           .catch(this.$opensilex.errorHandler);
-
-      this.$opensilex.showSuccessToast(this.successMessageOS());
     }
   }
 
@@ -546,10 +489,6 @@ export default class MapView extends Vue {
     return this.$i18n.t("MapView.label");
   }
 
-  successMessageOS() {
-    return this.$t("ScientificObjects.update");
-  }
-
   defineCenter() {
     if (this.featuresOS.length > 0) {
       let extent = this.vectorSource.$source.getExtent();
@@ -621,7 +560,7 @@ export default class MapView extends Vue {
     } else {
       this.$opensilex
           .getService(this.scientificObjectsService)
-          .deleteScientificObject(uri)
+          .deleteScientificObject(uri, this.experiment)
           .then((http) => {
             let message =
                 this.$i18n.t("ScientificObjects.title") +
@@ -631,6 +570,58 @@ export default class MapView extends Vue {
                 this.$i18n.t("component.common.success.delete-success-message");
             this.$opensilex.showSuccessToast(message);
             this.removeFromFeaturesOS(uri, this.featuresOS);
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  private recoveryShowArea(areaUri) {
+    if (areaUri != undefined) {
+      this.editingMode = false;
+      console.debug("showAreaDetails", areaUri);
+      this.$opensilex
+          .getService(this.areaService)
+          .getByURI(areaUri.toString())
+          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+            const res = http.response.result as any;
+            if (res.geometry != null) {
+              res.geometry.properties = {
+                uri: res.uri,
+                name: res.name,
+                type: res.rdf_type,
+                description: res.description,
+                author: res.author,
+                nature: "Area",
+              };
+              this.featuresArea.push(res.geometry);
+            }
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
+  }
+
+  private recoveryArea(areaUri) {
+    if (areaUri != undefined) {
+      this.removeFromFeaturesArea(areaUri, this.featuresArea);
+      this.removeFromFeaturesArea(areaUri, this.selectedFeatures);
+
+      this.$opensilex
+          .getService(this.areaService)
+          .getByURI(areaUri)
+          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+            const res = http.response.result as any;
+            if (res.geometry != null) {
+              res.geometry.properties = {
+                uri: res.uri,
+                name: res.name,
+                type: res.rdf_type,
+                description: res.description,
+                author: res.author,
+                nature: "Area",
+              };
+              this.featuresArea.push(res.geometry);
+              this.selectedFeatures.push(res.geometry);
+            }
           })
           .catch(this.$opensilex.errorHandler);
     }
@@ -676,14 +667,15 @@ export default class MapView extends Vue {
           .getService(this.scientificObjectsService)
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
           .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
-            let result = http.response.result;
-            this.selectedFeatures.forEach((item) => {
-              if (item.properties.uri === result.uri) {
-                item.properties.OS = result;
-                this.detailsSO = true;
+                let result = http.response.result;
+                this.selectedFeatures.forEach((item) => {
+                  if (item.properties.uri === result.uri) {
+                    item.properties.OS = result;
+                    this.detailsSO = true;
+                  }
+                });
               }
-            });
-          })
+          )
           .catch(this.$opensilex.errorHandler)
           .finally(() => {
             this.$opensilex.enableLoader();
@@ -805,7 +797,6 @@ export default class MapView extends Vue {
     let uri = data.item.properties.uri;
 
     if (data.item.properties.nature === "Area") {
-      this.removeFromFeaturesArea(uri, this.selectedFeatures);
       this.$opensilex
           .getService(this.areaService)
           .getByURI(uri)
@@ -816,7 +807,6 @@ export default class MapView extends Vue {
           .catch(this.$opensilex.errorHandler);
     } else {
       this.callSO = true;
-      this.removeFromFeaturesOS(uri, this.selectedFeatures);
       this.scientificObjectURI = uri;
       this.soForm.editScientificObject(uri);
     }

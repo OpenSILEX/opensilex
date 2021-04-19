@@ -6,12 +6,6 @@
           label="MapView.add-area-button"
           @click="editingMode = true"
       ></opensilex-CreateButton>
-      <opensilex-FilterMap
-          :experiment="experiment"
-          :featureOS="featuresOS"
-          :tabLayer="tabLayer"
-      >
-      </opensilex-FilterMap>
     </div>
     <div v-if="editingMode" id="editing">
       <opensilex-Button
@@ -59,10 +53,12 @@
             title="Area.display"
         ></opensilex-CheckboxForm>
         <div v-for="layer in tabLayer" :key="layer.ref">
-          <opensilex-CheckboxForm
-              :title="layer.titleDisplay"
-              :value.sync="layer.display"
-          ></opensilex-CheckboxForm>
+          <toggle-button
+              :key="layer.id"
+              v-model="layer.display"
+              :value="layer.display"
+          />
+          {{ layer.titleDisplay }}
           <opensilex-InputForm
               :value.sync="layer.vlStyleFillColor"
               type="color"
@@ -158,7 +154,7 @@
           <vl-layer-vector
               v-for="layer in tabLayer"
               :key="layer.ref"
-              :visible="layer.display === 'true'"
+              :visible="layer.display.toString() === 'true'"
           >
             <vl-source-vector
                 :ref="layer.ref"
@@ -211,7 +207,12 @@
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
     <span id="Area">{{ $t("MapView.LegendArea") }}</span>
-
+    <opensilex-FilterMap
+        :experiment="experiment"
+        :featureOS="featuresOS"
+        :tabLayer="tabLayer"
+    >
+    </opensilex-FilterMap>
     <div id="selectedTable">
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -422,14 +423,11 @@ export default class MapView extends Vue {
     }
   }
 
-  callScientificObjectsUpdate() {
+  callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
       this.removeFromFeaturesOS(this.scientificObjectURI, this.featuresOS);
-      this.removeFromFeaturesOS(
-          this.scientificObjectURI,
-          this.selectedFeatures
-      );
+      this.removeFromFeaturesOS(this.scientificObjectURI, this.selectedFeatures);
 
       this.$opensilex
           .getService(this.scientificObjectsService)

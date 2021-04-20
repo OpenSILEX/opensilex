@@ -3,6 +3,9 @@ OpenSILEX Developper's installation
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
+NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.m](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md)
+
+
 # Pre-requesite softwares
 
 First you need to have these software installed :
@@ -83,14 +86,6 @@ Be sure to configure properly read and write rights for your user on configured 
 
 The only mandatory options to setup are:
 - file-system.storageBasePath: Base directory for file storage
-- phisws.uploadFileServerUsername: Name of your Linux user running the application
-- phisws.uploadFileServerPassword: Password of your Linux user running the application
-
-For usage with phis-webapp you should also configure these options if your app is not installed in /var/www/html:
-- layerFileServerDirectory: Folder to store layer files used by phis-webapp
-- layerFileServerAddress: Base uri for accessing layerFileServerDirectory folder through apache
-- uploadImageServerDirectory: Folder to store images files used by phis-webapp
-- imageFileServerDirectory:  Base uri for accessing uploadImageServerDirectory folder through apache
 
 # Setup Databases with docker
 

@@ -16,7 +16,7 @@ You need at least [Java JDK 8+](https://jdk.java.net/) installed on the server o
 You can install it on linux with the following command:
 
 ```
-sudo apt install openjdk-11-jdk
+sudo apt install openjdk-11-jdk 
 ```
 
 You can check java installation and version with the following command:
@@ -93,40 +93,54 @@ All directories and user names in this installation procedure can be changed but
 
 Create a user with it's home directory:
 
-```sudo useradd -s /bin/bash -d /home/opensilex/ -m opensilex```
+```
+sudo useradd -s /bin/bash -d /home/opensilex/ -m opensilex
+```
 
 Set up a password to your new user:
 
-```sudo passwd opensilex```
+```
+sudo passwd opensilex
+```
 
 Give sudo permissions to this user :
 
-```sudo usermod -a -G sudo opensilex```
+```
+sudo usermod -a -G sudo opensilex
+```
 
 Connect with this user and the defined password:
 
-```su - opensilex```
+```
+su - opensilex
+```
 
 ## Create directories
 
 Directory for OpenSILEX binaries:
-```mkdir -p /home/opensilex/bin```
+```
+mkdir -p /home/opensilex/bin
+```
 
 Directory for OpenSILEX configuration file:
-```mkdir -p /home/opensilex/config```
+```
+mkdir -p /home/opensilex/config
+```
 
 Directory for OpenSILEX data file storage:
-```mkdir -p /home/opensilex/data```
+```
+mkdir -p /home/opensilex/data
+```
 
 Directory for OpenSILEX file logs:
-```mkdir -p /home/opensilex/logs```
+```
+mkdir -p /home/opensilex/logs
+```
 
 ## Download & extract OpenSILEX production release
 
 Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases)
-
 In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
-
 Extract the downloaded zip file into ```/home/opensilex/bin```
 
 Linux example commands:
@@ -135,12 +149,13 @@ Linux example commands:
 cd /home/opensilex/bin
 wget https://github.com/OpenSILEX/opensilex/releases/download/X.Y.Z/opensilex-X.Y.Z.zip
 unzip opensilex-X.Y.Z.zip
+
 ```
 For latest version
 ```
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex/releases/download/3.4.0-beta/opensilex-3.4.0-beta.zip
-unzip opensilex-3.4.0-beta.zip
+wget https://github.com/OpenSILEX/opensilex/releases/download/1.0.0-beta/opensilex-release-1.0.0-beta.zip
+unzip opensilex-release-1.0.0-beta.zip
 ```
 
 You should get the following directory structure:
@@ -176,54 +191,24 @@ Here is a minimal example of configuration content, where all values must be ada
 
 ```yml
 ontologies:
-    # Base URI domain for every generated URI by this OpenSILEX instance, 
-    # it should be an URI representing your organisation (but not necessary a "real" URL pointing to a website)
     baseURI: http://www.opensilex.org/
-
-    # Base URI domain alias for short URI
     baseURIAlias: os
-
-    # Triple store configuration
     sparql:
         config:
-            # Connection URI to RDF4J or GraphDB instance (they use the same API)
-            # please adjust it to your local installation
             serverURI: http://localhost:8080/rdf4j-server/
-
-            # Triple store repository name
             repository: opensilex
 
-file-system: 
-    # Path to root file data storage directory
-    storageBasePath: /home/opensilex/data
-
-big-data:
-    nosql:
+file-system:
+    fs:
         config:
-            connection:
-                config:
-                    # MongoDB server host
-                    host: localhost
-
-                    # MongoDB server port
-                    port: 27017
-
-                    # MongoDB database name
-                    database: opensilex
-
-        # MongoDB connection configuration
-        mongodb:
-            # MongoDB server host
+            basePath: /home/opensilex/data
+    
+big-data:   
+    mongodb:
+        config:
             host: localhost
-
-            # MongoDB server port
             port: 27017
-
-            # MongoDB database name
             database: opensilex
-
-phisws:
-    infrastructure: opensilex
 ```
 
 ### Configure logging
@@ -243,41 +228,94 @@ By default logs will be printed to the console output and writen into a rotating
 
 ## Initialize database and check configuration
 
+## Create a script to access instructions
 
-### Initialize database
+- Create
 ```
-cd /home/opensilex/bin/<X.Y.Z>/
-
-echo "Initialize databases structures"
-java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml system install
-
-echo "Create main admin user"
-java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml user add --admin --email=<admin@opensilex.org> --firstName=<admin> --lastName=<admin>
+nano ~/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
-### Check configuration
-
-
+- Content
 ```
-cd /home/opensilex/bin/<X.Y.Z>/
+#!/bin/bash
 
-java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml system check
-```
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
-## Start / Stop server
+cd $SCRIPT_DIR
 
-### Start server
-
-```
-cd /home/opensilex/bin/<X.Y.Z>/
-
-java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml server start --host=<localhost> --port=<8666> --adminPort=<8888> [--daemon] 
+java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR --CONFIG_FILE="$SCRIPT_DIR/config/opensilex.yml" "$@"
 ```
 
-### Stop server
+- Activation
+```
+chmod +x ~/opensilex/bin/<X.Y.Z>/opensilex.sh
+```
+
+## Add an alias
+
+- Edit 
+```
+nano ~/.bash_aliases
+```
+
+- Content
+```
+alias opensilex="~/opensilex/bin/<X.Y.Z>/opensilex.sh"
+```
+
+- Activation
+```
+source  ~/.bashrc
+```
+
+- Verification
+```
+opensilex help
+```
+
+## Create default administrator
+
+This instruction create user "admin@opensilex.org" with the password "admin"
 
 ```
-cd /home/opensilex/bin/<X.Y.Z>/
+opensilex user add --admin
+```
 
-java -jar opensilex.jar --CONFIG_FILE=/home/opensilex/config/opensilex.yml server stop --host=<localhost> --adminPort=<8888>
+More about user
+
+```
+opensilex user add --help
+```
+
+## Start openSilex
+
+```
+opensilex server start --host=192.168.178.31 --port=8081 --adminPort=4081
+```
+
+## Stop openSilex
+
+```
+opensilex server stop --host=192.168.178.31 --adminPort=4081
+```
+
+## Add a Reverse Proxy Nginx to redirect application on port 80
+
+Instructions
+```
+sudo apt install nginx
+sudo nano /etc/nginx/sites-enabled/default  
+```
+
+Content
+```
+        location / {
+                include proxy_params;
+                proxy_pass http://127.0.0.1:8081;
+        }
+```
+
+Activation
+```
+sudo systemctl restart nginx
 ```

@@ -580,6 +580,6 @@ fr:
       dates: Filtrer par Dates
     creationDate:  Date de création
     destructionDate: Date de destruction
-    existenceDate: Date d'existance
+    existenceDate: Date d'existence
     visualize: Visualiser
 </i18n>

@@ -7,7 +7,7 @@
     @hide="requiredField = false"
     @show="requiredField = true"
   >
-    <template v-slot:modal-ok>{{ $t("component.common.ok") }}</template>
+    <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
     <template v-slot:modal-title>{{
       $t("ScientificObjectCSVTemplateGenerator.title")
     }}</template>

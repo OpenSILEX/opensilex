@@ -588,7 +588,7 @@ en:
     import-scientific-objects: Import scientific objets
     add: Add scientific object
     update: Update scientific object
-    create-scientific-object: Create scientific object
+    create-scientific-object: Add scientific object
     edit-scientific-object: Edit scientific object
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
@@ -606,7 +606,7 @@ fr:
     import-scientific-objects:  Importer des objets scientifiques
     add: Ajouter un objet scientifique
     update: Mettre à jour un objet scientifiques
-    create-scientific-object: Créer un objet scientifique
+    create-scientific-object: Ajouter un objet scientifique
     edit-scientific-object:  Mettre à jour l'objet scientifique
     delete-scientific-object: Supprimer l'objet scientifique
     add-scientific-object-child: Ajouter un objet scientifique enfant

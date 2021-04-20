@@ -4,6 +4,7 @@
     <opensilex-UriForm
       :uri.sync="form.uri"
       label="OntologyObjectForm.uri-label"
+      helpMessage="component.common.uri-help-message"
       :editMode="editMode"
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>

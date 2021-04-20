@@ -3,7 +3,7 @@
 
     <opensilex-SearchFilterField
         @search="refresh()"
-        @clear="resetFilters()"
+        @clear="reset()"
         withButton="false"
         :showAdvancedSearch="true"
     >
@@ -11,7 +11,7 @@
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.namePattern')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.namePattern"
+              :filter.sync="filter.name"
               placeholder="DeviceList.filter.namePattern-placeholder"
           ></opensilex-StringFilter>
         </div>
@@ -110,7 +110,7 @@
         </b-dropdown>
       </template>
 
-      <template v-slot:cell(uri)="{data}">
+      <template v-slot:cell(name)="{data}">
         <opensilex-UriLink :uri="data.item.uri"
                            :value="data.item.name"
                            :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
@@ -208,7 +208,7 @@ export default class DeviceList extends Vue {
   }
 
   filter = {
-    namePattern: undefined,
+    name: undefined,
     rdf_type: undefined,
     start_up: undefined,
     existence_date: undefined,
@@ -219,7 +219,7 @@ export default class DeviceList extends Vue {
   };
 
   exportFilter = {
-    namePattern: undefined,
+    name: undefined,
     rdf_type: undefined,
     start_up: undefined,
     existence_date: undefined,
@@ -231,7 +231,7 @@ export default class DeviceList extends Vue {
 
   resetFilters() {
     this.filter = {
-      namePattern: undefined,
+      name: undefined,
       rdf_type: undefined,
       start_up: undefined,
       existence_date: undefined,
@@ -251,12 +251,35 @@ export default class DeviceList extends Vue {
       serial_number: undefined,
       metadata: undefined
     }*/
+  }
+
+  reset() {
+    this.resetFilters();
     this.refresh();
   }
 
-  created() {
+  updateFiltersFromURL() {
     let query: any = this.$route.query;
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
+      }
+    }
+  }
+
+  updateURLFilters() {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");       
+    }    
+  }
+
+  created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
+    this.updateFiltersFromURL();
   }
 
   editDevice(uri: string) {
@@ -295,7 +318,7 @@ export default class DeviceList extends Vue {
 
   fields = [
     {
-      key: "uri",
+      key: "name",
       label: "DeviceList.name",
       sortable: true
     },
@@ -318,19 +341,20 @@ export default class DeviceList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 
   searchDevices(options) {
     //this.updateExportFilters();
     return this.service.searchDevices(
-        this.filter.namePattern, // namePattern filter
-        this.filter.rdf_type, // rdfTypes filter
+        this.filter.rdf_type, // rdf_type filter
+        this.filter.name, // name filter
         this.filter.start_up, // year filter
-        this.filter.existence_date, // existence filter
-        this.filter.brand, // brandPattern filter
+        this.filter.existence_date, // existence_date filter
+        this.filter.brand, // brand filter
         this.filter.model, // model filter
-        undefined, // snPattern filter
+        undefined, // serial_number filter
         this.addMetadataFilter(), //metadata filter
         options.orderBy,
         options.currentPage,
@@ -457,7 +481,7 @@ export default class DeviceList extends Vue {
   }
 
   updateExportFilters() {
-    this.exportFilter.namePattern = this.filter.namePattern;
+    this.exportFilter.name = this.filter.name;
     this.exportFilter.rdf_type = this.filter.rdf_type;
     this.exportFilter.start_up = this.filter.start_up;
     this.exportFilter.existence_date = this.filter.existence_date;

@@ -182,36 +182,35 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
     })    
     public Response searchDevices(
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfType") @ValidURI URI rdfType,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
-            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
-            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
-            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
-            @ApiParam(value = "Search by metadata", example = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}") @QueryParam("metadata") String metadataParam,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "namePattern=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
+            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
+            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
+            @ApiParam(value = "Search by metadata", example = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}") @QueryParam("metadata") String metadata,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         Document metadataFilter = null;
-        if (metadataParam != null) {
+        if (metadata != null) {
             try {
-                metadataFilter = Document.parse(metadataParam);
+                metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();                
             }
         }
         
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
-        ListWithPagination<DeviceModel> devices = dao.search(
-            namePattern,
+        ListWithPagination<DeviceModel> devices = dao.search(name,
             rdfType,
             year,
             existenceDate,
-            brandPattern,
-            modelPattern,
-            snPattern,
+            brand,
+            model,
+            serialNumber,
             metadataFilter,
             currentUser,
             orderByList,

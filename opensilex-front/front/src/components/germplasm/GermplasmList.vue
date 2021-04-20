@@ -3,7 +3,7 @@
 
     <opensilex-SearchFilterField
       @search="refresh()"
-      @clear="resetSearch()"
+      @clear="reset()"
       label="GermplasmList.filter.description"
       :showAdvancedSearch="true"
     >
@@ -234,13 +234,7 @@ export default class GermplasmList extends Vue {
   //   metadata: undefined
   // };
 
-  resetSearch() {
-    this.resetFilters();
-    //this.updateFilters();
-    this.refresh()
-  }
-
-  resetFilters() {
+  reset() {
     this.filter = {
       rdf_type: undefined,
       name: undefined,
@@ -262,6 +256,7 @@ export default class GermplasmList extends Vue {
     //   uri: undefined,
     //   metadata: undefined
     // };
+    this.refresh();
   }
 
   getSelected() {
@@ -283,23 +278,28 @@ export default class GermplasmList extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.GermplasmService");
-    let query: any = this.$route.query;
+    this.service = this.$opensilex.getService("opensilex.GermplasmService")    
     this.loadSpecies();
-
-    this.resetFilters();
+    this.updateFiltersFromURL();
+  }
+  
+  updateFiltersFromURL() {
+    let query: any = this.$route.query;
     for (let [key, value] of Object.entries(this.filter)) {
       if (query[key]) {
-        this.filter[key] = decodeURIComponent(query[key]);
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
       }
     }
-  }
+  }  
 
-  updateFilters() {
+  updateURLFilters() {
     for (let [key, value] of Object.entries(this.filter)) {
       this.$opensilex.updateURLParameter(key, value, "");
-    }
-    
+    }    
   }
 
   get fields() {
@@ -333,7 +333,7 @@ export default class GermplasmList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-    this.updateFilters();
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 

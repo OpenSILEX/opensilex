@@ -1,6 +1,7 @@
 <template>
   <div>
     <opensilex-SearchFilterField
+      ref="searchFilterField"
       @search="refresh()"
       @clear="reset()"
       label="component.experiment.search.label"
@@ -194,7 +195,7 @@ export default class ExperimentList extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
-
+  
   @Ref("documentForm") readonly documentForm!: any;
 
   @Prop({
@@ -223,6 +224,7 @@ export default class ExperimentList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 
@@ -243,8 +245,27 @@ export default class ExperimentList extends Vue {
       projects: [],
       yearFilter: undefined,
       state: "",
-    };
+    };   
     this.refresh();
+  }
+
+  updateFiltersFromURL() {
+    let query: any = this.$route.query;
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
+      }
+    }
+  }
+
+  updateURLFilters() {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");       
+    }    
   }
 
   searchExperiments(options) {
@@ -289,6 +310,7 @@ export default class ExperimentList extends Vue {
   created() {
     this.loadSpecies();
     this.refreshStateLabel();
+    this.updateFiltersFromURL();
   }
 
   private langUnwatcher;

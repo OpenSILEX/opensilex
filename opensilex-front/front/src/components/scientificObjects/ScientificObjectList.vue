@@ -280,6 +280,11 @@ export default class ScientificObjectList extends Vue {
     },
   ];
 
+
+  created() {
+    this.updateFiltersFromURL();
+  }
+
   private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
@@ -334,9 +339,29 @@ export default class ScientificObjectList extends Vue {
     this.refresh();
   }
 
+  updateFiltersFromURL() {
+    let query: any = this.$route.query;
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
+      }
+    }
+  }
+
+  updateURLFilters() {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");       
+    }    
+  }
+
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 

@@ -6,7 +6,7 @@
           <label for="name">{{ $t("component.common.name") }}</label>
           <opensilex-StringFilter
             id="name"
-            :filter.sync="nameFilter"
+            :filter.sync="filter.name"
             placeholder="component.project.filter-label-placeholder"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
@@ -15,7 +15,7 @@
           <label>{{ $t("component.common.year") }}</label>
           <opensilex-StringFilter
             placeholder="component.project.filter-year-placeholder"
-            :filter.sync="yearFilter"
+            :filter.sync="filter.year"
             type="number"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
@@ -24,7 +24,7 @@
           <label for="term">{{ $t("component.common.keyword") }}</label>
           <opensilex-StringFilter
             id="term"
-            :filter.sync="termFilter"
+            :filter.sync="filter.keyword"
             placeholder="component.project.filter-keywords-placeholder"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
@@ -33,7 +33,7 @@
           <label for="financial">{{ $t("component.project.financialFunding") }}</label>
           <opensilex-StringFilter
             id="financial"
-            :filter.sync="financialFilter"
+            :filter.sync="filter.financial"
             placeholder="component.project.filter-financial-placeholder"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
@@ -162,21 +162,45 @@ export default class ProjectList extends Vue {
   @Prop()
   maximumSelectedRows;
 
-  private yearFilter: any = "";
-  private nameFilter: any = "";
-  private termFilter: any = "";
-  private financialFilter: any = "";
+  filter = {
+    year: undefined,
+    name: "",
+    keyword: "",
+    financial: "",
+  };
 
   reset() {
-    this.yearFilter = "";
-    this.nameFilter = "";
-    this.termFilter = "";
-    this.financialFilter = "";
+    this.filter = {
+      year: undefined,
+      name: "",
+      keyword: "",
+      financial: "",
+    };
     this.refresh();
+  }
+  
+  updateFiltersFromURL() {
+    let query: any = this.$route.query;
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
+      }
+    }
+  }
+
+  updateURLFilters() {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");       
+    }    
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
+    this.updateFiltersFromURL();
   }
 
   get fields() {
@@ -228,18 +252,19 @@ export default class ProjectList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 
   loadData(options) {
     return this.service.searchProjects(
-      this.nameFilter,
-      this.yearFilter,
-      this.termFilter,
-      this.financialFilter,
+      this.filter.name,
+      this.filter.year,
+      this.filter.keyword,
+      this.filter.financial,
       options.orderBy,
       options.currentPage,
-      options.pageSize
+      options.pageSize      
     );
   }
 

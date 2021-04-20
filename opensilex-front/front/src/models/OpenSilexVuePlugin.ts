@@ -607,21 +607,7 @@ export default class OpenSilexVuePlugin {
             if (!value || (defaultValue != null && value == defaultValue)) {
                 queryParams.delete(key);
             } else {
-                if (Array.isArray(value)) {
-                    if (value.length == 0) {
-                        queryParams.delete(key);
-                    } else {
-                        for (let i in value) {
-                            if (queryParams.has(key)) {
-                                queryParams.append(key, encodeURI(value[i]));
-                            } else {
-                                queryParams.set(key, encodeURI(value[i]));
-                            }
-                        }
-                    }
-                } else {
-                    queryParams.set(key, encodeURI(value));
-                }
+                queryParams.set(key, encodeURI(value));
             }
 
             let queryParamString = queryParams.toString();

@@ -385,7 +385,7 @@ export default class TableAsyncView extends Vue {
         this.totalRow = http.response.metadata.pagination.totalCount;
         this.selectedItems = http.response.result;
         this.numberOfSelectedRows = this.selectedItems.length;
-        this.pagination();
+        this.tableRef.selectAllRows();
         return this.selectedItems;
         }) 
       }
@@ -393,7 +393,7 @@ export default class TableAsyncView extends Vue {
     else {
       this.selectedItems = [];
       this.numberOfSelectedRows = this.selectedItems.length;
-      this.pagination();
+      this.tableRef.clearSelected();
     }
   }
 }

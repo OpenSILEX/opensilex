@@ -9,6 +9,20 @@
           ></opensilex-StringFilter>
         </div>
       </div>
+      <div v-if="showCount">
+        <div v-if="totalRows > 0">
+          <strong>
+            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.totalRows})}}
+              </span>
+          </strong>
+        </div>
+        <div v-else>
+          <strong>
+            <span class="ml-1"> {{$t('component.common.list.pagination.noEntries')}}
+              </span>
+          </strong>
+        </div>
+      </div>
       <b-table
         :id="this.uuid"
         ref="tableRef"
@@ -102,6 +116,11 @@ export default class TableView extends Vue {
   })
   globalFilterField: boolean;
 
+  @Prop({
+    default: true
+  })
+  showCount: boolean;
+
   filter: string = null;
 
   uuid: string;
@@ -130,6 +149,14 @@ export default class TableView extends Vue {
     // Trigger pagination to update the number of buttons/pages due to filtering
     this.totalRows = filteredItems.length;
     this.currentPage = 1;
+  }
+
+  getCurrentItemLimit() : number {
+    return (this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
+  }
+
+  getCurrentItemOffset() : number {
+    return (this.pageSize * (this.currentPage ) < this.totalRows ? this.pageSize * (this.currentPage )  :  this.totalRows )
   }
 }
 </script>

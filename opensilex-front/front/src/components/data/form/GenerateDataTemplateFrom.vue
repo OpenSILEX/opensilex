@@ -41,6 +41,7 @@
           $t("OntologyCsvImporter.downloadTemplate")
         }}</b-button>
         <b-button
+          v-if="variables.length == 0"
           class="float-right"
           @click="csvExportDataExample"
           variant="outline-info"

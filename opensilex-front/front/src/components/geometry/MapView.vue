@@ -1,11 +1,27 @@
 <template>
   <div id="map">
-    <div v-if="!editingMode" id="selected">
-      <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
-          label="MapView.add-area-button"
-          @click="editingMode = true"
-      ></opensilex-CreateButton>
+    <div v-if="!editingMode" id="selected" class="d-flex">
+      <div class="mr-auto p-2">
+        <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+            label="MapView.add-area-button"
+            @click="editingMode = true"
+        ></opensilex-CreateButton>
+        <!-- map panel, controls -->
+        <b-button v-b-toggle.map-sidebar>
+          {{ $t("MapView.configuration") }}
+        </b-button>
+        <!--// map panel, controls -->
+      </div>
+      <span class="p-2">
+        <label class="alert-warning">
+          <img
+              alt="Warning"
+              src="../../../theme/phis/images/construction.png"
+          />
+          {{ $t("MapView.WarningInstruction") }}
+        </label>
+      </span>
     </div>
     <div v-if="editingMode" id="editing">
       <opensilex-Button
@@ -40,40 +56,6 @@
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
     >
-      <div v-if="!editingMode" class="row">
-        {{ $t("MapView.display") + " : " }}
-        <opensilex-CheckboxForm
-            :value.sync="displaySO"
-            class="col-lg-2"
-            title="ScientificObjects.display"
-        ></opensilex-CheckboxForm>
-        <opensilex-CheckboxForm
-            :value.sync="displayAreas"
-            class="col-lg-5"
-            title="Area.display"
-        ></opensilex-CheckboxForm>
-        <div v-for="layer in tabLayer" :key="layer.ref">
-          <toggle-button
-              :key="layer.id"
-              v-model="layer.display"
-              :value="layer.display"
-          />
-          {{ layer.titleDisplay }}
-          <opensilex-InputForm
-              :value.sync="layer.vlStyleFillColor"
-              type="color"
-          ></opensilex-InputForm>
-        </div>
-        <span>
-          <label class="alert-warning">
-            <img
-                alt="Warning"
-                src="../../../theme/phis/images/construction.png"
-            />
-            {{ $t("MapView.WarningInstruction") }}
-          </label>
-        </span>
-      </div>
       <p class="alert-info">
         <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
       </p>
@@ -83,6 +65,7 @@
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
+          class="map"
           data-projection="EPSG:4326"
           style="height: 500px"
           @created="mapCreated"
@@ -154,15 +137,22 @@
           <vl-layer-vector
               v-for="layer in tabLayer"
               :key="layer.ref"
-              :visible="layer.display.toString() === 'true'"
+              :visible="layer.display === 'true'"
           >
             <vl-source-vector
                 :ref="layer.ref"
                 :features.sync="layer.tabFeatures"
             ></vl-source-vector>
             <vl-style-box>
-              <!-- <vl-style-stroke :color="layer.vlStyleStrokeColor"></vl-style-stroke>  -->    <!-- outline color -->
-              <vl-style-fill :color="colorFeature(layer.vlStyleFillColor)"></vl-style-fill>
+              <vl-style-stroke
+                  v-if="layer.vlStyleStrokeColor"
+                  :color="layer.vlStyleStrokeColor"
+              ></vl-style-stroke>
+              <!-- outline color -->
+              <vl-style-fill
+                  v-if="layer.vlStyleFillColor"
+                  :color="colorFeature(layer.vlStyleFillColor)"
+              ></vl-style-fill>
             </vl-style-box>
           </vl-layer-vector>
         </template>
@@ -203,6 +193,59 @@
         />
       </vl-map>
     </div>
+
+    <b-sidebar
+        id="map-sidebar"
+        :title="$t('MapView.configuration')"
+        class="sidebar-content"
+    >
+      <h5 class="text">{{ $t("MapView.display") + " : " }}</h5>
+      <br/>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <opensilex-CheckboxForm
+              :value.sync="displaySO"
+              class="col-lg-2"
+              title="ScientificObjects.display"
+          ></opensilex-CheckboxForm>
+        </li>
+        <li class="list-group-item">
+          <opensilex-CheckboxForm
+              :value.sync="displayAreas"
+              class="p2"
+              title="Area.display"
+          ></opensilex-CheckboxForm>
+        </li>
+        <li
+            v-for="layer in tabLayer"
+            :key="layer.ref"
+            class="list-group-item d-flex justify-content-around"
+        >
+          <opensilex-CheckboxForm
+              :title="layer.titleDisplay"
+              :value.sync="layer.display"
+              class="p-2 bd-highlight"
+          ></opensilex-CheckboxForm>
+          <div class="p-2 bd-highlight col-2">
+            <opensilex-InputForm
+                v-if="layer.vlStyleStrokeColor"
+                :value.sync="layer.vlStyleStrokeColor"
+                type="color"
+            ></opensilex-InputForm>
+            <opensilex-InputForm
+                v-if="layer.vlStyleFillColor"
+                :value.sync="layer.vlStyleFillColor"
+                type="color"
+            ></opensilex-InputForm>
+          </div>
+          <opensilex-DeleteButton
+              label="FilterMap.filter.delete-button"
+              @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
+          ></opensilex-DeleteButton>
+        </li>
+      </ul>
+    </b-sidebar>
+
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
@@ -875,6 +918,22 @@ p {
   background-color: transparent;
   box-shadow: none;
 }
+
+.map {
+  position: relative;
+}
+
+.map-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.b-sidebar-outer {
+  z-index: 1045;
+  width: 240px;
+}
 </style>
 
 <i18n>
@@ -898,7 +957,8 @@ en:
     details: Show or hide element details
     author: Author
     update: Update element
-    display: Display of
+    display: Display of layers
+    configuration: Control panel
   Area:
     title: Area
     add: Description of the area
@@ -928,7 +988,8 @@ fr:
     details: Afficher ou masquer les détails de l'élément
     author: Auteur
     update: Mise à jour de l'élément
-    display: Affichage des
+    display: Affichage des couches
+    configuration: Panneau de contrôle
   Area:
     title: Zone
     add: Description de la zone

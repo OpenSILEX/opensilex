@@ -75,33 +75,6 @@
         </div>
       </div>
     </div>
-    <div class="col-4">
-      <div class="row">
-        <div v-for="layer in tabLayer" :key="layer.ref" class="col-2">
-          <opensilex-CheckboxForm
-              :title="layer.titleDisplay"
-              :value.sync="layer.display"
-              class="col"
-          ></opensilex-CheckboxForm>
-          <opensilex-DeleteButton
-              label="FilterMap.filter.delete-button"
-              @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
-          ></opensilex-DeleteButton>
-          <div class="col">
-            <opensilex-InputForm
-                v-if="layer.vlStyleStrokeColor"
-                :value.sync="layer.vlStyleStrokeColor"
-                type="color"
-            ></opensilex-InputForm>
-            <opensilex-InputForm
-                v-if="layer.vlStyleFillColor"
-                :value.sync="layer.vlStyleFillColor"
-                type="color"
-            ></opensilex-InputForm>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 

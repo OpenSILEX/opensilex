@@ -170,8 +170,8 @@ public class ScientificObjectDAO {
                                     .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g2"))
                                     .addWhere(makeVar("_g2"), Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm)))
                                 .addUnion(new WhereBuilder()
-                                    .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g2"))
-                                    .addWhere(makeVar("_g2"), Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm))));
+                                    .addWhere(makeVar(ScientificObjectModel.URI_FIELD), Oeso.hasGermplasm, makeVar("_g3"))
+                                    .addWhere(makeVar("_g3"), Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm))));
                     }
 
                     if (facility != null) {

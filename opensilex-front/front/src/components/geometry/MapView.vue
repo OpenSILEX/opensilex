@@ -339,9 +339,6 @@ export default class MapView extends Vue {
   private areaService = "opensilex.AreaService";
   private scientificObjectURI: string;
 
-  private mapPanel = {
-        tab: 'state',
-      }
   get user() {
     return this.$store.state.user;
   }

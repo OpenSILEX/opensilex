@@ -9,7 +9,7 @@ package org.opensilex.brapi.model;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 
 /**
  * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
@@ -224,12 +224,11 @@ public class ObservationUnitDTO {
         this.treatments = treatments;
     }
     
-    public static ObservationUnitDTO fromModel(ScientificObjectModel model) {
+    public static ObservationUnitDTO fromModel(ScientificObjectNodeDTO model, List<FactorLevelModel> factorLevels) {
         ObservationUnitDTO observationUnit = new ObservationUnitDTO();
         if (model.getUri() != null) {
             observationUnit.setObservationUnitDbId(model.getUri().toString());
         }
-        List<FactorLevelModel> factorLevels = model.getFactorLevels();
         List<ObservationTreatment> treatments = new ArrayList();
         for (FactorLevelModel level:factorLevels) {
             ObservationTreatment treatment = new ObservationTreatment();

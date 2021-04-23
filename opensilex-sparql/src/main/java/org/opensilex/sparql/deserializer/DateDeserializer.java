@@ -20,6 +20,9 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
 
     @Override
     public LocalDate fromString(String value) throws Exception {
+        if (value == null) {
+            return null;
+        }
         DateTimeFormatter slashFormater = DateTimeFormatter.ofPattern("d/MM/yyyy");
         DateTimeFormatter slashRevertFormater = DateTimeFormatter.ofPattern("yyyy/MM/d");
         DateTimeFormatter hyphenFormater = DateTimeFormatter.ofPattern("d-MM-yyyy");

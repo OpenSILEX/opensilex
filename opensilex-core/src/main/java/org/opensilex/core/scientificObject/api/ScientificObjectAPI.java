@@ -277,6 +277,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parent") URI parentURI,
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") @ValidURI URI experimentURI,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -287,9 +288,8 @@ public class ScientificObjectAPI {
         if (experimentURI == null) {
             experimentURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.searchChildren(experimentURI, parentURI, facility, page, pageSize, currentUser);
+        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = dao.searchChildren(experimentURI, parentURI, facility, orderByList, page, pageSize, currentUser);
 
-        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = scientificObjects.convert(ScientificObjectNodeWithChildrenDTO.class, ScientificObjectNodeWithChildrenDTO::getDTOFromModel);
         return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
     }
 
@@ -326,9 +326,7 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = dao.search(contextURI, pattern, rdfTypes, parentURI, germplasm, factorLevels, facility, existenceDate, creationDate, page, pageSize, orderByList, currentUser);
-
-        ListWithPagination<ScientificObjectNodeDTO> dtoList = scientificObjects.convert(ScientificObjectNodeDTO.class, ScientificObjectNodeDTO::getDTOFromModel);
+        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.search(contextURI, pattern, rdfTypes, parentURI, false, germplasm, factorLevels, facility, existenceDate, creationDate, page, pageSize, orderByList, currentUser);
 
         return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
     }

@@ -693,7 +693,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return search(graph, objectClass, lang, filterHandler, orderByList, null, null);
     }
 
-    private <T extends SPARQLResourceModel> SelectBuilder getSelectBuilder(SPARQLClassObjectMapper<T> mapper, Node graph, String language, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+    public <T extends SPARQLResourceModel> SelectBuilder getSelectBuilder(SPARQLClassObjectMapper<T> mapper, Node graph, String language, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
 
         SelectBuilder select = mapper.getSelectBuilder(graph, language);
 

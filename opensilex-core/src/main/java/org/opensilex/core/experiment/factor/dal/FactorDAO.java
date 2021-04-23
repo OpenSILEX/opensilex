@@ -22,8 +22,6 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;

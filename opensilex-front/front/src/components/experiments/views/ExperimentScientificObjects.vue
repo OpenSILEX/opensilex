@@ -413,6 +413,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   searchMethod(nodeURI, page, pageSize) {
+    let orderBy = ["name=asc"];
     if (
       this.filters.name == "" &&
       this.filters.types.length == 0 &&
@@ -423,6 +424,7 @@ export default class ExperimentScientificObjects extends Vue {
         nodeURI,
         this.uri,
         undefined,
+        orderBy,
         page,
         pageSize
       );

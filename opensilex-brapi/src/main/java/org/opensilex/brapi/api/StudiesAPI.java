@@ -20,8 +20,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -35,14 +37,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.model.Call;
-import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -52,6 +54,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -264,30 +267,39 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int limit,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        
-        List<URI> rdfTypes =new ArrayList<>();
+
+        List<URI> rdfTypes = new ArrayList<>();
         if (observationLevel != null) {
             URI rdfType = new URI(Oeso.DOMAIN + "#" + observationLevel.substring(0, 1).toUpperCase() + observationLevel.substring(1));
             rdfTypes.add(rdfType);
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectModel> scientificObjects = soDAO.search(
+        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.search(
                 studyDbId,
                 null,
                 rdfTypes,
                 null,
+                false,
                 null,
                 null,
                 null,
                 null,
                 null,
-                page, 
-                limit, 
-                null, 
+                page,
+                limit,
+                null,
                 currentUser
         );
-        ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, ObservationUnitDTO::fromModel);
+
+        Collection<URI> nodeUris = scientificObjects.getList().stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList());
+        Map<String, List<FactorLevelModel>> soUriFactorLevelMap = soDAO.getScientificObjectsFactors(studyDbId, nodeUris, currentUser.getLanguage());
+        
+        ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, (item) -> {
+            String expandedUri = SPARQLDeserializers.getExpandedURI(item.getUri());
+            List<FactorLevelModel> factors = soUriFactorLevelMap.get(expandedUri);
+            return ObservationUnitDTO.fromModel(item, factors);
+        });
         return new PaginatedListResponse<>(observations).getResponse();
     }
 }

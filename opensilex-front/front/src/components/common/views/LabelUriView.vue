@@ -2,7 +2,7 @@
   <div class="static-field">
     <span class="field-view-title">{{$t(label)}}:</span>
     <span class="static-field-line">{{value}}</span>
-    <opensilex-UriLink class="uri" v-if="uri.startsWith('http')" :uri=uri :url=uri></opensilex-UriLink>
+    <opensilex-UriLink class="uri" v-if="uri != null && uri.startsWith('http')" :uri=uri :url=uri></opensilex-UriLink>
     <opensilex-UriLink class="uri" v-else :uri=uri :to=to></opensilex-UriLink>
   </div>
 </template>

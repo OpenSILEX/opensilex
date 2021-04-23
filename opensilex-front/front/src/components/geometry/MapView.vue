@@ -35,38 +35,27 @@
         @refresh="callScientificObjectsUpdate"
     />
 
-    <p class="alert-info">
-      <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
-    </p>
+    
     <div
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
     >
-      <div v-if="!editingMode" class="row">
-        {{ $t("MapView.display") + " : " }}
-        <opensilex-CheckboxForm
-            :value.sync="displaySO"
-            class="col-lg-2"
-            title="ScientificObjects.display"
-        ></opensilex-CheckboxForm>
-        <opensilex-CheckboxForm
-            :value.sync="displayAreas"
-            class="col-lg-5"
-            title="Area.display"
-        ></opensilex-CheckboxForm>
-        <span>
-          <label class="alert-warning">
+      <div v-if="!editingMode" >
+           <label class="alert-warning">
             <img
                 alt="Warning"
                 src="../../../theme/phis/images/construction.png"
             />
             {{ $t("MapView.WarningInstruction") }}
           </label>
-        </span>
-      </div>
+       </div>
+      <p class="alert-info">
+      <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
+    </p>
       <!-- "mapControls" to display the scale -->
       <vl-map
           ref="map"
+          class="map"
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
@@ -75,6 +64,14 @@
           @created="mapCreated"
           @pointermove="onMapPointerMove"
       >
+
+      <!-- map panel, controls -->
+    <div class="map-panel">
+         <b-button v-b-toggle.map-sidebar>{{$t("MapView.configuration")}}</b-button>
+    </div>
+
+      
+    <!--// map panel, controls -->
         <vl-view
             ref="mapView"
             :min-zoom="2"
@@ -156,6 +153,25 @@
         />
       </vl-map>
     </div>
+
+    
+    <b-sidebar id="map-sidebar" :title="$t('MapView.configuration')" shadow right>
+       <h5>{{ $t("MapView.display") + " : " }}</h5>
+       <br>
+        <ul class="list-group">
+        <li class="list-group-item"><opensilex-CheckboxForm
+            :value.sync="displaySO"
+            class="col-lg-2"
+            title="ScientificObjects.display"
+        ></opensilex-CheckboxForm></li>
+        <li class="list-group-item"> <opensilex-CheckboxForm
+            :value.sync="displayAreas"
+            class="col-lg-5"
+            title="Area.display"
+        ></opensilex-CheckboxForm></li> 
+      </ul> 
+    </b-sidebar>
+
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
@@ -271,7 +287,8 @@ import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
 import MultiPolygon from "ol/geom/MultiPolygon";
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
-
+import { FullScreen, OverviewMap, ZoomSlider} from 'ol/control'
+ 
 @Component
 export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
@@ -322,6 +339,9 @@ export default class MapView extends Vue {
   private areaService = "opensilex.AreaService";
   private scientificObjectURI: string;
 
+  private mapPanel = {
+        tab: 'state',
+      }
   get user() {
     return this.$store.state.user;
   }
@@ -845,6 +865,17 @@ p {
   background-color: transparent;
   box-shadow: none;
 }
+  .map {
+        position: relative;
+  }
+  .map-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 1;
+    } 
+
+   
 </style>
 
 <i18n>
@@ -869,6 +900,7 @@ en:
     author: Author
     update: Update element
     display: Display of
+    configuration: Map panel
   Area:
     title: Area
     add: Description of the area
@@ -899,6 +931,7 @@ fr:
     author: Auteur
     update: Mise à jour de l'élément
     display: Affichage des
+    configuration: Options
   Area:
     title: Zone
     add: Description de la zone

@@ -243,7 +243,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 cd $SCRIPT_DIR
 
-java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR --CONFIG_FILE="$SCRIPT_DIR/config/opensilex.yml" "$@"
+java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR/bin --CONFIG_FILE="$SCRIPT_DIR/config/opensilex.yml" "$@"
 ```
 
 - Activation

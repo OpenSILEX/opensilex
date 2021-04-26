@@ -17,7 +17,7 @@
           ></opensilex-ModalForm>
         </div>
         <opensilex-OntologyClassTreeView
-          ref="classesTree "
+          ref="classesTree"
           :rdfType="rdfType"
           @selectionChange="selected = $event"
           @editClass="showEditForm($event)"

@@ -38,6 +38,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
+import org.opensilex.server.exceptions.InvalidValueException;
 
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.utils.ListWithPagination;
@@ -86,7 +87,9 @@ public class FacilityAPI {
                 ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                    ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility);
+                    if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                        throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+                    }
                 }
             }
 
@@ -239,7 +242,9 @@ public class FacilityAPI {
             ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
             URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
-                ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility);
+                if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
+                    throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
+                }
             }
         }
 

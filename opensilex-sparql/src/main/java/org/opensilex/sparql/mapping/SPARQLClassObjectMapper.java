@@ -228,7 +228,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             if (useDefaultGraph) {
                 propertyGraph = mapperIndex.getForClass(model).getDefaultGraph();
             }
-            SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, propertyGraph, uri, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
+            SPARQLProxyListObject<? extends SPARQLResourceModel> proxy = new SPARQLProxyListObject<>(mapperIndex, propertyGraph, uri, graph, classAnalizer.getObjectListPropertyByField(field), model, classAnalizer.isReverseRelation(field), lang, service);
             setter.invoke(instance, proxy.getInstance());
         }
 

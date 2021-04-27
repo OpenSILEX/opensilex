@@ -28,6 +28,7 @@ abstract class SPARQLProxyList<T> extends SPARQLProxy<List> {
         super(repository, graph, List.class, lang, service);
         this.property = property;
         this.uri = uri;
+
         this.genericType = genericType;
         this.isReverseRelation = isReverseRelation;
     }
@@ -37,9 +38,9 @@ abstract class SPARQLProxyList<T> extends SPARQLProxy<List> {
     public List<T> getInstance() {
         return super.getInstance();
     }
-    
+
     public abstract int getSize() throws Exception;
-    
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         boolean noParameters = (method.getParameterCount() == 0);

@@ -7,6 +7,7 @@
     :itemLoadingMethod="loadUsers"
     :searchMethod="searchUsers"
     :conversionMethod="userToSelectNode"
+    :disabled="disabled"
     placeholder="component.user.filter-placeholder"
     noResultsText="component.user.filter-search-no-result"
     @select="select"
@@ -35,6 +36,11 @@ export default class UserSelector extends Vue {
 
   @Prop()
   multiple;
+
+  @Prop({
+    default: false
+  })
+  disabled;
 
   @Prop()
   helpMessage: string;

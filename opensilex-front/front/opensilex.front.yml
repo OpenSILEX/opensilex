@@ -56,6 +56,11 @@ menu:
         route:
           path: /scientific-objects
           component: opensilex-ScientificObjectList
+      - id: Data
+        label: component.menu.data.label
+        route:
+          path: /data
+          component: opensilex-DataView
       # - id: equipments
       #   label: component.menu.equipments.label
       #   route:

@@ -39,6 +39,8 @@ let ontologies = {
     IS_PART_OF: OESO_URI + "#isPartOf",
     IMAGE_TYPE_URI: OESO_URI + "#Image",
     DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
+    VECTOR_TYPE_URI: OESO_URI + "#Vector",
+    SOFTWARE_TYPE_URI: OESO_URI + "#Software",
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };

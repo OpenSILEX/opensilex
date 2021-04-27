@@ -146,6 +146,19 @@ public class Server extends Tomcat {
             LOGGER.error("Error while loading path prefix", ex);
         }
 
+        if (!pathPrefix.equals("")) {
+            try {
+                Context redirectContext = addWebapp("defaultRedirect", new File(".").getAbsolutePath());
+                RewriteValve valve = new RewriteValve();
+                redirectContext.getPipeline().addValve(valve);
+                String rewriteRules = "RewriteCond  %{REQUEST_URI} ^/$\n"
+                        + "RewriteRule . " + pathPrefix + " [R=301,L,NE]\n";
+                valve.setConfiguration(rewriteRules);
+            } catch (Exception ex) {
+                LOGGER.error("Error while setting default rewrite rules", ex);
+            }
+        }
+
         // Load Swagger root application
         Context appContext = initApp("", pathPrefix.equals("") ? "/" : pathPrefix, "/webapp", getClass());
 

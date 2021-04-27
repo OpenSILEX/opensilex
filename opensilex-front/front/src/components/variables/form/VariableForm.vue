@@ -580,6 +580,10 @@ export default class VariableForm extends Vue {
         );
     }
 
+    beforeDestroy() {
+        this.langUnwatcher();
+    }
+
     tutorial() {
 
         this.savedVariable = JSON.parse(JSON.stringify(this.form));

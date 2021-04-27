@@ -1,5 +1,6 @@
 <template>
   <opensilex-SelectForm
+    :key="lang"
     ref="selectForm"
     :label="label"
     :selected.sync="germplasmURI"
@@ -20,7 +21,7 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 import HttpResponse, {
-  OpenSilexResponse
+  OpenSilexResponse,
 } from "opensilex-security/HttpResponse";
 import { SpeciesDTO, GermplasmGetSingleDTO } from "opensilex-core/index";
 
@@ -35,12 +36,12 @@ export default class GermplasmSelector extends Vue {
   germplasmURI;
 
   @Prop({
-    default: "GermplasmView.title"
+    default: "GermplasmView.title",
   })
   label;
 
   @Prop({
-    default: "GermplasmSelector.placeholder"
+    default: "GermplasmSelector.placeholder",
   })
   placeholder;
 
@@ -49,6 +50,10 @@ export default class GermplasmSelector extends Vue {
 
   @Prop()
   multiple;
+
+  get lang() {
+    return this.$store.getters.language;
+  }
 
   @Ref("selectForm") readonly selectForm!: any;
 
@@ -59,7 +64,7 @@ export default class GermplasmSelector extends Vue {
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<GermplasmGetSingleDTO>>>) =>
           http.response.result
-      )
+      );
   }
 
   loadOptions(query, page, pageSize) {
@@ -80,7 +85,7 @@ export default class GermplasmSelector extends Vue {
         [], //orderBy?: Array<string>
         page, //page?: number
         pageSize //pageSize?
-      )
+      );
   }
 
   convertGermplasmDTO(germplasm) {
@@ -92,8 +97,8 @@ export default class GermplasmSelector extends Vue {
 
     return {
       id: germplasm.uri,
-      label: label
-    }
+      label: label,
+    };
   }
 
   select(value) {

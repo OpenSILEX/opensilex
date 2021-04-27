@@ -225,6 +225,10 @@ export default class ScientificObjectDataFiles extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }    
+
   resetFilters() {
     this.filter = {
       start_date: undefined,

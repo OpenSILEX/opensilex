@@ -232,6 +232,10 @@ export default class DeviceDataFiles extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }  
+
   resetFilters() {
     this.filter = {
       start_date: undefined,

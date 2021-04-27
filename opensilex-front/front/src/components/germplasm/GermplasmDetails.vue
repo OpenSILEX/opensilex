@@ -227,6 +227,10 @@ export default class GermplasmDetails extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }    
+
   germplasm: GermplasmGetSingleDTO = {
     uri: null,
     name: null,

@@ -186,6 +186,10 @@
             );
         }
 
+        beforeDestroy() {
+            this.langUnwatcher();
+        }
+
         reset() {
             this.filter = AnnotationList.newFilter();
             this.refresh();

@@ -88,6 +88,10 @@
             );
         }
 
+        beforeDestroy() {
+            this.langUnwatcher();
+        }
+
         created(){
             this.$service = this.$opensilex.getService("opensilex.AnnotationsService");
             this.searchMotivations();

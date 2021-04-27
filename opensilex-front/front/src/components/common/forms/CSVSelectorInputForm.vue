@@ -57,6 +57,10 @@ export default class CSVSelectorInputForm extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }  
+
   get delimiterOptions() {
     return [
       {

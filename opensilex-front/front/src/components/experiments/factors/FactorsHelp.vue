@@ -25,7 +25,6 @@ export default class FactorsHelp extends Vue {
   $router: any;
 
   get lang() {
-    console.debug("Active language : " + this.$store.getters.language);
     return this.$store.getters.language;
   }
 

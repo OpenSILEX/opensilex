@@ -200,6 +200,10 @@
             );
         }
 
+        beforeDestroy() {
+            this.langUnwatcher();
+        }        
+
         resetForm() {
             this.currentRelation = "";
             this.currentExternalUri = "";

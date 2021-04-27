@@ -232,6 +232,10 @@ export default class ProjectDescription extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }    
+
   loadRelatedProject() {
     if (this.project.related_projects) {
       this.relatedProjectsList = [];

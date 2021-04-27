@@ -521,6 +521,12 @@ import DataProvenanceModalView from './data/DataProvenanceModalView.vue';
 components["opensilex-DataProvenanceModalView"] = DataProvenanceModalView;
 import ImageModal from './data/ImageModal.vue';
 components["opensilex-ImageModal"] = ImageModal;
+import DataForm from './data/form/DataForm.vue';
+components["opensilex-DataForm"] = DataForm;
+import DataForm1 from './data/form/DataForm1.vue';
+components["opensilex-DataForm1"] = DataForm1;
+import DataForm2 from './data/form/DataForm2.vue';
+components["opensilex-DataForm2"] = DataForm2;
 
 // PHIS
 //IMAGES
@@ -631,6 +637,8 @@ import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 import  DeviceTypes from './devices/DeviceTypes.vue';
 components["opensilex-DeviceTypes"] = DeviceTypes;
+import  DeviceSelector from './devices/DeviceSelector.vue';
+components["opensilex-DeviceSelector"] = DeviceSelector;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';

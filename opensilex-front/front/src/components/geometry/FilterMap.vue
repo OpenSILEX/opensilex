@@ -19,7 +19,10 @@
         </div>
         <toggle-button
             v-model="isStrikeColorGermplasm"
-            :labels="{checked: $t('FilterMap.filter.strokeColor'), unchecked: $t('FilterMap.filter.fillColor')}"
+            :labels="{
+            checked: $t('FilterMap.filter.strokeColor'),
+            unchecked: $t('FilterMap.filter.fillColor'),
+          }"
             :sync="true"
             :width="68"
         />
@@ -56,7 +59,10 @@
         </div>
         <toggle-button
             v-model="isStrikeColorFactor"
-            :labels="{checked: $t('FilterMap.filter.strokeColor'), unchecked: $t('FilterMap.filter.fillColor')}"
+            :labels="{
+            checked: $t('FilterMap.filter.strokeColor'),
+            unchecked: $t('FilterMap.filter.fillColor'),
+          }"
             :sync="true"
             :width="68"
         />
@@ -158,6 +164,12 @@ export default class FilterMap extends Vue {
       if (tabLayerElement.ref == ref) return;
     }
     this.feature.splice(0, this.feature.length);
+
+    let pageSize = 0;
+    for (const feature of this.featureOS) {
+      pageSize += feature.length;
+    }
+
     this.$opensilex
         .getService("opensilex.ScientificObjectsService")
         .searchScientificObjects(
@@ -172,13 +184,17 @@ export default class FilterMap extends Vue {
             undefined,
             [],
             0,
-            this.featureOS.length
+            pageSize
         )
         .then((http) => {
-          http.response.result.forEach(({uri}) => {
+          http.response.result.forEach(({rdf_type, uri}) => {
             this.featureOS.forEach((item) => {
-              if (uri === item.properties.uri) {
-                this.feature.push(item);
+              if (rdf_type === item[0].properties.type) {
+                for (const itemElement of item) {
+                  if (uri === itemElement.properties.uri) {
+                    this.feature.push(itemElement);
+                  }
+                }
               }
             });
           });

@@ -1,7 +1,7 @@
 <template>
   <b-form>
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID) && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
       ref="provenanceForm"
       modalSize="lg"
       :initForm="initForm"

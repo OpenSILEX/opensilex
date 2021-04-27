@@ -3,8 +3,8 @@
     <div class="col col-xl-12">
       <opensilex-Card icon>
         <template v-slot:header>
-          <br />
           <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID) && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
             @click="dataForm.showCreateForm()"
             label="OntologyCsvImporter.import"
           ></opensilex-CreateButton>
@@ -195,6 +195,14 @@ export default class ExperimentData extends Vue {
   @Ref("provSelector") readonly provSelector!: any;
 
   @Ref("resultModal") readonly resultModal!: any;
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);

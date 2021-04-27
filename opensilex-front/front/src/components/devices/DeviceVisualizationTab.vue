@@ -50,7 +50,7 @@ export default class DeviceVisualizationTab extends Vue {
   @Prop()
   device;
 
-  isGraphicLoaded = false;
+  isGraphicLoaded = true;
   form;
   selectedVariable;
   devicesService: DevicesService;
@@ -69,7 +69,6 @@ export default class DeviceVisualizationTab extends Vue {
   }
 
   onGraphicCreated() {
-
     let that = this;
     setTimeout(function() {
       that.page.scrollIntoView({
@@ -112,9 +111,7 @@ export default class DeviceVisualizationTab extends Vue {
         .getService("opensilex.VariablesService")
         .getVariable(form.variable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
-          console.log(http.response.result);
           this.selectedVariable = http.response.result;
-          console.log(this.form);
           let promise = this.buildDataSerie();
           promise
             .then(value => {

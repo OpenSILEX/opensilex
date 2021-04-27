@@ -50,7 +50,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   @Prop()
   scientificObject;
 
-  isGraphicLoaded = false;
+  isGraphicLoaded = true;
   form;
   selectedVariable;
   dataService: DataService;
@@ -73,29 +73,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }, 500);
   }
 
-  getProvenance(uri) {
-    if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
-  }
-  showProvenanceDetailComponent(value) {
-    if (value.provenance != undefined && value.provenance != null) {
-      this.getProvenance(value.provenance)
-        .then(provenance => {
-          value.provenance = provenance;
-          this.dataProvenanceModalView.setProvenance(value);
-          this.dataProvenanceModalView.show();
-        })
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
-    }
-  }
 
   onUpdate(form) {
     this.isGraphicLoaded = false;
@@ -228,6 +205,31 @@ export default class ScientificObjectVisualizationTab extends Vue {
       cleanData.push(toAdd);
     });
     return cleanData;
+  }
+
+
+  getProvenance(uri) {
+    if (uri != undefined && uri != null) {
+      return this.$opensilex
+        .getService("opensilex.DataService")
+        .getProvenance(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          return http.response.result;
+        });
+    }
+  }
+  showProvenanceDetailComponent(value) {
+    if (value.provenance != undefined && value.provenance != null) {
+      this.getProvenance(value.provenance)
+        .then(provenance => {
+          value.provenance = provenance;
+          this.dataProvenanceModalView.setProvenance(value);
+          this.dataProvenanceModalView.show();
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
+    }
   }
 
   timestampToUTC(time) {

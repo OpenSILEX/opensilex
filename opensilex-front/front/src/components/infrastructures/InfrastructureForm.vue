@@ -128,6 +128,8 @@ export default class InfrastructureForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure facility created", uri);
+        form.uri = uri;
+        return form;
       })
       .catch((error) => {
         if (error.status == 409) {

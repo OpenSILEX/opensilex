@@ -1,26 +1,43 @@
 <template>
   <div>
     <opensilex-ExperimentForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      v-if="
+        user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+      "
       ref="experimentForm"
       @onUpdate="loadExperiment()"
     ></opensilex-ExperimentForm>
 
     <div v-if="experiment" class="row">
       <div class="col col-xl-6" style="min-width: 400px">
-        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.experiment.description')">
+        <opensilex-Card
+          icon="ik#ik-clipboard"
+          :label="$t('component.experiment.description')"
+        >
           <template v-slot:rightHeader>
             <b-button-group
-              v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                )
+              "
             >
               <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                  )
+                "
                 @click="showEditForm()"
                 label="component.experiment.update"
               ></opensilex-EditButton>
 
               <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_DELETE_ID)"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_EXPERIMENT_DELETE_ID
+                  )
+                "
                 @click="deleteExperiment(experiment.uri)"
                 label="component.experiment.delete"
               ></opensilex-DeleteButton>
@@ -28,11 +45,14 @@
           </template>
 
           <template v-slot:body>
-            <opensilex-StringView label="component.common.name" :value="experiment.name"></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.name"
+              :value="experiment.name"
+            ></opensilex-StringView>
             <div class="static-field">
-              <span
-                class="field-view-title"
-              >{{ $t('component.common.state') }}</span>
+              <span class="field-view-title">{{
+                $t("component.common.state")
+              }}</span>
               <span class="static-field-line">
                 <span
                   v-if="!isEnded(experiment)"
@@ -61,35 +81,56 @@
                 </span>
               </span>
             </div>
-            <opensilex-StringView label="component.common.period" :value="period"></opensilex-StringView>
+            <opensilex-StringView
+              label="component.common.period"
+              :value="period"
+            ></opensilex-StringView>
             <opensilex-UriView :uri="experiment.uri"></opensilex-UriView>
             <opensilex-TextView
               label="component.experiment.objective"
               :value="experiment.objective"
             ></opensilex-TextView>
-            <opensilex-TextView label="component.experiment.comment" :value="experiment.description"></opensilex-TextView>
+            <opensilex-TextView
+              label="component.experiment.comment"
+              :value="experiment.description"
+            ></opensilex-TextView>
           </template>
         </opensilex-Card>
       </div>
 
       <div class="col col-xl-6">
-        <opensilex-Card icon="ik#ik-box" :label="$t('component.experiment.context')">
+        <opensilex-Card
+          icon="ik#ik-box"
+          :label="$t('component.experiment.context')"
+        >
           <template v-slot:body>
-            <opensilex-UriListView label="component.experiment.projects" :list="projectsList"></opensilex-UriListView>
+            <opensilex-UriListView
+              label="component.experiment.projects"
+              :list="projectsList"
+            ></opensilex-UriListView>
             <opensilex-UriListView
               label="component.experiment.infrastructures"
-              :list="infrastructuresList"
+              :list="infrastructuresListURIs"
             ></opensilex-UriListView>
-            <opensilex-UriListView label="component.experiment.species" :list="speciesList"></opensilex-UriListView>
+            <opensilex-UriListView
+              label="component.experiment.species"
+              :list="speciesList"
+            ></opensilex-UriListView>
             <opensilex-UriListView
               label="component.menu.experimentalDesign.factors"
               :list="factorsList"
             ></opensilex-UriListView>
-            <opensilex-UriListView label="component.experiment.groups" :list="groupsList"></opensilex-UriListView>
+            <opensilex-UriListView
+              label="component.experiment.groups"
+              :list="groupsList"
+            ></opensilex-UriListView>
           </template>
         </opensilex-Card>
 
-        <opensilex-Card icon="ik#ik-users" :label="$t('component.experiment.contacts')">
+        <opensilex-Card
+          icon="ik#ik-users"
+          :label="$t('component.experiment.contacts')"
+        >
           <template v-slot:body>
             <opensilex-UriListView
               label="component.experiment.scientificSupervisors"
@@ -120,12 +161,12 @@ import {
   SpeciesDTO,
   SpeciesService,
   FactorsService,
-  FactorGetDTO
+  FactorGetDTO,
 } from "opensilex-core/index";
 import {
   SecurityService,
   GroupDTO,
-  UserGetDTO
+  UserGetDTO,
 } from "opensilex-security/index";
 import VueI18n from "vue-i18n";
 import moment from "moment";
@@ -163,13 +204,12 @@ export default class ExperimentDetail extends Vue {
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
-      lang => {
-        
-    this.loadSpecies();
-     this.period = this.formatPeriod(
-      this.experiment.start_date,
-      this.experiment.end_date
-    );
+      (lang) => {
+        this.loadSpecies();
+        this.period = this.formatPeriod(
+          this.experiment.start_date,
+          this.experiment.end_date
+        );
       }
     );
   }
@@ -177,7 +217,7 @@ export default class ExperimentDetail extends Vue {
   beforeDestroy() {
     this.langUnwatcher();
   }
-  
+
   showEditForm() {
     this.convertDtoBeforeEditForm();
     // make a deep copy of the experiment in order to not change the current dto
@@ -190,24 +230,35 @@ export default class ExperimentDetail extends Vue {
   convertDtoBeforeEditForm() {
     if (
       this.experiment.projects &&
-      this.experiment.projects.length>0 &&
-      this.experiment.projects[0].uri  //convert experiment 's project list only one time on open form
+      this.experiment.projects.length > 0 &&
+      this.experiment.projects[0].uri //convert experiment 's project list only one time on open form
     ) {
-      this.experiment.projects = this.experiment.projects.map(project => {
+      this.experiment.projects = this.experiment.projects.map((project) => {
         return project.uri;
       });
     }
     if (
       this.experiment.organisations &&
-      this.experiment.organisations.length >0 &&
+      this.experiment.organisations.length > 0 &&
       this.experiment.organisations[0].uri
     ) {
       this.experiment.organisations = this.experiment.organisations.map(
-        organisation => {
+        (organisation) => {
           return organisation.uri;
         }
       );
     }
+  }
+
+  get infrastructuresListURIs() {
+    let infraUris = [];
+    for (let infra of this.infrastructuresList) {
+      infra.to = {
+        path: "/infrastructure/details/" + encodeURIComponent(infra.uri),
+      };
+      infraUris.push(infra);
+    }
+    return infraUris;
   }
 
   deleteExperiment(uri: string) {
@@ -215,9 +266,8 @@ export default class ExperimentDetail extends Vue {
       .deleteExperiment(uri)
       .then(() => {
         this.$router.push({
-            path: "/experiments"
-          });
-
+          path: "/experiments",
+        });
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -238,7 +288,7 @@ export default class ExperimentDetail extends Vue {
           this.experiment = http.response.result;
           this.loadExperimentDetails();
         })
-        .catch(error => {
+        .catch((error) => {
           this.$opensilex.errorHandler(error);
         });
     }
@@ -267,10 +317,10 @@ export default class ExperimentDetail extends Vue {
       this.experiment.organisations &&
       this.experiment.organisations.length > 0
     ) {
-      this.experiment.organisations.forEach(organisation => {
+      this.experiment.organisations.forEach((organisation) => {
         this.infrastructuresList.push({
           uri: organisation.uri,
-          value: organisation.name
+          value: organisation.name,
         });
       });
     }
@@ -285,10 +335,10 @@ export default class ExperimentDetail extends Vue {
       service
         .getGroupsByURI(this.experiment.groups)
         .then((http: HttpResponse<OpenSilexResponse<GroupDTO[]>>) => {
-          this.groupsList = http.response.result.map(group => {
+          this.groupsList = http.response.result.map((group) => {
             return {
               uri: group.uri,
-              value: group.name
+              value: group.name,
             };
           });
         })
@@ -308,11 +358,11 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.scientific_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.scientificSupervisorsList = http.response.result.map(item => {
+          this.scientificSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name
+              value: item.first_name + " " + item.last_name,
             };
           });
         })
@@ -326,11 +376,11 @@ export default class ExperimentDetail extends Vue {
       service
         .getUsersByURI(this.experiment.technical_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.technicalSupervisorsList = http.response.result.map(item => {
+          this.technicalSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.email,
               url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name
+              value: item.first_name + " " + item.last_name,
             };
           });
         })
@@ -350,20 +400,20 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                species => species == http.response.result[i].uri
+                (species) => species == http.response.result[i].uri
               )
             ) {
               this.speciesList.push(http.response.result[i]);
             }
           }
 
-          this.speciesList = this.speciesList.map(item => {
+          this.speciesList = this.speciesList.map((item) => {
             return {
               uri: item.uri,
               value: item.name,
               to: {
-                path: "/germplasm/details/" + encodeURIComponent(item.uri)
-              }
+                path: "/germplasm/details/" + encodeURIComponent(item.uri),
+              },
             };
           });
         })
@@ -386,27 +436,29 @@ export default class ExperimentDetail extends Vue {
           undefined, // orderBy
           0, // page
           0 // pageSize
-          )
+        )
         .then((http: HttpResponse<OpenSilexResponse<Array<FactorGetDTO>>>) => {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.factors.find(
-                factors => factors == http.response.result[i].uri
+                (factors) => factors == http.response.result[i].uri
               )
             ) {
               this.factorsList.push(http.response.result[i]);
             }
           }
 
-          this.factorsList = this.factorsList.map(item => {
+          this.factorsList = this.factorsList.map((item) => {
             return {
               uri: item.uri,
               value: item.name,
               to: {
-                path: "/" +
+                path:
+                  "/" +
                   encodeURIComponent(this.uri) +
-                  "/factor/details/" + encodeURIComponent(item.uri)
-              }
+                  "/factor/details/" +
+                  encodeURIComponent(item.uri),
+              },
             };
           });
         })
@@ -420,13 +472,13 @@ export default class ExperimentDetail extends Vue {
     );
     this.projectsList = [];
     if (this.experiment.projects) {
-      this.experiment.projects.forEach(project => {
+      this.experiment.projects.forEach((project) => {
         this.projectsList.push({
           uri: project.uri,
           value: project.name,
           to: {
-            path: "/project/details/" + encodeURIComponent(project.uri)
-          }
+            path: "/project/details/" + encodeURIComponent(project.uri),
+          },
         });
       });
     }
@@ -451,17 +503,17 @@ export default class ExperimentDetail extends Vue {
       endDate = moment();
     }
 
-    endDate.add(1, 'days');
-    let years = endDate.diff(startDate, 'year');
-    startDate.add(years, 'years');
-    let months = endDate.diff(startDate, 'months');
-    startDate.add(months, 'months');
-    let days = endDate.diff(startDate, 'days');
+    endDate.add(1, "days");
+    let years = endDate.diff(startDate, "year");
+    startDate.add(years, "years");
+    let months = endDate.diff(startDate, "months");
+    startDate.add(months, "months");
+    let days = endDate.diff(startDate, "days");
 
-    let yearsString="";
-    let monthsString="";
-    let daysString="";
-     if (years > 0) {
+    let yearsString = "";
+    let monthsString = "";
+    let daysString = "";
+    if (years > 0) {
       if (years == 1) {
         yearsString = years + " " + this.$t("component.common.year").toString();
       }
@@ -490,13 +542,7 @@ export default class ExperimentDetail extends Vue {
       }
     }
     result +=
-      " ( " +
-       yearsString+
-      " " +
-       monthsString +
-      " " +
-       daysString +
-      " )";
+      " ( " + yearsString + " " + monthsString + " " + daysString + " )";
 
     return result;
   }

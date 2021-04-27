@@ -275,7 +275,7 @@ export default class InfrastructureTree extends Vue {
     this.service
       .deleteInfrastructure(uri)
       .then(() => {
-        this.refresh(uri);
+        this.refresh();
       })
       .catch(this.$opensilex.errorHandler);
   }

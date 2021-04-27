@@ -42,7 +42,12 @@
     </template>
     <div>
       <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+      <opensilex-UriView
+        :uri="selected.uri"
+        :to="{
+          path: '/infrastructure/details/' + encodeURIComponent(selected.uri),
+        }"
+      ></opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView
         label="component.common.name"

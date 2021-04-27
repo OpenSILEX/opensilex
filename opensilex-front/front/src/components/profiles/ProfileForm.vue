@@ -141,7 +141,7 @@ export default class ProfileForm extends Vue {
 
       for (let j = 0; j < credentialsGroups[i].credentials.length; j++) {
         let credentialId = credentialsGroups[i].credentials[j].id;
-        if (this.form.credentials.indexOf(credentialId) >= 0) {
+        if (this.form.credentials && this.form.credentials.indexOf(credentialId) >= 0) {
           def[credentialsGroups[i].group_id].push(credentialId);
         }
       }

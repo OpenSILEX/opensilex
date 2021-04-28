@@ -228,6 +228,12 @@ By default logs will be printed to the console output and writen into a rotating
 
 ## Initialize database and check configuration
 
+## Initialize sparql repositories
+
+```
+opensilex sparql reset-ontologies
+```
+
 ## Create a script to access instructions
 
 - Create
@@ -310,6 +316,9 @@ sudo nano /etc/nginx/sites-enabled/default
 Content
 ```
         location / {
+                #comment the following line to avoid an error and enable proxy
+                #try_files $uri $uri/ =404;
+                #add proxy settings
                 include proxy_params;
                 proxy_pass http://127.0.0.1:8081;
         }

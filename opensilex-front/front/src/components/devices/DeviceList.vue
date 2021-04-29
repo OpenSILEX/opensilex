@@ -287,21 +287,9 @@ export default class DeviceList extends Vue {
         .getDevice(uri)
         .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
           let device = http.response.result;
-          let form = {
-            uri: device.uri,
-            name: device.name,
-            rdf_type: device.rdf_type,
-            brand: device.brand,
-            constructor_model: device.constructor_model,
-            serial_number: device.serial_number,
-            person_in_charge: device.person_in_charge,
-            start_up: device.start_up,
-            removal: device.removal,
-            description: device.description,
-            metadata: device.metadata,
-            relations: device.relations
-          };
-          this.deviceForm.showEditForm(form);
+          this.deviceForm.getFormRef().getAttributes(device)
+          let devicetoSend = JSON.parse(JSON.stringify(device));
+          this.deviceForm.showEditForm(devicetoSend);
         })
         .catch(this.$opensilex.errorHandler);
   }

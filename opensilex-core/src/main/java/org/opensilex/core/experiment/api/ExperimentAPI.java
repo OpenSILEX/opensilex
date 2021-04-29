@@ -857,7 +857,12 @@ public class ExperimentAPI {
                             first = false;
 
                         }
-                        csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                        // value
+                        if(dataGetDTO.getValue() == null){
+                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), null);
+                        }else{
+                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                        }
                     }
                     
                     
@@ -988,7 +993,12 @@ public class ExperimentAPI {
                     // unit
                     csvRow.add(variables.get(dataGetDTO.getVariable()).getUnit().getName());
                     // value
-                    csvRow.add(dataGetDTO.getValue().toString());
+                    if(dataGetDTO.getValue() == null){
+                        csvRow.add(null);
+                    }else{
+                        csvRow.add(dataGetDTO.getValue().toString());
+                    }
+                   
                     // provenance
                     if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
                         csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());

@@ -7,6 +7,8 @@ package org.opensilex.core.device.dal;
 
 import com.mongodb.client.MongoCollection;
 import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import java.net.URI;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
@@ -107,6 +109,7 @@ public class DeviceDAO {
         
         if(devModel.getAttributes() != null && !devModel.getAttributes().isEmpty()){
             MongoCollection collection = getAttributesCollection();
+            collection.createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
             sparql.startTransaction();
             nosql.startTransaction();
             try {

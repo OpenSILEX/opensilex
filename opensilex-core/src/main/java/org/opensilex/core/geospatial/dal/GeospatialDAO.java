@@ -114,9 +114,10 @@ public class GeospatialDAO {
     }
 
     public static String geometryToWkt(Geometry geometry) throws JsonProcessingException, ParseException {
-        GeoJsonObject geoJSON = geometryToGeoJson(geometry);
+        String geoJSON = geometry.toJson();
+        GeoJsonObject geoJsonGeometry = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, GeoJsonObject.class);
         final GeoJsonReader reader = new GeoJsonReader();
-        String geoJSONString = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geoJSON);
+        String geoJSONString = ObjectMapperContextResolver.getObjectMapper().writeValueAsString(geoJsonGeometry);
         org.locationtech.jts.geom.Geometry geom = reader.read(geoJSONString);
         WKTWriter writer = new WKTWriter();
         return writer.write(geom);

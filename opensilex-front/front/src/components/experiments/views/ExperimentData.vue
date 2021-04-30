@@ -248,18 +248,32 @@ export default class ExperimentData extends Vue {
   }
 
   afterCreateData(results) {
-    results.then((res) => {
+    if(results instanceof Promise){
+      results.then((res) => {
+        this.resultModal.setNbLinesImported(
+          res.validation.dataErrors.nb_lines_imported
+        );
+        this.resultModal.setProvenance(res.form.provenance);
+        this.resultModal.show();
+        this.clear();
+        this.filter.provenance = res.form.provenance.uri;
+        this.refreshVariables();
+        this.provSelector.refresh();
+        this.loadProvenance({id:res.form.provenance.uri})
+      });
+    }else{ 
       this.resultModal.setNbLinesImported(
-        res.validation.dataErrors.nb_lines_imported
+        results.validation.dataErrors.nb_lines_imported
       );
-      this.resultModal.setProvenance(res.form.provenance);
+      this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.clear();
-      this.filter.provenance = res.form.provenance.uri;
+      this.filter.provenance = results.form.provenance.uri;
       this.refreshVariables();
       this.provSelector.refresh();
-      this.loadProvenance({id:res.form.provenance.uri})
-    });
+      this.loadProvenance({id:results.form.provenance.uri}) 
+    }
+    
   }
 
   initFormData(form) {

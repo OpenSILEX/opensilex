@@ -32,8 +32,8 @@
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
         ref="soForm"
         :context="{ experimentURI: this.experiment }"
-        @onUpdate="callScientificObjectsUpdate"
         @onCreate="callScientificObjectsUpdate"
+        @onUpdate="callScientificObjectsUpdate"
     />
 
     <p class="alert-info">
@@ -72,7 +72,7 @@
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
           data-projection="EPSG:4326"
-          style="height: 400px"
+          style="height: 500px"
           @created="mapCreated"
           @pointermove="onMapPointerMove"
       >
@@ -97,6 +97,25 @@
           <template slot-scope="scope">
             <div class="panel-content">
               {{ selectPointerMove[0] + " (" + selectPointerMove[1] + ")" }}
+            </div>
+          </template>
+        </vl-overlay>
+
+        <vl-overlay
+            v-if="selectedFeatures.length === 1"
+            id="detailItem"
+            :position="centerMap"
+            positioning="center-center"
+        >
+          <template slot-scope="scope">
+            <div class="panel-content">
+              <opensilex-DisplayInformationAboutItem
+                  :details-s-o="detailsSO"
+                  :experiment="experiment"
+                  :item="selectedFeatures[0]"
+                  :showName="true"
+                  :withBasicProperties="true"
+              />
             </div>
           </template>
         </vl-overlay>
@@ -154,6 +173,7 @@
             id="select"
             ref="selectInteraction"
             :features.sync="selectedFeatures"
+            @update:features=" selectedFeatures.length === 1 ? showDetails(selectedFeatures[0], true) : ''"
         />
       </vl-map>
     </div>
@@ -185,6 +205,7 @@
             "
               :uri="data.item.properties.uri"
               :value="data.item.properties.name"
+              target="_blank"
           ></opensilex-UriLink>
         </template>
 
@@ -193,32 +214,11 @@
         </template>
 
         <template v-slot:row-details="{ data }">
-          <div v-if="data.item.properties.nature === 'Area'">
-            <strong class="capitalize-first-letter">
-              {{ $t("MapView.author") }}
-            </strong>
-            <br/>
-            {{ data.item.properties.author }}
-            <br/>
-            <strong class="capitalize-first-letter">
-              {{ $t("MapView.description") }}
-            </strong>
-            <br/>
-            {{ data.item.properties.description }}
-            <br/>
-            <opensilex-GeometryCopy
-                v-if="data.item.geometry"
-                :value="data.item.geometry"
-            ></opensilex-GeometryCopy>
-          </div>
-          <div v-if="data.item.properties.nature === 'ScientificObjects' & detailsSO">
-            <opensilex-ScientificObjectDetailProperties
-                v-if="data.item.properties.OS"
-                :experiment="experiment"
-                :selected="data.item.properties.OS"
-                :withBasicProperties="false"
-            ></opensilex-ScientificObjectDetailProperties>
-          </div>
+          <opensilex-DisplayInformationAboutItem
+              :details-s-o="detailsSO"
+              :experiment="experiment"
+              :item="data.item"
+          />
         </template>
 
         <template v-slot:cell(actions)="{ data }">
@@ -291,6 +291,7 @@ export default class MapView extends Vue {
   temporaryArea: any[] = [];
   selectPointerMove: any[] = [];
   overlayCoordinate: any[] = [];
+  centerMap: any[] = [];
   fieldsSelected = [
     {
       key: "name",
@@ -331,16 +332,22 @@ export default class MapView extends Vue {
     return this.$store.state.credentials;
   }
 
-  showDetails(data) {
-    if (!data.detailsShowing) {
-      let uriResult = data.item.properties.uri;
-      if (data.item.properties.nature === "Area") {
-        this.areaDetails(uriResult);
-      } else {
+  // Used to display details on the map and in the table
+  showDetails(data, isMap = false) {
+    if (isMap) {
+      let uriResult = data.properties.uri;
+      if (data.properties.nature === "ScientificObjects") {
         this.scientificObjectsDetails(uriResult);
       }
+    } else {
+      if (!data.detailsShowing) {
+        let uriResult = data.item.properties.uri;
+        if (data.item.properties.nature === "ScientificObjects") {
+          this.scientificObjectsDetails(uriResult);
+        }
+      }
+      data.toggleDetails = -data.toggleDetails();
     }
-    data.toggleDetails = -data.toggleDetails();
   }
 
   showAreaDetails(areaUriResult: any) {
@@ -590,8 +597,6 @@ export default class MapView extends Vue {
                 uri: res.uri,
                 name: res.name,
                 type: res.rdf_type,
-                description: res.description,
-                author: res.author,
                 nature: "Area",
               };
               this.featuresArea.push(res.geometry);
@@ -616,8 +621,6 @@ export default class MapView extends Vue {
                 uri: res.uri,
                 name: res.name,
                 type: res.rdf_type,
-                description: res.description,
-                author: res.author,
                 nature: "Area",
               };
               this.featuresArea.push(res.geometry);
@@ -684,23 +687,6 @@ export default class MapView extends Vue {
     }
   }
 
-  private areaDetails(areaUri) {
-    console.debug("areaDetails", areaUri);
-    this.$opensilex
-        .getService(this.areaService)
-        .getByURI(areaUri)
-        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-          let result = http.response.result;
-          this.selectedFeatures.forEach((item) => {
-            if (item.properties.uri === result.uri) {
-              item.properties.description = result.description;
-              item.properties.author = result.author;
-            }
-          });
-        })
-        .catch(this.$opensilex.errorHandler);
-  }
-
   private removeFromFeaturesArea(uri, features) {
     features.forEach((item) => {
       const {uri: uriItem} = item.properties;
@@ -745,6 +731,11 @@ export default class MapView extends Vue {
       (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
       coordinateExtent[3] +
       (coordinateExtent[1] - coordinateExtent[3]) * 0.025747,
+    ];
+
+    this.centerMap = [
+      (coordinateExtent[0] + coordinateExtent[2]) / 2,
+      (coordinateExtent[1] + coordinateExtent[3]) / 2,
     ];
 
     if (

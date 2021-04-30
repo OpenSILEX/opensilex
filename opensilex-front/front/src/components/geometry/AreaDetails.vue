@@ -1,114 +1,142 @@
 <template>
-  <div v-if="area.uri" class="container-fluid">
-    <opensilex-PageHeader
-        :title="area.name"
-        description="component.area.title"
-        icon="fa#sun"
-    ></opensilex-PageHeader>
+  <div v-if="withBasicProperties">
+    <div v-if="area.uri" class="container-fluid">
+      <opensilex-PageHeader
+          :title="area.name"
+          description="component.area.title"
+          icon="fa#sun"
+      ></opensilex-PageHeader>
 
-    <opensilex-PageActions :returnButton="true" :tabs="true">
-      <b-nav-item
-          :active="isDetailsTab()"
-          :to="{ path: '/area/details/' + encodeURIComponent(uri) }"
-      >{{ $t("component.common.details-label") }}
-      </b-nav-item>
+      <opensilex-PageActions :returnButton="true" :tabs="true">
+        <b-nav-item
+            :active="isDetailsTab()"
+            :to="{ path: '/area/details/' + encodeURIComponent(uri) }"
+        >{{ $t("component.common.details-label") }}
+        </b-nav-item>
 
-      <b-nav-item
-          :active="isDocumentTab()"
-          :to="{ path: '/area/documents/' + encodeURIComponent(uri) }"
-      >{{ $t("component.project.documents") }}
-      </b-nav-item>
+        <b-nav-item
+            :active="isDocumentTab()"
+            :to="{ path: '/area/documents/' + encodeURIComponent(uri) }"
+        >{{ $t("component.project.documents") }}
+        </b-nav-item>
 
-      <b-nav-item
-          :active="isAnnotationTab()"
-          :to="{ path: '/area/annotations/' + encodeURIComponent(uri) }"
-      >{{ $t("Annotation.list-title") }}
-      </b-nav-item>
-    </opensilex-PageActions>
+        <b-nav-item
+            :active="isAnnotationTab()"
+            :to="{ path: '/area/annotations/' + encodeURIComponent(uri) }"
+        >{{ $t("Annotation.list-title") }}
+        </b-nav-item>
+      </opensilex-PageActions>
 
-    <opensilex-PageContent>
-      <b-row v-if="isDetailsTab()">
-        <b-col sm="5">
-          <opensilex-Card label="component.common.description">
-            <template v-slot:rightHeader>
-              <div class="ml-3">
-                <opensilex-EditButton
-                    v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
-                    :small="true"
-                    label="Area.update"
-                    @click="editArea()"
-                ></opensilex-EditButton>
+      <opensilex-PageContent>
+        <b-row v-if="isDetailsTab()">
+          <b-col sm="5">
+            <opensilex-Card label="component.common.description">
+              <template v-slot:rightHeader>
+                <div class="ml-3">
+                  <opensilex-EditButton
+                      v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+                      :small="true"
+                      label="Area.update"
+                      @click="editArea()"
+                  ></opensilex-EditButton>
 
-                <opensilex-DeleteButton
-                    v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                    label="component.area.delete"
-                    @click="deleteArea()"
-                ></opensilex-DeleteButton>
-              </div>
-            </template>
-            <template v-slot:body>
-              <opensilex-StringView
-                  :value="area.uri"
-                  label="component.area.details.uri"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  :value="area.name"
-                  label="component.area.details.name"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  :value="authorName"
-                  label="component.area.details.author"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  :value="nameType()"
-                  label="component.area.details.rdfType"
-              ></opensilex-StringView>
-              <opensilex-StringView
-                  :value="area.description"
-                  label="component.area.details.description"
-              ></opensilex-StringView>
-              <opensilex-GeometryCopy
-                  :value="area.geometry"
-              ></opensilex-GeometryCopy>
-            </template>
-          </opensilex-Card>
-        </b-col>
-      </b-row>
+                  <opensilex-DeleteButton
+                      v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
+                      label="component.area.delete"
+                      @click="deleteArea()"
+                  ></opensilex-DeleteButton>
+                </div>
+              </template>
+              <template v-slot:body>
+                <opensilex-StringView
+                    :value="area.uri"
+                    label="component.area.details.uri"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    :value="area.name"
+                    label="component.area.details.name"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    :value="authorName"
+                    label="component.area.details.author"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    :value="nameType()"
+                    label="component.area.details.rdfType"
+                ></opensilex-StringView>
+                <opensilex-StringView
+                    v-if="area.description"
+                    :value="area.description"
+                    label="component.area.details.description"
+                ></opensilex-StringView>
+                <opensilex-GeometryCopy
+                    :value="area.geometry"
+                ></opensilex-GeometryCopy>
+              </template>
+            </opensilex-Card>
+          </b-col>
+        </b-row>
 
-      <opensilex-DocumentTabList
-          v-else-if="isDocumentTab()"
-          ref="documentList"
-          :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
-          :uri="uri"
-      ></opensilex-DocumentTabList>
+        <opensilex-DocumentTabList
+            v-else-if="isDocumentTab()"
+            ref="documentList"
+            :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
+            :uri="uri"
+        ></opensilex-DocumentTabList>
 
-      <opensilex-AnnotationList
-          v-else-if="isAnnotationTab()"
-          ref="annotationList"
-          :deleteCredentialId="credentials.CREDENTIAL_AREA_DELETE_ID"
-          :displayTargetColumn="false"
-          :enableActions="true"
-          :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
-          :target="uri"
-      ></opensilex-AnnotationList>
-    </opensilex-PageContent>
+        <opensilex-AnnotationList
+            v-else-if="isAnnotationTab()"
+            ref="annotationList"
+            :deleteCredentialId="credentials.CREDENTIAL_AREA_DELETE_ID"
+            :displayTargetColumn="false"
+            :enableActions="true"
+            :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
+            :target="uri"
+        ></opensilex-AnnotationList>
+      </opensilex-PageContent>
 
-    <opensilex-ModalForm
-        v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
-        ref="areaForm"
-        :successMessage="successMessage"
-        component="opensilex-AreaForm"
-        createTitle="component.area.add"
-        editTitle="component.area.update"
-        icon="fa#sun"
-        modalSize="lg"
-        @onUpdate="loadArea"
-    ></opensilex-ModalForm>
+      <opensilex-ModalForm
+          v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+          ref="areaForm"
+          :successMessage="successMessage"
+          component="opensilex-AreaForm"
+          createTitle="component.area.add"
+          editTitle="component.area.update"
+          icon="fa#sun"
+          modalSize="lg"
+          @onUpdate="loadArea"
+      ></opensilex-ModalForm>
+    </div>
+  </div>
+  <div v-else>
+    <!-- Name -->
+    <template v-if="showName">
+      {{ area.uri === uri ? "" : loadArea(uri) }}
+      <opensilex-StringView
+          label="component.common.name"
+      ></opensilex-StringView>
+      <opensilex-UriLink
+          :to="{ path: '/area/details/' + encodeURIComponent(area.uri) }"
+          :uri="area.uri"
+          :value="area.name + ' (' + nameType().bold() + ')'"
+          target="_blank"
+      ></opensilex-UriLink>
+    </template>
+    <opensilex-StringView
+        :value="authorName"
+        label="component.area.details.author"
+    ></opensilex-StringView>
+    <opensilex-StringView
+        v-if="area.description"
+        :value="area.description"
+        label="component.area.details.description"
+    ></opensilex-StringView>
+    <opensilex-GeometryCopy :value="area.geometry"></opensilex-GeometryCopy>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
@@ -123,6 +151,17 @@ export default class AreaDetails extends Vue {
   $i18n: any;
   service: any;
 
+  @Prop({
+    default: true,
+  })
+  withBasicProperties;
+
+  @Prop()
+  uri;
+
+  @Prop()
+  showName;
+
   @Ref("areaForm") readonly areaForm!: any;
 
   area: AreaGetDTO = {
@@ -136,7 +175,6 @@ export default class AreaDetails extends Vue {
 
   rdf_type: string;
   authorName: string = "";
-  private uri: string;
   private lang: string;
 
   get user() {
@@ -149,13 +187,14 @@ export default class AreaDetails extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.AreaService");
-    this.uri = decodeURIComponent(this.$route.params.uri);
-    this.loadArea();
+    if (this.withBasicProperties)
+      this.loadArea(decodeURIComponent(this.$route.params.uri));
+    else this.loadArea(this.uri);
   }
 
-  loadArea() {
+  loadArea(uri) {
     this.service
-        .getByURI(this.uri)
+        .getByURI(uri)
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           this.area = http.response.result;
           this.rdf_type = this.area.rdf_type;
@@ -200,13 +239,15 @@ export default class AreaDetails extends Vue {
   }
 
   private rdfTypeLabel() {
-    this.$opensilex
-        .getService("opensilex.OntologyService")
-        .getURILabel(this.rdf_type)
-        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          this.area.rdf_type = http.response.result;
-        })
-        .catch(this.$opensilex.errorHandler);
+    if (this.rdf_type) {
+      this.$opensilex
+          .getService("opensilex.OntologyService")
+          .getURILabel(this.rdf_type)
+          .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+            this.area.rdf_type = http.response.result;
+          })
+          .catch(this.$opensilex.errorHandler);
+    } else this.area.rdf_type = "";
   }
 
   private editArea() {
@@ -244,6 +285,14 @@ export default class AreaDetails extends Vue {
   margin-top: -35px;
   margin-left: -15px;
   margin-right: 15px;
+}
+
+::v-deep .capitalize-first-letter {
+  display: block;
+}
+
+::v-deep a {
+  color: #007bff;
 }
 </style>
 <i18n>

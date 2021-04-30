@@ -2,9 +2,10 @@
   <span class="static-field-line">
     <opensilex-UriLink
       v-if="label"
+      :target="target"
+      :to="to"
       :uri="value"
       :value="label"
-      :to="to"
     ></opensilex-UriLink>
   </span>
 </template>
@@ -13,9 +14,6 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
-  PropSync,
   Watch,
 } from "vue-property-decorator";
 import Vue from "vue";
@@ -31,6 +29,11 @@ export default class FactorLevelPropertyView extends Vue {
     default: null,
   })
   experiment;
+
+  @Prop({
+    default: "_self"
+  })
+  target: string;
 
   label = "";
   factorLevel = null;

@@ -5,6 +5,7 @@
       :uri="value"
       :value="label"
       :to="{path: '/germplasm/details/'+ encodeURIComponent(value)}"
+      :target="target"
     ></opensilex-UriLink>
   </span>
 </template>
@@ -13,9 +14,6 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
-  PropSync,
   Watch
 } from "vue-property-decorator";
 import Vue from "vue";
@@ -26,6 +24,11 @@ export default class GermplasmPropertyView extends Vue {
 
   @Prop()
   value;
+
+  @Prop({
+    default: "_self"
+  })
+  target: string;
 
   label = "";
 

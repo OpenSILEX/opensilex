@@ -2,6 +2,7 @@
   <span class="static-field-line">
     <opensilex-UriLink
       v-if="label"
+      :target="target"
       :to="{
         path: '/infrastructure/facility/details/' + encodeURIComponent(value),
       }"
@@ -15,9 +16,6 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
-  PropSync,
   Watch,
 } from "vue-property-decorator";
 import Vue from "vue";
@@ -28,6 +26,11 @@ export default class InfrastructureFacilityPropertyView extends Vue {
 
   @Prop()
   value;
+
+  @Prop({
+    default: "_self"
+  })
+  target: string;
 
   label = "";
   infrastructure = null;

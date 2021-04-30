@@ -408,6 +408,8 @@ import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.v
 components["opensilex-ScientificObjectDetail"] = ScientificObjectDetail;
 import ScientificObjectDetailProperties from './scientificObjects/ScientificObjectDetailProperties.vue';
 components["opensilex-ScientificObjectDetailProperties"] = ScientificObjectDetailProperties;
+import ScientificObjectDetailMap from './scientificObjects/ScientificObjectDetailMap.vue';
+components["opensilex-ScientificObjectDetailMap"] = ScientificObjectDetailMap;
 import ScientificObjectTypes from './scientificObjects/ScientificObjectTypes.vue';
 components["opensilex-ScientificObjectTypes"] = ScientificObjectTypes;
 import ScientificObjectTypeSelector from './scientificObjects/ScientificObjectTypeSelector.vue';
@@ -566,8 +568,10 @@ import AreaForm from "./geometry/AreaForm.vue";
 components["opensilex-AreaForm"] = AreaForm;
 import AreaDetails from "./geometry/AreaDetails.vue";
 components["opensilex-AreaDetails"] = AreaDetails;
+import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.vue";
+components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 
-//VIZUALISATION
+//VISUALIZATION
 import VisuPage from './visualization/VisuPage.vue';
 components["opensilex-VisuPage"] = VisuPage;
 import VisuView from './visualization/VisuView.vue';

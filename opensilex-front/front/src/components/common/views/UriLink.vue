@@ -2,13 +2,14 @@
   <span>
     <router-link
       v-if="to"
-      class="uri"
+      :target="target"
       :title="uri"
       :to="to"
+      class="uri"
       @focus.native="storePrevious"
       @click.native="storeReturnPage"
     >
-      <span>{{value || uri}}</span>
+      <span v-html="value">{{ value || uri }}</span>
       &nbsp;
       <button
         v-if="allowCopy"
@@ -85,6 +86,11 @@ export default class UriLink extends Vue {
   })
   allowCopy: boolean;
 
+  @Prop({
+    default: "_self"
+  })
+  target: string;
+
   get computeURL() {
     if (this.to) {
       return null;
@@ -147,10 +153,7 @@ export default class UriLink extends Vue {
   border: 1px solid #d8dde5;
   border-radius: 5px;
   color: #212121;
-  display: none;
-  padding: 3px 3px 0 3px;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding: 3px 5px 0;
   position: absolute;
   right: 0;
   top: -3px;

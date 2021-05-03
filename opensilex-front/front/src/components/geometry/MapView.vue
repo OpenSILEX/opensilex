@@ -213,17 +213,17 @@
               title="ScientificObjects.display"
               @update:value="displayScientificObjects"
           ></opensilex-CheckboxForm>
-        </li>
-        <li
-            v-for="layerSO in featuresOS"
-            :key="layerSO.id"
-            class="list-group-item d-flex justify-content-around"
-        >
-          <opensilex-CheckboxForm
-              :title="nameType(layerSO[0].properties.type)"
-              :value.sync="layerSO[0].properties.display"
-              class="p-2 bd-highlight"
-          ></opensilex-CheckboxForm>
+          <div
+              v-for="layerSO in featuresOS"
+              :key="layerSO.id"
+              class="d-flex justify-content-around"
+          >
+            <opensilex-CheckboxForm
+                :title="nameType(layerSO[0].properties.type)"
+                :value.sync="layerSO[0].properties.display"
+                class="p-2 bd-highlight"
+            ></opensilex-CheckboxForm>
+          </div>
         </li>
         <li class="list-group-item">
           <opensilex-CheckboxForm
@@ -1011,6 +1011,9 @@ p {
 
 .b-sidebar-outer {
   z-index: 1045;
+}
+
+::v-deep .b-sidebar {
   width: 240px;
 }
 </style>

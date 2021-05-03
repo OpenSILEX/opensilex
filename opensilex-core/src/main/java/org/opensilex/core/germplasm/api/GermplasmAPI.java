@@ -179,7 +179,7 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.CONFLICT,
                         "Germplasm name already exists",
-                        "Duplicated URI: " + name
+                        "Duplicated name: " + name
                 ).getResponse();
             }
 

@@ -14,7 +14,7 @@
         ></b-form-radio-group>
       </b-form-group>
 
-      <div v-if="selected">
+      <div v-if="selected" ref="successMessage">
         <opensilex-ProvenanceSelector      
           ref="provSelector"
           :provenances.sync="provenance.uri"
@@ -28,10 +28,9 @@
           :showURI="false"
           :required="true"
         ></opensilex-ProvenanceSelector>
+        <b-alert variant="success" :show="createOK">The provenance has been successfully created</b-alert>
       </div>
-      </ValidationObserver>
-
-
+      </ValidationObserver>      
         <b-card bg-variant="light" v-if="selected">
           <b-form>
             <b-form-group
@@ -63,13 +62,13 @@
             ></opensilex-TextAreaForm>
 
             <!--activity -->
-
             <b-card title="Activity" bg-variant="light">
               <!-- type -->
               <opensilex-TypeForm
+                v-bind:style="styleObject"
                 :type.sync="provenance.activity.rdf_type"
                 :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
-                :required="true"
+                :required="false"
                 helpMessage="DataForm.type-help"
                 :disabled="provenance.uri != undefined && provenance.uri != null"
               ></opensilex-TypeForm>
@@ -200,6 +199,7 @@ export default class DataForm1 extends Vue {
 
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("validatorRef") readonly validatorRef!: any;
+  @Ref("successMessage") readonly successMessage!: any;
   
   selected: any = null;
 
@@ -209,18 +209,25 @@ export default class DataForm1 extends Vue {
           { item: 'computed', name: 'Computed data' },
         ]
 
+  createOK: boolean = false;
+
+  styleObject: {
+    color: 'transparent',
+    background: 'red'
+  }
+
   @PropSync("form")
   dataForm;
 
   provenance = {
-    uri: undefined,
-    name: undefined,
-    description: undefined,
+    uri: null,
+    name: null,
+    description: null,
     activity: {
-      rdf_type: undefined,
-      start_date: undefined,
-      end_date: undefined,
-      uri: undefined,
+      rdf_type: null,
+      start_date: null,
+      end_date: null,
+      uri: null,
     },
     sensors: [],
     vectors: [],
@@ -231,7 +238,7 @@ export default class DataForm1 extends Vue {
   filterLabel = null;
 
   getProvenance(uri) {
-    if (uri != undefined && uri != null) {
+    if (uri != null) {
       return this.$opensilex
         .getService("opensilex.DataService")
         .getProvenance(uri)
@@ -242,14 +249,18 @@ export default class DataForm1 extends Vue {
   }
 
   loadProvenance(selectedValue) {
+    this.createOK = false;
     if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id).then((prov) => {
+        this.resetProv();
         this.provenance.name = prov.name;
         this.provenance.uri = prov.uri;
         this.dataForm.provenanceURI = prov.uri;
 
         if (prov.description != null) {
           this.provenance.description = prov.description;
+        } else {
+          this.provenance.description = ""
         }
 
         if (prov.prov_activity != null && prov.prov_activity.length>0) {
@@ -334,6 +345,10 @@ export default class DataForm1 extends Vue {
         console.debug("provenance created", uri);
         this.provenance.uri = uri;
         this.provSelector.select({ id: uri, label: form.name });
+        this.createOK = true;
+        this.$nextTick(() => {
+          this.successMessage.scrollIntoView({behavior: 'smooth'});
+        }) 
       });
   }
 
@@ -342,16 +357,21 @@ export default class DataForm1 extends Vue {
   }
 
   reset() {
+    this.createOK = false;
     this.filterLabel = null;
+    this.resetProv();
+  }
+
+  resetProv() {
     this.provenance = {
-      uri: undefined,
-      name: undefined,
-      description: undefined,
+      uri: null,
+      name: null,
+      description: null,
       activity: {
-        rdf_type: undefined,
-        start_date: undefined,
-        end_date: undefined,
-        uri: undefined,
+        rdf_type: null,
+        start_date: null,
+        end_date: null,
+        uri: null,
       },
       sensors: [],
       vectors: [],
@@ -363,8 +383,18 @@ export default class DataForm1 extends Vue {
 }
 </script>
 <style scoped lang="scss">
-::v-deep .jsoneditor-menu {
-  background-color: #a7a7a7;
-  border-bottom: 1px solid #a7a7a7;
+
+::v-deep .form-control:disabled::placeholder {
+    color: transparent;
 }
+
+::v-deep .vue-treeselect__placeholder {
+    color: transparent;
+
+}
+
+::v-deep .vue-treeselect__disabled {
+  background-color: grey;
+}
+
 </style>

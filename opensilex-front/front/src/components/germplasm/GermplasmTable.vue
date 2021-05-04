@@ -623,28 +623,28 @@ export default class GermplasmTable extends Vue {
 
       for (let idx = 0; idx < data.length; idx++) {
         data[idx]["rowNumber"] = idx + 1;
-        if (data[idx].name === "") {
-          alert(this.$t('GermplasmTable.missingName') + " " + data[idx]["rowNumber"]);
-          insertionOK = false
-          break
-        } else {
-          if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
-            uniqueNames.push(data[idx].name);        
-          } else {
-            insertionOK = false
-            alert(this.$t('GermplasmTable.alertDuplicateName') + " " + data[idx]["rowNumber"] + ", name= " + data[idx].name);
-            break
-          }
-        }
-        if(data[idx].uri !== "") {
-            if (uniqueURIs.indexOf(data[idx].uri) === -1){
-              uniqueURIs.push(data[idx].uri);        
-            } else {
-              insertionOK = false
-              alert(this.$t('GermplasmTable.alertDuplicateURI') + " " + data[idx]["rowNumber"] + ", uri= " + data[idx].uri);
-              break
-            }
-        }
+      //   if (data[idx].name === "") {
+      //     alert(this.$t('GermplasmTable.missingName') + " " + data[idx]["rowNumber"]);
+      //     insertionOK = false
+      //     break
+      //   } else {
+      //     if(data[idx].name !== "" && uniqueNames.indexOf(data[idx].name) === -1){
+      //       uniqueNames.push(data[idx].name);        
+      //     } else {
+      //       insertionOK = false
+      //       alert(this.$t('GermplasmTable.alertDuplicateName') + " " + data[idx]["rowNumber"] + ", name= " + data[idx].name);
+      //       break
+      //     }
+      //   }
+      //   if(data[idx].uri !== "") {
+      //       if (uniqueURIs.indexOf(data[idx].uri) === -1){
+      //         uniqueURIs.push(data[idx].uri);        
+      //       } else {
+      //         insertionOK = false
+      //         alert(this.$t('GermplasmTable.alertDuplicateURI') + " " + data[idx]["rowNumber"] + ", uri= " + data[idx].uri);
+      //         break
+      //       }
+      //   }
          
       }
     

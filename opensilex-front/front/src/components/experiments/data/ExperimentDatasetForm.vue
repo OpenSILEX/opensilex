@@ -5,7 +5,7 @@
       ref="provenanceForm"
       modalSize="lg"
       :initForm="initForm"
-      component="opensilex-ProvenanceForm"
+      component="opensilex-ExpProvenanceForm"
       createTitle="DatasetForm.provenance.label"
       editTitle="component.factor.update"
       icon="fa#sun"

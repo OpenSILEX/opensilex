@@ -511,8 +511,8 @@ import ProvenanceDetails from './data/ProvenanceDetails.vue';
 components["opensilex-ProvenanceDetails"] = ProvenanceDetails;
 import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
-import ProvenanceForm from './data/form/ProvenanceForm.vue';
-components["opensilex-ProvenanceForm"] = ProvenanceForm;
+import ExpProvenanceForm from './data/form/ExpProvenanceForm.vue';
+components["opensilex-ExpProvenanceForm"] = ExpProvenanceForm;
 import DataValidationReport from './data/form/DataValidationReport.vue';
 components["opensilex-DataValidationReport"] = DataValidationReport;
 import DataHelpTableView from './data/form/DataHelpTableView.vue';
@@ -527,6 +527,8 @@ import DataForm1 from './data/form/DataForm1.vue';
 components["opensilex-DataForm1"] = DataForm1;
 import DataForm2 from './data/form/DataForm2.vue';
 components["opensilex-DataForm2"] = DataForm2;
+import ProvenanceForm from './data/form/ProvenanceForm.vue';
+components["opensilex-ProvenanceForm"] = ProvenanceForm;
 
 // PHIS
 //IMAGES

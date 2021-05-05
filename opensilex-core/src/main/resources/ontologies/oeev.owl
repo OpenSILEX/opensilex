@@ -599,8 +599,10 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Thinning">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#ScientificObjectManagement"/>
-        <rdfs:label xml:lang="fr">Eclaircissement</rdfs:label>
+        <rdfs:label xml:lang="fr">Eclaircissage</rdfs:label>
         <rdfs:label xml:lang="en">Thinning</rdfs:label>
+        <rdfs:comment xml:lang="en">Although fruits have evolved fruit load self-regulatory mechanisms, physiological fruit drop is often insufficient to guarantee fruits of good marketable size and maximum commercial yield at harvest. This mechanism is also insufficient to avoid alternate bearing. For this reason, fruit thinning, i.e. the voluntary removal of a certain number of fruits per tree, is an unavoidable cultural practice that must be performed regularly in some species (Costa, 2018).</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Bien que les fruits aient développé des mécanismes d'autorégulation de leur charge, la chute physiologique des fruits est souvent insuffisante pour garantir des fruits de bon calibre commercial et un rendement commercial maximal à la récolte. Ce mécanisme est également insuffisant pour éviter les portages alternés. C'est pourquoi l'éclaircissage des fruits, c'est-à-dire la suppression volontaire d'un certain nombre de fruits par arbre, est une pratique culturale incontournable qui doit être réalisée régulièrement chez certaines espèces (Costa, 2018).</rdfs:comment>
     </owl:Class>
     
 

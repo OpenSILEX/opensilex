@@ -7,6 +7,7 @@
       :multiple="multiple"
       :required="required"
       :optionsLoadingMethod="loadFactorLevels"
+      :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
     ></opensilex-SelectForm>
     <opensilex-SelectForm
@@ -17,6 +18,7 @@
       :required="required"
       :searchMethod="searchFactorLevels"
       :conversionMethod="convertDetail"
+      :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
     ></opensilex-SelectForm>
   </div>
@@ -70,7 +72,7 @@ export default class FactorLevelSelector extends Vue {
               let factorNode = {
                 id: factor.uri,
                 label: factor.name,
-                isDisabled: true,
+                isDisabled: this.multiple,
                 children: [],
               };
               for (let j in factor.levels) {
@@ -110,7 +112,7 @@ export default class FactorLevelSelector extends Vue {
     let factorNode = {
       id: factor.uri,
       label: factor.name,
-      isDisabled: true,
+      isDisabled: this.multiple,
       children: [],
     };
     for (let j in factor.levels) {

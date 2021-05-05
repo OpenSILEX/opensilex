@@ -77,10 +77,6 @@ public class FactorLevelAPI {
     @Path("{uri}")
     @ApiOperation("Get a factor level")
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -119,10 +115,6 @@ public class FactorLevelAPI {
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiCredential(
-            credentialId = CREDENTIAL_FACTOR_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_FACTOR_DELETE_LABEL_KEY
-    )
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Factor level retrieved", response = FactorLevelGetDetailDTO.class, responseContainer = "List"),
         @ApiResponse(code = 404, message = "Factor level not found", response = ErrorResponse.class)
@@ -132,7 +124,7 @@ public class FactorLevelAPI {
     ) throws Exception {
         FactorLevelDAO dao = new FactorLevelDAO(sparql);
         FactorLevelModel model = dao.get(factorLevelUri);
-
+        
         if (model != null) {
             return new SingleObjectResponse<>(
                     FactorLevelGetDetailDTO.fromModel(model)

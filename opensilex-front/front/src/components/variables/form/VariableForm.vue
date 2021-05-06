@@ -796,14 +796,14 @@ fr:
         entity-placeholder: Rechercher et sélectionner une entité
         characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
         characteristic-placeholder: Rechercher et sélectionner une caractéristique
-        method-help: Définit comment la mesure/l'observation a été effectuée.
+        method-help: Définir comment la mesure/l'observation a été effectuée.
         method-placeholder: Rechercher et sélectionner une méthode
         unit-placeholder: Rechercher et sélectionner une unité
         time-interval: Intervalle de temps
-        time-interval-placeholder: Sélectionnez un intervalle
-        time-interval-help: Durée entre deux enregistrement de données
+        time-interval-placeholder: Sélectionner un intervalle
+        time-interval-help: Durée entre deux enregistrements de données
         sampling-interval: Échantillonnage
-        sampling-interval-placeholder: Sélectionnez un intervalle
+        sampling-interval-placeholder: Sélectionner un intervalle
         sampling-interval-help: Granularité de l'échantillonage
         synonym : Synonyme
         trait-name: Nom du trait
@@ -812,7 +812,7 @@ fr:
         trait-uri: URI du trait
         trait-uri-help: Identifiant unique d'un trait (Peut être utilisé pour lier cette variable avec l'URI d'un trait existant)
         trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
-        class-placeholder: Sélectionnez un type
+        class-placeholder: Sélectionner un type
         no-entity: Entité inconnue. L'ajouter avec le bouton +.
         no-characteristic: Caractéristique inconnue. L'ajouter avec le bouton +.
         no-method: Méthode inconnue. L'ajouter avec le bouton +.
@@ -822,7 +822,7 @@ fr:
         trait-button: Trait existant déjà dans une ontologie
         trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
         datatype-help: Format des données enregistrées pour cette variable
-        datatype-placeholder: Sélectionnez un type de donnée
+        datatype-placeholder: Sélectionner un type de donnée
         dimension-values:
             unique: Enregistrement unique
             milliseconde : Milliseconde
@@ -842,9 +842,9 @@ fr:
         tutorial:
             global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
             entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."
-            entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifiez toutefois des orthographes alternatives - seed, crop, etc."
+            entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives - seed, crop, etc."
             characteristic: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
-            characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifiez encore une fois que la caractéristique n'est pas présente sous un autre nom."
+            characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifier encore une fois que la caractéristique n'est pas présente sous un autre nom."
             method: " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse."
             method-check: "Si la méthode n'est pas présente, vous pouvez l'ajouter. Ne pas oublier de bien renseigner la description, c'est particulièrement important pour la méthode."
             unit: "Sélectionner l'unité dans laquelle est exprimée la variable. Que faire si l'unité proposée ne correspond pas à ma mesure ? On me propose kg/ha, mais j'ai des mesures en t/ha ?

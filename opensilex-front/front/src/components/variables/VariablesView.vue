@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
         <opensilex-PageHeader
-            icon="ik#ik-globe"
+            icon="fa#vials"
             title="VariableView.title"
             description="VariableView.description"
         ></opensilex-PageHeader>
@@ -96,7 +96,7 @@
                     <opensilex-UnitDetails v-show="! loadVariableList() && ! useGenericDetailsPage()" :selected="selected"></opensilex-UnitDetails>
 
                     <opensilex-Card
-                        v-show="! loadVariableList()" label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
+                        v-show="! loadVariableList()" label="component.skos.ontologies-references-label" icon="fa#globe-americas">
                         <template v-slot:body>
                             <opensilex-ExternalReferencesDetails :skosReferences="selected"></opensilex-ExternalReferencesDetails>
                         </template>

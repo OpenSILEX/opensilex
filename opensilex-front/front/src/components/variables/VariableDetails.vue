@@ -77,7 +77,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <opensilex-Card label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
+                <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas">
                     <template v-slot:body>
                         <opensilex-ExternalReferencesDetails
                             :skosReferences="variable">

@@ -15,6 +15,7 @@
           class="inline-block h-full"
           is24hr
           mode="datetime"
+          @input="input"
         >
           <template v-slot="{ inputValue, inputEvents }">
             <input
@@ -33,7 +34,7 @@
           <b-btn
             class="clear-btn"
             variant="outline-secondary"
-            @click="date = undefined"
+            @click="clear"
           >
             <opensilex-Icon icon="fa#times" />
           </b-btn>
@@ -85,6 +86,15 @@ export default class DateTimeForm extends Vue {
     mask: "iso",
     timeAdjust: "now",
   };
+
+  input(value) {
+    this.$emit("input", value);
+  }
+  
+  clear() {
+    this.date = undefined;
+    this.$emit("clear");
+  }
 
   get user() {
     return this.$store.state.user;

@@ -56,16 +56,19 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
     private final URI baseGraphURI;
-
+    
+    private final URI generationPrefixURI;
+    
     private Constructor<T> constructor;
     protected SPARQLClassQueryBuilder classQueryBuilder;
     protected SPARQLClassAnalyzer classAnalizer;
 
-    protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, SPARQLClassObjectMapperIndex mapperIndex) {
+    protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, URI generationPrefixURI, SPARQLClassObjectMapperIndex mapperIndex) {
         LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
         this.objectClass = objectClass;
         this.mapperIndex = mapperIndex;
         this.baseGraphURI = baseGraphURI;
+        this.generationPrefixURI = generationPrefixURI;
     }
 
     protected void init() throws SPARQLInvalidClassDefinitionException {
@@ -286,6 +289,23 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
+    public URI getDefaultGenerationURI() {
+        if (classAnalizer.getGraphSuffix() != null) {
+            try {
+                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
+                if (graphSuffixUri.isAbsolute()) {
+                    return graphSuffixUri;
+                }
+                String classGraphURI = generationPrefixURI.resolve(classAnalizer.getGraphSuffix()).toString();
+                return new URI(classGraphURI);
+            } catch (Exception ex) {
+                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
+            }
+        }
+
+        return null;
+    }
+
     public AskBuilder getAskBuilder(String lang) {
         return getAskBuilder(getDefaultGraph(), lang);
     }
@@ -428,8 +448,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     /**
      *
      * @param fieldName the var name to put in the {@link Expr}
-     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the {@link #classAnalizer}, else return an
-     * {@link Expr} with the given fieldName
+     * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the
+     * {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
      * @see ExprVar
      */
     public Expr getFieldOrderExpr(String fieldName) {

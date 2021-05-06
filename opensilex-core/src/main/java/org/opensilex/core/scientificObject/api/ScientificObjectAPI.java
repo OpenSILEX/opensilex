@@ -435,8 +435,10 @@ public class ScientificObjectAPI {
 
         URI globalScientificObjectGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         boolean globalCopy = false;
+        URI generationPrefixURI = contextURI;
         if (contextURI == null) {
             contextURI = globalScientificObjectGraph;
+            generationPrefixURI = sparql.getDefaultGenerationURI(ScientificObjectModel.class);
         } else {
             globalCopy = true;
         }
@@ -450,7 +452,7 @@ public class ScientificObjectAPI {
         nosql.startTransaction();
         sparql.startTransaction();
         try {
-            URI soURI = dao.create(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = dao.create(contextURI, generationPrefixURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
@@ -893,13 +895,15 @@ public class ScientificObjectAPI {
     private CSVValidationModel getCSVValidationModel(URI contextURI, InputStream file, UserModel currentUser) throws Exception {
         HashMap<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
 
+        URI uriGenerationPrefix = contextURI;
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+            uriGenerationPrefix = sparql.getDefaultGenerationURI(ScientificObjectModel.class);
         } else if (!sparql.uriExists(ExperimentModel.class, contextURI)) {
             throw new NotFoundURIException("Experiment URI not found:", contextURI);
         }
 
-        ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(contextURI);
+        ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(uriGenerationPrefix);
 
         Map<String, List<CSVCell>> parentNamesToReplace = new HashMap<>();
         customValidators.put(Oeso.isPartOf.toString(), (cell, csvErrors) -> {

@@ -39,9 +39,13 @@ public class SPARQLClassObjectMapperIndex {
     private Map<Class<? extends SPARQLResourceModel>, Map<Class<? extends SPARQLResourceModel>, Field>> reverseRelationIndex = new HashMap<>();
 
     private final URI baseGraphURI;
+    
+    private final URI generationPrefixURI;
+    
 
-    public SPARQLClassObjectMapperIndex(URI baseGraphURI, Set<Class<? extends SPARQLResourceModel>> initClasses) throws SPARQLInvalidClassDefinitionException {
+    public SPARQLClassObjectMapperIndex(URI baseGraphURI, URI generationPrefixURI, Set<Class<? extends SPARQLResourceModel>> initClasses) throws SPARQLInvalidClassDefinitionException {
         this.baseGraphURI = baseGraphURI;
+        this.generationPrefixURI = generationPrefixURI;
         this.classes = initClasses;
         addClasses(initClasses);
     }
@@ -77,7 +81,7 @@ public class SPARQLClassObjectMapperIndex {
 
         for (Class<?> sparqlModelClass : newClasses) {
             Class<? extends SPARQLResourceModel> sparqlResourceModelClass = (Class<? extends SPARQLResourceModel>) sparqlModelClass;
-            SPARQLClassObjectMapper<?> mapper = new SPARQLClassObjectMapper<>(sparqlResourceModelClass, baseGraphURI, this);
+            SPARQLClassObjectMapper<?> mapper = new SPARQLClassObjectMapper<>(sparqlResourceModelClass, baseGraphURI, generationPrefixURI, this);
             classesMapper.put(sparqlModelClass, mapper);
         }
 

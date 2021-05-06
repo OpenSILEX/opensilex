@@ -47,7 +47,7 @@ public class EventDAO {
     protected final MongoDBService mongodb;
 
     protected final Node eventGraph;
-
+    protected final URI uriGeneration;
 
     // SPARQL vars
     protected static final Var uriVar;
@@ -97,6 +97,7 @@ public class EventDAO {
         this.mongodb = mongodb;
 
         eventGraph = sparql.getDefaultGraph(EventModel.class);
+        uriGeneration = sparql.getDefaultGenerationURI(EventModel.class);
     }
 
     public EventModel create(EventModel model) throws Exception {

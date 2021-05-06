@@ -52,7 +52,7 @@ public class MongoDBService extends BaseService {
     private ClientSession session = null;
     private MongoDatabase db;
     public final static int SIZE_MAX = 10000;
-    private URI baseURI;
+    private URI generationPrefixURI;
     private static String defaultTimezone;
 
     public MongoDBService(MongoDBConfig config) {
@@ -64,7 +64,7 @@ public class MongoDBService extends BaseService {
     @Override
     public void startup() throws OpenSilexModuleNotFoundException {
         mongoClient = getMongoDBClient();
-        baseURI = getBaseURI();
+        generationPrefixURI = getGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
     }
 
@@ -75,8 +75,8 @@ public class MongoDBService extends BaseService {
         }
     }
 
-    public URI getBaseURI() throws OpenSilexModuleNotFoundException {
-        return getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
+    public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
+        return getOpenSilex().getModuleByClass(SPARQLModule.class).getGenerationPrefixURI();
     }
 
     public static String getDefaultTimeZone() {
@@ -484,7 +484,7 @@ public class MongoDBService extends BaseService {
         if (uri == null) {
 
             int retry = 0;
-            String graphPrefix = baseURI.resolve(prefix).toString();
+            String graphPrefix = generationPrefixURI.resolve(prefix).toString();
             uri = instance.generateURI(graphPrefix, instance, retry);
             while (uriExists(instance.getClass(), collectionName, uri)) {
                 uri = instance.generateURI(graphPrefix, instance, retry++);

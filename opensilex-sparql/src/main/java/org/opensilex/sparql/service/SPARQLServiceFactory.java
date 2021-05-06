@@ -59,6 +59,8 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
     private URI baseURI;
 
+    private URI generationPrefixURI;
+
     protected SPARQLClassObjectMapperIndex mapperIndex;
 
     private SPARQLModule sparqlModule;
@@ -67,6 +69,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
     public void setup() throws Exception {
         sparqlModule = getOpenSilex().getModuleByClass(SPARQLModule.class);
         baseURI = sparqlModule.getBaseURI();
+        generationPrefixURI = sparqlModule.getGenerationPrefixURI();
     }
 
     @Override
@@ -79,7 +82,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
             LOGGER.debug("Register model class to build: " + c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });
-        mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, initClasses);
+        mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, generationPrefixURI, initClasses);
 
         SPARQLConfig sparqlConfig = sparqlModule.getConfig(SPARQLConfig.class);
         if (sparqlConfig.usePrefixes()) {
@@ -87,11 +90,17 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
                 String resourceNamespace = mapper.getResourceGraphNamespace();
                 String resourcePrefix = mapper.getResourceGraphPrefix();
                 if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                    SPARQLService.addPrefix(sparqlModule.getBasePrefix() + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+                    SPARQLService.addPrefix(sparqlModule.getBaseURIAlias().toString() + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
                 }
             });
 
             SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI());
+
+            if (!sparqlConfig.generationBaseURI().isBlank()
+                    && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI().toString())
+                    && !sparqlConfig.baseURIAlias().equals(sparqlConfig.generationBaseURIAlias())) {
+                SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());
+            }
 
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {

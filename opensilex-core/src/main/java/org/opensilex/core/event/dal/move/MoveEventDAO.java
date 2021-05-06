@@ -99,7 +99,7 @@ public class MoveEventDAO extends EventDAO {
                 }
 
             }else{
-                uri = model.generateURI(eventGraph.toString(), model, 0);
+                uri = model.generateURI(uriGeneration.toString(), model, 0);
                 model.setUri(uri);
             }
 

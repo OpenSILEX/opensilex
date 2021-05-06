@@ -402,12 +402,12 @@ public class ScientificObjectDAO {
         }
     }
 
-    public URI create(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public URI create(URI contextURI, URI uriGenerationPrefix, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
 
         SPARQLResourceModel object = initObject(contextURI, soType, name, relations, currentUser);
 
         if (objectURI == null) {
-            ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(contextURI);
+            ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(uriGenerationPrefix);
             int retry = 0;
             objectURI = uriGenerator.generateURI(contextURI.toString(), name, retry);
             while (sparql.uriExists(SPARQLDeserializers.nodeURI(contextURI), objectURI)) {

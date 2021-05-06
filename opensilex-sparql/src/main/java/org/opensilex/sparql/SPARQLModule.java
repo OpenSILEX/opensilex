@@ -39,31 +39,44 @@ public class SPARQLModule extends OpenSilexModule {
 
     private URI baseURI;
 
-    private String basePrefix;
+    private String baseURIAlias;
 
+    private URI generationPrefixURI;
+    
     private SPARQLConfig sparqlConfig;
 
     @Override
     public void setup() throws Exception {
         sparqlConfig = this.getConfig(SPARQLConfig.class);
         if (sparqlConfig != null) {
-            basePrefix = sparqlConfig.baseURIAlias() + "-";
+            baseURIAlias = sparqlConfig.baseURIAlias() + "-";
             baseURI = new URI(sparqlConfig.baseURI());
         } else {
-            basePrefix = "";
+            baseURIAlias = "";
             baseURI = new URI(DEFAULT_BASE_URI);
         }
 
         LOGGER.debug("Set platform URI: " + baseURI.toString());
-        LOGGER.debug("Set platform URI prefix: " + basePrefix);
+        LOGGER.debug("Set platform URI alias: " + baseURIAlias);
+        if (sparqlConfig != null && !sparqlConfig.generationBaseURI().isBlank()) {
+            generationPrefixURI = new URI(sparqlConfig.generationBaseURI());
+            LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI.toString());
+        } else {
+            generationPrefixURI = baseURI;
+        }
+
     }
 
-    public String getBasePrefix() {
-        return basePrefix;
+    public String getBaseURIAlias() {
+        return baseURIAlias;
     }
 
     public URI getBaseURI() {
         return baseURI;
+    }
+
+    public URI getGenerationPrefixURI() {
+        return generationPrefixURI;
     }
 
     public URI getSuffixedURI(String suffix) {

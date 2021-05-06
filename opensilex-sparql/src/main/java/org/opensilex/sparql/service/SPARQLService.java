@@ -329,9 +329,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> T getByURI(Node graph, Class<T> objectClass, URI uri, String lang) throws Exception {
-         return getByURI(graph, objectClass, uri, lang, false);
+        return getByURI(graph, objectClass, uri, lang, false);
     }
-    
+
     public <T extends SPARQLResourceModel> T getByURI(Node graph, Class<T> objectClass, URI uri, String lang, boolean useDefaultGraph) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
@@ -482,7 +482,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         AskBuilder ask = mapper.getAskBuilder(graph, lang);
         Field field = mapper.getFieldFromUniqueProperty(property);
         SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(propertyValue.getClass());
-        ask.addGraph(graph,makeVar(SPARQLResourceModel.URI_FIELD), property.asNode(), makeVar(field.getName()));
+        ask.addGraph(graph, makeVar(SPARQLResourceModel.URI_FIELD), property.asNode(), makeVar(field.getName()));
         ask.setVar(field.getName(), deserializer.getNode(propertyValue));
 
         return executeAskQuery(ask);
@@ -728,7 +728,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        SelectBuilder select = getSelectBuilder(mapper,graph,language,filterHandler,orderByList,offset,limit);
+        SelectBuilder select = getSelectBuilder(mapper, graph, language, filterHandler, orderByList, offset, limit);
 
         List<T> resultList = new ArrayList<>();
         executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
@@ -748,7 +748,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        SelectBuilder select = getSelectBuilder(mapper,graph,language,filterHandler,orderByList,offset,limit);
+        SelectBuilder select = getSelectBuilder(mapper, graph, language, filterHandler, orderByList, offset, limit);
 
         Stream<SPARQLResult> resultStream = executeSelectQueryAsStream(select);
         Stream<T> modelStream = resultStream.map(result -> {
@@ -854,9 +854,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance,null, checkUriExist, false, null);
+        create(graph, instance, null, checkUriExist, false, null);
     }
-
 
     /**
      *
@@ -864,7 +863,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param subInstanceUpdateBuilder
      * @param blankNode
      */
-
     /**
      *
      * @param graph the graph onto instance are created
@@ -892,7 +890,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
-
     /**
      *
      * @param graph the graph onto instance are created
@@ -918,7 +915,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         validate(instance);
 
         for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-            create(getDefaultGraph(subInstance.getClass()),subInstance,subInstanceUpdateBuilder,checkUriExist,blankNode,null);
+            create(getDefaultGraph(subInstance.getClass()), subInstance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
         }
     }
 
@@ -927,7 +924,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph,instances,null,true);
+        create(graph, instances, null, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -944,8 +941,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
 
-        if(reuseSameQuery && maxInstancePerQuery <= 0){
-            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : "+maxInstancePerQuery);
+        if (reuseSameQuery && maxInstancePerQuery <= 0) {
+            throw new IllegalArgumentException("maxInstancePerQuery must be strictly positive : " + maxInstancePerQuery);
         }
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
@@ -978,11 +975,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     }
                 }
 
-                if(reuseSameQuery){
-                    if(insertedInstanceNb > 0){
+                if (reuseSameQuery) {
+                    if (insertedInstanceNb > 0) {
                         executeUpdateQuery(updateBuilder);
                     }
-                }else{
+                } else {
                     executeUpdateQuery(updateBuilder);
                 }
 
@@ -1002,15 +999,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (uri == null) {
 
             int retry = 0;
-            String graphPrefix = getDefaultGraph(instance.getClass()).toString();
+            String graphPrefix = getDefaultGenerationURI(instance.getClass()).toString();
             uri = uriGenerator.generateURI(graphPrefix, instance, retry);
 
-            if(checkUriExist){
+            if (checkUriExist) {
                 while (uriExists(graph, uri)) {
                     uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
                 }
             }
-
 
             mapper.setUri(instance, uri);
         } else if (checkUriExist && uriExists(graph, uri)) {
@@ -1298,10 +1294,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (uri == null) {
             return false;
         }
-        if(objectClass != null){
+        if (objectClass != null) {
             return executeAskQuery(getUriExistsQuery(objectClass, uri));
         }
-        return uriExists((Node) null,uri);
+        return uriExists((Node) null, uri);
     }
 
     public <T extends SPARQLResourceModel> boolean anyUriExists(Class<T> objectClass, Collection<URI> uris) throws Exception {
@@ -1335,7 +1331,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return Collections.emptySet();
         }
 
-        SelectBuilder selectQuery = getUnknownUrisQuery(objectClass,uris,checkExist);
+        SelectBuilder selectQuery = getUnknownUrisQuery(objectClass, uris, checkExist);
 
         return executeSelectQueryAsStream(selectQuery).map(result -> {
             try {
@@ -1406,7 +1402,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         WhereBuilder where = new WhereBuilder()
                 .addWhere(uriVar, makeVar("p"), makeVar("o"));
 
-        if(objectClass != null){
+        if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
             Var typeVar = mapper.getTypeFieldVar();
             Resource typeDef = mapper.getRDFType();
@@ -1437,7 +1433,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         WhereBuilder where = new WhereBuilder()
                 .addWhere(uriVar, makeVar("p"), makeVar("o"));
 
-        if(objectClass != null){
+        if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
             Var typeVar = mapper.getTypeFieldVar();
             Resource typeDef = mapper.getRDFType();
@@ -1445,13 +1441,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     .addWhere(uriVar, RDF.type, typeVar);
         }
 
-        Expr notExistsExpr = checkExist ?
-                SPARQLQueryHelper.getExprFactory().exists(where):
-                SPARQLQueryHelper.getExprFactory().notexists(where);
+        Expr notExistsExpr = checkExist
+                ? SPARQLQueryHelper.getExprFactory().exists(where)
+                : SPARQLQueryHelper.getExprFactory().notexists(where);
 
         return select.addFilter(notExistsExpr);
     }
-
 
     public void insertPrimitive(Node graph, URI subject, Property property, Object value) throws Exception {
         UpdateBuilder insertQuery = new UpdateBuilder();
@@ -1611,6 +1606,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return g.getDefaultGraphURI();
     }
 
+    public URI getDefaultGenerationURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
+        return getMapperIndex().getForClass(modelClass).getDefaultGenerationURI();
+    }
+
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getURIFieldVar();
     }
@@ -1636,10 +1635,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
             Set<URI> uris = urisByMapper.getValue();
 
-            Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(),uris,false);
-            if(! unknownUris.isEmpty()){
+            Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(), uris, false);
+            if (!unknownUris.isEmpty()) {
                 // #TODO append property for which URI are unknown
-                throw new SPARQLInvalidUriListException("["+modelMapper.getObjectClass().getSimpleName()+"] Unknown URIS : ",unknownUris);
+                throw new SPARQLInvalidUriListException("[" + modelMapper.getObjectClass().getSimpleName() + "] Unknown URIS : ", unknownUris);
             }
         }
     }

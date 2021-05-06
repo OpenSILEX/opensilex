@@ -27,6 +27,18 @@ public interface SPARQLConfig {
     public String baseURIAlias();
 
     @ConfigDescription(
+            value = "Base domain for auto-generated URI (default to baseURI if not specified)",
+            defaultString = ""
+    )
+    public String generationBaseURI();
+    
+        @ConfigDescription(
+            value = "Base domain for auto-generated URI (default to baseURI if not specified)",
+            defaultString = "id"
+    )
+    public String generationBaseURIAlias();
+    
+    @ConfigDescription(
             value = "SPARQL data source"
     )
     public SPARQLServiceFactory sparql();

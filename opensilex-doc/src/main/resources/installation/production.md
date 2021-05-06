@@ -211,6 +211,8 @@ big-data:
             database: opensilex
 ```
 
+**N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
+
 ### Configure logging
 
 Edit the file ```/home/opensilex/bin/<X.Y.Z>/logback.xml```
@@ -228,7 +230,7 @@ By default logs will be printed to the console output and writen into a rotating
 
 ## Initialize database and check configuration
 
-## Create a script to access instructions
+### Create a script to access instructions
 
 - Create
 ```
@@ -251,7 +253,7 @@ java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR/bin --CONFIG_FI
 chmod +x ~/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
-## Add an alias
+### Add an alias
 
 - Edit 
 ```
@@ -273,9 +275,25 @@ source  ~/.bashrc
 opensilex help
 ```
 
-## Create default administrator
+### Initialize your triplestore
 
-This instruction create user "admin@opensilex.org" with the password "admin"
+```
+opensilex system install
+```
+
+This instruction creates the repository (with the name defined in the configuration file). It also creates the default administrator and imports the ontologies.
+
+**N.B.** If your triplestore is graphDB, this instruction may not work. In this case, you can create your repository manually and run the following instructions to import the ontologies and create default administrator.
+
+- Import ontologies
+
+```
+opensilex sparql reset-ontologies
+```
+
+- Create default administrator
+
+This instruction creates a user "admin@opensilex.org" with the password "admin"
 
 ```
 opensilex user add --admin
@@ -310,6 +328,9 @@ sudo nano /etc/nginx/sites-enabled/default
 Content
 ```
         location / {
+                #comment the following line to avoid an error and enable proxy
+                #try_files $uri $uri/ =404;
+                #add proxy settings
                 include proxy_params;
                 proxy_pass http://127.0.0.1:8081;
         }

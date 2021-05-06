@@ -73,7 +73,8 @@
                       class="error-message alert alert-danger"
                     >{{ errors[0] }}</div>
                   </ValidationProvider>
-                </b-form-group>
+                </b-form-group> 
+                 <a href="forgot-password" v-if="isResetPassword()"><span>{{$t('LoginComponent.forgotPassword')}}</span></a>
                 <div class="sign-btn text-center">
                   <b-button
                     type="submit"
@@ -171,6 +172,11 @@ export default class DefaultLoginComponent extends Vue {
     }
   }
 
+  isResetPassword(){
+    let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
+    return opensilexConfig.activateResetPassword;
+  }
+
   $opensilex: OpenSilexVuePlugin;
 
   static async asyncInit($opensilex: OpenSilexVuePlugin) {
@@ -254,8 +260,10 @@ en:
   LoginComponent:
     selectLoginMethod: Select login method
     passwordConnectionTitle: Connect with password
+    forgotPassword: Forgot password ?
 fr:
   LoginComponent:
     selectLoginMethod: Choisir la méthode de connexion
     passwordConnectionTitle: Connexion par mot de passe
+    forgotPassword: Mot de passe oublié ?
 </i18n>

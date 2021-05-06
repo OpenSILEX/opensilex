@@ -8,7 +8,8 @@ package org.opensilex.security;
 
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.security.authentication.AuthenticationService;
-
+import org.opensilex.security.email.EmailService;
+ 
 /**
  * Default configuration for OpenSilex base module
  *
@@ -21,6 +22,12 @@ public interface SecurityConfig {
     )
     public AuthenticationService authentication();
 
+    
+     @ConfigDescription(
+            value = "Email service"
+    )
+    public EmailService email();
+    
     @ConfigDescription(
             value = "Option to allow multiple connection with the same account (NOT RECOMMENDED IN PRODUCTION)",
             defaultBoolean = false

@@ -90,7 +90,7 @@ menu:
         label: component.menu.facilitiesTypes
         route:
           path: /facilities-types
-          component: opensilex-InfrastructureFacilitiesTypes 
+          component: opensilex-InfrastructureFacilitiesTypes
       - id: scientificObjectVocabulary
         label: component.menu.scientificObjectTypes
         route:
@@ -106,7 +106,6 @@ menu:
         route:
           path: /event-types
           component: opensilex-EventTypes
-
 
   - id: configuration
     label: component.menu.configuration
@@ -133,7 +132,7 @@ routes:
   - path: /infrastructure/details/:uri
     component: opensilex-InfrastructureDetailView
   - path: /infrastructure/facility/details/:uri
-    component: opensilex-InfrastructureFacilityView    
+    component: opensilex-InfrastructureFacilityView
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
   - path: /experiment/scientific-objects/:uri
@@ -173,7 +172,6 @@ routes:
     component: opensilex-ProjectDetails
   - path: /project/annotations/:uri
     component: opensilex-ProjectDetails
-
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
     credentials: [germplasm-modification]
@@ -234,9 +232,17 @@ routes:
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
-# Route item example:
-#  - path: /users/create
-#    component: opensilex-UserCreate
-#    credentials: []
+  # Route item example:
+  #  - path: /users/create
+  #    component: opensilex-UserCreate
+  #    credentials: []
 
-
+  ## Public routes
+  - path: /forgot-password
+    component: opensilex-ForgotPassword
+    credentials:
+      - public
+  - path: /reset-password/:uri
+    component: opensilex-ResetPassword
+    credentials:
+      - public

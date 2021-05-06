@@ -11,7 +11,8 @@ export class OpenSilexRouter {
     private menu: Array<MenuItemDTO> = [];
     private router: any;
     private pathPrefix: string
-    
+    private PUBLIC_ROUTE_PUBLIC: string = "public";
+
     constructor(pathPrefix: string) {
         this.pathPrefix = pathPrefix;
         this.router = this.createRouter(User.ANONYMOUS());
@@ -64,13 +65,21 @@ export class OpenSilexRouter {
                 if (user.hasAllCredentials(route.credentials)) {
                     routes.push({
                         path: route.path,
-                        component: this.getAsyncComponentLoader($opensilex, route.component)
+                        component: this.getAsyncComponentLoader($opensilex, route.component),
+                        meta:{public: false}
+                    });
+                }
+                if(route.credentials.includes(this.PUBLIC_ROUTE_PUBLIC)){ 
+                    routes.push({
+                        path: route.path,
+                        component: this.getAsyncComponentLoader($opensilex, route.component),
+                        meta:{public: true}
                     });
                 }
             }
 
             this.menu = this.buildMenu(frontConfig.menu, routes, user);
-
+            
             routes.push({
                 path: "*",
                 component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)

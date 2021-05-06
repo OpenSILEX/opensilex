@@ -485,6 +485,20 @@ export default class OpenSilexVuePlugin {
         });
     }
 
+    public showSuccessToastWithDelay(message: string, delay : number) {
+        if(delay == null){
+            delay = 2500
+        }
+        this.showToast(message, {
+            variant: "success",
+            toaster: "b-toaster-top-center",
+            appendToast: true,
+            solid: true,
+            autoHideDelay: delay,
+            noCloseButton: true
+        });
+    }
+
     public showInfoToast(message: string) {
         this.showToast(message, {
             variant: "info",

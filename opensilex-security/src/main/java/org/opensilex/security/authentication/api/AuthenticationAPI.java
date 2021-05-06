@@ -11,18 +11,25 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -33,8 +40,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityConfig;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -42,12 +51,17 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.SecurityModule;
+import static org.opensilex.security.authentication.AuthenticationService.DEFAULT_SUPER_ADMIN_EMAIL;
+import org.opensilex.security.email.EmailService;
 import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.ServerModule;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +92,14 @@ public class AuthenticationAPI {
     @Inject
     private AuthenticationService authentication;
 
+    
+    
+    /**
+     * Inject Email service
+     */
+    @Inject
+    private EmailService email;
+
     /**
      * Inject SPARQL service
      */
@@ -90,6 +112,12 @@ public class AuthenticationAPI {
     @Inject
     private OpenSilex openSilex;
 
+    
+    
+    private final static String EMAIL_USERNAME_KEY = "username";
+    private final static String EMAIL_TEMPLATE_REDIRECTURL_KEY = "redirectUrl";
+    private final static String EMAIL_RESET_PASSWORD_APP_PATH = "reset-password"; 
+    
     /**
      * Authenticate a user with it's identifier (email or URI) and password returning a JWT token
      *
@@ -159,6 +187,155 @@ public class AuthenticationAPI {
     ) throws Exception {
         authentication.renewToken(currentUser);
         return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(currentUser.getToken())).getResponse();
+    }
+    
+    /**
+     * Send an email to renew password
+     *
+     * @param identifier
+     * @see org.opensilex.security.user.dal.UserDAO
+     * @return Renewed JWT token
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @POST
+    @Path("forgot-password")
+    @ApiOperation("Send an e-mail confirmation")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Email sucessfully sent"),
+        @ApiResponse(code = 400, message = "Email not send")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response forgotPassword(
+            @ApiParam(value = "User e-mail or uri", required = true) @QueryParam("identifier")  @NotNull String identifier
+    ) throws Exception {
+        if(!EmailService.ENABLE){
+            return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionnality not available", "Email service must be started").getResponse();
+        }
+        
+        // Create user DAO
+        UserDAO userDAO = new UserDAO(sparql);
+
+        // Get user by email or by uri
+        UserModel user;
+        try {
+            InternetAddress userEmail = new InternetAddress(identifier);
+            user = userDAO.getByEmail(userEmail);
+        } catch (AddressException ex2) {
+            try {
+                URI uri = new URI(identifier);
+                user = userDAO.get(uri);
+            } catch (URISyntaxException ex1) {
+                throw new Exception("Submitted user identifier is neither a valid email or URI");
+            }
+        }
+
+        // Authenticate found user with provided e-mail
+        if (user != null) {
+            if(user.getEmail().equals(new InternetAddress(DEFAULT_SUPER_ADMIN_EMAIL))){
+                // Otherwise return a 403 - FORBIDDEN error response
+                return new ErrorResponse(Status.FORBIDDEN, "Invalid identifier", "Admin password can't be reset by this service").getResponse();
+            }else{
+               
+                // Return user forgot token
+                URI userForgottenToken = authentication.addForgotPasswordId(user.getUri());
+                sendForgotPasswordRedirectEmail(user,userForgottenToken);
+                return new ObjectUriResponse(Response.Status.OK, userForgottenToken).getResponse(); 
+            }
+        } else {
+            // Otherwise return a 403 - FORBIDDEN error response
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
+        }
+    }
+    /**
+     * 
+     * @param user user model
+     * @param userForgottenToken renew token uuid
+     * @throws OpenSilexModuleNotFoundException
+     * @throws UnsupportedEncodingException
+     * @throws AddressException
+     * @throws IOException 
+     */
+    private void sendForgotPasswordRedirectEmail(UserModel user, URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException, AddressException, IOException{
+        Map<String,Object> infos = new HashMap<>();
+        ArrayList<InternetAddress> arrayList = new ArrayList<>();
+        arrayList.add(user.getEmail());
+        // get address
+        String username = StringUtils.capitalize(user.getFirstName() ) + " "  + StringUtils.capitalize(user.getLastName());
+        infos.put(EMAIL_USERNAME_KEY, username); 
+        // get getForgotPasswordRedirectUrl address
+        String redirectUrl = getForgotPasswordRedirectUrl(userForgottenToken); 
+        infos.put(EMAIL_TEMPLATE_REDIRECTURL_KEY, redirectUrl); 
+        email.sendAnEmail(arrayList, new InternetAddress(EmailService.SENDER), "[OpenSILEX] Reset your password", "forgot-password.mustache",infos,true); 
+    }
+    
+    private String getForgotPasswordRedirectUrl(URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException{
+        // get address
+        String redirectUrl = email.getOpenSilex().getModuleByClass(ServerModule.class).getBaseURL();
+        
+        redirectUrl = redirectUrl + "app/" + EMAIL_RESET_PASSWORD_APP_PATH + "/" + URLEncoder.encode(userForgottenToken.toString(), StandardCharsets.UTF_8.name());
+        return redirectUrl;
+    }
+    
+     /**
+     * Renew a user password
+     *
+     * @param renewToken renew token linked to user
+     * @param checkOnly only check if renew token uri exist
+     * @param password new password to update
+     * @see org.opensilex.security.user.dal.UserDAO
+     * @return User uri
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @PUT
+    @Path("renew-password")
+    @ApiOperation("Update user password")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Password sucessfully renewed", response = TokenGetDTO.class),
+        @ApiResponse(code = 400, message = "Invalid token", response = ErrorResponse.class),
+        @ApiResponse(code = 400, message = "Invalid password", response = ErrorResponse.class),
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response renewPassword( 
+            @ApiParam(value = "User renew token", required = true) @QueryParam("renew_token") @NotNull @ValidURI URI renewToken,
+            @ApiParam(value = "Check only renew token", example = "false") @DefaultValue("false") @QueryParam("check_only") Boolean checkOnly,
+            @ApiParam(value = "User password") @QueryParam("password") String password
+    ) throws Exception {
+        if(!EmailService.ENABLE){
+            return new ErrorResponse(Status.SERVICE_UNAVAILABLE, "Functionnality not available", "Email service must be started").getResponse();
+        }
+        URI userUri =  authentication.getForgottenPasswordUserURIFromRenewToken(renewToken);
+        if(checkOnly){
+            if(userUri == null){
+                return new ErrorResponse(Status.BAD_REQUEST, "Invalid token", "Token has expired").getResponse();
+            }else{
+                return new ObjectUriResponse(Status.OK, userUri).getResponse();
+            }
+        }
+       if(StringUtils.isEmpty(password)){
+            return new ErrorResponse(Status.BAD_REQUEST, "Invalid password", "Password must not be empty").getResponse();
+        }
+        if(userUri == null){
+            return new ErrorResponse(Status.BAD_REQUEST, "Invalid token", "Token has expired").getResponse();
+        }
+        UserDAO userDAO = new UserDAO(sparql);
+        UserModel user = userDAO.get(userUri);
+        if(user == null){
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid token", "User does not exists or forgotten password token is invalid").getResponse();
+        }else{
+            userDAO.update(
+                    user.getUri(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.isAdmin(),
+                    authentication.getPasswordHash(password),
+                    user.getLanguage()
+            );
+            authentication.removeForgottenPasswordUserFromRenewToken(renewToken);
+        }
+        return new ObjectUriResponse(Status.OK, userUri).getResponse();
     }
 
     /**

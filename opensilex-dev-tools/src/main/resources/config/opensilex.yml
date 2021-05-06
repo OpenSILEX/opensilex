@@ -32,7 +32,21 @@ big-data:
     
 phisws:
     infrastructure: opensilex
-    
+# Configuration for module: SecurityModule (SecurityConfig)
+# security:
+# #    Email service (EmailService)
+#    email:
+#         config:
+#             enable: true
+#             simulateSending: false
+#             # Not working
+#             sender: opensilex@mail.com
+#             smtp :
+#                 host: smtp.gmail.com
+#                 port: 587
+#                 userId : ""
+#                 userPassword : ""
+
 #core:
 #    enableLogs: true
 #server:

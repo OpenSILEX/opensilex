@@ -23,6 +23,11 @@ import Overlay from './layout/Overlay.vue'
 components["opensilex-Overlay"] = Overlay;
 import ToDoComponent from './layout/ToDoComponent.vue';
 components["opensilex-ToDoComponent"] = ToDoComponent;
+import ResetPassword from './layout/ResetPassword.vue';
+components["opensilex-ResetPassword"] = ResetPassword;
+import ForgotPassword from './layout/ForgotPassword.vue';
+components["opensilex-ForgotPassword"] = ForgotPassword;
+
 
 // Users
 import UserForm from './users/UserForm.vue';

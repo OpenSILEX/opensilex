@@ -47,6 +47,8 @@ public class FrontConfigDTO {
     String openIDAuthenticationURI;
 
     String openIDConnectionTitle;
+    
+    Boolean activateResetPassword;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -163,5 +165,15 @@ public class FrontConfigDTO {
     public void setOpenIDConnectionTitle(String openIDConnectionTitle) {
         this.openIDConnectionTitle = openIDConnectionTitle;
     }
+
+    public Boolean getActivateResetPassword() {
+        return activateResetPassword;
+    }
+
+    public void setActivateResetPassword(Boolean activateResetPassword) {
+        this.activateResetPassword = activateResetPassword;
+    }
+    
+    
 
 }

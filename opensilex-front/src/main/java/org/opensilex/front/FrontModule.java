@@ -13,6 +13,8 @@ import org.opensilex.front.config.Route;
 import org.opensilex.front.config.MenuItem;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.apache.catalina.Context;
 import org.opensilex.config.ConfigManager;
@@ -22,10 +24,12 @@ import org.opensilex.front.api.RouteDTO;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.security.EmailConfig;
 import org.opensilex.security.OpenIDConfig;
 import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.email.EmailService;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
@@ -115,6 +119,14 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 }
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error", ex);
+            }
+            
+            try {
+                EmailService emailService = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).email();
+                EmailConfig emailConfig = (EmailConfig) emailService.getConfig();
+                config.setActivateResetPassword(emailConfig.enable()); 
+            } catch (OpenSilexModuleNotFoundException ex) {
+                 LOGGER.error("Unexpected error", ex);
             }
 
             String[] themeId = frontConfig.theme().split("#");

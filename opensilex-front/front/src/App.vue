@@ -3,10 +3,32 @@
     <global-events @keydown.enter.exact="keydownEnter"></global-events>
     <opensilex-Overlay :show="isLoaderVisible" :noFade="false" zIndex="32000" :fullscreen="true">
       <div id="page-wrapper" class="wrapper customized" v-bind:class="{ embed: embed }">
+         <!-- if route as credentials public -->
+        <div v-if="this.$route.meta.public">
+          <component
+          class="header-logo"
+          v-bind:is="headerComponent"
+        ></component>
+ 
+
+        <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
+      
+          <div id="main-content">
+            <main class="main-content">
+              <router-view :key="$route.fullPath" />
+            </main>
+
+        <!--    <footer v-if="!embed">
+              <component v-bind:is="footerComponent"></component>
+            </footer> -->
+          </div>
+        </section>
+        </div>  
+        <div v-else>
         <component
           class="header-logo"
           v-bind:is="headerComponent"
-          v-if="user.isLoggedIn() && !disconnected &&!embed"
+          v-if="user.isLoggedIn() && !disconnected && !embed"
         ></component>
 
         <header v-if="!embed" v-bind:class="{ 'logged-out': !user.isLoggedIn() || disconnected }">
@@ -28,6 +50,7 @@
             </footer> -->
           </div>
         </section>
+        </div>
       </div>
     </opensilex-Overlay>
   </div>

@@ -39,4 +39,13 @@ public class ServerModule extends OpenSilexModule implements APIExtension, JCSAp
         return list;
     }
 
+    public String getBaseURL(){
+        ServerConfig cfg =(ServerConfig) this.getConfig();
+   
+        String redirectUrl = ((ServerConfig) this.getConfig()).publicURI();
+        if(!org.apache.commons.lang3.StringUtils.isEmpty(cfg.pathPrefix() )){
+            redirectUrl = redirectUrl + cfg.pathPrefix() + "/";
+        }
+        return redirectUrl;
+    }
 }

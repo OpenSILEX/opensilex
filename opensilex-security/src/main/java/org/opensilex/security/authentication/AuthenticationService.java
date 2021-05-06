@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.Tokens;
@@ -66,6 +67,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.service.BaseService;
 
@@ -118,6 +120,11 @@ public class AuthenticationService extends BaseService implements Service {
      */
     private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.MINUTES;
 //    private static final TemporalUnit TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.SECONDS;
+    
+    /**
+     * Renew token validity duration unit
+     */
+    private static final TemporalUnit RENEW_TOKEN_VALIDITY_DURATION_UNIT = ChronoUnit.HOURS;
 
     /**
      * JWT token issuer
@@ -192,11 +199,30 @@ public class AuthenticationService extends BaseService implements Service {
      */
     private ConcurrentHashMap<URI, Thread> schedulerRegistry = new ConcurrentHashMap<>();
 
+    
+    /**
+     * Map of forgot users URI by uuid URI
+     */
+    private ConcurrentHashMap<URI, URI> forgotPasswordUserRegistry = new ConcurrentHashMap<>();
+
+    /**
+     * Forgot password thread map by users
+     */
+    private ConcurrentHashMap<URI, Thread> schedulerForgotUserPasswordRegistry = new ConcurrentHashMap<>();
+
+    public static final String DEFAULT_SUPER_ADMIN_EMAIL = "admin@opensilex.org";
+    
     /**
      * RSA encryption algorithm for JWT token generation
      */
     private final Algorithm algoRSA;
 
+    
+    /**
+     * reset password uuid validity duration in days
+     */
+    private static final long RENEW_TOKEN_PASSWORD_VALIDITY_DURATION = 24;
+    
     /**
      * Constructor initializing a new RSA key pair for JWT token generation
      *
@@ -656,4 +682,76 @@ public class AuthenticationService extends BaseService implements Service {
         return authReqURI;
     }
 
+     /**
+     * Return password token expiration delay in seconds
+     *
+     * @return renew password token expiration delay in seconds
+     */
+    private long getRenewTokenExpiresInSec() {
+        return RENEW_TOKEN_PASSWORD_VALIDITY_DURATION * RENEW_TOKEN_VALIDITY_DURATION_UNIT.getDuration().getSeconds();
+    }
+
+    
+     /**
+     * Add a user which has forgotten his password 
+     * @param userUri user uri
+     * @return URI token generated renew token uri
+     * @throws Exception in case previous uuid connection can't be cleared
+     */
+    public synchronized URI addForgotPasswordId(URI userUri) throws Exception {
+        UUID uuid = UUID.randomUUID();
+        URI uuidURI = new URI("os-reset-pwd:"+ uuid.toString().replaceAll("-", ""));
+
+        // If uuid already registred remove it
+        if (schedulerForgotUserPasswordRegistry.containsKey(uuidURI)) {
+            schedulerForgotUserPasswordRegistry.get(uuidURI).interrupt();
+            schedulerForgotUserPasswordRegistry.remove(uuidURI);
+        }
+        LOGGER.debug("Renew token expires in :" + getRenewTokenExpiresInSec());
+        // Create thread to remove user after expire time
+        Thread t = new Thread(() -> {
+            try {
+                Thread.sleep(getRenewTokenExpiresInSec());
+                LOGGER.debug("Renew token UUID expires: " + uuidURI);
+                schedulerForgotUserPasswordRegistry.remove(uuidURI);
+            } catch (InterruptedException ex) {
+                LOGGER.debug("Revoke renew token UUID: " + uuidURI + " - " + ex.getMessage());
+            } catch (Exception ex) {
+                LOGGER.warn("Error while removing user fogotten password: " + uuidURI + " - ", ex);
+            }
+        });
+
+        // Start thread
+        t.start();
+
+        // Add user and logout thread into concurrent map registry
+        forgotPasswordUserRegistry.put(uuidURI, userUri);
+        schedulerForgotUserPasswordRegistry.put(uuidURI, t);
+        LOGGER.debug("Renew token UUID registered: " + uuidURI + "for user : " + userUri);
+        
+        return uuidURI;
+    }
+    
+    public URI getForgottenPasswordUserURIFromRenewToken(URI uuidURI) throws Exception {    
+        // If uuid already registred remove it
+        if (!schedulerForgotUserPasswordRegistry.containsKey(uuidURI)) {
+            LOGGER.debug("Unknown Renew token UUID: " + uuidURI);
+            return null;
+        }       
+        
+        return forgotPasswordUserRegistry.get(uuidURI);
+    }
+    
+    public boolean removeForgottenPasswordUserFromRenewToken(URI uuidURI) throws Exception {    
+
+        // If uuid already registred remove it
+        if (!schedulerForgotUserPasswordRegistry.containsKey(uuidURI)) {
+            LOGGER.debug("Unknown Renew token UUID: " + uuidURI);
+         }else{
+            schedulerForgotUserPasswordRegistry.get(uuidURI).interrupt();
+            schedulerForgotUserPasswordRegistry.remove(uuidURI);
+            forgotPasswordUserRegistry.remove(uuidURI);
+        }
+        return true;
+    }
 }

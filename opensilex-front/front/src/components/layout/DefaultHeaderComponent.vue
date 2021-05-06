@@ -41,6 +41,7 @@
           </b-dropdown>
 
           <b-dropdown
+            v-if="user.isLoggedIn()"
             id="userDropdown"
             :title="user.getEmail()"
             variant="link"

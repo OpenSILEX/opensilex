@@ -193,6 +193,7 @@
                                     <exclude>jakarta.xml.bind:jakarta.xml.bind-api</exclude>
                                     <exclude>jakarta.activation:jakarta.activation-api</exclude>
                                     <exclude>com.sun.activation:jakarta.activation</exclude>
+                                    <exclude>com.sun.mail:jakarta.mail</exclude>
                                     <exclude>jakarta.el:jakarta.el-api</exclude>
                                     <exclude>javax.el:javax.el-api</exclude>
                                     <exclude>org.glassfish:jakarta.el</exclude>

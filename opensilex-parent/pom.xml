@@ -127,8 +127,10 @@
         <maven.jxr.plugin.version>3.0.0</maven.jxr.plugin.version>
         <maven.processor.plugin.version>4.4</maven.processor.plugin.version>
         <spotbugs.maven.plugin.version>3.1.12.2</spotbugs.maven.plugin.version>
-        <logstash-logback-encoder>6.5</logstash-logback-encoder>
+        <logstash-logback-encoder.version>6.5</logstash-logback-encoder.version>
         <csv.parser.version>2.9.1</csv.parser.version>
+        <email.version>6.5.2</email.version>
+        <mustache.compiler.version>0.9.7</mustache.compiler.version>
     </properties>
 
     <dependencyManagement>
@@ -299,7 +301,7 @@
         <dependency> 
             <groupId>net.logstash.logback</groupId> 
             <artifactId>logstash-logback-encoder</artifactId> 
-            <version>${logstash-logback-encoder}</version> 
+            <version>${logstash-logback-encoder.version}</version> 
         </dependency>
         
         <!--allow condition evaluation in logback configuration file--> 
@@ -557,6 +559,22 @@
             <artifactId>univocity-parsers</artifactId>
             <version>${csv.parser.version}</version>
         </dependency>
+        
+        <!--Email dependency-->
+        <dependency>
+            <groupId>org.simplejavamail</groupId>
+            <artifactId>simple-java-mail</artifactId>
+            <version>${email.version}</version>
+        </dependency>
+         
+        <!-- templating -->
+        <!-- https://mvnrepository.com/artifact/com.github.spullara.mustache.java/compiler -->
+        <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>${mustache.compiler.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

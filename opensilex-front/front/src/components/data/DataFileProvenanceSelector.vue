@@ -34,7 +34,7 @@ import { ProvenanceGetDTO } from "opensilex-core/index";
 
 
 @Component
-export default class DatafileProvenanceSelector extends Vue {
+export default class DataFileProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 

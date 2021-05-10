@@ -535,6 +535,8 @@ import ProvenanceForm from './data/form/ProvenanceForm.vue';
 components["opensilex-ProvenanceForm"] = ProvenanceForm;
 import DataFilesView from './data/DataFilesView.vue';
 components["opensilex-DataFilesView"] = DataFilesView;
+import ProvenanceView from './data/ProvenanceView.vue';
+components["opensilex-ProvenanceView"] = ProvenanceView;
 
 // PHIS
 //IMAGES

@@ -1,9 +1,19 @@
 <template>
-  <div>
+  <ValidationObserver ref="validatorRef">
+
+    <b-form-group label="What kind of data do you want to import ?">
+      <b-form-radio-group
+        v-model="selected"
+        :options="options"
+        class="mb-3"
+        value-field="item"
+        text-field="name"
+        :required="true"
+      ></b-form-radio-group>
+    </b-form-group>
     <!-- Label -->
     <opensilex-InputForm
       :value.sync="provenance.name"
-      :disabled="provenance.uri != undefined && provenance.uri != null"
       label="DataForm.provenance.name"
       helpMessage="DataForm.provenance.name-help"
       type="text"
@@ -17,19 +27,16 @@
       helpMessage="DataForm.provenance.description-help"
       label="DataForm.provenance.description"
       placeholder="DataForm.provenance.description-placeholder"
-      :disabled="provenance.uri != undefined && provenance.uri != null"
     ></opensilex-TextAreaForm>
 
     <!--activity -->
     <b-card title="Activity" bg-variant="light">
       <!-- type -->
       <opensilex-TypeForm
-        v-bind:style="styleObject"
         :type.sync="provenance.activity.rdf_type"
         :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
         :required="false"
         helpMessage="DataForm.type-help"
-        :disabled="provenance.uri != undefined && provenance.uri != null"
       ></opensilex-TypeForm>
 
       <!-- start_date  & end_date-->
@@ -42,7 +49,6 @@
             :required="true"
             @change="updateRequiredProps"
             helpMessage="DataForm.start-help"
-            :disabled="provenance.uri != undefined && provenance.uri != null"
           ></opensilex-DateTimeForm>
         </div>
 
@@ -53,7 +59,6 @@
             label="DataForm.end"
             @change="updateRequiredProps"
             helpMessage="DataForm.end-help"
-            :disabled="provenance.uri != undefined && provenance.uri != null"
           ></opensilex-DateTimeForm>
         </div>
       </div>
@@ -61,11 +66,10 @@
     <!-- uri -->
     <opensilex-InputForm
       :value.sync="provenance.activity.uri"
-      label=""
+      label="url"
       type="url"
       rules="url"
       helpMessage=""
-      :disabled="provenance.uri != undefined && provenance.uri != null"
     ></opensilex-InputForm>
     </b-card>
 
@@ -78,7 +82,6 @@
         label="DataForm.sensors"
         :devices.sync="provenance.sensors"
         :multiple="true"
-        :disabled="provenance.uri != undefined && provenance.uri != null"
         :required="selected == 'sensor'"
       ></opensilex-DeviceSelector>
 
@@ -88,16 +91,14 @@
         label="DataForm.vectors"
         :devices.sync="provenance.sensors"
         :multiple="true"
-        :disabled="provenance.uri != undefined && provenance.uri != null"
       ></opensilex-DeviceSelector>
 
       <!-- softwares -->
       <opensilex-DeviceSelector
-        v-if="selected == 'softwares'"
+        v-if="selected == 'computed'"
         label="DataForm.softwares"
         :devices.sync="provenance.softwares"
         :multiple="true"
-        :disabled="provenance.uri != undefined && provenance.uri != null"
       ></opensilex-DeviceSelector>
 
       <!-- operators -->
@@ -108,10 +109,9 @@
         :multiple="true"
         @select="selectedOperators"
         @deselect="deselectedOperators"
-        :disabled="provenance.uri != undefined && provenance.uri != null"
       ></opensilex-UserSelector>
     </b-card>
-  </div>
+  </ValidationObserver>
 </template>
 
 <script lang="ts">
@@ -136,7 +136,6 @@ export default class ProvenanceForm extends Vue {
 
   @Ref("validatorRef") readonly validatorRef!: any;
   
-  provenance = null;
   users = [];
   @Prop({
     default: () => {
@@ -151,6 +150,30 @@ export default class ProvenanceForm extends Vue {
     },
   })
   form: any;
+
+  provenance = {
+    uri: null,
+    name: null,
+    description: null,
+    activity: {
+      rdf_type: null,
+      start_date: null,
+      end_date: null,
+      uri: null,
+    },
+    sensors: [],
+    vectors: [],
+    softwares: [],
+    operators: []
+  }
+
+  selected: any = null;
+
+  options = [
+          { item: 'observations', name: 'Observations' },
+          { item: 'sensor', name: 'Sensor data' },
+          { item: 'computed', name: 'Computed data' },
+        ]
 
   @Prop()
   editMode;

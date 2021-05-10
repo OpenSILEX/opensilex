@@ -9,8 +9,8 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
-          @click="dataForm.showCreateForm()"
-          label="OntologyCsvImporter.import"
+          @click="createProvenance()"
+          label="ProvenanceView.add"
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
@@ -18,8 +18,8 @@
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
-      label="ProvenanceView.filter.label"
-      :showTitle="true"
+      label="DataView.filter.label"
+      :showTitle="false"
     >
       <template v-slot:filters>
 
@@ -35,9 +35,9 @@
         <!-- activity type-->
         <opensilex-FilterField>
           <opensilex-TypeForm
-            :type.sync="filter.actvity_type"
+            :type.sync="filter.activity_type"
             :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
-            helpMessage="ProvenanceView.agent-type-help"
+            label="ProvenanceView.filter.activity_type"
           ></opensilex-TypeForm>
         </opensilex-FilterField>
 
@@ -45,36 +45,34 @@
         <opensilex-FilterField>
           <opensilex-TypeForm
             :type.sync="filter.agent_type"
-            :baseType="$opensilex.Oeso.PROV_AGENT_TYPE_URI"
-            helpMessage="ProvenanceView.agent-type-help"
-            :disabled="provenance.uri != undefined && provenance.uri != null"
+            :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+            label="ProvenanceView.filter.agent_type"
           ></opensilex-TypeForm>
         </opensilex-FilterField>
 
         <!-- agent -->
         <opensilex-FilterField>
-          <opensilex-SelectForm
-            label="DataView.filter.sensor"
-            :selected.sync="filter.agent"
-          ></opensilex-SelectForm>
+          <opensilex-DeviceSelector
+            label="ProvenanceView.filter.agent"
+            :devices.sync="filter.agent"
+            :multiple="false"
+          ></opensilex-DeviceSelector>
         </opensilex-FilterField>
 
       </template>
     </opensilex-SearchFilterField>
 
     <opensilex-TableAsyncView
-      ref="tableRef"
+      ref="provTableRef"
       :searchMethod="searchProvenance"
       :fields="fields"
       defaultSortBy="name"
     >
-
       <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
           :noExternalLink="true"
-          @click="showProvenanceDetailsModal"
         ></opensilex-UriLink>
       </template>
 
@@ -99,8 +97,7 @@
 
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
-      ref="provForm"
+      ref="provenanceForm"
       component="opensilex-ProvenanceForm"
       createTitle="ProvenanceView.add"
       editTitle="ProvenanceView.update"
@@ -108,6 +105,8 @@
       modalSize="lg"
       @onCreate="tableRef.refresh()"
       @onUpdate="tableRef.refresh()"
+      :initForm="initForm"
+      :successMessage="successMessage"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -123,7 +122,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { UserGetDTO } from "opensilex-security/index";
 
 @Component
-export default class DataView extends Vue {
+export default class ProvenanceView extends Vue {
   $opensilex: any;
   $store: any;
   service: any;
@@ -133,23 +132,17 @@ export default class DataView extends Vue {
   usedVariables: any[] = [];
   selectedProvenance: any = null;
 
-  @Ref("templateForm") readonly templateForm!: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
 
   get credentials() {
     return this.$store.state.credentials;
   }
 
   @Ref("tableRef") readonly tableRef!: any;
-
-  @Ref("dataForm") readonly dataForm!: any;
-
-  @Ref("searchField") readonly searchField!: any;
-
-  @Ref("provSelector") readonly provSelector!: any;
-
-  @Ref("resultModal") readonly resultModal!: any;
-
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  @Ref("provenanceForm") readonly provenanceForm!: any;
 
   filter = {
     name: undefined,
@@ -167,16 +160,17 @@ export default class DataView extends Vue {
     };
   }
 
-
-  get user() {
-    return this.$store.state.user;
+  createProvenance() {
+    this.provenanceForm.showCreateForm()
   }
+
 
   get fields() {
     let tableFields: any = [
       {
         key: "name",
         label: "component.common.name",
+        sortable: true
       },
       {
         key: "activity_type",
@@ -241,24 +235,12 @@ export default class DataView extends Vue {
     }
   }
 
-  showProvenanceDetailsModal(item) {
-    this.$opensilex.enableLoader();
-    this.getProvenance(item.provenance.uri)
-    .then(result => {
-      let value = {
-        provenance: result,
-        data: item
-      }
-      this.dataProvenanceModalView.setProvenance(value);
-      this.dataProvenanceModalView.show();
-    });    
-  }
 
   searchProvenance(options) {
     return this.service.searchProvenance(
       this.filter.name,  //name
-      null, //description
-      null, //activity
+      undefined, //description
+      undefined, //activity
       this.filter.activity_type, //activity_type
       this.filter.agent, //agent
       this.filter.agent_type, //agent_type
@@ -278,55 +260,11 @@ export default class DataView extends Vue {
 <i18n>
 
 en:
-  DataView:
-    buttons:
-      create-data : Add data
-      generate-template : Generate template
-    description: View and export data
-    list:
-      date: Date
-      variable: Variable
-      value: Value
-      object: Object
-      provenance: provenance
-    filter:
-      label: Search data
-      experiments:  Experiment(s)
-      traits: Filter par Trait(s)
-      methods:  Method(s)
-      units:  Unit(s)
-      scientificObjects: scientific object(s)
-      sensor: sensor
-    placeholder:
-      traits: All Traits
-      methods: All Methods
-      units: All Units
+  ProvenanceView:
+    add: Add provenance
 
 fr:
-  DataView:
-    buttons:
-      create-data : Ajouter un jeu de données
-      generate-template : Générer un gabarit
-    description: Visualiser et exporter des données
-    list:
-      date: Date
-      variable: Variable
-      value: Valeur
-      object: objet
-      provenance: provenance
-    filter:
-      label: Rechercher des données
-      experiments:  Expérimentation(s)
-      traits:  Trait(s)
-      methods: Méthode(s)
-      units:  Unité(s)
-      scientificObject: Objet(s) scientifique(s)
-      sensor: capteur
-    placeholder:
-      traits: Tous les Traits
-      methods: Toutes les Méthodes
-      units: Toutes les Unités
-
-      
+  ProvenanceView:
+    add: Ajouter une provenance      
   
 </i18n>

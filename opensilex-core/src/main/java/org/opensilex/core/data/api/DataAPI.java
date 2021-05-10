@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -102,7 +101,6 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
@@ -558,29 +556,6 @@ public class DataAPI {
         }
 
     }
-    
-    @Path("data/variables")
-    @ApiOperation("Get variables for which there are data")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-   @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
-    })
-    public Response getDataVariables(
-    ) throws Exception {
-
-        DataDAO dao = new DataDAO(nosql, sparql, null);
-        List<URI> objects = new ArrayList<>();
-        List<VariableModel> variables = dao.getUsedVariables(user, null, null);
-
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
-
-    }
-    
-    
-    
 //    
 //    @POST
 //    @Path("{uri}/data/import")

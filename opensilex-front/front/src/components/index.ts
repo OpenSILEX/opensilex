@@ -434,6 +434,10 @@ import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataF
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
 import ScientificObjectUriView from './scientificObjects/ScientificObjectUriView.vue';
 components["opensilex-ScientificObjectUriView"] = ScientificObjectUriView;
+import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
+components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
+import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
+components["opensilex-ScientificObjectView"] = ScientificObjectView;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

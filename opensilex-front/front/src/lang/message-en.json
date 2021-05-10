@@ -152,6 +152,10 @@
             "backToDashboard": "Return to the dashboard",
             "data": {
                 "label": "Data",
+                "tabularData": "Tabular Data",
+                "datafiles": "Data files",
+                "provenance": "Provenances",
+                "templatePreparation": "Template preparation",
                 "images": "Images",
                 "visualization":"Visualization"
             },

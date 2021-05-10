@@ -55,22 +55,27 @@ menu:
         label: component.menu.scientificObjects
         route:
           path: /scientific-objects
-          component: opensilex-ScientificObjectList
-  - id: DataMenu
+          component: opensilex-ScientificObjectView
+  - id: data-menu
     label: component.menu.data.label
     children:
-      - id: Provenance
-        label: component.menu.provenance.label
+      - id: data-template
+        label: component.menu.data.templatePreparation
+        route:
+          path: /template
+          component: opensilex-ProvenanceView
+      - id: provenance
+        label: component.menu.data.provenance
         route:
           path: /provenance
           component: opensilex-ProvenanceView
-      - id: Data
-        label: component.menu.data.label
+      - id: data
+        label: component.menu.data.tabularData
         route:
           path: /data
           component: opensilex-DataView
-      - id: Datafiles
-        label: component.menu.datafiles.label
+      - id: datafiles
+        label: component.menu.data.datafiles
         route:
           path: /datafiles
           component: opensilex-DatafilesView

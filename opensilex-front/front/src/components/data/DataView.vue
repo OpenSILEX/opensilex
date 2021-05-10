@@ -25,13 +25,11 @@
 
         <!-- Variables -->
         <opensilex-FilterField>
-          <opensilex-SelectForm
-            label="Variable"
-            :multiple="true"
-            :selected.sync="filter.variables"
-            :options="usedVariables"
-            placeholder="component.experiment.form.selector.variables.placeholder-multiple"
-          ></opensilex-SelectForm>
+          <opensilex-VariableSelector
+           label="DataView.filter.variables"
+           :multiple="true"
+           :variables.sync="filter.variables"
+          ></opensilex-VariableSelector>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
@@ -57,7 +55,8 @@
         <opensilex-FilterField>
           <opensilex-ExperimentSelector
             label="DataView.filter.experiments"
-            :experiments.sync="filter.experiment"
+            :experiments.sync="filter.experiments"
+            :multiple="true"
           ></opensilex-ExperimentSelector>
         </opensilex-FilterField> 
 
@@ -65,15 +64,13 @@
         <opensilex-FilterField>
           <opensilex-SelectForm
             label="DataView.filter.scientificObjects"
+            placeholder="DataView.filter.scientificObjects-placeholder"
             :selected.sync="filter.scientificObjects"
-          ></opensilex-SelectForm>
-        </opensilex-FilterField>
-
-        <!-- Sensor -->
-        <opensilex-FilterField>
-          <opensilex-SelectForm
-            label="DataView.filter.sensor"
-            :selected.sync="filter.scientificObjects"
+            :conversionMethod="soGetDTOToSelectNode"
+            modalComponent="opensilex-ScientificObjectModalList"
+            :isModalSearch="true"
+            :clearable="false"
+            :maximumSelectedItems="1"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -344,13 +341,20 @@ export default class DataView extends Vue {
       provUris = [provUris];
     }
 
+    let scientificObjects = [];
+    if (this.filter.scientificObjects) {
+      for (let i in this.filter.scientificObjects) {
+        scientificObjects.push(this.filter.scientificObjects[i].id);
+      }
+    }
+
     return new Promise((resolve, reject) => {
       this.service.searchDataList(
         this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
-        this.$opensilex.prepareGetParameter(this.filter.experiments), // experiments
-        this.filter.scientificObjects, // scientific_object
+        this.filter.experiments, // experiments
+        scientificObjects, // scientific_object
         this.$opensilex.prepareGetParameter(this.filter.variables), // variables
         undefined, // min_confidence
         undefined, // max_confidence
@@ -393,6 +397,16 @@ export default class DataView extends Vue {
     });
   }
 
+  soGetDTOToSelectNode(dto) {
+    if (dto) {
+      return {
+        id: dto.uri,
+        label: dto.name
+      };
+    }
+    return null;
+  }
+
 }
 </script>
 
@@ -417,15 +431,9 @@ en:
     filter:
       label: Search data
       experiments:  Experiment(s)
-      traits: Filter par Trait(s)
-      methods:  Method(s)
-      units:  Unit(s)
+      variables: Variable(s)
       scientificObjects: scientific object(s)
-      sensor: sensor
-    placeholder:
-      traits: All Traits
-      methods: All Methods
-      units: All Units
+      provenance: Provenance
 
 fr:
   DataView:
@@ -442,15 +450,9 @@ fr:
     filter:
       label: Rechercher des données
       experiments:  Expérimentation(s)
-      traits:  Trait(s)
-      methods: Méthode(s)
-      units:  Unité(s)
+      variables: Variable(s)
       scientificObject: Objet(s) scientifique(s)
-      sensor: capteur
-    placeholder:
-      traits: Tous les Traits
-      methods: Toutes les Méthodes
-      units: Toutes les Unités
+      provenance: Provenance
 
       
   

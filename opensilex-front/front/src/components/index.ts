@@ -507,8 +507,8 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
-import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
-components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
+import DataFileProvenanceSelector from './data/DataFileProvenanceSelector.vue';
+components["opensilex-DataFileProvenanceSelector"] = DataFileProvenanceSelector;
 import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';
@@ -533,6 +533,8 @@ import DataForm2 from './data/form/DataForm2.vue';
 components["opensilex-DataForm2"] = DataForm2;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
 components["opensilex-ProvenanceForm"] = ProvenanceForm;
+import DataFilesView from './data/DataFilesView.vue';
+components["opensilex-DataFilesView"] = DataFilesView;
 
 // PHIS
 //IMAGES

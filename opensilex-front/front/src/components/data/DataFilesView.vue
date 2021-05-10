@@ -2,18 +2,9 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-bar-chart-line"
-      title="component.menu.data.label"
-      description="DataView.description"
+      title="component.menu.datafiles.label"
+      description="DatafilesView.description"
     ></opensilex-PageHeader>
-
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton
-          @click="dataForm.showCreateForm()"
-          label="OntologyCsvImporter.import"
-        ></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
 
     <opensilex-SearchFilterField
       @search="refresh()"
@@ -23,13 +14,14 @@
     >
       <template v-slot:filters>
 
-        <!-- Variables -->
+        <!-- Type -->
         <opensilex-FilterField>
-          <opensilex-VariableSelector
-           label="DataView.filter.variables"
-           :multiple="true"
-           :variables.sync="filter.variables"
-          ></opensilex-VariableSelector>
+          <opensilex-TypeForm
+            :type.sync="filter.rdf_type"
+            :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
+            :ignoreRoot="false"
+            placeholder="ScientificObjectDataFiles.rdfType-placeholder"
+          ></opensilex-TypeForm>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
@@ -97,18 +89,10 @@
     <opensilex-PageContent>
       <template v-slot></template>
     </opensilex-PageContent>
-    <opensilex-DataForm
-      ref="dataForm"
-      @onCreate="refresh()"
-      @onUpdate="refresh()"
-    ></opensilex-DataForm>
 
-    <opensilex-GenerateDataTemplateFrom
-      ref="templateForm"
-    ></opensilex-GenerateDataTemplateFrom>
     <opensilex-TableAsyncView
       ref="tableRef"
-      :searchMethod="searchDataList"
+      :searchMethod="searchDatafiles"
       :fields="fields"
       defaultSortBy="name"
     >
@@ -136,14 +120,8 @@
         </b-dropdown>
       </template>
 
-      <template v-slot:cell(variable)="{ data }">
-        <opensilex-UriLink
-          :uri="data.item.variable"
-          :value="data.item.variable"
-          :to="{
-            path: '/variable/' + encodeURIComponent(data.item.variable),
-          }"
-        ></opensilex-UriLink>
+      <template v-slot:cell(scientific_object)="{ data }">
+        {{ data.item.scientific_objects }}
       </template>
 
       <template v-slot:cell(provenance)="{ data }">
@@ -154,6 +132,24 @@
           @click="showProvenanceDetailsModal(data.item)"
         ></opensilex-UriLink>
       </template>
+
+       <template v-slot:cell(type)="{ data }">
+          <div>{{ rdf_types[data.item.rdf_type] }}</div>
+        </template>
+
+        <template v-slot:cell(actions)="{data}">
+          <b-button-group size="sm">
+            <opensilex-Button
+              :disabled="!images_rdf_types.includes(data.item.rdf_type)"
+              component="opensilex-DocumentDetails"
+              @click="showImage(data.item)"
+              label="ScientificObjectDataFiles.displayImage"
+              :small="true"
+              icon= "ik#ik-eye"
+              variant="outline-info"
+            ></opensilex-Button>
+          </b-button-group>
+        </template>
     </opensilex-TableAsyncView>
 
 
@@ -168,20 +164,23 @@
     <opensilex-DataProvenanceModalView 
       ref="dataProvenanceModalView"        
     ></opensilex-DataProvenanceModalView>
+
+    <opensilex-ImageModal      
+      ref="imageModal"
+      :fileUrl.sync="imageUrl"
+    ></opensilex-ImageModal>
   </div>
 </template>
 
 <script lang="ts">
 import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
-import VueI18n from "vue-i18n";
-import moment from "moment";
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
-export default class DataView extends Vue {
+export default class DataFilesView extends Vue {
   $opensilex: any;
   $store: any;
   service: any;
@@ -190,6 +189,7 @@ export default class DataView extends Vue {
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
+  imageUrl = null;
 
   @Ref("templateForm") readonly templateForm!: any;
 
@@ -198,21 +198,16 @@ export default class DataView extends Vue {
   }
 
   @Ref("tableRef") readonly tableRef!: any;
-
-  @Ref("dataForm") readonly dataForm!: any;
-
   @Ref("searchField") readonly searchField!: any;
-
   @Ref("provSelector") readonly provSelector!: any;
-
   @Ref("resultModal") readonly resultModal!: any;
-
   @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  @Ref("imageModal") readonly imageModal!: any;
 
   filter = {
     start_date: null,
     end_date: null,
-    variables: [],
+    rdf_type: null,
     provenance: null,
     experiments: [],
     scientificObjects: []
@@ -222,7 +217,7 @@ export default class DataView extends Vue {
     this.filter = {
       start_date: null,
       end_date: null,
-      variables: [],
+      rdf_type: null,
       provenance: null,
       experiments: [],
       scientificObjects: []
@@ -237,7 +232,7 @@ export default class DataView extends Vue {
   get fields() {
     let tableFields: any = [
       {
-        key: "scientific_objects",
+        key: "scientific_object",
         label: "ExperimentData.object",
       },
       {
@@ -246,27 +241,21 @@ export default class DataView extends Vue {
         sortable: true,
       },
       {
-        key: "variable",
-        label: "DataView.list.variable",
+        key: "type",
+        label: "ScientificObjectDataFiles.rdfType",
         sortable: true,
-      },
-      {
-        key: "value",
-        label: "DataView.list.value",
-        sortable: false,
       },
       {
         key: "provenance",
         label: "DataView.list.provenance",
         sortable: false
       },
+      {
+        key: "actions",
+        label: "component.common.actions"
+      }
     ];
-    // if (!this.noActions) {
-    //   tableFields.push({
-    //     key: "actions",
-    //     label: "component.common.actions",
-    //   });
-    // }
+
     return tableFields;
   }
 
@@ -282,6 +271,8 @@ export default class DataView extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.DataService");
     let query: any = this.$route.query;
+
+    this.loadTypes();
 
     this.reset();
     for (let [key, value] of Object.entries(this.filter)) {
@@ -335,7 +326,7 @@ export default class DataView extends Vue {
 
   provenances = {};
 
-  searchDataList(options) {
+  searchDatafiles(options) {
     let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
     if (provUris != undefined) {
       provUris = [provUris];
@@ -349,15 +340,13 @@ export default class DataView extends Vue {
     }
 
     return new Promise((resolve, reject) => {
-      this.service.searchDataList(
+      this.service.getDataFileDescriptionsBySearch(
+        this.$opensilex.prepareGetParameter(this.filter.rdf_type),
         this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
         this.filter.experiments, // experiments
         scientificObjects, // scientific_object
-        this.$opensilex.prepareGetParameter(this.filter.variables), // variables
-        undefined, // min_confidence
-        undefined, // max_confidence
         provUris, // provenance
         undefined, // metadata
         undefined, // order_by
@@ -405,6 +394,48 @@ export default class DataView extends Vue {
       };
     }
     return null;
+  }
+
+  showImage(item: any) {
+    let path = "/core/datafiles/" + encodeURIComponent(item.uri) + "/thumbnail?scaled_width=600&scaled_height=600";
+      let promise = this.$opensilex.viewImageFromGetService(path);
+      promise.then((result) => {
+        this.imageUrl = result;
+        this.imageModal.show();
+      })    
+  }
+
+  images_rdf_types = [];
+  rdf_types = {};
+  loadTypes() {
+    this.$opensilex.getService("opensilex.OntologyService")
+    .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
+    .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+      console.log(http.response.result);
+      let parentType = http.response.result[0];
+      let key = parentType.uri;
+      this.rdf_types[key] = parentType.name;
+      for (let i = 0; i < parentType.children.length; i++) {   
+        let key = parentType.children[i].uri;
+        this.rdf_types[key] = parentType.children[i].name;
+        if (Oeso.checkURIs(key, Oeso.IMAGE_TYPE_URI)) {
+          let imageType = parentType.children[i];
+          this.images_rdf_types.push(imageType.uri);
+          for (let i = 0; i < imageType.children.length; i++) {
+            let key = imageType.children[i].uri;
+            this.rdf_types[key] = imageType.children[i].name;
+            this.images_rdf_types.push(key);
+          }
+        } else {
+          let subType = parentType.children[i];
+          for (let i = 0; i < subType.children.length; i++) {
+            let key = subType.children[i].uri;
+            this.rdf_types[key] = subType.children[i].name;
+          }
+        }   
+      }
+    })
+    .catch(this.$opensilex.errorHandler);
   }
 
 }

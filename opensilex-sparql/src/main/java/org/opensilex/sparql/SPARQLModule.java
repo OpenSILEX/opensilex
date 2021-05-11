@@ -7,7 +7,11 @@ package org.opensilex.sparql;
 
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
@@ -45,12 +49,25 @@ public class SPARQLModule extends OpenSilexModule {
     
     private SPARQLConfig sparqlConfig;
 
+    private Map<String, URI> customPrefixes = new HashMap<>();
+
     @Override
     public void setup() throws Exception {
         sparqlConfig = this.getConfig(SPARQLConfig.class);
         if (sparqlConfig != null) {
             baseURIAlias = sparqlConfig.baseURIAlias() + "-";
             baseURI = new URI(sparqlConfig.baseURI());
+            sparqlConfig.customPrefixes().forEach((prefix, uri) -> {
+                try {
+                    if (URIDeserializer.validateURI(uri)) {
+                        customPrefixes.put(prefix, new URI(uri));
+                    } else {
+                        throw new RuntimeException("Invalid custom uri prefix: " + prefix + " - " + uri);
+                    }
+                } catch (URISyntaxException ex) {
+                    throw new RuntimeException("Invalid custom uri prefix: " + prefix + " - " + uri, ex);
+                }
+            });
         } else {
             baseURIAlias = "";
             baseURI = new URI(DEFAULT_BASE_URI);
@@ -81,6 +98,10 @@ public class SPARQLModule extends OpenSilexModule {
 
     public URI getSuffixedURI(String suffix) {
         return baseURI.resolve(suffix);
+    }
+
+    public Map<String, URI> getCustomPrefixes() {
+        return customPrefixes;
     }
 
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {

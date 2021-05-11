@@ -58,7 +58,7 @@
 
 <script lang="ts">
 import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
-import Vue from "vue";
+import Vue, { Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
 
 @ComponentAnnotation

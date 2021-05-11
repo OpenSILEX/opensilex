@@ -38,7 +38,7 @@ public class DataValidateUtils {
         } else {
             switch (dataType.toString()) {
                 case "xsd:integer":
-                    if ((value instanceof Integer)) {
+                    if (value instanceof Integer) {
                         checkCoherence = true;
                     }
                     break;
@@ -48,22 +48,22 @@ public class DataValidateUtils {
                     }
                     break;
                 case "xsd:boolean":
-                    if ((value instanceof Boolean)) {
+                    if (value instanceof Boolean) {
                         checkCoherence = true;
                     }
                     break;
                 case "xsd:date":
-                    if ((value instanceof String) && isDate(value.toString())) {
+                    if (value instanceof String && isDate(value.toString())) {
                         checkCoherence = true;
                     }
                     break;
                 case "xsd:datetime":
-                    if ((value instanceof String && isDateTime(value.toString()))) {
+                    if (value instanceof String && isDateTime(value.toString())) {
                         checkCoherence = true;
                     }
                     break;
                 case "xsd:string":
-                    if ((value instanceof String)) {
+                    if (value instanceof String) {
                         checkCoherence = true;
                     }
                     break;

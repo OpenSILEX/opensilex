@@ -506,22 +506,22 @@ export default class VisuView extends Vue {
   }
   imagesFilter(data: Array<DataFileGetDTO>, point: any) {
     data.forEach(element => {
-      const image: Image = {
-        imageUri: element.uri,
-        uri:
-          this.$opensilex.getBaseAPI() +
-          "/data/file/thumbnail" +
-          encodeURIComponent(element.uri) +
-          "?scaledHeight=800",
-        type: element.rdf_type,
-        objectUri: element.scientific_object,
-        date: element.date,
-        provenanceUri: element.provenance.uri,
-        imageIndex: point.imageIndex,
-        serieIndex: point.serieIndex
-      };
-      this.visuImages.addImage(image);
-    });
+        const image: Image = {
+          imageUri: element.uri,
+          uri:
+            this.$opensilex.getBaseAPI() +
+            "/data/file/thumbnail" +
+            encodeURIComponent(element.uri) +
+            "?scaledHeight=800",
+          type: element.rdf_type,
+          objectUri: element.scientific_object,
+          date: element.date,
+          provenanceUri: element.provenance.uri,
+          imageIndex: point.imageIndex,
+          serieIndex: point.serieIndex
+        };
+        this.visuImages.addImage(image);
+      });
   }
 /* 
   buildEventSeries() {

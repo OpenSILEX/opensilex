@@ -63,7 +63,7 @@
     </opensilex-SearchFilterField>
 
     <opensilex-TableAsyncView
-      ref="provTableRef"
+      ref="tableRef"
       :searchMethod="searchProvenance"
       :fields="fields"
       defaultSortBy="name"
@@ -75,6 +75,19 @@
           :noExternalLink="true"
         ></opensilex-UriLink>
       </template>
+
+      <template v-slot:cell(activity_type)="{ data }">
+        {{ getActivity(data.item).rdf_type }}
+      </template>
+
+      <template v-slot:cell(activity_start_date)="{ data }">
+        {{ getActivity(data.item).start_date }}
+      </template>
+
+      <template v-slot:cell(activity_end_date)="{ data }">
+        {{ getActivity(data.item).end_date }}
+      </template>
+
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
@@ -248,6 +261,24 @@ export default class ProvenanceView extends Vue {
       options.currentPage,
       options.pageSize
     )
+  }
+
+  getActivity(item) {
+    let activity = {
+      rdf_type:null,
+      start_date: null,
+      end_date: null
+    }
+
+    if (item.activity != null || item.activity.length() > 0) {
+      activity = {
+        rdf_type: item.activity[0].rdf_type,
+        start_date: item.activity[0].start_date,
+        end_date: item.activity[0].end_date
+      }
+    }
+
+    return activity;
   }
 
 }

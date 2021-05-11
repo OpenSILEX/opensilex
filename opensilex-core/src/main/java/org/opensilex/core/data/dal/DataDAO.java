@@ -88,8 +88,7 @@ public class DataDAO {
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("provenance", "scientificObject", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("scientificObject"
-                + "", "date"));
+        dataCollection.createIndex(Indexes.ascending("scientificObject", "date"));
 
     }
 

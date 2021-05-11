@@ -69,15 +69,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  SecurityService,
-  UserGetDTO,
-  GroupDTO,
-  NamedResourceDTO
-} from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { SecurityService } from "opensilex-security/index";
 
 @Component
 export default class UserList extends Vue {

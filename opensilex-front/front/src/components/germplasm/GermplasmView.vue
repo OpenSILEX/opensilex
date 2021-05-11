@@ -51,18 +51,8 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-
-import { 
-  GermplasmService, 
-  GermplasmCreationDTO, 
-  GermplasmUpdateDTO,
-  GermplasmGetAllDTO,
-  GermplasmGetSingleDTO,
-  OntologyService, 
-  ResourceTreeDTO 
-  } from "opensilex-core/index"
-import GermplasmCreate from "./GermplasmCreate.vue";
-import Oeso from "../../ontologies/Oeso";
+// @ts-ignore
+import { GermplasmService, GermplasmCreationDTO, GermplasmUpdateDTO, GermplasmGetSingleDTO } from "opensilex-core/index"
 import VueRouter from "vue-router";
 
 @Component

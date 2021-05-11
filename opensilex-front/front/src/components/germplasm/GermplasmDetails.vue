@@ -169,11 +169,8 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  GermplasmGetSingleDTO,
-  GermplasmUpdateDTO,
-  GermplasmService,
-} from "opensilex-core/index";
+// @ts-ignore
+import { GermplasmGetSingleDTO, GermplasmUpdateDTO, GermplasmService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";

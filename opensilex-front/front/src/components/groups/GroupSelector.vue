@@ -14,11 +14,11 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
+import Vue from "vue";
+// @ts-ignore
 import { SecurityService, GroupDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class GroupSelector extends Vue {

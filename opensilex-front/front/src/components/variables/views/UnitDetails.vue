@@ -25,7 +25,7 @@
 <script lang="ts">
 import { Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import { UnitGetDTO } from "opensilex-core/index";
+// @ts-ignore
 import {UnitDetailsDTO} from "opensilex-core/model/unitDetailsDTO";
 
 

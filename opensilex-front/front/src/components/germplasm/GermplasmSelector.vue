@@ -18,12 +18,13 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
-import { SpeciesDTO, GermplasmGetSingleDTO } from "opensilex-core/index";
+import Vue from "vue";
+// @ts-ignore
+import { SecurityService } from "opensilex-security/index";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { GermplasmGetSingleDTO } from "opensilex-core/index";
 
 @Component
 export default class GermplasmSelector extends Vue {

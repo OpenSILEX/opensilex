@@ -101,11 +101,11 @@
 <script lang="ts">
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import {ExperimentsService, ExperimentGetDTO} from "opensilex-core/index";
-
+    // @ts-ignore
     import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
-    import AnnotationModalForm from "../annotations/form/AnnotationModalForm.vue";
 
     @Component
     export default class ExperimentView extends Vue {

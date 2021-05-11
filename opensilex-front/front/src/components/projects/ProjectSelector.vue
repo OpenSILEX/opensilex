@@ -17,8 +17,10 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
-import { ProjectsService, ProjectGetDTO } from "opensilex-core/index";
+import Vue from "vue";
+// @ts-ignore
+import { ProjectGetDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

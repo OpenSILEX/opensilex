@@ -124,9 +124,9 @@
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import { DocumentsService,DocumentGetDTO } from "opensilex-core/index"; 
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+// @ts-ignore
+import { DocumentsService } from "opensilex-core/index"; 
+import { OpenSilexResponse } from "../../lib/HttpResponse";
 
 @Component
 export default class DocumentForm extends Vue {

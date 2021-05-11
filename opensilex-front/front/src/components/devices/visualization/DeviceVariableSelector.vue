@@ -19,10 +19,8 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  NamedResourceDTO,
-  DevicesService
-} from "opensilex-core/index";
+// @ts-ignore
+import { NamedResourceDTO } from "opensilex-core/index";
 
 @Component
 export default class DeviceVariableSelector extends Vue {

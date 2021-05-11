@@ -40,22 +40,6 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import copy from "copy-to-clipboard";
-import VueI18n from "vue-i18n";
-import moment from "moment";
-import {
-  ProjectGetDTO,
-  SpeciesDTO,
-  ExperimentGetDTO,
-  ResourceTreeDTO,
-  InfrastructureGetDTO,
-  ExperimentsService,
-  OrganisationsService,
-  ProjectsService,
-  SpeciesService
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { UserGetDTO } from "opensilex-security/index";
 
 @Component
 export default class ExperimentListView extends Vue {

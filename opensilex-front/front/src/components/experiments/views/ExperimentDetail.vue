@@ -150,26 +150,12 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ExperimentCreationDTO,
-  ExperimentGetDTO,
-  ExperimentsService,
-  ProjectCreationDTO,
-  InfrastructureGetDTO,
-  ProjectsService,
-  OrganisationsService,
-  SpeciesDTO,
-  SpeciesService,
-  FactorsService,
-  FactorGetDTO,
-} from "opensilex-core/index";
-import {
-  SecurityService,
-  GroupDTO,
-  UserGetDTO,
-} from "opensilex-security/index";
-import VueI18n from "vue-i18n";
+// @ts-ignore
+import { ExperimentGetDTO, ExperimentsService, ProjectsService, OrganisationsService, SpeciesDTO, SpeciesService, FactorsService, FactorGetDTO } from "opensilex-core/index";
+// @ts-ignore
+import { SecurityService, GroupDTO, UserGetDTO } from "opensilex-security/index";
 import moment from "moment";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentDetail extends Vue {

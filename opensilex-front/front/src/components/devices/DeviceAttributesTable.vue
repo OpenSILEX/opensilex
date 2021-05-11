@@ -34,14 +34,8 @@
 <script lang="ts">
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { DevicesService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-
-
-
-
 
 @Component
 export default class DeviceAttributesTable extends Vue {

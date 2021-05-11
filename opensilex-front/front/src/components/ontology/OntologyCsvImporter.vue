@@ -135,6 +135,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { OntologyService } from "opensilex-core/index";
 
 @Component

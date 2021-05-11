@@ -79,6 +79,7 @@
 import Vue from "vue";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import EntityCreate from "./EntityCreate.vue";
+// @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
 
 @Component

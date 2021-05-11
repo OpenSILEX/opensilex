@@ -45,9 +45,8 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileForm extends Vue {

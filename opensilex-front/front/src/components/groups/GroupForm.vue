@@ -39,16 +39,10 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import {
-  UserCreationDTO,
-  GroupUpdateDTO,
-  SecurityService,
-  UserGetDTO,
-  ProfileGetDTO
-} from "opensilex-security/index";
+// @ts-ignore
+import { GroupUpdateDTO, SecurityService } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import GroupUserProfileForm from "./GroupUserProfileForm.vue";
-import { BvModal } from "bootstrap-vue";
 
 @Component
 export default class GroupForm extends Vue {

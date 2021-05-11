@@ -117,6 +117,7 @@ import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
+// @ts-ignore
 import { VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";

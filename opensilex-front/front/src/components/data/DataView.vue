@@ -135,12 +135,8 @@
 <script lang="ts">
 import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
-import VueI18n from "vue-i18n";
-import moment from "moment";
-import { ExperimentGetListDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { UserGetDTO } from "opensilex-security/index";
 
 @Component
 export default class DataView extends Vue {

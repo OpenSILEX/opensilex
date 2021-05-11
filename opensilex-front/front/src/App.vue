@@ -59,15 +59,7 @@
 <script lang="ts">
 import { Component as ComponentAnnotation, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { ModuleComponentDefinition } from "./models/ModuleComponentDefinition";
-import { VueConstructor, Component } from "vue";
 import OpenSilexVuePlugin from "./models/OpenSilexVuePlugin";
-import { FrontConfigDTO } from "./lib";
-import { AuthenticationService, TokenGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import { User } from "./models/User";
 
 @ComponentAnnotation
 export default class App extends Vue {

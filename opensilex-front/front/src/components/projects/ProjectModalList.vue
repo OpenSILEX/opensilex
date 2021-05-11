@@ -29,12 +29,7 @@
 </template>
 
 <script lang="ts">
-import moment from "moment";
 import { Component, Ref, Prop } from "vue-property-decorator";
-import Vue from "vue";
-import VueRouter from "vue-router";
-import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
 import ProjectList from "./ProjectList.vue";
 
 @Component

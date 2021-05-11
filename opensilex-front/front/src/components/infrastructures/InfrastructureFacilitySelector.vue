@@ -21,10 +21,12 @@
 <script lang="ts">
     import { Component, Prop, PropSync } from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+    // @ts-ignore
     import {OrganisationsService} from "opensilex-core/api/organisations.service";
+    // @ts-ignore
     import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-    import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 
     @Component
     export default class InfrastructureFacilitySelector extends Vue {

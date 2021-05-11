@@ -40,7 +40,9 @@
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import PositionForm from "../../positions/form/PositionForm.vue";
+    // @ts-ignore
     import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
+    // @ts-ignore
     import {ConcernedItemPositionCreationDTO} from "opensilex-core/model/concernedItemPositionCreationDTO";
 
     @Component

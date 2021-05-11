@@ -184,10 +184,9 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment";
-import {
-  SpeciesDTO,
-  SpeciesService,
-} from "opensilex-core/index";
+// @ts-ignore
+import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

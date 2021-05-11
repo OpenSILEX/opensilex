@@ -65,10 +65,6 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { SecurityService, ProfileGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProfileList extends Vue {

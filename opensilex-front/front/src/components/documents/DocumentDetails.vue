@@ -114,18 +114,10 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  DocumentGetDTO,
-  DocumentsService,
-  ResourceTreeDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import { DocumentGetDTO, DocumentsService } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
-import {
-  SecurityService,
-  UserGetDTO
-} from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { faFileExport, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 @Component
 export default class DocumentDetails extends Vue {

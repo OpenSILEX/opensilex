@@ -24,12 +24,9 @@
 <script lang="ts">
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
-import {
-  DataService,
-  DataGetDTO,
-  ProvenanceGetDTO
-} from "opensilex-core/index";
-
+// @ts-ignore
+import { DataService, DataGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";

@@ -16,11 +16,12 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
+import Vue from "vue";
+// @ts-ignore
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+// @ts-ignore
 import { SpeciesDTO } from "opensilex-core/index";
 
 @Component

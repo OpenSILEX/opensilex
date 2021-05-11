@@ -59,10 +59,6 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import { SecurityService, GroupDTO } from "opensilex-security/index";
 
 @Component
 export default class GroupList extends Vue {

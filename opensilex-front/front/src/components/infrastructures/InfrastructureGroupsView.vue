@@ -99,14 +99,8 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {
-  OrganisationsService,
-  ResourceTreeDTO,
-  InfrastructureGetDTO,
-  InfrastructureFacilityGetDTO,
-  InfrastructureTeamDTO
-} from "opensilex-core/index";
-import { GroupCreationDTO, GroupUpdateDTO } from "opensilex-security/index";
+// @ts-ignore
+import { InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureGroupsView extends Vue {

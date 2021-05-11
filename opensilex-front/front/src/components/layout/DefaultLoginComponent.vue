@@ -110,14 +110,10 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
-import {
-  SecurityService,
-  TokenGetDTO,
-  AuthenticationService
-} from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import { FrontConfigDTO } from "../../lib";
 
 @Component

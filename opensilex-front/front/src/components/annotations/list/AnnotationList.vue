@@ -99,12 +99,17 @@
     import {Component, Ref, Prop, Watch} from "vue-property-decorator";
     import Vue from "vue";
 
+    // @ts-ignore
     import {AnnotationsService} from "opensilex-core/api/annotations.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+    // @ts-ignore
     import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+    // @ts-ignore
     import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
     import AnnotationModalForm from "../form/AnnotationModalForm.vue";
+    // @ts-ignore
     import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+    // @ts-ignore
     import {SecurityService} from "opensilex-security/api/security.service";
 
     @Component

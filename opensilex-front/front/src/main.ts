@@ -357,6 +357,7 @@ Vue.component("sl-vue-tree", SlVueTree);
 console.debug("Load default components...");
 import components from './components';
 import VueRouter from 'vue-router';
+// @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
 
 for (let componentName in components) {

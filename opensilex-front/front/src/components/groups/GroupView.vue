@@ -38,14 +38,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {
-  GroupCreationDTO,
-  GroupUpdateDTO,
-  GroupDTO,
-  SecurityService,
-  ProfileGetDTO
-} from "opensilex-security/index";
+// @ts-ignore
+import { SecurityService } from "opensilex-security/index";
 
 @Component
 export default class GroupView extends Vue {

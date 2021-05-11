@@ -54,11 +54,6 @@
 import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment";
-import {
-  SpeciesDTO,
-  SpeciesService,
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class AssociatedExperimentsList extends Vue {

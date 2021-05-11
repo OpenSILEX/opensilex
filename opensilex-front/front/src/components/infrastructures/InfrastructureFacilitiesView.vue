@@ -104,10 +104,8 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  OrganisationsService,
-  InfrastructureGetDTO,
-} from "opensilex-core/index";
+// @ts-ignore
+import { InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {

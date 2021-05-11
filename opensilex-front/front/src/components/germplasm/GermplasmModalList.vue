@@ -26,17 +26,7 @@
 
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import VueRouter from "vue-router";
-import {
-  GermplasmService,
-  GermplasmGetAllDTO,
-  ResourceTreeDTO
-} from "opensilex-core/index";
-
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import GermplasmList from "./GermplasmList.vue";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class GermplasmModalList extends GermplasmList {

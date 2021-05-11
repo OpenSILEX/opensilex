@@ -261,16 +261,21 @@ import Vue from "vue";
 import {DragBox} from "ol/interaction";
 import {platformModifierKeyOnly} from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
+// @ts-ignore
 import {ScientificObjectNodeDTO} from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
+// @ts-ignore
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
+// @ts-ignore
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+// @ts-ignore
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
-import MultiPolygon from "ol/geom/MultiPolygon";
+// @ts-ignore
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component

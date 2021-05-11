@@ -34,8 +34,6 @@
 
     import { Component, Prop } from "vue-property-decorator";
     import Vue from "vue";
-    import Oeso from "../../ontologies/Oeso";
-    import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
     import { BDropdown } from 'bootstrap-vue';
 
     @Component

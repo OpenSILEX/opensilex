@@ -135,9 +135,9 @@
 <script lang="ts">
 import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-import { GermplasmCreationDTO, GermplasmGetSingleDTO, GermplasmService, OntologyService, ResourceTreeDTO } from "opensilex-core/index"; 
+// @ts-ignore
+import { GermplasmService } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class GermplasmForm extends Vue {

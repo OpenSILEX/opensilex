@@ -219,8 +219,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { ScientificObjectsService } from "opensilex-core/index";
-import HttpResponse from "opensilex-core/HttpResponse";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 @Component

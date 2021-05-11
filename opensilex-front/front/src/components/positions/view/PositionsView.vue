@@ -18,6 +18,7 @@
 <script lang="ts">
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import {ConcernedItemPositionGetDTO} from "opensilex-core/model/concernedItemPositionGetDTO";
 
     @Component

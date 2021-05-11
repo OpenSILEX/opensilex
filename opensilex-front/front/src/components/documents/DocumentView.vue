@@ -21,10 +21,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { DocumentsService, DocumentGetDTO} from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "../../lib/HttpResponse";
+// @ts-ignore
+import { DocumentsService } from "opensilex-core/index";
 
 @Component
 export default class DocumentView extends Vue {

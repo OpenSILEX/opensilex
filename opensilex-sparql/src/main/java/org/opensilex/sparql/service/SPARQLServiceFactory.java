@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.ext.Provider;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceConfig;
@@ -96,7 +97,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
             SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI());
 
-            if (!sparqlConfig.generationBaseURI().isBlank()
+            if (!StringUtils.isBlank(sparqlConfig.generationBaseURI())
                     && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI().toString())
                     && !sparqlConfig.baseURIAlias().equals(sparqlConfig.generationBaseURIAlias())) {
                 SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());

@@ -484,15 +484,13 @@ public class DataFilesAPI {
         for (DataFileCreationDTO dto : dtoList) {          
             
             //check objects uri
-            if (dto.getScientificObjects() != null) {
-                for (URI object:dto.getScientificObjects()) {
-                    if (!objectURIs.contains(object)) {
-                        objectURIs.add(object);
-                        if (!sparql.uriExists(ScientificObjectModel.class, object)) {
-                            notFoundedObjectURIs.add(object);
-                        }
+            if (dto.getScientificObject() != null) {
+                if (!objectURIs.contains(dto.getScientificObject())) {
+                    objectURIs.add(dto.getScientificObject());
+                    if (!sparql.uriExists(ScientificObjectModel.class, dto.getScientificObject())) {
+                        notFoundedObjectURIs.add(dto.getScientificObject());
                     }
-                }                
+                }         
             }
         
             //check provenance uri

@@ -49,7 +49,7 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         DataFileGetDTO dto = new DataFileGetDTO();        
         dto.setUri(model.getUri());
         dto.setRdfType(model.getRdfType());
-        dto.setScientificObjects(model.getScientificObjects());
+        dto.setScientificObject(model.getScientificObject());
         dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());        
         dto.setMetadata(model.getMetadata());   
         dto.setProvenance(model.getProvenance());

@@ -30,7 +30,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "date","timezone", "scientific_objects", "provenance",  "metadata"})
+@JsonPropertyOrder({"uri", "rdf_type", "date","timezone", "scientific_object", "provenance",  "metadata"})
 public class DataFileCreationDTO {
     
     @ValidURI
@@ -46,9 +46,9 @@ public class DataFileCreationDTO {
     @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE)
     private String date;
     
-    @JsonProperty("scientific_objects")
+    @JsonProperty("scientific_object")
     @ApiModelProperty(value = "scientific objects URIs on which the data have been collected")
-    private List<URI> scientificObjects;
+    private URI scientificObject;
     
     @NotNull
     private DataProvenanceModel provenance;
@@ -75,12 +75,12 @@ public class DataFileCreationDTO {
         this.rdfType = rdfType;
     }
 
-    public List<URI> getScientificObjects() {
-        return scientificObjects;
+    public URI getScientificObject() {
+        return scientificObject;
     }
 
-    public void setScientificObjects(List<URI> scientificObjects) {
-        this.scientificObjects = scientificObjects;
+    public void setScientificObject(URI scientificObject) {
+        this.scientificObject = scientificObject;
     }
 
     public DataProvenanceModel getProvenance() {
@@ -121,7 +121,7 @@ public class DataFileCreationDTO {
         model.setMetadata(metadata);
         model.setProvenance(provenance);
         model.setRdfType(rdfType);
-        model.setScientificObjects(scientificObjects);
+        model.setScientificObject(scientificObject);
         model.setUri(uri);
         
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());

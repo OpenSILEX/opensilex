@@ -150,8 +150,8 @@ public class ObservationDTO {
             observation.setObservationTimeStamp(model.getDate().toString());
         }
         
-        if (model.getScientificObjects() != null && !model.getScientificObjects().isEmpty()) {
-            observation.setObservationUnitDbId(model.getScientificObjects().toString());
+        if (model.getScientificObject() != null) {
+            observation.setObservationUnitDbId(model.getScientificObject().toString());
         }        
         
         if (model.getVariable() != null) {

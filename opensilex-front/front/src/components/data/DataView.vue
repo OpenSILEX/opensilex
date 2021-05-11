@@ -333,6 +333,8 @@ export default class DataView extends Vue {
     });    
   }
 
+  objects = {};
+  variables = {};
   provenances = {};
 
   searchDataList(options) {
@@ -366,17 +368,62 @@ export default class DataView extends Vue {
       )
       .then((http) => {
           
+        let promiseArray = [];
+        let objectsToLoad = [];
+        let variablesToLoad = [];
         let provenancesToLoad = [];
+
         if (http.response.result.length > 0) {
           for (let i in http.response.result) {
+
+            let objectURI = http.response.result[i].scientific_object;
+            if (!objectsToLoad.includes(objectURI)
+            ) {
+              objectsToLoad.push(objectURI);
+            }
+
+            let variableURI = http.response.result[i].variable;
+            if (!variablesToLoad.includes(variableURI)) {
+              variablesToLoad.push(variableURI);
+            }
+
             let provenanceURI = http.response.result[i].provenance.uri;
             if (!provenancesToLoad.includes(provenanceURI)) {
               provenancesToLoad.push(provenanceURI);
             }
           }           
 
+          if (objectsToLoad.length > 0) {
+            let promiseObject = this.$opensilex
+              .getService("opensilex.ScientificObjectsService")
+              .getScientificObjectsListByUris(null, objectsToLoad)
+              .then((httpObj) => {
+                for (let j in httpObj.response.result) {
+                  let obj = httpObj.response.result[j];
+                  this.objects[obj.uri] =
+                    obj.name + " (" + obj.rdf_type_name + ")";
+                }
+              })
+              .catch(reject);
+            promiseArray.push(promiseObject);
+          }
+
+          if (variablesToLoad.length > 0) {
+            let promiseVariable = this.$opensilex
+              .getService("opensilex.VariablesService")
+              .getVariablesByURIs(variablesToLoad)
+              .then((httpObj) => {
+                for (let j in httpObj.response.result) {
+                  let variable = httpObj.response.result[j];
+                  this.variables[variable.uri] = variable.name;
+                }
+              })
+              .catch(reject);
+            promiseArray.push(promiseVariable);
+          }
+
           if (provenancesToLoad.length > 0) {
-            this.$opensilex
+            let promiseProvenance = this.$opensilex
               .getService("opensilex.DataService")
               .getProvenancesByURIs(provenancesToLoad)
               .then((httpObj) => {
@@ -384,10 +431,13 @@ export default class DataView extends Vue {
                   let prov = httpObj.response.result[j];
                   this.provenances[prov.uri] = prov.name;
                 }
-                resolve(http);
               })
               .catch(reject);
+            promiseArray.push(promiseProvenance);
           }
+          Promise.all(promiseArray).then((values) => {
+            resolve(http);
+          });
 
         } else {
           resolve(http);

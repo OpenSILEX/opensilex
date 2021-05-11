@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.bson.Document;
+import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -79,14 +80,14 @@ public class DataDAO {
         MongoCollection dataCollection = nosql.getDatabase()
                 .getCollection(DATA_COLLECTION_NAME, DataModel.class);
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "scientificObjects", "date"), unicityOptions);
+        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "scientificObject", "date"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "scientificObjects", "date"));
 
         MongoCollection fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", "scientificObjects", "date"), unicityOptions);
+        fileCollection.createIndex(Indexes.ascending("provenance", "scientificObject", "date"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("scientificObjects", "date"));
 
     }
@@ -484,77 +485,6 @@ public class DataDAO {
 
         return files;
 
-    }
-
-    public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
-        Set<URI> variables = new HashSet<>();
-        Map<URI, URI> variableTypes = new HashMap();
-
-        for (DataModel data : datas) {
-            if (data.getValue() != "NA") {
-                URI variableUri = data.getVariable();
-                if (!variableTypes.containsKey(variableUri)) {
-                    VariableModel variable = dao.get(data.getVariable());
-                    if (variable.getDataType() == null) {
-                        throw new NoVariableDataTypeException(variableUri);
-                    } else {
-                        variableTypes.put(variableUri,variable.getDataType());
-                    }                    
-                }
-                URI dataType = variableTypes.get(variableUri);
-                
-                if (!checkTypeCoherence(dataType, data.getValue()))  {
-                    throw new DataTypeException(variableUri, data.getValue(), dataType);
-                }
-
-            }
-        }
-    }
-
-    private Boolean checkTypeCoherence(URI dataType, Object value) {
-        Boolean checkCoherence = false;
-        if (dataType == null) {
-            checkCoherence = true;
-
-        } else {
-            switch (dataType.toString()) {
-                case "xsd:integer":
-                    if ((value instanceof Integer)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:decimal":
-                    if ((value instanceof Double)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:boolean":
-                    if ((value instanceof Boolean)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:date":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:datetime":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                case "xsd:string":
-                    if ((value instanceof String)) {
-                        checkCoherence = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return checkCoherence;
     }
 
     public DeleteResult deleteWithFilter(UserModel user, URI experimentUri, URI objectUri, URI variableUri, URI provenanceUri) throws Exception {

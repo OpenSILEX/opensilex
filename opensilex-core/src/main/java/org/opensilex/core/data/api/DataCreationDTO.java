@@ -31,7 +31,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri", "date","timezone", "scientific_objects", "variable", "value", "confidence", "provenance",  "metadata"})
+@JsonPropertyOrder({"uri", "date","timezone", "scientific_object", "variable", "value", "confidence", "provenance",  "metadata"})
 public class DataCreationDTO {
     
     public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/A"};
@@ -45,9 +45,9 @@ public class DataCreationDTO {
     @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
     private String date;
     
-    @JsonProperty("scientific_objects")
-    @ApiModelProperty(value = "scientific objects URIs on which the data have been collected", example = "http://plot01")
-    private List<URI> scientificObjects;
+    @JsonProperty("scientific_object")
+    @ApiModelProperty(value = "scientific objects URI on which the data have been collected", example = "http://plot01")
+    private URI scientificObject;
     
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
     protected String timezone;
@@ -60,6 +60,10 @@ public class DataCreationDTO {
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
+    
+    @JsonProperty("raw_data")
+    @ApiModelProperty(value = "list of repetition values")
+    private List<Object> rawData;
     
     @Min(0)
     @Max(1)
@@ -80,12 +84,12 @@ public class DataCreationDTO {
         this.uri = uri;
     }
 
-    public List<URI> getScientificObjects() {
-        return scientificObjects;
+    public URI getScientificObject() {
+        return scientificObject;
     }
 
-    public void setScientificObjects(List<URI> scientificObjects) {
-        this.scientificObjects = scientificObjects;
+    public void setScientificObject(URI scientificObject) {
+        this.scientificObject = scientificObject;
     }
 
     public URI getVariable() {
@@ -128,6 +132,14 @@ public class DataCreationDTO {
         this.value = value;
     }
 
+    public List<Object> getRawData() {
+        return rawData;
+    }
+
+    public void setRawData(List<Object> rawData) {
+        this.rawData = rawData;
+    }    
+
     public Float getConfidence() {
         return confidence;
     }
@@ -148,7 +160,7 @@ public class DataCreationDTO {
         DataModel model = new DataModel();
 
         model.setUri(getUri());        
-        model.setScientificObjects(getScientificObjects());
+        model.setScientificObject(getScientificObject());
         model.setVariable(getVariable());
         model.setProvenance(getProvenance());       
         
@@ -174,8 +186,12 @@ public class DataCreationDTO {
             }            
         } else {
             model.setValue(getValue());
-        }
+        }       
         
+        if (getRawData() != null) {
+            model.setRawData(getRawData());
+        }
+
         return model;      
         
     }   

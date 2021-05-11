@@ -24,7 +24,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
  */
 public class DataModel extends MongoModel {
 
-    private List<URI> scientificObjects;
+    private URI scientificObject;
     
     private URI variable;
     
@@ -38,16 +38,18 @@ public class DataModel extends MongoModel {
 
     private Object value;
     
+    private List<Object> rawData;
+    
     private Float confidence = null;
 
     private Document metadata;  
 
-    public List<URI> getScientificObjects() {
-        return scientificObjects;
+    public URI getScientificObject() {
+        return scientificObject;
     }
 
-    public void setScientificObjects(List<URI> scientificObjects) {
-        this.scientificObjects = scientificObjects;
+    public void setScientificObject(URI scientificObject) {
+        this.scientificObject = scientificObject;
     }
 
     public URI getVariable() {
@@ -98,6 +100,14 @@ public class DataModel extends MongoModel {
         this.value = value;
     }
 
+    public List<Object> getRawData() {
+        return rawData;
+    }
+
+    public void setRawData(List<Object> rawData) {
+        this.rawData = rawData;
+    }
+
     public Float getConfidence() {
         return confidence;
     }
@@ -124,8 +134,8 @@ public class DataModel extends MongoModel {
         }
         
         String objectsString = "";
-        if (getScientificObjects() != null) {
-            objectsString = getScientificObjects().toString();
+        if (getScientificObject() != null) {
+            objectsString = getScientificObject().toString();
         }
         
         String md5Hash = DigestUtils.md5Hex(getVariable().toString() + objectsString + provenanceString);

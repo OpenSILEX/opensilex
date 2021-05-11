@@ -506,8 +506,6 @@ export default class VisuView extends Vue {
   }
   imagesFilter(data: Array<DataFileGetDTO>, point: any) {
     data.forEach(element => {
-      element.scientific_objects.forEach(concernedItem => {
-        //else add same image many times as far as they are concerned items
         const image: Image = {
           imageUri: element.uri,
           uri:
@@ -516,7 +514,7 @@ export default class VisuView extends Vue {
             encodeURIComponent(element.uri) +
             "?scaledHeight=800",
           type: element.rdf_type,
-          objectUri: concernedItem,
+          objectUri: element.scientific_object,
           date: element.date,
           provenanceUri: element.provenance.uri,
           imageIndex: point.imageIndex,
@@ -524,7 +522,6 @@ export default class VisuView extends Vue {
         };
         this.visuImages.addImage(image);
       });
-    });
   }
 /* 
   buildEventSeries() {

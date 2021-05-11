@@ -396,7 +396,7 @@ export default class DataView extends Vue {
           if (objectsToLoad.length > 0) {
             let promiseObject = this.$opensilex
               .getService("opensilex.ScientificObjectsService")
-              .getScientificObjectsListByUris(null, objectsToLoad)
+              .getScientificObjectsListByUris(undefined, objectsToLoad)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {
                   let obj = httpObj.response.result[j];

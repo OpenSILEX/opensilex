@@ -270,11 +270,11 @@ export default class ProvenanceView extends Vue {
       end_date: null
     }
 
-    if (item.activity != null || item.activity.length() > 0) {
+    if (item.prov_activity != null && item.prov_activity.length > 0) {
       activity = {
-        rdf_type: item.activity[0].rdf_type,
-        start_date: item.activity[0].start_date,
-        end_date: item.activity[0].end_date
+        rdf_type: item.prov_activity[0].rdf_type,
+        start_date: item.prov_activity[0].start_date,
+        end_date: item.prov_activity[0].end_date
       }
     }
 

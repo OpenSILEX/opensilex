@@ -1,12 +1,11 @@
 ontologies:
-    baseURI: http://www.phenome-fppn.fr/
-    baseURIAlias: test
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            #serverURI: http://localhost:8667/rdf4j-server/
-            serverURI: http://138.102.159.37:8080/rdf4j-server/
-            repository: test-modularity
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
 
 
 file-system:
@@ -26,12 +25,9 @@ file-system:
 big-data:   
     mongodb:
         config:
-            host: 138.102.159.37
-            port: 27017
-            database: test-modularity
-#            host: localhost
-#            port: 8668
-#            database: opensilex
+            host: localhost
+            port: 8668
+            database: opensilex
 #            timezone: Europe/Paris
     
 phisws:

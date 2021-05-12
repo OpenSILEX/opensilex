@@ -121,7 +121,15 @@
       </template>
 
       <template v-slot:cell(scientific_object)="{ data }">
-        {{ data.item.scientific_objects }}
+          <opensilex-UriLink
+            :uri="data.item.scientific_object"
+            :value="objects[data.item.scientific_object]"
+            :to="{
+              path:
+                '/scientific-objects/details/' +
+                encodeURIComponent(data.item.scientific_object),
+            }"
+          ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(provenance)="{ data }">
@@ -324,6 +332,7 @@ export default class DataFilesView extends Vue {
     });    
   }
 
+  objects = {};
   provenances = {};
 
   searchDatafiles(options) {
@@ -354,29 +363,57 @@ export default class DataFilesView extends Vue {
         options.pageSize
       )
       .then((http) => {
-          
+        let promiseArray = [];
+        let objectsToLoad = [];
         let provenancesToLoad = [];
+
         if (http.response.result.length > 0) {
           for (let i in http.response.result) {
+
+            let objectURI = http.response.result[i].scientific_object;
+            if (objectURI != null && !objectsToLoad.includes(objectURI)) {
+              objectsToLoad.push(objectURI);
+            }
+
             let provenanceURI = http.response.result[i].provenance.uri;
             if (!provenancesToLoad.includes(provenanceURI)) {
               provenancesToLoad.push(provenanceURI);
             }
-          }           
+          }        
+          
 
-          if (provenancesToLoad.length > 0) {
-            this.$opensilex
-              .getService("opensilex.DataService")
-              .getProvenancesByURIs(provenancesToLoad)
-              .then((httpObj) => {
-                for (let j in httpObj.response.result) {
-                  let prov = httpObj.response.result[j];
-                  this.provenances[prov.uri] = prov.name;
-                }
-                resolve(http);
-              })
-              .catch(reject);
-          }
+            if (objectsToLoad.length > 0) {
+              let promiseObject = this.$opensilex
+                .getService("opensilex.ScientificObjectsService")
+                .getScientificObjectsListByUris(undefined, objectsToLoad)
+                .then((httpObj) => {
+                  for (let j in httpObj.response.result) {
+                    let obj = httpObj.response.result[j];
+                    this.objects[obj.uri] =
+                      obj.name + " (" + obj.rdf_type_name + ")";
+                  }
+                })
+                .catch(reject);
+              promiseArray.push(promiseObject);
+            }
+
+            if (provenancesToLoad.length > 0) {
+              let promiseProvenance = this.$opensilex
+                .getService("opensilex.DataService")
+                .getProvenancesByURIs(provenancesToLoad)
+                .then((httpObj) => {
+                  for (let j in httpObj.response.result) {
+                    let prov = httpObj.response.result[j];
+                    this.provenances[prov.uri] = prov.name;
+                  }
+                })
+                .catch(reject);
+              promiseArray.push(promiseProvenance);
+            }
+
+            Promise.all(promiseArray).then((values) => {
+              resolve(http);
+            });
 
         } else {
           resolve(http);

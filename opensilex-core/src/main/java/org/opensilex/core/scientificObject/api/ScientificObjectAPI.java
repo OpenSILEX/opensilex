@@ -166,6 +166,10 @@ public class ScientificObjectAPI {
             objectsURI = new ArrayList<>();
         }
         validateContextAccess(contextURI);
+        
+        if (contextURI == null) {
+            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         List<ScientificObjectModel> scientificObjects = dao.searchByURIs(contextURI, objectsURI, currentUser);

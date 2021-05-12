@@ -136,6 +136,18 @@
         </b-dropdown>
       </template>
 
+      <template v-slot:cell(scientific_object)="{ data }">
+          <opensilex-UriLink
+            :uri="data.item.scientific_object"
+            :value="objects[data.item.scientific_object]"
+            :to="{
+              path:
+                '/scientific-objects/details/' +
+                encodeURIComponent(data.item.scientific_object),
+            }"
+          ></opensilex-UriLink>
+      </template>
+
       <template v-slot:cell(variable)="{ data }">
         <opensilex-UriLink
           :uri="data.item.variable"
@@ -237,7 +249,7 @@ export default class DataView extends Vue {
   get fields() {
     let tableFields: any = [
       {
-        key: "scientific_objects",
+        key: "scientific_object",
         label: "ExperimentData.object",
       },
       {
@@ -377,8 +389,7 @@ export default class DataView extends Vue {
           for (let i in http.response.result) {
 
             let objectURI = http.response.result[i].scientific_object;
-            if (!objectsToLoad.includes(objectURI)
-            ) {
+            if (objectURI != null && !objectsToLoad.includes(objectURI)) {
               objectsToLoad.push(objectURI);
             }
 
@@ -391,8 +402,8 @@ export default class DataView extends Vue {
             if (!provenancesToLoad.includes(provenanceURI)) {
               provenancesToLoad.push(provenanceURI);
             }
-          }           
-
+          }
+          
           if (objectsToLoad.length > 0) {
             let promiseObject = this.$opensilex
               .getService("opensilex.ScientificObjectsService")

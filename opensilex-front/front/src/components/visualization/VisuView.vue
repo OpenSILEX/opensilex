@@ -50,13 +50,8 @@ import moment from "moment-timezone";
 import Highcharts from "highcharts";
 import { Image } from "./image";
 /* import { EventsService, EventGetDTO } from "opensilex-phis/index"; */
-import {
-  DataService,
-  DataFileGetDTO,
-  OntologyService,
-  ResourceTreeDTO,
-  DataGetDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import { DataService, DataFileGetDTO, OntologyService, DataGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";

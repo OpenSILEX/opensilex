@@ -17,12 +17,11 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
-import { ExperimentsService, ExperimentGetListDTO } from "opensilex-core/index";
+import Vue from "vue";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { ExperimentGetListDTO } from "opensilex-core/index";
 
 @Component
 export default class ExperimentSelector extends Vue {

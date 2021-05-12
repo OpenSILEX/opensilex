@@ -14,9 +14,12 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync, Watch } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
+import Vue from "vue";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+// @ts-ignore
 import { ListItemDTO } from "opensilex-core/index";
+// @ts-ignore
 import { ScientificObjectsService } from "opensilex-core/index";
 
 @Component

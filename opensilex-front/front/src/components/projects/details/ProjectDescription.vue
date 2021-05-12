@@ -106,12 +106,9 @@ import moment from "moment";
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import {
-  ProjectGetDetailDTO,
-  ExperimentGetListDTO,
-  ExperimentsService,
-  ProjectsService
-} from "opensilex-core/index";
+// @ts-ignore
+import { ProjectGetDetailDTO, ProjectsService } from "opensilex-core/index";
+// @ts-ignore
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
 
 @Component

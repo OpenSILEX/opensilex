@@ -1364,7 +1364,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     /**
      * @param rdfType the {@link RDF#type} to check
      * @param uri the {@link URI} to check
-     * @return true if uri exists in the TripleStore and if it's an instance of rdfType
+     * @return true if uri exists in the TripleStore and if it's an instance of
+     * rdfType
      */
     public boolean uriExists(URI rdfType, URI uri) throws SPARQLException {
         Var typeVar = makeVar("type");
@@ -1478,10 +1479,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject,property,object_1) ...
-     * (graph,subject,property,object_k)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject,property,object_1) ... (graph,subject,property,object_k)
      *
-     * and remove any old quad (graph,subject,property,?object) in the SPARQL graph
+     * and remove any old quad (graph,subject,property,?object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subject the triple subject URI
@@ -1513,10 +1515,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
-     * Insert a list of quad (graph,subject,property,object), (graph,subject_1,property,object) ...
-     * (graph,subject_k,property,object)
+     * Insert a list of quad (graph,subject,property,object),
+     * (graph,subject_1,property,object) ... (graph,subject_k,property,object)
      *
-     * and remove any old quad (graph,?subject,property,object) in the SPARQL graph
+     * and remove any old quad (graph,?subject,property,object) in the SPARQL
+     * graph
      *
      * @param graph the graph in which the triple(s) are present
      * @param subjects the list of subject URIS

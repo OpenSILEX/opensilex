@@ -34,10 +34,10 @@
 <script lang="ts">
 import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
-import HttpResponse from "opensilex-core/HttpResponse";
 import OWL from "../../ontologies/OWL";
-import { PropSync } from "vue-property-decorator";
+
 @Component
 export default class OntologyPropertyTreeView extends Vue {
   $opensilex: any;

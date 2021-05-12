@@ -116,11 +116,11 @@ import Vue from "vue";
 import Oeso from "../../../ontologies/Oeso";
 import moment from "moment";
 
-import {
-  AgentModel,
-  ProvenanceGetDTO,
-} from "opensilex-core/index";
+// @ts-ignore
+import { AgentModel, ProvenanceGetDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+// @ts-ignore
 import { ExperimentGetDTO } from "opensilex-core/index";
 
 @Component

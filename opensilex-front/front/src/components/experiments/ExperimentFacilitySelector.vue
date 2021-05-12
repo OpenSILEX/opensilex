@@ -40,11 +40,8 @@ import Component from "vue-class-component";
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ExperimentsService,
-  OrganisationsService,
-  ResourceTreeDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import { ExperimentsService, OrganisationsService, ResourceTreeDTO } from "opensilex-core/index";
 @Component
 export default class ExperimentFacilitySelector extends Vue {
   $opensilex: any;

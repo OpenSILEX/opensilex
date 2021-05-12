@@ -5,6 +5,7 @@
  */
 package org.opensilex.sparql;
 
+import java.util.Map;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 
@@ -48,6 +49,11 @@ public interface SPARQLConfig {
             defaultBoolean = true
     )
     public boolean usePrefixes();
+
+    @ConfigDescription(
+            value = "Custom URI prefixes"
+    )
+    public Map<String, String> customPrefixes();
 
     @ConfigDescription(
             value = "Enable SHACL usage (Experimental)",

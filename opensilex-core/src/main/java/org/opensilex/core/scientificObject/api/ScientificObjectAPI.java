@@ -684,16 +684,21 @@ public class ScientificObjectAPI {
                     }
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();
+                        boolean hasUpdateItem = false;
                         Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
                         for (SPARQLNamedResourceModel object : objects) {
                             if (!sparql.uriExists(graphNode, object.getUri())) {
                                 Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
                                 update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
                                 update.addInsert(graphNode, soNode, RDFS.label, object.getName());
+                                hasUpdateItem = true;
                             }
 
                         }
-                        sparql.executeUpdateQuery(update);
+
+                        if (hasUpdateItem) {
+                            sparql.executeUpdateQuery(update);
+                        }
                     }
 
                     List<GeospatialModel> geospatialModels = new ArrayList<>();

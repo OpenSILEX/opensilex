@@ -12,6 +12,7 @@
 
     import {Component, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import {EntityCreationDTO} from "opensilex-core/index";
     import EntityCreate from "./EntityCreate.vue";
 

@@ -39,13 +39,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {
-  OrganisationsService,
-  ResourceTreeDTO,
-  InfrastructureUpdateDTO,
-  InfrastructureGetDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import { OrganisationsService, InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureView extends Vue {

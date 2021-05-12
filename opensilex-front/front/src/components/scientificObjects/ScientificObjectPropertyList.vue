@@ -9,8 +9,6 @@
 
     import { Component, Prop } from "vue-property-decorator";
     import Vue from "vue";
-    import Oeso from "../../ontologies/Oeso";
-    import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
     @Component
     export default class ScientificObjectPropertyList extends Vue {

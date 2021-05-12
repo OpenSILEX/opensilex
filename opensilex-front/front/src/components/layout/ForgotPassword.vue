@@ -66,10 +66,10 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+// @ts-ignore
 import { AuthenticationService } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class ForgotPassword extends Vue {

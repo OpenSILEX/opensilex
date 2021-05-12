@@ -26,23 +26,6 @@
 
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
-import Vue from "vue";
-import VueRouter from "vue-router";
-import moment from "moment";
-import copy from "copy-to-clipboard";
-import VueI18n from "vue-i18n";
-import {
-  ProjectCreationDTO,
-  SpeciesDTO,
-  ExperimentGetDTO,
-  ResourceTreeDTO,
-  InfrastructureGetDTO,
-  ExperimentsService,
-  OrganisationsService,
-  ProjectsService,
-  SpeciesService
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import ExperimentList from "./ExperimentList.vue";
 
 @Component

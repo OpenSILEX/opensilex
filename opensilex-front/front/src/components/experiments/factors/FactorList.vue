@@ -110,8 +110,8 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import { FactorsService, FactorCategoryGetDTO } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+// @ts-ignore
+import { FactorsService } from "opensilex-core/index";
 
 @Component
 export default class FactorList extends Vue {

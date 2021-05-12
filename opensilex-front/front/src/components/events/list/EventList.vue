@@ -188,6 +188,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import {EventsService} from "opensilex-core/api/events.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import EventModalView from "../view/EventModalView.vue";

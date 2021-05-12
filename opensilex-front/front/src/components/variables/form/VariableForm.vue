@@ -220,9 +220,12 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
+// @ts-ignore
 import { NamedResourceDTO, EntityCreationDTO, CharacteristicCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+// @ts-ignore
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
+// @ts-ignore
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component

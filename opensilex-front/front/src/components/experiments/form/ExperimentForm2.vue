@@ -43,7 +43,7 @@
 <script lang="ts">
 import { Component, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-
+// @ts-ignore
 import { ExperimentCreationDTO } from "opensilex-core/index";
 
 @Component

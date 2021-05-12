@@ -43,8 +43,11 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+// @ts-ignore
 import {OntologyService} from "opensilex-core/api/ontology.service";
+// @ts-ignore
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
 @Component

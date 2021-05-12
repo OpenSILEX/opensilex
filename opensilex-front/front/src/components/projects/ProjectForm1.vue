@@ -61,8 +61,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-
+// @ts-ignore
 import { ProjectCreationDTO } from "opensilex-core/index";
 @Component
 export default class ProjectForm1 extends Vue {

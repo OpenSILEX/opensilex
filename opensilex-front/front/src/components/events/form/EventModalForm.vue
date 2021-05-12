@@ -22,14 +22,18 @@
     import ModalForm from "../../common/forms/ModalForm.vue";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+    // @ts-ignore
     import {EventsService} from "opensilex-core/api/events.service";
+    // @ts-ignore
     import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
+    // @ts-ignore
     import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
     import EventForm from "./EventForm.vue";
     import PositionsView from "../../positions/view/PositionsView.vue";
+    // @ts-ignore
     import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
+    // @ts-ignore
     import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
-    import {ConcernedItemPositionCreationDTO} from "opensilex-core/model/concernedItemPositionCreationDTO";
 
     @Component
     export default class EventModalForm extends Vue {

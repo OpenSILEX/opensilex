@@ -17,12 +17,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-
-import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class ProjectForm extends Vue {

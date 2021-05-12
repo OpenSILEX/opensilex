@@ -149,10 +149,6 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
 import AsyncComputedProp from "vue-async-computed-decorator";
 
 @Component

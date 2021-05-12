@@ -100,11 +100,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  FactorDetailsGetDTO,
-  FactorUpdateDTO,
-  FactorsService,
-} from "opensilex-core/index";
+// @ts-ignore
+import { FactorDetailsGetDTO, FactorUpdateDTO, FactorsService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import AnnotationModalForm from "../../annotations/form/AnnotationModalForm.vue";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";

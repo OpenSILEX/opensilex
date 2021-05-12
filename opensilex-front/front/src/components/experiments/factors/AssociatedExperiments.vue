@@ -58,19 +58,10 @@ import VueConstructor from "vue";
 import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
 import moment from "moment";
-import {
-  ProjectGetDTO,
-  SpeciesDTO,
-  ExperimentGetDTO,
-  ResourceTreeDTO,
-  InfrastructureGetDTO,
-  ExperimentsService,
-  OrganisationsService,
-  ProjectsService,
-  SpeciesService
-} from "opensilex-core/index";
+// @ts-ignore
+import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { UserGetDTO } from "opensilex-security/index";
 
 export class ExperimentState {
   code: String;

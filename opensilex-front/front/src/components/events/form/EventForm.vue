@@ -117,9 +117,12 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    // @ts-ignore
     import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
+    // @ts-ignore
     import {OntologyService} from "opensilex-core/api/ontology.service";
     import MoveForm from "./MoveForm.vue";
+    // @ts-ignore
     import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
 
     @Component

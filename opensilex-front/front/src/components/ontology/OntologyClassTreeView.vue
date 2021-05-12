@@ -34,8 +34,8 @@
 <script lang="ts">
 import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
-import HttpResponse from "opensilex-core/HttpResponse";
 @Component
 export default class OntologyClassTreeView extends Vue {
   $opensilex: any;

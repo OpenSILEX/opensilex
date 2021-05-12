@@ -113,6 +113,7 @@ import Vue from "vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import VariablesView from "./VariablesView.vue";
 import VariableCreate from "./form/VariableCreate.vue";
+// @ts-ignore
 import { VariablesService, VariableDetailsDTO } from "opensilex-core/index";
 import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";

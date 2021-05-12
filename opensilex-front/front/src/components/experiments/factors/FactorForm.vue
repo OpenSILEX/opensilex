@@ -85,10 +85,10 @@
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { FactorsService } from "opensilex-core/index";
-import HttpResponse, {
-  OpenSilexResponse,
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class FactorForm extends Vue {

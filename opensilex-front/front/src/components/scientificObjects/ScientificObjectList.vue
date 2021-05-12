@@ -239,15 +239,9 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
 import VueRouter from "vue-router";
-import moment from "moment";
-import {
-  ExperimentGetDTO,
-  ScientificObjectsService,
-  ScientificObjectDetailDTO,
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+// @ts-ignore
+import { ExperimentGetDTO, ScientificObjectsService } from "opensilex-core/index";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
 @Component

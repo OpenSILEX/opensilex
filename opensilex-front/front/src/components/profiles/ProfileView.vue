@@ -38,17 +38,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {
-  ProfileCreationDTO,
-  ProfileUpdateDTO,
-  ProfileGetDTO,
-  SecurityService,
-  CredentialsGroupDTO,
-  AuthenticationService
-} from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { SecurityService, CredentialsGroupDTO } from "opensilex-security/index";
 
 @Component
 export default class ProfileView extends Vue {

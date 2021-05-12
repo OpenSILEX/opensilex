@@ -129,9 +129,8 @@
 import moment from "moment";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import { ProjectGetDTO, ProjectsService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib//HttpResponse";
+// @ts-ignore
+import { ProjectsService } from "opensilex-core/index";
 
 @Component
 export default class ProjectList extends Vue {

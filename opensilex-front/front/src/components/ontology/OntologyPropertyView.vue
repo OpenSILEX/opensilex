@@ -35,6 +35,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { OntologyService } from "opensilex-core/index";
 import OWL from "../../ontologies/OWL";
 

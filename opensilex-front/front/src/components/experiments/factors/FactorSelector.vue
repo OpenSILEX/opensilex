@@ -18,14 +18,10 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import {
-  FactorsService,
-  FactorGetDTO,
-  FactorCategoryGetDTO,
-} from "opensilex-core/index";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { FactorsService, FactorGetDTO, FactorCategoryGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FactorSelector extends Vue {

@@ -50,11 +50,9 @@ import Oeso from "../../../ontologies/Oeso";
 //TODO Add document at creation , etc ...</p> -->
 // import vueJsonEditor from "vue-json-editor";
 // Vue.component("vue-json-editor", vueJsonEditor);
-import {
-  DataCreationDTO,
-  AgentModel,
-  ProvenanceGetDTO,
-} from "opensilex-core/index";
+// @ts-ignore
+import { AgentModel, ProvenanceGetDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

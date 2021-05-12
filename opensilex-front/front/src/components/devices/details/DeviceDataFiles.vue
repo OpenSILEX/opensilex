@@ -168,7 +168,9 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
+// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import Oeso from "../../../ontologies/Oeso";
 

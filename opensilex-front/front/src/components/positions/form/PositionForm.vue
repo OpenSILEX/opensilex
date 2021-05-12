@@ -63,8 +63,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
-    import {OntologyService} from "opensilex-core/api/ontology.service";
+    // @ts-ignore
     import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
 
     @Component

@@ -57,11 +57,8 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import {
-  FactorsService,
-  FactorDetailsGetDTO,
-  FactorUpdateDTO,
-} from "opensilex-core/index";
+// @ts-ignore
+import { FactorsService, FactorDetailsGetDTO, FactorUpdateDTO } from "opensilex-core/index";
 
 @Component
 export default class ExperimentFactors extends Vue {

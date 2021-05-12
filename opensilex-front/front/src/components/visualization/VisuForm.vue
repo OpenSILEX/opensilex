@@ -99,12 +99,8 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 
 import Vue from "vue";
-
-import {
-  VariablesService,
-  VariableGetDTO,
-  VariableDetailsDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import { VariablesService, VariableGetDTO } from "opensilex-core/index";
 
 class DataFilter {
   concernedItems = [];

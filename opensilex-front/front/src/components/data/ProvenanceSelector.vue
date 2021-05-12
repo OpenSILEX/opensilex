@@ -28,15 +28,10 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
-import {
-  ScientificObjectsService,
-  DataService,
-  DevicesService,
-  ProvenanceGetDTO
-} from "opensilex-core/index";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+// @ts-ignore
+import { ProvenanceGetDTO } from "opensilex-core/index";
 
 @Component
 export default class ProvenanceSelector extends Vue {

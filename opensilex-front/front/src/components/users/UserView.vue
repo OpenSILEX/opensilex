@@ -37,13 +37,6 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {
-  UserCreationDTO,
-  UserUpdateDTO,
-  SecurityService,
-  UserGetDTO
-} from "opensilex-security/index";
 
 @Component
 export default class UserView extends Vue {

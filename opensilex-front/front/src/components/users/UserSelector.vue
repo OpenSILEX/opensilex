@@ -17,10 +17,10 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
+// @ts-ignore
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
-import HttpResponse, {
-  OpenSilexResponse
-} from "opensilex-security/HttpResponse";
+// @ts-ignore
+import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component
 export default class UserSelector extends Vue {

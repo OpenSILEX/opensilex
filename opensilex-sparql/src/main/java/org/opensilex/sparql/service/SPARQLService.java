@@ -1167,15 +1167,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 delete(relationToDelete.getKey(), relationToDelete.getValue());
             }
 
-            UpdateBuilder deleteAllReverseReferencesBuilder = new UpdateBuilder();
             Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> i = mapperIndex.getReverseReferenceIterator(objectClass);
             Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
-            int statementCount = 0;
             while (i.hasNext()) {
+                UpdateBuilder deleteAllReverseReferencesBuilder = new UpdateBuilder();
                 Map.Entry<Class<? extends SPARQLResourceModel>, Field> entry = i.next();
-                statementCount++;
-                String var = "?x" + statementCount;
+                String var = "?x1";
                 SPARQLClassObjectMapper<SPARQLResourceModel> reverseMapper = mapperIndex.getForClass(entry.getKey());
                 Property reverseProp = reverseMapper.getFieldProperty(entry.getValue());
                 Node defaultGraph = reverseMapper.getDefaultGraph();
@@ -1185,8 +1183,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     deleteAllReverseReferencesBuilder.addDelete(var, reverseProp, uriNode);
                 }
                 deleteAllReverseReferencesBuilder.addWhere(var, reverseProp, uriNode);
-            }
-            if (statementCount > 0) {
                 executeDeleteQuery(deleteAllReverseReferencesBuilder);
             }
 

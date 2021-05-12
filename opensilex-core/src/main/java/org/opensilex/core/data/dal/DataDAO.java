@@ -81,14 +81,15 @@ public class DataDAO {
                 .getCollection(DATA_COLLECTION_NAME, DataModel.class);
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "provenance", "scientificObject", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "scientificObjects", "date"));
+        dataCollection.createIndex(Indexes.ascending("variable", "scientificObject", "date"));
 
         MongoCollection fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("provenance", "scientificObject", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("scientificObjects", "date"));
+        dataCollection.createIndex(Indexes.ascending("scientificObject"
+                + "", "date"));
 
     }
 
@@ -266,7 +267,7 @@ public class DataDAO {
         if (objects != null && !objects.isEmpty()) {
             Document inFilter = new Document(); 
             inFilter.put("$in", objects);
-            filter.put("scientificObjects", inFilter);
+            filter.put("scientificObject", inFilter);
         }
 
         if (variables != null && !variables.isEmpty()) {

@@ -48,11 +48,6 @@ export default class CSVInputFile extends Vue {
   })
   buttonLabel: string;
 
-  @Prop()
-  delimiterOption: string;
-
-  delimiter: string;
-
   @Ref("inputFile") readonly inputFile!: any;
 
   importCsv() {
@@ -63,10 +58,10 @@ export default class CSVInputFile extends Vue {
     this.$nextTick(() => {
       this.readUploadedFileAsText(file).then((text) => {
         console.debug("Input file text", text);
-
+        let delimiter =  CSV.detect(text.toString());
         let result = this.$papa.parse(text, {
           header: true,
-          delimiter: CSV.detect(text.toString()),
+          delimiter: delimiter,
         });
 
         console.debug("result.data", result.data);
@@ -75,7 +70,7 @@ export default class CSVInputFile extends Vue {
         this.errors = [];
         if (result.data == null || result.data.length == 0) {
           this.errors.push(
-            "Unable to parse csv, delimiter used : '" + this.delimiter + "'"
+            "Unable to parse csv, delimiter used : '" + delimiter + "'"
           );
         } else {
           if (this.headersToCheck != null && this.headersToCheck.length > 0) {

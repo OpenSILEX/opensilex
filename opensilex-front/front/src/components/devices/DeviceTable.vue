@@ -27,7 +27,7 @@
         name="template.csv">
         {{$t('DeviceTable.downloadTemplate')}}
       </downloadCsv>
-      <opensilex-CSVInputFile v-on:updated="uploaded" delimiterOption=",">         
+      <opensilex-CSVInputFile v-on:updated="uploaded">         
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('DeviceTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('DeviceTable.addRow')}}</b-button>

@@ -24,7 +24,7 @@
         name="template.csv">
         {{$t('GermplasmTable.downloadTemplate')}}
       </downloadCsv>
-      <opensilex-CSVInputFile v-on:updated="uploaded" delimiterOption=",">         
+      <opensilex-CSVInputFile v-on:updated="uploaded">         
       </opensilex-CSVInputFile>
       <b-button class="mb-2 mr-2" @click="updateColumns" variant="outline-secondary">{{$t('GermplasmTable.resetTable')}}</b-button>
       <b-button class="mb-2 mr-2" @click="addRow" variant="outline-dark">{{$t('GermplasmTable.addRow')}}</b-button>
@@ -82,6 +82,26 @@
         >{{$t('GermplasmTable.close')}}</b-button>
       </template>
     </b-modal>
+
+    <b-modal  :no-close-on-backdrop="true"
+      :no-close-on-esc="true" @hide="addNewColumns" ref="newcolsModal" centered :title="$t('GermplasmTable.newColumns')">
+      <b-form-group 
+      :label="$t('GermplasmTable.newColumnsHelp')"
+      v-slot="{ ariaDescribedby }"
+      >
+      <b-form-checkbox
+        v-for="column in  newColumns"
+        v-model="newColumnsselected"
+        :key="column"
+        :value="column"
+        :aria-describedby="ariaDescribedby"
+        :name="column"
+        se
+      >
+        {{ column }}
+      </b-form-checkbox>
+    </b-form-group>
+    </b-modal>
   </div>
 </template>
 
@@ -104,9 +124,10 @@ export default class GermplasmTable extends Vue {
   $t: any;
   $i18n: any;
   service: GermplasmService;
-  onlyChecking: boolean;
-  colName: string;
+  onlyChecking: boolean = true;
+  colName: string = null;
   suppColumnsNames: Array<string>;
+  $bvModal : any;
 
   // Progress Modal
   errorNumber: number = 0;
@@ -120,10 +141,15 @@ export default class GermplasmTable extends Vue {
   alertEmptyTable: boolean = false;
   disableCloseButton: boolean = true;
 
+  newColumns  : string[] = [];
+  newColumnsselected : string[] = []; // Must be an array reference!
+
   @Ref("progressModal") readonly progressModal!: any;
   @Ref("progressBar") readonly progressBar!: any;
   @Ref("colModal") readonly colModal!: any;
   @Ref("table") readonly table!: any;
+  @Ref("newcolsModal") readonly newcolsModal!: any;
+
 
   props = [
     {
@@ -140,7 +166,7 @@ export default class GermplasmTable extends Vue {
   
   @Ref("helpModal") readonly helpModal!: any;
 
-  tableColumns = [];
+  tableColumns : any[]= [];
 
   insertionStatus = [];
 
@@ -176,6 +202,26 @@ export default class GermplasmTable extends Vue {
   @Watch("tableData", { deep: true })
   newData(value: string, oldValue: string) {
     this.tabulator.replaceData(value);
+  }
+
+  addNewColumnsConfirmMessage(){
+    this.newcolsModal.show()
+  }
+
+  addNewColumns(){
+    this.colModal.hide();
+    for( let col in this.newColumnsselected){
+      this.tabulator.addColumn(
+        { title: this.newColumnsselected[col], field: this.newColumnsselected[col], editor: true },
+        false,
+        this.newColumnsselected[col]
+      );
+      this.suppColumnsNames.push(this.newColumnsselected[col]);
+      this.jsonForTemplate[0][this.newColumnsselected[col]] = null
+      this.$attrs.downloadCsv;
+    } 
+    this.newColumns = [];
+    this.newColumnsselected = [];
   }
 
   updateColumns() {
@@ -569,9 +615,12 @@ export default class GermplasmTable extends Vue {
     if (data.length > 1000) {
       alert(this.$t('GermplasmTable.alertFileSize'));
     } else {
+      this.newColumns = [];
       var uniqueNames = [];
       var uniqueURIs = [];
       let insertionOK = true;
+     
+
       for (let idx = 0; idx < data.length; idx++) {
         data[idx]["rowNumber"] = idx + 1;
         if (data[idx].name === "") {
@@ -598,7 +647,19 @@ export default class GermplasmTable extends Vue {
         }
          
       }
+    
       if (insertionOK) {
+        let csvColumns = Object.keys(data[0])
+        let tableCols = []
+        for (let colNumber in this.tableColumns) { 
+            tableCols.push(this.tableColumns[colNumber].field); 
+        }
+        this.newColumns = csvColumns.filter( function( col ) {
+            return ! tableCols.includes( col );
+        }); 
+        if(this.newColumns.length > 0){
+          this.addNewColumnsConfirmMessage()
+        }
         this.tabulator.setData(data);
       }
     }
@@ -707,6 +768,8 @@ en:
     alertDuplicateURI: The file contains a duplicate uri at line
     alertFileSize: The file has too many lines, 1000 lines maximum
     missingName: The name is missing at line
+    newColumns: Supplementary columns
+    newColumnsHelp: Select the columns to add
 
 fr:
   GermplasmTable:
@@ -754,5 +817,7 @@ fr:
     alertDuplicateName: Le fichier comporte un doublon de nom à la ligne
     alertDuplicateURI: Le fichier comporte un doublon d'uri à la ligne 
     alertFileSize: Le fichier contient trop de ligne, 1000 lignes maximum
-    missingName: Le nom n'est pas renseigné à la ligne 
+    missingName: Le nom n'est pas renseigné à la ligne
+    newColumns: Colonnes additionnelles
+    newColumnsHelp: Cochez les colonnes à ajouter
 </i18n>

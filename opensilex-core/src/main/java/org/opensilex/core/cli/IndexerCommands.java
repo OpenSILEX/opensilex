@@ -26,6 +26,8 @@ import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.variable.dal.BaseVariableModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import picocli.CommandLine;
@@ -63,7 +65,8 @@ public class IndexerCommands extends AbstractOpenSilexCommand implements OpenSil
                             new HttpHost("localhost", 9201, "http")
                     )
             );
-            indexProject();
+            //indexProject();
+            indexVariable();
         } finally {
             elasticClient.close();
             factory.dispose(sparql);
@@ -106,13 +109,11 @@ public class IndexerCommands extends AbstractOpenSilexCommand implements OpenSil
             if (field.getDeclaringClass() == ProjectModel.class && field.getName().equals("scientificContacts")) {
                 return true;
             }
-            if (field.getDeclaringClass() == ProjectModel.class && field.getName().equals("coordinators")) {
-                return true;
-            }
+            
              if (field.getDeclaringClass() == ProjectModel.class && field.getName().equals("creator")) {
                 return true;
             }
-            if (field.getDeclaringClass() == ProjectModel.class && field.getName().equals("relatedProjects.creator")) {
+            if (field.getDeclaringClass() == ProjectModel.class && field.getName().equals("relatedProjects")) {
                 return true;
             } 
             return false;
@@ -143,7 +144,39 @@ public class IndexerCommands extends AbstractOpenSilexCommand implements OpenSil
            
       }
         }
+    private void indexVariable() throws Exception {
+        
+        List<VariableModel> Variables = sparql.search(VariableModel.class, "en");
+        
+        /*try {
+            
+            DeleteIndexRequest request = new DeleteIndexRequest("Variables");
+            AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
+        
+        }catch (ElasticsearchException exception) {
+          if (exception.status() == RestStatus.NOT_FOUND) {*/
 
+           
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json;
+        
+           for(VariableModel p : Variables) {
+           json = gson.toJson(p);
+              
+           IndexRequest indexRequest = new IndexRequest("variables");
+           indexRequest.source(json, XContentType.JSON); 
+           IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
+        
+            }
+           // System.out.println("----------------------------------------------------------------------------");
+           //System.out.println(json);
+           
+
+    } 
+           
+      }
+        //}
     
     
-}
+//}

@@ -537,6 +537,8 @@ import DataFilesView from './data/DataFilesView.vue';
 components["opensilex-DataFilesView"] = DataFilesView;
 import ProvenanceView from './data/ProvenanceView.vue';
 components["opensilex-ProvenanceView"] = ProvenanceView;
+import ProvenanceDetailsPage from './data/ProvenanceDetailsPage.vue';
+components["opensilex-ProvenanceDetailsPage"] = ProvenanceDetailsPage;
 
 // PHIS
 //IMAGES

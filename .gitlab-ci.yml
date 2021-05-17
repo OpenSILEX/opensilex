@@ -401,6 +401,33 @@ test:arnaud:deploy:
     - arnaud:build
 
 ###################################
+##  HAMZA-TEST-BUILD-DEPLOYMENT
+###################################
+
+hamza:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "hamza"
+
+test:hamza:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/hamza"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4083
+    OPENSILEX_JAR_PORT: 8083
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/hamza"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "hamza"
+      when: on_success
+  needs:
+    - hamza:build
+
+###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT
 ###################################
 

@@ -83,6 +83,19 @@
           ></opensilex-ProvenanceSelector>
         </opensilex-FilterField>
 
+        <opensilex-FilterField>
+          <b-collapse
+            v-if="selectedProvenance"
+            id="collapse-4"
+            v-model="visibleDetails"
+            class="mt-2"
+          >
+            <opensilex-ProvenanceDetails
+              :provenance="getSelectedProv"
+            ></opensilex-ProvenanceDetails>
+          </b-collapse>
+        </opensilex-FilterField>
+
       </template>
     </opensilex-SearchFilterField>
 

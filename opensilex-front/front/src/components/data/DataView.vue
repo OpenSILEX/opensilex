@@ -83,12 +83,24 @@
             label="ExperimentData.provenance"
             @select="loadProvenance"
             @clear="filterLabel = null"
-            :experiment="uri"
             :multiple="false"
             :viewHandler="showProvenanceDetails"
             :viewHandlerDetailsVisible="visibleDetails"
             :showURI="false"
           ></opensilex-ProvenanceSelector>
+        </opensilex-FilterField>
+
+        <opensilex-FilterField>
+          <b-collapse
+            v-if="selectedProvenance"
+            id="collapse-4"
+            v-model="visibleDetails"
+            class="mt-2"
+          >
+            <opensilex-ProvenanceDetails
+              :provenance="getSelectedProv"
+            ></opensilex-ProvenanceDetails>
+          </b-collapse>
         </opensilex-FilterField>
 
       </template>
@@ -202,6 +214,7 @@ export default class DataView extends Vue {
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
+  filterProvenanceLabel: string = null;
 
   @Ref("templateForm") readonly templateForm!: any;
 

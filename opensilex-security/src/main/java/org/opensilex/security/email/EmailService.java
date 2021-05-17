@@ -81,7 +81,6 @@ public class EmailService extends BaseService implements Service {
                     System.out.println(mailer.getOperationalConfig());
                     System.out.println(mailer.getEmailAddressCriteria());
                     mailer.testConnection();
-                    mailer.shutdownConnectionPool();
                     mailer = null;
                 }
             } catch (Exception e) {
@@ -137,14 +136,6 @@ public class EmailService extends BaseService implements Service {
             mailerBuilder.withDebugLogging(true);
         }
         return mailerBuilder.buildMailer();
-
-    }
-
-    @Override
-    public void shutdown() throws Exception {
-        if (EmailService.ENABLE && this.mailer != null) {
-            this.mailer.shutdownConnectionPool();
-        }
     }
 
     /**

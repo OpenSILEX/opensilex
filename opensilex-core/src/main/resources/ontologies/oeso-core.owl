@@ -1,26 +1,26 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeso#"
      xml:base="http://www.opensilex.org/vocabulary/oeso"
-     xmlns:dc="http://purl.org/dc/elements/1.1/"
-     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:terms="http://purl.org/dc/terms/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#"
      xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-     xmlns:terms="http://purl.org/dc/terms/"
-     xmlns:object="http://www.mistea.supagro.inra.fr/object#"
-     xmlns:vocabulary="http://www.opensilex.org/vocabulary/oeso#"
-     xmlns:opensilex-api="http://www.opensilex.org/vocabulary/opensilex-api#">
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:object="http://www.mistea.supagro.inra.fr/object#">
     <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
         <owl:versionIRI rdf:resource="http://www.opensilex.org/vocabulary/oeso"/>
-        <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
+        <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
+        <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
+        <owl:versionInfo>Version 2.1 (2019-07-26) created by INRA</owl:versionInfo>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2019
             The Object Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by/4.0/legalcode)</rdfs:comment>
-        <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
-        <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
-        <owl:versionInfo>Version 2.1 (2019-07-26) created by INRA</owl:versionInfo>
+        <rdfs:comment>Authors : Anne TIREAU, Llorenç CABRERA-BOSQUET, Morgane VIDAL, Pascal NEVEU</rdfs:comment>
     </owl:Ontology>
     
 
@@ -826,6 +826,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Computation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Computation">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#activity"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#ControlLaw -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ControlLaw">
@@ -1042,6 +1050,22 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#ImageAcquisition -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ImageAcquisition">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#activity"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ImageAnalysis -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ImageAnalysis">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#activity"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Infrastructure -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Infrastructure">
@@ -1052,8 +1076,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
-    </owl:Class>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
     
 
 
@@ -1086,6 +1109,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#MeasuresAcquisition -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MeasuresAcquisition">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#activity"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
@@ -1100,6 +1131,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
         <rdfs:label xml:lang="en">Multimedia</rdfs:label>
         <rdfs:label xml:lang="fr">Multimédia</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Operator -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Operator">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+        <rdfs:label xml:lang="en">Operator</rdfs:label>
+        <rdfs:label xml:lang="fr">Opérateur</rdfs:label>
     </owl:Class>
     
 
@@ -1315,6 +1356,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Software -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Software">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:label xml:lang="fr">Logiciel</rdfs:label>
+        <rdfs:label xml:lang="en">Software</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#SoilArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SoilArea">
@@ -1507,6 +1558,15 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.w3.org/2002/07/owl#DatatypeProperty -->
 
     <owl:Class rdf:about="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    
+
+
+    <!-- http://www.w3.org/ns/prov#activity -->
+
+    <owl:Class rdf:about="http://www.w3.org/ns/prov#activity">
+        <rdfs:label xml:lang="en">Activity</rdfs:label>
+        <rdfs:label xml:lang="fr">Activité</rdfs:label>
+    </owl:Class>
     
 
 
@@ -1946,8 +2006,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
+        <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:comment xml:lang="en">An account of the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Description</rdfs:label>
@@ -1959,8 +2019,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
+        <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
@@ -2096,5 +2156,5 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
-<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
 

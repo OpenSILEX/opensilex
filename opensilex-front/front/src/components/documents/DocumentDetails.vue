@@ -44,22 +44,26 @@
               <opensilex-StringView class="overflow-auto" style="height: 100px" label="DocumentDetails.targets" :uri="document.targets">
                 <span :key="target" v-for="(target) in targetsTypes"> 
                 <opensilex-UriLink 
-                  :uri="target.uri"    
+                  :uri="target.uri"  
+                  :value="target.uri"     
                   v-if="target.rdf_types.includes($opensilex.Oeso.EXPERIMENT_TYPE_URI)"           
                   :to="{path: '/experiment/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
-                  :uri="target.uri"    
+                  :uri="target.uri" 
+                  :value="target.uri"   
                   v-else-if="target.rdf_types.includes($opensilex.Oeso.DEVICE_TYPE_URI)"       
                   :to="{path: '/device/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
-                  :uri="target.uri"    
+                  :uri="target.uri"   
+                  :value="target.uri" 
                   v-else-if="target.rdf_types.includes($opensilex.Oeso.PROJECT_TYPE_URI)"           
                   :to="{path: '/project/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink> 
                 <opensilex-UriLink 
-                  :uri="target.uri"    
+                  :uri="target.uri"  
+                  :value="target.uri"  
                   v-else-if="target.rdf_types.includes($opensilex.Oeso.GERMPLASM_TYPE_URI)"           
                   :to="{path: '/germplasm/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink>
@@ -86,7 +90,6 @@
             <template v-slot:body>
               <div class="button-zone">
               <b-button 
-                :disabled="firstPreview"
                 @click="previewFile(document.uri, document.title, document.format)"
               >{{ $t("DocumentDetails.preview") }}</b-button> 
               <b-button 
@@ -128,7 +131,6 @@ export default class DocumentDetails extends Vue {
   $i18n: any;
   service: DocumentsService;
   uri: string = null;
-  firstPreview = false;
 
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("preview") readonly preview!: any;
@@ -189,7 +191,6 @@ export default class DocumentDetails extends Vue {
 
   previewFile(uri: string, title: string, format: string) {
     let path = "/core/documents/" + encodeURIComponent(uri);
-    this.firstPreview = true;
     this.$opensilex
      .previewFilefromGetService(path, title, format);
   }

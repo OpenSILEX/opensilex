@@ -930,9 +930,15 @@ export default class OpenSilexVuePlugin {
                 } else {
                     type = null;
                     let message = this.$i18n.t("component.document.nopreview");
-                    let error = document.createElement("p");
+                    let divPreview = document.getElementById("preview");
                     let content = document.createTextNode(message as string);
-                    document.getElementById("preview").appendChild(error.appendChild(content));
+                    let error = document.createElement("p");
+                    if(divPreview.hasChildNodes()){
+                        while( divPreview.firstChild) {
+                            divPreview.removeChild(divPreview.firstChild);
+                        }
+                    }
+                    divPreview.appendChild(error.appendChild(content));
                 }
                 let blob = new Blob([file], { type: type });
                 console.log(extension);

@@ -36,7 +36,7 @@
         <opensilex-FilterField>
           <opensilex-TypeForm
             :type.sync="filter.activity_type"
-            :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
+            :baseType="PROV.ACTIVITY_TYPE_URI"
             label="ProvenanceView.filter.activity_type"
           ></opensilex-TypeForm>
         </opensilex-FilterField>
@@ -126,12 +126,9 @@
 <script lang="ts">
 import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
-import VueI18n from "vue-i18n";
-import moment from "moment";
 import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { UserGetDTO } from "opensilex-security/index";
+import PROV from "../../ontologies/PROV";
 
 @Component
 export default class ProvenanceView extends Vue {
@@ -139,6 +136,7 @@ export default class ProvenanceView extends Vue {
   $store: any;
   service: any;
   disabled = false;
+  PROV = PROV;
 
   visibleDetails: boolean = false;
   usedVariables: any[] = [];

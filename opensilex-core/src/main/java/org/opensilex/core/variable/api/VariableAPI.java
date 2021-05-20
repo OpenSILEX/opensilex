@@ -35,8 +35,17 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.SearchHit;
 
 import org.opensilex.server.response.ErrorDTO;
+
+import com.alibaba.fastjson.JSON;
+import java.util.stream.Collectors;
+
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -59,6 +68,9 @@ public class VariableAPI {
 
     @Inject
     private SPARQLService sparql;
+    
+    private RestHighLevelClient elasticClient;
+
 
     @CurrentUser
     UserModel currentUser;
@@ -232,6 +244,46 @@ public class VariableAPI {
                 VariableDetailsDTO.class,
                 VariableDetailsDTO::new
         );
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    @GET
+    @Path("Elasticsearch")
+    @ApiOperation(
+            value = "Search variables by name, long name, entity, characteristic, method or unit name",
+            notes = "The following fields could be used for sorting : \n\n" +
+                    " _entity_name/entityName : the name of the variable entity\n\n"+
+                    " _characteristic_name/characteristicName : the name of the variable characteristic\n\n"+
+                    " _method_name/methodName : the name of the variable method\n\n"+
+                    " _unit_name/unitName : the name of the variable unit\n\n"
+            )
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return variables", response = VariableGetDTO.class, responseContainer = "List")
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchVariablesES(
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+       
+       SearchRequest searchRequest = new SearchRequest();
+       SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
+       SearchHit[] searchHits = response.getHits().getHits();
+       
+       List<VariableModel> results =  Arrays.stream(searchHits)
+        .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
+        .collect(Collectors.toList());
+        
+        ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(
+                results.stream()
+                .map(model -> VariableGetDTO.fromModel(model))
+                .collect(Collectors.toList()));
+                
+
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 

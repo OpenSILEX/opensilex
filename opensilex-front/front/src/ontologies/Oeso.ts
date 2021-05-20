@@ -34,7 +34,7 @@ let ontologies = {
     CONCERNS: OESO_URI + "#concerns",
     AREA_TYPE_URI: OESO_URI + "#Area",
     OPERATOR_TYPE_URI: OESO_URI + "#Operator",
-    SENSOR_TYPE_URI: OESO_URI + "#SensorDevice",
+    SENSOR_TYPE_URI: OESO_URI + "#SensingDevice",
     DEVICE_TYPE_URI: OESO_URI + '#Device',
     IS_PART_OF: OESO_URI + "#isPartOf",
     IMAGE_TYPE_URI: OESO_URI + "#Image",

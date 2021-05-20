@@ -43,11 +43,13 @@
 
         <!-- agent type-->
         <opensilex-FilterField>
-          <opensilex-TypeForm
-            :type.sync="filter.agent_type"
-            :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+          <opensilex-SelectForm
             label="ProvenanceView.filter.agent_type"
-          ></opensilex-TypeForm>
+            :multiple="true"
+            :selected.sync="filter.agent_type"
+            :options="agentTypes"
+            placeholder="ProvenanceView.filter.agent_type_placeholder"
+          ></opensilex-SelectForm>
         </opensilex-FilterField>
 
         <!-- agent -->
@@ -126,9 +128,10 @@
 <script lang="ts">
 import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import { ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import PROV from "../../ontologies/PROV";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class ProvenanceView extends Vue {
@@ -141,6 +144,7 @@ export default class ProvenanceView extends Vue {
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
+  agentTypes: any[] = [];
 
 
   get user() {
@@ -168,6 +172,29 @@ export default class ProvenanceView extends Vue {
       agent_type: undefined,
       agent: undefined
     };
+  }
+
+  mounted() {
+    this.loadAgentTypes();
+  }
+
+  loadAgentTypes() {
+    let agentURIs = [
+      Oeso.SENSOR_TYPE_URI, 
+      Oeso.OPERATOR_TYPE_URI, 
+      Oeso.SOFTWARE_TYPE_URI
+    ];
+    this.$opensilex.getService("opensilex.OntologyService")
+    .getClasses(agentURIs, undefined)
+    .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
+      for (let i = 0; i < http.response.result.length; i++) {   
+        this.agentTypes.push({
+            id: http.response.result[i].uri,
+            label: http.response.result[i].name,
+          });
+      }
+    })
+    .catch(this.$opensilex.errorHandler);
   }
 
   createProvenance() {

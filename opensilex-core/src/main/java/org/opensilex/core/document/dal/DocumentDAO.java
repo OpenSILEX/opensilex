@@ -43,6 +43,8 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.utils.Ontology;
 
 
 /**
@@ -109,6 +111,12 @@ public class DocumentDAO {
         }catch (IOException e){
             sparql.rollbackTransaction(e);
         }
+    }
+
+    public boolean isDocumentType(URI type) throws SPARQLException {
+        return sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(type), Ontology.subClassAny, Oeso.Document)
+        );
     }
 
     public ListWithPagination<DocumentModel> search(UserModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {

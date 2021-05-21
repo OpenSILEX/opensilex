@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.core.ontology.Oeso;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static junit.framework.TestCase.assertEquals;
@@ -69,9 +71,10 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         return fs;
     }
 
-    protected DocumentCreationDTO getCreationDTO() {
+    protected DocumentCreationDTO getCreationDTO() throws URISyntaxException {
 
         DocumentCreationDTO docDto = new DocumentCreationDTO();
+        docDto.setType(new URI(Oeso.Document.toString()));
         docDto.setTitle("test document");
         LocalDate currentDate = LocalDate.now();
         docDto.setDate(currentDate.toString());

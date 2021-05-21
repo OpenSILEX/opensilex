@@ -68,7 +68,8 @@
                   :to="{path: '/germplasm/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink>
                 <opensilex-UriLink 
-                  :uri="targets"  
+                  :uri="target.uri"  
+                  :value="target.uri"  
                   v-else  
                 ></opensilex-UriLink> 
                 </span>

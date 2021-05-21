@@ -127,6 +127,16 @@ public class DocumentAPI {
                     documentModel.setDeprecated("false");
                 }
 
+                boolean isType = documentDAO.isDocumentType(docDto.getType()); 
+                if (!isType) {
+                    // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
+                    return new ErrorResponse(
+                            Response.Status.BAD_REQUEST,
+                            "rdfType doesn't exist in the ontology",
+                            "wrong rdfType: " + docDto.getType().toString()
+                    ).getResponse();
+                }
+
                 String format = FilenameUtils.getExtension(fileDetail.getFileName());
                 documentModel.setFormat(format); 
                 documentDAO.create(documentModel, file);
@@ -222,6 +232,17 @@ public class DocumentAPI {
         ) throws Exception {
         DocumentDAO documentDAO = new DocumentDAO(sparql, fs);
         DocumentModel documentModel = docDto.newModel();
+
+        boolean isType = documentDAO.isDocumentType(docDto.getType()); 
+        if (!isType) {
+            // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "rdfType doesn't exist in the ontology",
+                    "wrong rdfType: " + docDto.getType().toString()
+            ).getResponse();
+        }
+
         documentDAO.update(documentModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, documentModel.getUri()).getResponse();
     }

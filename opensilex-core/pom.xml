@@ -32,6 +32,15 @@
     </parent>
     
     <dependencies>
+        
+        <!-- OpenSilex fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+
+     
         <!-- OpenSilex gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>

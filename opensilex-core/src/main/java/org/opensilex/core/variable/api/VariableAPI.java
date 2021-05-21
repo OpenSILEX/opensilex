@@ -45,6 +45,11 @@ import org.opensilex.server.response.ErrorDTO;
 
 import com.alibaba.fastjson.JSON;
 import java.util.stream.Collectors;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
@@ -69,7 +74,6 @@ public class VariableAPI {
     @Inject
     private SPARQLService sparql;
     
-    private RestHighLevelClient elasticClient;
 
 
     @CurrentUser
@@ -269,21 +273,32 @@ public class VariableAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+      RestHighLevelClient elasticClient;
        
-       SearchRequest searchRequest = new SearchRequest();
+            elasticClient = new RestHighLevelClient(
+                    RestClient.builder(
+                            new HttpHost("localhost", 9200, "http"),
+                            new HttpHost("localhost", 9201, "http")
+                    )
+            );
+              
+       SearchRequest searchRequest = new SearchRequest("variables");
+       SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+       searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+       searchRequest.source(searchSourceBuilder);
        SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
        SearchHit[] searchHits = response.getHits().getHits();
+       elasticClient.close();
        
-       List<VariableModel> results =  Arrays.stream(searchHits)
+        List<VariableModel> results =  Arrays.stream(searchHits)
         .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
         .collect(Collectors.toList());
-        
+               
         ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(
-                results.stream()
+                 results.stream()
                 .map(model -> VariableGetDTO.fromModel(model))
                 .collect(Collectors.toList()));
-                
-
+        
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 

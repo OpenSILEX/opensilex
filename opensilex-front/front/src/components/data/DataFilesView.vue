@@ -149,8 +149,10 @@
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
-          :noExternalLink="true"
-          @click="showProvenanceDetailsModal(data.item)"
+          :to="{
+            path: '/provenances/details/' +
+              encodeURIComponent(data.item.provenance.uri),
+          }"
         ></opensilex-UriLink>
       </template>
 
@@ -166,11 +168,18 @@
               @click="showImage(data.item)"
               label="ScientificObjectDataFiles.displayImage"
               :small="true"
-              icon= "ik#ik-eye"
+              icon= "fa#image"
               variant="outline-info"
             ></opensilex-Button>
+            <opensilex-DetailButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+              @click="showDataProvenanceDetailsModal(data.item)"
+              label="DataView.details"
+              :small="true"
+          ></opensilex-DetailButton>
           </b-button-group>
         </template>
+
     </opensilex-TableAsyncView>
 
 

@@ -234,7 +234,7 @@ By default logs will be printed to the console output and writen into a rotating
 
 - Create
 ```
-nano ~/opensilex/bin/<X.Y.Z>/opensilex.sh
+nano /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
 - Content
@@ -243,14 +243,16 @@ nano ~/opensilex/bin/<X.Y.Z>/opensilex.sh
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+CONFIG_FILE="/home/opensilex/config/opensilex.yml"
+
 cd $SCRIPT_DIR
 
-java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR/bin --CONFIG_FILE="$SCRIPT_DIR/config/opensilex.yml" "$@"
+java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR --CONFIG_FILE=$CONFIG_FILE "$@"
 ```
 
 - Activation
 ```
-chmod +x ~/opensilex/bin/<X.Y.Z>/opensilex.sh
+chmod +x /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
 ### Add an alias
@@ -262,7 +264,7 @@ nano ~/.bash_aliases
 
 - Content
 ```
-alias opensilex="~/opensilex/bin/<X.Y.Z>/opensilex.sh"
+alias opensilex="/home/opensilex/bin/<X.Y.Z>/opensilex.sh"
 ```
 
 - Activation

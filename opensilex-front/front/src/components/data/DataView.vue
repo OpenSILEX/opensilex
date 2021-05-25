@@ -174,10 +174,24 @@
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
-          :noExternalLink="true"
-          @click="showProvenanceDetailsModal(data.item)"
+          :to="{
+            path: '/provenances/details/' +
+              encodeURIComponent(data.item.provenance.uri),
+          }"
         ></opensilex-UriLink>
       </template>
+
+      <template v-slot:cell(actions)="{data}">
+        <b-button-group size="sm">
+          <opensilex-DetailButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+              @click="showDataProvenanceDetailsModal(data.item)"
+              label="DataView.details"
+              :small="true"
+          ></opensilex-DetailButton>
+        </b-button-group>
+      </template>
+
     </opensilex-TableAsyncView>
 
 
@@ -285,6 +299,10 @@ export default class DataView extends Vue {
         label: "DataView.list.provenance",
         sortable: false
       },
+      {
+        key: "actions",
+        label: "component.common.actions"
+      }
     ];
     // if (!this.noActions) {
     //   tableFields.push({
@@ -345,7 +363,7 @@ export default class DataView extends Vue {
     }
   }
 
-  showProvenanceDetailsModal(item) {
+  showDataProvenanceDetailsModal(item) {
     this.$opensilex.enableLoader();
     this.getProvenance(item.provenance.uri)
     .then(result => {

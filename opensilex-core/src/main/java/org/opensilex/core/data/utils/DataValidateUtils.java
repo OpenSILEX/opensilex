@@ -43,7 +43,7 @@ public class DataValidateUtils {
                     }
                     break;
                 case "xsd:decimal":
-                    if ((value instanceof Double)) {
+                    if (value instanceof Double || value instanceof Integer) {
                         checkCoherence = true;
                     }
                     break;

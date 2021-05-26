@@ -39,6 +39,7 @@
         <module>opensilex-nosql</module>
         <module>opensilex-fs</module>
         <module>opensilex-security</module>
+        <module>opensilex-elastic</module>
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
@@ -109,6 +110,12 @@
         
         <dependency>
             <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-elastic</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
@@ -134,7 +141,7 @@
         </dependency>
         
         <!--Other extension modules must be declared as dependencies-->
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>

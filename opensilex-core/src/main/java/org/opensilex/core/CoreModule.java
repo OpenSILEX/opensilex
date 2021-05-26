@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.core;
 
-import com.auth0.jwt.JWTCreator;
 import org.opensilex.OpenSilexModule;
 
 import java.util.List;
@@ -14,8 +13,6 @@ import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

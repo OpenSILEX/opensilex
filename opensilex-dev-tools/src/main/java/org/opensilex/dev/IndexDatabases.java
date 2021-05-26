@@ -7,8 +7,6 @@
 //******************************************************************************
 package org.opensilex.dev;
 
-import java.nio.file.*;
-
 /**
  *
  * @author Cheimae
@@ -17,7 +15,7 @@ public class IndexDatabases {
 
     public static void main(String[] args) throws Exception {
         DevModule.run(null, new String[]{
-            "indexer",
+            "elastic",
             "index-db"
         });
     }

@@ -14,12 +14,15 @@ import java.util.List;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.opensilex.cli.OpenSilexCommand;
@@ -136,10 +139,6 @@ public class IndexerCommands extends AbstractOpenSilexCommand implements OpenSil
            IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
         
             }
-           // System.out.println("----------------------------------------------------------------------------");
-           //System.out.println(json);
-           
-
     } 
            
       }
@@ -148,35 +147,78 @@ public class IndexerCommands extends AbstractOpenSilexCommand implements OpenSil
         
         List<VariableModel> Variables = sparql.search(VariableModel.class, "en");
         
-        /*try {
+        try {
             
-            DeleteIndexRequest request = new DeleteIndexRequest("Variables");
+            DeleteIndexRequest request = new DeleteIndexRequest("variables");
             AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
         
         }catch (ElasticsearchException exception) {
-          if (exception.status() == RestStatus.NOT_FOUND) {*/
-
-           
+          if (exception.status() == RestStatus.NOT_FOUND) {
+          }
+        }
+ 
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json;
         
            for(VariableModel p : Variables) {
            json = gson.toJson(p);
+           System.out.println("----------------------------------------------------------------------------");
+           System.out.println(json);
+           
+           
+           PutMappingRequest request = new PutMappingRequest("variables"); 
+           XContentBuilder builder = XContentFactory.jsonBuilder();
+           builder.startObject();
+           {
+                builder.startObject("p");
+                {    
+                    builder.field("uri", "text");
+                    builder.field("name", "text");
+                    builder.field("alternative_name", "text");
+                    builder.field("description", "text");
+
+
+                builder.startObject("entity");
+                {
+                    builder.field("uri", "text");
+                    builder.field("name", "text");
+                }
+                builder.endObject();
+
+                builder.startObject("characteristic");
+                {
+                    builder.field("uri", "text");
+                    builder.field("name", "text");
+                }
+                builder.endObject();
+
+                builder.field("trait", "text");
+                builder.field("trait_name", "text");
+       
+                builder.startObject("unit");
+                {
+                builder.field("uri", "text");
+                builder.field("name", "text");
+                }
+                builder.endObject();
+            }
+             builder.endObject();
+          }
+    builder.endObject();
+    request.source(builder);
+                 
+           
               
            IndexRequest indexRequest = new IndexRequest("variables");
            indexRequest.source(json, XContentType.JSON); 
            IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
         
             }
-           // System.out.println("----------------------------------------------------------------------------");
-           //System.out.println(json);
-           
+          
 
     } 
-           
-      }
-        //}
+                  
     
     
-//}
+}

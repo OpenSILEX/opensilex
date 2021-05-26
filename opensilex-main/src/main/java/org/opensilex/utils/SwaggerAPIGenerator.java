@@ -2,7 +2,6 @@ package org.opensilex.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.annotations.Api;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.SwaggerContextService;
@@ -188,6 +187,7 @@ public final class SwaggerAPIGenerator {
         if (swagger != null) {
             ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(Include.NON_NULL);
+            System.out.println(destination);
             File swaggerFile = new File(destination);
             swaggerFile.createNewFile();
             mapper.writeValue(swaggerFile, swagger);

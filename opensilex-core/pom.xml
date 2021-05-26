@@ -32,33 +32,6 @@
     </parent>
     
     <dependencies>
-        
-        <!-- OpenSilex fastjson -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.13</version>
-        </dependency>
-
-     
-        <!-- OpenSilex gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.6</version>
-        </dependency>
-    
-    	<!-- OpenSilex elasticsearch -->
-        <dependency>
-            <groupId>org.elasticsearch</groupId>
-            <artifactId>elasticsearch</artifactId>
-            <version>7.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>7.12.0</version>
-        </dependency>
         <!-- OpenSilex Base -->
         <dependency>
             <groupId>org.opensilex</groupId>

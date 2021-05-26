@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                        
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
 package org.opensilex.core.search.api;
 
 import com.alibaba.fastjson.JSON;
@@ -40,9 +41,12 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.api.VariableDatatypeDTO;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
@@ -84,12 +88,8 @@ public class SearchAPI {
     
     public static final String CREDENTIAL_SEARCH_GROUP_ID = "Search";
     public static final String CREDENTIAL_SEARCH_GROUP_LABEL_KEY = "credential-groups.search";
-    
-   // public static final String PATH = "/core/search";
-    
         
-        
- 
+       
 
     @CurrentUser
     UserModel currentUser;
@@ -127,9 +127,26 @@ public class SearchAPI {
               
        SearchRequest searchRequest = new SearchRequest("variables");
        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-       searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+       HighlightBuilder highlightBuilder = new HighlightBuilder(); 
+       HighlightBuilder.Field highlightName = new HighlightBuilder.Field("name");
+       highlightName.highlighterType("unified");
+       highlightBuilder.field(highlightName);  
+       searchSourceBuilder.highlighter(highlightBuilder);
+
+
+
+
+       
+       MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("name", "Plant Canopy Surface"); 
+        
+       
+       //searchSourceBuilder.query(QueryBuilders.matchAllQuery());
        searchRequest.source(searchSourceBuilder);
+       searchSourceBuilder.query(matchQueryBuilder);
+
+ 
        SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
+       //
        SearchHit[] searchHits = response.getHits().getHits();
        elasticClient.close();
        

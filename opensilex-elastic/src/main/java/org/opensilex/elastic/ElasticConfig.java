@@ -17,7 +17,7 @@ public interface ElasticConfig extends ServiceConfig {
 
     @ConfigDescription(
             value = "Activate elastic search",
-            defaultBoolean = false
+            defaultBoolean = true
     )
     public Boolean enableElasticSearch();
 

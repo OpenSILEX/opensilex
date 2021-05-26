@@ -13,18 +13,20 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
 import org.opensilex.sparql.service.SPARQLService;
@@ -60,7 +62,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         try {
             ElasticService elasticService = getOpenSilex().getServiceInstance(ElasticService.DEFAULT_ELASTIC_SERVICE, ElasticService.class);
             elasticClient = elasticService.getClient();
-            indexProject();
+            //indexProject();
             indexVariable();
         } finally {
             if (elasticClient != null) {
@@ -81,10 +83,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
 
         } catch (ElasticsearchException exception) {
-            if (exception.status() == RestStatus.NOT_FOUND) { }
-                }
-        
-        
+            if (exception.status() == RestStatus.NOT_FOUND) {
 
                 ExclusionStrategy strategy = new ExclusionStrategy() {
                     @Override
@@ -122,7 +121,6 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
                         return false;
                     }
                 };
-                
 
                 Gson gson = new GsonBuilder().addSerializationExclusionStrategy(strategy).create();
                 String json;
@@ -133,48 +131,81 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
                     IndexRequest indexRequest = new IndexRequest("projects");
                     indexRequest.source(json, XContentType.JSON);
                     IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
+
                 }
-        
+            }
+
+        }
     }
 
-
-       private void indexVariable() throws Exception {
+    private void indexVariable() throws Exception {
 
         List<VariableModel> Variables = sparql.search(VariableModel.class, "en");
-    
 
         try {
+
             DeleteIndexRequest request = new DeleteIndexRequest("variables");
             AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
 
         } catch (ElasticsearchException exception) {
-            if (exception.status() == RestStatus.NOT_FOUND) {}
+            if (exception.status() == RestStatus.NOT_FOUND) {
+            }
         }
-        
-        
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String json;                
+        String json;
 
         for (VariableModel p : Variables) {
-            VariableDetailsDTO var = new VariableDetailsDTO(p);
-                
-            json = gson.toJson(var);
-
+            json = gson.toJson(p);
             System.out.println("----------------------------------------------------------------------------");
             System.out.println(json);
 
+            PutMappingRequest request = new PutMappingRequest("variables");
+            XContentBuilder builder = XContentFactory.jsonBuilder();
+            builder.startObject();
+            {
+                builder.startObject("p");
+                {
+                    builder.field("uri", "text");
+                    builder.field("name", "text");
+                    builder.field("alternative_name", "text");
+                    builder.field("description", "text");
+
+                    builder.startObject("entity");
+                    {
+                        builder.field("uri", "text");
+                        builder.field("name", "text");
+                    }
+                    builder.endObject();
+
+                    builder.startObject("characteristic");
+                    {
+                        builder.field("uri", "text");
+                        builder.field("name", "text");
+                    }
+                    builder.endObject();
+
+                    builder.field("trait", "text");
+                    builder.field("trait_name", "text");
+
+                    builder.startObject("unit");
+                    {
+                        builder.field("uri", "text");
+                        builder.field("name", "text");
+                    }
+                    builder.endObject();
+                }
+                builder.endObject();
+            }
+            builder.endObject();
+            request.source(builder);
+
             IndexRequest indexRequest = new IndexRequest("variables");
-      
             indexRequest.source(json, XContentType.JSON);
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
-            //System.out.println(response);
+
         }
-        
-      
+
     }
-       
+
 }
-
-
-     

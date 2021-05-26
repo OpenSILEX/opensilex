@@ -29,12 +29,10 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.core.CountRequest;
-import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
@@ -44,7 +42,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.utils.ListWithPagination;
-
+import org.opensilex.utils.OrderBy;
 
 /**
  *
@@ -86,54 +84,41 @@ public class SearchAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesES(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         RestHighLevelClient elasticClient = elastic.getClient();
 
-        
-        int from = page*pageSize;
         SearchRequest searchRequest = new SearchRequest("variables");
-        QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        HighlightBuilder.Field highlightName = new HighlightBuilder.Field("name");
+        highlightName.highlighterType("unified");
+        highlightBuilder.field(highlightName);
+        searchSourceBuilder.highlighter(highlightBuilder);
 
-        SearchResponse response = elasticClient.search(searchRequest
-        .source(sourceBuilder
-                .query(query)
-                .from(from)
-                .size(pageSize)
-                .trackTotalHits(true)
-                )
-                , RequestOptions.DEFAULT
-        );
-        
-         
+        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("name", "Plant Canopy Surface");
+
+        //searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        searchSourceBuilder.query(matchQueryBuilder);
+
+        SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
+        //
         SearchHit[] searchHits = response.getHits().getHits();
-        
-        CountRequest countRequest = new CountRequest("variables"); 
-        
-        countRequest.source(sourceBuilder);
-        CountResponse countResponse = elasticClient
-                  .count(countRequest, RequestOptions.DEFAULT);
-        
-        int count = (int) countResponse.getCount();
-
-       
         elasticClient.close();
 
-        
         List<VariableModel> results = Arrays.stream(searchHits)
                 .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
                 .collect(Collectors.toList());
 
-
-        
         ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(
                 results.stream()
                         .map(model -> VariableGetDTO.fromModel(model))
-                        .collect(Collectors.toList()),page,pageSize,count);
+                        .collect(Collectors.toList()));
 
-       return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

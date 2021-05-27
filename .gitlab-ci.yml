@@ -434,9 +434,9 @@ test:hamza:deploy:
 cheimae:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "hamza"
+    - if: $CI_COMMIT_BRANCH == "cheimae"
 
-test:hamzacheimae:deploy:
+test:cheimae:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:

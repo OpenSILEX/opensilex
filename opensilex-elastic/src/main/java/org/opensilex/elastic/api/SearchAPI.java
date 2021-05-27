@@ -29,10 +29,17 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import static org.elasticsearch.common.xcontent.XContentType.values;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.ScoreSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
@@ -84,35 +91,37 @@ public class SearchAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesES(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         RestHighLevelClient elasticClient = elastic.getClient();
 
-        SearchRequest searchRequest = new SearchRequest("variables");
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        HighlightBuilder highlightBuilder = new HighlightBuilder();
-        HighlightBuilder.Field highlightName = new HighlightBuilder.Field("name");
-        highlightName.highlighterType("unified");
-        highlightBuilder.field(highlightName);
-        searchSourceBuilder.highlighter(highlightBuilder);
+        
+        
+      QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
 
-        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("name", "Plant Canopy Surface");
+        SearchResponse response = elasticClient.search(new SearchRequest("variables")
+        .source(new SearchSourceBuilder()
+                .query(query)
+                .size(pageSize)
+                .trackTotalHits(true)
+                //.sort(SortBuilders.scoreSort())
+                //.sort(SortBuilders.fieldSort("name"))
+                )
+                , RequestOptions.DEFAULT
+        );
 
-        //searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchRequest.source(searchSourceBuilder);
-        searchSourceBuilder.query(matchQueryBuilder);
-
-        SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
-        //
+        
+        //SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
         SearchHit[] searchHits = response.getHits().getHits();
         elasticClient.close();
 
+        
         List<VariableModel> results = Arrays.stream(searchHits)
                 .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
                 .collect(Collectors.toList());
 
+        
         ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(
                 results.stream()
                         .map(model -> VariableGetDTO.fromModel(model))

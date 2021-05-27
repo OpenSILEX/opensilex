@@ -29,17 +29,10 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import static org.elasticsearch.common.xcontent.XContentType.values;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.ScoreSortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
@@ -49,7 +42,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
+
 
 /**
  *
@@ -91,8 +84,8 @@ public class SearchAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesES(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "number of documents to skip", example = "0") @QueryParam("from") @DefaultValue("0") @Min(0) int from,
+            @ApiParam(value = "maximum number of documents to return", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int size
     ) throws Exception {
         RestHighLevelClient elasticClient = elastic.getClient();
 
@@ -103,16 +96,13 @@ public class SearchAPI {
         SearchResponse response = elasticClient.search(new SearchRequest("variables")
         .source(new SearchSourceBuilder()
                 .query(query)
-                .size(pageSize)
+                .from(from)
+                .size(size)
                 .trackTotalHits(true)
-                //.sort(SortBuilders.scoreSort())
-                //.sort(SortBuilders.fieldSort("name"))
                 )
                 , RequestOptions.DEFAULT
         );
 
-        
-        //SearchResponse response = elasticClient.search(searchRequest, RequestOptions.DEFAULT);
         SearchHit[] searchHits = response.getHits().getHits();
         elasticClient.close();
 

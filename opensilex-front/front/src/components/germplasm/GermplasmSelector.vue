@@ -52,6 +52,9 @@ export default class GermplasmSelector extends Vue {
   @Prop()
   multiple;
 
+  @Prop()
+  experiment;
+
   get lang() {
     return this.$store.getters.language;
   }
@@ -81,7 +84,7 @@ export default class GermplasmSelector extends Vue {
         undefined, //variety?: string
         undefined, //accession?: string
         undefined, //institute?: string
-        undefined, //experiment?: string
+        this.experiment || undefined, //experiment?: string
         undefined, //metadata?: string
         [], //orderBy?: Array<string>
         page, //page?: number

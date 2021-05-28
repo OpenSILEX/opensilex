@@ -1,11 +1,27 @@
 <template>
   <div id="map">
-    <div v-if="!editingMode" id="selected">
-      <opensilex-CreateButton
-          v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
-          label="MapView.add-area-button"
-          @click="editingMode = true"
-      ></opensilex-CreateButton>
+    <div v-if="!editingMode" id="selected" class="d-flex">
+      <div class="mr-auto p-2">
+        <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+            label="MapView.add-area-button"
+            @click="editingMode = true"
+        ></opensilex-CreateButton>
+        <!-- map panel, controls -->
+        <b-button v-b-toggle.map-sidebar>
+          {{ $t("MapView.configuration") }}
+        </b-button>
+        <!--// map panel, controls -->
+      </div>
+      <span class="p-2">
+        <label class="alert-warning">
+          <img
+              alt="Warning"
+              src="../../../theme/phis/images/construction.png"
+          />
+          {{ $t("MapView.WarningInstruction") }}
+        </label>
+      </span>
     </div>
     <div v-if="editingMode" id="editing">
       <opensilex-Button
@@ -32,45 +48,24 @@
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
         ref="soForm"
         :context="{ experimentURI: this.experiment }"
-        @onCreate="callScientificObjectsUpdate"
-        @onUpdate="callScientificObjectsUpdate"
+        @onCreate="callScientificObjectUpdate"
+        @onUpdate="callScientificObjectUpdate"
     />
 
-    <p class="alert-info">
-      <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
-    </p>
     <div
         id="mapPoster"
         :class="editingMode ? 'bg-light border border-secondary' : ''"
     >
-      <div v-if="!editingMode" class="row">
-        {{ $t("MapView.display") + " : " }}
-        <opensilex-CheckboxForm
-            :value.sync="displaySO"
-            class="col-lg-2"
-            title="ScientificObjects.display"
-        ></opensilex-CheckboxForm>
-        <opensilex-CheckboxForm
-            :value.sync="displayAreas"
-            class="col-lg-5"
-            title="Area.display"
-        ></opensilex-CheckboxForm>
-        <span>
-          <label class="alert-warning">
-            <img
-                alt="Warning"
-                src="../../../theme/phis/images/construction.png"
-            />
-            {{ $t("MapView.WarningInstruction") }}
-          </label>
-        </span>
-      </div>
+      <p class="alert-info">
+        <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
+      </p>
       <!-- "mapControls" to display the scale -->
       <vl-map
           ref="map"
           :default-controls="mapControls"
           :load-tiles-while-animating="true"
           :load-tiles-while-interacting="true"
+          class="map"
           data-projection="EPSG:4326"
           style="height: 500px"
           @created="mapCreated"
@@ -131,13 +126,38 @@
               <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
             </vl-style-box>
           </vl-layer-vector>
-          <vl-layer-vector :visible="displaySO === 'true'">
+          <vl-layer-vector
+              v-for="layerSO in featuresOS"
+              :key="layerSO.id"
+              :visible="displaySO === 'true' && layerSO[0].properties.display==='true'"
+          >
             <vl-source-vector
                 ref="vectorSource"
-                :features.sync="featuresOS"
-                @update:features="defineCenter"
+                :features="layerSO"
+                @mounted="defineCenter"
             >
             </vl-source-vector>
+          </vl-layer-vector>
+          <vl-layer-vector
+              v-for="layer in tabLayer"
+              :key="layer.ref"
+              :visible="layer.display === 'true'"
+          >
+            <vl-source-vector
+                :ref="layer.ref"
+                :features.sync="layer.tabFeatures"
+            ></vl-source-vector>
+            <vl-style-box>
+              <vl-style-stroke
+                  v-if="layer.vlStyleStrokeColor"
+                  :color="layer.vlStyleStrokeColor"
+              ></vl-style-stroke>
+              <!-- outline color -->
+              <vl-style-fill
+                  v-if="layer.vlStyleFillColor"
+                  :color="colorFeature(layer.vlStyleFillColor)"
+              ></vl-style-fill>
+            </vl-style-box>
           </vl-layer-vector>
         </template>
 
@@ -177,11 +197,81 @@
         />
       </vl-map>
     </div>
+
+    <b-sidebar
+        id="map-sidebar"
+        :title="$t('MapView.configuration')"
+        class="sidebar-content"
+    >
+      <h5 class="text">{{ $t("MapView.display") + " : " }}</h5>
+      <br/>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <opensilex-CheckboxForm
+              :value.sync="displaySO"
+              class="col-lg-2"
+              title="ScientificObjects.display"
+              @update:value="displayScientificObjects"
+          ></opensilex-CheckboxForm>
+          <div
+              v-for="layerSO in featuresOS"
+              :key="layerSO.id"
+              class="d-flex justify-content-around"
+          >
+            <opensilex-CheckboxForm
+                :title="nameType(layerSO[0].properties.type)"
+                :value.sync="layerSO[0].properties.display"
+                class="p-2 bd-highlight"
+            ></opensilex-CheckboxForm>
+          </div>
+        </li>
+        <li class="list-group-item">
+          <opensilex-CheckboxForm
+              :value.sync="displayAreas"
+              class="p2"
+              title="Area.display"
+          ></opensilex-CheckboxForm>
+        </li>
+        <li
+            v-for="layer in tabLayer"
+            :key="layer.ref"
+            class="list-group-item d-flex justify-content-around"
+        >
+          <opensilex-CheckboxForm
+              :title="layer.titleDisplay"
+              :value.sync="layer.display"
+              class="p-2 bd-highlight"
+          ></opensilex-CheckboxForm>
+          <div class="p-2 bd-highlight col-2">
+            <opensilex-InputForm
+                v-if="layer.vlStyleStrokeColor"
+                :value.sync="layer.vlStyleStrokeColor"
+                type="color"
+            ></opensilex-InputForm>
+            <opensilex-InputForm
+                v-if="layer.vlStyleFillColor"
+                :value.sync="layer.vlStyleFillColor"
+                type="color"
+            ></opensilex-InputForm>
+          </div>
+          <opensilex-DeleteButton
+              label="FilterMap.filter.delete-button"
+              @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
+          ></opensilex-DeleteButton>
+        </li>
+      </ul>
+    </b-sidebar>
+
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
     <span id="Area">{{ $t("MapView.LegendArea") }}</span>
-
+    <opensilex-FilterMap
+        :experiment="experiment"
+        :featureOS="featuresOS"
+        :tabLayer="tabLayer"
+    >
+    </opensilex-FilterMap>
     <div id="selectedTable">
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -297,6 +387,7 @@ export default class MapView extends Vue {
   selectPointerMove: any[] = [];
   overlayCoordinate: any[] = [];
   centerMap: any[] = [];
+  tabLayer: any[] = [];
   fieldsSelected = [
     {
       key: "name",
@@ -317,6 +408,7 @@ export default class MapView extends Vue {
   private editingMode: boolean = false;
   private displayAreas: String = "true";
   private displaySO: String = "true";
+  private subDisplaySO: string[] = [];
   private detailsSO: boolean = false;
   private endReceipt: boolean = false;
   private errorGeometry: boolean = false;
@@ -335,6 +427,26 @@ export default class MapView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  displayScientificObjects() {
+    if (this.displaySO == "false") {
+      for (const feature of this.featuresOS) {
+        if (feature[0].properties.display == "true") {
+          feature[0].properties.display = "false";
+          this.subDisplaySO.push(feature[0].properties.uri);
+        }
+      }
+    } else {
+      for (const feature of this.featuresOS) {
+        for (const uri of this.subDisplaySO) {
+          if (feature[0].properties.uri == uri) {
+            feature[0].properties.display = "true";
+            this.subDisplaySO.splice(this.subDisplaySO.indexOf(uri), 1);
+          }
+        }
+      }
+    }
   }
 
   // Used to display details on the map and in the table
@@ -391,14 +503,11 @@ export default class MapView extends Vue {
     }
   }
 
-  callScientificObjectsUpdate() {
+  callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
-      this.removeFromFeaturesOS(this.scientificObjectURI, this.featuresOS);
-      this.removeFromFeaturesOS(
-          this.scientificObjectURI,
-          this.selectedFeatures
-      );
+      this.removeFromFeatureOS(this.scientificObjectURI, this.featuresOS);
+      this.removeFromFeatureOS(this.scientificObjectURI, this.selectedFeatures);
 
       this.$opensilex
           .getService(this.scientificObjectsService)
@@ -412,9 +521,20 @@ export default class MapView extends Vue {
                     name: result.name,
                     type: result.rdf_type,
                     nature: "ScientificObjects",
+                    display: "true",
                   };
 
-                  this.featuresOS.push(result.geometry);
+                  let inserted = false;
+                  this.featuresOS.forEach((item) => {
+                    if (item[0].properties.type == result.rdf_type) {
+                      item.push(result.geometry);
+                      inserted = true;
+                    }
+                  });
+                  if (!inserted) {
+                    this.featuresOS.push([result.geometry]);
+                  }
+
                   this.selectedFeatures.push(result.geometry);
                 }
               }
@@ -481,11 +601,13 @@ export default class MapView extends Vue {
       onBoxEnd: () => {
         // features that intersect the box are selected
         const extent = dragBox.getGeometry().getExtent();
-        const source = (this.$refs.vectorSource as any).$source;
+        (this.$refs.vectorSource as any).forEach((vector) => {
+          const source = vector.$source;
 
-        source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
-          feature = olExt.writeGeoJsonFeature(feature);
-          this.selectedFeatures.push(feature);
+          source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
+            feature = olExt.writeGeoJsonFeature(feature);
+            this.selectedFeatures.push(feature);
+          });
         });
       },
     });
@@ -504,11 +626,16 @@ export default class MapView extends Vue {
 
   defineCenter() {
     if (this.featuresOS.length > 0) {
-      let extent = this.vectorSource.$source.getExtent();
-      extent[0] -= 50;
-      extent[1] -= 50;
-      extent[2] += 50;
-      extent[3] += 50;
+      let extent = [-50, -50, 50, 50];
+      this.vectorSource.forEach((vector) => {
+        let extentTemporary = vector.$source.getExtent();
+        if (extentTemporary[0] != Infinity) {
+          extent[0] += extentTemporary[0] / this.vectorSource.length;
+          extent[1] += extentTemporary[1] / this.vectorSource.length;
+          extent[2] += extentTemporary[2] / this.vectorSource.length;
+          extent[3] += extentTemporary[3] / this.vectorSource.length;
+        }
+      });
       this.mapView.$view.fit(extent);
     }
   }
@@ -582,10 +709,14 @@ export default class MapView extends Vue {
                 " " +
                 this.$i18n.t("component.common.success.delete-success-message");
             this.$opensilex.showSuccessToast(message);
-            this.removeFromFeaturesOS(uri, this.featuresOS);
+            this.removeFromFeatureOS(uri, this.featuresOS);
           })
           .catch(this.$opensilex.errorHandler);
     }
+  }
+
+  colorFeature(color) {
+    return "rgba(" + parseInt(color.slice(1, 3), 16) + "," + parseInt(color.slice(3, 5), 16) + "," + parseInt(color.slice(5, 7), 16) + ",0.5)"
   }
 
   private recoveryShowArea(areaUri) {
@@ -652,8 +783,19 @@ export default class MapView extends Vue {
                     name: element.name,
                     type: element.rdf_type,
                     nature: "ScientificObjects",
+                    display: "true",
                   };
-                  this.featuresOS.push(element.geometry);
+
+                  let inserted = false;
+                  this.featuresOS.forEach((item) => {
+                    if (item[0].properties.type == element.rdf_type) {
+                      item.push(element.geometry);
+                      inserted = true;
+                    }
+                  });
+                  if (!inserted) {
+                    this.featuresOS.push([element.geometry]);
+                  }
                 }
               });
               if (res.length != 0) {
@@ -703,12 +845,25 @@ export default class MapView extends Vue {
     });
   }
 
-  private removeFromFeaturesOS(uri, features) {
+  private removeFromFeatureOS(uri, features, higherLevelFeatures = []) {
     features.forEach((item) => {
-      const {uri: uriItem} = item.properties;
+      if (item.type === undefined) {
+        this.removeFromFeatureOS(uri, item, features);
+      } else {
+        const {uri: uriItem} = item.properties;
 
-      if (uri == uriItem) {
-        features.splice(features.indexOf(item), 1);
+        if (uri == uriItem) {
+          if (features.length > 1 || higherLevelFeatures.length == 0) {
+            features.splice(features.indexOf(item), 1);
+          } else {
+            for (let i = 0; i < higherLevelFeatures.length; i++) {
+              if (uri == higherLevelFeatures[i][0].properties.uri) {
+                higherLevelFeatures.splice(i, 1);
+              }
+            }
+          }
+          return; // Stops at the first matching element
+        }
       }
     });
   }
@@ -842,6 +997,25 @@ p {
   background-color: transparent;
   box-shadow: none;
 }
+
+.map {
+  position: relative;
+}
+
+.map-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.b-sidebar-outer {
+  z-index: 1045;
+}
+
+::v-deep .b-sidebar {
+  width: 240px;
+}
 </style>
 
 <i18n>
@@ -865,7 +1039,8 @@ en:
     details: Show or hide element details
     author: Author
     update: Update element
-    display: Display of
+    display: Display of layers
+    configuration: Control panel
   Area:
     title: Area
     add: Description of the area
@@ -895,7 +1070,8 @@ fr:
     details: Afficher ou masquer les détails de l'élément
     author: Auteur
     update: Mise à jour de l'élément
-    display: Affichage des
+    display: Affichage des couches
+    configuration: Panneau de contrôle
   Area:
     title: Zone
     add: Description de la zone

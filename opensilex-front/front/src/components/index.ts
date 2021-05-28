@@ -568,6 +568,8 @@ import AreaForm from "./geometry/AreaForm.vue";
 components["opensilex-AreaForm"] = AreaForm;
 import AreaDetails from "./geometry/AreaDetails.vue";
 components["opensilex-AreaDetails"] = AreaDetails;
+import FilterMap from "./geometry/FilterMap.vue";
+components["opensilex-FilterMap"] = FilterMap;
 import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.vue";
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 

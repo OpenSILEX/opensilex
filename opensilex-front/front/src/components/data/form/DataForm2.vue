@@ -22,6 +22,7 @@
       <div v-if="selected=='importCSV'">
         <opensilex-GenerateDataTemplateFrom
           ref="templateForm"
+          :selectExperiment="true"
         ></opensilex-GenerateDataTemplateFrom>
         <div>
           <label
@@ -121,6 +122,8 @@ export default class DataForm2 extends Vue {
   $store: any;
   $i18n: any;
   $t: any;
+
+  @Ref("templateForm") readonly templateForm!: any;
 
   @PropSync("form")
   dataForm;

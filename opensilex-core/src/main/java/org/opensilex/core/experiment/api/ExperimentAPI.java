@@ -1345,7 +1345,6 @@ public class ExperimentAPI {
         ScientificObjectModel object;
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
-
             object = scientificObjectDAO.getObjectByURI(objectUri, contextUri);
         } else {
             object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);

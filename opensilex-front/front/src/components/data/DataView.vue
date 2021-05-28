@@ -9,7 +9,7 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
-          @click="dataForm.showCreateForm()"
+          @click="modalForm.showCreateForm()"
           label="OntologyCsvImporter.import"
         ></opensilex-CreateButton>
       </template>
@@ -23,101 +23,108 @@
     >
       <template v-slot:filters>
 
-        <!-- Variables -->
-        <opensilex-FilterField>
-          <opensilex-VariableSelector
-           label="DataView.filter.variables"
-           :multiple="true"
-           :variables.sync="filter.variables"
-          ></opensilex-VariableSelector>
-        </opensilex-FilterField>
-
-        <opensilex-FilterField>
-          <!-- Start Date -->
-          <opensilex-DateTimeForm
-              :value.sync="filter.start_date"
-              label="component.common.begin"
-              name="startDate"
-          ></opensilex-DateTimeForm>
-        </opensilex-FilterField>
-
-        <opensilex-FilterField>
-          <!-- End Date -->
-          <opensilex-DateTimeForm
-              :isTime="true"
-              :value.sync="filter.end_date"
-              label="component.common.end"
-              name="endDate"
-          ></opensilex-DateTimeForm>
-        </opensilex-FilterField>
-
-        <!-- Experiments -->
-        <opensilex-FilterField>
-          <opensilex-ExperimentSelector
-            label="DataView.filter.experiments"
-            :experiments.sync="filter.experiments"
+        <b-row class="ml-2">
+          <!-- Variables -->
+          <opensilex-FilterField>
+            <opensilex-VariableSelector
+            label="DataView.filter.variables"
             :multiple="true"
-          ></opensilex-ExperimentSelector>
-        </opensilex-FilterField> 
+            :variables.sync="filter.variables"
+            ></opensilex-VariableSelector>
+          </opensilex-FilterField>
+        
+          <!-- Experiments -->
+          <opensilex-FilterField>
+            <opensilex-ExperimentSelector
+              label="DataView.filter.experiments"
+              :experiments.sync="filter.experiments"
+              :multiple="true"
+            ></opensilex-ExperimentSelector>
+          </opensilex-FilterField> 
+          </b-row>
+        
+          <!-- Scientific objects -->
+          <opensilex-FilterField>
+            <opensilex-SelectForm
+              label="DataView.filter.scientificObjects"
+              placeholder="DataView.filter.scientificObjects-placeholder"
+              :selected.sync="filter.scientificObjects"
+              :conversionMethod="soGetDTOToSelectNode"
+              modalComponent="opensilex-ScientificObjectModalList"
+              :isModalSearch="true"
+              :clearable="false"
+              :maximumSelectedItems="1"
+            ></opensilex-SelectForm>
+          </opensilex-FilterField>
+        
+        <b-row class="ml-2">
+          <opensilex-FilterField>
+            <!-- Start Date -->
+            <opensilex-DateTimeForm
+                :value.sync="filter.start_date"
+                label="component.common.begin"
+                name="startDate"
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
 
-        <!-- Scientific objects -->
-        <opensilex-FilterField>
-          <opensilex-SelectForm
-            label="DataView.filter.scientificObjects"
-            placeholder="DataView.filter.scientificObjects-placeholder"
-            :selected.sync="filter.scientificObjects"
-            :conversionMethod="soGetDTOToSelectNode"
-            modalComponent="opensilex-ScientificObjectModalList"
-            :isModalSearch="true"
-            :clearable="false"
-            :maximumSelectedItems="1"
-          ></opensilex-SelectForm>
-        </opensilex-FilterField>
+          <opensilex-FilterField>
+            <!-- End Date -->
+            <opensilex-DateTimeForm
+                :isTime="true"
+                :value.sync="filter.end_date"
+                label="component.common.end"
+                name="endDate"
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
 
-        <!-- Provenance -->
-        <opensilex-FilterField>
-          <opensilex-ProvenanceSelector
-            ref="provSelector"
-            :provenances.sync="filter.provenance"
-            :filterLabel="filterProvenanceLabel"
-            label="ExperimentData.provenance"
-            @select="loadProvenance"
-            @clear="filterLabel = null"
-            :multiple="false"
-            :viewHandler="showProvenanceDetails"
-            :viewHandlerDetailsVisible="visibleDetails"
-            :showURI="false"
-          ></opensilex-ProvenanceSelector>
-        </opensilex-FilterField>
+          <!-- Provenance -->
+          <opensilex-FilterField>
+            <opensilex-ProvenanceSelector
+              ref="provSelector"
+              :provenances.sync="filter.provenance"
+              :filterLabel="filterProvenanceLabel"
+              label="ExperimentData.provenance"
+              @select="loadProvenance"
+              @clear="filterLabel = null"
+              :multiple="false"
+              :viewHandler="showProvenanceDetails"
+              :viewHandlerDetailsVisible="visibleDetails"
+              :showURI="false"
+            ></opensilex-ProvenanceSelector>
+          </opensilex-FilterField>
 
-        <opensilex-FilterField>
-          <b-collapse
-            v-if="selectedProvenance"
-            id="collapse-4"
-            v-model="visibleDetails"
-            class="mt-2"
-          >
-            <opensilex-ProvenanceDetails
-              :provenance="getSelectedProv"
-            ></opensilex-ProvenanceDetails>
-          </b-collapse>
-        </opensilex-FilterField>
-
+          <opensilex-FilterField>
+            <b-collapse
+              v-if="selectedProvenance"
+              id="collapse-4"
+              v-model="visibleDetails"
+              class="mt-2"
+            >
+              <opensilex-ProvenanceDetails
+                :provenance="getSelectedProv"
+              ></opensilex-ProvenanceDetails>
+            </b-collapse>
+          </opensilex-FilterField>
+        </b-row>
       </template>
     </opensilex-SearchFilterField>
 
     <opensilex-PageContent>
       <template v-slot></template>
     </opensilex-PageContent>
-    <opensilex-DataForm
-      ref="dataForm"
-      @onCreate="refresh()"
-      @onUpdate="refresh()"
-    ></opensilex-DataForm>
 
-    <opensilex-GenerateDataTemplateFrom
-      ref="templateForm"
-    ></opensilex-GenerateDataTemplateFrom>
+    <opensilex-ModalForm
+      ref="modalForm"
+      :initForm="initFormData"
+      createTitle="DatasetForm.create"
+      editTitle="DatasetForm.update"
+      component="opensilex-DataForm"
+      icon="fa#vials"
+      modalSize="xl"
+      @onCreate="afterCreateData"
+      :successMessage="successMessage"
+    ></opensilex-ModalForm>
+
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDataList"
@@ -194,13 +201,6 @@
 
     </opensilex-TableAsyncView>
 
-
-    <opensilex-DataForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
-      ref="dataForm"
-      @onCreate="afterCreateData"
-    ></opensilex-DataForm>
-
     <opensilex-ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"> </opensilex-ResultModalView>
 
     <opensilex-DataProvenanceModalView 
@@ -238,7 +238,7 @@ export default class DataView extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
 
-  @Ref("dataForm") readonly dataForm!: any;
+  @Ref("modalForm") readonly modalForm!: any;
 
   @Ref("searchField") readonly searchField!: any;
 

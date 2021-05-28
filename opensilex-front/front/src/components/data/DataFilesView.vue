@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageHeader
-      icon="ik#ik-bar-chart-line"
+      icon="fa#file-medical-alt"
       title="component.menu.datafiles.label"
       description="DatafilesView.description"
     ></opensilex-PageHeader>

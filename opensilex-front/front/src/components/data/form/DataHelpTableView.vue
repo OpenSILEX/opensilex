@@ -10,8 +10,12 @@
         <b-thead>
           <b-tr>
             <b-th>1</b-th>
-            <b-th
+            <b-th v-if="acceptSONames"
               >{{ $t("DataHelp.objectId")
+              }}<span class="required"> *</span></b-th
+            >
+            <b-th v-else
+              >{{ $t("DataHelp.objectURI")
               }}<span class="required"> *</span></b-th
             >
             <b-th>Date <span class="required"> *</span></b-th>
@@ -22,7 +26,8 @@
         <b-tbody>
           <b-tr>
             <b-th>2</b-th>
-            <b-td>{{ $t("DataHelp.objectId-help") }}</b-td>
+            <b-td v-if="acceptSONames">{{ $t("DataHelp.objectId-help") }}</b-td>
+            <b-td v-else>{{ $t("DataHelp.objectURI-help") }}</b-td>
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
@@ -106,6 +111,12 @@ export default class DataHelpTableView extends Vue {
   $t: any;
   visible: boolean = true;
 
+  @Prop({ default: true })
+  acceptSONames;
+
+  @Prop({ default: true })
+  scientificObjectsColumn;
+
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {
       return undefined;
@@ -186,6 +197,8 @@ en :
   DataHelp:
     exceptedFormat: Expected format
     objectId : Scientific Object name / URI
+    objectURI : Scientific Object URI
+    sensorURI : Sensor URI
     title: Generate Data template
     required: "Required : yes"
     variables-associated : Experiment variables associated
@@ -201,6 +214,7 @@ en :
     columns: CSV Files columns 
     file-rules: CSV editing rules
     objectId-help: Scientific object name or URI
+    objectURI-help: Scientific object URI
     variable-help : Variable 1 name
     variables-help : Other variables names
     text-help:  "You can insert data from this row. <br /> \n
@@ -220,6 +234,8 @@ fr :
   DataHelp:
     exceptedFormat: Format attendu
     objectId: Objet scientifique Nom / URI
+    objectURI : URI de l'objet scientifique
+    sensorURI : URI du capteur
     title: Générer un gabarit de données
     required: "Requis : oui"
     variables-associated: Variables associées à l'expérimentation
@@ -235,6 +251,7 @@ fr :
     columns: Colonnes du fichier CSV
     file-rules: Règles d'édition du CSV
     objectId-help: Nom ou l'URI de l'objet scientifique
+    objectURI-help: URI de l'objet scientifique
     variable-help : Nom de la variable 1 
     variables-help : Autres noms de variables
     text-help:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n

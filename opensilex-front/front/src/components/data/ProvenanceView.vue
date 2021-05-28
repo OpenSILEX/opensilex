@@ -281,7 +281,7 @@ export default class ProvenanceView extends Vue {
       this.filter.activity_type, //activity_type
       this.filter.agent, //agent
       this.filter.agent_type, //agent_type
-      undefined, // order_by
+      options.orderBy, // order_by
       options.currentPage,
       options.pageSize
     )

@@ -34,8 +34,8 @@
       <!-- type -->
       <opensilex-TypeForm
         :type.sync="provenance.activity.rdf_type"
-        :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
-        :required="false"
+        :baseType="PROV.ACTIVITY_TYPE_URI"
+        :required="true"
         helpMessage="DataForm.type-help"
       ></opensilex-TypeForm>
 
@@ -86,12 +86,12 @@
       ></opensilex-DeviceSelector>
 
       <!-- vectors -->
-      <opensilex-DeviceSelector
+      <!-- <opensilex-DeviceSelector
         v-if="selected == 'sensor'"
         label="DataForm.vectors"
         :devices.sync="provenance.sensors"
         :multiple="true"
-      ></opensilex-DeviceSelector>
+      ></opensilex-DeviceSelector> -->
 
       <!-- softwares -->
       <opensilex-DeviceSelector
@@ -119,6 +119,7 @@ import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Oeso from "../../../ontologies/Oeso";
+import PROV from "../../../ontologies/PROV";
 //TODO Add document at creation , etc ...</p> -->
 // import vueJsonEditor from "vue-json-editor";
 // Vue.component("vue-json-editor", vueJsonEditor);
@@ -133,6 +134,7 @@ export default class ProvenanceForm extends Vue {
   $store: any;
   $i18n: any;
   $t: any;
+  PROV = PROV;
 
   @Ref("validatorRef") readonly validatorRef!: any;
   

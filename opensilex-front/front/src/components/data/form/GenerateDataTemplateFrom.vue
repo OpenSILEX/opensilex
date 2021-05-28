@@ -80,6 +80,12 @@ export default class GenerateDataTemplateFrom extends Vue {
   @Prop({ default: true })
   uriGenerated;
 
+  @Prop({ default: true })
+  acceptSONames;
+
+  @Prop({ default: true })
+  scientificObjectsColumn;
+
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
   @Ref("modalRef") readonly modalRef!: any;
@@ -160,22 +166,39 @@ export default class GenerateDataTemplateFrom extends Vue {
   }
 
   csvExportDataExample() {
-    let arrData = [
-      [
-        this.$t("DataHelp.objectId").toString(),
-        "Date",
-        "demo:variable#variable.air_temperature",
-        "demo:variable#variable.fruit_color/2",
-        "demo:variable#variable.veraison_date",
-      ],
-      [
-        this.$t("DataHelp.objectId-help").toString(),
-        this.$t("DataHelp.date-help").toString(),
-        "Air_Temperature",
-        "Fruit_Color",
-        "Veraison_Date",
-      ],
-      [
+    let soCol = "";
+    let soColHelp = "";
+    if (this.acceptSONames) {
+      soCol = this.$t("DataHelp.objectId").toString();
+      soColHelp = this.$t("DataHelp.objectId-help").toString();
+    } else {
+      soCol = this.$t("DataHelp.objectURI").toString();
+      soColHelp = this.$t("DataHelp.objectURI-help").toString();
+    }
+
+    let row1 = [];
+    let row2 = [];
+    let row3 = [];
+
+    if (this.scientificObjectsColumn) {
+
+      row1 = [ 
+          soCol,
+          "Date",
+          "demo:variable#variable.air_temperature",
+          "demo:variable#variable.fruit_color/2",
+          "demo:variable#variable.veraison_date",
+        ];
+
+      row2 = [
+          soColHelp,
+          this.$t("DataHelp.date-help").toString(),
+          "Air_Temperature",
+          "Fruit_Color",
+          "Veraison_Date",
+        ];
+
+      row3 = [
         this.$t("DataHelp.column-type-help").toString() +
           this.getDataTypeLabel("xsd:string") +
           "\n" +
@@ -190,7 +213,42 @@ export default class GenerateDataTemplateFrom extends Vue {
           this.getDataTypeLabel("xsd:string"),
         this.$t("DataHelp.column-type-help").toString() +
           this.getDataTypeLabel("xsd:date"),
-      ],
+      ];
+
+    } else {
+      row1 = [ 
+          "Date",
+          "demo:variable#variable.air_temperature",
+          "demo:variable#variable.fruit_color/2",
+          "demo:variable#variable.veraison_date",
+        ];
+
+      row2 = [
+          this.$t("DataHelp.date-help").toString(),
+          "Air_Temperature",
+          "Fruit_Color",
+          "Veraison_Date",
+        ];
+
+      row3 = [
+        this.$t("DataHelp.column-type-help").toString() +
+          this.getDataTypeLabel("xsd:date") +
+          "\n" +
+          this.$t("DataHelp.required").toString(),
+        this.$t("DataHelp.column-type-help").toString() +
+          this.getDataTypeLabel("xsd:integer"),
+        this.$t("DataHelp.column-type-help").toString() +
+          this.getDataTypeLabel("xsd:string"),
+        this.$t("DataHelp.column-type-help").toString() +
+          this.getDataTypeLabel("xsd:date"),
+      ];
+
+    }
+
+    let arrData = [
+      row1,
+      row2,
+      row3,
       ["test", "2020-09-21T00:00:00+0100", "30", "Red", "2020-09-21"],
     ];
     this.$papa.download(
@@ -204,9 +262,19 @@ export default class GenerateDataTemplateFrom extends Vue {
     this.validateTemplate().then((isValid) => {
       // fill in large
       if (isValid) {
-        let variableUriInfo = [this.$t("DataHelp.objectId").toString(), "Date"];
+        let soColHeader;
+        let soColHelp;
+        if (this.acceptSONames) {
+          soColHeader = this.$t("DataHelp.objectId").toString();
+          soColHelp = this.$t("DataHelp.objectId-help").toString();
+        } else {
+          soColHeader = this.$t("DataHelp.objectURI").toString();
+          soColHelp = this.$t("DataHelp.objectURI-help").toString();
+        }
+
+        let variableUriInfo = [soColHeader, "Date"];
         let otherHeaders = [
-          this.$t("DataHelp.objectId-help").toString(),
+          soColHelp,
           this.$t("DataHelp.date-help").toString(),
         ];
         let otherExample = [

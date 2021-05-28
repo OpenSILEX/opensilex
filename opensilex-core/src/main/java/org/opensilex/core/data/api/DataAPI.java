@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponses;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import static java.lang.Float.NaN;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -50,10 +52,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import static org.opensilex.core.data.api.DataCreationDTO.NAN_VALUES;
+import static org.opensilex.core.data.api.DataCreationDTO.NA_VALUES;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -556,274 +561,376 @@ public class DataAPI {
         }
 
     }
-//    
-//    @POST
-//    @Path("{uri}/data/import")
-//    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
-//    @ApiResponses(value = {
-//        @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
-//    @ApiProtected
-//    @ApiCredential(
-//        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-//        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
-//        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
-//        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
-//    )
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response importCSVData(
-//            @ApiParam(value = "Experiment URIs", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("experiments") @NotNull @ValidURI List<URI> xpUris,
-//            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
-//            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
-//            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-//        DataDAO dao = new DataDAO(nosql, sparql, fs);
-//
-//        // test exp
-//        ExperimentDAO xpDAO = new ExperimentDAO(sparql);        
-//        Set<URI> userExp = xpDAO.getUserExperiments(user);
-//        if (!userExp.containsAll(xpUris)) {
-//            throw new Exception("no access to all the experiments");
-//        }
-//
-//        // test prov
-//        ProvenanceModel provenanceModel = null;
-//        ProvenanceDAO provDAO = new ProvenanceDAO(nosql); 
-//        try {
-//            provenanceModel = provDAO.get(provenance);
-//        } catch (NoSQLInvalidURIException e) {
-//            throw new NotFoundURIException("Provenance URI not found: ", provenance);
-//        } 
-//
-//        DataCSVValidationModel validation;
-//        
-//        validation = validateWholeCSV(xpUris, provenanceModel, file, user);
-//
-//        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
-//
-//        validation.setInsertionStep(true);
-//        validation.setValidCSV(!validation.hasErrors()); 
-//        validation.setNbLinesToImport(validation.getData().size()); 
-//
-//        if (validation.isValidCSV()) {
-//            Instant start = Instant.now();
-//            try {
-//                dao.createAll(new ArrayList<>(validation.getData().keySet()));
-//                validation.setNbLinesImported(validation.getData().keySet().size());
-//            } catch (NoSQLTooLargeSetException ex) {
-//                validation.setTooLargeDataset(true);
-//
-//            } catch (MongoBulkWriteException duplicateError) {
-//                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
-//                for (int i = 0; i < bulkErrors.size(); i++) {
-//                    int index = bulkErrors.get(i).getIndex();
-//                    ArrayList<DataModel> arrayList = new ArrayList<>(validation.getData().keySet());
-//                    DataGetDTO fromModel = DataGetDTO.fromModel(arrayList.get(index));
-//                    int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
-//                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-//                    CSVCell csvCell = new CSVCell(validation.getData().get(arrayList.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
-//                    validation.addDuplicatedDataError(csvCell);
-//                }
-//            } catch (MongoCommandException e) {
-//                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
-//                validation.addDuplicatedDataError(csvCell);
-//            } catch (DataTypeException e) {
-//                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
-//                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
-//                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-//            }
-//            Instant finish = Instant.now();
-//            long timeElapsed = Duration.between(start, finish).toMillis();
-//            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-//            
-//            validation.setValidCSV(!validation.hasErrors());
-//        }
-//        csvValidation.setDataErrors(validation); 
-//        return new SingleObjectResponse<>(csvValidation).getResponse();
-//    }
-//    
-//    private DataCSVValidationModel validateWholeCSV(List<URI> experimentURIs, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
-//        DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-//        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-//
-//        Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
-//        List<String> scientificObjectsNotInXp = new ArrayList<>();
-//
-//        Map<Integer, String> headerByIndex = new HashMap<>();
-//
-//        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>(); 
-//
-//        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
-//            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
-//            CsvParser csvReader = new CsvParser(csvParserSettings);
-//            csvReader.beginParsing(inputReader);
-//            LOGGER.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
-//
-//            // Line 1
-//            String[] ids = csvReader.parseNext();
-//
-//            // 1. check variables
-//            HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
-// 
-//            VariableDAO dao = new VariableDAO(sparql);
-//            if (ids != null) {
-//
-//                for (int i = 0; i < ids.length; i++) {
-//                    if (i > 1) {
-//                        String header = ids[i];
-//                        try {
-//                            if (header == null || !URIDeserializer.validateURI(header)) {
-//                                csvValidation.addInvalidHeaderURI(i, header);
-//                            } else {
-//                                VariableModel var = dao.get(URI.create(header));
-//                                // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
-//                                if (var == null) {
-//                                    csvValidation.addInvalidHeaderURI(i, header);
-//                                } else {
-//                                    mapVariableUriDataType.put(var.getUri(), var.getDataType());
-//                                    // TODO : Validate duplicate variable colonne
-//                                    headerByIndex.put(i, header);
-//                                }
-//                            }
-//                        } catch (URISyntaxException e) {
-//                            csvValidation.addInvalidHeaderURI(i, ids[i]);
-//                        }
-//                    }
-//                }
-//
-//                // 1.1 return error variables
-//                if (csvValidation.hasErrors()) {
-//                    return csvValidation;
-//                }
-//                csvValidation.setHeadersFromArray(ids);
-//
-//                int rowIndex = 0;
-//                String[] values;
-//
-//                // Line 2
-//                String[] headersLabels = csvReader.parseNext();
-//                csvValidation.setHeadersLabelsFromArray(headersLabels);
-//
-//                // Line 3
-//                csvReader.parseNext();
-//                // Line 4
-//                int nbError = 0;
-//                boolean validateCSVRow = false;
-//                while ((values = csvReader.parseNext()) != null) {
-//                    try {
-//                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURIs, scientificObjectDAO, nameURIScientificObjectsInXp, scientificObjectsNotInXp, mapVariableUriDataType,duplicateDataByIndex);
-//                    } catch (CSVDataTypeException e) {
-//                        csvValidation.addInvalidDataTypeError(e.getCsvCell());
-//                    }
-//                    rowIndex++;
-//                    if (!validateCSVRow) {
-//                        nbError++;
-//                    }
-//                    if (nbError >= CSV_NB_ERRORS_MAX) {
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
-//            csvValidation.setTooLargeDataset(true);
-//        }
-//        
-//        return csvValidation;
-//    }
-//
-//    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType,List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
-//
-//        boolean validRow = true;
-//        ScientificObjectModel object = null;
-//
-//        ParsedDateTimeMongo parsedDateTimeMongo = null;
-//        for (int colIndex = 0; colIndex < values.length; colIndex++) {
-//            if (colIndex == 0) {
-//                String objectNameOrUri = values[colIndex];
-//                // test in uri list
-//                if (!StringUtils.isEmpty(objectNameOrUri) && nameURIScientificObjects.containsKey(objectNameOrUri)) {
-//                    object = nameURIScientificObjects.get(objectNameOrUri);
-//                } else {
-//                    // test not in uri list
-//                    if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-//                        object = getObjectByNameOrURI(scientificObjectDAO, objectNameOrUri);
-//                    }
-//                    if (object == null) {
-//                        scientificObjectsNotInXp.add(objectNameOrUri);
-//                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
-//                        csvValidation.addInvalidObjectError(cell);
-//                        validRow = false;
-//                        break;
-//                    } else {
-//                        nameURIScientificObjects.put(objectNameOrUri, object);
-//                    }
-//                }
-//            } else if (colIndex == 1) {
-//                // check date
-//                // TODO : Validate timezone ambiguity
-//                parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(values[colIndex], null);
-//                if (parsedDateTimeMongo == null) {
-//                    CSVCell cell = new CSVCell(rowIndex, colIndex, values[colIndex], "DATE");
-//                    csvValidation.addInvalidDateError(cell);
-//                    validRow = false;
-//                    break;
-//                }
-//            } else {
-//                // If value is not blank and null
-//                if(!StringUtils.isEmpty(values[colIndex])){
-//                    
-//                    DataModel dataModel = new DataModel();
-//                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
-//                    provenanceModel.setUri(provenance.getUri());
-//                    List<URI> experiments = new ArrayList<>();
-//                    experiments.addAll(expURIs);
-//                    provenanceModel.setExperiments(experiments);
-//                    dataModel.setDate(parsedDateTimeMongo.getInstant());
-//                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
-//                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-//                    List<URI> listObject = new ArrayList<>();
-//                    listObject.add(object.getUri());
-//                    dataModel.setScientificObjects(listObject);
-//                    dataModel.setProvenance(provenanceModel);
-//                    URI varURI = URI.create(headerByIndex.get(colIndex));
-//                    dataModel.setVariable(varURI);
-//                    dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-//                    csvValidation.addData(dataModel,rowIndex);
-//                    // check for duplicate data
-//                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI,experimentURI,object.getUri());
-//                    if (!duplicateDataByIndex.contains(importDataIndex)) { 
-//                        duplicateDataByIndex.add(importDataIndex);
-//                    }else{
-//                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-//                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-//                        csvValidation.addDuplicatedDataError(duplicateCell);
-//                    }    
-//                } 
-//            } 
-//        }
-//        return validRow;
-//    }
-//    
-//    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
-//        ScientificObjectModel object = null;
-//        try {
-//            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
-//        } catch (Exception ex) {
-//        }
-//        return object;
-//    }
-//
-//    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
-//        ScientificObjectModel object;
-//        if (URIDeserializer.validateURI(nameOrUri)) {
-//            URI objectUri = URI.create(nameOrUri);
-//
-//            object = scientificObjectDAO.getObjectByURI(objectUri, contextUri);
-//        } else {
-//            object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
-//        }
-//
-//        return object;
-//    }
+    
+    @POST
+    @Path("import")
+    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
+    @ApiProtected
+    @ApiCredential(
+        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+        credentialId = CREDENTIAL_DATA_MODIFICATION_ID, 
+        credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response importCSVData(
+            @ApiParam(value = "Experiment URIs", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") @NotNull @ValidURI List<URI> xpUris,
+            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+
+        // test exp
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);        
+        Set<URI> userExp = xpDAO.getUserExperiments(user);
+        if (!userExp.containsAll(xpUris)) {
+            throw new Exception("no access to all the experiments");
+        }
+
+        // test prov
+        ProvenanceModel provenanceModel = null;
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql); 
+        try {
+            provenanceModel = provDAO.get(provenance);
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Provenance URI not found: ", provenance);
+        } 
+
+        DataCSVValidationModel validation;
+        
+        validation = validateWholeCSV(xpUris, provenanceModel, file, user);
+
+        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
+
+        validation.setInsertionStep(true);
+        validation.setValidCSV(!validation.hasErrors()); 
+        validation.setNbLinesToImport(validation.getData().size()); 
+
+        if (validation.isValidCSV()) {
+            Instant start = Instant.now();
+            try {
+                dao.createAll(new ArrayList<>(validation.getData().keySet()));
+                validation.setNbLinesImported(validation.getData().keySet().size());
+            } catch (NoSQLTooLargeSetException ex) {
+                validation.setTooLargeDataset(true);
+
+            } catch (MongoBulkWriteException duplicateError) {
+                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
+                for (int i = 0; i < bulkErrors.size(); i++) {
+                    int index = bulkErrors.get(i).getIndex();
+                    ArrayList<DataModel> arrayList = new ArrayList<>(validation.getData().keySet());
+                    DataGetDTO fromModel = DataGetDTO.fromModel(arrayList.get(index));
+                    int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
+                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
+                    CSVCell csvCell = new CSVCell(validation.getData().get(arrayList.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                    validation.addDuplicatedDataError(csvCell);
+                }
+            } catch (MongoCommandException e) {
+                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
+                validation.addDuplicatedDataError(csvCell);
+            } catch (DataTypeException e) {
+                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
+                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
+                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
+            }
+            Instant finish = Instant.now();
+            long timeElapsed = Duration.between(start, finish).toMillis();
+            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
+            
+            validation.setValidCSV(!validation.hasErrors());
+        }
+        csvValidation.setDataErrors(validation); 
+        return new SingleObjectResponse<>(csvValidation).getResponse();
+    }
+    
+    @POST
+    @Path("import_validation")
+    @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = DataCSVValidationDTO.class)})
+    @ApiProtected
+    @ApiCredential(
+            groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
+            groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY,
+            credentialId = CREDENTIAL_DATA_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateCSV(
+            @ApiParam(value = "Experiment URIs", example = EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") @NotNull @ValidURI List<URI> xpUris,
+            @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
+        // test exp
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);        
+        Set<URI> userExp = xpDAO.getUserExperiments(user);
+        if (!userExp.containsAll(xpUris)) {
+            throw new Exception("no access to all the experiments");
+        }
+
+        // test prov
+        ProvenanceModel provenanceModel = null;
+
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        try {
+            provenanceModel = provDAO.get(provenance);
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Provenance URI not found: ", provenance);
+        }
+
+        DataCSVValidationModel validation;
+
+        Instant start = Instant.now();
+        validation = validateWholeCSV(xpUris, provenanceModel, file, user);
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
+
+        DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
+
+        validation.setValidCSV(!validation.hasErrors());
+        validation.setValidationStep(true);
+        validation.setNbLinesToImport(validation.getData().size());
+        csvValidation.setDataErrors(validation);
+
+        return new SingleObjectResponse<>(csvValidation).getResponse();
+    }
+    
+    private DataCSVValidationModel validateWholeCSV(List<URI> experimentURIs, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
+        DataCSVValidationModel csvValidation = new DataCSVValidationModel();
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+
+        List<URI> scientificObjectsNotInDB = new ArrayList<>();
+
+        Map<Integer, String> headerByIndex = new HashMap<>();
+
+        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>(); 
+
+        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
+            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
+            CsvParser csvReader = new CsvParser(csvParserSettings);
+            csvReader.beginParsing(inputReader);
+            LOGGER.debug("Import data - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
+
+            // Line 1
+            String[] ids = csvReader.parseNext();
+
+            // 1. check variables
+            HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
+ 
+            VariableDAO dao = new VariableDAO(sparql);
+            if (ids != null) {
+
+                for (int i = 0; i < ids.length; i++) {
+                    if (i > 1) {
+                        String header = ids[i];
+                        try {
+                            if (header == null || !URIDeserializer.validateURI(header)) {
+                                csvValidation.addInvalidHeaderURI(i, header);
+                            } else {
+                                VariableModel var = dao.get(URI.create(header));
+                                // boolean uriExists = sparql.uriExists(VariableModel.class, URI.create(header));
+                                if (var == null) {
+                                    csvValidation.addInvalidHeaderURI(i, header);
+                                } else {
+                                    mapVariableUriDataType.put(var.getUri(), var.getDataType());
+                                    // TODO : Validate duplicate variable colonne
+                                    headerByIndex.put(i, header);
+                                }
+                            }
+                        } catch (URISyntaxException e) {
+                            csvValidation.addInvalidHeaderURI(i, ids[i]);
+                        }
+                    }
+                }
+
+                // 1.1 return error variables
+                if (csvValidation.hasErrors()) {
+                    return csvValidation;
+                }
+                csvValidation.setHeadersFromArray(ids);
+
+                int rowIndex = 0;
+                String[] values;
+
+                // Line 2
+                String[] headersLabels = csvReader.parseNext();
+                csvValidation.setHeadersLabelsFromArray(headersLabels);
+
+                // Line 3
+                csvReader.parseNext();
+                // Line 4
+                int nbError = 0;
+                boolean validateCSVRow = false;
+                while ((values = csvReader.parseNext()) != null) {
+                    try {
+                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURIs, scientificObjectDAO, scientificObjectsNotInDB, mapVariableUriDataType, duplicateDataByIndex);
+                    } catch (CSVDataTypeException e) {
+                        csvValidation.addInvalidDataTypeError(e.getCsvCell());
+                    }
+                    rowIndex++;
+                    if (!validateCSVRow) {
+                        nbError++;
+                    }
+                    if (nbError >= CSV_NB_ERRORS_MAX) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (csvValidation.getData().keySet().size() >  DataAPI.SIZE_MAX) {
+            csvValidation.setTooLargeDataset(true);
+        }
+        
+        return csvValidation;
+    }
+
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, List<URI> experimentURIs, ScientificObjectDAO scientificObjectDAO, List<URI> scientificObjectsNotInDB, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
+
+        boolean validRow = true;
+
+        ParsedDateTimeMongo parsedDateTimeMongo = null;
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {
+            URI objectUri = null;
+            
+            if (colIndex == 0) {
+                String objectUriString = values[colIndex];                
+                
+                if (objectUriString != null) {
+                    objectUri = new URI(objectUriString);
+
+                    if (scientificObjectsNotInDB.contains(objectUri)) {                    
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectUriString, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
+                        validRow = false;
+                        break;  
+                        
+                    } else {
+                        // test not in uri list
+                        if (!sparql.uriExists(ScientificObjectModel.class, objectUri)) {   
+                            scientificObjectsNotInDB.add(objectUri);
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectUriString, "OBJECT_ID");
+                            csvValidation.addInvalidObjectError(cell);
+                            validRow = false;
+                            break;                    
+                        }
+
+                    }
+                }
+
+            } else if (colIndex == 1) {
+                // check date
+                // TODO : Validate timezone ambiguity
+                parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(values[colIndex], null);
+                if (parsedDateTimeMongo == null) {
+                    CSVCell cell = new CSVCell(rowIndex, colIndex, values[colIndex], "DATE");
+                    csvValidation.addInvalidDateError(cell);
+                    validRow = false;
+                    break;
+                }
+            } else {
+                // If value is not blank and null
+                if(!StringUtils.isEmpty(values[colIndex])){
+                    
+                    DataModel dataModel = new DataModel();
+                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                    provenanceModel.setUri(provenance.getUri());
+                    provenanceModel.setExperiments(experimentURIs);
+                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+                    
+                    dataModel.setScientificObject(objectUri);
+                    dataModel.setProvenance(provenanceModel);
+                    URI varURI = URI.create(headerByIndex.get(colIndex));
+                    dataModel.setVariable(varURI);
+                    dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                    csvValidation.addData(dataModel,rowIndex);
+                    // check for duplicate data
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), objectUri);
+                    if (!duplicateDataByIndex.contains(importDataIndex)) { 
+                        duplicateDataByIndex.add(importDataIndex);
+                    }else{
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
+                    }    
+                } 
+            } 
+        }
+        return validRow;
+    }
+    
+    private Object returnValidCSVDatum(URI variable, Object value, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
+        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+
+        if (Arrays.asList(NAN_VALUES).contains(value)) {
+            value = NaN;
+        } else if (Arrays.asList(NA_VALUES).contains(value)) {
+            return null;
+        }
+
+        if (dataType == null) {
+            return value;
+        } else {
+            if (dataType.toString().equals("xsd:integer")) {
+                try {
+                    return Integer.valueOf(value.toString());
+                } catch (NumberFormatException e) {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                    throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+                }
+            }
+
+        }
+        if (dataType.toString().equals("xsd:decimal")) {
+            try {
+                return Double.valueOf(value.toString());
+            } catch (NumberFormatException e) {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:boolean")) {
+            Boolean toBooleanObject = BooleanUtils.toBooleanObject(value.toString());
+            if (Objects.equals(toBooleanObject, Boolean.FALSE) || Objects.equals(toBooleanObject, Boolean.TRUE)) {
+                return toBooleanObject;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+
+        if (dataType.toString().equals("xsd:date")) {
+            if (value instanceof String && DataValidateUtils.isDate(value.toString())) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:datetime")) {
+            if (value instanceof String && DataValidateUtils.isDateTime(value.toString())) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:string")) {
+            if ((value instanceof String)) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+
+        return value;
+    }
 }

@@ -28,148 +28,15 @@
           :showURI="false"
           :required="true"
         ></opensilex-ProvenanceSelector>
-        <b-alert variant="success" :show="createOK">The provenance has been successfully created</b-alert>
-      </div>
-      </ValidationObserver>      
-        <b-card bg-variant="light" v-if="selected">
-          <b-form>
-            <b-form-group
-              label-size="lg"
-              label-class="font-weight-bold pt-0"
-              class="mb-0"
-            >
-                <template v-slot:label>{{$t('Describe the provenance of the dataset') }}</template>
-            </b-form-group>
+        <b-alert variant="success" :show="createOK">The provenance has been successfully created</b-alert>        
+      </div>  
+      </ValidationObserver>  
+        
+      <b-card bg-variant="light" v-if="selected">
+        <opensilex-ProvenanceForm>
+        </opensilex-ProvenanceForm>
 
-            <!-- Label -->
-            <opensilex-InputForm
-              :value.sync="provenance.name"
-              :disabled="provenance.uri != undefined && provenance.uri != null"
-              label="DataForm.provenance.name"
-              helpMessage="DataForm.provenance.name-help"
-              type="text"
-              placeholder="DataForm.provenance.name-placeholder"
-              :required="true"
-            ></opensilex-InputForm>
-
-            <!-- description -->
-            <opensilex-TextAreaForm            
-              :value.sync="provenance.description"
-              helpMessage="DataForm.provenance.description-help"
-              label="DataForm.provenance.description"
-              placeholder="DataForm.provenance.description-placeholder"
-              :disabled="provenance.uri != undefined && provenance.uri != null"
-            ></opensilex-TextAreaForm>
-
-            <!--activity -->
-            <b-card title="Activity" bg-variant="light">
-              <!-- type -->
-              <opensilex-TypeForm
-                v-bind:style="styleObject"
-                :type.sync="provenance.activity.rdf_type"
-                :baseType="$opensilex.Oeso.PROV_ACTIVITY_TYPE_URI"
-                :required="false"
-                helpMessage="DataForm.type-help"
-                :disabled="provenance.uri != undefined && provenance.uri != null"
-              ></opensilex-TypeForm>
-
-              <!-- start_date  & end_date-->
-              <div class="row">
-                <div class="col">
-                  <opensilex-DateTimeForm
-                    :value.sync="provenance.activity.start_date"
-                    label="DataForm.start"
-                    :maxDate="form.end"
-                    :required="true"
-                    @change="updateRequiredProps"
-                    helpMessage="DataForm.start-help"
-                    :disabled="provenance.uri != undefined && provenance.uri != null"
-                  ></opensilex-DateTimeForm>
-                </div>
-
-                <div class="col">
-                  <opensilex-DateTimeForm
-                    :value.sync="provenance.activity.end_date"
-                    :minDate="form.start"
-                    label="DataForm.end"
-                    @change="updateRequiredProps"
-                    helpMessage="DataForm.end-help"
-                    :disabled="provenance.uri != undefined && provenance.uri != null"
-                  ></opensilex-DateTimeForm>
-                </div>
-
-            </div>
-
-            <!-- uri -->
-            <opensilex-InputForm
-              :value.sync="provenance.activity.uri"
-              label=""
-              type="url"
-              rules="url"
-              helpMessage=""
-              :disabled="provenance.uri != undefined && provenance.uri != null"
-            ></opensilex-InputForm>
-            </b-card>
-
-            <!-- agents -->
-            <b-card title="agents" bg-variant="light">
-
-            <!-- sensors -->
-              <opensilex-DeviceSelector
-                v-if="selected == 'sensor'"
-                label="DataForm.sensors"
-                :devices.sync="provenance.sensors"
-                :multiple="true"
-                :disabled="provenance.uri != undefined && provenance.uri != null"
-                :required="selected == 'sensor'"
-              ></opensilex-DeviceSelector>
-
-              <!-- vectors -->
-              <opensilex-DeviceSelector
-                v-if="selected == 'sensor'"
-                label="DataForm.vectors"
-                :devices.sync="provenance.sensors"
-                :multiple="true"
-                :disabled="provenance.uri != undefined && provenance.uri != null"
-              ></opensilex-DeviceSelector>
-
-              <!-- softwares -->
-              <opensilex-DeviceSelector
-                v-if="selected == 'softwares'"
-                label="DataForm.softwares"
-                :devices.sync="provenance.softwares"
-                :multiple="true"
-                :disabled="provenance.uri != undefined && provenance.uri != null"
-              ></opensilex-DeviceSelector>
-
-              <!-- operators -->
-              <opensilex-UserSelector
-                label="DataForm.provenance.operators"
-                helpMessage="DataForm.provenance.operators-help"
-                :users.sync="provenance.operators"
-                :multiple="true"
-                @select="selectedOperators"
-                @deselect="deselectedOperators"
-                :disabled="provenance.uri != undefined && provenance.uri != null"
-              ></opensilex-UserSelector>
-            </b-card>
-
-            <b-button
-              v-if="provenance.uri == undefined || provenance.uri == null"
-              @click="createProvenance"
-              variant="success"
-            >{{$t('Create provenance')}}
-            </b-button>
-
-            <b-button
-              v-else
-              @click="copyProvenance"
-              variant="success"
-            >{{$t('Copy provenance')}}
-            </b-button>
-
-          </b-form>
-        </b-card>
+      </b-card>
 
     </div>
   

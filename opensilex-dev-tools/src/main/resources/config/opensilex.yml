@@ -1,12 +1,10 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://www.opensilex.org/sunagri/
+    baseURIAlias: sunagri
     sparql:
-        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
-
+            repository: sunagri
 
 file-system:
     fs:

@@ -481,15 +481,13 @@ public class DataAPI {
             }            
             
             //check objects uri
-            if (data.getScientificObjects() != null) {
-                for (URI object:data.getScientificObjects()) {
-                    if (!objectURIs.contains(object)) {
-                        objectURIs.add(object);
-                        if (!sparql.uriExists(ScientificObjectModel.class, object)) {
-                            notFoundedObjectURIs.add(object);
-                        }
+            if (data.getScientificObject() != null) {
+                if (!objectURIs.contains(data.getScientificObject())) {
+                    objectURIs.add(data.getScientificObject());
+                    if (!sparql.uriExists(ScientificObjectModel.class, data.getScientificObject())) {
+                        notFoundedObjectURIs.add(data.getScientificObject());
                     }
-                }                
+                }         
             }
         
             //check provenance urii

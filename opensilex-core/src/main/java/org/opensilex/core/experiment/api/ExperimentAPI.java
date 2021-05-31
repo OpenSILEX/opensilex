@@ -701,8 +701,8 @@ public class ExperimentAPI {
         Map<Instant, Map<ExportDataIndex, List<DataGetDTO>>> dataByIndexAndInstant = new HashMap<>();
 
         for (DataModel dataModel : resultList) {
-            if (!objects.containsKey(dataModel.getScientificObjects().get(0))) {
-                objects.put(dataModel.getScientificObjects().get(0), null);
+            if (!objects.containsKey(dataModel.getScientificObject())) {
+                objects.put(dataModel.getScientificObject(), null);
             }
             if (!variables.contains(dataModel.getVariable())) {
                 variables.add(dataModel.getVariable());
@@ -717,7 +717,7 @@ public class ExperimentAPI {
             }
             // add export data
             // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
-            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(), dataModel.getScientificObjects().get(0));
+            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(), dataModel.getScientificObject());
 
             if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                 dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
@@ -824,7 +824,7 @@ public class ExperimentAPI {
                     boolean first = true;
                     for (DataGetDTO dataGetDTO : val) {
                         if (first == true) {
-                            ScientificObjectModel os = objects.get(dataGetDTO.getScientificObjects().get(0));
+                            ScientificObjectModel os = objects.get(dataGetDTO.getScientificObject());
 
                             // experiment
                             csvRow.add(xp.getName());
@@ -897,8 +897,8 @@ public class ExperimentAPI {
 
         HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
         for (DataModel dataModel : resultList) {
-            if (!objects.containsKey(dataModel.getScientificObjects().get(0))) {
-                objects.put(dataModel.getScientificObjects().get(0), null);
+            if (!objects.containsKey(dataModel.getScientificObject())) {
+                objects.put(dataModel.getScientificObject(), null);
             }
             if (!variables.containsKey(dataModel.getVariable())) {
                 variables.put(dataModel.getVariable(), null);
@@ -975,7 +975,7 @@ public class ExperimentAPI {
                 List<DataGetDTO> val = entry.getValue();
                 for (DataGetDTO dataGetDTO : val) {
                     ArrayList<String> csvRow = new ArrayList<>();
-                    ScientificObjectModel os = objects.get(dataGetDTO.getScientificObjects().get(0));
+                    ScientificObjectModel os = objects.get(dataGetDTO.getScientificObject());
                     // experiment
                     csvRow.add(xp.getName());
                     // object
@@ -1311,9 +1311,7 @@ public class ExperimentAPI {
                     dataModel.setDate(parsedDateTimeMongo.getInstant());
                     dataModel.setOffset(parsedDateTimeMongo.getOffset());
                     dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-                    List<URI> listObject = new ArrayList<>();
-                    listObject.add(object.getUri());
-                    dataModel.setScientificObjects(listObject);
+                    dataModel.setScientificObject(object.getUri());
                     dataModel.setProvenance(provenanceModel);
                     URI varURI = URI.create(headerByIndex.get(colIndex));
                     dataModel.setVariable(varURI);

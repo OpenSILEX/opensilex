@@ -57,13 +57,14 @@ public class DataGetDTO extends DataCreationDTO {
     public static DataGetDTO fromModel(DataModel model){
         DataGetDTO dto = new DataGetDTO();        
         dto.setUri(model.getUri());
-        dto.setScientificObjects(model.getScientificObjects());
+        dto.setScientificObject(model.getScientificObject());
         dto.setVariable(model.getVariable());      
         dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         dto.setConfidence(model.getConfidence());
         dto.setValue(model.getValue());
         dto.setMetadata(model.getMetadata());   
         dto.setProvenance(model.getProvenance());
+        dto.setRawData(model.getRawData());
         
         return dto;
     }

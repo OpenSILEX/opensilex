@@ -224,7 +224,7 @@
               </li>
             </ul>
           </b-tab>
-          <b-tab :title="$t('MapView.displayFilter')">
+          <b-tab :title="$t('MapView.displayFilter',{count : tabLayer.length})">
             <template v-if="tabLayer.length===0">{{ $t('MapView.noFilter') }}</template>
             <li v-for="layer in tabLayer" :key="layer.ref" class="d-flex justify-content-around">
               <opensilex-CheckboxForm
@@ -1056,7 +1056,7 @@ en:
     author: Author
     update: Update element
     display: Layers
-    displayFilter: Filters
+    displayFilter: Filters ({count})
     configuration: Configuration
     center: Refocus the map
     noFilter: No filter applied. To add one, use the form below the map
@@ -1090,7 +1090,7 @@ fr:
     author: Auteur
     update: Mise à jour de l'élément
     display: Couches
-    displayFilter: Filtres
+    displayFilter: Filtres ({count})
     configuration: Configuration
     center: Recentrer la carte
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte

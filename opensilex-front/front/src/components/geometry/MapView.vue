@@ -1057,7 +1057,7 @@ en:
     update: Update element
     display: Layers
     displayFilter: Filters
-    configuration: Control panel
+    configuration: Configuration
     center: Refocus the map
     noFilter: No filter applied. To add one, use the form below the map
   Area:
@@ -1091,7 +1091,7 @@ fr:
     update: Mise à jour de l'élément
     display: Couches
     displayFilter: Filtres
-    configuration: Panneau de contrôle
+    configuration: Configuration
     center: Recentrer la carte
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
   Area:

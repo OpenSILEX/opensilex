@@ -29,6 +29,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -84,26 +86,36 @@ public class SearchAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesES(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "number of documents to skip", example = "0") @QueryParam("from") @DefaultValue("0") @Min(0) int from,
-            @ApiParam(value = "maximum number of documents to return", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int size
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         RestHighLevelClient elasticClient = elastic.getClient();
 
         
+        int from = page*pageSize;
+        SearchRequest searchRequest = new SearchRequest("variables");
         
-      QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
+        QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
 
-        SearchResponse response = elasticClient.search(new SearchRequest("variables")
+        SearchResponse response = elasticClient.search(searchRequest
         .source(new SearchSourceBuilder()
                 .query(query)
                 .from(from)
-                .size(size)
+                .size(pageSize)
                 .trackTotalHits(true)
                 )
                 , RequestOptions.DEFAULT
         );
-
+        
+         
         SearchHit[] searchHits = response.getHits().getHits();
+        CountRequest countRequest = new CountRequest(); 
+        CountResponse countResponse = elasticClient
+                       .count(countRequest, RequestOptions.DEFAULT);
+        
+        int count = (int) countResponse.getCount();
+
+     
         elasticClient.close();
 
         
@@ -111,13 +123,14 @@ public class SearchAPI {
                 .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
                 .collect(Collectors.toList());
 
+
         
         ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(
                 results.stream()
                         .map(model -> VariableGetDTO.fromModel(model))
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()),page,pageSize,count);
 
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+       return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

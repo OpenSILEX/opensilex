@@ -9,7 +9,7 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
-          @click="modalForm.showCreateForm()"
+          @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
         ></opensilex-CreateButton>
       </template>
@@ -114,8 +114,7 @@
     </opensilex-PageContent>
 
     <opensilex-ModalForm
-      ref="modalForm"
-      :initForm="initFormData"
+      ref="modalDataForm"
       createTitle="DatasetForm.create"
       editTitle="DatasetForm.update"
       component="opensilex-DataForm"
@@ -238,7 +237,7 @@ export default class DataView extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
 
-  @Ref("modalForm") readonly modalForm!: any;
+  @Ref("modalDataForm") readonly modalDataForm!: any;
 
   @Ref("searchField") readonly searchField!: any;
 
@@ -497,6 +496,47 @@ export default class DataView extends Vue {
       };
     }
     return null;
+  }
+
+  afterCreateData(results) {
+    if(results instanceof Promise){
+      results.then((res) => {
+        this.resultModal.setNbLinesImported(
+          res.validation.dataErrors.nb_lines_imported
+        );
+        this.resultModal.setProvenance(res.form.provenance);
+        this.resultModal.show();
+        this.clear();
+        this.filter.provenance = res.form.provenance.uri;
+        this.provSelector.refresh();
+        this.loadProvenance({id:res.form.provenance.uri})
+      });
+    }else{ 
+      this.resultModal.setNbLinesImported(
+        results.validation.dataErrors.nb_lines_imported
+      );
+      this.resultModal.setProvenance(results.form.provenance);
+      this.resultModal.show();
+      this.clear();
+      this.filter.provenance = results.form.provenance.uri;
+      this.provSelector.refresh();
+      this.loadProvenance({id:results.form.provenance.uri}) 
+    }
+    
+  }
+
+  clear() {
+    this.selectedProvenance = null;
+    this.resetFilter();
+    this.filterProvenanceLabel = null;
+  }
+
+  successMessage(form) {
+    return this.$t("ResultModalView.data-imported");
+  }
+
+  refreshDataAfterImportation(){
+    this.loadProvenance({id: this.filter.provenance})
   }
 
 }

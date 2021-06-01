@@ -14,7 +14,7 @@
 
     <opensilex-ExperimentSelector
       label="DataForm.experiments"
-      :experiments.sync="this.form.experiments"
+      :experiments.sync="experiments"
       :multiple="true"
     ></opensilex-ExperimentSelector>
 
@@ -23,7 +23,7 @@
       :provenances.sync="provenance"
       :filterLabel="filterProvenanceLabel"
       label="Select a provenance"
-      @select="loadProvenance"
+      @select="loadProvenanceAndCheckUploadedData"
       @clear="reset()"
       :multiple="false"
       :actionHandler="showCreateForm"
@@ -32,6 +32,11 @@
       :showURI="false"
       :required="true"
     ></opensilex-ProvenanceSelector>
+    <b-collapse id="collapse-4" v-model="visibleDetails" class="mt-2">
+      <opensilex-ProvenanceDetails
+        :provenance="this.form.provenance"
+      ></opensilex-ProvenanceDetails>
+    </b-collapse>
 
     <opensilex-ModalForm
       ref="provenanceForm"
@@ -169,7 +174,8 @@ export default class DataForm extends Vue {
   withSOcolumn: boolean = true;
 
   provenance = null;
-  filterLabel = null;
+  experiments = [];
+  filterProvenanceLabel = null;
   selected = null;
 
   @Prop({
@@ -182,9 +188,7 @@ export default class DataForm extends Vue {
           provActivity: [],
           provAgent: [],
         },
-        experiments: [],
-        dataFile: null,
-        selectExperiment: null,
+        dataFile: null
       };
     },
   })
@@ -205,9 +209,7 @@ export default class DataForm extends Vue {
         prov_activity: [],
         prov_agent: [],
       },
-      experiments: [],
-      dataFile: null,
-      selectExperiment: null,
+      dataFile: null
     };
   }
 
@@ -238,7 +240,7 @@ export default class DataForm extends Vue {
     let formattedDate = moment(date).format("YYYY-MM-DDTHH:MM:SS");
     let name = "PROV_" + formattedDate;
     form.name = name;
-    form.experiments = this.form.experiments;
+    form.experiments = [];
   }
 
   selectedOperators(valueToSelect) {
@@ -260,7 +262,7 @@ export default class DataForm extends Vue {
   resetProvenanceForm() {
     this.users = [];
     this.provenance = null;
-    this.filterLabel = null;
+    this.filterProvenanceLabel = null;
     this.form.provenance = {
       uri: null,
       name: null,
@@ -274,7 +276,7 @@ export default class DataForm extends Vue {
   afterCreateProvenance(data) {
     data.then((data) => {
       this.provenance = data.uri;
-      this.filterLabel = data.name;
+      this.filterProvenanceLabel = data.name;
       this.provenanceSelector.select({ id: data.uri, label: data.name });
     });
   }
@@ -312,7 +314,7 @@ export default class DataForm extends Vue {
               file: this.form.dataFile
             },
             {
-              experiments: this.form.experiments,
+              experiments: this.experiments,
               provenance: this.provenance
             }
           )
@@ -401,7 +403,7 @@ export default class DataForm extends Vue {
             file: this.form.dataFile
           },
           {
-            experiments: this.form.experiments,
+            experiments: this.experiments,
             provenance: this.provenance
           }
         )

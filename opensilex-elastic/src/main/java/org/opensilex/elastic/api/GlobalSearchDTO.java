@@ -9,6 +9,16 @@ package org.opensilex.elastic.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.method.MethodGetDTO;
+import org.opensilex.core.variable.api.unit.UnitGetDTO;
+import org.opensilex.core.variable.dal.CharacteristicModel;
+import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.rest.validation.Required;
 
 

@@ -127,11 +127,20 @@
         label="component.area.details.author"
     ></opensilex-StringView>
     <opensilex-StringView
-        v-if="area.description"
+        v-if="area.description && isViewAllInformation"
         :value="area.description"
         label="component.area.details.description"
     ></opensilex-StringView>
-    <opensilex-GeometryCopy :value="area.geometry"></opensilex-GeometryCopy>
+    <opensilex-GeometryCopy v-if="isViewAllInformation" :value="area.geometry"></opensilex-GeometryCopy>
+    <p>
+      <a v-on:click="isViewAllInformation = !isViewAllInformation">{{
+          $t(
+              isViewAllInformation
+                  ? "ScientificObjectDetailMap.seeMoreInformation"
+                  : "ScientificObjectDetailMap.viewAllInformation"
+          )
+        }}</a>
+    </p>
   </div>
 </template>
 
@@ -176,6 +185,7 @@ export default class AreaDetails extends Vue {
     geometry: null,
   };
 
+  isViewAllInformation: boolean = false;
   rdf_type: string;
   authorName: string = "";
   private lang: string;
@@ -296,6 +306,11 @@ export default class AreaDetails extends Vue {
 
 ::v-deep a {
   color: #007bff;
+}
+
+#vl-overlay-detailItem > div > div > div > div > p > a {
+  color: #007bff;
+  cursor: pointer;
 }
 </style>
 <i18n>

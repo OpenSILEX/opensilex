@@ -8,17 +8,13 @@
             @click="editingMode = true"
         ></opensilex-CreateButton>
         <!-- map panel, controls -->
-        <b-button v-b-toggle.map-sidebar>
-          {{ $t("MapView.configuration") }}
-        </b-button>
+        <b-button v-b-toggle.map-sidebar>{{ $t("MapView.configuration") }}</b-button>
         <!--// map panel, controls -->
+        <opensilex-Button icon="fa#crosshairs" label="MapView.center" @click="defineCenter"></opensilex-Button>
       </div>
       <span class="p-2">
         <label class="alert-warning">
-          <img
-              alt="Warning"
-              src="../../../theme/phis/images/construction.png"
-          />
+          <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
           {{ $t("MapView.WarningInstruction") }}
         </label>
       </span>
@@ -26,7 +22,7 @@
     <div v-if="editingMode" id="editing">
       <opensilex-Button
           :small="false"
-          icon=""
+          icon
           label="MapView.selected-button"
           variant="secondary"
           @click="editingMode = false"
@@ -52,10 +48,7 @@
         @onUpdate="callScientificObjectUpdate"
     />
 
-    <div
-        id="mapPoster"
-        :class="editingMode ? 'bg-light border border-secondary' : ''"
-    >
+    <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
       <p class="alert-info">
         <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
       </p>
@@ -77,8 +70,7 @@
             :zoom="3"
             @update:rotation="areaRecovery"
             @update:zoom="areaRecovery"
-        >
-        </vl-view>
+        ></vl-view>
 
         <vl-layer-tile id="osm">
           <vl-source-osm :wrap-x="false"/>
@@ -90,8 +82,9 @@
             :position="overlayCoordinate"
         >
           <template slot-scope="scope">
-            <div class="panel-content">
-              {{ selectPointerMove[0] + " (" + selectPointerMove[1] + ")" }}
+            <div
+                class="panel-content"
+            >{{ selectPointerMove[0] + " (" + selectPointerMove[1] + ")" }}
             </div>
           </template>
         </vl-overlay>
@@ -117,10 +110,7 @@
 
         <template v-if="endReceipt">
           <vl-layer-vector :visible="displayAreas === 'true'">
-            <vl-source-vector
-                ref="vectorSourceArea"
-                :features.sync="featuresArea"
-            ></vl-source-vector>
+            <vl-source-vector ref="vectorSourceArea" :features.sync="featuresArea"></vl-source-vector>
             <vl-style-box>
               <vl-style-stroke color="green"></vl-style-stroke>
               <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
@@ -131,32 +121,29 @@
               :key="layerSO.id"
               :visible="displaySO === 'true' && layerSO[0].properties.display==='true'"
           >
-            <vl-source-vector
-                ref="vectorSource"
-                :features="layerSO"
-                @mounted="defineCenter"
-            >
-            </vl-source-vector>
+            <vl-source-vector ref="vectorSource" :features="layerSO" @mounted="defineCenter"></vl-source-vector>
           </vl-layer-vector>
           <vl-layer-vector
               v-for="layer in tabLayer"
               :key="layer.ref"
               :visible="layer.display === 'true'"
           >
-            <vl-source-vector
-                :ref="layer.ref"
-                :features.sync="layer.tabFeatures"
-            ></vl-source-vector>
+            <vl-source-vector :ref="layer.ref" :features.sync="layer.tabFeatures"></vl-source-vector>
             <vl-style-box>
-              <vl-style-stroke
-                  v-if="layer.vlStyleStrokeColor"
-                  :color="layer.vlStyleStrokeColor"
-              ></vl-style-stroke>
+              <vl-style-stroke v-if="layer.vlStyleStrokeColor" :color="layer.vlStyleStrokeColor"></vl-style-stroke>
               <!-- outline color -->
               <vl-style-fill
                   v-if="layer.vlStyleFillColor"
                   :color="colorFeature(layer.vlStyleFillColor)"
               ></vl-style-fill>
+              <vl-style-circle :radius="5">
+                <vl-style-stroke v-if="layer.vlStyleStrokeColor" :color="layer.vlStyleStrokeColor"></vl-style-stroke>
+                <!-- outline color -->
+                <vl-style-fill
+                    v-if="layer.vlStyleFillColor"
+                    :color="colorFeature(layer.vlStyleFillColor)"
+                ></vl-style-fill>
+              </vl-style-circle>
             </vl-style-box>
           </vl-layer-vector>
         </template>
@@ -168,8 +155,7 @@
                   :features.sync="temporaryArea"
                   ident="the-source"
                   @update:features="memorizesArea"
-              >
-              </vl-source-vector>
+              ></vl-source-vector>
             </vl-layer-vector>
 
             <!-- Creating a new area -->
@@ -198,80 +184,73 @@
       </vl-map>
     </div>
 
-    <b-sidebar
-        id="map-sidebar"
-        :title="$t('MapView.configuration')"
-        class="sidebar-content"
-    >
-      <h5 class="text">{{ $t("MapView.display") + " : " }}</h5>
-      <br/>
-      <ul class="list-group">
-        <li class="list-group-item">
-          <opensilex-CheckboxForm
-              :value.sync="displaySO"
-              class="col-lg-2"
-              title="ScientificObjects.display"
-              @update:value="displayScientificObjects"
-          ></opensilex-CheckboxForm>
-          <div
-              v-for="layerSO in featuresOS"
-              :key="layerSO.id"
-              class="d-flex justify-content-around"
-          >
+    <b-sidebar id="map-sidebar" no-header class="sidebar-content">
+      <template #default="{ hide }">
+        <div class="b-sidebar-header">
+          <strong id="map-sidebar___title__">{{ $t('MapView.configuration') }}</strong>
+          <button class="hamburger hamburger--collapse is-active" @click="hide">
+            <span class="hamburger-box">
+              <span class="hamburger-inner"></span>
+            </span>
+          </button>
+        </div>
+        <h5 class="text">{{ $t("MapView.display") + " : " }}</h5>
+        <br/>
+        <ul class="list-group">
+          <li class="list-group-item">
             <opensilex-CheckboxForm
-                :title="nameType(layerSO[0].properties.type)"
-                :value.sync="layerSO[0].properties.display"
+                :value.sync="displaySO"
+                class="col-lg-2"
+                title="ScientificObjects.display"
+                @update:value="displayScientificObjects"
+            ></opensilex-CheckboxForm>
+            <div
+                v-for="layerSO in featuresOS"
+                :key="layerSO.id"
+                class="d-flex justify-content-around"
+            >
+              <opensilex-CheckboxForm
+                  :disabled="displaySO === 'false'"
+                  :title="nameType(layerSO[0].properties.type)"
+                  :value.sync="layerSO[0].properties.display"
+                  class="p-2 bd-highlight"
+              ></opensilex-CheckboxForm>
+            </div>
+          </li>
+          <li class="list-group-item">
+            <opensilex-CheckboxForm :value.sync="displayAreas" class="p2" title="Area.display"></opensilex-CheckboxForm>
+          </li>
+          <li v-for="layer in tabLayer" :key="layer.ref" class="d-flex justify-content-around">
+            <opensilex-CheckboxForm
+                :title="layer.titleDisplay"
+                :value.sync="layer.display"
                 class="p-2 bd-highlight"
             ></opensilex-CheckboxForm>
-          </div>
-        </li>
-        <li class="list-group-item">
-          <opensilex-CheckboxForm
-              :value.sync="displayAreas"
-              class="p2"
-              title="Area.display"
-          ></opensilex-CheckboxForm>
-        </li>
-        <li
-            v-for="layer in tabLayer"
-            :key="layer.ref"
-            class="list-group-item d-flex justify-content-around"
-        >
-          <opensilex-CheckboxForm
-              :title="layer.titleDisplay"
-              :value.sync="layer.display"
-              class="p-2 bd-highlight"
-          ></opensilex-CheckboxForm>
-          <div class="p-2 bd-highlight col-2">
-            <opensilex-InputForm
-                v-if="layer.vlStyleStrokeColor"
-                :value.sync="layer.vlStyleStrokeColor"
-                type="color"
-            ></opensilex-InputForm>
-            <opensilex-InputForm
-                v-if="layer.vlStyleFillColor"
-                :value.sync="layer.vlStyleFillColor"
-                type="color"
-            ></opensilex-InputForm>
-          </div>
-          <opensilex-DeleteButton
-              label="FilterMap.filter.delete-button"
-              @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
-          ></opensilex-DeleteButton>
-        </li>
-      </ul>
+            <div class="p-2 bd-highlight col-2">
+              <opensilex-InputForm
+                  v-if="layer.vlStyleStrokeColor"
+                  :value.sync="layer.vlStyleStrokeColor"
+                  type="color"
+              ></opensilex-InputForm>
+              <opensilex-InputForm
+                  v-if="layer.vlStyleFillColor"
+                  :value.sync="layer.vlStyleFillColor"
+                  type="color"
+              ></opensilex-InputForm>
+            </div>
+            <opensilex-DeleteButton
+                label="FilterMap.filter.delete-button"
+                @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
+            ></opensilex-DeleteButton>
+          </li>
+        </ul>
+      </template>
     </b-sidebar>
-
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
     <span id="Area">{{ $t("MapView.LegendArea") }}</span>
-    <opensilex-FilterMap
-        :experiment="experiment"
-        :featureOS="featuresOS"
-        :tabLayer="tabLayer"
-    >
-    </opensilex-FilterMap>
+    <opensilex-FilterMap :experiment="experiment" :featureOS="featuresOS" :tabLayer="tabLayer"></opensilex-FilterMap>
     <div id="selectedTable">
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -299,9 +278,7 @@
           ></opensilex-UriLink>
         </template>
 
-        <template v-slot:cell(type)="{ data }">
-          {{ nameType(data.item.properties.type) }}
-        </template>
+        <template v-slot:cell(type)="{ data }">{{ nameType(data.item.properties.type) }}</template>
 
         <template v-slot:row-details="{ data }">
           <opensilex-DisplayInformationAboutItem
@@ -391,16 +368,16 @@ export default class MapView extends Vue {
   fieldsSelected = [
     {
       key: "name",
-      label: "MapView.name",
+      label: "MapView.name"
     },
     {
       key: "type",
-      label: "MapView.type",
+      label: "MapView.type"
     },
     {
       key: "actions",
-      label: "actions",
-    },
+      label: "actions"
+    }
   ];
   selectedFeatures: any[] = [];
   nodes: any[] = [];
@@ -469,7 +446,7 @@ export default class MapView extends Vue {
 
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
-      areaUriResult.then((areaUri) => {
+      areaUriResult.then(areaUri => {
         this.recoveryShowArea(areaUri);
       });
     } else {
@@ -481,12 +458,12 @@ export default class MapView extends Vue {
     // Gets the name when the cursor hovers over the item.
     const hitFeature = this.map.forEachFeatureAtPixel(
         pixel,
-        (feature) => feature
+        feature => feature
     );
     if (hitFeature) {
       this.selectPointerMove = [
         hitFeature.values_.name,
-        this.nameType(hitFeature.values_.type),
+        this.nameType(hitFeature.values_.type)
       ];
     } else {
       this.selectPointerMove = [];
@@ -495,7 +472,7 @@ export default class MapView extends Vue {
 
   callAreaUpdate(areaUriResult) {
     if (areaUriResult instanceof Promise) {
-      areaUriResult.then((areaUri) => {
+      areaUriResult.then(areaUri => {
         this.recoveryArea(areaUri);
       });
     } else {
@@ -521,11 +498,11 @@ export default class MapView extends Vue {
                     name: result.name,
                     type: result.rdf_type,
                     nature: "ScientificObjects",
-                    display: "true",
+                    display: "true"
                   };
 
                   let inserted = false;
-                  this.featuresOS.forEach((item) => {
+                  this.featuresOS.forEach(item => {
                     if (item[0].properties.type == result.rdf_type) {
                       item.push(result.geometry);
                       inserted = true;
@@ -557,7 +534,7 @@ export default class MapView extends Vue {
         if (unKinkedPoly.features.length > 1) {
           let coordinates = [];
 
-          unKinkedPoly.features.forEach((item) => {
+          unKinkedPoly.features.forEach(item => {
             coordinates.push(item.geometry.coordinates);
           });
 
@@ -601,7 +578,7 @@ export default class MapView extends Vue {
       onBoxEnd: () => {
         // features that intersect the box are selected
         const extent = dragBox.getGeometry().getExtent();
-        (this.$refs.vectorSource as any).forEach((vector) => {
+        (this.$refs.vectorSource as any).forEach(vector => {
           const source = vector.$source;
 
           source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
@@ -609,7 +586,7 @@ export default class MapView extends Vue {
             this.selectedFeatures.push(feature);
           });
         });
-      },
+      }
     });
 
     map.$map.addInteraction(dragBox);
@@ -627,7 +604,7 @@ export default class MapView extends Vue {
   defineCenter() {
     if (this.featuresOS.length > 0) {
       let extent = [-50, -50, 50, 50];
-      this.vectorSource.forEach((vector) => {
+      this.vectorSource.forEach(vector => {
         let extentTemporary = vector.$source.getExtent();
         if (extentTemporary[0] != Infinity) {
           extent[0] += extentTemporary[0] / this.vectorSource.length;
@@ -701,7 +678,7 @@ export default class MapView extends Vue {
       this.$opensilex
           .getService(this.scientificObjectsService)
           .deleteScientificObject(uri, this.experiment)
-          .then((http) => {
+          .then(http => {
             let message =
                 this.$i18n.t("ScientificObjects.title") +
                 " " +
@@ -733,7 +710,7 @@ export default class MapView extends Vue {
                 uri: res.uri,
                 name: res.name,
                 type: res.rdf_type,
-                nature: "Area",
+                nature: "Area"
               };
               this.featuresArea.push(res.geometry);
             }
@@ -757,7 +734,7 @@ export default class MapView extends Vue {
                 uri: res.uri,
                 name: res.name,
                 type: res.rdf_type,
-                nature: "Area",
+                nature: "Area"
               };
               this.featuresArea.push(res.geometry);
               this.selectedFeatures.push(res.geometry);
@@ -776,18 +753,18 @@ export default class MapView extends Vue {
         .searchScientificObjectsWithGeometryListByUris(this.experiment)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
-              res.forEach((element) => {
+              res.forEach(element => {
                 if (element.geometry != null) {
                   element.geometry.properties = {
                     uri: element.uri,
                     name: element.name,
                     type: element.rdf_type,
                     nature: "ScientificObjects",
-                    display: "true",
+                    display: "true"
                   };
 
                   let inserted = false;
-                  this.featuresOS.forEach((item) => {
+                  this.featuresOS.forEach(item => {
                     if (item[0].properties.type == element.rdf_type) {
                       item.push(element.geometry);
                       inserted = true;
@@ -819,7 +796,7 @@ export default class MapView extends Vue {
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
           .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
                 let result = http.response.result;
-                this.selectedFeatures.forEach((item) => {
+                this.selectedFeatures.forEach(item => {
                   if (item.properties.uri === result.uri) {
                     item.properties.OS = result;
                     this.detailsSO = true;
@@ -835,7 +812,7 @@ export default class MapView extends Vue {
   }
 
   private removeFromFeaturesArea(uri, features) {
-    features.forEach((item) => {
+    features.forEach(item => {
       const {uri: uriItem} = item.properties;
       let regExp = /area:.+|area#.+/;
 
@@ -846,7 +823,7 @@ export default class MapView extends Vue {
   }
 
   private removeFromFeatureOS(uri, features, higherLevelFeatures = []) {
-    features.forEach((item) => {
+    features.forEach(item => {
       if (item.type === undefined) {
         this.removeFromFeatureOS(uri, item, features);
       } else {
@@ -872,7 +849,7 @@ export default class MapView extends Vue {
     res.forEach(({name, uri, children}) => {
       typeLabel.push({
         uri: uri,
-        name: name.substr(0, 1).toUpperCase() + name.substr(1),
+        name: name.substr(0, 1).toUpperCase() + name.substr(1)
       });
       if (children.length > 0) {
         this.extracted(children, typeLabel);
@@ -890,12 +867,12 @@ export default class MapView extends Vue {
       coordinateExtent[0] +
       (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
       coordinateExtent[3] +
-      (coordinateExtent[1] - coordinateExtent[3]) * 0.025747,
+      (coordinateExtent[1] - coordinateExtent[3]) * 0.025747
     ];
 
     this.centerMap = [
       (coordinateExtent[0] + coordinateExtent[2]) / 2,
-      (coordinateExtent[1] + coordinateExtent[3]) / 2,
+      (coordinateExtent[1] + coordinateExtent[3]) / 2
     ];
 
     if (
@@ -916,9 +893,9 @@ export default class MapView extends Vue {
             [coordinateExtent[0], coordinateExtent[1]],
             [coordinateExtent[0], coordinateExtent[3]],
             [coordinateExtent[2], coordinateExtent[3]],
-            [coordinateExtent[2], coordinateExtent[1]],
-          ],
-        ],
+            [coordinateExtent[2], coordinateExtent[1]]
+          ]
+        ]
       };
 
       this.featuresArea = [];
@@ -927,14 +904,14 @@ export default class MapView extends Vue {
           .searchIntersects(JSON.parse(JSON.stringify(geometry)))
           .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
             const res = http.response.result as any;
-            res.forEach((element) => {
+            res.forEach(element => {
               if (element.geometry != null) {
                 element.geometry.properties = {
                   uri: element.uri,
                   name: element.name,
                   type: element.rdf_type,
                   description: element.description,
-                  nature: "Area",
+                  nature: "Area"
                 };
                 this.featuresArea.push(element.geometry);
               }
@@ -1016,6 +993,38 @@ p {
 ::v-deep .b-sidebar {
   width: 240px;
 }
+
+::v-deep div.b-sidebar-header {
+  background-color: #00a38d;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+::v-deep .b-sidebar > .b-sidebar-body {
+  background-color: white;
+}
+
+#selected > div > button {
+  margin-right: 20px;
+}
+
+.custom-checkbox .custom-control-label {
+  font-size: 13px;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+.hamburger.is-active .hamburger-inner,
+.hamburger.is-active .hamburger-inner::after,
+.hamburger.is-active .hamburger-inner::before {
+  background-color: #fff;
+}
+
+.hamburger-box {
+  width: 30px;
+}
 </style>
 
 <i18n>
@@ -1041,6 +1050,7 @@ en:
     update: Update element
     display: Display of layers
     configuration: Control panel
+    center: Refocus the map
   Area:
     title: Area
     add: Description of the area
@@ -1072,6 +1082,7 @@ fr:
     update: Mise à jour de l'élément
     display: Affichage des couches
     configuration: Panneau de contrôle
+    center: Recentrer la carte
   Area:
     title: Zone
     add: Description de la zone

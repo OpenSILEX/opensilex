@@ -701,9 +701,10 @@ public class ExperimentAPI {
         Map<Instant, Map<ExportDataIndex, List<DataGetDTO>>> dataByIndexAndInstant = new HashMap<>();
 
         for (DataModel dataModel : resultList) {
-            if (!objects.containsKey(dataModel.getScientificObject())) {
+            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
                 objects.put(dataModel.getScientificObject(), null);
             }
+            
             if (!variables.contains(dataModel.getVariable())) {
                 variables.add(dataModel.getVariable());
             }
@@ -824,13 +825,20 @@ public class ExperimentAPI {
                     boolean first = true;
                     for (DataGetDTO dataGetDTO : val) {
                         if (first == true) {
-                            ScientificObjectModel os = objects.get(dataGetDTO.getScientificObject());
+                            ScientificObjectModel os = null;
+                            if(dataGetDTO.getScientificObject() != null){
+                               os = objects.get(dataGetDTO.getScientificObject());
+                            }
 
                             // experiment
                             csvRow.add(xp.getName());
 
                             // object
-                            csvRow.add(os.getName());
+                            if(os != null){
+                                csvRow.add(os.getName());
+                            }else{
+                                csvRow.add("");
+                            }
 
                             // date
                             csvRow.add(dataGetDTO.getDate());
@@ -850,7 +858,11 @@ public class ExperimentAPI {
                             csvRow.add(xp.getUri().toString());
 
                             // object URI
-                            csvRow.add(os.getUri().toString());
+                             if(os != null){
+                                csvRow.add(os.getUri().toString());
+                            }else{
+                                csvRow.add("");
+                            }
 
                             // provenance Uri
                             csvRow.add(dataGetDTO.getProvenance().getUri().toString());
@@ -897,7 +909,7 @@ public class ExperimentAPI {
 
         HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
         for (DataModel dataModel : resultList) {
-            if (!objects.containsKey(dataModel.getScientificObject())) {
+            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
                 objects.put(dataModel.getScientificObject(), null);
             }
             if (!variables.containsKey(dataModel.getVariable())) {
@@ -975,11 +987,19 @@ public class ExperimentAPI {
                 List<DataGetDTO> val = entry.getValue();
                 for (DataGetDTO dataGetDTO : val) {
                     ArrayList<String> csvRow = new ArrayList<>();
-                    ScientificObjectModel os = objects.get(dataGetDTO.getScientificObject());
+                    ScientificObjectModel os = null;
+                    if(dataGetDTO.getScientificObject() != null){
+                       os = objects.get(dataGetDTO.getScientificObject());
+                    }
                     // experiment
                     csvRow.add(xp.getName());
                     // object
-                    csvRow.add(os.getName());
+                    if(os != null){
+                        csvRow.add(os.getName());
+                    }else{
+                        csvRow.add("");
+                    }
+                    
                     // date
                     csvRow.add(dataGetDTO.getDate());
                     // variable
@@ -1009,7 +1029,12 @@ public class ExperimentAPI {
                     // experiment uri
                     csvRow.add(xp.getUri().toString());
                     // object uri
-                    csvRow.add(os.getUri().toString());
+                    if(os != null){
+                        csvRow.add(os.getUri().toString());
+                    }else{
+                        csvRow.add("");
+                    }
+                   
                     // variable uri
                     csvRow.add(dataGetDTO.getVariable().toString());
                     // provenance Uri

@@ -1,6 +1,6 @@
 import { Container } from 'inversify';
 import moment from 'moment';
-import { VueJsOntologyExtensionService } from 'src/lib/api/vueJsOntologyExtension.service';
+import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';

@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLValidationException;
@@ -75,7 +76,7 @@ public class SPARQLModule extends OpenSilexModule {
 
         LOGGER.debug("Set platform URI: " + baseURI.toString());
         LOGGER.debug("Set platform URI alias: " + baseURIAlias);
-        if (sparqlConfig != null && !sparqlConfig.generationBaseURI().isBlank()) {
+        if (sparqlConfig != null && !StringUtils.isBlank(sparqlConfig.generationBaseURI())) {
             generationPrefixURI = new URI(sparqlConfig.generationBaseURI());
             LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI.toString());
         } else {

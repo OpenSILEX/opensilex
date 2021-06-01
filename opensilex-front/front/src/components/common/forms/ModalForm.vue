@@ -60,6 +60,7 @@ import Vue from "vue";
 @Component
 export default class ModalForm extends Vue {
   $opensilex: any;
+  $i18n;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("validatorRef") readonly validatorRef!: any;

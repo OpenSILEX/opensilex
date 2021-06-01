@@ -110,7 +110,8 @@
               </b-dropdown>
             </template>
             <template v-slot:cell(uri)="{ data }">
-                 <opensilex-UriLink
+                <div  v-if="data.item.scientific_objects != null" >
+                  <opensilex-UriLink  
                   :uri="data.item.scientific_object"
                   :value="objects[data.item.scientific_object]"
                   :to="{
@@ -119,6 +120,9 @@
                       encodeURIComponent(data.item.scientific_object),
                   }"
                 ></opensilex-UriLink>
+                </div>
+                <div v-else  >
+               </div>
             </template>
 
             <template v-slot:cell(provenance)="{ data }">
@@ -421,9 +425,9 @@ export default class ExperimentData extends Vue {
           if (http.response.result.length > 0) {
             for (let i in http.response.result) {
               let objectURI = http.response.result[i].scientific_object;
-                if (objectURI != null && !objectToLoad.includes(objectURI)) {
-                  objectToLoad.push(objectURI);
-                }
+              if (objectURI != null && !objectToLoad.includes(objectURI)) {
+                objectToLoad.push(objectURI);
+              }
               let variableURI = http.response.result[i].variable;
               if (!variablesToLoad.includes(variableURI)) {
                 variablesToLoad.push(variableURI);
@@ -435,7 +439,6 @@ export default class ExperimentData extends Vue {
             }
 
             if (
-              objectToLoad.length > 0 ||
               variablesToLoad.length > 0 ||
               provenancesToLoad.length > 0
             ) {

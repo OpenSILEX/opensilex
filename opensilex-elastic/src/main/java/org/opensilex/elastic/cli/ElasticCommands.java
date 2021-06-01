@@ -138,7 +138,8 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         }
     }
 
-    private void indexVariable() throws Exception {
+
+       private void indexVariable() throws Exception {
 
         List<VariableModel> Variables = sparql.search(VariableModel.class, "en");
 
@@ -209,3 +210,6 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
     }
 
 }
+
+
+     

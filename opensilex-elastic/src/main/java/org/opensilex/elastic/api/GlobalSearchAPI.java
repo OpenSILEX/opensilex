@@ -13,8 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +36,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.elastic.service.ElasticService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -95,14 +94,12 @@ public class GlobalSearchAPI  {
         int from = page*pageSize;
         
         //Creates the SearchRequest. Without arguments this runs against all indices.
-        SearchRequest searchRequest = new SearchRequest("variables","projects");
+        SearchRequest searchRequest = new SearchRequest();
         
         QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 
-
 
         SearchResponse response = elasticClient.search(searchRequest
-        .source(sourceBuilder
+        .source(new SearchSourceBuilder()
                 .query(query)
                 .from(from)
                 .size(pageSize)
@@ -113,10 +110,7 @@ public class GlobalSearchAPI  {
         
          
         SearchHit[] searchHits = response.getHits().getHits();
-        CountRequest countRequest = new CountRequest("variables","projects"); 
-        countRequest.source(sourceBuilder);
-        
-
+        CountRequest countRequest = new CountRequest(); 
         CountResponse countResponse = elasticClient
                        .count(countRequest, RequestOptions.DEFAULT);
         
@@ -133,7 +127,8 @@ public class GlobalSearchAPI  {
 
         
         ListWithPagination<GlobalSearchDTO> resultDTOList = new ListWithPagination(
-                new ArrayList<>(results),page,pageSize,count);
+                results.stream()
+                        .collect(Collectors.toList()),page,pageSize,count);
 
        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

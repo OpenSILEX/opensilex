@@ -194,56 +194,63 @@
             </span>
           </button>
         </div>
-        <h5 class="text">{{ $t("MapView.display") + " : " }}</h5>
         <br/>
-        <ul class="list-group">
-          <li class="list-group-item">
-            <opensilex-CheckboxForm
-                :value.sync="displaySO"
-                class="col-lg-2"
-                title="ScientificObjects.display"
-                @update:value="displayScientificObjects"
-            ></opensilex-CheckboxForm>
-            <div
-                v-for="layerSO in featuresOS"
-                :key="layerSO.id"
-                class="d-flex justify-content-around"
-            >
+        <b-tabs content-class="mt-3">
+          <b-tab :title="$t('MapView.display')" active>
+            <ul class="list-group">
+              <li class="list-group-item">
+                <opensilex-CheckboxForm
+                    :value.sync="displaySO"
+                    class="col-lg-2"
+                    title="ScientificObjects.display"
+                    @update:value="displayScientificObjects"
+                ></opensilex-CheckboxForm>
+                <div
+                    v-for="layerSO in featuresOS"
+                    :key="layerSO.id"
+                    class="d-flex justify-content-around"
+                >
+                  <opensilex-CheckboxForm
+                      :disabled="displaySO === 'false'"
+                      :title="nameType(layerSO[0].properties.type)"
+                      :value.sync="layerSO[0].properties.display"
+                      class="p-2 bd-highlight"
+                  ></opensilex-CheckboxForm>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <opensilex-CheckboxForm :value.sync="displayAreas" class="p2"
+                                        title="Area.display"></opensilex-CheckboxForm>
+              </li>
+            </ul>
+          </b-tab>
+          <b-tab :title="$t('MapView.displayFilter',{count : tabLayer.length})">
+            <template v-if="tabLayer.length===0">{{ $t('MapView.noFilter') }}</template>
+            <li v-for="layer in tabLayer" :key="layer.ref" class="d-flex justify-content-around">
               <opensilex-CheckboxForm
-                  :disabled="displaySO === 'false'"
-                  :title="nameType(layerSO[0].properties.type)"
-                  :value.sync="layerSO[0].properties.display"
+                  :title="layer.titleDisplay"
+                  :value.sync="layer.display"
                   class="p-2 bd-highlight"
               ></opensilex-CheckboxForm>
-            </div>
-          </li>
-          <li class="list-group-item">
-            <opensilex-CheckboxForm :value.sync="displayAreas" class="p2" title="Area.display"></opensilex-CheckboxForm>
-          </li>
-          <li v-for="layer in tabLayer" :key="layer.ref" class="d-flex justify-content-around">
-            <opensilex-CheckboxForm
-                :title="layer.titleDisplay"
-                :value.sync="layer.display"
-                class="p-2 bd-highlight"
-            ></opensilex-CheckboxForm>
-            <div class="p-2 bd-highlight col-2">
-              <opensilex-InputForm
-                  v-if="layer.vlStyleStrokeColor"
-                  :value.sync="layer.vlStyleStrokeColor"
-                  type="color"
-              ></opensilex-InputForm>
-              <opensilex-InputForm
-                  v-if="layer.vlStyleFillColor"
-                  :value.sync="layer.vlStyleFillColor"
-                  type="color"
-              ></opensilex-InputForm>
-            </div>
-            <opensilex-DeleteButton
-                label="FilterMap.filter.delete-button"
-                @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
-            ></opensilex-DeleteButton>
-          </li>
-        </ul>
+              <div class="p-2 bd-highlight col-2">
+                <opensilex-InputForm
+                    v-if="layer.vlStyleStrokeColor"
+                    :value.sync="layer.vlStyleStrokeColor"
+                    type="color"
+                ></opensilex-InputForm>
+                <opensilex-InputForm
+                    v-if="layer.vlStyleFillColor"
+                    :value.sync="layer.vlStyleFillColor"
+                    type="color"
+                ></opensilex-InputForm>
+              </div>
+              <opensilex-DeleteButton
+                  label="FilterMap.filter.delete-button"
+                  @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
+              ></opensilex-DeleteButton>
+            </li>
+          </b-tab>
+        </b-tabs>
       </template>
     </b-sidebar>
     {{ $t("MapView.Legend") }}:
@@ -997,7 +1004,7 @@ p {
 ::v-deep div.b-sidebar-header {
   background-color: #00a38d;
   color: #ffffff;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
 }
 
 ::v-deep .b-sidebar > .b-sidebar-body {
@@ -1048,9 +1055,11 @@ en:
     details: Show or hide element details
     author: Author
     update: Update element
-    display: Display of layers
-    configuration: Control panel
+    display: Layers
+    displayFilter: Filters ({count})
+    configuration: Configuration
     center: Refocus the map
+    noFilter: No filter applied. To add one, use the form below the map
   Area:
     title: Area
     add: Description of the area
@@ -1080,9 +1089,11 @@ fr:
     details: Afficher ou masquer les détails de l'élément
     author: Auteur
     update: Mise à jour de l'élément
-    display: Affichage des couches
-    configuration: Panneau de contrôle
+    display: Couches
+    displayFilter: Filtres ({count})
+    configuration: Configuration
     center: Recentrer la carte
+    noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
   Area:
     title: Zone
     add: Description de la zone

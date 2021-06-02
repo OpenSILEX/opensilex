@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-form-file
@@ -59,6 +60,11 @@ export default class FileInputForm extends Vue {
 
   @Prop()
   rules: string | Function;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 }
 </script>
 

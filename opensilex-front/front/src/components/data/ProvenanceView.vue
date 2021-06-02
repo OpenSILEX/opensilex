@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-bar-chart-line"
-      title="component.menu.provenance.label"
+      title="component.menu.data.provenance"
       description="ProvenanceView.description"
     ></opensilex-PageHeader>
 
@@ -25,10 +25,10 @@
 
         <!-- Name -->
         <opensilex-FilterField>
-          <label>{{$t('ProvenanceView.filter.name')}}</label>
+          <label>{{$t('ProvenanceView.name')}}</label>
           <opensilex-StringFilter
             :filter.sync="filter.name"
-            placeholder="ProvenanceView.filter.name-placeholder"
+            placeholder="ProvenanceView.name-placeholder"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
 
@@ -37,25 +37,26 @@
           <opensilex-TypeForm
             :type.sync="filter.activity_type"
             :baseType="PROV.ACTIVITY_TYPE_URI"
-            label="ProvenanceView.filter.activity_type"
+            label="ProvenanceView.activity_type"
+            placeholder="ProvenanceView.activity_type-placeholder"
           ></opensilex-TypeForm>
         </opensilex-FilterField>
 
         <!-- agent type-->
         <opensilex-FilterField>
           <opensilex-SelectForm
-            label="ProvenanceView.filter.agent_type"
+            label="ProvenanceView.agent_type"
             :multiple="true"
             :selected.sync="filter.agent_type"
             :options="agentTypes"
-            placeholder="ProvenanceView.filter.agent_type_placeholder"
+            placeholder="ProvenanceView.agent_type-placeholder"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
         <!-- agent -->
         <opensilex-FilterField>
           <opensilex-DeviceSelector
-            label="ProvenanceView.filter.agent"
+            label="ProvenanceView.agent"
             :devices.sync="filter.agent"
             :multiple="false"
           ></opensilex-DeviceSelector>
@@ -317,9 +318,29 @@ export default class ProvenanceView extends Vue {
 en:
   ProvenanceView:
     add: Add provenance
+    description: description
+    name: Name
+    activity_type: Activity type
+    agent_type: Agent type
+    agent: Agent
+    activity_start_date: Start date
+    activity_end_date: End date
+    name-placeholder: Enter provenance name
+    activity_type-placeholder: Select a type of activity
+    agent_type-placeholder: Select a type of agent
 
 fr:
   ProvenanceView:
-    add: Ajouter une provenance      
+    add: Ajouter une provenance
+    description: description
+    name: Nom
+    activity_type: Type d'activité
+    agent_type: Type d'agent
+    agent: Agent
+    activity_start_date: Date de début
+    activity_end_date: Date de fin
+    name-placeholder: Entrer un nom de provenance
+    activity_type-placeholder: Selectionner un type d'activité
+    agent_type-placeholder: Selectionner un type d'agent
   
 </i18n>

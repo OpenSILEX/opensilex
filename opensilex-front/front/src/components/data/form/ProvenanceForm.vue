@@ -19,6 +19,7 @@
       type="text"
       placeholder="DataForm.provenance.name-placeholder"
       :required="true"
+      :validationDisabled="validationDisabled"
     ></opensilex-InputForm>
 
     <!-- description -->
@@ -37,6 +38,7 @@
         :baseType="PROV.ACTIVITY_TYPE_URI"
         :required="true"
         helpMessage="DataForm.type-help"
+        :validationDisabled="validationDisabled"
       ></opensilex-TypeForm>
 
       <!-- start_date  & end_date-->
@@ -45,20 +47,18 @@
           <opensilex-DateTimeForm
             :value.sync="provenance.activity.start_date"
             label="DataForm.start"
-            :maxDate="form.end"
             :required="true"
-            @change="updateRequiredProps"
             helpMessage="DataForm.start-help"
+            :validationDisabled="validationDisabled"
           ></opensilex-DateTimeForm>
         </div>
 
         <div class="col">
           <opensilex-DateTimeForm
             :value.sync="provenance.activity.end_date"
-            :minDate="form.start"
             label="DataForm.end"
-            @change="updateRequiredProps"
             helpMessage="DataForm.end-help"
+            :validationDisabled="validationDisabled"
           ></opensilex-DateTimeForm>
         </div>
       </div>
@@ -83,6 +83,8 @@
         :devices.sync="provenance.sensors"
         :multiple="true"
         :required="selected == 'sensor'"
+        @select="selectedSensors"
+        @deselect="deselectedSensors"
       ></opensilex-DeviceSelector>
 
       <!-- vectors -->
@@ -99,6 +101,8 @@
         label="DataForm.softwares"
         :devices.sync="provenance.softwares"
         :multiple="true"
+        @select="selectedSoftwares"
+        @deselect="deselectedSoftwares"
       ></opensilex-DeviceSelector>
 
       <!-- operators -->
@@ -145,7 +149,6 @@ export default class ProvenanceForm extends Vue {
         uri: null,
         name: null,
         description: null,
-        experiments: [],
         prov_activity: [],
         prov_agent: [],
       };
@@ -180,6 +183,11 @@ export default class ProvenanceForm extends Vue {
   @Prop()
   editMode;
 
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
+
   getEmptyForm() {
     return {
       uri: null,
@@ -191,35 +199,52 @@ export default class ProvenanceForm extends Vue {
     };
   }
 
-  selectedOperators(valueToSelect) {
-    let agent: AgentModel = {};
-    agent.uri = valueToSelect.id;
-    agent.rdf_type = Oeso.OPERATOR_TYPE_URI;
-    agent.settings = {};
-    this.form.prov_agent.push(agent);
-  }
-  deselectedOperators(valueToDeselect) {
-    this.form.prov_agent = this.form.prov_agent.filter(function (
-      agent,
-      index,
-      arr
-    ) {
-      return agent.uri != valueToDeselect.id;
-    });
-  }
+  
 
   create() {
+    let agents = []
+    for (let i in this.provenance.sensors) {
+      agents.push({
+        uri: i,
+        rdf_type: Oeso.SENSOR_TYPE_URI
+      })
+    }
+
+    for (let i in this.provenance.vectors) {
+      agents.push({
+        uri: i,
+        rdf_type: Oeso.VECTOR_TYPE_URI
+      })
+    }
+
+    for (let i in this.provenance.softwares) {
+      agents.push({
+        uri: i,
+        rdf_type: Oeso.SOFTWARE_TYPE_URI
+      })
+    }
+
+    for (let i in this.provenance.softwares) {
+      agents.push({
+        uri: i,
+        rdf_type: Oeso.OPERATOR_TYPE_URI
+      })
+    }
+
     // format form
-    let formNew = JSON.parse(JSON.stringify(this.form));
+    this.form.name = this.provenance.name;
+    this.form.description = this.provenance.description;
+    this.form.prov_activity.push(this.provenance.activity);
+    this.form.prov_agent = agents;
 
     return this.$opensilex
       .getService("opensilex.DataService")
-      .createProvenance(formNew)
+      .createProvenance(this.form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("provenance created", uri);
-        formNew.uri = uri;
-        return formNew;
+        this.form.uri = uri;
+        return this.form;
       });
   }
   update(form) {}

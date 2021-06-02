@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <input :id="field.id" type="hidden" :value="hiddenValue" />
@@ -275,6 +276,11 @@ export default class SelectForm extends Vue {
     default: false,
   })
   searchNested: boolean;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   @Prop()
   maximumSelectedItems;

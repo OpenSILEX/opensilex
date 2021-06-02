@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-input-group size="sm" class="mt-3">
@@ -87,6 +88,11 @@ export default class TranslatedNameInputForm extends Vue {
 
   @Prop({ default: false })
   localName: boolean;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   countryCode: string;
 

@@ -5,6 +5,7 @@
     :label="label"
     :helpMessage="helpMessage"
     :vid="vid"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-form-input
@@ -76,6 +77,11 @@ export default class GeometryForm extends Vue {
 
   @Prop()
   vid;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 }
 </script>
 

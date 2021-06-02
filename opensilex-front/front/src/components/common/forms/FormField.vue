@@ -13,6 +13,7 @@
       :rules="getRules()"
       v-slot="{ errors }"
       :vid="vid"
+      :disabled="validationDisabled"
     >
       <div v-bind:class="{ errors: errors.length > 0 }">
         <slot name="field" v-bind:id="id" v-bind:validator="validatorRef"></slot>
@@ -48,6 +49,11 @@ export default class FormField extends Vue {
     default: false
   })
   required: boolean;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   @Prop()
   rules: string | Function;

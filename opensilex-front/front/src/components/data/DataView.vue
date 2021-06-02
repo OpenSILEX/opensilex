@@ -23,7 +23,6 @@
     >
       <template v-slot:filters>
 
-        <b-row class="ml-2">
           <!-- Variables -->
           <opensilex-FilterField>
             <opensilex-VariableSelector
@@ -41,7 +40,6 @@
               :multiple="true"
             ></opensilex-ExperimentSelector>
           </opensilex-FilterField> 
-          </b-row>
         
           <!-- Scientific objects -->
           <opensilex-FilterField>
@@ -560,6 +558,7 @@ en:
       value: Value
       object: Object
       provenance: provenance
+      details: view data details
     filter:
       label: Search data
       experiments:  Experiment(s)
@@ -579,6 +578,7 @@ fr:
       value: Valeur
       object: objet
       provenance: provenance
+      details: Voir les détails de la donnée
     filter:
       label: Rechercher des données
       experiments:  Expérimentation(s)

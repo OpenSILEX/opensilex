@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <input :id="field.id" type="hidden" :value="stringValue" />
@@ -80,6 +81,11 @@ export default class IconForm extends Vue {
     default: false
   })
   rules: string | Function;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   observer = null;
   limit = 20;

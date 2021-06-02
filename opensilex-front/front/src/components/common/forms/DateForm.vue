@@ -3,6 +3,7 @@
     :helpMessage="helpMessage"
     :label="label"
     :required="isRequired"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-input-group>
@@ -74,6 +75,11 @@ export default class DateForm extends Vue {
 
   @PropSync("value")
   date: string;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   private modelConfig = {
     type: "string",

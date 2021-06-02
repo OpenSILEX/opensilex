@@ -2,8 +2,8 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="fa#file-medical-alt"
-      title="component.menu.datafiles.label"
-      description="DatafilesView.description"
+      title="component.menu.data.datafiles"
+      description="DataFilesView.description"
     ></opensilex-PageHeader>
 
     <opensilex-SearchFilterField
@@ -22,25 +22,6 @@
             :ignoreRoot="false"
             placeholder="ScientificObjectDataFiles.rdfType-placeholder"
           ></opensilex-TypeForm>
-        </opensilex-FilterField>
-
-        <opensilex-FilterField>
-          <!-- Start Date -->
-          <opensilex-DateTimeForm
-              :value.sync="filter.start_date"
-              label="component.common.begin"
-              name="startDate"
-          ></opensilex-DateTimeForm>
-        </opensilex-FilterField>
-
-        <opensilex-FilterField>
-          <!-- End Date -->
-          <opensilex-DateTimeForm
-              :isTime="true"
-              :value.sync="filter.end_date"
-              label="component.common.end"
-              name="endDate"
-          ></opensilex-DateTimeForm>
         </opensilex-FilterField>
 
         <!-- Experiments -->
@@ -64,6 +45,26 @@
             :clearable="false"
             :maximumSelectedItems="1"
           ></opensilex-SelectForm>
+        </opensilex-FilterField>
+
+        <b-row class="ml-2">
+        <opensilex-FilterField>
+          <!-- Start Date -->
+          <opensilex-DateTimeForm
+              :value.sync="filter.start_date"
+              label="component.common.begin"
+              name="startDate"
+          ></opensilex-DateTimeForm>
+        </opensilex-FilterField>
+
+        <opensilex-FilterField>
+          <!-- End Date -->
+          <opensilex-DateTimeForm
+              :isTime="true"
+              :value.sync="filter.end_date"
+              label="component.common.end"
+              name="endDate"
+          ></opensilex-DateTimeForm>
         </opensilex-FilterField>
 
         <!-- Provenance -->
@@ -96,6 +97,8 @@
           </b-collapse>
         </opensilex-FilterField>
 
+        </b-row>
+
       </template>
     </opensilex-SearchFilterField>
 
@@ -109,29 +112,6 @@
       :fields="fields"
       defaultSortBy="name"
     >
-
-      <template v-slot:export>
-        <b-dropdown
-          dropup
-          :small="false"
-          :text="$t('ExperimentData.export')"
-        >
-          <b-dropdown-item-button @click="exportData('long')">
-            {{ $t("ExperimentData.export-long") }}
-            <opensilex-FormInputLabelHelper
-              :helpMessage="$t('ExperimentData.export-long-help')"
-            >
-            </opensilex-FormInputLabelHelper>
-          </b-dropdown-item-button>
-          <b-dropdown-item-button @click="exportData('wide')"
-            >{{ $t("ExperimentData.export-wide") }}
-            <opensilex-FormInputLabelHelper
-              :helpMessage="$t('ExperimentData.export-wide-help')"
-            >
-            </opensilex-FormInputLabelHelper
-          ></b-dropdown-item-button>
-        </b-dropdown>
-      </template>
 
       <template v-slot:cell(scientific_object)="{ data }">
           <opensilex-UriLink
@@ -174,22 +154,13 @@
             <opensilex-DetailButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               @click="showDataProvenanceDetailsModal(data.item)"
-              label="DataView.details"
+              label="DataFilesView.details"
               :small="true"
           ></opensilex-DetailButton>
           </b-button-group>
         </template>
 
     </opensilex-TableAsyncView>
-
-
-    <opensilex-DataForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
-      ref="dataForm"
-      @onCreate="afterCreateData"
-    ></opensilex-DataForm>
-
-    <opensilex-ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"> </opensilex-ResultModalView>
 
     <opensilex-DataProvenanceModalView 
       ref="dataProvenanceModalView"        
@@ -505,45 +476,13 @@ export default class DataFilesView extends Vue {
 </style>
 
 <i18n>
-
 en:
-  DataView:
-    buttons:
-      create-data : Add data
-      generate-template : Generate template
-    description: View and export data
-    list:
-      date: Date
-      variable: Variable
-      value: Value
-      object: Object
-      provenance: provenance
-    filter:
-      label: Search data
-      experiments:  Experiment(s)
-      variables: Variable(s)
-      scientificObjects: scientific object(s)
-      provenance: Provenance
+  DataFilesView:
+    description: View datafiles
+    details: view datafile metadata
 
 fr:
-  DataView:
-    buttons:
-      create-data : Ajouter un jeu de données
-      generate-template : Générer un gabarit
-    description: Visualiser et exporter des données
-    list:
-      date: Date
-      variable: Variable
-      value: Valeur
-      object: objet
-      provenance: provenance
-    filter:
-      label: Rechercher des données
-      experiments:  Expérimentation(s)
-      variables: Variable(s)
-      scientificObject: Objet(s) scientifique(s)
-      provenance: Provenance
-
-      
-  
+  DataFilesView:
+    description: Voir les fichiers de données
+    details: Voir les métadonnées du fichier
 </i18n>

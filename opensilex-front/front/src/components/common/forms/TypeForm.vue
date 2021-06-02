@@ -1,5 +1,10 @@
 <template>
-  <opensilex-FormField :rules="rules" :required="required" :label="label ||'component.common.type'">
+  <opensilex-FormField 
+    :rules="rules" 
+    :required="required" 
+    :label="label ||'component.common.type'"
+    :validationDisabled="validationDisabled"
+    >
     <!-- helpMessage="component.common.type.help-message" -->
     <template v-slot:field="field">
       <treeselect
@@ -66,6 +71,11 @@ export default class TypeForm extends Vue {
     default: true
   })
   ignoreRoot: boolean;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   typesOptions = null;
 

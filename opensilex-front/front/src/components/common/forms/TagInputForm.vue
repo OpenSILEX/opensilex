@@ -3,6 +3,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-form-tags
@@ -56,6 +57,11 @@ export default class TagInputForm extends Vue {
 
   @Prop()
   variant: string;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
 }
 </script>

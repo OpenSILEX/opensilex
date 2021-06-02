@@ -4,6 +4,7 @@
     :required="required"
     :label="label"
     :helpMessage="helpMessage"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-form-textarea
@@ -56,6 +57,11 @@ export default class TextAreaForm extends Vue {
 
   @Prop()
   autocomplete: string;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 }
 </script>
 

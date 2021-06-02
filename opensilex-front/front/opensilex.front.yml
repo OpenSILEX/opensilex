@@ -63,7 +63,7 @@ menu:
         label: component.menu.data.templatePreparation
         route:
           path: /template
-          component: opensilex-ProvenanceView
+          component: opensilex-Template
       - id: provenance
         label: component.menu.data.provenance
         route:

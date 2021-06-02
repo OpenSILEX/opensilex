@@ -5,6 +5,7 @@
     :label="label"
     :helpMessage="helpMessage"
     :vid="vid"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-form-input
@@ -79,6 +80,11 @@ export default class InputForm extends Vue {
 
   @Prop()
   vid;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 }
 </script>
 

@@ -3,6 +3,7 @@
     :helpMessage="helpMessage"
     :label="label"
     :required="isRequired"
+    :validationDisabled="validationDisabled"
   >
     <template v-slot:field="field">
       <b-input-group>
@@ -80,6 +81,11 @@ export default class DateTimeForm extends Vue {
 
   @Prop({ default: "local" })
   valueZone: string;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   private modelConfig = {
     type: "string",

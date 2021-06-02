@@ -46,7 +46,7 @@
 
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
+        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :validationDisabled="validationDisabled">
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -104,6 +104,11 @@ export default class ModalForm extends Vue {
     default: "component.common.element"
   })
   successMessage: string | Function;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
 
   validate() {
     this.validatorRef.validate().then(isValid => {

@@ -26,7 +26,7 @@
       @select="loadProvenanceAndCheckUploadedData"
       @clear="reset()"
       :multiple="false"
-      :actionHandler="showCreateForm"
+      :actionHandler="showProvenanceCreateForm"
       :viewHandler="showProvenanceDetails"
       :viewHandlerDetailsVisible="visibleDetails"
       :showURI="false"
@@ -45,10 +45,10 @@
       editTitle="ProvenanceView.update"
       icon="fa#seedling"
       modalSize="lg"
-      @onCreate="tableRef.refresh()"
-      @onUpdate="tableRef.refresh()"
+      @hide="validateProvenanceForm='true'"
       :initForm="initForm"
       :successMessage="successMessage"
+      :validationDisabled="validateProvenanceForm"
     ></opensilex-ModalForm>
     
       <!-- Upload file  -->
@@ -172,6 +172,7 @@ export default class DataForm extends Vue {
   tooLargeDataset: boolean = false;
   importedLines: number = 0;
   withSOcolumn: boolean = true;
+  validateProvenanceForm: boolean = true;
 
   provenance = null;
   experiments = [];
@@ -219,7 +220,8 @@ export default class DataForm extends Vue {
     }
   }
 
-  showCreateForm() {
+  showProvenanceCreateForm() {
+    this.validateProvenanceForm = false;
     this.provenanceForm.showCreateForm();
   }
 

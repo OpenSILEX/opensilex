@@ -9,10 +9,10 @@
     :conversionMethod="devicesToSelectNode"
     :placeholder="
       multiple
-        ? 'component.data.form.selector.placeholder-multiple'
-        : 'component.data.form.selector.placeholder'
+        ? 'component.device.selector.placeholder-multiple'
+        : 'component.device.selector.placeholder'
     "
-    noResultsText="component.data.form.selector.filter-search-no-result"
+    noResultsText="component.device.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -163,19 +163,17 @@ export default class DeviceSelector extends Vue {
 
 en:
   component: 
-    data: 
-        form: 
-         selector:
-            placeholder  : Select one provenance
-            placeholder-multiple  : Select one or more provenance(s)
-            filter-search-no-result : No provenance found
+    device: 
+      selector:
+        placeholder  : Select one device
+        placeholder-multiple  : Select one or more device(s)
+        filter-search-no-result : No device found
 fr:
   component: 
-    data: 
-        form:
-          selector:
-            placeholder : Sélectionner une provenance
-            placeholder-multiple : Sélectionner une ou plusieurs provenance(s)   
-            filter-search-no-result : Aucune provenance trouvée
+    device: 
+      selector:
+        placeholder : Sélectionner un dispositif
+        placeholder-multiple : Sélectionner un ou plusieurs dispositif(s)   
+        filter-search-no-result : Aucun dispositif trouvé
 
 </i18n>

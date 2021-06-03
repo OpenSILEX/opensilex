@@ -110,7 +110,7 @@
               </b-dropdown>
             </template>
             <template v-slot:cell(uri)="{ data }">
-                <div  v-if="data.item.scientific_objects != null" >
+                <div  v-if="data.item.scientific_object != null" >
                   <opensilex-UriLink  
                   :uri="data.item.scientific_object"
                   :value="objects[data.item.scientific_object]"

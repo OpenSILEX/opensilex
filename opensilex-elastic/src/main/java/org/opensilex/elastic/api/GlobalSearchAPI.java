@@ -36,7 +36,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.elastic.service.ElasticService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -97,9 +96,11 @@ public class GlobalSearchAPI  {
         SearchRequest searchRequest = new SearchRequest();
         
         QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 
+
 
         SearchResponse response = elasticClient.search(searchRequest
-        .source(new SearchSourceBuilder()
+        .source(sourceBuilder
                 .query(query)
                 .from(from)
                 .size(pageSize)
@@ -110,7 +111,9 @@ public class GlobalSearchAPI  {
         
          
         SearchHit[] searchHits = response.getHits().getHits();
-        CountRequest countRequest = new CountRequest(); 
+        CountRequest countRequest = new CountRequest("variables","projects"); 
+        countRequest.source(sourceBuilder);
+
         CountResponse countResponse = elasticClient
                        .count(countRequest, RequestOptions.DEFAULT);
         

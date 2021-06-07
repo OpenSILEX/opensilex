@@ -94,11 +94,11 @@ public class SearchAPI {
         
         int from = page*pageSize;
         SearchRequest searchRequest = new SearchRequest("variables");
-        
         QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 
 
         SearchResponse response = elasticClient.search(searchRequest
-        .source(new SearchSourceBuilder()
+        .source(sourceBuilder
                 .query(query)
                 .from(from)
                 .size(pageSize)
@@ -109,13 +109,16 @@ public class SearchAPI {
         
          
         SearchHit[] searchHits = response.getHits().getHits();
-        CountRequest countRequest = new CountRequest(); 
+        
+        CountRequest countRequest = new CountRequest("variables"); 
+        
+        countRequest.source(sourceBuilder);
         CountResponse countResponse = elasticClient
-                       .count(countRequest, RequestOptions.DEFAULT);
+                  .count(countRequest, RequestOptions.DEFAULT);
         
         int count = (int) countResponse.getCount();
 
-     
+       
         elasticClient.close();
 
         

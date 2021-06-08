@@ -196,7 +196,7 @@ public class DataFilesAPI {
 
         try {
             if (dtoList.size()> DataAPI.SIZE_MAX) {
-                throw new NoSQLTooLargeSetException(dtoList.size());
+                throw new NoSQLTooLargeSetException(DataAPI.SIZE_MAX, dtoList.size());
             }
             validDataFileDescription(dtoList);
             List<DataFileModel> dataList = new ArrayList();

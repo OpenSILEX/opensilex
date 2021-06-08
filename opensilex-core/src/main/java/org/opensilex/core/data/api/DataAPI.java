@@ -147,7 +147,7 @@ public class DataAPI {
         List<DataModel> dataList = new ArrayList();
         try {
             if (dtoList.size()> SIZE_MAX) {
-                throw new NoSQLTooLargeSetException(dtoList.size());
+                throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
             }
             
             for(DataCreationDTO dto : dtoList ){            

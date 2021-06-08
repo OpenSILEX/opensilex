@@ -11,7 +11,7 @@ package org.opensilex.nosql.exceptions;
  */
 public class NoSQLTooLargeSetException extends Exception{
     
-    public NoSQLTooLargeSetException(int size) {
-        super("Too large set of data (<"+String.valueOf(size)+")");
+    public NoSQLTooLargeSetException(int sizeMax, int size) {
+        super("Too large set of data (" + String.valueOf(size) + ">" + String.valueOf(sizeMax) +")");
     }
 }

@@ -1,16 +1,5 @@
 <template>
   <ValidationObserver ref="validatorRef">
-
-    <b-form-group label="What kind of data do you want to import ?">
-      <b-form-radio-group
-        v-model="selected"
-        :options="options"
-        class="mb-3"
-        value-field="item"
-        text-field="name"
-        :required="true"
-      ></b-form-radio-group>
-    </b-form-group>
     <!-- Label -->
     <opensilex-InputForm
       :value.sync="provenance.name"
@@ -78,7 +67,6 @@
 
     <!-- sensors -->
       <opensilex-DeviceSelector
-        v-if="selected == 'sensor'"
         label="DataForm.sensors"
         :devices.sync="provenance.sensors"
         :multiple="true"
@@ -87,17 +75,8 @@
         @deselect="deselectedSensors"
       ></opensilex-DeviceSelector>
 
-      <!-- vectors -->
-      <!-- <opensilex-DeviceSelector
-        v-if="selected == 'sensor'"
-        label="DataForm.vectors"
-        :devices.sync="provenance.sensors"
-        :multiple="true"
-      ></opensilex-DeviceSelector> -->
-
       <!-- softwares -->
       <opensilex-DeviceSelector
-        v-if="selected == 'computed'"
         label="DataForm.softwares"
         :devices.sync="provenance.softwares"
         :multiple="true"

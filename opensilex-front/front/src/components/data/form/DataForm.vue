@@ -1,23 +1,6 @@
 <template>
   <b-form>
 
-    <b-form-group label="Select the kind of data you want to import">
-      <b-form-radio-group
-        v-model="selected"
-        :options="options"
-        class="mb-3"
-        value-field="item"
-        text-field="name"
-        :required="true"
-      ></b-form-radio-group>
-    </b-form-group>
-
-    <opensilex-ExperimentSelector
-      label="DataForm.experiments"
-      :experiments.sync="experiments"
-      :multiple="true"
-    ></opensilex-ExperimentSelector>
-
     <opensilex-ProvenanceSelector      
       ref="provenanceSelector"
       :provenances.sync="provenance"
@@ -38,6 +21,21 @@
       ></opensilex-ProvenanceDetails>
     </b-collapse>
 
+    <b-form-group
+      label="Select the elements participating to the data production"
+    >
+      <b-form-checkbox-group
+        v-model="selected"
+        :options="options"
+        class="mb-3"
+      ></b-form-checkbox-group>
+    </b-form-group>
+    <opensilex-ExperimentSelector
+      label="DataForm.experiments"
+      :experiments.sync="experiments"
+      :multiple="true"
+    ></opensilex-ExperimentSelector>
+
     <opensilex-ModalForm
       ref="provenanceForm"
       component="opensilex-ProvenanceForm"
@@ -55,6 +53,7 @@
       <opensilex-GenerateDataTemplateFrom
         :selectExperiment="false"
         :acceptSONames="false"
+        :agents="selected"
         ref="templateForm"
       ></opensilex-GenerateDataTemplateFrom>
       <div>
@@ -93,8 +92,10 @@
       </div>
       <div>
         <opensilex-DataHelpTableView
+          ref="helpTable"
           :acceptSONames="false"
-          :scientificObjectsColumn="withSOcolumn"
+          :agents="selected"
+          :visibleAtFirst="false"
         >
         </opensilex-DataHelpTableView>
       </div>
@@ -173,11 +174,12 @@ export default class DataForm extends Vue {
   importedLines: number = 0;
   withSOcolumn: boolean = true;
   validateProvenanceForm: boolean = true;
+  showTable: boolean;
 
   provenance = null;
   experiments = [];
   filterProvenanceLabel = null;
-  selected = null;
+  selected = [];
 
   @Prop({
     default: () => {
@@ -196,9 +198,9 @@ export default class DataForm extends Vue {
   form;
 
   options = [
-        { item: 'observations', name: 'Observations' },
-        { item: 'sensor', name: 'Sensor data' },
-        { item: 'computed', name: 'Computed data' },
+        { text: 'Sensor', value: 'sensor' },
+        { text: 'Operator', value: 'operator' },
+        { text: 'Software', value: 'software' },
       ]
 
   getEmptyForm() {

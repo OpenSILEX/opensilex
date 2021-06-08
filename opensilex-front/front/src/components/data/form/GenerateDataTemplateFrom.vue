@@ -83,8 +83,8 @@ export default class GenerateDataTemplateFrom extends Vue {
   @Prop({ default: true })
   acceptSONames;
 
-  @Prop({ default: true })
-  scientificObjectsColumn;
+  @Prop({ default: [] })
+  agents;
 
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
@@ -176,74 +176,61 @@ export default class GenerateDataTemplateFrom extends Vue {
       soColHelp = this.$t("DataHelp.objectURI-help").toString();
     }
 
-    let row1 = [];
-    let row2 = [];
-    let row3 = [];
+    let row1 = [soCol];
+    let row2 = [soColHelp];
+    let row3 = [this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:string") +
+        "\n" +
+        this.$t("DataHelp.required").toString(),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:date") +
+        "\n" +
+        this.$t("DataHelp.required").toString(),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:integer")];
 
-    if (this.scientificObjectsColumn) {
-
-      row1 = [ 
-          soCol,
-          "Date",
-          "demo:variable#variable.air_temperature",
-          "demo:variable#variable.fruit_color/2",
-          "demo:variable#variable.veraison_date",
-        ];
-
-      row2 = [
-          soColHelp,
-          this.$t("DataHelp.date-help").toString(),
-          "Air_Temperature",
-          "Fruit_Color",
-          "Veraison_Date",
-        ];
-
-      row3 = [
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:string") +
-          "\n" +
-          this.$t("DataHelp.required").toString(),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date") +
-          "\n" +
-          this.$t("DataHelp.required").toString(),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:integer"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:string"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date"),
-      ];
-
-    } else {
-      row1 = [ 
-          "Date",
-          "demo:variable#variable.air_temperature",
-          "demo:variable#variable.fruit_color/2",
-          "demo:variable#variable.veraison_date",
-        ];
-
-      row2 = [
-          this.$t("DataHelp.date-help").toString(),
-          "Air_Temperature",
-          "Fruit_Color",
-          "Veraison_Date",
-        ];
-
-      row3 = [
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date") +
-          "\n" +
-          this.$t("DataHelp.required").toString(),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:integer"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:string"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date"),
-      ];
-
+    if (this.agents.includes("sensor")) {
+      row1.push("sensorURI");
+      row2.push("sensorURI");
+      row3.push("sensorURI");
     }
+
+    if (this.agents.includes("operator")) {
+      row1.push("operator");
+      row2.push("operator");
+      row3.push("operator");
+    }
+
+    if (this.agents.includes("software")) {
+      row1.push("software");
+      row2.push("software");
+      row3.push("software");
+    }
+
+    row1.push(
+      "Date",
+      "demo:variable#variable.air_temperature",
+      "demo:variable#variable.fruit_color/2",
+      "demo:variable#variable.veraison_date"
+      );
+
+
+    row2.push(
+      this.$t("DataHelp.date-help").toString(),
+      "Air_Temperature",
+      "Fruit_Color",
+      "Veraison_Date"
+      );
+
+    row3.push(
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:integer"),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:string"),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:date"),
+      )
+
 
     let arrData = [
       row1,
@@ -272,37 +259,68 @@ export default class GenerateDataTemplateFrom extends Vue {
           soColHelp = this.$t("DataHelp.objectURI-help").toString();
         }
 
-        let variableUriInfo = [soColHeader, "Date"];
-        let otherHeaders = [
-          soColHelp,
-          this.$t("DataHelp.date-help").toString(),
-        ];
-        let otherExample = [
-          this.$t("DataHelp.column-type-help").toString() +
+        let row1 = [soColHeader];
+        let row2 = [soColHelp];
+        let row3 = [this.$t("DataHelp.column-type-help").toString() +
             this.getDataTypeLabel("xsd:string") +
             "\n" +
-            this.$t("DataHelp.required").toString(),
+            this.$t("DataHelp.required").toString()];
+
+        if (this.agents.includes("sensor")) {
+          row1.push("sensorURI");
+          row2.push("sensorURI");
+          row3.push("sensorURI");
+        }
+
+        if (this.agents.includes("operator")) {
+          row1.push("operator");
+          row2.push("operator");
+          row3.push("operator");
+        }
+
+        if (this.agents.includes("software")) {
+          row1.push("software");
+          row2.push("software");
+          row3.push("software");
+        }
+
+        row1.push(
+          "Date",
+          "demo:variable#variable.air_temperature",
+          "demo:variable#variable.fruit_color/2",
+          "demo:variable#variable.veraison_date"
+          );
+
+        row2.push(
+          this.$t("DataHelp.date-help").toString()
+          );
+
+        row3.push(
           this.$t("DataHelp.column-type-help").toString() +
-            this.getDataTypeLabel("xsd:date") +
-            "\n" +
-            this.$t("DataHelp.required").toString(),
-        ];
+          this.getDataTypeLabel("xsd:string") +
+          "\n" +
+          this.$t("DataHelp.required").toString(),
+          this.$t("DataHelp.column-type-help").toString() +
+          this.getDataTypeLabel("xsd:date") +
+          "\n" +
+          this.$t("DataHelp.required").toString()
+          );
 
         this.service.getVariablesByURIs(this.variables).then((http) => {
           let varsList = [];
           for (let element of http.response.result) {
-            variableUriInfo.push(element.uri);
-            otherHeaders.push(element.name);
+            row1.push(element.uri);
+            row2.push(element.name);
             if (element.datatype != undefined && element.datatype != null) {
-              otherExample.push(
+              row3.push(
                 this.$t("DataHelp.column-type-help").toString() +
                   this.getDataTypeLabel(element.datatype)
               );
             } else {
-              otherExample.push(this.getDataTypeLabel("xsd:string"));
+              row3.push(this.getDataTypeLabel("xsd:string"));
             }
           }
-          arrData = [variableUriInfo, otherHeaders, otherExample];
+          arrData = [row1, row2, row3];
           this.$papa.download(
             this.$papa.unparse(arrData, { delimiter: this.separator }),
             "datasetTemplate"

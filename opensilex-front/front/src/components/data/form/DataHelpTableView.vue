@@ -18,6 +18,9 @@
               >{{ $t("DataHelp.objectURI")
               }}<span class="required"> *</span></b-th
             >
+            <b-th v-if="agents.includes('sensor')">{{ $t("DataHelp.sensorURI")}}</b-th>
+            <b-th v-if="agents.includes('operator')">{{ $t("DataHelp.operatorURI")}}</b-th>
+            <b-th v-if="agents.includes('software')">{{ $t("DataHelp.softwareURI")}}</b-th>
             <b-th>Date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
             <b-th>uri:variable...</b-th>
@@ -28,6 +31,9 @@
             <b-th>2</b-th>
             <b-td v-if="acceptSONames">{{ $t("DataHelp.objectId-help") }}</b-td>
             <b-td v-else>{{ $t("DataHelp.objectURI-help") }}</b-td>
+            <b-td v-if="agents.includes('sensor')">{{ $t("DataHelp.sensorURI") }}</b-td>
+            <b-td v-if="agents.includes('operator')">{{ $t("DataHelp.operatorURI") }}</b-td>
+            <b-td v-if="agents.includes('software')">{{ $t("DataHelp.softwareURI") }}</b-td>
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
@@ -39,6 +45,21 @@
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
               ><br /><strong>{{ $t("DataHelp.required") }}</strong></b-td
             >
+            <b-td v-if="agents.includes('sensor')" 
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
+              >
+            </b-td>
+            <b-td v-if="agents.includes('operator')" 
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
+              >
+            </b-td>
+            <b-td v-if="agents.includes('software')" 
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
+              >
+            </b-td>
             <b-td>
               {{ $t("DataHelp.column-type-help") }}
               <strong>
@@ -79,7 +100,7 @@
           <b-tr class="alert alert-info">
             <b-th>4</b-th>
             <b-td
-              colspan="4"
+              colspan="7"
               v-html="
                 $t('DataHelp.text-help', {
                   decimalSeparator: '<strong>.</strong>',
@@ -109,13 +130,17 @@ export default class DataHelpTableView extends Vue {
   $route: any;
   $store: any;
   $t: any;
+
   visible: boolean = true;
+
+  @Prop({ default: true })
+  visibleAtFirst: boolean;
 
   @Prop({ default: true })
   acceptSONames;
 
-  @Prop({ default: true })
-  scientificObjectsColumn;
+  @Prop({ default: [] })
+  agents;
 
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {
@@ -124,6 +149,11 @@ export default class DataHelpTableView extends Vue {
     let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).label_key);
     return label.charAt(0).toUpperCase() + label.slice(1);
   }
+
+  created() {
+    this.visible = this.visibleAtFirst;
+  }
+  
 }
 </script>
 
@@ -199,6 +229,8 @@ en :
     objectId : Scientific Object name / URI
     objectURI : Scientific Object URI
     sensorURI : Sensor URI
+    operatorURI : Operator URI
+    softwareURI : Software URI
     title: Generate Data template
     required: "Required : yes"
     variables-associated : Experiment variables associated
@@ -236,6 +268,8 @@ fr :
     objectId: Objet scientifique Nom / URI
     objectURI : URI de l'objet scientifique
     sensorURI : URI du capteur
+    operatorURI : URI de l'opérateur
+    softwareURI : URI du logiciel
     title: Générer un gabarit de données
     required: "Requis : oui"
     variables-associated: Variables associées à l'expérimentation

@@ -77,7 +77,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
 
         try {
 
-            DeleteIndexRequest request = new DeleteIndexRequest("Indexprojects");
+            DeleteIndexRequest request = new DeleteIndexRequest("projects");
             AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
 
         } catch (ElasticsearchException exception) {
@@ -130,7 +130,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
                 for (ProjectModel p : projects) {
                     json = gson.toJson(p);
 
-                    IndexRequest indexRequest = new IndexRequest("Indexprojects");
+                    IndexRequest indexRequest = new IndexRequest("projects");
                     indexRequest.source(json, XContentType.JSON);
                     IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
                 }

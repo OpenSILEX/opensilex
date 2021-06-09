@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="card">
-      <opensilex-SearchFilterField :withButton="false" :showAdvancedSearch="true">
+      <opensilex-SearchFilterField    :withButton="true"
+         :showTitle="true"
+          @search="onSearch"
+          @clear="clear" :showAdvancedSearch="true">
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
@@ -11,8 +14,7 @@
               :multiple="false"
               :device="device"
               :clearable="true"
-              :defaultSelectedValue="true"
-              @select="onSearch"
+              :required="true"
             ></opensilex-DeviceVariableSelector>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
@@ -21,16 +23,14 @@
                 <opensilex-DateTimeForm
                   :value.sync="filter.startDate"
                   label="component.common.begin"
-                  @input="onUpdate"
-                  @clear="onUpdate"
+                  name="startDate"
                 ></opensilex-DateTimeForm>
               </div>
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
                 <opensilex-DateTimeForm
                   :value.sync="filter.endDate"
                   label="component.common.end"
-                  @input="onUpdate"
-                  @clear="onUpdate"
+                  name="endDate"
                 ></opensilex-DateTimeForm>
               </div>
             </div>
@@ -44,36 +44,16 @@
               :provenances.sync="filter.provenance"
               :filterLabel="filterProvenanceLabel"
               label="Provenance"
-              @select="loadProvenance"
-              @clear="clearProvenance"
               :multiple="false"
               :device="device"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false"
+              :showURI="false" 
+              @select="loadProvenance"
+              @clear="clearProvenance"
+
             ></opensilex-ProvenanceSelector>
           </opensilex-FilterField>
-
-          <!-- <opensilex-FilterField :halfWidth="true">
-            <div class="row">
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                <label for="metadataKey">{{ $t("DataVisuForm.search.metadataKey") }}</label>
-                <opensilex-StringFilter
-                  id="metadataKey"
-                  :filter.sync="filter.metadataKey"
-                  @update="onUpdate"
-                ></opensilex-StringFilter>
-              </div>
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                <label for="metadataValue">{{ $t("DataVisuForm.search.metadataValue") }}</label>
-                <opensilex-StringFilter
-                  id="metadataValue"
-                  :filter.sync="filter.metadataValue"
-                  @update="onUpdate"
-                ></opensilex-StringFilter>
-              </div>
-            </div>
-          </opensilex-FilterField> -->
 
           <opensilex-FilterField>
             <b-collapse
@@ -110,9 +90,7 @@ export default class DeviceVisualizationForm extends Vue {
     variable: null,
     startDate: undefined,
     endDate: undefined,
-    provenance: undefined,
-    // metadataKey: undefined,
-    // metadataValue: undefined
+    provenance: undefined
   };
 
   resetFilters() {
@@ -120,8 +98,6 @@ export default class DeviceVisualizationForm extends Vue {
     this.filter.startDate = undefined;
     this.filter.endDate = undefined;
     this.filter.provenance = undefined;
-    // this.filter.metadataKey = undefined;
-    // this.filter.metadataValue = undefined;
 
     this.filterProvenanceLabel = null;
   }
@@ -129,8 +105,8 @@ export default class DeviceVisualizationForm extends Vue {
   @Prop()
   device;
 
-  onUpdate() {
-    this.$emit("update", this.filter);
+  clear() {
+    this.resetFilters();
   }
 
   onSearch() {
@@ -152,14 +128,12 @@ export default class DeviceVisualizationForm extends Vue {
     if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id).then(prov => {
         this.selectedProvenance = prov;
-        this.onUpdate();
       });
     }
   }
 
   clearProvenance() {
     this.filterProvenanceLabel = null;
-    this.onUpdate();
   }
 
   showProvenanceDetails() {

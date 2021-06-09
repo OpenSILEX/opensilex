@@ -49,9 +49,15 @@
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 import { Image } from "./image";
-/* import { EventsService, EventGetDTO } from "opensilex-phis/index"; */
-// @ts-ignore
-import { DataService, DataFileGetDTO, OntologyService, DataGetDTO } from "opensilex-core/index";
+import {
+  DataService,
+  DataFileGetDTO,
+  OntologyService,
+  ResourceTreeDTO,
+  DataGetDTO,
+  EventsService,
+  EventGetDTO
+} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
@@ -61,7 +67,7 @@ export default class VisuView extends Vue {
   $route: any;
   $opensilex: any;
   dataService: DataService;
- /*  eventsService: EventsService; */
+   eventsService: EventsService; 
   ontologyService: OntologyService;
   form;
   multipleVariables = false;
@@ -137,8 +143,8 @@ export default class VisuView extends Vue {
     const series = [];
     let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
-  /*   this.eventsService = this.$opensilex.getService("opensilex.EventsService");
- */
+   this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+ 
   /*   if (this.form.showEvents) {
       promise = this.buildEventSeries();
       promises.push(promise);
@@ -523,7 +529,7 @@ export default class VisuView extends Vue {
       this.visuImages.addImage(image);
     });
   }
-/* 
+
   buildEventSeries() {
     let series = [],
       serie;
@@ -545,16 +551,7 @@ export default class VisuView extends Vue {
 
   buildEventSerie(concernedItem, index) {
     return this.eventsService
-      .getEvents(
-        5000,
-        0,
-        undefined,
-        undefined,
-        concernedItem,
-        undefined,
-        undefined,
-        undefined
-      )
+    .searchEvents(undefined, undefined, undefined, concernedItem, undefined, undefined,0, 100000)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         const eventsData = http.response.result.data as Array<EventGetDTO>;
         if (eventsData.length > 0) {
@@ -578,22 +575,22 @@ export default class VisuView extends Vue {
           ];
           let index = 0;
           eventsData.forEach(element => {
-            if (!eventTypesColorArray[element.rdfType]) {
-              eventTypesColorArray[element.rdfType] = colorPalette[index];
+            if (!eventTypesColorArray[element.rdf_type_name]) {
+              eventTypesColorArray[element.rdf_type_name] = colorPalette[index];
               index++;
               if (index === 12) {
                 index = 0;
               }
             }
 
-            convertedDate = moment.utc(element.date).valueOf();
-            label = element.rdfType.split("#")[1];
+            convertedDate = moment.utc(element.start).valueOf();
+            label = element.rdf_type_name;
             toAdd = {
               x: convertedDate,
               title: label,
               text: label,
               eventUri: element.uri,
-              fillColor: eventTypesColorArray[element.rdfType]
+              fillColor: eventTypesColorArray[element.rdf_type_name]
             };
             cleanEventsData.push(toAdd);
           });
@@ -640,7 +637,7 @@ export default class VisuView extends Vue {
         console.log(error);
       });
   }
- */
+ 
   timestampToUTC(time) {
     // var day = moment.unix(time).utc().format();
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);

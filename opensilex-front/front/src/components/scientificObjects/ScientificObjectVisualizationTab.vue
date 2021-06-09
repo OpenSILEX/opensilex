@@ -1,24 +1,30 @@
 <template>
   <div ref="page">
-    
     <opensilex-ScientificObjectVisualizationForm
-          :scientificObject="scientificObject"
-          @search="onSearch"
-          @update="onUpdate"
-        ></opensilex-ScientificObjectVisualizationForm>
+      :scientificObject="scientificObject"
+      @search="onSearch"
+    ></opensilex-ScientificObjectVisualizationForm>
 
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
     </div>
 
     <opensilex-DataVisuGraphic
-      v-show="isGraphicLoaded"
+      v-if="isGraphicLoaded"
       ref="visuGraphic"
-      @detailProvenanceIsClicked="showProvenanceDetailComponent"
-      @graphicCreated="onGraphicCreated"
+      @addEventIsClicked="showAddEventComponent"
+      @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
 
-    <opensilex-DataProvenanceModalView ref="dataProvenanceModalView"></opensilex-DataProvenanceModalView>
+    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+
+    <opensilex-EventModalForm
+      ref="eventsModalForm"
+      :target="target"
+      :eventCreatedTime="eventCreatedTime"
+      @onCreate="prepareGraphic"
+      @onUpdate="prepareGraphic"
+    ></opensilex-EventModalForm>
   </div>
 </template>
 
@@ -27,9 +33,18 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
-// @ts-ignore
-import { DataService, DataGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
-// @ts-ignore
+import {
+  DataService,
+  DataGetDTO,
+  ProvenanceGetDTO,
+  AnnotationsService,
+  AnnotationGetDTO,
+  EventsService,
+  EventCreationDTO,
+  EventDetailsDTO,
+  EventGetDTO,
+  EventUpdateDTO
+} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
@@ -49,77 +64,112 @@ export default class ScientificObjectVisualizationTab extends Vue {
   scientificObject;
 
   isGraphicLoaded = true;
+  target = [];
+  eventCreatedTime = "";
+
   form;
   selectedVariable;
   dataService: DataService;
-  @Ref("visuGraphic") readonly visuGraphic!: any;
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  annotationService: AnnotationsService;
+  eventsService: EventsService;
   @Ref("page") readonly page!: any;
+  @Ref("visuGraphic") readonly visuGraphic!: any;
+  @Ref("annotationModalForm") readonly annotationModalForm!: any;
+  @Ref("eventsModalForm") readonly eventsModalForm!: any;
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
   }
 
-  onGraphicCreated() {
-    let that = this;
-    setTimeout(function() {
-      that.page.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest"
-      });
-    }, 500);
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.prepareGraphic();
+      }
+    );
   }
 
+  onAnnotationCreated() {
+    this.visuGraphic.updateDataAnnotations();
+  }
 
-  onUpdate(form) {
-    this.isGraphicLoaded = false;
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
 
-    this.form = form;
-    let promise = this.buildDataSerie();
-    promise
-      .then(value => {
-        let serie;
-        if (value) {
-          serie = [value];
-        } else {
-          serie = [];
-        }
-        this.visuGraphic.reload(serie, this.selectedVariable);
-        this.isGraphicLoaded = true;
-      })
-      .catch(error => {
-        this.isGraphicLoaded = true;
-        this.$opensilex.errorHandler(error);
-      });
+  showAddEventComponent(time) {
+    this.target = this.scientificObject;
+    this.eventCreatedTime = time;
+    this.eventsModalForm.showCreateForm();
+  }
+
+  showAnnotationForm(target) {
+    this.annotationModalForm.showCreateForm([target]);
   }
 
   onSearch(form) {
     this.isGraphicLoaded = false;
     if (form.variable) {
       this.form = form;
-
       this.$opensilex
         .getService("opensilex.VariablesService")
         .getVariable(form.variable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
           this.selectedVariable = http.response.result;
-          let promise = this.buildDataSerie();
-          promise
-            .then(value => {
-              let serie;
-              if (value) {
-                serie = [value];
-              } else {
-                serie = [];
-              }
-              this.visuGraphic.reload(serie, this.selectedVariable);
-              this.isGraphicLoaded = true;
-            })
-            .catch(error => {
-              this.isGraphicLoaded = true;
-              this.$opensilex.errorHandler(error);
-            });
+          const datatype = this.selectedVariable.datatype.split("#")[1];
+          if (datatype == "decimal" || datatype == "integer") {
+            this.prepareGraphic();
+          } else {
+            this.isGraphicLoaded = true;
+            this.$opensilex.showInfoToast(
+              this.$i18n.t(
+                "ScientificObjectVisualizationTab.datatypeMessageA"
+              ) +
+                " " +
+                datatype +
+                " " +
+                this.$i18n.t(
+                  "ScientificObjectVisualizationTab.datatypeMessageB"
+                )
+            );
+          }
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
+    }
+  }
+
+  prepareGraphic() {
+    if (this.form) {
+      var promises = [];
+      let promise;
+      promise = this.buildDataSerie();
+      promises.push(promise);
+      promise = this.buildEventsSerie();
+      promises.push(promise);
+
+      Promise.all(promises)
+        .then(values => {
+          this.isGraphicLoaded = true;
+          let series = [];
+
+          if (values[0]) {
+            series.push(values[0]);
+          }
+          if (values[1]) {
+            series.push(values[1]);
+          }
+          this.$nextTick(() => {
+            this.visuGraphic.reload(
+              series,
+              this.selectedVariable,
+              this.form.showEvents
+            );
+          });
         })
         .catch(error => {
           this.isGraphicLoaded = true;
@@ -128,39 +178,165 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }
   }
 
-  buildDataSerie() {
-    return this.dataService
-      .searchDataList(
-        this.form.startDate != undefined && this.form.startDate != ""
-          ? this.form.startDate
-          : undefined,
-        this.form.endDate != undefined && this.form.endDate != ""
-          ? this.form.endDate
-          : undefined,
-        undefined,
-        undefined,
-        [this.scientificObject],
-        [this.form.variable],
-        undefined,
-        undefined,
-        this.form.provenance ? [this.form.provenance] : undefined,
-        undefined, //this.addMetadataFilter(),
-        undefined,
-        0,
-        1000000
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-        const data = http.response.result as Array<DataGetDTO>;
-        if (data.length > 0) {
-          const cleanData = this.dataTransforme(data);
+  buildEventsSerie() {
+    if (this.form && this.form.showEvents) {
+      return this.eventsService
+        .searchEvents(
+          undefined,
+          this.form.startDate != undefined && this.form.startDate != ""
+            ? this.form.startDate
+            : undefined,
+          this.form.endDate != undefined && this.form.endDate != ""
+            ? this.form.endDate
+            : undefined,
+          this.scientificObject,
+          undefined,
+          undefined,
+          0,
+          0
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+          const events = http.response.result as Array<EventGetDTO>;
+          if (events.length > 0) {
+            const cleanEventsData = [];
+            let convertedDate, toAdd, label, title;
 
-          return {
-            name: this.selectedVariable.name,
-            data: cleanData,
-            visible: true
-          };
-        }
-      });
+            let eventTypesColorArray = [];
+            const colorPalette = [
+              "#ca6434 ",
+              "#427775",
+              "#f2dc7c",
+              "#0f839c",
+              "#a45354",
+              "#d3b0ae",
+              "#774e42",
+              "#776942",
+              "#5c4277",
+              "#34a0ca",
+              "#9334ca",
+              "#caaf34"
+            ];
+            let index = 0;
+
+            events.forEach(element => {
+              if (!eventTypesColorArray[element.rdf_type]) {
+                eventTypesColorArray[element.rdf_type] = colorPalette[index];
+                index++;
+                if (index === 12) {
+                  index = 0;
+                }
+              }
+              label = element.rdf_type_name
+                ? element.rdf_type_name
+                : element.rdf_type;
+              if (element.start != null) {
+                let endTime = element.end ? element.end : "en cours..";
+                label = label + "(End: " + endTime + ")";
+              }
+              // if (element.end) {
+              //   if (element.is_instant) {
+              //     title = label;
+              //   } else {
+              //     title = label + "(End)";
+              //   }
+              // }
+              title = label.charAt(0).toUpperCase();
+              let stringDateWithoutUTC;
+              if (element.start != null) {
+                stringDateWithoutUTC =
+                  moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
+                  "+00:00";
+              } else {
+                stringDateWithoutUTC =
+                  moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
+                  "+00:00";
+              }
+
+              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+              toAdd = {
+                x: dateWithoutUTC,
+                title: title,
+                text: label,
+                eventUri: element.uri,
+                fillColor: eventTypesColorArray[element.rdf_type]
+              };
+
+              cleanEventsData.push(toAdd);
+            });
+            return {
+              type: "flags",
+              allowOverlapX: true,
+              name: "Events",
+              lineWidth: 1,
+              yAxis: 1,
+              data: cleanEventsData,
+              style: {
+                // text style
+                color: "white"
+              }
+            };
+          } else {
+            return undefined;
+          }
+        });
+    } else {
+      return null;
+    }
+  }
+
+  buildDataSerie() {
+    if (this.form) {
+      return this.dataService
+        .searchDataList(
+          this.form.startDate != undefined && this.form.startDate != ""
+            ? this.form.startDate
+            : undefined,
+          this.form.endDate != undefined && this.form.endDate != ""
+            ? this.form.endDate
+            : undefined,
+          undefined,
+          undefined,
+          [this.scientificObject],
+          [this.form.variable],
+          undefined,
+          undefined,
+          this.form.provenance ? [this.form.provenance] : undefined,
+          undefined, //this.addMetadataFilter(),
+          ["date=asc"],
+          0,
+          50000
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+          const data = http.response.result as Array<DataGetDTO>;
+          let dataLength = data.length;
+          if (dataLength > 0) {
+            const cleanData = this.dataTransforme(data);
+            if (dataLength > 50000) {
+              this.$opensilex.showInfoToast(
+                this.$i18n.t(
+                  "ScientificObjectVisualizationTab.limitSizeMessageA"
+                ) +
+                  " " +
+                  dataLength +
+                  " " +
+                  this.$i18n.t(
+                    "ScientificObjectVisualizationTab.limitSizeMessageB"
+                  )
+              );
+            }
+
+            return {
+              type: "line",
+              name: this.selectedVariable.name,
+              data: cleanData,
+              yAxis: 0,
+              visible: true
+            };
+          }
+        });
+    } else {
+      return null;
+    }
   }
 
   // addMetadataFilter() {
@@ -196,38 +372,12 @@ export default class ScientificObjectVisualizationTab extends Vue {
         y: element.value,
         offset: offset,
         dateWithOffset: highchartsDate + offset,
-        dataUri: element.uri,
         provenanceUri: element.provenance.uri,
         data: element
       };
       cleanData.push(toAdd);
     });
     return cleanData;
-  }
-
-
-  getProvenance(uri) {
-    if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
-  }
-  showProvenanceDetailComponent(value) {
-    if (value.provenance != undefined && value.provenance != null) {
-      this.getProvenance(value.provenance)
-        .then(provenance => {
-          value.provenance = provenance;
-          this.dataProvenanceModalView.setProvenance(value);
-          this.dataProvenanceModalView.show();
-        })
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
-    }
   }
 
   timestampToUTC(time) {
@@ -247,11 +397,19 @@ en:
         visualization: Visualization
         data: Data
         add: Add data
+        datatypeMessageA: The variable datatype is
+        datatypeMessageB: At this time only decimal or integer are accepted
+        limitSizeMessageA : "There are "
+        limitSizeMessageB : " data .Only the 50 000 first data are displayed."
 
 fr:
     ScientificObjectVisualizationTab:
         visualization: Visualisation
         data: Données
         add: Ajouter des données
+        datatypeMessageA:  le type de donnée de la variable est
+        datatypeMessageB: Pour le moment, seuls les types decimal ou entier sont acceptés
+        limitSizeMessageA : "Il y a "
+        limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
 </i18n>
 

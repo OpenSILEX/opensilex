@@ -505,7 +505,7 @@ export default class OpenSilexVuePlugin {
             toaster: "b-toaster-top-center",
             appendToast: true,
             solid: true,
-            autoHideDelay: 3000,
+            autoHideDelay: 8000,
             noCloseButton: true
         });
     }

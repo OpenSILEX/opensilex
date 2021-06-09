@@ -47,6 +47,9 @@
         target: string;
 
         @Prop()
+        eventCreatedTime: any;
+
+        @Prop()
         defaultEventType: string;
 
         @Prop()
@@ -172,6 +175,12 @@
             }
             if(this.target){
                 eventCopy.targets.push(this.target);
+            }
+
+            if(this.eventCreatedTime){
+                eventCopy.end = this.eventCreatedTime;
+                eventCopy.start = this.eventCreatedTime;
+                eventCopy.is_instant = true;
             }
 
             if(this.defaultEventType){

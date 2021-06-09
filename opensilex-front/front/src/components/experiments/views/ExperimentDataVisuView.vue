@@ -13,11 +13,12 @@
       <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
-        @detailProvenanceIsClicked="showProvenanceDetailComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
         @graphicCreated="$emit('graphicCreated')"
       ></opensilex-DataVisuGraphic>
     </b-collapse>
-    <opensilex-DataProvenanceModalView ref="dataProvenanceModalView"></opensilex-DataProvenanceModalView>
+
+    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
   </div>
 </template>
 
@@ -25,7 +26,11 @@
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 // @ts-ignore
-import { DataService, DataGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
+import {
+  DataService,
+  DataGetDTO,
+  ProvenanceGetDTO
+} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { Component, Ref, Prop } from "vue-property-decorator";
@@ -39,7 +44,7 @@ export default class ExperimentDataVisuView extends Vue {
   form;
   chartOptionsValue: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  @Ref("annotationModalForm") readonly annotationModalForm!: any;
   showSearchComponent: boolean = true;
   showGraphicComponent: boolean = true;
 
@@ -55,26 +60,14 @@ export default class ExperimentDataVisuView extends Vue {
     });
   }
 
-  getProvenance(uri) {
-    if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
+  onAnnotationCreated() {
+    this.visuGraphic.updateDataAnnotations();
   }
-  showProvenanceDetailComponent(value) {
-    this.$opensilex.enableLoader();
-    if (value.provenance != undefined && value.provenance != null) {
-      this.getProvenance(value.provenance).then(provenance => {
-        value.provenance = provenance;
-        this.dataProvenanceModalView.setProvenance(value);
-        this.dataProvenanceModalView.show();
-      });
-    }
+
+  showAnnotationForm(target) {
+    this.annotationModalForm.showCreateForm([target]);
   }
+
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
     this.$opensilex.disableLoader();
@@ -83,14 +76,26 @@ export default class ExperimentDataVisuView extends Vue {
 
   onUpdate(form) {
     this.form = form;
-    this.showGraphicComponent = true;
-    this.$opensilex.enableLoader();
-    this.loadSeries();
+    const datatype = this.selectedVariable.datatype.split("#")[1];
+    if (datatype == "decimal" || datatype == "integer") {
+      this.showGraphicComponent = false;
+      this.$opensilex.enableLoader();
+      this.loadSeries();
+    } else {
+      this.showGraphicComponent = false;
+      this.$opensilex.showInfoToast(
+        this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+          " " +
+          datatype +
+          " " +
+          this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+      );
+    }
   }
 
   onSearch(form) {
     this.form = form;
-    this.showGraphicComponent = true;
+    this.showGraphicComponent = false;
     this.$opensilex.enableLoader();
 
     this.$opensilex
@@ -98,7 +103,19 @@ export default class ExperimentDataVisuView extends Vue {
       .getVariable(form.variable)
       .then((http: HttpResponse<OpenSilexResponse>) => {
         this.selectedVariable = http.response.result;
-        this.loadSeries();
+        const datatype = this.selectedVariable.datatype.split("#")[1];
+        if (datatype == "decimal" || datatype == "integer") {
+          this.loadSeries();
+        } else {
+          this.showGraphicComponent = true;
+          this.$opensilex.showInfoToast(
+            this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+              " " +
+              datatype +
+              " " +
+              this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+          );
+        }
       });
   }
 
@@ -127,7 +144,10 @@ export default class ExperimentDataVisuView extends Vue {
         series.push(serie);
       });
 
-      this.visuGraphic.reload(series, this.selectedVariable);
+      this.showGraphicComponent = true;
+      this.$nextTick(() => {
+        this.visuGraphic.reload(series, this.selectedVariable, false);
+      });
     });
   }
 
@@ -167,15 +187,30 @@ export default class ExperimentDataVisuView extends Vue {
         undefined,
         this.form.provenance ? [this.form.provenance] : undefined,
         undefined, //this.addMetadataFilter(),
-        undefined,
+        ["date=asc"],
         0,
-        1000000
+        50000
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
-        if (data.length > 0) {
+        let dataLength = data.length;
+        if (dataLength > 0) {
           const cleanData = this.dataTransforme(data, concernedItem);
-
+          if (dataLength > 50000) {
+            this.$opensilex.showInfoToast(
+              this.$i18n.t(
+                "ExperimentDataVisuView.limitSizeMessageA"
+              ) +
+                " " +
+                dataLength +
+                " " +
+                this.$i18n.t(
+                  "ExperimentDataVisuView.limitSizeMessageB"
+                ) +  concernedItem.name + this.$i18n.t(
+                  "ExperimentDataVisuView.limitSizeMessageC"
+                )
+            );
+          }
           return {
             name: concernedItem.name,
             data: cleanData,
@@ -183,8 +218,7 @@ export default class ExperimentDataVisuView extends Vue {
           };
         }
       })
-      .catch(error => {
-      });
+      .catch(error => {});
   }
 
   // addMetadataFilter() {
@@ -257,4 +291,23 @@ export default class ExperimentDataVisuView extends Vue {
   height: 800px;
 }
 </style>
+
+<i18n>
+en:
+    ExperimentDataVisuView:
+        datatypeMessageA: The variable datatype is
+        datatypeMessageB: At this time only decimal or integer are accepted 
+        limitSizeMessageA : "There are "
+        limitSizeMessageB : "data for "
+        limitSizeMessageC : " .Only the 50 000 first data are displayed."
+     
+fr:
+    ExperimentDataVisuView:
+        datatypeMessageA:  le type de donnée de la variable est
+        datatypeMessageB: Pour le moment, seuls les types decimal ou entier sont acceptés
+        limitSizeMessageA : "Il y a "
+        limitSizeMessageB : "données pour "
+        limitSizeMessageC : ".Seules les 50 000 premières valeurs sont affichées. "
+
+</i18n>
 

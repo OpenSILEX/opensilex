@@ -1,24 +1,19 @@
 <template>
   <div ref="page">
-      <opensilex-DeviceVisualizationForm
-         :device="device"
-          @search="onSearch"
-          @update="onUpdate"
-          ></opensilex-DeviceVisualizationForm>
+    <opensilex-DeviceVisualizationForm :device="device" @search="onSearch"></opensilex-DeviceVisualizationForm>
 
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
     </div>
 
     <opensilex-DataVisuGraphic
-      v-show="isGraphicLoaded"
+      v-if="isGraphicLoaded"
       ref="visuGraphic"
       :deviceType="true"
-      @detailProvenanceIsClicked="showProvenanceDetailComponent"
-      @graphicCreated="onGraphicCreated"
+      @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
 
-    <opensilex-DataProvenanceModalView ref="dataProvenanceModalView"></opensilex-DataProvenanceModalView>
+    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
   </div>
 </template>
 
@@ -28,7 +23,11 @@ import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 // @ts-ignore
-import {DevicesService, DataGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
+import {
+  DevicesService,
+  DataGetDTO,
+  ProvenanceGetDTO
+} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
@@ -53,7 +52,7 @@ export default class DeviceVisualizationTab extends Vue {
   selectedVariable;
   devicesService: DevicesService;
   @Ref("visuGraphic") readonly visuGraphic!: any;
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("page") readonly page!: any;
 
   created() {
@@ -66,38 +65,12 @@ export default class DeviceVisualizationTab extends Vue {
     );
   }
 
-  onGraphicCreated() {
-    let that = this;
-    setTimeout(function() {
-      that.page.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest"
-      });
-    }, 500);
+  onAnnotationCreated() {
+    this.visuGraphic.updateDataAnnotations();
   }
 
-  
-  onUpdate(form) {
-    this.isGraphicLoaded = false;
-
-    this.form = form;
-    let promise = this.buildDataSerie();
-    promise
-      .then(value => {
-        let serie;
-        if (value) {
-          serie = [value];
-        } else {
-          serie = [];
-        }
-        this.visuGraphic.reload(serie, this.selectedVariable);
-        this.isGraphicLoaded = true;
-      })
-      .catch(error => {
-        this.isGraphicLoaded = true;
-        this.$opensilex.errorHandler(error);
-      });
+  showAnnotationForm(target) {
+    this.annotationModalForm.showCreateForm([target]);
   }
 
   onSearch(form) {
@@ -110,22 +83,41 @@ export default class DeviceVisualizationTab extends Vue {
         .getVariable(form.variable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
           this.selectedVariable = http.response.result;
-          let promise = this.buildDataSerie();
-          promise
-            .then(value => {
-               let serie;
-              if (value) {
-                serie = [value];
-              } else {
-                serie = [];
-              }
-              this.visuGraphic.reload(serie, this.selectedVariable);
-              this.isGraphicLoaded = true;
-            })
-            .catch(error => {
-              this.isGraphicLoaded = true;
-              this.$opensilex.errorHandler(error);
-            });
+          const datatype = this.selectedVariable.datatype.split("#")[1];
+          if (datatype == "decimal" || datatype == "integer") {
+            this.prepareGraphic();
+          } else {
+            this.$opensilex.showInfoToast(
+              this.$i18n.t("DeviceDataTab.datatypeMessageA") +
+                " " +
+                datatype +
+                " " +
+                this.$i18n.t("DeviceDataTab.datatypeMessageB")
+            );
+          }
+        })
+        .catch(error => {
+          this.isGraphicLoaded = true;
+          this.$opensilex.errorHandler(error);
+        });
+    }
+  }
+
+  prepareGraphic() {
+    if (this.form) {
+      let promise = this.buildDataSerie();
+      promise
+        .then(value => {
+          this.isGraphicLoaded = true;
+          let serie;
+          if (value) {
+            serie = [value];
+          } else {
+            serie = [];
+          }
+          this.$nextTick(() => {
+            this.visuGraphic.reload(serie, this.selectedVariable, false);
+          });
         })
         .catch(error => {
           this.isGraphicLoaded = true;
@@ -151,16 +143,28 @@ export default class DeviceVisualizationTab extends Vue {
         undefined, //max confidence
         this.form.provenance ? [this.form.provenance] : undefined,
         undefined, //this.addMetadataFilter(),
-        undefined, //order by
+        ["date=asc"], //order by
         0,
-        1000000
+        50000
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
-        if (data.length > 0) {
+        let dataLength = data.length;
+
+        if (dataLength > 0) {
           const cleanData = this.dataTransforme(data);
+          if (dataLength > 50000) {
+            this.$opensilex.showInfoToast(
+              this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
+                " " +
+                dataLength +
+                " " +
+                this.$i18n.t("DeviceDataTab.limitSizeMessageB")
+            );
+          }
 
           return {
+            type: "line",
             name: this.selectedVariable.name,
             data: cleanData,
             visible: true
@@ -168,21 +172,6 @@ export default class DeviceVisualizationTab extends Vue {
         }
       });
   }
-
-// addMetadataFilter() {
-//     let metadata = undefined;
-//     if (
-//       this.form.metadataKey != undefined &&
-//       this.form.metadataKey != "" &&
-//       this.form.metadataValue != undefined &&
-//       this.form.metadataValue != ""
-//     ) {
-//       metadata =
-//         '{"' + this.form.metadataKey + '":"' + this.form.metadataValue + '"}';
-//       return metadata;
-//     }
-//   }
-
 
   // keep only date/value/uriprovenance properties
   dataTransforme(data) {
@@ -212,29 +201,6 @@ export default class DeviceVisualizationTab extends Vue {
     return cleanData;
   }
 
-  getProvenance(uri) {
-    if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
-    }
-  }
-  showProvenanceDetailComponent(value) {
-    if (value.provenance != undefined && value.provenance != null) {
-      this.getProvenance(value.provenance).then(provenance => {
-        value.provenance = provenance;
-        this.dataProvenanceModalView.setProvenance(value);
-        this.dataProvenanceModalView.show();
-      }).catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
-    }
-  }
-
-
   timestampToUTC(time) {
     // var day = moment.unix(time).utc().format();
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
@@ -252,11 +218,20 @@ en:
         visualization: Visualization
         data: Data
         add: Add data
+        datatypeMessageA: The variable datatype is
+        datatypeMessageB: "At this time only decimal or integer are accepted"
+        limitSizeMessageA : "There are "
+        limitSizeMessageB : " data .Only the 50 000 first data are displayed."
 
 fr:
     DeviceDataTab:
         visualization: Visualisation
         data: Données
         add: Ajouter des données
+        datatypeMessageA:  le type de donnée de la variable est
+        datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
+        limitSizeMessageA : "Il y a "
+        limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
+
 </i18n>
 

@@ -153,8 +153,8 @@ export default class ScientificObjectVisualizationForm extends Vue {
         this.scientificObject,
         undefined,
         undefined,
-        0,
-        0
+        1,
+        1
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
         const events = http.response.result as Array<EventGetDTO>;

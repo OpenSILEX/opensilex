@@ -140,6 +140,8 @@ export default class ScientificObjectVisualizationForm extends Vue {
   }
 
   getEvents() {
+
+    this.$opensilex.disableLoader();
     this.$opensilex
       .getService("opensilex.EventsService")
       .searchEvents(
@@ -153,12 +155,12 @@ export default class ScientificObjectVisualizationForm extends Vue {
         this.scientificObject,
         undefined,
         undefined,
-        1,
+        0,
         1
       )
       .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
-        const events = http.response.result as Array<EventGetDTO>;
-        this.eventsCount = "" + events.length;
+        this.eventsCount = "" + http.response.metadata.pagination.totalCount;
+        this.$opensilex.enableLoader();
       });
   }
 

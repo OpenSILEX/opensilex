@@ -1,6 +1,7 @@
 <template>
   <div ref="page">
     <opensilex-ScientificObjectVisualizationForm
+      ref="scientificObjectVisualizationForm"
       :scientificObject="scientificObject"
       @search="onSearch"
     ></opensilex-ScientificObjectVisualizationForm>
@@ -16,14 +17,16 @@
       @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
 
-    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+    <opensilex-AnnotationModalForm 
+       ref="annotationModalForm"
+       @onCreate="onAnnotationCreated"
+    ></opensilex-AnnotationModalForm>
 
     <opensilex-EventModalForm
       ref="eventsModalForm"
       :target="target"
       :eventCreatedTime="eventCreatedTime"
-      @onCreate="prepareGraphic"
-      @onUpdate="prepareGraphic"
+      @onCreate="onEventCreated"
     ></opensilex-EventModalForm>
   </div>
 </template>
@@ -76,6 +79,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
+  @Ref("scientificObjectVisualizationForm") readonly scientificObjectVisualizationForm!: any;
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
@@ -94,6 +98,11 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   onAnnotationCreated() {
     this.visuGraphic.updateDataAnnotations();
+  }
+
+  onEventCreated(){
+    this.prepareGraphic();
+    this.scientificObjectVisualizationForm.getEvents();
   }
 
   beforeDestroy() {
@@ -145,6 +154,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   prepareGraphic() {
     if (this.form) {
+      
+      this.$opensilex.disableLoader();
       var promises = [];
       let promise;
       promise = this.buildDataSerie();
@@ -164,6 +175,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             series.push(values[1]);
           }
           this.$nextTick(() => {
+            this.$opensilex.enableLoader();
             this.visuGraphic.reload(
               series,
               this.selectedVariable,

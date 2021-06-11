@@ -18,6 +18,11 @@
     <div class="container-fluid boxed-layout">
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
+          
+          <opensilex-StringFilter
+            placeholder="Search"
+          ></opensilex-StringFilter>
+
           <b-dropdown
             id="langDropdown"
             :title="user.getEmail()"
@@ -39,7 +44,7 @@
               >{{ $t("component.header.language." + item) }}</b-dropdown-item
             >
           </b-dropdown>
-
+        
           <b-dropdown
             v-if="user.isLoggedIn()"
             id="userDropdown"

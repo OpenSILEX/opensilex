@@ -41,13 +41,11 @@
         
       </template>
     </opensilex-SearchFilterField>
-    <opensilex-Elasticsearch  
-      ref="tableRef"
-      :searchMethod="loadData"
-      :fields="fields"
-      :isSelectable="true">
 
-    </opensilex-Elasticsearch>
+    <opensilex-ElasticSearch
+      ref="tableRef"
+     >
+    </opensilex-ElasticSearch>
 
     <!--<opensilex-TableAsyncView
       ref="tableRef"

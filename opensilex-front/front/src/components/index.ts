@@ -678,6 +678,11 @@ components["opensilex-PositionsView"] = PositionsView;
 import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 
+//Elasticsearch
+import Elasticsearch from './Elasticsearch.vue';
+components["opensilex-ElasticSearch"] = Elasticsearch;
+
+
  
  
 export default components;

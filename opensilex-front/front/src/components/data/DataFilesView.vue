@@ -34,7 +34,7 @@
         </opensilex-FilterField> 
 
         <!-- Scientific objects -->
-        <opensilex-FilterField>
+        <opensilex-FilterField halfWidth="true">
           <opensilex-SelectForm
             label="DataView.filter.scientificObjects"
             placeholder="DataView.filter.scientificObjects-placeholder"
@@ -43,11 +43,10 @@
             modalComponent="opensilex-ScientificObjectModalList"
             :isModalSearch="true"
             :clearable="false"
-            :maximumSelectedItems="1"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
-        <b-row class="ml-2">
+
         <opensilex-FilterField>
           <!-- Start Date -->
           <opensilex-DateTimeForm
@@ -68,7 +67,7 @@
         </opensilex-FilterField>
 
         <!-- Provenance -->
-        <opensilex-FilterField>
+        <opensilex-FilterField halfWidth="true">
           <opensilex-ProvenanceSelector
             ref="provSelector"
             :provenances.sync="filter.provenance"
@@ -96,8 +95,6 @@
             ></opensilex-ProvenanceDetails>
           </b-collapse>
         </opensilex-FilterField>
-
-        </b-row>
 
       </template>
     </opensilex-SearchFilterField>

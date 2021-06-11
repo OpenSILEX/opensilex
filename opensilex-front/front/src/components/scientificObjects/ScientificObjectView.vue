@@ -48,6 +48,9 @@ export default class ScientificObjectView extends Vue {
   $opensilex: any;
   $store: any;
 
+  @Ref("soForm") readonly soForm!: any;
+  @Ref("importForm") readonly importForm!: any;
+
   get user() {
     return this.$store.state.user;
   }

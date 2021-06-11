@@ -1,7 +1,20 @@
 <template>
   <b-form>
 
-    <opensilex-ProvenanceSelector      
+    <opensilex-FormField
+      :required="true"
+      label="DataForm.useDefaultProvenance"
+      helpMessage="DataForm.useDefaultProvenance-help"
+    >
+      <template v-slot:field="field">
+          <b-form-checkbox v-model="selectDefaultProvenance" switch>
+            The data will be linked to the standard provenance. Uncheck to select a specific provenance.
+          </b-form-checkbox>
+      </template>
+    </opensilex-FormField>
+
+    <opensilex-ProvenanceSelector     
+      v-if="!selectDefaultProvenance" 
       ref="provenanceSelector"
       :provenances.sync="provenance"
       :filterLabel="filterProvenanceLabel"
@@ -15,6 +28,18 @@
       :showURI="false"
       :required="true"
     ></opensilex-ProvenanceSelector>
+
+    <!-- <opensilex-SelectForm
+      label="DataView.filter.provenance"
+      placeholder="DataView.filter.provenance-placeholder"
+      :selected.sync="provenance"
+      :conversionMethod="provenanceGetDTOToSelectNode"
+      modalComponent="opensilex-ProvenanceModalList"
+      :isModalSearch="true"
+      :clearable="false"
+      
+    ></opensilex-SelectForm> -->
+
     <b-collapse id="collapse-4" v-model="visibleDetails" class="mt-2">
       <opensilex-ProvenanceDetails
         :provenance="this.form.provenance"
@@ -180,6 +205,7 @@ export default class DataForm extends Vue {
   experiments = [];
   filterProvenanceLabel = null;
   selected = [];
+  selectDefaultProvenance = true;
 
   @Prop({
     default: () => {
@@ -391,6 +417,9 @@ export default class DataForm extends Vue {
   }
 
   checkUploadedData() {
+    if (this.selectDefaultProvenance) {
+      this.provenance="dev:id/provenance/standard_provenance"
+    }
     if (this.form.dataFile !== null && this.provenance !== null) {
       this.insertionError = false;
       this.insertionDataError = null;
@@ -433,12 +462,24 @@ export default class DataForm extends Vue {
     this.validationReport.checkValidation(errors, false);
     this.isValid = this.validationReport.isValid;
   }
+
+  provenanceGetDTOToSelectNode(dto) {
+    if (dto) {
+      return {
+        id: dto.uri,
+        label: dto.name
+      };
+    }
+    return null;
+  }
 }
 </script>
 <style scoped lang="scss">
 </style>
 <i18n>
 en:
+  DataForm:
+    use-default-provenance: Use standard provenance
   DatasetForm:
     create: Add Data
     update: Update
@@ -474,6 +515,8 @@ en:
     dataFile : Import data CSV
     
 fr:
+  DataForm:
+    use-default-provenance: Use standard provenance
   DatasetForm:
     create: Ajouter des données
     update: Modifier

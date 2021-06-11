@@ -494,7 +494,7 @@ public class DataFilesAPI {
             }
         
             //check provenance uri
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(dto.getProvenance().getUri())) {
                 provenanceURIs.add(dto.getProvenance().getUri());
                 if (!provDAO.provenanceExists(dto.getProvenance().getUri())) {

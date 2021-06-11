@@ -211,7 +211,7 @@ public class DataDAO {
             Float confidenceMax,
             Document metadata) throws Exception {
         
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         List<URI> agents = new ArrayList<>();
         agents.add(deviceURI);
         Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);        

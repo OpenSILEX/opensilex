@@ -641,7 +641,7 @@ public class ExperimentAPI {
         // test prov
         List<URI> provenancesArrayList = new ArrayList<>();
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         if (provenanceUri != null) {
             try {
                 provDAO.get(provenanceUri);
@@ -790,7 +790,7 @@ public class ExperimentAPI {
         Instant scientificObjectTime = Instant.now();
         LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
@@ -958,7 +958,7 @@ public class ExperimentAPI {
         Instant scientificObjectTime = Instant.now();
         LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
@@ -1090,7 +1090,7 @@ public class ExperimentAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1170,7 +1170,7 @@ public class ExperimentAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1478,7 +1478,7 @@ public class ExperimentAPI {
 
         ListWithPagination<ProvenanceGetDTO> provenances = new ListWithPagination(new ArrayList<ProvenanceGetDTO>());
         if (!provenancesURIs.isEmpty()) {
-            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+            ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
             ListWithPagination<ProvenanceModel> resultList = dao.search(provenancesURIs, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
 
             provenances = resultList.convert(

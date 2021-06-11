@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
@@ -54,6 +55,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -100,7 +102,7 @@ public class ProvenanceAPI {
     ) throws Exception {
         
         try {
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);                    
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);                    
             ProvenanceModel model = provDTO.newModel();
             ProvenanceModel provenance = provDAO.create(model);
 
@@ -135,7 +137,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         try {
             ProvenanceModel provenance = dao.get(uri);
             return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
@@ -176,7 +178,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         ListWithPagination<ProvenanceModel> resultList = dao.search(null, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
         
         // Convert paginated list to DTO
@@ -202,7 +204,7 @@ public class ProvenanceAPI {
     })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
 
         //check if the provenance can be deleted (not linked to data)
         List<URI> provenances = new ArrayList();
@@ -258,7 +260,7 @@ public class ProvenanceAPI {
             @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
     ) throws Exception {
         try {
-            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+            ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel newProvenance = dto.newModel();
             newProvenance = dao.update(newProvenance);
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
@@ -288,7 +290,7 @@ public class ProvenanceAPI {
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> models = dao.getListByURIs(uris);
 
         if (!models.isEmpty()) {
@@ -306,5 +308,37 @@ public class ProvenanceAPI {
                     "Unknown provenances URIs"
             ).getResponse();
         }
+    }
+    
+    /**
+     * @param name
+     * @param agentTypes
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws java.lang.Exception
+     */
+    @GET
+    @Path("agents")
+    @ApiOperation("Get provenance agents")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = NamedResourceDTO.class, responseContainer = "List")
+    })
+    public Response searchProvenanceAgents(
+            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @ApiParam(value = "Search by agent type") @QueryParam("agent_type") List<URI> agentTypes,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+        List<NamedResourceDTO> resultList = dao.searchAgents(name, agentTypes, orderByList, page, pageSize);
+        
+        return new PaginatedListResponse<>(resultList).getResponse();
     }
 }

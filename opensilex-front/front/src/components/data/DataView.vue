@@ -38,24 +38,26 @@
               label="DataView.filter.experiments"
               :experiments.sync="filter.experiments"
               :multiple="true"
+              @select="updateSOFilter"
+              @clear="updateSOFilter"
             ></opensilex-ExperimentSelector>
           </opensilex-FilterField> 
         
           <!-- Scientific objects -->
-          <opensilex-FilterField>
+          <opensilex-FilterField halfWidth="true">
             <opensilex-SelectForm
+              ref="soSelector"
               label="DataView.filter.scientificObjects"
               placeholder="DataView.filter.scientificObjects-placeholder"
               :selected.sync="filter.scientificObjects"
               :conversionMethod="soGetDTOToSelectNode"
               modalComponent="opensilex-ScientificObjectModalList"
+              :searchModalFilter="soFilter"
               :isModalSearch="true"
               :clearable="false"
-              :maximumSelectedItems="1"
             ></opensilex-SelectForm>
           </opensilex-FilterField>
-        
-        <b-row class="ml-2">
+
           <opensilex-FilterField>
             <!-- Start Date -->
             <opensilex-DateTimeForm
@@ -76,7 +78,7 @@
           </opensilex-FilterField>
 
           <!-- Provenance -->
-          <opensilex-FilterField>
+          <opensilex-FilterField halfWidth="true">
             <opensilex-ProvenanceSelector
               ref="provSelector"
               :provenances.sync="filter.provenance"
@@ -103,7 +105,7 @@
               ></opensilex-ProvenanceDetails>
             </b-collapse>
           </opensilex-FilterField>
-        </b-row>
+
       </template>
     </opensilex-SearchFilterField>
 
@@ -227,6 +229,16 @@ export default class DataView extends Vue {
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
 
+  soFilter = {
+        name: "",
+        experiment: undefined,
+        germplasm: undefined,
+        factorLevels: [],
+        types: [],
+        existenceDate: undefined,
+        creationDate: undefined,
+      };
+
   @Ref("templateForm") readonly templateForm!: any;
 
   get credentials() {
@@ -244,6 +256,7 @@ export default class DataView extends Vue {
   @Ref("resultModal") readonly resultModal!: any;
 
   @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
+  @Ref("soSelector") readonly soSelector!: any;
 
   filter = {
     start_date: null,
@@ -263,6 +276,30 @@ export default class DataView extends Vue {
       experiments: [],
       scientificObjects: []
     };
+  }
+
+  updateSOFilter() {
+    this.soFilter.experiment = this.filter.experiments[0];
+    this.soSelector.refreshModalSearch();
+  }
+
+  updateFiltersFromURL() {
+    let query: any = this.$route.query;
+    for (let [key, value] of Object.entries(this.filter)) {
+      if (query[key]) {
+        if (Array.isArray(this.filter[key])){
+          this.filter[key] = decodeURIComponent(query[key]).split(",");
+        } else {
+          this.filter[key] = decodeURIComponent(query[key]);
+        }        
+      }
+    }
+  }  
+
+  updateURLFilters() {
+    for (let [key, value] of Object.entries(this.filter)) {
+      this.$opensilex.updateURLParameter(key, value, "");
+    }    
   }
 
 

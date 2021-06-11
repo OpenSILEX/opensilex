@@ -228,10 +228,28 @@ export default class ScientificObjectList extends Vue {
   })
   noActions;
 
+  @Prop({
+    default: 20
+  })
+  pageSize: number;
+
+
+  @Prop({
+    default: () => {
+      return {
+        name: "",
+        experiment: undefined,
+        germplasm: undefined,
+        factorLevels: [],
+        types: [],
+        existenceDate: undefined,
+        creationDate: undefined,
+      };
+    },
+  })
+  filter;
+
   @Ref("tableRef") readonly tableRef!: any;
-  @Ref("soForm") readonly soForm!: any;
-  @Ref("importForm") readonly importForm!: any;
-  @Ref("templateGenerator") readonly templateGenerator!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
@@ -295,16 +313,6 @@ export default class ScientificObjectList extends Vue {
     Array<ExperimentGetDTO>
   >();
 
-  filter = {
-    name: "",
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  };
-
   get user() {
     return this.$store.state.user;
   }
@@ -357,6 +365,10 @@ export default class ScientificObjectList extends Vue {
   }
 
   searchScientificObject(options) {
+    if (this.pageSize != null) {
+      options.pageSize = this.pageSize;
+    }
+
     let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );

@@ -113,7 +113,7 @@
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
-          <b-button variant="primary" @click="showModal">+</b-button>
+          <b-button variant="primary" @click="showModal">>></b-button>
         </b-input-group-append>
         <b-input-group-append v-else-if="!actionHandler && viewHandler">
            <opensilex-DetailButton
@@ -141,6 +141,7 @@
         :is="modalComponent"
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
+        :searchModalFilter="searchModalFilter"
         @onValidate="updateValues"
       ></component>
     </template>
@@ -175,6 +176,9 @@ export default class SelectForm extends Vue {
 
   @Prop()
   options;
+
+  @Prop()
+  searchModalFilter;
 
   @Prop()
   searchMethod;
@@ -290,6 +294,7 @@ export default class SelectForm extends Vue {
   selectedValues(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.itemLoadingMethod) {
+        console.log(this.selection, "1")
         if (!this.selection || this.selection.length == 0) {
           if (this.multiple) {
             resolve([]);
@@ -299,6 +304,7 @@ export default class SelectForm extends Vue {
         } else if (this.currentValue) {
           resolve(this.currentValue);
         } else {
+          console.log(this.selection, "2")
           this.$opensilex.disableLoader();
           let uris = this.selection;
           if (!this.multiple) {
@@ -504,6 +510,7 @@ export default class SelectForm extends Vue {
           }
           
           let nodeList = [];
+          
           list.forEach((item) => {
             nodeList.push(self.conversionMethod(item));
           });
@@ -573,6 +580,10 @@ export default class SelectForm extends Vue {
   }
   showDetails() {
     this.detailVisible != this.detailVisible;
+  }
+
+  refreshModalSearch() {
+    this.searchModal.refresh();
   }
 }
 </script>

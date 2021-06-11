@@ -539,6 +539,10 @@ import ProvenanceView from './data/ProvenanceView.vue';
 components["opensilex-ProvenanceView"] = ProvenanceView;
 import ProvenanceDetailsPage from './data/ProvenanceDetailsPage.vue';
 components["opensilex-ProvenanceDetailsPage"] = ProvenanceDetailsPage;
+import ProvenanceList from './data/ProvenanceList.vue';
+components["opensilex-ProvenanceList"] = ProvenanceList;
+import ProvenanceModalList from './data/ProvenanceModalList.vue';
+components["opensilex-ProvenanceModalList"] = ProvenanceModalList;
 
 // PHIS
 //IMAGES

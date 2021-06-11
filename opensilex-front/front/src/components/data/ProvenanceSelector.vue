@@ -22,6 +22,8 @@
     :viewHandler="viewHandler"
     :required="required"
     :viewHandlerDetailsVisible="viewHandlerDetailsVisible"
+    :defaultSelectedValue="false"
+    :disabled="disabled"
   ></opensilex-SelectForm>
 </template>
 
@@ -87,12 +89,17 @@ export default class ProvenanceSelector extends Vue {
   @Prop()
   device;
 
+  @Prop({
+    default: false
+  })
+  disabled;
+
   refresh() {
     this.selectForm.refresh();
   }
 
   loadProvenances(provenancesURI) {
-
+    console.log(provenancesURI)
     if (provenancesURI == undefined || provenancesURI === ".*") {
       if (this.experiment == null && this.scientificObject == null && this.device== null) {
         return this.$opensilex

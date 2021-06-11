@@ -19,31 +19,26 @@
     </template>
 
     <div class="card">
-      <opensilex-ScientificObjectList 
-        ref="soList"
+      <opensilex-ProvenanceList 
+        ref="provenancesSelection"
         :isSelectable="true"
-        :noActions="true"
-        :filter="searchModalFilter"
-        :pageSize="10">
-      </opensilex-ScientificObjectList>
+        :noActions="true">
+      </opensilex-ProvenanceList>
     </div>
   </b-modal>
 </template>
 
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
-import ScientificObjectList from "./ScientificObjectList.vue";
+import ProvenanceList from "./ProvenanceList.vue";
 
 @Component
-export default class ScientificObjectModalList extends ScientificObjectList {
-
-  @Prop()
-  searchModalFilter;
+export default class ProvenanceModalList extends ProvenanceList {
     
-  @Ref("soList") readonly soList!: any;
+  @Ref("provenancesSelection") readonly provenancesSelection!: any;
 
   unSelect(row) {
-    this.soList.onItemUnselected(row);
+    this.provenancesSelection.onItemUnselected(row);
   }
   show() {
     let modalRef: any = this.$refs.modalRef;
@@ -55,13 +50,9 @@ export default class ScientificObjectModalList extends ScientificObjectList {
     modalRef.hide();
 
     if (validate) {
-      let select = this.soList.getSelected();
-      this.$emit("onValidate", this.soList.getSelected());
+      let select = this.provenancesSelection.getSelected();
+      this.$emit("onValidate", this.provenancesSelection.getSelected());
     }
-  }
-
-  refresh() {
-    this.soList.refresh();
   }
 }
 </script>

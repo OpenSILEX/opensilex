@@ -11,6 +11,7 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.result.DeleteResult;
+import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.Api;
@@ -21,12 +22,16 @@ import io.swagger.annotations.ApiResponses;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import static java.lang.Float.NaN;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,17 +80,21 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
+import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import static org.opensilex.core.experiment.api.ExperimentAPI.CSV_NB_ERRORS_MAX;
 import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -99,6 +108,7 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -525,7 +535,7 @@ public class DataAPI {
             }
         
             //check provenance urii
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
@@ -592,7 +602,7 @@ public class DataAPI {
 
         // test prov
         ProvenanceModel provenanceModel = null;
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql); 
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql); 
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -675,7 +685,7 @@ public class DataAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -795,8 +805,8 @@ public class DataAPI {
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            URI objectUri = null;
+        URI objectUri = null;
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {            
             
             if (colIndex == 0) {
                 String objectUriString = values[colIndex];                
@@ -933,4 +943,458 @@ public class DataAPI {
 
         return value;
     }
+    
+        /**
+     *
+     * @param xpUri experimentUri
+     * @param startDate startDate
+     * @param endDate endDate
+     * @param timezone timezone
+     * @param objects objectUri
+     * @param variables variableUri
+     * @param confidenceMin confidenceMin
+     * @param confidenceMax confidenceMax
+     * @param provenanceUri provenanceUri
+     * @param metadata metadata json filter
+     * @param csvFormat long or wide format
+     * @param orderByList orderByList
+     * @param page page number
+     * @param pageSize page size
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path("export")
+    @ApiOperation("export data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportData(
+            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") @ValidURI List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") @ValidURI List<URI> variables,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            try {
+                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        if (endDate != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+        
+        Instant start = Instant.now();
+        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        Instant data = Instant.now();
+        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+
+        Response prepareCSVExport = null;
+
+        if (csvFormat.equals("long")) {
+            prepareCSVExport = prepareCSVLongExportResponse(resultList);
+        } else {
+            prepareCSVExport = prepareCSVWideExportResponse(resultList);
+        }
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+
+        return prepareCSVExport;
+    }
+        
+    private Response prepareCSVWideExportResponse(List<DataModel> resultList) throws Exception {
+        Instant data = Instant.now();
+
+        List<URI> variables = new ArrayList<>();
+
+        Map<URI, ScientificObjectModel> objects = new HashMap<>();
+        Map<URI, ProvenanceModel> provenances = new HashMap<>();
+        Map<Instant, Map<ExportDataIndex, List<DataGetDTO>>> dataByIndexAndInstant = new HashMap<>();
+
+        for (DataModel dataModel : resultList) {
+            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
+                objects.put(dataModel.getScientificObject(), null);
+            }
+            
+            if (!variables.contains(dataModel.getVariable())) {
+                variables.add(dataModel.getVariable());
+            }
+
+            if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
+                provenances.put(dataModel.getProvenance().getUri(), null);
+            }
+
+            if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
+                dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
+            }
+            // add export data
+            // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
+            ExportDataIndex exportDataIndex = new ExportDataIndex(dataModel.getProvenance().getUri(), dataModel.getScientificObject());
+
+            if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+            }
+            dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataGetDTO.fromModel(dataModel));
+        }
+
+        Instant dataTransform = Instant.now();
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+
+        List<String> defaultColumns = new ArrayList<>();
+
+        // first static columns
+        defaultColumns.add("Scientific Object");
+        defaultColumns.add("Date");
+
+        List<String> methods = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            methods.add("");
+        }
+        methods.add("Method");
+        List<String> units = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            units.add("");
+        }
+        units.add("Unit");
+        List<String> variablesList = new ArrayList<>();
+        for (int i = 0; i < (defaultColumns.size() - 1); i++) {
+            variablesList.add("");
+        }
+        variablesList.add("Variable");
+
+        VariableDAO variableDao = new VariableDAO(sparql);
+        List<VariableModel> variablesModelList = variableDao.getList(variables);
+
+        Map<URI, Integer> variableUriIndex = new HashMap<>();
+        for (VariableModel variableModel : variablesModelList) {
+
+            MethodModel method = variableModel.getMethod();
+
+            if (method != null) {
+                String methodID = method.getName() + " (" + method.getUri().toString() + ")";
+                methods.add(methodID);
+            } else {
+                methods.add("");
+            }
+            UnitModel unit = variableModel.getUnit();
+
+            String unitID = unit.getName() + " (" + unit.getUri().toString() + ")";
+            units.add(unitID);
+            variablesList.add(variableModel.getName() + " (" + variableModel.getUri() + ")");
+            defaultColumns.add(variableModel.getName());
+            variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 1));
+        }
+        // static supplementary columns
+        defaultColumns.add("Data Description");
+        defaultColumns.add("Scientific Object URI");
+        defaultColumns.add("Data Description URI");
+
+        Instant variableTime = Instant.now();
+        LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
+        List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(sparql.getDefaultGraphURI(ScientificObjectModel.class), new ArrayList<>(objects.keySet()), user);
+        for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
+            objects.put(scientificObjectModel.getUri(), scientificObjectModel);
+        }
+        Instant scientificObjectTime = Instant.now();
+        LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
+
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        for (ProvenanceModel prov : listByURIs) {
+            provenances.put(prov.getUri(), prov);
+        }
+        Instant provenancesTime = Instant.now();
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(scientificObjectTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+
+        // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
+        try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
+            // Method
+            // Unit
+            // Variable 
+            writer.writeNext(methods.toArray(new String[methods.size()]));
+            writer.writeNext(units.toArray(new String[units.size()]));
+            writer.writeNext(variablesList.toArray(new String[variablesList.size()]));
+            // empty line
+            writer.writeNext(new String[defaultColumns.size()]);
+            // headers
+            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+
+            // Search in map indexed by date for prov, object and data
+            // <Instant => Map<ExportDataIndex(Prov,Object) => List<Data>>
+            for (Map.Entry<Instant, Map<ExportDataIndex, List<DataGetDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
+                Map<ExportDataIndex, List<DataGetDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
+                // Search in map indexed by  prov and data
+                for (Map.Entry<ExportDataIndex, List<DataGetDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
+                    List<DataGetDTO> val = provUriObjectEntry.getValue();
+
+                    // Each row is linked to a provenance 
+                    ArrayList<String> csvRow = new ArrayList<>();
+                    boolean first = true;
+                    for (DataGetDTO dataGetDTO : val) {
+                        if (first == true) {
+                            ScientificObjectModel os = null;
+                            if(dataGetDTO.getScientificObject() != null){
+                               os = objects.get(dataGetDTO.getScientificObject());
+                            }
+
+                            // object
+                            if(os != null){
+                                csvRow.add(os.getName());
+                            }else{
+                                csvRow.add("");
+                            }
+
+                            // date
+                            csvRow.add(dataGetDTO.getDate());
+                            // write blank columns
+                            for (int i = 0; i < variables.size(); i++) {
+                                csvRow.add("");
+                            }
+
+                            // provenance
+                            if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
+                                csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
+                            } else {
+                                csvRow.add("");
+                            }
+
+                            // object URI
+                             if(os != null){
+                                csvRow.add(os.getUri().toString());
+                            }else{
+                                csvRow.add("");
+                            }
+
+                            // provenance Uri
+                            csvRow.add(dataGetDTO.getProvenance().getUri().toString());
+
+                            first = false;
+
+                        }
+                        // value
+                        if(dataGetDTO.getValue() == null){
+                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), null);
+                        }else{
+                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                        }
+                    }
+
+                    String[] row = csvRow.toArray(new String[csvRow.size()]);
+                    writer.writeNext(row);
+                }
+            }
+            LocalDate date = LocalDate.now();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String fileName = "export_data_wide_format" + dtf.format(date);
+
+            Instant writeCSVTime = Instant.now();
+            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+
+            return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .build();
+
+        } catch (Exception e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, e.getMessage(), e).getResponse();
+
+        }
+    }
+
+    private Response prepareCSVLongExportResponse(List<DataModel> resultList) throws Exception {
+        Instant data = Instant.now();
+
+        HashMap<URI, VariableModel> variables = new HashMap<>();
+        HashMap<URI, ScientificObjectModel> objects = new HashMap<>();
+        HashMap<URI, ProvenanceModel> provenances = new HashMap<>();
+
+        HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
+        for (DataModel dataModel : resultList) {
+            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
+                objects.put(dataModel.getScientificObject(), null);
+            }
+            if (!variables.containsKey(dataModel.getVariable())) {
+                variables.put(dataModel.getVariable(), null);
+            }
+            if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
+                provenances.put(dataModel.getProvenance().getUri(), null);
+            }
+            if (!dataByInstant.containsKey(dataModel.getDate())) {
+                dataByInstant.put(dataModel.getDate(), new ArrayList<>());
+            }
+            dataByInstant.get(dataModel.getDate()).add(DataGetDTO.fromModel(dataModel));
+        }
+
+        Instant dataTransform = Instant.now();
+        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+
+        List<String> defaultColumns = new ArrayList<>();
+
+        defaultColumns.add("Scientific Object");
+        defaultColumns.add("Date");
+        defaultColumns.add("Variable");
+        defaultColumns.add("Method");
+        defaultColumns.add("Unit");
+        defaultColumns.add("Value");
+        defaultColumns.add("Data Description");
+        defaultColumns.add("");
+        defaultColumns.add("Scientific Object URI");
+        defaultColumns.add("Variable URI");
+        defaultColumns.add("Data Description URI");
+
+        Instant variableTime = Instant.now();
+        VariableDAO variableDao = new VariableDAO(sparql);
+        List<VariableModel> variablesModelList = variableDao.getList(new ArrayList<>(variables.keySet()));
+        for (VariableModel variableModel : variablesModelList) {
+            variables.put(variableModel.getUri(), variableModel);
+        }
+        LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
+        List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(sparql.getDefaultGraphURI(ScientificObjectModel.class), new ArrayList<>(objects.keySet()), user);
+        for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
+            objects.put(scientificObjectModel.getUri(), scientificObjectModel);
+        }
+        Instant scientificObjectTime = Instant.now();
+        LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
+
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        for (ProvenanceModel prov : listByURIs) {
+            provenances.put(prov.getUri(), prov);
+        }
+        Instant provenancesTime = Instant.now();
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(scientificObjectTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+
+        // See defaultColumns order
+        //        Object
+        //        Date
+        //        Variable
+        //        Method
+        //        Unit
+        //        Value
+        //        Data Description
+        //        
+        //        Object URI
+        //        Variable URI
+        //        Data Description URI
+        try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
+            writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
+            for (Map.Entry<Instant, List<DataGetDTO>> entry : dataByInstant.entrySet()) {
+                List<DataGetDTO> val = entry.getValue();
+                for (DataGetDTO dataGetDTO : val) {
+                    ArrayList<String> csvRow = new ArrayList<>();
+                    ScientificObjectModel os = null;
+                    if(dataGetDTO.getScientificObject() != null){
+                       os = objects.get(dataGetDTO.getScientificObject());
+                    }
+                    // object
+                    if(os != null){
+                        csvRow.add(os.getName());
+                    }else{
+                        csvRow.add("");
+                    }
+                    
+                    // date
+                    csvRow.add(dataGetDTO.getDate());
+                    // variable
+                    csvRow.add(variables.get(dataGetDTO.getVariable()).getName());
+                    // method
+                    if (variables.get(dataGetDTO.getVariable()).getMethod() != null) {
+                        csvRow.add(variables.get(dataGetDTO.getVariable()).getMethod().getName());
+                    } else {
+                        csvRow.add("");
+                    }
+                    // unit
+                    csvRow.add(variables.get(dataGetDTO.getVariable()).getUnit().getName());
+                    // value
+                    if(dataGetDTO.getValue() == null){
+                        csvRow.add(null);
+                    }else{
+                        csvRow.add(dataGetDTO.getValue().toString());
+                    }
+                   
+                    // provenance
+                    if (provenances.containsKey(dataGetDTO.getProvenance().getUri())) {
+                        csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
+                    } else {
+                        csvRow.add("");
+                    }
+                    csvRow.add("");
+                    // object uri
+                    if(os != null){
+                        csvRow.add(os.getUri().toString());
+                    }else{
+                        csvRow.add("");
+                    }
+                   
+                    // variable uri
+                    csvRow.add(dataGetDTO.getVariable().toString());
+                    // provenance Uri
+                    csvRow.add(dataGetDTO.getProvenance().getUri().toString());
+
+                    String[] row = csvRow.toArray(new String[csvRow.size()]);
+                    writer.writeNext(row);
+                }
+            }
+            LocalDate date = LocalDate.now();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String fileName = "export_data_long_format" + dtf.format(date);
+
+            Instant writeCSVTime = Instant.now();
+            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+
+            return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .build();
+
+        } catch (Exception e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, e.getMessage(), e).getResponse();
+
+        }
+    }
+    
 }

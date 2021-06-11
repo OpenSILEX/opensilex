@@ -5,7 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.position.api.ConcernedItemPositionCreationDTO;
+import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.position.api.PositionCreationDTO;
 
 import javax.validation.ConstraintValidator;
@@ -27,7 +27,7 @@ public class MoveLocationOrPositionNotNullValidator implements ConstraintValidat
     @Override
     public boolean isValid(MoveCreationDTO moveCreationDTO, ConstraintValidatorContext context) {
 
-        List<ConcernedItemPositionCreationDTO> positions = moveCreationDTO.getConcernedItemPositions();
+        List<TargetPositionCreationDTO> positions = moveCreationDTO.getTargetsPositions();
 
         if (moveCreationDTO.getTo() == null && moveCreationDTO.getFrom() == null && CollectionUtils.isEmpty(positions)) {
             return updateContextViolationTemplateWithMessage(context, "no location or position : to, from and targets_positions are null or empty");
@@ -39,12 +39,12 @@ public class MoveLocationOrPositionNotNullValidator implements ConstraintValidat
 
         for (int i = 0; i < positions.size(); i++) {
 
-            ConcernedItemPositionCreationDTO itemPosition = positions.get(i);
+            TargetPositionCreationDTO itemPosition = positions.get(i);
             if (itemPosition == null) {
                 return updateContextViolationTemplateWithMessage(context, "(target,position) at index " + i + " is null");
             } else {
 
-                URI item = itemPosition.getConcernedItem();
+                URI item = itemPosition.getTarget();
                 if (item == null) {
                     return updateContextViolationTemplateWithMessage(context, "null target at index" + i);
                 }

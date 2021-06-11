@@ -34,15 +34,21 @@ public class Oeev {
     // Event types
 
     public static final Resource Event =  Ontology.resource(NS, "Event");
-
     public static final Resource Move =  Ontology.resource(NS, "Move");
 
     public static final Property concerns = Ontology.property(NS, "concerns");
-
     public static final Property isInstant = Ontology.property(NS, "isInstant");
-
     public static final Property to = Ontology.property(NS, "to");
-
     public static final Property from = Ontology.property(NS, "from");
+
+
+    // associations properties
+
+    public static final Resource AssociationWith =  Ontology.resource(NS, "AssociationWith");
+    public static final Resource AssociationWithScientificObject =  Ontology.resource(NS, "AssociationWithScientificObject");
+    public static final Resource AssociationWithSensingDevice =  Ontology.resource(NS, "AssociationWithSensingDevice");
+
+    public static final Property associatedWithScientificObject = Ontology.property(NS, "associatedWithScientificObject");
+    public static final Property associatedWithSensingDevice = Ontology.property(NS, "associatedWithSensingDevice");
 
 }

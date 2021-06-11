@@ -7,6 +7,8 @@ package org.opensilex.sparql.mapping;
 
 import java.io.StringWriter;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Triple;
@@ -32,11 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
@@ -294,22 +292,8 @@ class SPARQLClassQueryBuilder {
             }
         }, blankNode);
 
-        for (SPARQLModelRelation relation : instance.getRelations()) {
-
-            Class<?> valueType = relation.getType();
-            String vString = relation.getValue();
-            if (vString != null && !vString.isEmpty()) {
-                Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
-
-                Triple triple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
-
-                Node relationGraph = graph;
-                if (relation.getGraph() != null) {
-                    relationGraph = SPARQLDeserializers.nodeURI(relation.getGraph());
-                }
-                create.addInsert(relationGraph, triple);
-            }
-        }
+        // append INSERT clause from instance relations
+        addRelationsQuads(graph,uriNode,instance,create);
 
         return uriNode;
     }
@@ -329,6 +313,7 @@ class SPARQLClassQueryBuilder {
                 delete.addDelete(quad);
             }
         }, false);
+
     }
 
     /**
@@ -629,6 +614,33 @@ class SPARQLClassQueryBuilder {
         }
 
         return uriNode;
+    }
+
+    private <T extends SPARQLResourceModel> void addRelationsQuads(Node graph, Node uriNode, T instance, UpdateBuilder builder) throws Exception {
+
+        if(instance.getRelations() == null){
+            return;
+        }
+
+        for (SPARQLModelRelation relation : instance.getRelations()) {
+            Class<?> valueType = relation.getType();
+            String vString = relation.getValue();
+
+            if (! StringUtils.isEmpty(vString)) {
+                Node valueNode = SPARQLDeserializers.getForClass(valueType).getNodeFromString(relation.getValue());
+                Triple relationTriple = new Triple(uriNode, SPARQLDeserializers.nodeURI(relation.getProperty()), valueNode);
+
+                Node relationGraph = relation.getGraph() != null ? SPARQLDeserializers.nodeURI(relation.getGraph()) : graph;
+
+                if(relationGraph != null){
+                    builder.addInsert(new Quad(relationGraph,relationTriple));
+                }else {
+                    builder.addInsert(relationTriple);
+                }
+
+            }
+        }
+
     }
 
     public String generateSHACL() {

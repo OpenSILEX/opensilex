@@ -96,10 +96,10 @@
       v-if="isEventTab"
       ref="eventList"
       :target="selected.uri"
-      :columnsToDisplay="new Set(['type', 'start', 'end', 'description'])"
-      :modificationCredentialId="
-        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-      "
+      :columnsToDisplay="new Set(['type', 'end', 'description'])"
+      :displayTargetFilter="false"
+      :maximizeFilterSize="true"
+      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
       :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
     ></opensilex-EventList>
 

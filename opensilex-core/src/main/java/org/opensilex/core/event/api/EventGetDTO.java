@@ -9,7 +9,6 @@ package org.opensilex.core.event.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.server.rest.validation.Required;
@@ -42,7 +41,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
     protected String end;
 
     @JsonProperty("targets")
-    protected List<URI> concernedItems;
+    protected List<URI> targets;
 
     @JsonProperty("description")
     protected String description;
@@ -98,12 +97,12 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
     @ApiModelProperty(value = "URI(s) of items concerned by this event")
     @NotEmpty
     @ValidURI
-    public List<URI> getConcernedItems() {
-        return concernedItems;
+    public List<URI> getTargets() {
+        return targets;
     }
 
-    public void setConcernedItems(List<URI> concernedItems) {
-        this.concernedItems = concernedItems;
+    public void setTargets(List<URI> targets) {
+        this.targets = targets;
     }
 
     @ApiModelProperty(value = "Description of the event",example = "The pest attack lasted 20 minutes")
@@ -152,7 +151,7 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         }
 
         description = model.getDescription();
-        concernedItems = model.getConcernedItems();
+        targets = model.getTargets();
         creator = model.getCreator();
         isInstant = model.getIsInstant();
     }

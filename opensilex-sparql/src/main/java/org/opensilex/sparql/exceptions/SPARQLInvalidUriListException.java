@@ -6,14 +6,16 @@ import java.util.Collection;
 public class SPARQLInvalidUriListException extends SPARQLException {
 
     private final Collection<URI> uris;
-
-    public SPARQLInvalidUriListException(Collection<URI> uris) {
-        this("Invalid URIs: ", uris);
-    }
+    protected String field;
 
     public SPARQLInvalidUriListException(String message, Collection<URI> uris) {
         super(message + uris.toString());
         this.uris = uris;
+    }
+
+    public SPARQLInvalidUriListException(String message, Collection<URI> uris, String field) {
+       this(message,uris);
+       setField(field);
     }
 
     public String getUris() {
@@ -22,6 +24,13 @@ public class SPARQLInvalidUriListException extends SPARQLException {
         } else {
             return uris.toString();
         }
+    }
 
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
     }
 }

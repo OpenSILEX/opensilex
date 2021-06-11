@@ -62,7 +62,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     @Before
     public void createFacilities() throws Exception {
 
-
         facilityA = new InfrastructureFacilityModel();
         facilityA.setUri(new URI("test:greenHouseA"));
         facilityA.setName("greenHouseA");
@@ -133,7 +132,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         dto.setStart(now.toString());
         dto.setEnd(now.plusMinutes(2).toString());
 
-        dto.setConcernedItems(Arrays.asList(
+        dto.setTargets(Arrays.asList(
                 scientificObjectA.getUri(),
                 scientificObjectB.getUri(),
                 scientificObjectC.getUri()
@@ -150,8 +149,8 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         k2Summit.setZ(8611);
         k2Summit.setPoint(new Point(76.513333, 35.8825, 8611));
 
-        ConcernedItemPositionCreationDTO so1Position = new ConcernedItemPositionCreationDTO();
-        so1Position.setConcernedItem(dto.getConcernedItems().get(0));
+        TargetPositionCreationDTO so1Position = new TargetPositionCreationDTO();
+        so1Position.setTarget(dto.getTargets().get(0));
         so1Position.setPosition(k2Summit);
 
         // 2nd position
@@ -159,16 +158,16 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         k2Camp4.setDescription("Just behind the Bottleneck");
         k2Camp4.setZ(7600);
 
-        ConcernedItemPositionCreationDTO so2Position = new ConcernedItemPositionCreationDTO();
-        so2Position.setConcernedItem(dto.getConcernedItems().get(1));
+        TargetPositionCreationDTO so2Position = new TargetPositionCreationDTO();
+        so2Position.setTarget(dto.getTargets().get(1));
         so2Position.setPosition(k2Camp4);
 
-        dto.setConcernedItemPositions(Arrays.asList(so1Position,so2Position));
+        dto.setTargetsPositions(Arrays.asList(so1Position,so2Position));
 
         return dto;
     }
 
-//    @Test
+    @Test
     public void testCreateGetAndDelete() throws Exception {
         super.testCreateListGetAndDelete(createPath, getByUriPath, deletePath, Collections.singletonList(getCreationDto()));
     }
@@ -180,7 +179,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         creationDTO.setTo(new URI("test:unknownFacilityA"));
 
         final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),postResult.getStatus());
     }
 
     @Test
@@ -189,20 +188,18 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         creationDTO.setFrom(new URI("test:unknownFacilityA"));
 
         final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),postResult.getStatus());
     }
 
     @Test
-    public void testFailWithConcernedItems() throws Exception {
-        MoveCreationDTO creationDTO = getCreationDto();
+    public void testFailWithUnknownTargets() throws Exception {
 
-        creationDTO.setConcernedItems(Arrays.asList(
-                new URI("test:unknown_target1"),
-                new URI("test:unknown_target2")
-        ));
+        MoveCreationDTO dto = getCreationDto();
+        dto.setTargets(Arrays.asList(new URI("oeev:unknown_target")));
 
-        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(),postResult.getStatus());
+        Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(dto));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
     }
 
 
@@ -259,7 +256,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         // update move by setting no positions
         creationDTO.setDescription("new description");
-        creationDTO.setConcernedItemPositions(null);
+        creationDTO.setTargetsPositions(null);
         Response putResponse = getJsonPutResponse(target(updatePath),creationDTO);
         assertEquals(Response.Status.OK.getStatusCode(),putResponse.getStatus());
 
@@ -280,11 +277,11 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
 
-        Collections.sort(creationDTO.getConcernedItems());
-        Collections.sort(dtoFromDb.getConcernedItems());
-        assertEquals(creationDTO.getConcernedItems(), dtoFromDb.getConcernedItems());
+        Collections.sort(creationDTO.getTargets());
+        Collections.sort(dtoFromDb.getTargets());
+        assertEquals(creationDTO.getTargets(), dtoFromDb.getTargets());
 
-        assertNull(dtoFromDb.getConcernedItemPositions());
+        assertNull(dtoFromDb.getTargetsPositions());
     }
 
 //    @Test
@@ -317,9 +314,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
 
-        Collections.sort(creationDTO.getConcernedItems());
-        Collections.sort(dtoFromDb.getConcernedItems());
-        assertEquals(creationDTO.getConcernedItems(), dtoFromDb.getConcernedItems());
+        Collections.sort(creationDTO.getTargets());
+        Collections.sort(dtoFromDb.getTargets());
+        assertEquals(creationDTO.getTargets(), dtoFromDb.getTargets());
     }
 
     private void testEquals(MoveCreationDTO creationDTO, int concernedItemIdx, PositionGetDTO dtoFromDb, URI moveEventUri) {
@@ -329,7 +326,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertEquals(SPARQLDeserializers.getExpandedURI(dtoFromDb.getEvent()), SPARQLDeserializers.getExpandedURI(moveEventUri));
         assertEquals(creationDTO.getEnd(),dtoFromDb.getMoveTime());
 
-        PositionCreationDTO itemPositionCreationDto = creationDTO.getConcernedItemPositions().get(concernedItemIdx).getPosition();
+        PositionCreationDTO itemPositionCreationDto = creationDTO.getTargetsPositions().get(concernedItemIdx).getPosition();
         PositionGetDetailDTO positionNoSqlGetDto = dtoFromDb.getPosition();
 
         assertNotNull(positionNoSqlGetDto);
@@ -349,7 +346,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // get last move concerning first scientific object
-        Response getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getConcernedItems().get(0).toString());
+        Response getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getTargets().get(0).toString());
         JsonNode node = getPositionResult.readEntity(JsonNode.class);
         SingleObjectResponse<PositionGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -358,7 +355,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(creationDTO, 0,dtoFromDb, moveEventUri);
 
         // get last move concerning second scientific object
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getConcernedItems().get(1).toString());
+        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getTargets().get(1).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -377,7 +374,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         postResult = getJsonPostResponse(target(createPath), Collections.singletonList(newEventCreationDto));
         URI newerMoveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getConcernedItems().get(0).toString());
+        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getTargets().get(0).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -386,7 +383,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(newEventCreationDto,0, dtoFromDb, newerMoveEventUri);
 
         // get last move concerning second scientific object
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getConcernedItems().get(1).toString());
+        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getTargets().get(1).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -395,7 +392,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(newEventCreationDto, 1,dtoFromDb, newerMoveEventUri);
     }
 
-    static final String CONCERNED_ITEM_HISTORY_PARAM = "concernedItemUri";
+    static final String TARGET_HISTORY_PARAM = "target";
 
     @Test
     public void testGetPositionHistory() throws Exception {
@@ -406,7 +403,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         // search given a description witch match both events
         Map<String, Object> params = new HashMap<String, Object>() {{
-            put(CONCERNED_ITEM_HISTORY_PARAM,creationDTO.getConcernedItems().get(0));
+            put(TARGET_HISTORY_PARAM,creationDTO.getTargets().get(0));
         }};
         List<PositionGetDTO> history = getResults(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
 

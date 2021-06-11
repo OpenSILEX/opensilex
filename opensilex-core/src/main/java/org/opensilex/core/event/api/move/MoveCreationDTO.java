@@ -8,8 +8,8 @@ import org.opensilex.core.event.api.EventCreationDTO;
 import org.opensilex.core.event.api.validation.MoveLocationOrPositionNotNullConstraint;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.position.api.ConcernedItemPositionCreationDTO;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.position.api.TargetPositionCreationDTO;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 
 import java.net.URI;
@@ -29,7 +29,7 @@ public class MoveCreationDTO extends EventCreationDTO {
     private URI to;
 
     @JsonProperty("targets_positions")
-    private List<ConcernedItemPositionCreationDTO> concernedItemPositions;
+    private List<TargetPositionCreationDTO> targetsPositions;
 
     @ApiModelProperty(example="test:greenHouseA")
     public URI getFrom() {
@@ -50,12 +50,12 @@ public class MoveCreationDTO extends EventCreationDTO {
     }
 
 
-    public List<ConcernedItemPositionCreationDTO> getConcernedItemPositions() {
-        return concernedItemPositions;
+    public List<TargetPositionCreationDTO> getTargetsPositions() {
+        return targetsPositions;
     }
 
-    public void setConcernedItemPositions(List<ConcernedItemPositionCreationDTO> concernedItemPositions) {
-        this.concernedItemPositions = concernedItemPositions;
+    public void setTargetsPositions(List<TargetPositionCreationDTO> targetsPositions) {
+        this.targetsPositions = targetsPositions;
     }
 
     public MoveModel toModel() {
@@ -81,16 +81,16 @@ public class MoveCreationDTO extends EventCreationDTO {
 
     public MoveEventNoSqlModel toNoSqlModel() {
 
-        if (CollectionUtils.isEmpty(concernedItemPositions)) {
+        if (CollectionUtils.isEmpty(targetsPositions)) {
             return null;
         }
 
-        List<ConcernedItemPositionModel> itemPositions = concernedItemPositions.stream()
-                .map(ConcernedItemPositionCreationDTO::toModel)
+        List<TargetPositionModel> itemPositions = targetsPositions.stream()
+                .map(TargetPositionCreationDTO::toModel)
                 .collect(Collectors.toList());
 
         MoveEventNoSqlModel moveNoSql = new MoveEventNoSqlModel();
-        moveNoSql.setItemPositions(itemPositions);
+        moveNoSql.setTargetPositions(itemPositions);
         return moveNoSql;
     }
 }

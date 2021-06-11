@@ -4,18 +4,24 @@ import com.mongodb.client.model.geojson.Point;
 
 public class PositionModel {
 
-    private Point point;
+    public static final String COORDINATES_FIELD = "coordinates";
+    public static final String X_FIELD = "x";
+    public static final String Y_FIELD = "y";
+    public static final String Z_FIELD = "z";
+    public static final String TEXTUAL_POSITION_FIELD = "textualPosition";
+
+    private Point coordinates;
     private Integer x;
     private Integer y;
     private Integer z;
-    private String description;
+    private String textualPosition;
 
-    public Point getPoint() {
-        return point;
+    public Point getCoordinates() {
+        return coordinates;
     }
 
-    public void setPoint(Point coordinates) {
-        this.point = coordinates;
+    public void setCoordinates(Point coordinates) {
+        this.coordinates = coordinates;
     }
 
     public Integer getX() {
@@ -42,11 +48,11 @@ public class PositionModel {
         this.z = z;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTextualPosition() {
+        return textualPosition;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTextualPosition(String textualPosition) {
+        this.textualPosition = textualPosition;
     }
 }

@@ -378,6 +378,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (lang == null) {
             lang = getDefaultLang();
         }
+
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
@@ -1733,6 +1734,23 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         delete.addDelete(graph, nodeUri, property, "?value");
         delete.addWhere(nodeUri, property, "?value");
         delete.addFilter(SPARQLQueryHelper.eq("?value", value));
+        executeDeleteQuery(delete);
+    }
+
+    public void deleteRelations(Node graph, URI uri, Set<URI> properties) throws Exception {
+
+        Node subjectUri = SPARQLDeserializers.nodeURI(uri);
+        Var propertyVar = makeVar("p");
+        Node objectVar = makeVar("o");
+
+        UpdateBuilder delete = new UpdateBuilder();
+        delete.addDelete(graph, subjectUri, propertyVar, objectVar);
+
+        WhereBuilder where = new WhereBuilder().addWhere(new Triple(subjectUri, propertyVar, objectVar));
+        delete.addGraph(graph,where);
+
+        delete.addFilter(SPARQLQueryHelper.inURIFilter(propertyVar,properties));
+
         executeDeleteQuery(delete);
     }
 

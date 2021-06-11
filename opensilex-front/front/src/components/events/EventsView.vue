@@ -4,7 +4,7 @@
         icon="ik#ik-activity"
         title="Event.list-title"
         description="EventsView.description"
-        :isExperimentalFeature="true"
+        :isExperimentalFeature="false"
     ></opensilex-PageHeader>
 
     <opensilex-PageContent>

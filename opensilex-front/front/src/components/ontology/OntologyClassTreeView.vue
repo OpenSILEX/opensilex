@@ -79,7 +79,7 @@ export default class OntologyClassTreeView extends Vue {
   @Watch("rdfType")
   onRootClassChange() {
     if (this.rdfType) {
-      this.refresh();
+      this.refresh(undefined,undefined);
     }
   }
 
@@ -91,11 +91,12 @@ export default class OntologyClassTreeView extends Vue {
 
   classesParametersByURI = {};
 
-  refresh(selection?) {
+  refresh(selection, nameFilter) {
+
     Promise.all([
       this.$opensilex
         .getService("opensilex-core.OntologyService")
-        .getSubClassesOf(this.rdfType, false),
+        .searchSubClassesOf(this.rdfType, nameFilter,false),
       this.$opensilex
         .getService("opensilex-front.VueJsOntologyExtensionService")
         .getRDFTypesParameters()
@@ -107,7 +108,6 @@ export default class OntologyClassTreeView extends Vue {
       }
 
       let treeNode = [];
-      let first = true;
       this.resourceTree = results[0].response.result;
       for (let i in this.resourceTree[0].children) {
         let node = this.dtoToNode(this.resourceTree[0].children[i], selection);

@@ -8,8 +8,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDTO;
-import org.opensilex.core.position.api.ConcernedItemPositionGetDTO;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.position.api.TargetPositionGetDTO;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 
 import java.net.URISyntaxException;
@@ -31,7 +31,7 @@ public class MoveGetDTO extends EventGetDTO {
     private InfrastructureFacilityNamedDTO to;
 
     @JsonProperty("targets_positions")
-    private List<ConcernedItemPositionGetDTO> concernedItemPositions;
+    private List<TargetPositionGetDTO> targetsPositions;
 
     public MoveGetDTO() {
     }
@@ -51,14 +51,14 @@ public class MoveGetDTO extends EventGetDTO {
             return;
         }
 
-        List<ConcernedItemPositionModel> itemPositions = moveEventNoSqlModel.getItemPositions();
+        List<TargetPositionModel> itemPositions = moveEventNoSqlModel.getTargetPositions();
         if(CollectionUtils.isEmpty(itemPositions)){
             return;
         }
 
-        this.concernedItemPositions = new ArrayList<>(itemPositions.size());
-        for(ConcernedItemPositionModel itemPosition : itemPositions){
-            this.concernedItemPositions.add(new ConcernedItemPositionGetDTO(itemPosition));
+        this.targetsPositions = new ArrayList<>(itemPositions.size());
+        for(TargetPositionModel itemPosition : itemPositions){
+            this.targetsPositions.add(new TargetPositionGetDTO(itemPosition));
         }
 
     }
@@ -79,12 +79,12 @@ public class MoveGetDTO extends EventGetDTO {
         this.to = to;
     }
 
-    public List<ConcernedItemPositionGetDTO> getConcernedItemPositions() {
-        return concernedItemPositions;
+    public List<TargetPositionGetDTO> getTargetsPositions() {
+        return targetsPositions;
     }
 
-    public void setConcernedItemPositions(List<ConcernedItemPositionGetDTO> concernedItemPositions) {
-        this.concernedItemPositions = concernedItemPositions;
+    public void setTargetsPositions(List<TargetPositionGetDTO> targetsPositions) {
+        this.targetsPositions = targetsPositions;
     }
 
     @ApiModelProperty(value = "Description of the move",example = "Move to greenhouse A")

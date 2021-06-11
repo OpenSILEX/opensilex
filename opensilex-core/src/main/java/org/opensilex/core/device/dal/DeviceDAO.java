@@ -408,4 +408,8 @@ public class DeviceDAO {
         List<URI> variableURIs = sparql.searchPrimitives(sparql.getDefaultGraph(DeviceModel.class), uri, Oeso.measures, URI.class);
         return sparql.getListByURIs(VariableModel.class, variableURIs, language);
     }
+
+    public List<DeviceModel> getList(List<URI> uris, UserModel userModel) throws Exception {
+        return sparql.getListByURIs(DeviceModel.class, uris, userModel.getLanguage());
+    }
 }

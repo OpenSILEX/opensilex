@@ -13,8 +13,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 @SPARQLResource(
         ontology = Oeev.class,
         resource = "Move",
-        graph = "events",
-        prefix = "ev"
+        graph = EventModel.GRAPH
 )
 public class MoveModel extends EventModel {
 

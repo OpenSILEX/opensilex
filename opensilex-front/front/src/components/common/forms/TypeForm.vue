@@ -12,6 +12,7 @@
         :allow-selecting-disabled-descendants="true"
         :flat="true"
         v-model="typeURI"
+        :multiple="multiple"
         @select="field.validator && field.validator.validate()"
         @close="field.validator && field.validator.validate()"
         @input="$emit('input', $event)"
@@ -59,6 +60,10 @@ export default class TypeForm extends Vue {
   @Prop()
   disabled: boolean;
 
+  @Prop({default: false})
+  multiple: boolean;
+
+
   @Prop()
   rules: string | Function;
 
@@ -66,6 +71,7 @@ export default class TypeForm extends Vue {
     default: true
   })
   ignoreRoot: boolean;
+
 
   typesOptions = null;
 

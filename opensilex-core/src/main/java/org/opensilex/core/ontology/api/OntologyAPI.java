@@ -98,6 +98,35 @@ public class OntologyAPI {
         SPARQLTreeListModel tree = dao.searchSubClasses(
                 parentClass,
                 ClassModel.class,
+                null,
+                currentUser,
+                ignoreRootClasses,
+                null
+        );
+
+        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(tree)).getResponse();
+    }
+
+    @GET
+    @Path("/subclasses_of/search")
+    @ApiOperation("Search sub-classes tree of an RDF class")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response searchSubClassesOf(
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern ,
+            @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        SPARQLTreeListModel<?> tree = dao.searchSubClasses(
+                parentClass,
+                ClassModel.class,
+                stringPattern,
                 currentUser,
                 ignoreRootClasses,
                 null

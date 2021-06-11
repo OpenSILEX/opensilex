@@ -26,7 +26,7 @@ public class PositionGetDetailDTO {
 
     public PositionGetDetailDTO(PositionModel model) throws JsonProcessingException {
 
-        com.mongodb.client.model.geojson.Point coordinatesModel = model.getPoint();
+        com.mongodb.client.model.geojson.Point coordinatesModel = model.getCoordinates();
         if(coordinatesModel != null){
             String geoJSON = coordinatesModel.toJson();
             point  = ObjectMapperContextResolver.getObjectMapper().readValue(geoJSON, Point.class);
@@ -35,7 +35,7 @@ public class PositionGetDetailDTO {
         x = model.getX();
         y = model.getY();
         z = model.getZ();
-        description = model.getDescription();
+        description = model.getTextualPosition();
     }
 
     public PositionGetDetailDTO() {

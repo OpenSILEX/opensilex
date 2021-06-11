@@ -35,12 +35,14 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             property = "label"
     )
     protected SPARQLLabel label;
+    public static final String NAME_FIELD = "label";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     protected SPARQLLabel comment;
+    public static final String COMMENT_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = RDFS.class,

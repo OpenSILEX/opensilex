@@ -3,24 +3,23 @@ package org.opensilex.core.position.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class ConcernedItemPositionGetDTO {
+public class TargetPositionGetDTO {
 
     @JsonProperty("target")
-    private URI concernedItem;
+    private URI target;
 
     @JsonProperty("position")
     private PositionGetDetailDTO position;
 
-    public ConcernedItemPositionGetDTO(ConcernedItemPositionModel model) throws URISyntaxException, JsonProcessingException {
+    public TargetPositionGetDTO(TargetPositionModel model) throws URISyntaxException, JsonProcessingException {
 
-        this.concernedItem = model.getConcernedItem();
+        this.target = model.getTarget();
 
         PositionModel position = model.getPosition();
         if(position != null){
@@ -28,17 +27,17 @@ public class ConcernedItemPositionGetDTO {
         }
     }
 
-    public ConcernedItemPositionGetDTO(){
+    public TargetPositionGetDTO(){
 
     }
 
     @ApiModelProperty(example="test:plantA")
-    public URI getConcernedItem() {
-        return concernedItem;
+    public URI getTarget() {
+        return target;
     }
 
-    public void setConcernedItem(URI concernedItem) {
-        this.concernedItem = concernedItem;
+    public void setTarget(URI target) {
+        this.target = target;
     }
 
     public PositionGetDetailDTO getPosition() {

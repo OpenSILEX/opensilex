@@ -1,10 +1,5 @@
 package org.opensilex.core.device.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,50 +8,28 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
-import java.io.StringWriter;
-import static java.lang.Integer.max;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.zone.ZoneRulesException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.data.api.DataFileGetDTO;
+import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -64,44 +37,35 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.StringWriter;
+import java.net.URI;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
-import org.opensilex.core.data.api.DataFileGetDTO;
-import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataFileModel;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.utils.DataValidateUtils;
-import org.opensilex.core.exception.UnableToParseDateException;
-import org.opensilex.core.experiment.api.ExperimentAPI;
-import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.core.URIsListPostDTO;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.Integer.max;
+import static org.opensilex.core.data.api.DataAPI.*;
 
 /**
  *
@@ -248,6 +212,39 @@ public class DeviceAPI {
         }
         
         return response;
+    }
+
+    @GET
+    @Path("by_uris")
+    @ApiOperation("Get devices by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return devices", response = DeviceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Device not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getDeviceByUris(
+            @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        List<DeviceModel> models = dao.getList(uris,currentUser);
+
+        if (!models.isEmpty()) {
+            List<DeviceGetDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(model -> {
+                resultDTOList.add(DeviceGetDTO.getDTOFromModel(model));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Devices not found",
+                    "Unknown device URIs"
+            ).getResponse();
+        }
     }
     
     @PUT

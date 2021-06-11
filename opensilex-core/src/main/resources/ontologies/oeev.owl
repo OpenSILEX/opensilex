@@ -54,22 +54,36 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#associatedTo -->
+    <!-- http://www.opensilex.org/vocabulary/oeev#associatedWith -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedTo">
-        <rdfs:label xml:lang="en">associated to</rdfs:label>
-        <rdfs:label xml:lang="fr">associé avec</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedWith">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Association"/>
+        <rdfs:label xml:lang="en">Associated with</rdfs:label>
+        <rdfs:label xml:lang="fr">Associé avec</rdfs:label>
     </owl:ObjectProperty>
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#associatedToASensor -->
+    <!-- http://www.opensilex.org/vocabulary/oeev#associatedWithScientificObject -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedToASensor">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedTo"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor"/>
-        <rdfs:label xml:lang="en">associated to a sensor</rdfs:label>
-        <rdfs:label xml:lang="fr">associé avec un capteur</rdfs:label>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedWithScientificObject">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWith"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#AssociationWithScientificObject"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">Associated with a scientific object</rdfs:label>
+        <rdfs:label xml:lang="fr">Associé avec un objet scientifique</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWith"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#AssociationWithSensingDevice"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+        <rdfs:label xml:lang="en">Associated with a sensing device</rdfs:label>
+        <rdfs:label xml:lang="fr">Associé avec un capteur</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -187,15 +201,45 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     </owl:Class>
     
 
+    <!-- http://www.opensilex.org/vocabulary/oeev#Association -->
 
-    <!-- http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AssociatedToASensor">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Association">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#FacilityManagement"/>
-        <rdfs:label xml:lang="fr">Associé à un capteur</rdfs:label>
-        <rdfs:label xml:lang="en">associated to a sensor</rdfs:label>
+        <rdfs:label xml:lang="en">Association</rdfs:label>
+        <rdfs:label xml:lang="fr">Association</rdfs:label>
     </owl:Class>
     
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#AssociationWithScientificObject -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AssociationWithScientificObject">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Association"/>
+        <rdfs:label xml:lang="en">Association with a scientific object</rdfs:label>
+        <rdfs:label xml:lang="fr">Association avec un objet scientifique</rdfs:label>
+         <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithScientificObject"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+
+    <!-- http://www.opensilex.org/vocabulary/oeev#AssociationWithSensingDevice -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AssociationWithSensingDevice">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Association"/>
+        <rdfs:label xml:lang="fr">Association avec un capteur</rdfs:label>
+        <rdfs:label xml:lang="en">Association with a sensing device</rdfs:label>
+         <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#AutomaticCalibration -->
@@ -417,8 +461,8 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
         <rdfs:comment xml:lang="en">Event describing the displacement in time and space of the different objects participating in experiments. For instance, plants are often transferred, during a single experiment, between installations or compartments with different environmental conditions. Similarly, sensors can be replaced or moved to different positions in the field or greenhouse.</rdfs:comment>
         <rdfs:comment xml:lang="fr">Evénement de déplacement général objet scientifique, équipement, etc.</rdfs:comment>
-        <rdfs:label xml:lang="en">Move</rdfs:label>
         <rdfs:label xml:lang="fr">Déplacement</rdfs:label>
+        <rdfs:label xml:lang="en">Move</rdfs:label>
     </owl:Class>
     
 

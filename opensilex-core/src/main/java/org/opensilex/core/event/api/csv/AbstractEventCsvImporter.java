@@ -2,11 +2,14 @@ package org.opensilex.core.event.api.csv;
 
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
+import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.dal.*;
+import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -26,23 +29,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
-    private final static LinkedHashSet<String> header = new LinkedHashSet<>(Arrays.asList(
-            "URI", "Type", "IsInstant", "Start", "End", "Target", "Description"
+    public final static String TARGET_COLUMN = "targets";
+
+    protected final static LinkedHashSet<String> EVENT_HEADER = new LinkedHashSet<>(Arrays.asList(
+            EventModel.URI_FIELD,
+            EventModel.TYPE_FIELD,
+            EventModel.IS_INSTANT_FIELD,
+            EventModel.START_FIELD,
+            EventModel.END_FIELD,
+            TARGET_COLUMN,
+            EventModel.DESCRIPTION_FIELD
     ));
+
+    public final static int ROWS_BEGIN_IDX = 2;
 
     Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final InputStream file;
-    protected final CSVValidationModel validation;
     private List<T> models;
-    protected final URI creator;
 
+    protected final CSVValidationModel validation;
+    protected final OntologyDAO ontologyDAO;
 
-    public AbstractEventCsvImporter(InputStream file, URI creator){
+    private final UserModel user;
+
+    public AbstractEventCsvImporter(OntologyDAO ontologyDAO, InputStream file, UserModel user) {
+        this.ontologyDAO = ontologyDAO;
         this.file = file;
-        this.creator = creator;
+        this.user = user;
         validation = new CSVValidationModel();
     }
+
 
     public List<T> getModels() {
         return models;
@@ -53,10 +70,10 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
     }
 
     protected  LinkedHashSet<String> getHeader(){
-        return header;
+        return EVENT_HEADER;
     }
 
-    public void readFile(boolean validateOnly) throws ParseException, IOException, URISyntaxException {
+    public void readFile(boolean validateOnly) throws Exception {
 
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
@@ -64,10 +81,20 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             csvReader.beginParsing(inputReader);
             LOGGER.debug("Import events - CSV format => \n '" + csvReader.getDetectedFormat()+ "'");
 
-            readAndValidateHeader(csvReader);
+            String[] csvHeader = readHeader(csvReader);
+
+            LinkedHashSet<URI> customProperties = null;
+
+            // read custom header if additional columns are found
+            if(!validation.hasErrors() && csvHeader.length > getHeader().size()){
+                customProperties = readCustomHeader(csvHeader);
+            }
+
+            // skip the header description row
+            csvReader.parseNext();
 
             if(! validation.hasErrors()){
-                readAndValidateBody(csvReader,validateOnly);
+                readAndValidateBody(csvReader,validateOnly, customProperties);
             }
 
         }catch (IOException | URISyntaxException | ParseException e){
@@ -75,32 +102,68 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         }
     }
 
-    protected void readAndValidateHeader(CsvParser csvReader) throws IOException {
+    protected LinkedHashSet<URI> readCustomHeader(String[] header) throws Exception {
 
-        String[] csvFileHeader = csvReader.parseNext();
-        List<String> missingHeaders = new LinkedList<>();
+        URI eventUri = new URI(Oeev.Event.getURI());
 
-        if(csvFileHeader == null || csvFileHeader.length == 0){
-            validation.addMissingHeaders(header);
-            return;
+        int propsBeginIndex = getHeader().size();
+        LinkedHashSet<URI> customProperties = new LinkedHashSet<>();
+
+        // read each custom column and check if a property match into the ontology
+        for (int i = propsBeginIndex; i < header.length; i++) {
+            String property = header[i];
+
+            if(StringUtils.isEmpty(property)){
+                validation.addInvalidHeaderURI(i,property);
+            }else{
+                URI propertyUri = new URI(property);
+
+                // searching for a data-type or object-type property
+                PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventUri,this.user);
+                if(propertyModel == null){
+                    propertyModel = ontologyDAO.getObjectProperty(propertyUri,eventUri,this.user);
+                    if(propertyModel == null){
+                        CSVCell csvCell = new CSVCell(0, i, null, property);
+                        validation.addInvalidURIError(csvCell);
+                    }
+                }
+
+                if(propertyModel != null){
+                    customProperties.add(propertyUri);
+                }
+            }
         }
 
-        // ensure header is equals to the expected header
-        Iterator<String> headerIt = getHeader().iterator();
+        return customProperties;
+    }
+
+    protected String[] readHeader(CsvParser csvReader) throws Exception {
+
+        String[] csvHeader = csvReader.parseNext();
+        List<String> missingHeaders = new LinkedList<>();
+
+        if(csvHeader == null || csvHeader.length == 0){
+            validation.addMissingHeaders(getHeader());
+            return csvHeader;
+        }
+
+        Iterator<String> expectedHeaderIt = getHeader().iterator();
         int i = 0;
 
-        while (headerIt.hasNext()){
-            String expectedHeader = headerIt.next();
+        // ensure that the expected header match with the begin of the csv header
+        while (expectedHeaderIt.hasNext()){
+            String expectedColumn = expectedHeaderIt.next();
 
-            if(i < csvFileHeader.length){
-                String fileHeader = csvFileHeader[i];
-                if(! expectedHeader.equals(fileHeader)){
-                    validation.addInvalidHeaderURI(i,fileHeader);
+            if(i < csvHeader.length){
+                String csvColumn = csvHeader[i];
+
+                if(! expectedColumn.equalsIgnoreCase(csvColumn)){
+                    validation.addInvalidHeaderURI(i,csvColumn);
                 }
                 i++;
             }
             else{
-                missingHeaders.add(expectedHeader);
+                missingHeaders.add(expectedColumn);
             }
         }
 
@@ -108,11 +171,10 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             validation.addMissingHeaders(missingHeaders);
         }
 
-        // skip the header description row
-        csvReader.parseNext();
+        return csvHeader;
     }
 
-    private void readAndValidateBody(CsvParser csvReader,boolean validateOnly) throws IOException, URISyntaxException, ParseException {
+    private void readAndValidateBody(CsvParser csvReader,boolean validateOnly, LinkedHashSet<URI> customProperties) throws Exception {
 
         String[] row;
 
@@ -120,14 +182,19 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         int rowIndex = 2;
         models = new ArrayList<>();
 
+        Map<URI, ClassModel> classesByType = new HashMap<>();
+        Map<URI, List<URI>> missedPropertiesByType = new HashMap<>();
 
         while((row = csvReader.parseNext()) != null){
             T model = getNewModel();
-            readAndValidateRow(model,row,rowIndex, new AtomicInteger(0));
+
+            AtomicInteger colIndex = new AtomicInteger(0);
+            readAndValidateRow(model,row,rowIndex,colIndex,customProperties,classesByType,missedPropertiesByType);
             if(! validateOnly){
                 models.add(model);
             }
             rowIndex++;
+            colIndex.set(0);
         }
 
         if(rowIndex == 2){
@@ -138,6 +205,113 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
     protected abstract T getNewModel();
 
+
+    protected void readCustomProps(T model,
+                                   String[] row,
+                                   int rowIndex,
+                                   AtomicInteger colIndex,
+                                   LinkedHashSet<URI> customProperties,
+                                   Map<URI, ClassModel> classesByType,
+                                   Map<URI, List<URI>> missedPropertiesByType
+    ) throws Exception {
+
+        // get or compute the ClassModel associated with the model
+        URI type = model.getType();
+        if(type == null){
+            return;
+        }
+
+        ClassModel classModel = classesByType.get(type);
+        if(classModel == null){
+            try{
+                classModel = ontologyDAO.getClassModel(model.getType(),new URI(Oeev.Event.getURI()),user.getLanguage());
+                classesByType.put(type,classModel);
+
+            }catch (NotFoundURIException e){
+                CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), type.toString(), EventModel.TYPE_FIELD);
+                validation.addInvalidURIError(csvCell);
+                return;
+            }
+
+        }
+
+        if(CollectionUtils.isEmpty(customProperties)){
+            return;
+        }
+
+        // for each column, check if a property match with the model type
+
+        Iterator<URI> propsIt = customProperties.iterator();
+
+        for (int i = row.length - customProperties.size(); i < row.length; i++) {
+
+            String propValue = row[i];
+            URI property = propsIt.next();
+            OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
+
+            boolean nullOrEmpty = StringUtils.isEmpty(propValue);
+
+            if (propertyRestriction == null) {
+
+                // nom-empty value and unknown property -> error
+                if (!nullOrEmpty) {
+                    CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, "unknown property " + property.toString() + " for type " + model.getType());
+                    validation.addInvalidValueError(csvCell);
+                }
+
+            } else {
+                if(nullOrEmpty){
+                    // required property with a null/empty value -> error
+                    if(propertyRestriction.isRequired()){
+                        CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, property.toString());
+                        validation.addMissingRequiredValue(csvCell);
+                    }
+                }else {
+                    // invalid value -> error
+                    if(! ontologyDAO.validateObjectValue(null, classModel, property, propValue, model)){
+                        CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, property.toString());
+                        validation.addInvalidValueError(csvCell);
+                    }
+                }
+            }
+
+        }
+
+        List<URI> missedRequiredProperties = missedPropertiesByType.get(model.getType());
+        if(missedRequiredProperties == null){
+
+            // compute the list of required property excluded from the custom properties list
+            missedRequiredProperties = new LinkedList<>();
+
+            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
+                if (entry.getValue().isRequired() && !customProperties.contains(entry.getKey())) {
+                    missedRequiredProperties.add(entry.getKey());
+                }
+            }
+
+            missedPropertiesByType.put(model.getType(),missedRequiredProperties);
+        }
+
+
+        if(! missedRequiredProperties.isEmpty()){
+            missedRequiredProperties.forEach(property -> {
+                CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), null, property.toString());
+                validation.addMissingRequiredValue(csvCell);
+            });
+        }
+
+    }
+
+    protected void readAndValidateRow(T model , String[] row, int rowIndex, AtomicInteger colIndex,
+                                      LinkedHashSet<URI> customProperties,
+                                      Map<URI,ClassModel> classesByTypeIndex,
+                                      Map<URI,List<URI>> missedPropertiesByType
+    ) throws Exception {
+
+        readCommonsProps(model,row,rowIndex,colIndex);
+        readCustomProps(model,row,rowIndex,colIndex,customProperties,classesByTypeIndex,missedPropertiesByType);
+    }
+
     /**
      *
      * @param model a new model
@@ -145,7 +319,18 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
      * @param rowIndex the row index into the file
      * @param colIndex the current col index into the row
      */
-    protected void readAndValidateRow(T model , String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException{
+    protected void readCommonsProps(T model , String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException{
+
+        if(row.length < getHeader().size()){
+
+            // append each missed column as invalid value
+            getHeader().stream().skip(row.length).forEach(header -> {
+                CSVCell cell = new CSVCell(rowIndex,colIndex.get(), "No value for column",header);
+                validation.addInvalidValueError(cell);
+            });
+
+            return;
+        }
 
         String uri = row[colIndex.getAndIncrement()];
         if(!StringUtils.isEmpty(uri)){
@@ -180,7 +365,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         String end = row[colIndex.getAndIncrement()];
         if (StringUtils.isEmpty(end)) {
 
-            if(model.getIsInstant()){
+            if(model.getIsInstant() == null || model.getIsInstant()){
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addMissingRequiredValue(cell);
             }
@@ -194,10 +379,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             try {
                 endModel.setDateTimeStamp(OffsetDateTime.parse(end));
                 model.setEnd(endModel);
-
-                if(model.getIsInstant()){
-                    model.setStart(model.getEnd());
-                }
             }catch (DateTimeParseException e){
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addInvalidValueError(cell);
@@ -205,20 +386,18 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
         }
 
-        String concernedItem = row[colIndex.getAndIncrement()];
-        URI concernedItemUri = null;
-
-        if(StringUtils.isEmpty(concernedItem )){
-            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, concernedItem,"Target");
+        String target = row[colIndex.getAndIncrement()];
+        if(StringUtils.isEmpty(target)){
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, target,"Target");
             validation.addMissingRequiredValue(cell);
         }else{
-            concernedItemUri = new URI(concernedItem);
-            model.setConcernedItems(Collections.singletonList(concernedItemUri));
+            URI targetUri = new URI(target);
+            model.setTargets(Collections.singletonList(targetUri));
         }
 
         String description = row[colIndex.getAndIncrement()];
         model.setDescription(description);
-        model.setCreator(creator);
+        model.setCreator(user.getUri());
 
     }
 }

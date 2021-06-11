@@ -407,7 +407,7 @@ public class SPARQLQueryHelper {
      * @see ExprFactory#ge(Object, Object)
      */
     public static Expr dateTimeRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws Exception {
-        return dateRange(startDateVarName,startDate,endDateVarName,endDate,new DateTimeDeserializer());
+        return dateRange(startDateVarName,startDate,endDateVarName,endDate,SPARQLDeserializers.getForClass(OffsetDateTime.class));
     }
     
     

@@ -15,13 +15,13 @@ import org.apache.jena.vocabulary.RDF;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -32,17 +32,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.excludeId;
 
-public class MoveEventDAO extends EventDAO {
+public class MoveEventDAO extends EventDAO<MoveModel> {
     
-    public final static String POSITION_ARRAY_FIELD = "itemPositions";
-    public final static String CONCERNED_ITEM_FIELD = "concernedItem";
+    public final static String POSITION_ARRAY_FIELD = "targetPositions";
+    public final static String TARGET_FIELD = "target";
     
     public final static String moveCollectionName = "Moves";
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
@@ -59,75 +58,11 @@ public class MoveEventDAO extends EventDAO {
     public final MongoCollection<MoveEventNoSqlModel> getMoveEventCollection() {
         return moveEventCollection;
     }
-    
-    private void check(MoveModel move) throws Exception {
-        
-        if (!sparql.uriListExists(null, move.getConcernedItems())) {
-            throw new IllegalArgumentException("One URI from concerned items was not found");
-        }
-    }
-    
-    private void checkAll(List<MoveModel> models) throws Exception {
-        
-        final int batchSize = 256;
-        int i = 0;
-        
-        List<URI> concernedItemUris = new ArrayList<>(batchSize);
-        List<URI> uris = new ArrayList<>(batchSize);
 
-        for(MoveModel model : models){
-
-            // generate of check move URI
-            URI uri = model.getUri();
-            if(uri != null){
-                if (model.getUri().toString().isEmpty()) {
-                    throw new IllegalArgumentException("Empty model uri at index " + 0);
-                }
-                
-                uris.add(model.getUri());
-                if(uris.size() >= batchSize || i == models.size()-1){
-
-                    Set<URI> alreadyExistingMoveUris = sparql.getExistingUris(null,uris,true);
-                    if(! alreadyExistingMoveUris.isEmpty()){
-                        throw new SPARQLInvalidUriListException("["+MoveModel.class+"] already existing URIs : ",alreadyExistingMoveUris);
-                    }
-
-                    if (sparql.anyUriExists(null, uris)) {
-                        throw new IllegalArgumentException("One move URI already exist");
-                    }
-                    uris.clear();
-                }
-
-            }else{
-                uri = model.generateURI(uriGeneration.toString(), model, 0);
-                model.setUri(uri);
-            }
-
-            // check concerned items
-            concernedItemUris.addAll(model.getConcernedItems());
-            if(concernedItemUris.size() >= batchSize || i == models.size()-1){
-
-                Set<URI> unknownConcernedItemUris = sparql.getExistingUris(null,concernedItemUris,false);
-                if(! unknownConcernedItemUris.isEmpty()){
-                    throw new SPARQLInvalidUriListException("["+MoveModel.class+"] Unknown concerned item URIs : ",unknownConcernedItemUris);
-                }
-                concernedItemUris.clear();
-            }
-
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            if (noSqlModel != null) {
-                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-            }
-            
-        };
-        
-    }
-    
     public MoveModel create(MoveModel model) throws Exception {
         
         try {
-            check(model);
+            check(Collections.singletonList(model),true);
             
             sparql.startTransaction();
             sparql.create(eventGraph, model, false);
@@ -135,7 +70,9 @@ public class MoveEventDAO extends EventDAO {
             // insert move event in mongodb
             MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
             if (noSqlModel != null) {
-                noSqlModel.setUri(new URI(URIDeserializer.getShortURI(model.getUri().toString())));
+
+                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
+                noSqlModel.setUri(new URI(shortEventUri));
                 
                 mongodb.startTransaction();
                 moveEventCollection.insertOne(noSqlModel);
@@ -152,14 +89,14 @@ public class MoveEventDAO extends EventDAO {
         }
     }
     
-    protected void createMoveEvents(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels, boolean anyMoveNoSqlModelFound) throws Exception {
+    protected void createMoveEvents(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
 
         // insert sparql and noSql model streams
         try {
             sparql.startTransaction();
             sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
             
-            if (anyMoveNoSqlModelFound) {
+            if (! noSqlModels.isEmpty()) {
                 mongodb.startTransaction();
                 moveEventCollection.insertMany(noSqlModels);
                 mongodb.commitTransaction();
@@ -173,36 +110,39 @@ public class MoveEventDAO extends EventDAO {
         }
     }
 
+
     /**
      * @param models
      * @return
      * @throws Exception
      */
-    public void createMoveEvents(List<MoveModel> models) throws Exception {
-        
-        Stream.Builder<MoveModel> checkModelStream = Stream.builder();
-        
-        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>(models.size());
-        AtomicBoolean anyMoveNoSqlModelFound = new AtomicBoolean(false);
+    public List<MoveModel> create(List<MoveModel> models) throws Exception {
+
+        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
+
+        check(models,true);
 
         // build streams of sparql and no models from main model stream
-        models.forEach(model -> {
-            checkModelStream.add(model);
-            try {
-                // set noSql model uri and update noSql model stream
-                MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-                if (noSqlModel != null) {
-                    noSqlModels.add(noSqlModel);
-                    anyMoveNoSqlModelFound.set(true);
-                }
-                
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        for(MoveModel model : models){
+
+            URI uri = model.getUri();
+            if(uri == null){
+                uri = model.generateURI(eventGraph.toString(), model, 0);
+                model.setUri(uri);
             }
-        });
-        
-        checkAll(models);
-        createMoveEvents(models, noSqlModels, anyMoveNoSqlModelFound.get());
+
+            // set noSql model uri and update noSql model list
+            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
+            if (noSqlModel != null) {
+                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
+                noSqlModel.setUri(new URI(shortEventUri));
+                noSqlModels.add(noSqlModel);
+            }
+
+        }
+
+        createMoveEvents(models, noSqlModels);
+        return models;
     }
 
     /**
@@ -242,10 +182,10 @@ public class MoveEventDAO extends EventDAO {
     }
 
     /**
-     * @param concernedItem the URI of the object concerned by the {@link MoveModel}
+     * @param target the URI of the object concerned by the {@link MoveModel}
      * @return a {@link SPARQLResult} which the following bindings :
      */
-    public MoveModel getMoveEvent(URI concernedItem, OffsetDateTime dateTime) throws Exception {
+    public MoveModel getMoveEvent(URI target, OffsetDateTime dateTime) throws Exception {
         
         ListWithPagination<MoveModel> moves = sparql.searchWithPagination(
                 MoveModel.class,
@@ -254,7 +194,7 @@ public class MoveEventDAO extends EventDAO {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
                     
-                    appendConcernedItemFilter(eventGraphGroupElem, concernedItem);
+                    appendTargetFilter(eventGraphGroupElem, target);
                     appendTimeAfterFilter(eventGraphGroupElem, dateTime);
                     
                     select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
@@ -308,8 +248,8 @@ public class MoveEventDAO extends EventDAO {
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
                     
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
-                    appendConcernedItemFilter(eventGraphGroupElem, concernedItem);
-                    appendTimeFilterAndOrder(eventGraphGroupElem, start, end, exprOrderIndex, defaultOrderIndex);
+                    appendTargetFilter(eventGraphGroupElem, concernedItem);
+                    appendTimeFilter(eventGraphGroupElem, start, end);
 
 //                  appendDateIntervalRangeFilter(eventGraphGroupElem, start, end);
                     if (CollectionUtils.isEmpty(orderByList)) {
@@ -366,9 +306,12 @@ public class MoveEventDAO extends EventDAO {
         
         eventGraphGroupElem.addElementFilter(new ElementFilter(dateIntervalExpr));
     }
-    
-    public MoveModel update(MoveModel model) throws Exception {
-        
+
+    @Override
+    public MoveModel update(MoveModel model, ClassModel classModel) throws Exception {
+
+        check(Collections.singletonList(model),false);
+
         try {
             sparql.startTransaction();
             sparql.update(model);
@@ -492,8 +435,8 @@ public class MoveEventDAO extends EventDAO {
                     .limit(pageSize)
                     .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
                     .forEach(moveNoSqlModel -> {
-                        if (moveNoSqlModel.getItemPositions().size() > 0) {
-                            positionList.put(moveNoSqlModel.getUri(), moveNoSqlModel.getItemPositions().get(0).getPosition());
+                        if (moveNoSqlModel.getTargetPositions().size() > 0) {
+                            positionList.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
                         } else {
                             positionList.remove(moveNoSqlModel.getUri());
                         }
@@ -513,12 +456,12 @@ public class MoveEventDAO extends EventDAO {
      * @param concernedItemUri the URI of the item concerned by a move event.
      * @return a {@link Bson} with {@link Filters#eq(Object)} expression on itemPositions.concernedItem property and the given URI
      *
-     * @see MoveEventNoSqlModel#getItemPositions()
-     * @see ConcernedItemPositionModel#getPosition()
+     * @see MoveEventNoSqlModel#getTargetPositions()
+     * @see TargetPositionModel#getPosition()
      */
     private Bson getConcernedItemArrayItemProjection(URI concernedItemUri) {
         return Filters.elemMatch(POSITION_ARRAY_FIELD,
-                Filters.eq(CONCERNED_ITEM_FIELD, concernedItemUri)
+                Filters.eq(TARGET_FIELD, concernedItemUri)
         );
     }
 
@@ -584,10 +527,10 @@ public class MoveEventDAO extends EventDAO {
                 )
                 .first();
         
-        if (moveNoSqlModel == null || moveNoSqlModel.getItemPositions().size() == 0) {
+        if (moveNoSqlModel == null || moveNoSqlModel.getTargetPositions().size() == 0) {
             return null;
         }
         
-        return moveNoSqlModel.getItemPositions().get(0).getPosition();
+        return moveNoSqlModel.getTargetPositions().get(0).getPosition();
     }
 }

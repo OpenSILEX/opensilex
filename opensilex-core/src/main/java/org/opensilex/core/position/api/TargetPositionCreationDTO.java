@@ -1,11 +1,9 @@
 package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
-import org.opensilex.core.event.dal.move.PositionModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.server.rest.validation.Required;
 
 import javax.validation.Valid;
@@ -13,22 +11,22 @@ import java.net.URI;
 
 @ApiModel
 @Valid
-public class ConcernedItemPositionCreationDTO {
+public class TargetPositionCreationDTO {
 
     @JsonProperty("target")
-    private URI concernedItem;
+    private URI target;
 
     @JsonProperty("position")
     private PositionCreationDTO position;
 
     @Required
     @ApiModelProperty(required = true, example = "test:plantA")
-    public URI getConcernedItem() {
-        return concernedItem;
+    public URI getTarget() {
+        return target;
     }
 
-    public void setConcernedItem(URI concernedItem) {
-        this.concernedItem = concernedItem;
+    public void setTarget(URI target) {
+        this.target = target;
     }
 
     @Required
@@ -40,10 +38,10 @@ public class ConcernedItemPositionCreationDTO {
         this.position = position;
     }
 
-    public ConcernedItemPositionModel toModel(){
+    public TargetPositionModel toModel(){
 
-        ConcernedItemPositionModel model = new ConcernedItemPositionModel();
-        model.setConcernedItem(concernedItem);
+        TargetPositionModel model = new TargetPositionModel();
+        model.setTarget(target);
         model.setPosition(position.toModel());
         return model;
     }

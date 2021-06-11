@@ -2,17 +2,17 @@ package org.opensilex.core.event.dal.move;
 
 import java.net.URI;
 
-public class ConcernedItemPositionModel {
+public class TargetPositionModel {
 
-    private URI concernedItem;
+    private URI target;
     private PositionModel position;
 
-    public URI getConcernedItem() {
-        return concernedItem;
+    public URI getTarget() {
+        return target;
     }
 
-    public void setConcernedItem(URI concernedItem) {
-        this.concernedItem = concernedItem;
+    public void setTarget(URI target) {
+        this.target = target;
     }
 
     public PositionModel getPosition() {

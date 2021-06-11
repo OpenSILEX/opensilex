@@ -30,7 +30,7 @@ import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
@@ -440,9 +440,9 @@ public class ScientificObjectDAO {
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
-        List<URI> concernedItems = new ArrayList<>();
-        concernedItems.add(object.getUri());
-        facilityMoveEvent.setConcernedItems(concernedItems);
+        List<URI> targets = new ArrayList<>();
+        targets.add(object.getUri());
+        facilityMoveEvent.setTargets(targets);
 
         facilityMoveEvent.setCreator(object.getCreator());
 
@@ -524,25 +524,25 @@ public class ScientificObjectDAO {
                 }
             } else {
                 if (event != null) {
-                    List<URI> newConcernedItems = new ArrayList<>();
-                    for (URI item : event.getConcernedItems()) {
+                    List<URI> newTargets = new ArrayList<>();
+                    for (URI item : event.getTargets()) {
                         if (!SPARQLDeserializers.compareURIs(item, objectURI)) {
-                            newConcernedItems.add(item);
+                            newTargets.add(item);
                         }
                     }
-                    if (newConcernedItems.size() == 0) {
+                    if (newTargets.size() == 0) {
                         moveDAO.delete(event.getUri());
                     } else {
-                        event.setConcernedItems(newConcernedItems);
+                        event.setTargets(newTargets);
 
                         if (event.getNoSqlModel() != null) {
-                            List<ConcernedItemPositionModel> newConcernedPositions = new ArrayList<>();
-                            for (ConcernedItemPositionModel position : event.getNoSqlModel().getItemPositions()) {
-                                if (!SPARQLDeserializers.compareURIs(position.getConcernedItem(), objectURI)) {
-                                    newConcernedPositions.add(position);
+                            List<TargetPositionModel> newTargetsPositions = new ArrayList<>();
+                            for (TargetPositionModel position : event.getNoSqlModel().getTargetPositions()) {
+                                if (!SPARQLDeserializers.compareURIs(position.getTarget(), objectURI)) {
+                                    newTargetsPositions.add(position);
                                 }
                             }
-                            event.getNoSqlModel().setItemPositions(newConcernedPositions);
+                            event.getNoSqlModel().setTargetPositions(newTargetsPositions);
                         }
                         moveDAO.update(event);
                     }

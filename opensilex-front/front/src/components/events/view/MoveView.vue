@@ -1,5 +1,5 @@
 <template>
-    <div v-if="event">
+    <div v-if="event" class="card-body">
 
         <br>
         <p class="h5">{{$t("Move.location")}} </p>

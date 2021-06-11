@@ -15,16 +15,19 @@
         name="propertyType"
         id="datatypeRadio"
         :value="OWL.DATATYPE_PROPERTY_URI"
+        :disabled="editMode"
       >{{$t("OntologyPropertyForm.dataProperty")}}</b-form-radio>
       <b-form-radio
         v-model="form.rdf_type"
         name="propertyType"
         :value="OWL.OBJECT_PROPERTY_URI"
+        :disabled="editMode"
       >{{$t("OntologyPropertyForm.objectProperty")}}</b-form-radio>
       <b-form-radio
         v-model="form.rdf_type"
         name="inheritedType"
         :value="null"
+        :disabled="editMode"
       >{{$t("OntologyPropertyForm.inheritedType")}}</b-form-radio>
     </b-form-group>
 

@@ -18,24 +18,23 @@
 <script lang="ts">
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
-    import {ConcernedItemPositionGetDTO} from "opensilex-core/model/concernedItemPositionGetDTO";
+    import {TargetPositionGetDTO} from "opensilex-core/model/targetPositionGetDTO";
 
     @Component
     export default class PositionsView extends Vue {
 
         @Prop({default: () => [] })
-        positions: Array<ConcernedItemPositionGetDTO>;
+        positions: Array<TargetPositionGetDTO>;
 
         hasPosition() : boolean{
             return this.positions && this.positions.length > 0;
         }
 
-        getTargetPosition(): ConcernedItemPositionGetDTO{
+        getTargetPosition(): TargetPositionGetDTO{
             return this.positions[0];
         }
 
-        static getEmptyForm(): Array<ConcernedItemPositionGetDTO> {
+        static getEmptyForm(): Array<TargetPositionGetDTO> {
             return [{
                     target: undefined,
                     position: {

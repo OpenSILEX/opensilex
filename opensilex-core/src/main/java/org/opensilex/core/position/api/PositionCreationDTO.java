@@ -1,11 +1,8 @@
 package org.opensilex.core.position.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
 import org.geojson.Point;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.event.dal.move.PositionModel;
 
 public class PositionCreationDTO {
@@ -81,12 +78,12 @@ public class PositionCreationDTO {
         PositionModel positionNoSqlModel = new PositionModel();
 
         if (point != null) {
-            positionNoSqlModel.setPoint(pointModel);
+            positionNoSqlModel.setCoordinates(pointModel);
         }
         positionNoSqlModel.setX(x);
         positionNoSqlModel.setY(y);
         positionNoSqlModel.setZ(z);
-        positionNoSqlModel.setDescription(description);
+        positionNoSqlModel.setTextualPosition(description);
 
         return positionNoSqlModel;
     }

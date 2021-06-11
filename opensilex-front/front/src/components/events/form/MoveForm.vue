@@ -42,8 +42,7 @@
     import PositionForm from "../../positions/form/PositionForm.vue";
     // @ts-ignore
     import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
-    // @ts-ignore
-    import {ConcernedItemPositionCreationDTO} from "opensilex-core/model/concernedItemPositionCreationDTO";
+    import {TargetPositionCreationDTO} from "opensilex-core/model/targetPositionCreationDTO";
 
     @Component
     export default class MoveForm extends Vue {
@@ -55,7 +54,7 @@
         @Prop({default: () => MoveForm.getEmptyForm()})
         form: MoveCreationDTO;
 
-        static getEmptyTargetsPositions() : Array<ConcernedItemPositionCreationDTO> {
+        static getEmptyTargetsPositions() : Array<TargetPositionCreationDTO> {
             return  [{
                     target: undefined,
                     position : PositionForm.getEmptyForm()

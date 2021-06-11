@@ -228,7 +228,7 @@ public class GeospatialDAO {
         if (geometry != null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class,
+            SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class, null,
                     currentUser,
                     true,
                     null);

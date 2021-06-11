@@ -6,31 +6,44 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
-import org.opensilex.core.event.dal.move.ConcernedItemPositionModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.security.user.dal.UserModel;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
-    private final static LinkedHashSet<String> MOVE_HEADER = new LinkedHashSet<>(Arrays.asList(
-            "URI", "Type", "IsInstant", "Start", "End", "Target", "Description", "From", "To", "Coordinates", "X", "Y", "Z", "TextualPosition"
-    ));
+    private final static LinkedHashSet<String> MOVE_HEADER = Stream.concat(
+                    AbstractEventCsvImporter.EVENT_HEADER.stream(),
+                    Stream.of(
+                        MoveModel.FROM_FIELD,
+                        MoveModel.TO_FIELD,
+                        PositionModel.COORDINATES_FIELD,
+                        PositionModel.X_FIELD,
+                        PositionModel.Y_FIELD,
+                        PositionModel.Z_FIELD,
+                        PositionModel.TEXTUAL_POSITION_FIELD
+                    )
+            ).collect(Collectors.toCollection(LinkedHashSet::new)
+    );
 
-    public MoveEventCsvImporter(InputStream file, URI creator){
-        super(file, creator);
+    public MoveEventCsvImporter(OntologyDAO ontologyDAO, InputStream file, UserModel user){
+        super(ontologyDAO,file, user);
     }
 
     @Override
@@ -44,10 +57,10 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
     }
 
     @Override
-    protected void readAndValidateRow(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
+    protected void readCommonsProps(MoveModel model, String[] row, int rowIndex, AtomicInteger colIndex) throws URISyntaxException {
 
         // first call super method in order to init properties of any Event
-        super.readAndValidateRow(model, row, rowIndex, colIndex);
+        super.readCommonsProps(model, row, rowIndex, colIndex);
 
         // then fill move specific properties
 
@@ -72,21 +85,21 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         }
 
         // parse all properties which define a position : point,x,y,z,positionDescription
-        if(!CollectionUtils.isEmpty(model.getConcernedItems())){
+        if(!CollectionUtils.isEmpty(model.getTargets())){
 
-            URI concernedItemUri = model.getConcernedItems().get(0);
-            ConcernedItemPositionModel itemPositionModel = new ConcernedItemPositionModel();
-            itemPositionModel.setConcernedItem(concernedItemUri);
+            URI targetUri = model.getTargets().get(0);
+            TargetPositionModel itemPositionModel = new TargetPositionModel();
+            itemPositionModel.setTarget(targetUri);
 
             PositionModel position = new PositionModel();
             itemPositionModel.setPosition(position);
-            List<ConcernedItemPositionModel> itemPositionModels = Collections.singletonList(itemPositionModel);
-            noSqlModel.setItemPositions(itemPositionModels);
+            List<TargetPositionModel> itemPositionModels = Collections.singletonList(itemPositionModel);
+            noSqlModel.setTargetPositions(itemPositionModels);
 
             String coordinates = row[colIndex.getAndIncrement()];
             if(!StringUtils.isEmpty(coordinates)){
                 try{
-                    position.setPoint((Point) GeospatialDAO.wktToGeometry(coordinates));
+                    position.setCoordinates((Point) GeospatialDAO.wktToGeometry(coordinates));
                     anyMoveFieldNonNull = true;
                 }catch (ParseException | JsonProcessingException e){
                     CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, coordinates,"coordinates");
@@ -121,7 +134,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
             String positionDescription = row[colIndex.get()];
             if(!StringUtils.isEmpty(positionDescription)){
-                position.setDescription(positionDescription);
+                position.setTextualPosition(positionDescription);
                 anyMoveFieldNonNull = true;
 
             }

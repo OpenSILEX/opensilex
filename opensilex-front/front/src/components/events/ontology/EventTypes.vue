@@ -6,7 +6,7 @@
         typeURI="/event-types"
         propertiesTitle="EventTypes.propertiesTitle"
         propertiesURI="/event-types/properties"
-        :withProperties="false"
+        :withProperties="true"
     ></opensilex-OntologyTypesView>
 </template>
 

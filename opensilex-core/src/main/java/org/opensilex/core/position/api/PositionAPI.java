@@ -25,7 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import org.opensilex.core.event.dal.EventModel;
+
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
@@ -99,7 +99,7 @@ public class PositionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchPositionHistory(
-            @ApiParam(value = "Concerned item URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("concernedItemUri") @NotNull URI concernedItem,
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") @NotNull URI target,
             @ApiParam(value = "Start date : match position affected after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("startDateTime") @ValidOffsetDateTime String startDate,
             @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -109,12 +109,12 @@ public class PositionAPI {
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        MoveModel moveEvent = moveDAO.getMoveEvent(concernedItem, null);
+        MoveModel moveEvent = moveDAO.getMoveEvent(target, null);
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
             LinkedHashMap<MoveModel, PositionModel> positionHistory = moveDAO.getPositionsHistory(
-                    concernedItem,
+                    target,
                     null,
                     startDate != null ? OffsetDateTime.parse(startDate) : null,
                     endDate != null ? OffsetDateTime.parse(endDate) : null,

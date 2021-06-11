@@ -91,7 +91,7 @@
                                     <b-button-group size="sm">
                                         <opensilex-EditButton
                                             v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                                            @click="editEvent(data.item)"
+                                            @click="editEvent(data.item.event)"
                                             :small="true"
                                         ></opensilex-EditButton>
                                         <opensilex-DeleteButton
@@ -292,14 +292,8 @@ export default class PositionList extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
-    editEvent(position) {
-        this.getEventPromise(position).then((http: HttpResponse<OpenSilexResponse<MoveDetailsDTO>>) => {
-            let move: MoveDetailsDTO = http.response.result;
-            if (!move.targets_positions) {
-                move.targets_positions = MoveForm.getEmptyTargetsPositions();
-            }
-            this.eventModalForm.showEditForm(move);
-        }).catch(this.$opensilex.errorHandler);
+    editEvent(uri) {
+        this.eventModalForm.showEditForm(uri,this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI);
     }
 
     getItemsToDisplay(targets) {

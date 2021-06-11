@@ -118,7 +118,8 @@ export default class OntologyClassForm extends Vue {
       .createRDFType(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
-        console.debug("Object type created", uri);
+        let message = this.$i18n.t("OntologyClassView.the-type") + " " +uri + this.$i18n.t("component.common.success.creation-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(error => {
         if (error.status == 409) {
@@ -139,7 +140,8 @@ export default class OntologyClassForm extends Vue {
       .updateRDFType(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
-        console.debug("Object type updated", uri);
+        let message = this.$i18n.t("OntologyClassView.the-type") + " " +uri + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }

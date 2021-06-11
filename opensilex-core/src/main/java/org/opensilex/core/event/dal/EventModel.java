@@ -21,23 +21,26 @@ import java.util.List;
 import java.util.UUID;
 
 
+
 /**
  * @author Renaud COLIN
  */
 @SPARQLResource(
         ontology = Oeev.class,
         resource = "Event",
-        graph = "events"
+        graph = EventModel.GRAPH
 )
 public class EventModel extends SPARQLResourceModel implements ClassURIGenerator<EventModel> {
+
+    public static final String GRAPH = "set/events";
 
     @SPARQLProperty(
             ontology = Oeev.class,
             property = "concerns",
             required = true
     )
-    private List<URI> concernedItems;
-    public static final String CONCERNED_ITEM_FIELD = "concernedItems";
+    private List<URI> targets;
+    public static final String TARGETS_FIELD = "targets";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -66,13 +69,15 @@ public class EventModel extends SPARQLResourceModel implements ClassURIGenerator
             required = true
     )
     private Boolean isInstant;
+    public static final String IS_INSTANT_FIELD = "isInstant";
 
-    public List<URI> getConcernedItems() {
-        return concernedItems;
+
+    public List<URI> getTargets() {
+        return targets;
     }
 
-    public void setConcernedItems(List<URI> concernedItems) {
-        this.concernedItems = concernedItems;
+    public void setTargets(List<URI> targets) {
+        this.targets = targets;
     }
 
     public InstantModel getStart() {

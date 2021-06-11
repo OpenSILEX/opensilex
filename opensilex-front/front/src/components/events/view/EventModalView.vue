@@ -9,7 +9,7 @@
             ok-only
             :title="$t('Event.event')"
     >
-        <div v-if="event">
+        <div class="card-body" v-if="event">
             <opensilex-UriView :uri="event.uri"></opensilex-UriView>
             <opensilex-TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name"></opensilex-TypeView>
             <opensilex-TextView label="component.common.description" :value="event.description"></opensilex-TextView>
@@ -38,9 +38,9 @@
             <opensilex-MoveView :event="event"></opensilex-MoveView>
         </div>
 
-        <div v-if="hasRelations(event)">
+        <div v-if="hasRelations(event)" class="card-body">
             <br>
-            <p><b> {{event.typeLabel}} : {{$t('Event.specific-properties')}} </b></p>
+            <p><b>  {{$t('Event.specific-properties')}} ({{event.rdf_type_name}})</b></p>
             <hr/>
 
             <div :key="index" v-for="(relation, index) in event.relations">
@@ -51,9 +51,7 @@
             </div>
         </div>
 
-
         <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-
 
     </b-modal>
 </template>
@@ -85,7 +83,7 @@
 
         baseEventType: string;
 
-        eventPropertyByUri: Map<string, VueRDFTypeDTO>;
+        eventPropertyByUri: Map<string, VueRDFTypeDTO> = new Map();
 
         static getEmptyForm(): EventDetailsDTO {
             return {

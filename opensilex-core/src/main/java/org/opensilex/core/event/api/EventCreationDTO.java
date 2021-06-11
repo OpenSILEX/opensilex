@@ -9,7 +9,6 @@ package org.opensilex.core.event.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.event.api.validation.EventDateTimeConstraint;
@@ -43,7 +42,7 @@ public class EventCreationDTO extends RDFObjectDTO {
     protected String end;
 
     @JsonProperty("targets")
-    protected List<URI> concernedItems;
+    protected List<URI> targets;
 
     @JsonProperty("description")
     protected String description;
@@ -74,12 +73,12 @@ public class EventCreationDTO extends RDFObjectDTO {
     @NotEmpty
     @ValidURI
     @ApiModelProperty(required = true, value = "URI(s) of items concerned by this event")
-    public List<URI> getConcernedItems() {
-        return concernedItems;
+    public List<URI> getTargets() {
+        return targets;
     }
 
-    public void setConcernedItems(List<URI> concernedItems) {
-        this.concernedItems = concernedItems;
+    public void setTargets(List<URI> targets) {
+        this.targets = targets;
     }
 
     @ApiModelProperty(example = "2019-09-08T13:00:00+01:00")
@@ -117,7 +116,7 @@ public class EventCreationDTO extends RDFObjectDTO {
         model.setUri(uri);
         model.setType(type);
 
-        model.setConcernedItems(concernedItems);
+        model.setTargets(targets);
         model.setDescription(description);
         model.setIsInstant(isInstant);
 

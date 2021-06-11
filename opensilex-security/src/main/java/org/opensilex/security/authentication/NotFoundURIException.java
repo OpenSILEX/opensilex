@@ -15,7 +15,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 public class NotFoundURIException extends SPARQLInvalidURIException {
 
     public NotFoundURIException(URI uri) {
-        super("URI not found:",  uri);
+        super("URI not found : ",  uri);
     }
     
     public NotFoundURIException(String message, URI uri) {

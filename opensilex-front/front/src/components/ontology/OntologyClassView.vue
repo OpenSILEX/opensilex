@@ -16,6 +16,12 @@
             :icon="icon"
           ></opensilex-ModalForm>
         </div>
+          <opensilex-StringFilter
+              :filter.sync="filter"
+              @update="updateFilter()"
+              placeholder="OntologyClassView.search"
+          ></opensilex-StringFilter>
+
         <opensilex-OntologyClassTreeView
           ref="classesTree"
           :rdfType="rdfType"
@@ -41,11 +47,14 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import OntologyClassTreeView from "./OntologyClassTreeView.vue";
 
 @Component
 export default class OntologyClassView extends Vue {
   $opensilex: any;
   $store: any;
+
+  private filter: any = "";
 
   get user() {
     return this.$store.state.user;
@@ -63,7 +72,7 @@ export default class OntologyClassView extends Vue {
   selected = null;
 
   @Ref("classForm") readonly classForm!: any;
-  @Ref("classesTree") readonly classesTree!: any;
+  @Ref("classesTree") readonly classesTree!: OntologyClassTreeView;
 
   initForm(form) {
     form.parent = this.parentURI;
@@ -93,6 +102,10 @@ export default class OntologyClassView extends Vue {
       .getService("opensilex.VueJsOntologyExtensionService")
       .deleteRDFType(data.uri)
       .then(http => {
+        let message = this.$i18n.t("OntologyClassView.the-type") + " " + data.name + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
+
+        this.selected = undefined;
         this.refresh();
       });
   }
@@ -112,8 +125,14 @@ export default class OntologyClassView extends Vue {
   }
 
   refresh() {
-    this.classesTree.refresh(this.selected);
+    this.classesTree.refresh(this.selected,this.filter);
   }
+
+
+  updateFilter() {
+    this.refresh();
+  }
+
 }
 </script>
 
@@ -129,11 +148,15 @@ export default class OntologyClassView extends Vue {
 <i18n>
 en:
   OntologyClassView:
+    the-type: The type
     add: Create type
     update: Update type
-
+    search: Search and select a type
 fr:
   OntologyClassView:
+    the-type: Le type
     add: Créer un type
     update: Mettre à jour le type
+    search: Rechercher et sélectioner un type
 </i18n>
+

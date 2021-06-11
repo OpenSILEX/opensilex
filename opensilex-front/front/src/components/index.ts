@@ -432,8 +432,8 @@ import ScientificObjectVariableSelector from './scientificObjects/visualization/
 components["opensilex-ScientificObjectVariableSelector"] = ScientificObjectVariableSelector;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
-import ScientificObjectUriView from './scientificObjects/ScientificObjectUriView.vue';
-components["opensilex-ScientificObjectUriView"] = ScientificObjectUriView;
+import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
+components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -631,6 +631,8 @@ import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 import  DeviceTypes from './devices/DeviceTypes.vue';
 components["opensilex-DeviceTypes"] = DeviceTypes;
+import  DeviceSelector from './devices/DeviceSelector.vue';
+components["opensilex-DeviceSelector"] = DeviceSelector;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';

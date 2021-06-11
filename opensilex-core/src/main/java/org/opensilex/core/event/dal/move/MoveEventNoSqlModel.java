@@ -10,7 +10,7 @@ public class MoveEventNoSqlModel extends MongoModel {
 
     public final static String ID_FIELD = "_id";
 
-    private List<ConcernedItemPositionModel> itemPositions;
+    private List<TargetPositionModel> targetPositions;
 
     @Override
     @BsonId
@@ -18,11 +18,11 @@ public class MoveEventNoSqlModel extends MongoModel {
         return super.getUri();
     }
 
-    public List<ConcernedItemPositionModel> getItemPositions() {
-        return itemPositions;
+    public List<TargetPositionModel> getTargetPositions() {
+        return targetPositions;
     }
 
-    public void setItemPositions(List<ConcernedItemPositionModel> itemPositions) {
-        this.itemPositions = itemPositions;
+    public void setTargetPositions(List<TargetPositionModel> targetPositions) {
+        this.targetPositions = targetPositions;
     }
 }

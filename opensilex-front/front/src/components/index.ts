@@ -679,10 +679,10 @@ import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 
 //Elasticsearch
-import ElasticSearch from './ElasticSearch.vue';
-components["opensilex-ElasticSearch"] = ElasticSearch;
-import ElasticFilter from './common/filters/ElasticFilter.vue';
-components["opensilex-ElasticFilter"] = ElasticFilter;
+import Elasticsearch from './Elasticsearch.vue';
+components["opensilex-ElasticSearch"] = Elasticsearch;
 
 
+ 
+ 
 export default components;

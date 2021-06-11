@@ -113,6 +113,7 @@ public class GlobalSearchAPI  {
         SearchHit[] searchHits = response.getHits().getHits();
         CountRequest countRequest = new CountRequest("variables","projects"); 
         countRequest.source(sourceBuilder);
+        
 
         CountResponse countResponse = elasticClient
                        .count(countRequest, RequestOptions.DEFAULT);

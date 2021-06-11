@@ -19,9 +19,10 @@
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
           
-          <opensilex-ElasticSearch >
-          </opensilex-ElasticSearch>
-          
+          <opensilex-StringFilter
+            placeholder="Search"
+          ></opensilex-StringFilter>
+
           <b-dropdown
             id="langDropdown"
             :title="user.getEmail()"

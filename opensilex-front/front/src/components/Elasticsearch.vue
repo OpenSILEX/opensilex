@@ -28,7 +28,7 @@ import Vue from "vue";
 import { GlobalSearchService } from "opensilex-core/index";
 
 @Component
-export default class Elasticsearch extends Vue {
+export default class ElasticSearch extends Vue {
   $opensilex: any;
   $store: any;
   //searchQuery: string = 'sunagri'
@@ -108,7 +108,7 @@ export default class Elasticsearch extends Vue {
   }
 
   loadData(options) {
-    return this.service.searcsearchES(
+    return this.service.searchES(
     "sunagri",
       options.currentPage,
       options.pageSize      
@@ -119,29 +119,6 @@ export default class Elasticsearch extends Vue {
     this.tableRef.onItemUnselected(row);
   }
 
-  initForm() {
-    let targetURI = [];
-    for (let select of this.tableRef.getSelected()) {
-      targetURI.push(select.uri);
-    }
-
-    return {
-      description: {
-        uri: undefined,
-        identifier: undefined,
-        rdf_type: undefined,
-        title: undefined,
-        date: undefined,
-        description: undefined,
-        targets: targetURI,
-        authors: undefined,
-        language: undefined,
-        deprecated: undefined,
-        keywords: undefined
-      },
-      file: undefined
-    };
-  }
 }
 </script>
 

@@ -77,7 +77,7 @@ menu:
       - id: datafiles
         label: component.menu.data.datafiles
         route:
-          path: /datafiles
+          path: /files
           component: opensilex-DataFilesView
       # - id: equipments
       #   label: component.menu.equipments.label

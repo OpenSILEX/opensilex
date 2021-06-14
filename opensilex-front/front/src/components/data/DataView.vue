@@ -574,6 +574,27 @@ export default class DataView extends Vue {
     this.loadProvenance({id: this.filter.provenance})
   }
 
+  exportData(mode: string) {
+    let path = "/core/data/export";
+    let today = new Date();
+    let filename =
+      "export_data_" +
+      today.getFullYear() +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0");
+
+    let params = {
+      start_date: this.filter.start_date,
+      end_date: this.filter.end_date,
+      scientific_objects: this.filter.scientificObjects,
+      experiments: this.filter.experiments,
+      variables: this.filter.variables,
+      provenances: [this.filter.provenance],
+      mode: mode
+    }
+    this.$opensilex.downloadFilefromService(path, filename, "csv", params);
+  }
+
 }
 </script>
 

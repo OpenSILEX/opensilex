@@ -1,6 +1,9 @@
 <template>
   <div>
 
+    <opensilex-ElasticSearch >
+    </opensilex-ElasticSearch>
+
     <opensilex-SearchFilterField @clear="reset()" @search="refresh()">
       <template v-slot:filters>
         <opensilex-FilterField>
@@ -41,9 +44,6 @@
         
       </template>
     </opensilex-SearchFilterField>
-
-    <opensilex-ElasticSearch >
-    </opensilex-ElasticSearch>
 
     <opensilex-TableAsyncView
       ref="tableRef"

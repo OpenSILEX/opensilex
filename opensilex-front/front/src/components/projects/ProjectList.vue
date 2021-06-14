@@ -42,12 +42,10 @@
       </template>
     </opensilex-SearchFilterField>
 
-    <opensilex-ElasticSearch
-      ref="tableRef"
-     >
+    <opensilex-ElasticSearch >
     </opensilex-ElasticSearch>
 
-    <!--<opensilex-TableAsyncView
+    <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="loadData"
       :fields="fields"
@@ -118,7 +116,7 @@
           ></opensilex-DeleteButton>
         </b-button-group>
       </template>
-    </opensilex-TableAsyncView> -->
+    </opensilex-TableAsyncView> 
 
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"

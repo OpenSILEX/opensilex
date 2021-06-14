@@ -1,42 +1,29 @@
 <template>
-
-<div>
-     
- <div class="container-fluid boxed-layout">
-      <div class="d-flex justify-content-end">
-        <div class="top-menu d-flex align-items-center">
-          
-          <opensilex-StringFilter
-              :filter.sync="nameFilter"
-                placeholder="Search"
-              ></opensilex-StringFilter>
-              
-          <b-button v-b-modal.modal-scrollable>Show results </b-button>
-          <b-modal id="modal-scrollable" scrollable title="Search results">
-            
-            <opensilex-TableAsyncView 
-              ref="tableRef"
-              :searchMethod="loadData"
-              :fields="fields">
-            </opensilex-TableAsyncView>
-
-        </b-modal>
-      
-      </div>
-    </div>
+  <div>
+    <opensilex-TableAsyncView 
+      ref="tableRef"
+      :searchMethod="loadData"
+      :fields="fields"
+      :isSelectable="true"
+    >
+      <!--<template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :disabled="numberOfSelectedRows == 0"
+          text="actions"
+        >
+        </b-dropdown>
+      </template>-->
+    </opensilex-TableAsyncView>
   </div>
-</div>
-
-  
-
-
 </template>
 
 <script lang="ts">
 
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-
 // @ts-ignore
 import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/lib";
 
@@ -44,6 +31,7 @@ import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/li
 export default class ElasticSearch extends Vue {
   $opensilex: any;
   $store: any;
+  //searchQuery: string = 'sunagri'
 
 
   service: ElasticSearchService;
@@ -77,13 +65,22 @@ await $opensilex.loadModule("opensilex-elastic");
   @Prop()
   maximumSelectedRows;
 
-   @Prop()
-  searchMethod;
+  filter = {
+    year: undefined,
+    name: "",
+    keyword: "",
+    financial: "",
+  };
 
-  @Prop({
-    default: ""
-  })
-  nameFilter: string;
+  reset() {
+    this.filter = {
+      year: undefined,
+      name: "",
+      keyword: "",
+      financial: "",
+    };
+    this.refresh();
+  }
   
 
   get fields() {
@@ -94,17 +91,17 @@ await $opensilex.loadModule("opensilex-elastic");
         sortable: true
       },
       {
-      label: "Type",
-      key: "rdf_type",
-      sortable: true
-      },
-      {
-      label: "Uri",
-      key: "uri",
+      label: "component.common.description",
+      key: "description",
       sortable: true
       }
     ];
-    
+    if (!this.noActions) {
+      tableFields.push({
+        key: "actions",
+        label: "component.common.actions"
+      });
+    }
     return tableFields;
   }
 
@@ -121,7 +118,7 @@ await $opensilex.loadModule("opensilex-elastic");
 
   loadData(options) {
     return this.service.searchES(
-      this.nameFilter,
+    "sunagri",
       options.currentPage,
       options.pageSize      
     );

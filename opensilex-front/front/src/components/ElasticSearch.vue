@@ -25,7 +25,7 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { GlobalSearchService } from "opensilex-core/index";
+import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/lib";
 
 @Component
 export default class ElasticSearch extends Vue {
@@ -34,13 +34,22 @@ export default class ElasticSearch extends Vue {
   //searchQuery: string = 'sunagri'
 
 
-  service: GlobalSearchService;
+  service: ElasticSearchService;
 
   get user() {
     return this.$store.state.user;
   }
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+static async asyncInit($opensilex) {
+await $opensilex.loadModule("opensilex-elastic");
+}
+
+    created() {
+    this.service = this.$opensilex.getService("opensilex-elastic.ElasticSearchService");
+    
   }
 
   @Prop({

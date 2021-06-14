@@ -4,18 +4,8 @@
       ref="tableRef"
       :searchMethod="loadData"
       :fields="fields"
-      :isSelectable="true"
     >
-      <!--<template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-        <b-dropdown
-          dropright
-          class="mb-2 mr-2"
-          :small="true"
-          :disabled="numberOfSelectedRows == 0"
-          text="actions"
-        >
-        </b-dropdown>
-      </template>-->
+
     </opensilex-TableAsyncView>
   </div>
 </template>
@@ -91,17 +81,17 @@ await $opensilex.loadModule("opensilex-elastic");
         sortable: true
       },
       {
-      label: "component.common.description",
-      key: "description",
+      label: "Type",
+      key: "rdf_type",
+      sortable: true
+      },
+      {
+      label: "Uri",
+      key: "uri",
       sortable: true
       }
     ];
-    if (!this.noActions) {
-      tableFields.push({
-        key: "actions",
-        label: "component.common.actions"
-      });
-    }
+    
     return tableFields;
   }
 

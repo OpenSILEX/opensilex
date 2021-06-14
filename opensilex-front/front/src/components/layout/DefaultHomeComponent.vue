@@ -3,17 +3,7 @@
       <div class="container-fluid">
           
       </div>
-     
-        <opensilex-Elasticsearch  
-         ref="tableRef"
-      :searchMethod="loadData"
-      :fields="fields"
-      :isSelectable="true"
-      :maximumSelectedRows="maximumSelectedRows">
-          
-
-        </opensilex-Elasticsearch>
-   
+        
   </div> 
 </template>
 

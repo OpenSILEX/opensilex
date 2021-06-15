@@ -110,7 +110,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         assertFalse(germplasmList.isEmpty());
     }
 
-    //@Test
+    @Test
     public void testUpdate() throws Exception {
 
         // create a species

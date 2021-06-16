@@ -1,23 +1,34 @@
 <template>
 
-  <div>
-  
-    <b-button v-b-modal.modal-scrollable>Show results </b-button>
-    <b-modal id="modal-scrollable" scrollable title="Search results">
-      <!-- <opensilex-StringFilter
-            :filter.sync="nameFilter"
-            @update="updateFilters()"
-            placeholder="Search"
-      ></opensilex-StringFilter> -->
-    
-      <opensilex-TableAsyncView 
-        ref="tableRef"
-        :searchMethod="loadData"
-        :fields="fields"
-      >
-      </opensilex-TableAsyncView>
-   </b-modal>
+<div>
+     
+ <div class="container-fluid boxed-layout">
+      <div class="d-flex justify-content-end">
+        <div class="top-menu d-flex align-items-center">
+          
+          <opensilex-StringFilter
+              :filter.sync="nameFilter"
+                placeholder="Search"
+              ></opensilex-StringFilter>
+              
+          <b-button v-b-modal.modal-scrollable>Show results </b-button>
+          <b-modal id="modal-scrollable" scrollable title="Search results">
+            
+            <opensilex-TableAsyncView 
+              ref="tableRef"
+              :searchMethod="loadData"
+              :fields="fields">
+            </opensilex-TableAsyncView>
+
+        </b-modal>
+      
+      </div>
+    </div>
   </div>
+</div>
+
+  
+
 
 </template>
 
@@ -66,22 +77,13 @@ await $opensilex.loadModule("opensilex-elastic");
   @Prop()
   maximumSelectedRows;
 
-  filter = {
-   year: undefined,
-      name: "",
-      keyword: "",
-      financial: "",
-  };
+   @Prop()
+  searchMethod;
 
-  reset() {
-    this.filter = {
-      year: undefined,
-      name: "",
-      keyword: "",
-      financial: "",
-    };
-    this.refresh();
-  }
+  @Prop({
+    default: ""
+  })
+  nameFilter: string;
   
 
   get fields() {
@@ -119,7 +121,7 @@ await $opensilex.loadModule("opensilex-elastic");
 
   loadData(options) {
     return this.service.searchES(
-      "sunagri",
+      this.nameFilter,
       options.currentPage,
       options.pageSize      
     );

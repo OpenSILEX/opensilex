@@ -277,7 +277,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             });
             return {
               type: "flags",
-              allowOverlapX: true,
+              allowOverlapX: false, // when flags have same datetimes
               name: "Events",
               lineWidth: 1,
               yAxis: 1,
@@ -338,7 +338,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
             }
 
             return {
-              type: "line",
               name: this.selectedVariable.name,
               data: cleanData,
               yAxis: 0,
@@ -372,18 +371,19 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
     data.forEach(element => {
       let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
+        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
       let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
       let highchartsDate = Highcharts.dateFormat(
         "%Y-%m-%dT%H:%M:%S",
         dateWithoutUTC
       );
       let offset = moment.parseZone(element.date).format("Z");
+      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
       toAdd = {
         x: dateWithoutUTC,
         y: element.value,
         offset: offset,
-        dateWithOffset: highchartsDate + offset,
+        dateWithOffset: stringDate,
         provenanceUri: element.provenance.uri,
         data: element
       };

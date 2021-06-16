@@ -37,6 +37,7 @@
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import Oeev from "../../../ontologies/Oeev";
     import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
+    import moment from "moment-timezone";
 
     @Component
     export default class EventModalForm extends Vue {
@@ -55,6 +56,9 @@
 
         @Prop()
         editMode;
+
+        @Prop()
+        eventCreatedTime: any;
 
         get user() {
             return this.$store.state.user;
@@ -118,8 +122,19 @@
             });
         }
 
-        create(event: EventCreationDTO) {
+        convertDateTime(event){
+           event.end = event.end.includes("Z") ? moment(event.end).utcOffset(this.eventCreatedTime.offset).format() : event.end;
+           if(event.start) {
+                event.start = event.start.includes("Z") ? moment(event.start).utcOffset(this.eventCreatedTime.offset).format() : event.start;
+           }
+           return event;
+        }
 
+        create(event: EventCreationDTO) {
+            if(this.eventCreatedTime){
+                event = this.convertDateTime(event);
+            }
+           
             let isMove = this.isMove(event.rdf_type,this.$opensilex.Oeev);
             EventModalForm.convertFormToDto(event,isMove);
 
@@ -178,6 +193,12 @@
             }
             if (this.target) {
                 eventCopy.targets.push(this.target);
+            }
+
+            if(this.eventCreatedTime){
+                eventCopy.start = this.eventCreatedTime.time;
+                eventCopy.end = this.eventCreatedTime.time;
+                eventCopy.is_instant = true;
             }
 
             if (this.defaultEventType) {

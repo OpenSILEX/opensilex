@@ -7,7 +7,6 @@
       :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
     >
       <b-list-group-item
-        v-if="showEvents"
         href="#"
         @click="addEventClick"
       >{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
@@ -178,8 +177,8 @@ export default class DataVisuGraphic extends Vue {
   variable;
   selectedPointsCount = 0;
 
-  lineType = true;
-  lineWidth = true;
+  lineType = false;
+  lineWidth = false;
   yAxis = {
     title: {
       text: ""
@@ -359,9 +358,7 @@ export default class DataVisuGraphic extends Vue {
             useHTML: true,
             formatter: function(tooltip) {
               if (this.point.y) {
-                let date = this.point.data.date.includes("T")
-                  ? Highcharts.dateFormat("%Y-%m-%d %H:%M:%S", this.x)
-                  : Highcharts.dateFormat("%Y-%m-%d", this.x);
+                let date = moment.parseZone( this.point.data.date).format("YYYY-MM-DD HH:mm:ss")
                 return (
                   "" +
                   this.point.series.name +
@@ -554,10 +551,10 @@ export default class DataVisuGraphic extends Vue {
     chart.tooltip.hide();
     if (e.point.data && graphic.series) {
       let chartWidth = this.highchartsRef[0].chart.chartWidth;
-      if (e.pageX + 200 > chartWidth) {
-        this.leftPosition = e.pageX - 195;
+      if (e.pageX + 120 > chartWidth) {
+        this.leftPosition = e.pageX - 130;
       } else {
-        this.leftPosition = e.pageX + 5;
+        this.leftPosition = e.pageX + 10;
       }
       this.topPosition = e.pageY;
       this.contextMenuShow = true;
@@ -569,7 +566,6 @@ export default class DataVisuGraphic extends Vue {
       this.selectedOffset = e.point.offset;
       this.selectedTime = e.point.data.date;
       this.selectedTimeToSend = e.point.dateWithOffset;
-
       // this.selectedTime = chart.xAxis[0].toValue(e.chartX, false);
     }
   }
@@ -617,7 +613,7 @@ export default class DataVisuGraphic extends Vue {
 
   addEventClick() {
     this.contextMenuShow = false;
-    this.$emit("addEventIsClicked", this.selectedTimeToSend);
+    this.$emit("addEventIsClicked", {time:this.selectedTimeToSend,offset:this.selectedOffset});
   }
 
   exportPNG() {

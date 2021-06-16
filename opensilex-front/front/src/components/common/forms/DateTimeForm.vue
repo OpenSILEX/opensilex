@@ -15,6 +15,7 @@
           class="inline-block h-full"
           is24hr
           mode="datetime"
+          :timezone="timezone"
           @input="input"
         >
           <template v-slot="{ inputValue, inputEvents }">
@@ -78,13 +79,13 @@ export default class DateTimeForm extends Vue {
   @Prop()
   minDate: Date;
 
-  @Prop({ default: "local" })
-  valueZone: string;
+  @Prop({ default: "" })
+  timezone: string;
 
   private modelConfig = {
     type: "string",
     mask: "iso",
-    timeAdjust: "now",
+    timeAdjust: "00:00:00",
   };
 
   input(value) {

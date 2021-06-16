@@ -21,12 +21,6 @@
           
           <opensilex-ElasticSearch >
           </opensilex-ElasticSearch>
-          <opensilex-StringFilter
-              :filter.sync="nameFilter"
-              @update="updateFilters()"
-              placeholder="Search"
-
-          ></opensilex-StringFilter> 
           
           <b-dropdown
             id="langDropdown"
@@ -151,6 +145,7 @@ export default class DefaultHeaderComponent extends Vue {
     }
   }
 }
+
 </script>
 
 <style scoped lang="scss">

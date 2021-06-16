@@ -1,19 +1,31 @@
 <template>
-  <div>
-    <opensilex-TableAsyncView 
-      ref="tableRef"
-      :searchMethod="loadData"
-      :fields="fields"
-    >
 
-    </opensilex-TableAsyncView>
+  <div>
+  
+    <b-button v-b-modal.modal-scrollable>Show results </b-button>
+    <b-modal id="modal-scrollable" scrollable title="Search results">
+      <!-- <opensilex-StringFilter
+            :filter.sync="nameFilter"
+            @update="updateFilters()"
+            placeholder="Search"
+      ></opensilex-StringFilter> -->
+    
+      <opensilex-TableAsyncView 
+        ref="tableRef"
+        :searchMethod="loadData"
+        :fields="fields"
+      >
+      </opensilex-TableAsyncView>
+   </b-modal>
   </div>
+
 </template>
 
 <script lang="ts">
 
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
+
 // @ts-ignore
 import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/lib";
 
@@ -21,7 +33,6 @@ import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/li
 export default class ElasticSearch extends Vue {
   $opensilex: any;
   $store: any;
-  //searchQuery: string = 'sunagri'
 
 
   service: ElasticSearchService;
@@ -56,10 +67,10 @@ await $opensilex.loadModule("opensilex-elastic");
   maximumSelectedRows;
 
   filter = {
-    year: undefined,
-    name: "",
-    keyword: "",
-    financial: "",
+   year: undefined,
+      name: "",
+      keyword: "",
+      financial: "",
   };
 
   reset() {
@@ -108,7 +119,7 @@ await $opensilex.loadModule("opensilex-elastic");
 
   loadData(options) {
     return this.service.searchES(
-    "sunagri",
+      "sunagri",
       options.currentPage,
       options.pageSize      
     );

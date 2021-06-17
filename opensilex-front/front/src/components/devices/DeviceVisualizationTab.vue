@@ -10,6 +10,7 @@
       v-if="isGraphicLoaded"
       ref="visuGraphic"
       :deviceType="true"
+      :isAddEvents="false"
       @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
 

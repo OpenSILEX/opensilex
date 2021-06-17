@@ -13,6 +13,7 @@
       <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
+        :isAddEvents="false"
         @dataAnnotationIsClicked="showAnnotationForm"
         @graphicCreated="$emit('graphicCreated')"
       ></opensilex-DataVisuGraphic>

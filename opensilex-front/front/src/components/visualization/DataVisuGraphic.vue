@@ -7,6 +7,7 @@
       :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
     >
       <b-list-group-item
+        v-if="isAddEvents"
         href="#"
         @click="addEventClick"
       >{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
@@ -193,6 +194,11 @@ export default class DataVisuGraphic extends Vue {
     default: false
   })
   deviceType;
+
+   @Prop({
+    default: true
+  })
+  isAddEvents;
 
   data: any = null;
   provenance: any = null;

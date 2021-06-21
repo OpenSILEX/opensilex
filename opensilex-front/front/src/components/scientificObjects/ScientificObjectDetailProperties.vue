@@ -200,7 +200,8 @@ export default class ScientificObjectDetailProperties extends Vue {
     this.typeProperties = [];
     this.valueByProperties = {};
     this.classModel = {};
-
+    this.$opensilex.disableLoader();
+    
     return Promise.all([
       this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
@@ -213,6 +214,8 @@ export default class ScientificObjectDetailProperties extends Vue {
         .getPosition(this.selected.uri)
         .catch(() => null),
     ]).then((result) => {
+      this.$opensilex.enableLoader();
+   
       this.classModel = result[0].response.result;
       let lastMove = null;
       if (result[1] != null) {

@@ -101,9 +101,12 @@ export default class TypeForm extends Vue {
   }
 
   loadTypes(callback?) {
+
+    this.$opensilex.disableLoader();
     this.service
       .getSubClassesOf(this.baseType, this.ignoreRoot)
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        this.$opensilex.enableLoader();
         this.typesOptions = this.$opensilex.buildTreeListOptions(
           http.response.result
         );
@@ -111,7 +114,10 @@ export default class TypeForm extends Vue {
           callback();
         }
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch((error) => {
+        this.$opensilex.enableLoader();
+        this.$opensilex.errorHandler;
+        });
   }
 }
 </script>

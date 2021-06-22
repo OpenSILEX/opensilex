@@ -1491,5 +1491,39 @@ public class ExperimentAPI {
 
         return new PaginatedListResponse<>(provenances).getResponse();
     }
+    
+    @GET
+    @Path("by_uris")
+    @ApiOperation("Get experiments URIs")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return experiments", response = ExperimentGetListDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Experiment not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getExperimentsByURIs(
+            @ApiParam(value = "Experiments URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+    ) throws Exception {
+        ExperimentDAO dao = new ExperimentDAO(sparql);
+        List<ExperimentModel> models = dao.getByURIs(uris, currentUser);
+
+        if (!models.isEmpty()) {
+            List<ExperimentGetListDTO> resultDTOList = new ArrayList<>(models.size());
+            models.forEach(result -> {
+                resultDTOList.add(ExperimentGetListDTO.fromModel(result));
+            });
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        } else {
+            // Otherwise return a 404 - NOT_FOUND error response
+            return new ErrorResponse(
+                    Response.Status.NOT_FOUND,
+                    "Experiments not found",
+                    "Unknown experiment URIs"
+            ).getResponse();
+        }
+    }
 
 }

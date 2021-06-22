@@ -472,4 +472,8 @@ public class ExperimentDAO {
             });
         }
     }
+
+    public List<ExperimentModel> getByURIs(List<URI> uris, UserModel currentUser) throws Exception {
+        return sparql.getListByURIs(ExperimentModel.class, uris, currentUser.getLanguage());
+    }
 }

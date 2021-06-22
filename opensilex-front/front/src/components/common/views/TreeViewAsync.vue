@@ -11,7 +11,6 @@
         <opensilex-Icon v-if="!node.isExpanded" icon="fa#chevron-right" />
       </span>
     </template>
-
     <template slot="title" slot-scope="{ node }">
       <span v-if="node.data != null">
         <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>

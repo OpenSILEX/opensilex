@@ -121,6 +121,18 @@
                 </b-dropdown-item-button>
             </b-dropdown>
           </div>
+
+          <div>
+            <b-form-checkbox
+                class="selection-box custom-control custom-checkbox"
+                v-model="selectAll"
+                @change="onSelectAll()"
+                switches
+              >
+            </b-form-checkbox>
+          </div>
+
+
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
@@ -217,7 +229,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { ScientificObjectsService } from "opensilex-core/index";
@@ -377,6 +389,8 @@ export default class ExperimentScientificObjects extends Vue {
   refresh() {
     if (this.soTree) {
       this.soTree.refresh();
+      this.selectAll = false;
+      this.onSelectAll();
       this.selected = null;
     }
   }
@@ -561,10 +575,78 @@ export default class ExperimentScientificObjects extends Vue {
       file: undefined
     }
   }
+
+  selectAll = false;
+  selectAllLimit = 1500; 
+  
+  onSelectAll(){
+    if (this.selectAll) {
+      this.selectedObjects = [];
+
+      this.soService.searchScientificObjects(
+        this.uri, 
+        this.filters.types,
+        this.filters.name,
+        this.filters.parent,
+        undefined, 
+        this.filters.factorLevels,
+        undefined, 
+        undefined, 
+        undefined, 
+        [], 
+        0,
+        this.selectAllLimit)
+      .then((http) => {
+        let count = http.response.metadata.pagination.totalCount;
+          if(count > this.selectAllLimit) {
+            alert(this.$t('ExperimentScientificObjects.alertSelectAllLimitSize') + this.selectAllLimit);
+            this.selectAll=false;
+          }
+          else {
+            for (let i in http.response.result) {
+              let soDTO = http.response.result[i];
+              this.selectedObjects.push(soDTO.uri);
+            }  
+
+              //Select all parents
+              // this.searchMethod(this.nodes, 0, this.selectAllLimit)
+              // .then((http) => {
+              // for (let i in http.response.result) {
+              //   let soDTO = http.response.result[i];
+
+              //   let soNode = {
+              //       title: soDTO.name,
+              //       data: soDTO,
+              //       isDraggable: false,
+              //       isExpanded: true,
+              //       isSelected: true,
+              //       isSelectable: true,
+              //       isVisible: true
+              //     };
+              //     this.selectedObjects.push(soNode.data.uri);
+
+              //     let children = this.loadAllChildren(soNode);
+              //     console.log(children);
+              // }  
+              this.numberOfSelectedRows = this.selectedObjects.length;
+              return this.selectedObjects;
+            }
+        })
+      }
+    else {
+      this.selectedObjects = [];
+      this.numberOfSelectedRows = this.selectedObjects.length;
+    }
+  }
 }
 </script>
 
 <style scoped lang="scss">
+.selection-box {
+  margin-top: 1px;
+  margin-left: 24px;
+}
+
 .async-tree-action {
   font-style: italic;
 }
@@ -603,6 +685,7 @@ en:
     objectType: Object type
     name-placeholder: Enter a name
     visualize: Visualize
+    alertSelectAllLimitSize: The selection has too many lines for this feature, refine your search, maximum= 
 
 fr:
   ExperimentScientificObjects:
@@ -621,4 +704,5 @@ fr:
     objectType: Type d'objet
     name-placeholder: Saisir un nom
     visualize: Visualiser
+    alertSelectAllLimitSize: La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum= 
 </i18n>

@@ -434,11 +434,6 @@ import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataF
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
 import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
 components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
-import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
-components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
-import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
-components["opensilex-ScientificObjectView"] = ScientificObjectView;
-
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -526,8 +521,6 @@ import DataProvenanceModalView from './data/DataProvenanceModalView.vue';
 components["opensilex-DataProvenanceModalView"] = DataProvenanceModalView;
 import ImageModal from './data/ImageModal.vue';
 components["opensilex-ImageModal"] = ImageModal;
-import DataFilesView from './data/DataFilesView.vue';
-components["opensilex-DataFilesView"] = DataFilesView;
 
 // PHIS
 //IMAGES

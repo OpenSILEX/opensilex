@@ -24,10 +24,13 @@ import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.opensilex.core.device.api.DeviceGetDetailsDTO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.EventDetailsDTO;
 import org.opensilex.core.event.dal.EventModel;
+=======
+>>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
 =======
 >>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
 import org.opensilex.core.project.dal.ProjectModel;
@@ -70,8 +73,11 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             indexProject();
             indexVariable();
 <<<<<<< HEAD
+<<<<<<< HEAD
             indexDevice();
             indexEvent();
+=======
+>>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
 =======
 >>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
         } finally {
@@ -181,6 +187,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             indexRequest.source(json, XContentType.JSON);
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
 <<<<<<< HEAD
+<<<<<<< HEAD
         }
         
       
@@ -218,11 +225,14 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
 =======
 >>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
+=======
+>>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
             //System.out.println(response);
         }
         
       
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
         private void indexEvent() throws Exception {
 
@@ -263,6 +273,9 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
     }
     
         
+=======
+       
+>>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
 =======
        
 >>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36

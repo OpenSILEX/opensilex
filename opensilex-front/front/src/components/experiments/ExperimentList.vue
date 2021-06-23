@@ -63,9 +63,11 @@
             :selected.sync="filter.projects"
             :conversionMethod="projectGetDTOToSelectNode"
             modalComponent="opensilex-ProjectModalList"
+            :itemLoadingMethod="loadProjects"
             :isModalSearch="true"
-            :clearable="false"
-            :maximumSelectedItems="1"
+            :clearable="true"
+            :multiple="true"
+            @clear="refreshSoSelector"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -185,7 +187,7 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment";
 // @ts-ignore
-import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
+import { SpeciesDTO, SpeciesService, ProjectGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
@@ -281,13 +283,6 @@ export default class ExperimentList extends Vue {
       }
     }
 
-    let projects = [];
-    if (this.filter.projects) {
-      for (let i in this.filter.projects) {
-        projects.push(this.filter.projects[i].id);
-      }
-    }
-
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
@@ -296,7 +291,7 @@ export default class ExperimentList extends Vue {
         isEnded, // isEnded
         this.filter.species, // species
         this.filter.factorCategories, // factorCategories
-        projects, // projects
+        this.filter.projects, // projects
         isPublic, // isPublic
         options.orderBy,
         options.currentPage,
@@ -463,6 +458,25 @@ export default class ExperimentList extends Vue {
       file: undefined
     }
   }
+
+  soGetDTOToSelectNode(dto) {
+    if (dto) {
+      return {
+        id: dto.uri,
+        label: dto.name
+      };
+    }
+    return null;
+  }
+
+  loadProjects(projectsURIs) {
+      return this.$opensilex.getService("opensilex.ProjectsService")
+        .getProjectsByURI(projectsURIs)
+        .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
+            return (http && http.response) ? http.response.result : undefined
+    }).catch(this.$opensilex.errorHandler);
+  }
+
 }
 </script>
 

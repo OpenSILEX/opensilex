@@ -16,11 +16,12 @@
           :searchable="false"
           :clearable="clearable"
           valueFormat="object"
-          v-model="selection"
+          :value="selectedValues"
           :placeholder="$t(placeholder)"
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
+          @input="clearIfNeeded"
           @deselect="searchModal.unSelect($event)"
           @open="showModal"
         >
@@ -112,7 +113,7 @@
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
-          <b-button variant="primary" @click="showModal">+</b-button>
+          <b-button variant="primary" @click="showModal">>></b-button>
         </b-input-group-append>
         <b-input-group-append v-else-if="!actionHandler && viewHandler">
            <opensilex-DetailButton
@@ -140,7 +141,10 @@
         :is="modalComponent"
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
+        :searchFilter.sync="searchModalFilter"
         @onValidate="updateValues"
+        @shown="showModalSearch"
+        @close='$emit("close")'
       ></component>
     </template>
   </opensilex-FormField>
@@ -200,6 +204,9 @@ export default class SelectForm extends Vue {
 
   @Prop()
   modalComponent;
+
+  @PropSync("filter")
+  searchModalFilter;
 
   @Prop({
     type: Function,
@@ -557,17 +564,28 @@ export default class SelectForm extends Vue {
   }
 
   updateValues(selectedValues) {
-    if (this.conversionMethod && selectedValues) {
-      this.selection = selectedValues.map((item) =>
-        this.conversionMethod(item)
-      );
-    } else {
-      this.selection = selectedValues;
+    let values = selectedValues.map((item =>
+      this.conversionMethod(item)
+    ));
+
+    for (let i = 0; i < values.length; i++) {
+      this.select(values[i]);
     }
   }
+  
   showDetails() {
     this.detailVisible != this.detailVisible;
   }
+
+  showModalSearch() {
+    this.$emit("shown");
+    this.searchModal.refreshWithKeepingSelection();
+  }
+
+  refreshModalSearch() {
+    this.searchModal.refresh();
+  }
+
 }
 </script>
 

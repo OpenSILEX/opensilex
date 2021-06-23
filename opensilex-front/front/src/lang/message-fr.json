@@ -153,6 +153,10 @@
             "backToDashboard": "Revenir au tableau de bord",
             "data": {
                 "label": "Données",
+                "tabularData": "Données tabulaires",
+                "datafiles": "Fichiers de données",
+                "provenance": "Provenances",
+                "templatePreparation": "Préparation de gabarit",
                 "images": "Images",
                 "visualization":"Visualisation"
             },

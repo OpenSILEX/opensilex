@@ -56,6 +56,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -967,4 +968,30 @@ public final class OntologyDAO {
         }
         return urisTypes;
     }
+    
+    public List<URI> getSubclassRdfTypes(URI rdfType, UserModel user) throws Exception {
+        
+        SPARQLTreeListModel treeList = searchSubClasses(
+                rdfType,
+                ClassModel.class,
+                null,
+                user,
+                false,
+                null
+        );
+        
+        List<URI> rdfTypes = new ArrayList<>();        
+        List<ResourceTreeDTO> trees = ResourceTreeDTO.fromResourceTree(treeList);        
+        
+        while (!trees.isEmpty()) {
+            for (ResourceTreeDTO tree:trees) {
+                rdfTypes.add(tree.getUri());
+                trees = tree.getChildren();
+                
+            }
+        }
+        
+        return rdfTypes;
+    }  
+
 }

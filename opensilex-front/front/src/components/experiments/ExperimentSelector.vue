@@ -134,7 +134,7 @@ export default class ExperimentSelector extends Vue {
 
   }
 
-  experimentToSelectNode(dto: ExperimentGetListDTO) {
+  experimentToSelectNode(dto) {
     return {
       id: dto.uri,
       label: dto.name,

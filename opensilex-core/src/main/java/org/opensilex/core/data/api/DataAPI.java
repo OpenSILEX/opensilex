@@ -11,13 +11,19 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.result.DeleteResult;
+import com.opencsv.CSVWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.io.StringWriter;
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,9 +59,16 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
+import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.utils.ExportDataIndex;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -68,11 +81,13 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -212,7 +227,7 @@ public class DataAPI {
         
         try {
             DataModel model = dao.get(uri);
-            return new SingleObjectResponse<>(DataGetDTO.fromModel(model)).getResponse();
+            return new SingleObjectResponse<>(DataGetDTO.getDtoFromModel(model)).getResponse();
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
@@ -290,7 +305,7 @@ public class DataAPI {
                 pageSize
         );
                
-        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::fromModel);
+        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
@@ -368,7 +383,7 @@ public class DataAPI {
             DataModel model = dto.newModel();
             validData(Arrays.asList(model));
             dao.update(model);
-            return new SingleObjectResponse<>(DataGetDTO.fromModel(model)).getResponse();
+            return new SingleObjectResponse<>(DataGetDTO.getDtoFromModel(model)).getResponse();
         } catch (NoSQLInvalidURIException e){
             throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
         } catch (MongoBulkWriteException e) {                   
@@ -490,7 +505,7 @@ public class DataAPI {
                 }         
             }
         
-            //check provenance urii
+            //check provenance uri
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
@@ -527,4 +542,105 @@ public class DataAPI {
         }
 
     }
+    
+      /**
+     * @param startDate startDate
+     * @param endDate endDate
+     * @param timezone timezone
+     * @param experiments experimentUris
+     * @param objects objectUris
+     * @param variables variableUris
+     * @param confidenceMin confidenceMin
+     * @param confidenceMax confidenceMax
+     * @param provenances provenanceUris
+     * @param metadata metadata json filter
+     * @param csvFormat long or wide format
+     * @param orderByList orderByList
+     * @param page page number
+     * @param pageSize page size
+     * @return
+     * @throws Exception
+     */
+    @GET
+    @Path("export")
+    @ApiOperation("export data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportData(
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            try {
+                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        if (endDate != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+        
+        Instant start = Instant.now();
+        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        Instant data = Instant.now();
+        LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+
+        Response prepareCSVExport = null;
+
+        if (csvFormat.equals("long")) {
+            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user);
+        } else {
+            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user);
+        }
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+
+        return prepareCSVExport;
+    }
+
 }

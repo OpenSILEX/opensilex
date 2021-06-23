@@ -5,6 +5,7 @@
     :selected.sync="variablesURI"
     :multiple="multiple"
     :searchMethod="searchVariables"
+    :itemLoadingMethod="load"
     :conversionMethod="variableToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
@@ -21,7 +22,8 @@
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { NamedResourceDTO } from "opensilex-core/index";
+import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse"
 
 @Component
 export default class VariableSelector extends Vue {
@@ -83,6 +85,17 @@ export default class VariableSelector extends Vue {
   deselect(value) {
     this.$emit("deselect", value);
   }
+
+  load(variables) {
+
+    return this.$opensilex
+      .getService("opensilex.VariablesService")
+        .getVariablesByURIs(variables)
+        .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
+            return (http && http.response) ? http.response.result : undefined
+        }).catch(this.$opensilex.errorHandler);
+
+    }
 }
 </script>
 

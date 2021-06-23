@@ -58,6 +58,8 @@ import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -76,6 +78,8 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -121,7 +125,7 @@ public class DataFilesAPI {
     notes = "{\"rdf_type\":\"" +  DATAFILE_EXAMPLE_TYPE + "\", "
             + "\"date\":\"" +  DataAPI.DATA_EXAMPLE_MINIMAL_DATE + "\", "
             + "\"timezone\":\"" +  DataAPI.DATA_EXAMPLE_TIMEZONE + "\", "
-            + "\"scientific_objects\":[\"http://plot01\"], "
+            + "\"scientific_object\":\"http://plot01\", "
             + "\"provenance\": { \"uri\":\"" +  DataAPI.DATA_EXAMPLE_PROVENANCEURI + "\" }, "
             + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}"
     )
@@ -390,8 +394,10 @@ public class DataFilesAPI {
      * This service searches for file descriptions according to the search parameters given.
      *
      * @param pageSize
-     * @param objectUri
-     * @param provenanceUri
+     * @param objects
+     * @param provenances
+     * @param timezone
+     * @param experiments
      * @param page
      * @param rdfType
      * @param metadata
@@ -399,6 +405,7 @@ public class DataFilesAPI {
      * @param startDate
      * @param endDate
      * @return List of file description
+     * @throws java.lang.Exception
      */
     @GET
     @ApiOperation(value = "Search data files")
@@ -453,9 +460,16 @@ public class DataFilesAPI {
             }
         }
         
+        OntologyDAO ontoDao = new OntologyDAO(sparql);
+        List<URI> rdfTypes = new ArrayList<>();
+        
+        if (rdfType != null) {
+            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user);
+        }        
+        
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
-                rdfType,
+                rdfTypes,
                 experiments,
                 objects,
                 provenances,
@@ -508,7 +522,7 @@ public class DataFilesAPI {
                     if (!expURIs.contains(exp)) {
                         expURIs.add(exp);
                         if (!sparql.uriExists(ExperimentModel.class, exp)) {
-                            notFoundedObjectURIs.add(exp);
+                            notFoundedExpURIs.add(exp);
                         }    
                     } 
                 }

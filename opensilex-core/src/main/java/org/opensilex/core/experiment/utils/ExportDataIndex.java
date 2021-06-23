@@ -15,8 +15,17 @@ import java.util.Objects;
  * @author A. Charleroy
  */
 public class ExportDataIndex {
+    private URI experimentUri;
     private URI provenanceUri;
     private URI objectUri; 
+
+    public URI getExperimentUri() {
+        return experimentUri;
+    }
+
+    public void setExperimentUri(URI experimentUri) {
+        this.experimentUri = experimentUri;
+    }
 
     public URI getProvenanceUri() {
         return provenanceUri;
@@ -34,14 +43,16 @@ public class ExportDataIndex {
         this.objectUri = objectUri;
     }
 
-    public ExportDataIndex(URI provenanceUri, URI objectUri) {
+    public ExportDataIndex(URI experimentUri, URI provenanceUri, URI objectUri) {
+        this.experimentUri = experimentUri;
         this.provenanceUri = provenanceUri;
-         this.objectUri = objectUri;
+        this.objectUri = objectUri;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
+        hash = 79 * hash + Objects.hashCode(this.experimentUri);
         hash = 79 * hash + Objects.hashCode(this.provenanceUri);
         hash = 79 * hash + Objects.hashCode(this.objectUri);
         return hash;
@@ -59,6 +70,10 @@ public class ExportDataIndex {
             return false;
         }
         final ExportDataIndex other = (ExportDataIndex) obj;
+        
+        if (!Objects.equals(this.experimentUri, other.experimentUri)) {
+            return false;
+        }
         if (!Objects.equals(this.provenanceUri, other.provenanceUri)) {
             return false;
         }

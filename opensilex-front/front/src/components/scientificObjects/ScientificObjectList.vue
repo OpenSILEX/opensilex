@@ -1,38 +1,5 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-target"
-      title="component.menu.scientificObjects"
-      description="ScientificObjectList.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions
-      v-if="
-        user.hasCredential(
-          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
-        )
-      "
-    >
-      <opensilex-CreateButton
-        @click="soForm.createScientificObject()"
-        label="ExperimentScientificObjects.create-scientific-object"
-      ></opensilex-CreateButton>
-      <opensilex-ScientificObjectForm
-        ref="soForm"
-        @onUpdate="redirectToDetail"
-        @onCreate="redirectToDetail"
-      ></opensilex-ScientificObjectForm>
-      &nbsp;
-      <opensilex-CreateButton
-        @click="importForm.show()"
-        label="OntologyCsvImporter.import"
-      ></opensilex-CreateButton>
-      <opensilex-ScientificObjectCSVImporter
-        ref="importForm"
-        @csvImported="refresh()"
-      ></opensilex-ScientificObjectCSVImporter>
-    </opensilex-PageActions>
-
+  <div>
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
@@ -120,6 +87,7 @@
         >
           <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
             <b-dropdown
+              v-if="!noActions" 
               dropright
               class="mb-2 mr-2"
               :small="true"
@@ -237,7 +205,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 // @ts-ignore
@@ -250,43 +218,82 @@ export default class ScientificObjectList extends Vue {
   $store: any;
   $router: VueRouter;
 
+  @Prop({
+    default: false
+  })
+  isSelectable;
+
+  @Prop({
+    default: false
+  })
+  noActions;
+
+  @Prop({
+    default: 20
+  })
+  pageSize: number;
+
+  @Prop({
+    default: false
+  })
+  noUpdateURL;
+
+
+  @PropSync("searchFilter", {
+    default: () => {
+      return {
+        name: "",
+        experiment: undefined,
+        germplasm: undefined,
+        factorLevels: [],
+        types: [],
+        existenceDate: undefined,
+        creationDate: undefined,
+      };
+    },
+  })
+  filter;
+
   @Ref("tableRef") readonly tableRef!: any;
-  @Ref("soForm") readonly soForm!: any;
-  @Ref("importForm") readonly importForm!: any;
-  @Ref("templateGenerator") readonly templateGenerator!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
 
   selectedUris: Array<string> = [];
 
-  fields = [
-    {
-      key: "name",
-      label: "component.common.name",
-      sortable: true,
-    },
-    {
-      key: "rdf_type_name",
-      label: "component.common.type",
-      sortable: true,
-    },
-    {
-      key: "creation_date",
-      label: "ScientificObjectList.creationDate",
-      sortable: true,
-    },
-    {
-      key: "destruction_date",
-      label: "ScientificObjectList.destructionDate",
-      sortable: true,
-    },
-    {
-      key: "actions",
-      label: "component.common.actions",
-    },
-  ];
+  get fields() {
+    let fields: any = [
+      {
+        key: "name",
+        label: "component.common.name",
+        sortable: true,
+      },
+      {
+        key: "rdf_type_name",
+        label: "component.common.type",
+        sortable: true,
+      },
+      {
+        key: "creation_date",
+        label: "ScientificObjectList.creationDate",
+        sortable: true,
+      },
+      {
+        key: "destruction_date",
+        label: "ScientificObjectList.destructionDate",
+        sortable: true,
+      }
+    ];
 
+    if (!this.noActions) {
+      fields.push({
+        key: "actions",
+        label: "component.common.actions"
+      });
+    }
+
+    return fields;
+  }
 
   created() {
     this.updateFiltersFromURL();
@@ -310,16 +317,6 @@ export default class ScientificObjectList extends Vue {
     String,
     Array<ExperimentGetDTO>
   >();
-
-  filter = {
-    name: "",
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  };
 
   get user() {
     return this.$store.state.user;
@@ -347,21 +344,26 @@ export default class ScientificObjectList extends Vue {
   }
 
   updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])){
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }        
+    if (!this.noUpdateURL) {
+      let query: any = this.$route.query;
+      for (let [key, value] of Object.entries(this.filter)) {
+        if (query[key]) {
+          if (Array.isArray(this.filter[key])){
+            this.filter[key] = decodeURIComponent(query[key]).split(",");
+          } else {
+            this.filter[key] = decodeURIComponent(query[key]);
+          }        
+        }
       }
     }
+    
   }
 
   updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");       
+    if (!this.noUpdateURL) {
+      for (let [key, value] of Object.entries(this.filter)) {
+        this.$opensilex.updateURLParameter(key, value, "");       
+      }
     }    
   }
 
@@ -372,15 +374,16 @@ export default class ScientificObjectList extends Vue {
     this.tableRef.refresh();
   }
 
-  redirectToDetail(http) {
-    this.$router.push({
-      path:
-        "/scientific-objects/details/" +
-        encodeURIComponent(http.response.result),
-    });
+  refreshWithKeepingSelection() {
+    this.updateURLFilters();
+    this.tableRef.refresh();
   }
 
   searchScientificObject(options) {
+    if (this.pageSize != null) {
+      options.pageSize = this.pageSize;
+    }
+
     let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
     );
@@ -510,6 +513,11 @@ export default class ScientificObjectList extends Vue {
       file: undefined,
     };
   }
+
+  getSelected() {
+    return this.tableRef.getSelected();
+  }
+  
 }
 </script>
 

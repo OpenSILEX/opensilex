@@ -683,5 +683,4 @@ import ElasticSearch from './ElasticSearch.vue';
 components["opensilex-ElasticSearch"] = ElasticSearch;
 
 
-
 export default components;

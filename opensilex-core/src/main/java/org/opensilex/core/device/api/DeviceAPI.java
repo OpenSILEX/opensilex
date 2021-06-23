@@ -1,3 +1,4 @@
+
 package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -28,11 +28,11 @@ import java.util.List;
 })
 public class EventGetDTO extends ResourceDTO<EventModel> {
 
-    @JsonProperty("rdf_type")
-    protected URI type;
+    //@JsonProperty("rdf_type")
+    //protected URI type;
 
-    @JsonProperty("rdf_type_name")
-    protected String typeLabel;
+    //@JsonProperty("rdf_type_name")
+    //protected String typeLabel;
 
     @JsonProperty("start")
     protected String start;

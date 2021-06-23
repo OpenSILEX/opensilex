@@ -23,6 +23,10 @@ import org.elasticsearch.rest.RestStatus;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
+import org.opensilex.core.device.api.DeviceGetDetailsDTO;
+import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.api.EventDetailsDTO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -62,6 +66,8 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             elasticClient = elasticService.getClient();
             indexProject();
             indexVariable();
+            indexDevice();
+            indexEvent();
         } finally {
             if (elasticClient != null) {
                 elasticClient.close();
@@ -168,12 +174,85 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
       
             indexRequest.source(json, XContentType.JSON);
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
+        }
+        
+      
+    }
+    
+    
+       private void indexDevice() throws Exception {
+
+        List<DeviceModel> Devices = sparql.search(DeviceModel.class, "en");
+    
+
+        try {
+            DeleteIndexRequest request = new DeleteIndexRequest("devices");
+            AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
+
+        } catch (ElasticsearchException exception) {
+            if (exception.status() == RestStatus.NOT_FOUND) {}
+        }
+        
+        
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json;                
+
+        for (DeviceModel d : Devices) {
+            DeviceGetDetailsDTO var =  DeviceGetDetailsDTO.getDTOFromModel(d);
+            json = gson.toJson(var);
+
+            System.out.println("----------------------------------------------------------------------------");
+            System.out.println(json);
+
+            IndexRequest indexRequest = new IndexRequest("devices");
+      
+            indexRequest.source(json, XContentType.JSON);
+            IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
             //System.out.println(response);
         }
         
       
     }
-       
+        private void indexEvent() throws Exception {
+
+        List<EventModel> Events = sparql.search(EventModel.class, "en");
+        //System.out.println("eveeeeeeeeeeeents"+Events.toString());
+    
+
+        try {
+            DeleteIndexRequest request = new DeleteIndexRequest("events");
+            AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
+
+        } catch (ElasticsearchException exception) {
+            if (exception.status() == RestStatus.NOT_FOUND) {}
+        }
+        
+        
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json;                
+
+        for (EventModel e : Events) {
+            EventDetailsDTO var = new EventDetailsDTO();
+            var.fromModel(e) ;
+               json = gson.toJson(var);
+           
+
+            System.out.println("----------------------------------------------------------------------------");
+            System.out.println(json);
+
+            IndexRequest indexRequest = new IndexRequest("events");
+      
+            indexRequest.source(json, XContentType.JSON);
+            IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
+            //System.out.println(response);
+        }
+        
+      
+    }
+    
+        
 }
 
 

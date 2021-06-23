@@ -53,9 +53,14 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("removal")
     protected LocalDate removal;
 
+   // @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
+    //@JsonProperty("rdf_type")
+    //protected URI type;
+    @Override
     @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SensingDevice")
-    @JsonProperty("rdf_type")
-    protected URI type;
+    public URI getType() {
+    return super.getType();
+}
     
     @ApiModelProperty(value = "comment", example = "description")
     @JsonProperty("description")

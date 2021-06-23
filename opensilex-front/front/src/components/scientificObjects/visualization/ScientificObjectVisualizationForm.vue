@@ -20,6 +20,7 @@
               :clearable="true"
             ></opensilex-ScientificObjectVariableSelector>
           </opensilex-FilterField>
+
           <opensilex-FilterField :halfWidth="true">
             <div class="row">
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
@@ -42,12 +43,19 @@
               </div>
             </div>
           </opensilex-FilterField>
+
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
-
-            <b-form-checkbox v-model="filter.showEvents" switch><b-badge variant="light">{{eventsCount}}</b-badge></b-form-checkbox>
-
-          
+            <b-form-checkbox v-model="filter.showEvents" switch>
+              <b-spinner
+                v-if="countIsLoading"
+                small
+                label="Small Spinner"
+                type="grow"
+                variant="primary"
+              ></b-spinner>
+              <b-badge v-else variant="light">{{eventsCount}}</b-badge>
+            </b-form-checkbox>
           </opensilex-FilterField>
         </template>
 
@@ -62,10 +70,9 @@
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false" 
+              :showURI="false"
               @select="loadProvenance"
               @clear="clearProvenance"
-
             ></opensilex-ProvenanceSelector>
           </opensilex-FilterField>
 
@@ -89,20 +96,18 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {
-  EventsService,
-  ProvenanceGetDTO,
-  EventGetDTO
-} from "opensilex-core/index";
+import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ScientificObjectVisualizationForm extends Vue {
   $opensilex: any;
+
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
+  countIsLoading: boolean = false;
 
   filter = {
     variable: null,
@@ -121,8 +126,6 @@ export default class ScientificObjectVisualizationForm extends Vue {
     this.filterProvenanceLabel = null;
   }
 
-  eventsService: EventsService;
-
   @Prop()
   scientificObject;
 
@@ -140,8 +143,8 @@ export default class ScientificObjectVisualizationForm extends Vue {
   }
 
   getEvents() {
-
     this.$opensilex.disableLoader();
+    this.countIsLoading = true;
     this.$opensilex
       .getService("opensilex.EventsService")
       .searchEvents(
@@ -161,6 +164,11 @@ export default class ScientificObjectVisualizationForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
         this.eventsCount = "" + http.response.metadata.pagination.totalCount;
         this.$opensilex.enableLoader();
+        this.countIsLoading = false;
+      })
+      .catch(error => {
+        this.$opensilex.enableLoader();
+        this.countIsLoading = false;
       });
   }
 
@@ -220,12 +228,10 @@ en:
     show_events: Show Events
     variable:
       label: Variable 
-      placeholder: Search for a variable
 fr:
   ScientificObjectVisualizationForm:
     show_events: Voir les Evénements 
     variable:
       label: Variable 
-      placeholder: Saisir une variable
 
 </i18n>

@@ -39,14 +39,8 @@ import Highcharts from "highcharts";
 import {
   DataService,
   DataGetDTO,
-  ProvenanceGetDTO,
-  AnnotationsService,
-  AnnotationGetDTO,
   EventsService,
-  EventCreationDTO,
-  EventDetailsDTO,
   EventGetDTO,
-  EventUpdateDTO
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
@@ -73,13 +67,13 @@ export default class ScientificObjectVisualizationTab extends Vue {
   form;
   selectedVariable;
   dataService: DataService;
-  annotationService: AnnotationsService;
   eventsService: EventsService;
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
-  @Ref("scientificObjectVisualizationForm") readonly scientificObjectVisualizationForm!: any;
+  @Ref("scientificObjectVisualizationForm")
+  readonly scientificObjectVisualizationForm!: any;
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
@@ -96,18 +90,19 @@ export default class ScientificObjectVisualizationTab extends Vue {
     );
   }
 
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
   onAnnotationCreated() {
     this.visuGraphic.updateDataAnnotations();
   }
 
-  onEventCreated(){
+  onEventCreated() {
     this.prepareGraphic();
     this.scientificObjectVisualizationForm.getEvents();
   }
 
-  beforeDestroy() {
-    this.langUnwatcher();
-  }
 
   showAddEventComponent(time) {
     this.target = this.scientificObject;
@@ -154,7 +149,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   prepareGraphic() {
     if (this.form) {
-      
       this.$opensilex.disableLoader();
       var promises = [];
       let promise;
@@ -370,13 +364,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
       cleanData = [];
 
     data.forEach(element => {
-      let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
+      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
       let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-        "%Y-%m-%dT%H:%M:%S",
-        dateWithoutUTC
-      );
       let offset = moment.parseZone(element.date).format("Z");
       let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
       toAdd = {

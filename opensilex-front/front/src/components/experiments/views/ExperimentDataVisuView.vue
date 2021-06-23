@@ -2,6 +2,7 @@
   <div>
     <b-collapse v-model="showSearchComponent" class="mt-2">
       <opensilex-ExperimentDataVisuForm
+        ref="experimentDataVisuForm"
         :selectedExperiment="selectedExperiment"
         :scientificObjects="scientificObjectsURI"
         @search="onSearch"
@@ -13,13 +14,26 @@
       <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
-        :isAddEvents="false"
+        @addEventIsClicked="showAddEventComponent"
         @dataAnnotationIsClicked="showAnnotationForm"
         @graphicCreated="$emit('graphicCreated')"
       ></opensilex-DataVisuGraphic>
     </b-collapse>
 
-    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+    <opensilex-AnnotationModalForm 
+    ref="annotationModalForm"
+     @onCreate="onAnnotationCreated"
+     >
+     </opensilex-AnnotationModalForm>
+
+
+    <opensilex-EventModalForm
+      ref="eventsModalForm"
+      :target="target"
+      :eventCreatedTime="eventCreatedTime"
+      @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
+
   </div>
 </template>
 
@@ -30,7 +44,8 @@ import Highcharts from "highcharts";
 import {
   DataService,
   DataGetDTO,
-  ProvenanceGetDTO
+  EventsService,
+  EventGetDTO
 } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
@@ -42,15 +57,25 @@ export default class ExperimentDataVisuView extends Vue {
   $route: any;
   $opensilex: any;
   dataService: DataService;
+
+  target = [] ;
+  eventCreatedTime = "";
+
   form;
   chartOptionsValue: any;
+
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
+  @Ref("eventsModalForm") readonly eventsModalForm!: any;
+  @Ref("experimentDataVisuForm") readonly experimentDataVisuForm!: any;
+
   showSearchComponent: boolean = true;
-  showGraphicComponent: boolean = true;
+  showGraphicComponent: boolean = false;
 
   selectedExperiment;
   selectedVariable;
+  eventsService: EventsService;
+  eventTypesColorArray = [];
 
   @Prop()
   selectedScientificObjects;
@@ -61,6 +86,22 @@ export default class ExperimentDataVisuView extends Vue {
     });
   }
 
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        if (this.showGraphicComponent) {
+          this.onUpdate(this.form);
+        }
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
   onAnnotationCreated() {
     this.visuGraphic.updateDataAnnotations();
   }
@@ -69,8 +110,20 @@ export default class ExperimentDataVisuView extends Vue {
     this.annotationModalForm.showCreateForm([target]);
   }
 
+  onEventCreated() {
+    this.onUpdate(this.form);
+    this.experimentDataVisuForm.getTotalEventsCount();
+  }
+
+  showAddEventComponent(value) {
+    this.target = value.target;
+    this.eventCreatedTime = value;
+    this.eventsModalForm.showCreateForm();
+  }
+
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.$opensilex.disableLoader();
     this.selectedExperiment = decodeURIComponent(this.$route.params.uri);
   }
@@ -94,6 +147,31 @@ export default class ExperimentDataVisuView extends Vue {
     }
   }
 
+  buildColorsSOArray() {
+    const colorPalette = [
+      "#ca6434 ",
+      "#427775",
+      "#f2dc7c",
+      "#0f839c",
+      "#a45354",
+      "#d3b0ae",
+      "#774e42",
+      "#776942",
+      "#5c4277",
+      "#34a0ca",
+      "#9334ca",
+      "#caaf34"
+    ];
+    let index = 0;
+    this.selectedScientificObjects.forEach((element, index) => {
+      this.eventTypesColorArray[element.uri] = colorPalette[index];
+      index++;
+      if (index === 12) {
+        index = 0;
+      }
+    });
+  }
+
   onSearch(form) {
     this.form = form;
     this.showGraphicComponent = false;
@@ -106,6 +184,8 @@ export default class ExperimentDataVisuView extends Vue {
         this.selectedVariable = http.response.result;
         const datatype = this.selectedVariable.datatype.split("#")[1];
         if (datatype == "decimal" || datatype == "integer") {
+
+          this.buildColorsSOArray();
           this.loadSeries();
         } else {
           this.showGraphicComponent = true;
@@ -122,6 +202,7 @@ export default class ExperimentDataVisuView extends Vue {
 
   loadSeries() {
     if (this.selectedScientificObjects && this.form.variable) {
+
       this.buildSeries();
     }
   }
@@ -133,21 +214,29 @@ export default class ExperimentDataVisuView extends Vue {
     let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
 
+    promise = this.buildEventsSeries();
+    promises.push(promise);
     promise = this.buidDataSeries();
     promises.push(promise);
 
     Promise.all(promises).then(values => {
       let series = [];
-      let dataSeries;
 
-      dataSeries = values[0];
-      dataSeries.forEach(serie => {
-        series.push(serie);
-      });
+      if (values[0]) {
+        values[0].forEach(serie => {
+          series.push(serie);
+        });
+      }
+
+      if (values[1]) {
+        values[1].forEach(serie => {
+          series.push(serie);
+        });
+      }
 
       this.showGraphicComponent = true;
       this.$nextTick(() => {
-        this.visuGraphic.reload(series, this.selectedVariable, false);
+        this.visuGraphic.reload(series, this.selectedVariable, this.form.showEvents);
       });
     });
   }
@@ -169,6 +258,111 @@ export default class ExperimentDataVisuView extends Vue {
       });
       return series;
     });
+  }
+
+  buildEventsSeries() {
+    if (this.form && this.form.showEvents) {
+      let series = [],
+        serie;
+      let promises = [],
+        promise;
+      this.selectedScientificObjects.forEach((os, index) => {
+        promise = this.buildEventsSerie(os);
+        promises.push(promise);
+      });
+      return Promise.all(promises).then(values => {
+        values.forEach(serie => {
+          if (serie !== undefined) {
+            series.push(serie);
+          }
+        });
+        return series;
+      });
+    } else {
+      return null;
+    }
+  }
+
+  buildEventsSerie(concernedItem) {
+    return this.eventsService
+      .searchEvents(
+        undefined,
+        this.form.startDate != undefined && this.form.startDate != ""
+          ? this.form.startDate
+          : undefined,
+        this.form.endDate != undefined && this.form.endDate != ""
+          ? this.form.endDate
+          : undefined,
+        concernedItem.uri,
+        undefined,
+        undefined,
+        0,
+        0
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+        const events = http.response.result as Array<EventGetDTO>;
+        if (events.length > 0) {
+          const cleanEventsData = [];
+          let convertedDate, toAdd, label, title;
+
+
+          events.forEach(element => {
+            label = element.rdf_type_name
+              ? element.rdf_type_name
+              : element.rdf_type;
+            if (element.start != null) {
+              let endTime = element.end ? element.end : "en cours..";
+              label = label + "(End: " + endTime + ")";
+            }
+            // if (element.end) {
+            //   if (element.is_instant) {
+            //     title = label;
+            //   } else {
+            //     title = label + "(End)";
+            //   }
+            // }
+            title = label.charAt(0).toUpperCase();
+            let stringDateWithoutUTC;
+            if (element.start != null) {
+              stringDateWithoutUTC =
+                moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
+                "+00:00";
+            } else {
+              stringDateWithoutUTC =
+                moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
+                "+00:00";
+            }
+
+            let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+            toAdd = {
+              x: dateWithoutUTC,
+              title: title,
+              text: label,
+              eventUri: element.uri,
+            };
+
+            cleanEventsData.push(toAdd);
+          });
+          let name = concernedItem.name ? concernedItem.name : concernedItem.uri
+          return {
+            type: "flags",
+            allowOverlapX: false,
+            name: "Events/"+ name,
+            lineWidth: 1,
+            yAxis: 1,
+            data: cleanEventsData,
+            style: {
+              // text style
+              color: "white"
+            },
+            fillColor:this.eventTypesColorArray[concernedItem.uri],
+            legendColor: this.eventTypesColorArray[concernedItem.uri]
+            
+          };
+        } else {
+          return undefined;
+        }
+      });
   }
 
   buildDataSerie(concernedItem) {
@@ -199,23 +393,23 @@ export default class ExperimentDataVisuView extends Vue {
           const cleanData = this.dataTransforme(data, concernedItem);
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
-              this.$i18n.t(
-                "ExperimentDataVisuView.limitSizeMessageA"
-              ) +
+              this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
                 " " +
                 dataLength +
                 " " +
-                this.$i18n.t(
-                  "ExperimentDataVisuView.limitSizeMessageB"
-                ) +  concernedItem.name + this.$i18n.t(
-                  "ExperimentDataVisuView.limitSizeMessageC"
-                )
+                this.$i18n.t("ExperimentDataVisuView.limitSizeMessageB") +
+                concernedItem.name +
+                this.$i18n.t("ExperimentDataVisuView.limitSizeMessageC")
             );
           }
+
+          let name = concernedItem.name ? concernedItem.name : concernedItem.uri
           return {
-            name: concernedItem.name,
+            name: name,
             data: cleanData,
-            visible: true
+            visible: true,
+            color:this.eventTypesColorArray[concernedItem.uri],
+            legendColor: this.eventTypesColorArray[concernedItem.uri]
           };
         }
       })
@@ -255,7 +449,6 @@ export default class ExperimentDataVisuView extends Vue {
         y: element.value,
         offset: offset,
         dateWithOffset: highchartsDate + offset,
-        dataUri: element.uri,
         objectUri: concernedItem.uri,
         provenanceUri: element.provenance.uri,
         data: element

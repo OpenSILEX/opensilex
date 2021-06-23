@@ -22,19 +22,27 @@
                 <opensilex-DateTimeForm
                   :value.sync="filter.startDate"
                   label="component.common.begin"
-                  @input="onUpdate"
-                  @clear="onUpdate"
+                  @input="onDateChange"
+                  @clear="onDateChange"
                 ></opensilex-DateTimeForm>
               </div>
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
                 <opensilex-DateTimeForm
                   :value.sync="filter.endDate"
                   label="component.common.end"
-                  @input="onUpdate"
-                  @clear="onUpdate"
+                  @input="onDateChange"
+                  @clear="onDateChange"
                 ></opensilex-DateTimeForm>
               </div>
             </div>
+          </opensilex-FilterField>
+
+          <opensilex-FilterField :halfWidth="true">
+            <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
+            <b-form-checkbox v-model="filter.showEvents" @input="onUpdate" switch>
+              <b-spinner v-if="countIsLoading" small label="Small Spinner" type="grow" variant="primary" ></b-spinner>
+              <b-badge  v-else variant="light">{{eventsCount}}</b-badge>
+              </b-form-checkbox>
           </opensilex-FilterField>
         </template>
 
@@ -66,7 +74,7 @@
                 <opensilex-StringFilter id="metadataValue" :filter.sync="filter.metadataValue"  @update="onUpdate"></opensilex-StringFilter>
               </div>
             </div>
-          </opensilex-FilterField> -->
+          </opensilex-FilterField>-->
 
           <opensilex-FilterField>
             <b-collapse
@@ -88,18 +96,19 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
 export default class ExperimentDataVisuForm extends Vue {
   $opensilex: any;
+
   showSearchComponent: boolean = false;
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
-
+  countIsLoading : boolean = false;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   filter = {
@@ -107,6 +116,7 @@ export default class ExperimentDataVisuForm extends Vue {
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
+    showEvents: false
     // metadataKey: undefined,
     // metadataValue: undefined
   };
@@ -118,6 +128,7 @@ export default class ExperimentDataVisuForm extends Vue {
     this.filter.provenance = undefined;
     // this.filter.metadataKey = undefined;
     // this.filter.metadataValue = undefined;
+    this.filter.showEvents = false;
 
     this.filterProvenanceLabel = null;
   }
@@ -128,6 +139,23 @@ export default class ExperimentDataVisuForm extends Vue {
   @Prop()
   scientificObjects;
 
+  eventsCountValue = "";
+  public get eventsCount() {
+    return this.eventsCountValue;
+  }
+
+  public set eventsCount(eventsCount: string) {
+    this.eventsCountValue = eventsCount;
+  }
+
+  created() {
+    this.getTotalEventsCount();
+  }
+
+  onDateChange(){
+    this.getTotalEventsCount();
+    this.onUpdate();
+  }
   onUpdate() {
     this.$emit("update", this.filter);
   }
@@ -135,6 +163,59 @@ export default class ExperimentDataVisuForm extends Vue {
   onSearch() {
     this.$emit("search", this.filter);
   }
+
+  getTotalEventsCount() {
+    this.$opensilex.disableLoader();
+    this.countIsLoading = true;
+    let series = [],
+      serie;
+    let promises = [],
+      promise;
+    this.scientificObjects.forEach((element, index) => {
+      promise = this.getEventsCount(element);
+      promises.push(promise);
+    });
+
+    Promise.all(promises).then(values => {
+      let count = 0;
+      values.forEach(value => {
+        if (value !== undefined) {
+          count += value;
+        }
+      });
+      this.eventsCount = "" + count;  
+      this.$opensilex.enableLoader();
+      this.countIsLoading = false;
+
+    }).catch(error => {
+      this.$opensilex.enableLoader();
+      this.countIsLoading = false;
+
+    });
+  }
+
+  getEventsCount(os) {
+    return this.$opensilex
+      .getService("opensilex.EventsService")
+      .searchEvents(
+        undefined,
+        this.filter.startDate != undefined && this.filter.startDate != ""
+          ? this.filter.startDate
+          : undefined,
+        this.filter.endDate != undefined && this.filter.endDate != ""
+          ? this.filter.endDate
+          : undefined,
+        os,
+        undefined,
+        undefined,
+        0,
+        1
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+        return http.response.metadata.pagination.totalCount;
+      });
+  }
+
   getProvenance(uri) {
     if (uri != undefined && uri != null) {
       return this.$opensilex

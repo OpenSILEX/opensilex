@@ -6,17 +6,12 @@
       class="contextMenu"
       :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
     >
-      <b-list-group-item
-        v-if="isAddEvents"
-        href="#"
-        @click="addEventClick"
-      >{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
+      <b-list-group-item href="#" @click="addEventClick">{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
 
       <b-list-group-item
         href="#"
         @click="dataAnnotationClick"
       >{{ $t("DataVisuGraphic.dataAnnotation") }}</b-list-group-item>
-
     </b-list-group>
 
     <!-- <b-list-group
@@ -31,7 +26,7 @@
         @click="addEventClick"
       >{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
 
-    </b-list-group> -->
+    </b-list-group>-->
 
     <div class="card">
       <div ref="header" class="card-header" v-if="chartOptions.length">
@@ -81,18 +76,21 @@
       <b-spinner type="grow" label="Spinning"></b-spinner>
     </div>
 
-    <b-card v-if="detailEventShow "  >
-
-      <b-card-text v-if="event.rdf_type_name">{{ $t("component.common.type") }}: {{event.rdf_type_name}}</b-card-text>
+    <b-card v-if="detailEventShow ">
+      <b-card-text
+        v-if="event.rdf_type_name"
+      >{{ $t("component.common.type") }}: {{event.rdf_type_name}}</b-card-text>
 
       <b-card-text v-else>{{ $t("component.common.type") }}:{{event.rdf_type}}</b-card-text>
 
       <b-card-text v-if="event.start">{{ $t("component.common.begin") }}: {{event.start}}</b-card-text>
       <b-card-text v-else>{{ $t("component.common.begin") }}: {{event.end}}</b-card-text>
       <b-card-text v-if="event.start">{{ $t("component.common.end") }}: {{event.end}}</b-card-text>
-      <b-card-text v-if="event.description">{{ $t("component.common.description") }}: {{event.description}}</b-card-text>
+      <b-card-text
+        v-if="event.description"
+      >{{ $t("component.common.description") }}: {{event.description}}</b-card-text>
 
-      <b-card-text >{{ $t("component.common.creator") }}: {{event.author}}</b-card-text>
+      <b-card-text>{{ $t("component.common.creator") }}: {{event.author}}</b-card-text>
     </b-card>
 
     <b-card-group deck v-if="detailDataShow ">
@@ -160,8 +158,9 @@ export default class DataVisuGraphic extends Vue {
   $opensilex: any;
 
   @Ref("helpModal") readonly helpModal!: any;
+  @Ref("contextMenu") readonly contextMenu!: any;
   contextMenuShow = false;
- // intervalContextMenuShow = false;
+  // intervalContextMenuShow = false;
   detailDataShow = false;
   detailDataLoad = false;
   detailEventShow = false;
@@ -195,7 +194,7 @@ export default class DataVisuGraphic extends Vue {
   })
   deviceType;
 
-   @Prop({
+  @Prop({
     default: true
   })
   isAddEvents;
@@ -212,6 +211,19 @@ export default class DataVisuGraphic extends Vue {
   //     }
   //   });
   // }
+
+  created() {
+    Highcharts.wrap(Highcharts.Legend.prototype, "colorizeItem", function(
+      proceed,
+      item,
+      visible
+    ) {
+      var color = item.color;
+      item.color = item.options.legendColor;
+      proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+      item.color = color;
+    });
+  }
 
   getEventDetail(uri) {
     return this.$opensilex
@@ -364,7 +376,9 @@ export default class DataVisuGraphic extends Vue {
             useHTML: true,
             formatter: function(tooltip) {
               if (this.point.y) {
-                let date = moment.parseZone( this.point.data.date).format("YYYY-MM-DD HH:mm:ss")
+                let date = moment
+                  .parseZone(this.point.data.date)
+                  .format("YYYY-MM-DD HH:mm:ss");
                 return (
                   "" +
                   this.point.series.name +
@@ -488,7 +502,6 @@ export default class DataVisuGraphic extends Vue {
   }
 
   reload(series, variable, isEvents) {
-
     this.detailDataShow = false;
     this.detailEventShow = false;
     this.showEvents = isEvents;
@@ -552,18 +565,24 @@ export default class DataVisuGraphic extends Vue {
 
   pointRightClick(e, graphic) {
     this.closeMenu();
-
     let chart = graphic.series.chart;
     chart.tooltip.hide();
     if (e.point.data && graphic.series) {
-      let chartWidth = this.highchartsRef[0].chart.chartWidth;
-      if (e.pageX + 120 > chartWidth) {
-        this.leftPosition = e.pageX - 130;
-      } else {
-        this.leftPosition = e.pageX + 10;
-      }
-      this.topPosition = e.pageY;
       this.contextMenuShow = true;
+      let chartWidth = this.highchartsRef[0].chart.chartWidth;
+
+      this.$nextTick(() => {
+        // wait to have the contextMenu Width
+        let menuWidth = this.contextMenu.clientWidth;
+
+        if (e.chartX + menuWidth > chartWidth) {
+          this.leftPosition = e.pageX - menuWidth - 10;
+        } else {
+          this.leftPosition = e.pageX + 10;
+        }
+
+        this.topPosition = e.pageY;
+      });
       this.selectedValue = e.point.y;
       this.selectedObject = e.point.objectUri;
       this.selectedProvenance = e.point.provenanceUri;
@@ -619,7 +638,11 @@ export default class DataVisuGraphic extends Vue {
 
   addEventClick() {
     this.contextMenuShow = false;
-    this.$emit("addEventIsClicked", {time:this.selectedTimeToSend,offset:this.selectedOffset});
+    this.$emit("addEventIsClicked", {
+      time: this.selectedTimeToSend,
+      offset: this.selectedOffset,
+      target: this.selectedObject
+    });
   }
 
   exportPNG() {
@@ -643,21 +666,17 @@ export default class DataVisuGraphic extends Vue {
 .contextMenu {
   position: absolute;
   z-index: 1001;
-  width: 120px;
+  max-width: 140px;
   -webkit-transform: translateY(-100%);
   transform: translateY(-100%);
 }
 .contextMenu .list-group-item {
-   
-    padding: 0.25rem 0.25rem; 
-    background-color: #F7F7F7;
-    border: 1px solid #CCCCCC;
-
+  padding: 0.25rem 0.25rem;
+  background-color: #f7f7f7;
+  border: 1px solid #cccccc;
 }
 .contextMenu .list-group-item:hover {
-   
-    background-color: #CCCCCC;
-
+  background-color: #cccccc;
 }
 </style>
 

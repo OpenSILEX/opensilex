@@ -1,6 +1,10 @@
 <template>
   <div ref="page">
-    <opensilex-DeviceVisualizationForm :device="device" @search="onSearch"></opensilex-DeviceVisualizationForm>
+    <opensilex-DeviceVisualizationForm
+      ref="deviceVisualizationForm"
+      :device="device"
+      @search="onSearch"
+    ></opensilex-DeviceVisualizationForm>
 
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
@@ -9,12 +13,19 @@
     <opensilex-DataVisuGraphic
       v-if="isGraphicLoaded"
       ref="visuGraphic"
-      :deviceType="true"
-      :isAddEvents="false"
+      :deviceType="false"
+      @addEventIsClicked="showAddEventComponent"
       @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+
+    <opensilex-EventModalForm
+      ref="eventsModalForm"
+      :target="target"
+      :eventCreatedTime="eventCreatedTime"
+      @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
   </div>
 </template>
 
@@ -27,7 +38,8 @@ import Highcharts from "highcharts";
 import {
   DevicesService,
   DataGetDTO,
-  ProvenanceGetDTO
+  EventsService,
+  EventGetDTO
 } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
@@ -49,12 +61,18 @@ export default class DeviceVisualizationTab extends Vue {
   device;
 
   isGraphicLoaded = true;
+  target = [] ;
+  eventCreatedTime = "";
+
   form;
   selectedVariable;
   devicesService: DevicesService;
+  eventsService: EventsService;
+  @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
-  @Ref("page") readonly page!: any;
+  @Ref("eventsModalForm") readonly eventsModalForm!: any;
+  @Ref("deviceVisualizationForm") readonly deviceVisualizationForm!: any;
 
   created() {
     if (this.device == null) {
@@ -64,10 +82,36 @@ export default class DeviceVisualizationTab extends Vue {
     this.devicesService = this.$opensilex.getService(
       "opensilex.DevicesService"
     );
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+  }
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.prepareGraphic();
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   onAnnotationCreated() {
     this.visuGraphic.updateDataAnnotations();
+  }
+
+  onEventCreated() {
+    this.prepareGraphic();
+    this.deviceVisualizationForm.getEvents();
+  }
+
+  showAddEventComponent(time) {
+    this.target = this.device;
+    this.eventCreatedTime = time;
+    this.eventsModalForm.showCreateForm();
   }
 
   showAnnotationForm(target) {
@@ -106,24 +150,142 @@ export default class DeviceVisualizationTab extends Vue {
 
   prepareGraphic() {
     if (this.form) {
-      let promise = this.buildDataSerie();
-      promise
-        .then(value => {
+      this.$opensilex.disableLoader();
+      var promises = [];
+      let promise;
+      promise = this.buildDataSerie();
+      promises.push(promise);
+      promise = this.buildEventsSerie();
+      promises.push(promise);
+      Promise.all(promises)
+        .then(values => {
           this.isGraphicLoaded = true;
-          let serie;
-          if (value) {
-            serie = [value];
-          } else {
-            serie = [];
+          let series = [];
+          if (values[0]) {
+            series.push(values[0]);
+          }
+          if (values[1]) {
+            series.push(values[1]);
           }
           this.$nextTick(() => {
-            this.visuGraphic.reload(serie, this.selectedVariable, false);
+            this.$opensilex.enableLoader();
+            this.visuGraphic.reload(
+              series,
+              this.selectedVariable,
+              this.form.showEvents
+            );
           });
         })
         .catch(error => {
           this.isGraphicLoaded = true;
           this.$opensilex.errorHandler(error);
         });
+    }
+  }
+
+  buildEventsSerie() {
+    if (this.form && this.form.showEvents) {
+      return this.eventsService
+        .searchEvents(
+          undefined,
+          this.form.startDate != undefined && this.form.startDate != ""
+            ? this.form.startDate
+            : undefined,
+          this.form.endDate != undefined && this.form.endDate != ""
+            ? this.form.endDate
+            : undefined,
+          this.device,
+          undefined,
+          undefined,
+          0,
+          0
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+          const events = http.response.result as Array<EventGetDTO>;
+          if (events.length > 0) {
+            const cleanEventsData = [];
+            let convertedDate, toAdd, label, title;
+
+            let eventTypesColorArray = [];
+            const colorPalette = [
+              "#ca6434 ",
+              "#427775",
+              "#f2dc7c",
+              "#0f839c",
+              "#a45354",
+              "#d3b0ae",
+              "#774e42",
+              "#776942",
+              "#5c4277",
+              "#34a0ca",
+              "#9334ca",
+              "#caaf34"
+            ];
+            let index = 0;
+
+            events.forEach(element => {
+              if (!eventTypesColorArray[element.rdf_type]) {
+                eventTypesColorArray[element.rdf_type] = colorPalette[index];
+                index++;
+                if (index === 12) {
+                  index = 0;
+                }
+              }
+              label = element.rdf_type_name
+                ? element.rdf_type_name
+                : element.rdf_type;
+              if (element.start != null) {
+                let endTime = element.end ? element.end : "en cours..";
+                label = label + "(End: " + endTime + ")";
+              }
+              // if (element.end) {
+              //   if (element.is_instant) {
+              //     title = label;
+              //   } else {
+              //     title = label + "(End)";
+              //   }
+              // }
+              title = label.charAt(0).toUpperCase();
+              let stringDateWithoutUTC;
+              if (element.start != null) {
+                stringDateWithoutUTC =
+                  moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
+                  "+00:00";
+              } else {
+                stringDateWithoutUTC =
+                  moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
+                  "+00:00";
+              }
+
+              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+              toAdd = {
+                x: dateWithoutUTC,
+                title: title,
+                text: label,
+                eventUri: element.uri,
+                fillColor: eventTypesColorArray[element.rdf_type]
+              };
+
+              cleanEventsData.push(toAdd);
+            });
+            return {
+              type: "flags",
+              allowOverlapX: false,
+              name: "Events",
+              lineWidth: 1,
+              yAxis: 1,
+              data: cleanEventsData,
+              style: {
+                // text style
+                color: "white"
+              }
+            };
+          } else {
+            return undefined;
+          }
+        });
+    } else {
+      return null;
     }
   }
 
@@ -165,7 +327,6 @@ export default class DeviceVisualizationTab extends Vue {
           }
 
           return {
-            type: "line",
             name: this.selectedVariable.name,
             data: cleanData,
             visible: true
@@ -181,19 +342,17 @@ export default class DeviceVisualizationTab extends Vue {
 
     data.forEach(element => {
       let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
+        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
       let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-        "%Y-%m-%dT%H:%M:%S",
-        dateWithoutUTC
-      );
       let offset = moment.parseZone(element.date).format("Z");
+      let stringDate =
+        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
+
       toAdd = {
         x: dateWithoutUTC,
         y: element.value,
         offset: offset,
-        dateWithOffset: highchartsDate + offset,
-        dataUri: element.uri,
+        dateWithOffset: stringDate,
         provenanceUri: element.provenance.uri,
         data: element
       };

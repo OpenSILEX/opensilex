@@ -1,15 +1,18 @@
 <template>
   <div>
     <div class="card">
-      <opensilex-SearchFilterField    :withButton="true"
-         :showTitle="true"
-          @search="onSearch"
-          @clear="clear" :showAdvancedSearch="true">
+      <opensilex-SearchFilterField
+        :withButton="true"
+        :showTitle="true"
+        @search="onSearch"
+        @clear="clear"
+        :showAdvancedSearch="true"
+      >
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
             <opensilex-DeviceVariableSelector
-              label="DeviceVisualizationForm.variable.label"
+              label="ScientificObjectVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
               :device="device"
@@ -17,6 +20,7 @@
               :required="true"
             ></opensilex-DeviceVariableSelector>
           </opensilex-FilterField>
+
           <opensilex-FilterField :halfWidth="true">
             <div class="row">
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
@@ -24,6 +28,8 @@
                   :value.sync="filter.startDate"
                   label="component.common.begin"
                   name="startDate"
+                  @input="getEvents"
+                  @clear="getEvents"
                 ></opensilex-DateTimeForm>
               </div>
               <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
@@ -31,9 +37,25 @@
                   :value.sync="filter.endDate"
                   label="component.common.end"
                   name="endDate"
+                  @input="getEvents"
+                  @clear="getEvents"
                 ></opensilex-DateTimeForm>
               </div>
             </div>
+          </opensilex-FilterField>
+
+          <opensilex-FilterField :halfWidth="true">
+            <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
+            <b-form-checkbox v-model="filter.showEvents" switch>
+              <b-spinner
+                v-if="countIsLoading"
+                small
+                label="Small Spinner"
+                type="grow"
+                variant="primary"
+              ></b-spinner>
+              <b-badge v-else variant="light">{{eventsCount}}</b-badge>
+            </b-form-checkbox>
           </opensilex-FilterField>
         </template>
 
@@ -43,15 +65,14 @@
               ref="provSelector"
               :provenances.sync="filter.provenance"
               :filterLabel="filterProvenanceLabel"
+              :device="device"
               label="Provenance"
               :multiple="false"
-              :device="device"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false" 
+              :showURI="false"
               @select="loadProvenance"
               @clear="clearProvenance"
-
             ></opensilex-ProvenanceSelector>
           </opensilex-FilterField>
 
@@ -75,7 +96,11 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import {
+  EventsService,
+  EventGetDTO,
+  ProvenanceGetDTO
+} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
@@ -86,11 +111,13 @@ export default class DeviceVisualizationForm extends Vue {
   filterProvenanceLabel: string = null;
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
+  countIsLoading: boolean = false;
   filter = {
     variable: null,
     startDate: undefined,
     endDate: undefined,
-    provenance: undefined
+    provenance: undefined,
+    showEvents: false
   };
 
   resetFilters() {
@@ -98,15 +125,61 @@ export default class DeviceVisualizationForm extends Vue {
     this.filter.startDate = undefined;
     this.filter.endDate = undefined;
     this.filter.provenance = undefined;
-
+    this.filter.showEvents = false;
     this.filterProvenanceLabel = null;
   }
+
+  eventsService: EventsService;
 
   @Prop()
   device;
 
+  eventsCountValue = "";
+  public get eventsCount() {
+    return this.eventsCountValue;
+  }
+
+  public set eventsCount(eventsCount: string) {
+    this.eventsCountValue = eventsCount;
+  }
+
+  created() {
+    this.getEvents();
+  }
+
+  getEvents() {
+    this.$opensilex.disableLoader();
+    this.countIsLoading = true;
+    this.$opensilex
+      .getService("opensilex.EventsService")
+      .searchEvents(
+        undefined,
+        this.filter.startDate != undefined && this.filter.startDate != ""
+          ? this.filter.startDate
+          : undefined,
+        this.filter.endDate != undefined && this.filter.endDate != ""
+          ? this.filter.endDate
+          : undefined,
+        this.device,
+        undefined,
+        undefined,
+        0,
+        1
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+        this.eventsCount = "" + http.response.metadata.pagination.totalCount;
+        this.$opensilex.enableLoader();
+        this.countIsLoading = false;
+      })
+      .catch(error => {
+        this.$opensilex.enableLoader();
+        this.countIsLoading = false;
+      });
+  }
+
   clear() {
     this.resetFilters();
+    this.getEvents();
   }
 
   onSearch() {
@@ -153,17 +226,3 @@ export default class DeviceVisualizationForm extends Vue {
   margin-bottom: 0px;
 }
 </style>
-
-<i18n>
-en:
-  DeviceVisualizationForm:
-    variable:
-      label: Variable 
-      placeholder: Search for a variable
-fr:
-  DeviceVisualizationForm:
-    variable:
-      label: Variable 
-      placeholder: Saisir une variable
-
-</i18n>

@@ -46,6 +46,10 @@ public class VariableGetDTO {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+    
+     @JsonProperty("rdf_type")
+    protected URI type;
+
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -88,12 +92,22 @@ public class VariableGetDTO {
     public void setUnit(UnitGetDTO unit) {
         this.unit = unit;
     }
+     public VariableGetDTO setType(URI rdfType) {
+        this.type = rdfType;
+        return this;
+    }
+     
+     public URI getType() {
+        return type;
+    }
+
 
 
     public static VariableGetDTO fromModel(VariableModel model) {
 
         VariableGetDTO dto = new VariableGetDTO();
         dto.setUri(model.getUri());
+        dto.setType(model.getType());
         dto.setName(model.getName());
 
         EntityModel entity = model.getEntity();

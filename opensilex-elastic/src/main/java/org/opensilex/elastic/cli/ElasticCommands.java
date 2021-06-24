@@ -28,9 +28,13 @@ import org.opensilex.core.device.api.DeviceGetDetailsDTO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.EventDetailsDTO;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.project.api.ProjectDTO;
+import org.opensilex.core.project.api.ProjectGetDTO;
+import org.opensilex.core.project.api.ProjectGetDetailDTO;
 
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
 import org.opensilex.sparql.service.SPARQLService;
@@ -69,7 +73,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
             indexProject();
             indexVariable();
             indexDevice();
-            indexEvent();
+            //indexEvent();
 
         } finally {
             if (elasticClient != null) {
@@ -137,7 +141,8 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
                 String json;
 
                 for (ProjectModel p : projects) {
-                    json = gson.toJson(p);
+                    ProjectGetDTO var = ProjectGetDTO.fromModel(p);
+                    json = gson.toJson(var);
 
                     IndexRequest indexRequest = new IndexRequest("projects");
                     indexRequest.source(json, XContentType.JSON);
@@ -166,7 +171,9 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         String json;                
 
         for (VariableModel p : Variables) {
-            VariableDetailsDTO var = new VariableDetailsDTO(p);
+            //VariableDetailsDTO var = new VariableDetailsDTO(p);
+            //VariableGetDTO var = VariableGetDTO.fromModel(p);
+            VariableDetailsDTO var = VariableDetailsDTO.fromModel(p);
                 
             json = gson.toJson(var);
 

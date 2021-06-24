@@ -95,7 +95,7 @@ public class GlobalSearchAPI  {
         int from = page*pageSize;
         
         //Creates the SearchRequest. Without arguments this runs against all indices.
-        SearchRequest searchRequest = new SearchRequest("variables","projects");
+        SearchRequest searchRequest = new SearchRequest("variables","projects","devices");
         
         QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 

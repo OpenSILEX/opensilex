@@ -113,7 +113,7 @@ public class GlobalSearchAPI  {
         
          
         SearchHit[] searchHits = response.getHits().getHits();
-        CountRequest countRequest = new CountRequest("variables","projects"); 
+        CountRequest countRequest = new CountRequest("variables","projects","devices"); 
         countRequest.source(sourceBuilder);
         
 

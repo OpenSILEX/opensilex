@@ -66,10 +66,10 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         try {
             ElasticService elasticService = getOpenSilex().getServiceInstance(ElasticService.DEFAULT_ELASTIC_SERVICE, ElasticService.class);
             elasticClient = elasticService.getClient();
-            //indexProject();
-            //indexVariable();
+            indexProject();
+            indexVariable();
             indexDevice();
-            //indexEvent();
+            indexEvent();
 
         } finally {
             if (elasticClient != null) {
@@ -221,7 +221,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         private void indexEvent() throws Exception {
 
         List<EventModel> Events = sparql.search(EventModel.class, "en");
-        System.out.println("eveeeeeeeeeeeents"+Events.toString());
+        //System.out.println("eveeeeeeeeeeeents"+Events.toString());
     
 
         try {

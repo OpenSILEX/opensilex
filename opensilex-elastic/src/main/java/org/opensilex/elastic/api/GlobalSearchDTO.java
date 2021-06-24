@@ -27,8 +27,11 @@ public class GlobalSearchDTO {
     @JsonProperty("description")
     protected String description;
     
-    @JsonProperty("rdf_type")
-    protected URI rdfType;
+    //@JsonProperty("rdf_type")
+    //protected URI rdfType;
+    
+   @JsonProperty("rdf_type")
+    protected URI type;
 
 
  
@@ -61,12 +64,15 @@ public class GlobalSearchDTO {
         this.description = description;
         return this;
     }
-     public URI getRdfType() {
-        return rdfType;
-    }
+    // public URI getRdfType() {
+      //  return type;
+    //}
 
     public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+        this.type = rdfType;
+    }
+     public URI getType() {
+        return type;
     }
   
 }

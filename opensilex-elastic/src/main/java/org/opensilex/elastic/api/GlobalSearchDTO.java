@@ -30,7 +30,7 @@ public class GlobalSearchDTO {
     //@JsonProperty("rdf_type")
     //protected URI rdfType;
     
-   @JsonProperty("rdf_type")
+   //@JsonProperty("rdf_type")
     protected URI type;
 
 
@@ -68,7 +68,7 @@ public class GlobalSearchDTO {
       //  return type;
     //}
 
-    public void setRdfType(URI rdfType) {
+    public void setType(URI rdfType) {
         this.type = rdfType;
     }
      public URI getType() {

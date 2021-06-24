@@ -61,6 +61,10 @@ public abstract class ProjectDTO {
     
     @JsonProperty("experiments")
     protected List<URI> experiments = new ArrayList<>();
+    
+   @JsonProperty("rdf_type")
+    protected URI type;
+
 
 
     public URI getUri() {
@@ -194,5 +198,13 @@ public abstract class ProjectDTO {
     public ProjectDTO setRelatedProjects(List<URI> relatedProjects) {
         this.relatedProjects = relatedProjects;
         return this;
+    }
+     public ProjectDTO setType(URI rdfType) {
+        this.type = rdfType;
+        return this;
+    }
+     
+     public URI getType() {
+        return type;
     }
 }

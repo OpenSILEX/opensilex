@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.project.api.ProjectDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
@@ -73,6 +74,10 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("datatype")
     private URI dataType;
+    
+    @JsonProperty("rdf_type")
+    protected URI type;
+
 
     public VariableDetailsDTO(VariableModel model) {
         super(model);
@@ -207,6 +212,39 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public void setDataType(URI dataType) {
         this.dataType = dataType;
+    }
+     
+    public VariableDetailsDTO setType(URI rdfType) {
+        this.type = rdfType;
+        return this;
+    }
+     
+     public URI getType() {
+        return type;
+    }
+     
+         public static VariableDetailsDTO fromModel(VariableModel model) {
+
+        VariableDetailsDTO dto = new VariableDetailsDTO();
+        dto.setUri(model.getUri());
+        dto.setType(model.getType());
+        dto.setName(model.getName());
+
+        EntityModel entity = model.getEntity();
+        dto.setEntity(new EntityGetDTO(entity));
+
+        CharacteristicModel characteristic = model.getCharacteristic();
+        dto.setCharacteristic(new CharacteristicGetDTO(characteristic));
+
+        MethodModel method = model.getMethod();
+        if(method != null){
+            dto.setMethod(new MethodGetDTO(method));
+        }
+
+        UnitModel unit = model.getUnit();
+        dto.setUnit(new UnitGetDTO(unit));
+
+        return dto;
     }
 
 }

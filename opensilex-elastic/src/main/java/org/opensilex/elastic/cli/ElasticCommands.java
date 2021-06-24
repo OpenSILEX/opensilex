@@ -23,13 +23,12 @@ import org.elasticsearch.rest.RestStatus;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
-<<<<<<< HEAD
+
 import org.opensilex.core.device.api.DeviceGetDetailsDTO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.EventDetailsDTO;
 import org.opensilex.core.event.dal.EventModel;
-=======
->>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
+
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -67,13 +66,11 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         try {
             ElasticService elasticService = getOpenSilex().getServiceInstance(ElasticService.DEFAULT_ELASTIC_SERVICE, ElasticService.class);
             elasticClient = elasticService.getClient();
-            indexProject();
-            indexVariable();
-<<<<<<< HEAD
+            //indexProject();
+            //indexVariable();
             indexDevice();
-            indexEvent();
-=======
->>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
+            //indexEvent();
+
         } finally {
             if (elasticClient != null) {
                 elasticClient.close();
@@ -180,7 +177,6 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
       
             indexRequest.source(json, XContentType.JSON);
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
-<<<<<<< HEAD
         }
         
       
@@ -216,18 +212,16 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
       
             indexRequest.source(json, XContentType.JSON);
             IndexResponse response = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
-=======
->>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
-            //System.out.println(response);
+
         }
         
       
     }
-<<<<<<< HEAD
+
         private void indexEvent() throws Exception {
 
         List<EventModel> Events = sparql.search(EventModel.class, "en");
-        //System.out.println("eveeeeeeeeeeeents"+Events.toString());
+        System.out.println("eveeeeeeeeeeeents"+Events.toString());
     
 
         try {
@@ -262,10 +256,6 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
       
     }
     
-        
-=======
-       
->>>>>>> 134f4733df9becbfcdbc1b43e7067036fc2bbc36
 }
 
 

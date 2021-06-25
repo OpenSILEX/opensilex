@@ -1,177 +1,165 @@
 <template>
   <div>
-
     <opensilex-SearchFilterField
-        @search="refresh()"
-        @clear="reset()"
-        withButton="false"
-        :showAdvancedSearch="true"
+      @search="refresh()"
+      @clear="reset()"
+      withButton="false"
+      :showAdvancedSearch="true"
     >
       <template v-slot:filters>
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.namePattern')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.name"
-              placeholder="DeviceList.filter.namePattern-placeholder"
+            :filter.sync="filter.name"
+            placeholder="DeviceList.filter.namePattern-placeholder"
           ></opensilex-StringFilter>
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <opensilex-TypeForm
-              :type.sync="filter.rdf_type"
-              :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-              placeholder="DeviceList.filter.rdfTypes-placeholder"
+            :type.sync="filter.rdf_type"
+            :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+            placeholder="DeviceList.filter.rdfTypes-placeholder"
           ></opensilex-TypeForm>
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.start_up')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.start_up"
-              placeholder="DeviceList.filter.start_up-placeholder"
-              type="number"
+            :filter.sync="filter.start_up"
+            placeholder="DeviceList.filter.start_up-placeholder"
+            type="number"
           ></opensilex-StringFilter>
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.brand')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.brand"
-              placeholder="DeviceList.filter.brand-placeholder"
+            :filter.sync="filter.brand"
+            placeholder="DeviceList.filter.brand-placeholder"
           ></opensilex-StringFilter>
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.model')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.model"
-              placeholder="DeviceList.filter.model-placeholder"
+            :filter.sync="filter.model"
+            placeholder="DeviceList.filter.model-placeholder"
           ></opensilex-StringFilter>
         </div>
-
       </template>
       <template v-slot:advancedSearch>
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.metadataKey')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.metadataKey"
-              placeholder="DeviceList.filter.metadataKey-placeholder"
+            :filter.sync="filter.metadataKey"
+            placeholder="DeviceList.filter.metadataKey-placeholder"
           ></opensilex-StringFilter>
         </div>
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{$t('DeviceList.filter.metadataValue')}}</label>
           <opensilex-StringFilter
-              :filter.sync="filter.metadataValue"
-              placeholder="DeviceList.filter.metadataValue-placeholder"
+            :filter.sync="filter.metadataValue"
+            placeholder="DeviceList.filter.metadataValue-placeholder"
           ></opensilex-StringFilter>
         </div>
       </template>
     </opensilex-SearchFilterField>
 
     <opensilex-TableAsyncView
-        ref="tableRef"
-        :searchMethod="searchDevices"
-        :fields="fields"
-        defaultSortBy="name"
-        :isSelectable="true"
-        labelNumberOfSelectedRow="DeviceList.selected"
-        iconNumberOfSelectedRow="ik#ik-thermometer"
+      ref="tableRef"
+      :searchMethod="searchDevices"
+      :fields="fields"
+      defaultSortBy="name"
+      :isSelectable="true"
+      labelNumberOfSelectedRow="DeviceList.selected"
+      iconNumberOfSelectedRow="ik#ik-thermometer"
     >
-
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
         <b-dropdown
-            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-            dropright
-            class="mb-2 mr-2"
-            :small="true"
-            :disabled="numberOfSelectedRows == 0"
-            text=actions>
-          <b-dropdown-item-button
-              @click="createDocument()"
-          >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-          <b-dropdown-item-button
-              @click="exportDevices()"
-          >{{$t('DeviceList.export')}}</b-dropdown-item-button>
-          <b-dropdown-item-button
-              @click="linkVariable()"
-          >{{$t('DeviceList.linkVariable')}}</b-dropdown-item-button>
+          v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :disabled="numberOfSelectedRows == 0"
+          text="actions"
+        >
+          <b-dropdown-item-button @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="exportDevices()">{{$t('DeviceList.export')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="linkVariable()">{{$t('DeviceList.linkVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
 
           <!-- <b-dropdown-item-button disabled>{{$t('DeviceList.addAnnotation')}}
-          </b-dropdown-item-button> -->
+          </b-dropdown-item-button>-->
 
-          <b-dropdown-item-button @click="createEvents()">
-            {{$t('Event.add-multiple')}}
-          </b-dropdown-item-button>
+          <b-dropdown-item-button @click="createEvents()">{{$t('Event.add-multiple')}}</b-dropdown-item-button>
 
-          <b-dropdown-item-button @click="createMoves()">
-            {{$t('Move.add')}}
-          </b-dropdown-item-button>
+          <b-dropdown-item-button @click="createMoves()">{{$t('Move.add')}}</b-dropdown-item-button>
         </b-dropdown>
       </template>
 
       <template v-slot:cell(name)="{data}">
-        <opensilex-UriLink :uri="data.item.uri"
-                           :value="data.item.name"
-                           :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
+        <opensilex-UriLink
+          :uri="data.item.uri"
+          :value="data.item.name"
+          :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
         ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              @click="editDevice(data.item.uri)"
-              label="DeviceList.update"
-              :small="true"
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+            @click="editDevice(data.item.uri)"
+            label="DeviceList.update"
+            :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
-              label="DeviceList.delete"
-              :small="true"
-              @click="deleteDevice(data.item.uri)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
+            label="DeviceList.delete"
+            :small="true"
+            @click="deleteDevice(data.item.uri)"
           ></opensilex-DeleteButton>
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
 
     <opensilex-ModalForm
-        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-        ref="documentForm"
-        component="opensilex-DocumentForm"
-        createTitle="component.common.addDocument"
-        modalSize="lg"
-        :initForm="initForm"
-        icon="ik#ik-file-text"
+      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+      ref="documentForm"
+      component="opensilex-DocumentForm"
+      createTitle="component.common.addDocument"
+      modalSize="lg"
+      :initForm="initForm"
+      icon="ik#ik-file-text"
     ></opensilex-ModalForm>
 
     <opensilex-ModalForm
-        ref="deviceForm"
-        component="opensilex-DeviceForm"
-        editTitle="update"
-        icon="ik#ik-thermometer"
-        modalSize="lg"
-        @onUpdate="refresh()"
+      ref="deviceForm"
+      component="opensilex-DeviceForm"
+      editTitle="update"
+      icon="ik#ik-thermometer"
+      modalSize="lg"
+      @onUpdate="refresh()"
     ></opensilex-ModalForm>
 
     <opensilex-VariableModalList
-        label="label"
-        ref="variableSelection"
-        :isModalSearch="true"
-        :required="true"
-        :multiple="true"
-        @onValidate="editDeviceVar"
+      v-if="showVariableForm"
+      label="label"
+      ref="variableSelection"
+      :isModalSearch="true"
+      :required="true"
+      :multiple="true"
+      @onValidate="editDeviceVar"
     ></opensilex-VariableModalList>
 
-    <opensilex-EventCsvForm
-        ref="eventCsvForm"
-        :targets="selectedUris"
-    ></opensilex-EventCsvForm>
+    <opensilex-EventCsvForm v-if="showEventForm" ref="eventCsvForm" :targets="selectedUris"></opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
-        ref="moveCsvForm"
-        :targets="selectedUris"
-        :isMove="true"
+      v-if="showMoveForm"
+      ref="moveCsvForm"
+      :targets="selectedUris"
+      :isMove="true"
     ></opensilex-EventCsvForm>
   </div>
 </template>
@@ -207,7 +195,9 @@ export default class DeviceList extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-
+  showVariableForm: boolean = false;
+  showEventForm: boolean = false;
+  showMoveForm: boolean = false;
   filter = {
     name: undefined,
     rdf_type: undefined,
@@ -228,7 +218,7 @@ export default class DeviceList extends Vue {
     model: undefined,
     serial_number: undefined,
     metadata: undefined
-  }
+  };
 
   resetFilters() {
     this.filter = {
@@ -263,19 +253,19 @@ export default class DeviceList extends Vue {
     let query: any = this.$route.query;
     for (let [key, value] of Object.entries(this.filter)) {
       if (query[key]) {
-        if (Array.isArray(this.filter[key])){
+        if (Array.isArray(this.filter[key])) {
           this.filter[key] = decodeURIComponent(query[key]).split(",");
         } else {
           this.filter[key] = decodeURIComponent(query[key]);
-        }        
+        }
       }
     }
   }
 
   updateURLFilters() {
     for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");       
-    }    
+      this.$opensilex.updateURLParameter(key, value, "");
+    }
   }
 
   created() {
@@ -285,24 +275,24 @@ export default class DeviceList extends Vue {
 
   editDevice(uri: string) {
     this.service
-        .getDevice(uri)
-        .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
-          let device = http.response.result;
-          this.deviceForm.getFormRef().getAttributes(device)
-          let devicetoSend = JSON.parse(JSON.stringify(device));
-          this.deviceForm.showEditForm(devicetoSend);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getDevice(uri)
+      .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+        let device = http.response.result;
+        this.deviceForm.getFormRef().getAttributes(device);
+        let devicetoSend = JSON.parse(JSON.stringify(device));
+        this.deviceForm.showEditForm(devicetoSend);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   deleteDevice(uri: string) {
     this.service
-        .deleteDevice(uri)
-        .then(() => {
-          this.refresh();
-          this.$emit("onDelete", uri);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .deleteDevice(uri)
+      .then(() => {
+        this.refresh();
+        this.$emit("onDelete", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   fields = [
@@ -337,17 +327,17 @@ export default class DeviceList extends Vue {
   searchDevices(options) {
     //this.updateExportFilters();
     return this.service.searchDevices(
-        this.filter.rdf_type, // rdf_type filter
-        this.filter.name, // name filter
-        this.filter.start_up, // year filter
-        this.filter.existence_date, // existence_date filter
-        this.filter.brand, // brand filter
-        this.filter.model, // model filter
-        undefined, // serial_number filter
-        this.addMetadataFilter(), //metadata filter
-        options.orderBy,
-        options.currentPage,
-        options.pageSize,
+      this.filter.rdf_type, // rdf_type filter
+      this.filter.name, // name filter
+      this.filter.start_up, // year filter
+      this.filter.existence_date, // existence_date filter
+      this.filter.brand, // brand filter
+      this.filter.model, // model filter
+      undefined, // serial_number filter
+      this.addMetadataFilter(), //metadata filter
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
     );
   }
 
@@ -358,78 +348,103 @@ export default class DeviceList extends Vue {
   exportDevices() {
     let path = "/core/devices/export_by_uris";
     let today = new Date();
-    let filename = "export_devices_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    let filename =
+      "export_devices_" +
+      today.getFullYear() +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0");
 
-    var exportList = []
+    var exportList = [];
     for (let select of this.tableRef.getSelected()) {
       exportList.push(select.uri);
     }
-    this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: exportList}, this.lang);
+    this.$opensilex.downloadFilefromPostService(
+      path,
+      filename,
+      "csv",
+      { uris: exportList },
+      this.lang
+    );
   }
 
   linkVariable() {
     let typeDevice;
     let measure = [];
-    let deniedType = ['vocabulary:RadiometricTarget', 'vocabulary:Station', 'vocabulary:ControlLaw'];
-    for(let select of this.tableRef.getSelected()) {
+    let deniedType = [
+      "vocabulary:RadiometricTarget",
+      "vocabulary:Station",
+      "vocabulary:ControlLaw"
+    ];
+    for (let select of this.tableRef.getSelected()) {
       typeDevice = select.rdf_type;
       measure.push(deniedType.includes(typeDevice));
     }
 
     if (measure.includes(true)) {
-      alert(this.$t('DeviceList.alertBadDeviceType'));
-    } else{
-      this.variableSelection.show();
+      alert(this.$t("DeviceList.alertBadDeviceType"));
+    } else {
+      this.showVariableForm = true;
+      this.$nextTick(() => {
+        this.variableSelection.show();
+      });
     }
   }
 
   editDeviceVar(variableSelected) {
-
-    for(let select of this.tableRef.getSelected()) {
+    for (let select of this.tableRef.getSelected()) {
       this.service
-          .getDevice(select.uri)
-          .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
-            let varList = [];
-            for(let select of variableSelected) {
-              varList.push({ property: "vocabulary:measures", value: select.uri });
-              console.debug("result device" + varList);
-            }
-            let device = http.response.result;
-            let form = JSON.parse(JSON.stringify(device));
-            form.relations = form.relations.concat(varList);
-            this.updateVariable(form);
-          })
-          .catch(this.$opensilex.errorHandler);
+        .getDevice(select.uri)
+        .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
+          let varList = [];
+          for (let select of variableSelected) {
+            varList.push({
+              property: "vocabulary:measures",
+              value: select.uri
+            });
+            console.debug("result device" + varList);
+          }
+          let device = http.response.result;
+          let form = JSON.parse(JSON.stringify(device));
+          form.relations = form.relations.concat(varList);
+          this.updateVariable(form);
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
   updateVariable(form) {
     this.$opensilex
-        .getService("opensilex.DevicesService")
-        .updateDevice(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("device updated", uri);
-          this.$emit("onUpdate", form);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getService("opensilex.DevicesService")
+      .updateDevice(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("device updated", uri);
+        this.$emit("onUpdate", form);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   createDocument() {
     this.documentForm.showCreateForm();
   }
 
-  createEvents(){
-    this.updateSelectedUris();
-    this.eventCsvForm.show();
+  createEvents() {
+    this.showEventForm = true;
+    this.$nextTick(() => {
+      this.updateSelectedUris();
+      this.eventCsvForm.show();
+    });
   }
 
-  createMoves(){
-    this.updateSelectedUris();
-    this.moveCsvForm.show();
+  createMoves() {
+    this.showMoveForm = true;
+    this.$nextTick(() => {
+      this.updateSelectedUris();
+      this.moveCsvForm.show();
+    });
   }
 
-  updateSelectedUris(){
+  updateSelectedUris() {
     this.selectedUris = [];
     for (let select of this.tableRef.getSelected()) {
       this.selectedUris.push(select.uri);
@@ -457,14 +472,23 @@ export default class DeviceList extends Vue {
         keywords: undefined
       },
       file: undefined
-    }
+    };
   }
 
   addMetadataFilter() {
     let metadata = undefined;
-    if (this.filter.metadataKey != undefined && this.filter.metadataKey != ""
-        && this.filter.metadataValue != undefined && this.filter.metadataValue != "") {
-      metadata = '{"' + this.filter.metadataKey + '":"' + this.filter.metadataValue + '"}'
+    if (
+      this.filter.metadataKey != undefined &&
+      this.filter.metadataKey != "" &&
+      this.filter.metadataValue != undefined &&
+      this.filter.metadataValue != ""
+    ) {
+      metadata =
+        '{"' +
+        this.filter.metadataKey +
+        '":"' +
+        this.filter.metadataValue +
+        '"}';
       return metadata;
     }
   }
@@ -479,7 +503,6 @@ export default class DeviceList extends Vue {
     this.exportFilter.serial_number = undefined;
     this.exportFilter.metadata = this.addMetadataFilter();
   }
-
 }
 </script>
 

@@ -95,7 +95,7 @@ await $opensilex.loadModule("opensilex-elastic");
       },
       {
       label: "Type",
-      key: "rdf_type",
+      key: "type",
       sortable: true
       },
       {

@@ -73,12 +73,6 @@ public class GlobalSearchAPI  {
     @Path("search")
     @ApiOperation(
             value = "Search by name, long name, entity, characteristic, method or unit name"
-            /*,
-            notes = "The following fields could be used for sorting : \n\n"
-            + " _entity_name/entityName : the name of the variable entity\n\n"
-            + " _characteristic_name/characteristicName : the name of the variable characteristic\n\n"
-            + " _method_name/methodName : the name of the variable method\n\n"
-            + " _unit_name/unitName : the name of the variable unit\n\n"*/
     )
     @ApiProtected
     @ApiResponses(value = {

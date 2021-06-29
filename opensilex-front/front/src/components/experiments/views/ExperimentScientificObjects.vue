@@ -580,6 +580,8 @@ export default class ExperimentScientificObjects extends Vue {
   selectAllLimit = 1500; 
   
   onSelectAll(){
+
+    this.showDataVisuView = false;
     if (this.selectAll) {
       this.selectedObjects = [];
 
@@ -634,6 +636,7 @@ export default class ExperimentScientificObjects extends Vue {
         })
       }
     else {
+      this.showDataVisuView = false; 
       this.selectedObjects = [];
       this.numberOfSelectedRows = this.selectedObjects.length;
     }

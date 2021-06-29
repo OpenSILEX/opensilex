@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <div v-click-outside="closeMenu" @click="closeContextMenu" class="card-body p-0">
+      <div v-click-outside="closeMenu" @click="closeContextMenu" class="card-body p-0" >
         <highcharts
           v-for="(options, index) in chartOptions"
           :options="options"
@@ -293,6 +293,7 @@ export default class DataVisuGraphic extends Vue {
         });
     }
   }
+
   get chartOptions() {
     let that = this;
     let previousPoint;
@@ -301,6 +302,9 @@ export default class DataVisuGraphic extends Vue {
         {
           chart: {
             zoomType: "x",
+            marginBottom: that.series.length > 8  ? 130 : 100,
+            marginLeft: 80,
+            height: that.series.length > 8 ? 500 : 400, //ok until 20 or 30 series depends on the name (uri) lenght....
             type: that.lineType ? "line" : "scatter",
             events: {
               click: function(e) {
@@ -353,8 +357,11 @@ export default class DataVisuGraphic extends Vue {
             y: -4
           },
           legend: {
-            layout: "vertical",
-            enabled: true
+            enabled: true,
+            floating: true,
+            verticalAlign: 'bottom',
+            align:'center'     
+
           },
           xAxis: {
             type: "datetime",
@@ -663,6 +670,7 @@ export default class DataVisuGraphic extends Vue {
 .card-header {
   height: 60px;
 }
+
 .contextMenu {
   position: absolute;
   z-index: 1001;

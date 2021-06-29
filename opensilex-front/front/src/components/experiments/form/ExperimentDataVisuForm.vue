@@ -40,8 +40,8 @@
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
             <b-form-checkbox v-model="filter.showEvents" @input="onUpdate" switch>
-              <b-spinner v-if="countIsLoading" small label="Small Spinner" type="grow" variant="primary" ></b-spinner>
-              <b-badge  v-else variant="light">{{eventsCount}}</b-badge>
+              <b-spinner v-if="false" small   label="Busy" ></b-spinner>
+              <b-badge  v-if="false" variant="light">{{eventsCount}}</b-badge>
               </b-form-checkbox>
           </opensilex-FilterField>
         </template>
@@ -63,18 +63,6 @@
             ></opensilex-ProvenanceSelector>
           </opensilex-FilterField>
 
-          <!-- <opensilex-FilterField :halfWidth="true">
-            <div class="row">
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                <label for="metadataKey">{{ $t("DataVisuForm.search.metadataKey") }}</label>
-                <opensilex-StringFilter id="metadataKey" :filter.sync="filter.metadataKey" @update="onUpdate"></opensilex-StringFilter>
-              </div>
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                <label for="metadataValue">{{ $t("DataVisuForm.search.metadataValue") }}</label>
-                <opensilex-StringFilter id="metadataValue" :filter.sync="filter.metadataValue"  @update="onUpdate"></opensilex-StringFilter>
-              </div>
-            </div>
-          </opensilex-FilterField>-->
 
           <opensilex-FilterField>
             <b-collapse
@@ -117,8 +105,6 @@ export default class ExperimentDataVisuForm extends Vue {
     endDate: undefined,
     provenance: undefined,
     showEvents: false
-    // metadataKey: undefined,
-    // metadataValue: undefined
   };
 
   resetFilters() {
@@ -126,8 +112,6 @@ export default class ExperimentDataVisuForm extends Vue {
     this.filter.startDate = undefined;
     this.filter.endDate = undefined;
     this.filter.provenance = undefined;
-    // this.filter.metadataKey = undefined;
-    // this.filter.metadataValue = undefined;
     this.filter.showEvents = false;
 
     this.filterProvenanceLabel = null;
@@ -149,7 +133,7 @@ export default class ExperimentDataVisuForm extends Vue {
   }
 
   created() {
-    this.getTotalEventsCount();
+  //  this.getTotalEventsCount();
   }
 
   onDateChange(){

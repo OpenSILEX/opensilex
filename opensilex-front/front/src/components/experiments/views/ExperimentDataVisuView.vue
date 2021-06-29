@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="experimentDataVisuView">
     <b-collapse v-model="showSearchComponent" class="mt-2">
       <opensilex-ExperimentDataVisuForm
         ref="experimentDataVisuForm"
@@ -10,11 +10,14 @@
       ></opensilex-ExperimentDataVisuForm>
     </b-collapse>
 
+    <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
+      <b-spinner label="Loading..."></b-spinner>
+    </div>
     <b-collapse v-model="showGraphicComponent" class="mt-2">
       <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
-        @addEventIsClicked="showAddEventComponent"
+        @addEventIsClicked="showEventForm"
         @dataAnnotationIsClicked="showAnnotationForm"
         @graphicCreated="$emit('graphicCreated')"
       ></opensilex-DataVisuGraphic>
@@ -71,7 +74,7 @@ export default class ExperimentDataVisuView extends Vue {
 
   showSearchComponent: boolean = true;
   showGraphicComponent: boolean = false;
-
+  initLoader : boolean = false;
   selectedExperiment;
   selectedVariable;
   eventsService: EventsService;
@@ -115,7 +118,7 @@ export default class ExperimentDataVisuView extends Vue {
     this.experimentDataVisuForm.getTotalEventsCount();
   }
 
-  showAddEventComponent(value) {
+  showEventForm(value) {
     this.target = value.target;
     this.eventCreatedTime = value;
     this.eventsModalForm.showCreateForm();
@@ -173,6 +176,8 @@ export default class ExperimentDataVisuView extends Vue {
   }
 
   onSearch(form) {
+
+    this.initLoader = true;
     this.form = form;
     this.showGraphicComponent = false;
     this.$opensilex.enableLoader();
@@ -202,7 +207,6 @@ export default class ExperimentDataVisuView extends Vue {
 
   loadSeries() {
     if (this.selectedScientificObjects && this.form.variable) {
-
       this.buildSeries();
     }
   }
@@ -213,7 +217,8 @@ export default class ExperimentDataVisuView extends Vue {
     const series = [];
     let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
-
+    
+    this.$opensilex.disableLoader();
     promise = this.buildEventsSeries();
     promises.push(promise);
     promise = this.buidDataSeries();
@@ -347,7 +352,7 @@ export default class ExperimentDataVisuView extends Vue {
           return {
             type: "flags",
             allowOverlapX: false,
-            name: "Events/"+ name,
+            name: "Events ->"+ name,
             lineWidth: 1,
             yAxis: 1,
             data: cleanEventsData,
@@ -416,20 +421,6 @@ export default class ExperimentDataVisuView extends Vue {
       .catch(error => {});
   }
 
-  // addMetadataFilter() {
-  //   let metadata = undefined;
-  //   if (
-  //     this.form.metadataKey != undefined &&
-  //     this.form.metadataKey != "" &&
-  //     this.form.metadataValue != undefined &&
-  //     this.form.metadataValue != ""
-  //   ) {
-  //     metadata =
-  //       '{"' + this.form.metadataKey + '":"' + this.form.metadataValue + '"}';
-  //     return metadata;
-  //   }
-  // }
-
   // keep only date/value/uriprovenance properties
   dataTransforme(data, concernedItem) {
     let toAdd,
@@ -471,7 +462,7 @@ export default class ExperimentDataVisuView extends Vue {
 /*
  * Force Bootstrap v4 transitions
  * (ignores prefers-reduced-motion media feature)
- * https://gist.github.com/robssanches/33c6c1bf4dd5cf3c259009775883d1c0
+ *  https://gist.github.com/robssanches/33c6c1bf4dd5cf3c259009775883d1c0
  */
 
 .fade {
@@ -481,8 +472,8 @@ export default class ExperimentDataVisuView extends Vue {
   transition: height 0.8s ease !important;
 }
 
-.data-container {
-  height: 800px;
+.experimentDataVisuView {
+  min-height: 700px;
 }
 </style>
 

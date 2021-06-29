@@ -116,6 +116,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   onSearch(form) {
     this.isGraphicLoaded = false;
+    this.$opensilex.disableLoader();
     if (form.variable) {
       this.form = form;
       this.$opensilex
@@ -142,6 +143,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
           }
         })
         .catch(error => {
+          this.isGraphicLoaded = true;
           this.$opensilex.errorHandler(error);
         });
     }

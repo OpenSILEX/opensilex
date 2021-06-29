@@ -122,7 +122,7 @@ export default class DeviceVisualizationTab extends Vue {
     this.isGraphicLoaded = false;
     if (form.variable) {
       this.form = form;
-
+      this.$opensilex.disableLoader();
       this.$opensilex
         .getService("opensilex.VariablesService")
         .getVariable(form.variable)
@@ -132,6 +132,8 @@ export default class DeviceVisualizationTab extends Vue {
           if (datatype == "decimal" || datatype == "integer") {
             this.prepareGraphic();
           } else {
+
+            this.isGraphicLoaded = true;
             this.$opensilex.showInfoToast(
               this.$i18n.t("DeviceDataTab.datatypeMessageA") +
                 " " +

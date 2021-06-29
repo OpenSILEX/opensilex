@@ -47,13 +47,7 @@
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
             <b-form-checkbox v-model="filter.showEvents" switch>
-              <b-spinner
-                v-if="countIsLoading"
-                small
-                label="Small Spinner"
-                type="grow"
-                variant="primary"
-              ></b-spinner>
+              <b-spinner  v-if="countIsLoading"  small label="Busy" ></b-spinner>
               <b-badge v-else variant="light">{{eventsCount}}</b-badge>
             </b-form-checkbox>
           </opensilex-FilterField>

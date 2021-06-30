@@ -7,7 +7,7 @@
             <opensilex-CreateButton
                 v-if="user.hasCredential(modificationCredentialId)"
                 label="Event.add"
-                @click="eventModalForm.showCreateForm()"
+                @click="showEventForm"
             ></opensilex-CreateButton>
 
             <opensilex-CreateButton
@@ -31,6 +31,7 @@
                     <opensilex-TypeForm
                         :type.sync="filter.type"
                         :baseType="baseType"
+                        :ignoreRoot="false"
                         placeholder="Event.type-placeholder"
                     ></opensilex-TypeForm>
 
@@ -41,7 +42,7 @@
                     <label>{{ $t("Event.targets") }}</label>
                     <opensilex-StringFilter
                         id="target"
-                        :filter.sync="target"
+                        :filter.sync="filter.target"
                         placeholder="GermplasmList.filter.uri-placeholder"
                     ></opensilex-StringFilter>
                 </opensilex-FilterField>
@@ -87,30 +88,37 @@
                         :searchMethod="search"
                         :fields="fields"
                         :isSelectable="isSelectable"
+                        defaultSortBy=""
                     >
                         <template v-slot:cell(rdf_type_name)="{data}">
                             <opensilex-UriLink
+                                v-if="data.item.rdf_type_name"
                                 :uri="data.item.uri"
                                 :value="data.item.rdf_type_name"
                                 @click="showEventView(data.item)"
                             ></opensilex-UriLink>
+                            <opensilex-TextView v-else
+                                                :value="data.item.rdf_type">
+                            </opensilex-TextView>
                         </template>
 
                         <template v-slot:cell(start)="{data}">
                             <opensilex-TextView v-if="data.item.start && data.item.start.length > 0"
-                                                :value="new Date(data.item.start).toLocaleString()"></opensilex-TextView>
+                                                :value="new Date(data.item.start).toLocaleString()">
+                            </opensilex-TextView>
                         </template>
                         <template v-slot:cell(end)="{data}">
                             <opensilex-TextView v-if="data.item.end"
-                                                :value="new Date(data.item.end).toLocaleString()"></opensilex-TextView>
+                                                :value="new Date(data.item.end).toLocaleString()">
+                            </opensilex-TextView>
                         </template>
 
                         <template v-slot:cell(targets)="{data}">
-                                        <span :key="index" v-for="(uri, index) in getItemsToDisplay(data.item.targets)">
-                                            <span :title="uri">{{ uri }}</span>
-                                            <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
-                                            <span v-if="index >= 2"> ... </span>
-                                        </span>
+                            <span :key="index" v-for="(uri, index) in getItemsToDisplay(data.item.targets)">
+                                <span :title="uri">{{ uri }}</span>
+                                <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
+                                <span v-if="index >= 2"> ... </span>
+                            </span>
                         </template>
 
                         <template v-slot:cell(description)="{data}">
@@ -146,6 +154,7 @@
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
+            v-if="renderEventModalForm"
             ref="eventModalForm"
             :target="target"
             @onCreate="displayAfterCreation"
@@ -153,6 +162,7 @@
         ></opensilex-EventModalForm>
 
         <opensilex-EventCsvForm
+            v-if="renderCsvForm"
             ref="eventCsvForm"
             @csvImported="onImport"
         ></opensilex-EventCsvForm>
@@ -222,6 +232,8 @@ export default class EventList extends Vue {
     @Prop()
     target;
 
+    baseType: string;
+
     renderComponent = true;
 
     @Watch("target")
@@ -234,10 +246,21 @@ export default class EventList extends Vue {
         });
     }
 
-    baseType: string;
+    renderEventModalForm = false;
+    renderCsvForm = false;
+
+    showEventForm(){
+        this.renderEventModalForm = true;
+        this.$nextTick(() => {
+            this.eventModalForm.showCreateForm();
+        });
+    }
 
     showCsvForm() {
-        this.eventCsvForm.show();
+        this.renderCsvForm = true;
+        this.$nextTick(() => {
+            this.eventCsvForm.show();
+        });
     }
 
     created() {
@@ -321,20 +344,12 @@ export default class EventList extends Vue {
 
         this.cleanFilter();
 
-        // options.forEach(option => {
-        //     if(option.fieldName.startsWith("end")){
-        //         option.fieldName = "_end__timestamp"
-        //     }else if(option.startsWith("start")){
-        //         option.fieldName = "_start__timestamp"
-        //     }
-        // })
-
         return this.$service
             .searchEvents(
                 this.filter.type,
                 this.filter.start,
                 this.filter.end,
-                this.filter.target,
+                this.target,
                 this.filter.description,
                 options.orderBy,
                 options.currentPage,

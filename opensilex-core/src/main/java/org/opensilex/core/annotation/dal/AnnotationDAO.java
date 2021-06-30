@@ -167,6 +167,8 @@ public class AnnotationDAO {
                     // add specific ORDER BY directly to the select builder
                     specificOrderMap.forEach(selectBuilder::addOrderBy);
                 },
+                null,
+                null,
                 defaultOrderByList,
                 page,
                 pageSize
@@ -186,7 +188,7 @@ public class AnnotationDAO {
             ElementGroup annotationGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,annotationGraph);
 
             appendTargetFilter(annotationGraphGroupElem, target);
-        });
+        },null);
     }
 
 

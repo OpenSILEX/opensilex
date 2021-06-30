@@ -4,53 +4,61 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.vocabulary.RDF;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.DateTimeDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingFunction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.excludeId;
 
-public class MoveEventDAO extends EventDAO<MoveModel> {
-    
+public class MoveEventDAO extends EventDAO<MoveModel>{
+
+    public static final Var fromNameVar;
+    public static final Var toNameVar;
+
     public final static String POSITION_ARRAY_FIELD = "targetPositions";
     public final static String TARGET_FIELD = "target";
     
     public final static String moveCollectionName = "Moves";
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
-    
-    private static final Triple moveEventTo = new Triple(uriVar, Oeev.from.asNode(), fromVar);
-    private static final Triple moveEventFrom = new Triple(uriVar, Oeev.to.asNode(), toVar);
-    private static final Triple moveEventType = new Triple(uriVar, RDF.type.asNode(), Oeev.Move.asNode());
-    
-    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException {
+
+    static {
+        toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(MoveModel.TO_FIELD));
+        fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(MoveModel.FROM_FIELD));
+    }
+
+    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
         this.moveEventCollection = mongodb.getDatabase().getCollection(moveCollectionName, MoveEventNoSqlModel.class);
     }
@@ -59,50 +67,51 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return moveEventCollection;
     }
 
+    @Override
     public MoveModel create(MoveModel model) throws Exception {
-        
+
         try {
             check(Collections.singletonList(model),true);
-            
+
             sparql.startTransaction();
             sparql.create(eventGraph, model, false);
-            
+
             // insert move event in mongodb
             MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
             if (noSqlModel != null) {
 
                 String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
                 noSqlModel.setUri(new URI(shortEventUri));
-                
+
                 mongodb.startTransaction();
                 moveEventCollection.insertOne(noSqlModel);
                 mongodb.commitTransaction();
             }
-            
+
             sparql.commitTransaction();
             return model;
-            
+
         } catch (Exception e) {
             sparql.rollbackTransaction(e);
             mongodb.rollbackTransaction();
             throw e;
         }
     }
-    
+
     protected void createMoveEvents(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
 
         // insert sparql and noSql model streams
         try {
             sparql.startTransaction();
             sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
-            
+
             if (! noSqlModels.isEmpty()) {
                 mongodb.startTransaction();
                 moveEventCollection.insertMany(noSqlModels);
                 mongodb.commitTransaction();
             }
             sparql.commitTransaction();
-            
+
         } catch (Exception e) {
             sparql.rollbackTransaction(e);
             mongodb.rollbackTransaction();
@@ -116,6 +125,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @return
      * @throws Exception
      */
+    @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
         List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
@@ -186,7 +196,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @return a {@link SPARQLResult} which the following bindings :
      */
     public MoveModel getMoveEvent(URI target, OffsetDateTime dateTime) throws Exception {
-        
+
         ListWithPagination<MoveModel> moves = sparql.searchWithPagination(
                 MoveModel.class,
                 null,
@@ -194,9 +204,8 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
                     
-                    appendTargetFilter(eventGraphGroupElem, target);
                     appendTimeAfterFilter(eventGraphGroupElem, dateTime);
-                    
+                    appendTargetRegexFilter(eventGraphGroupElem, target.toString(), null);
                     select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
                 }),
                 null,
@@ -211,34 +220,42 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return moves.getList().get(0);
     }
 
-    /**
-     * @param concernedItem the URI of the object concerned by the {@link MoveModel}
-     * @param start the time interval start
-     * @param end the time interval end
-     * @return a {@link Stream} of {@link MoveModel} which the following bindings :
-     * @apiNote The {@link MoveModel} are sorted with DESCENDING ordering on event end.
-     */
+
+    public MoveModel fromResult(SPARQLResult result, String lang, MoveModel model) throws Exception {
+
+         super.fromResult(result, lang,model);
+
+        String fromStr = result.getStringValue(MoveModel.FROM_FIELD);
+        if (!StringUtils.isEmpty(fromStr)) {
+            InfrastructureFacilityModel from = new InfrastructureFacilityModel();
+            from.setUri(new URI(fromStr));
+            from.setName(result.getStringValue(fromNameVar.getVarName()));
+            model.setFrom(from);
+        }
+
+        String toStr = result.getStringValue(MoveModel.TO_FIELD);
+        if (!StringUtils.isEmpty(toStr)) {
+            InfrastructureFacilityModel to = new InfrastructureFacilityModel();
+            to.setUri(new URI(toStr));
+            to.setName(result.getStringValue(toNameVar.getVarName()));
+            model.setTo(to);
+        }
+
+        return model;
+    }
+
+
     public Stream<MoveModel> searchMoveEvents(
-            URI concernedItem,
+            String targetPattern,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
             List<OrderBy> orderByList,
             Integer page, Integer pageSize) throws Exception {
-        
-        int offset = 0;
-        int limit = 20;
-        if (page != null && pageSize != null) {
-            offset = page * pageSize;
-            limit = pageSize;
-        }
 
-        // build the index of couple (Expr,order) for any specific order by
-        Map<Expr, Order> exprOrderIndex = new HashMap<>();
+        this.updateOrderByList(orderByList);
 
-        // build the index of default order by indexed by field name
-        Map<String, OrderBy> defaultOrderIndex = orderByList.stream()
-                .collect(Collectors.toMap(OrderBy::getFieldName, order -> order));
-        
+        ThrowingFunction<SPARQLResult, MoveModel,Exception> resultHandler = (result -> fromResult(result, null, new MoveModel()));
+
         return sparql.searchAsStream(
                 eventGraph,
                 MoveModel.class,
@@ -246,21 +263,22 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                 (select -> {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
-                    
-                    appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
-                    appendTargetFilter(eventGraphGroupElem, concernedItem);
-                    appendTimeFilter(eventGraphGroupElem, start, end);
 
-//                  appendDateIntervalRangeFilter(eventGraphGroupElem, start, end);
+                    // description is an optional field, so the filtering must be done outside of the OPTIONAL
+                    appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
+
+                    appendTargetRegexFilter(eventGraphGroupElem, targetPattern, orderByList);
+                    appendTimeFilter(select,eventGraphGroupElem, start, end);
+
                     if (CollectionUtils.isEmpty(orderByList)) {
                         select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
-                    } else {
-                        exprOrderIndex.forEach(select::addOrderBy);
                     }
                 }),
-                defaultOrderIndex.values(),
-                offset,
-                limit
+                null,
+                resultHandler,
+                orderByList,
+                page,
+                pageSize
         );
     }
     
@@ -272,41 +290,6 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
     }
     
-    protected void appendDateIntervalRangeFilter(ElementGroup eventGraphGroupElem, OffsetDateTime start, OffsetDateTime end) throws Exception {
-        
-        boolean beginTimeNotNull = start != null;
-        boolean endTimeNotNull = end != null;
-        
-        if (!beginTimeNotNull && !endTimeNotNull) {
-            return;
-        }
-        
-        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-        Expr beginTimeGeThanEffectiveTimeExpr = null;
-        Expr endTimeLeThanEffectiveTimeExpr = null;
-        DateTimeDeserializer dateTimeDeserializer = new DateTimeDeserializer();
-        
-        if (beginTimeNotNull) {
-            Node beginTimeNode = dateTimeDeserializer.getNode(start);
-            beginTimeGeThanEffectiveTimeExpr = exprFactory.ge(endInstantTimeStampVar, beginTimeNode);
-        }
-        if (endTimeNotNull) {
-            Node endTimeNode = dateTimeDeserializer.getNode(end);
-            endTimeLeThanEffectiveTimeExpr = exprFactory.le(endInstantTimeStampVar, endTimeNode);
-        }
-        
-        Expr dateIntervalExpr;
-        if (beginTimeNotNull && endTimeNotNull) {
-            dateIntervalExpr = exprFactory.and(beginTimeGeThanEffectiveTimeExpr, endTimeLeThanEffectiveTimeExpr);
-        } else if (beginTimeNotNull) {
-            dateIntervalExpr = beginTimeGeThanEffectiveTimeExpr;
-        } else {
-            dateIntervalExpr = endTimeLeThanEffectiveTimeExpr;
-        }
-        
-        eventGraphGroupElem.addElementFilter(new ElementFilter(dateIntervalExpr));
-    }
-
     @Override
     public MoveModel update(MoveModel model, ClassModel classModel) throws Exception {
 
@@ -315,7 +298,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         try {
             sparql.startTransaction();
             sparql.update(model);
-            
+
             MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
             Bson idFilter = eq(MoveEventNoSqlModel.ID_FIELD, model.getUri());
             boolean moveExistInMongo = moveEventCollection.find(idFilter).first() != null;
@@ -339,7 +322,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                 }
                 mongodb.commitTransaction();
             }
-            
+
             sparql.commitTransaction();
         } catch (Exception e) {
             sparql.rollbackTransaction();
@@ -348,10 +331,10 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
         return model;
     }
-    
+
     @Override
     public void delete(URI uri) throws Exception {
-        
+
         try {
             sparql.startTransaction();
             sparql.delete(MoveModel.class, uri);
@@ -365,15 +348,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                 moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri));
                 mongodb.commitTransaction();
             }
-            
+
             sparql.commitTransaction();
-            
+
         } catch (Exception e) {
             sparql.rollbackTransaction();
             mongodb.rollbackTransaction();
             throw e;
         }
-        
+
     }
 
     /**
@@ -393,9 +376,10 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * </ul>
      *
      *
-     * @see MoveEventDAO#searchMoveEvents(URI, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
+     * @see MoveEventDAO#searchMoveEvents(String, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
      */
-    public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(URI concernedItem,
+    public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(
+            URI concernedItem,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
             List<OrderBy> orderByList,
@@ -403,29 +387,29 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         
         Objects.requireNonNull(concernedItem);
 
-        // Index of position by uri, sorted by event end time
-        LinkedHashMap<URI, PositionModel> positionList = new LinkedHashMap<>();
-
         // search move history sorted with DESC order on move end, from SPARQL repository
-        Stream<MoveModel> locationHistory = searchMoveEvents(concernedItem, descriptionPattern, start, end, orderByList, page, pageSize);
-        
+        Stream<MoveModel> locationHistory = searchMoveEvents(concernedItem.toString(), descriptionPattern, start, end, orderByList, page, pageSize);
+
+        // Index of position by uri, sorted by event end time
+        LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
         Map<URI, MoveModel> moveByURI = new HashMap<>();
+
         // for each location, create a position model initialized with the location and update position index
-        locationHistory.forEach(result -> {
-            moveByURI.put(result.getUri(), result);
-            positionList.put(result.getUri(), null);
+        locationHistory.forEach(move -> {
+            moveByURI.put(move.getUri(), move);
+            positionsByUri.put(move.getUri(), null);
         });
         
         if (start != null) {
             MoveModel lastMove = getMoveEvent(concernedItem, start);
             if (lastMove != null) {
-                positionList.put(lastMove.getUri(), null);
+                positionsByUri.put(lastMove.getUri(), null);
             }
         }
         
-        if (!positionList.isEmpty()) {
+        if (!positionsByUri.isEmpty()) {
             
-            Bson eventInIdFilter = getEventIdInFilter(positionList.keySet().stream());
+            Bson eventInIdFilter = getEventIdInFilter(positionsByUri.keySet().stream());
             Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(concernedItem);
 
             // found all positions from mongodb collection according the filter
@@ -436,19 +420,19 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
                     .forEach(moveNoSqlModel -> {
                         if (moveNoSqlModel.getTargetPositions().size() > 0) {
-                            positionList.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
+                            positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
                         } else {
-                            positionList.remove(moveNoSqlModel.getUri());
+                            positionsByUri.remove(moveNoSqlModel.getUri());
                         }
                     });
             
         }
         
-        LinkedHashMap<MoveModel, PositionModel> result = new LinkedHashMap<>();
-        positionList.forEach((uri, position) -> {
-            result.put(moveByURI.get(uri), position);
+        LinkedHashMap<MoveModel, PositionModel> results = new LinkedHashMap<>();
+        positionsByUri.forEach((uri, position) -> {
+            results.put(moveByURI.get(uri), position);
         });
-        return result;
+        return results;
     }
 
     /**

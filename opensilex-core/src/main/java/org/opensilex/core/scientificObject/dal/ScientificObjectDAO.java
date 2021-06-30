@@ -165,7 +165,7 @@ public class ScientificObjectDAO {
             builder.addVar(soVar.getVarName());
             builder.addGraph(experimentGraph, soVar, Oeso.hasFactorLevel, makeVar(FactorLevelModel.URI_FIELD));
             builder.addFilter(SPARQLQueryHelper.inURIFilter(soVar, objectsURI));
-        }, null, null, null);
+        }, null,null, null, null);
 
         Map<String, List<FactorLevelModel>> resultMap = new HashMap<>();
         Map<String, FactorLevelModel> loadedFactors = new HashMap<>();
@@ -619,7 +619,11 @@ public class ScientificObjectDAO {
                 null,
                 (SelectBuilder select) -> {
                     appendStrictNameFilter(select, objectName);
-                }, 0, 1
+                },
+                null,
+                null,
+                null,
+                0, 1
         );
         if (searchWithPagination.getList().isEmpty()) {
             return null;
@@ -637,7 +641,11 @@ public class ScientificObjectDAO {
                 null,
                 (SelectBuilder select) -> {
                     appendStrictNameFilter(select, objectName);
-                }, 0, 1
+                },
+                null,
+                null,
+                null,
+                0, 1
         );
         if (searchWithPagination.getList().isEmpty()) {
             return null;

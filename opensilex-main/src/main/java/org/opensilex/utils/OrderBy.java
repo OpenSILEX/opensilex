@@ -52,6 +52,11 @@ public class OrderBy {
         }
     }
 
+    public OrderBy(String fieldName, Order order) {
+        this.fieldName = fieldName;
+        this.order = order;
+    }
+
     /**
      * Getter for field name.
      *
@@ -69,6 +74,7 @@ public class OrderBy {
     public Order getOrder() {
         return order;
     }
+
 
     @Override
     public String toString() {

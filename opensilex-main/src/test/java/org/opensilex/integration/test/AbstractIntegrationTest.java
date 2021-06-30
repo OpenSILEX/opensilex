@@ -251,7 +251,7 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
     }
 
     /**
-     * @see #appendSearchParams(WebTarget, int, int, List,Map)
+     * @see #appendSearchParams(WebTarget, Integer, Integer, List,Map)
      */
     protected WebTarget appendSearchParams(WebTarget target, Integer page, Integer pageSize, Map<String, Object> params) {
         return appendSearchParams(target, page, pageSize, Collections.emptyList(), params);

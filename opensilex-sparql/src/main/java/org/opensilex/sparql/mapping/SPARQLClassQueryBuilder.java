@@ -99,7 +99,8 @@ class SPARQLClassQueryBuilder {
         return "_" + objectFieldName + "__timestamp";
     }
 
-    public SelectBuilder getSelectBuilder(Node graph, String lang) {
+
+    public SelectBuilder getSelectBuilder(Node graph, String lang, Map<String,WhereHandler> customHandlerByFields) {
         SelectBuilder selectBuilder = new SelectBuilder();
         selectBuilder.setDistinct(true);
 
@@ -119,17 +120,22 @@ class SPARQLClassQueryBuilder {
         analyzer.forEachLabelProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());
         });
-        initializeQueryBuilder(selectBuilder, graph, lang, analyzer.allowBlankNode());
+        initializeQueryBuilder(selectBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
         return selectBuilder;
     }
 
+
     public AskBuilder getAskBuilder(Node graph, String lang) {
+       return getAskBuilder(graph,lang,null);
+    }
+
+    public AskBuilder getAskBuilder(Node graph, String lang, Map<String,WhereHandler> customHandlerByFields) {
         AskBuilder askBuilder = new AskBuilder();
-        initializeQueryBuilder(askBuilder, graph, lang, analyzer.allowBlankNode());
+        initializeQueryBuilder(askBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
         return askBuilder;
     }
 
-    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang, boolean allowBlankNode) {
+    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang, boolean allowBlankNode, Map<String,WhereHandler> customHandlerByFields) {
         String uriFieldName = analyzer.getURIFieldName();
         WhereHandler rootWhereHandler = new WhereHandler();
 
@@ -146,20 +152,46 @@ class SPARQLClassQueryBuilder {
                 rootWhereHandler,
                 lang,
                 (field, property) -> {
-                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, null, false);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, customHandlerByFields, null, false);
                 },
                 (field, property) -> {
-                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, lang, true);
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, customHandlerByFields, lang, true);
                 },
                 (field, property) -> {
-                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, lang, false);
-                }
+                    addSelectProperty(builder, graph, uriFieldName, property, field, requiredHandlersByGraph, optionalHandlersByGraph, customHandlerByFields, lang, false);
+                },
+                customHandlerByFields
         );
 
         if (!allowBlankNode) {
             ExprFactory exprFactory = new ExprFactory();
             Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(uriFieldName)));
             rootWhereHandler.addFilter(noBlankNodeFilter);
+        }
+
+        // attach a filter/where just after the field definition
+        if (customHandlerByFields != null) {
+            for (String fieldName : customHandlerByFields.keySet()) {
+                Field field = analyzer.getFieldFromName(fieldName);
+
+                // only handle field which are not automatically fetched from db -> dataList and objectList properties
+                if (field == null || (!analyzer.isDataListField(field) && !analyzer.isObjectListField(field))) {
+                    continue;
+                }
+                WhereHandler customHandler = customHandlerByFields.get(fieldName);
+
+                if (analyzer.isOptional(field)) {
+                    optionalHandlersByGraph.computeIfAbsent(graphKey, k -> Collections.singletonList(customHandler));
+                } else {
+                    WhereHandler fieldHandler = requiredHandlersByGraph.get(graphKey);
+                    if (fieldHandler == null) {
+                        requiredHandlersByGraph.put(graphKey, customHandler);
+                    } else {
+                        fieldHandler.addAll(customHandler);
+                    }
+                }
+
+            }
         }
 
         requiredHandlersByGraph.forEach((handlerGraph, handler) -> {
@@ -206,7 +238,7 @@ class SPARQLClassQueryBuilder {
 
     }
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang, Map<String, WhereHandler> customHandlerByFields) {
         String uriFieldName = analyzer.getURIFieldName();
 
         SelectBuilder countBuilder = new SelectBuilder();
@@ -218,9 +250,15 @@ class SPARQLClassQueryBuilder {
             LOGGER.error("Error while building count query (should never happend)", ex);
         }
 
-        initializeQueryBuilder(countBuilder, graph, lang, analyzer.allowBlankNode());
+        initializeQueryBuilder(countBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
 
         return countBuilder;
+    }
+
+
+
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
+        return getCountBuilder(graph,countFieldName,lang,null);
     }
 
     private void addSelectUriTypeVars(SelectBuilder select) {
@@ -235,7 +273,8 @@ class SPARQLClassQueryBuilder {
             String lang,
             BiConsumer<Field, Property> dataPropertyHandler,
             BiConsumer<Field, Property> objectPropertyHandler,
-            BiConsumer<Field, Property> labelPropertyHandler
+            BiConsumer<Field, Property> labelPropertyHandler,
+            Map<String,WhereHandler> customHandlerByFields
     ) {
         String uriFieldName = analyzer.getURIFieldName();
         String typeFieldName = analyzer.getTypeFieldName();
@@ -253,6 +292,18 @@ class SPARQLClassQueryBuilder {
         optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeFieldVar, RDFS.label, typeLabelFieldVar));
         addLangFilter(typeLabelFieldName, lang, optionalTypeLabelHandler);
         whereHandler.addOptional(optionalTypeLabelHandler);
+
+        if(customHandlerByFields != null){
+            if(customHandlerByFields.containsKey(SPARQLNamedResourceModel.URI_FIELD)){
+                whereHandler.addAll(customHandlerByFields.get(SPARQLNamedResourceModel.URI_FIELD));
+            }
+            if(customHandlerByFields.containsKey(SPARQLNamedResourceModel.TYPE_FIELD)){
+                whereHandler.addAll(customHandlerByFields.get(SPARQLNamedResourceModel.TYPE_FIELD));
+            }
+            if(customHandlerByFields.containsKey(SPARQLNamedResourceModel.TYPE_NAME_FIELD)){
+                whereHandler.addAll(customHandlerByFields.get(SPARQLNamedResourceModel.TYPE_NAME_FIELD));
+            }
+        }
 
         analyzer.forEachDataProperty((Field field, Property property) -> {
             if (dataPropertyHandler != null) {
@@ -327,7 +378,11 @@ class SPARQLClassQueryBuilder {
      * @see SelectBuilder#makeTriplePath(Object, Object, Object)
      */
     private void addSelectProperty(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
-                                   Map<String, WhereHandler> requiredHandlersByGraph, Map<String, List<WhereHandler>> optionalHandlersByGraph, String lang, boolean isObject) {
+                                   Map<String, WhereHandler> requiredHandlersByGraph,
+                                   Map<String, List<WhereHandler>> optionalHandlersByGraph,
+                                   Map<String,WhereHandler> customHandlerByFields,
+                                   String lang,
+                                   boolean isObject) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -376,6 +431,14 @@ class SPARQLClassQueryBuilder {
         }
 
         handler.addWhere(triple);
+
+        // add custom handler for the field
+        if(customHandlerByFields != null){
+            WhereHandler customHandler = customHandlerByFields.get(field.getName());
+            if(customHandler != null){
+                handler.addAll(customHandler);
+            }
+        }
 
         if (lang != null && !isObject) {
             if (lang.isEmpty()) {

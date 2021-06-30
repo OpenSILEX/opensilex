@@ -20,6 +20,7 @@
                             :multiple="true"
                             :required="false"
                             :baseType="this.$opensilex.Oeev.EVENT_TYPE_URI"
+                            :ignoreRoot="false"
                             placeholder="Event.type-placeholder"
                         ></opensilex-TypeForm>
                     </b-col>

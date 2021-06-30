@@ -16,12 +16,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -32,6 +27,7 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
@@ -40,7 +36,6 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -192,12 +187,23 @@ public final class OntologyDAO {
     }
 
     public ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws Exception {
-        ClassModel model = sparql.loadByURI(ClassModel.class,
-                rdfClass, lang, (select) -> {
-                    if (parentClass != null) {
-                        select.addWhere(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass));
-                    }
-                });
+
+        WhereHandler parentHandler = null;
+        if (parentClass != null) {
+            // Add a WHERE with a subClassOf* path on PARENT field, instead to add it on the end of query
+            parentHandler = new WhereHandler();
+            parentHandler.addWhere(new TriplePath(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass)));
+        }
+
+
+        ClassModel model = sparql.loadByURI(
+                sparql.getDefaultGraph(ClassModel.class),
+                ClassModel.class,
+                rdfClass,
+                lang,
+                null,
+                parentClass != null ? Collections.singletonMap(ClassModel.PARENT_FIELD, parentHandler) : null
+        );
 
         if (model == null) {
             throw new NotFoundURIException(rdfClass);
@@ -541,42 +547,56 @@ public final class OntologyDAO {
     }
 
     public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, UserModel user) throws Exception {
+
         URI dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
+
+        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        addDomainSubClassOfExistExpr(customHandlerByFields, domain);
+
         return sparql.searchResourceTree(
+                sparql.getDefaultGraph(DatatypePropertyModel.class),
                 DatatypePropertyModel.class,
                 user.getLanguage(),
                 dataPropertiesParent,
                 true,
-                (select) -> {
-                    addDomainSubClassOfExistExpr(select, domain);
-                }
+                this::appendDomainBoundExpr,
+                customHandlerByFields
         );
     }
 
+    protected void appendDomainBoundExpr(SelectBuilder select){
+
+        ExprFactory exprFactory = select.getExprFactory();
+
+        // the filtering on domain subClass will apply for any bound type,
+        // but if type is not bound, it match since the domain field is optional. So we must ensure that domain is bound
+        select.addFilter(exprFactory.bound(makeVar(ObjectPropertyModel.DOMAIN_FIELD)));
+    }
+
     public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, UserModel user) throws Exception {
+
         URI objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
+
+        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        addDomainSubClassOfExistExpr(customHandlerByFields, domain);
+
         return sparql.searchResourceTree(
+                sparql.getDefaultGraph(ObjectPropertyModel.class),
                 ObjectPropertyModel.class,
                 user.getLanguage(),
                 objectPropertiesParent,
                 true,
-                (select) -> {
-                    addDomainSubClassOfExistExpr(select, domain);
-                }
+                this::appendDomainBoundExpr,
+                customHandlerByFields
         );
     }
 
-    private void addDomainSubClassOfExistExpr(SelectBuilder select, URI domain) {
+    private void addDomainSubClassOfExistExpr(Map<String,WhereHandler> customHandlerByFields, URI domain) {
 
         if (domain != null) {
-            ExprFactory exprFactory = select.getExprFactory();
-
-            Var domainVar = makeVar(DatatypePropertyModel.DOMAIN_FIELD);
-            TriplePath domainSubCLassOfTriple = select.makeTriplePath(domainVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain));
-
-            Expr domainSubClassOfExistExpr = exprFactory.exists(new WhereBuilder().addWhere(domainSubCLassOfTriple));
-            Expr domainBoundExpr = exprFactory.bound(domainVar);
-            select.addFilter(exprFactory.and(domainBoundExpr, domainSubClassOfExistExpr));
+            WhereHandler handler = new WhereHandler();
+            handler.addWhere(new TriplePath(makeVar(DatatypePropertyModel.DOMAIN_FIELD),Ontology.subClassAny,SPARQLDeserializers.nodeURI(domain)));
+            customHandlerByFields.put(DatatypePropertyModel.DOMAIN_FIELD,handler);
         }
     }
 
@@ -589,15 +609,34 @@ public final class OntologyDAO {
     }
 
     public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
-        return sparql.loadByURI(DatatypePropertyModel.class, propertyURI, user.getLanguage(), (select) -> {
-            addDomainSubClassOfExistExpr(select, domain);
-        });
+
+        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        addDomainSubClassOfExistExpr(customHandlerByFields, domain);
+
+        return sparql.loadByURI(
+                sparql.getDefaultGraph(DatatypePropertyModel.class),
+                DatatypePropertyModel.class,
+                propertyURI,
+                user.getLanguage(),
+                null,
+                customHandlerByFields
+        );
     }
 
     public ObjectPropertyModel getObjectProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
-        return sparql.loadByURI(ObjectPropertyModel.class, propertyURI, user.getLanguage(), (select) -> {
-            addDomainSubClassOfExistExpr(select, domain);
-        });
+
+        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        addDomainSubClassOfExistExpr(customHandlerByFields, domain);
+
+        return sparql.loadByURI(
+                sparql.getDefaultGraph(ObjectPropertyModel.class),
+                ObjectPropertyModel.class,
+                propertyURI,
+                user.getLanguage(),
+                null,
+                customHandlerByFields
+        );
+
     }
 
     public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
@@ -622,11 +661,18 @@ public final class OntologyDAO {
     }
 
     public List<OwlRestrictionModel> getClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
+
         return sparql.search(graph, OwlRestrictionModel.class, lang, (select) -> {
-            Var uriVar = makeVar(OwlRestrictionModel.URI_FIELD);
-            select.addWhere(SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, uriVar);
-            select.addWhere(uriVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
-        }, null, 0, 1);
+                    Var uriVar = makeVar(OwlRestrictionModel.URI_FIELD);
+                    select.addWhere(SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, uriVar);
+                    select.addWhere(uriVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
+                },
+                null,
+                null,
+                null,
+                0,
+                1
+        );
     }
 
     public void deleteClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {

@@ -160,6 +160,7 @@ public final class UserDAO {
                         select.addFilter(SPARQLQueryHelper.eq(UserModel.EMAIL_FIELD, email));
                     }
                 },
+                null,
                 page,
                 pageSize
         );

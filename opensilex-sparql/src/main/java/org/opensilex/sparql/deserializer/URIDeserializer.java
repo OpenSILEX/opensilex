@@ -7,6 +7,8 @@ package org.opensilex.sparql.deserializer;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -48,6 +50,24 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
 
         return null;
     }
+
+    public static URI formatURI(String uri) {
+        if (StringUtils.isEmpty(uri)) {
+            return null;
+        }
+        try {
+            if (usePrefixes) {
+                return new URI(prefixes.shortForm(uri));
+            } else {
+                return new URI(prefixes.expandPrefix(uri));
+            }
+        } catch (URISyntaxException ex) {
+            // TODO log error
+        }
+
+        return null;
+    }
+
 
     public static String getShortURI(String value) {
         if (value == null || value.isEmpty() || prefixes == null) {

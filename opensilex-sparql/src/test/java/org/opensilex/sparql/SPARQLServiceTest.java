@@ -321,7 +321,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(bList.isEmpty());
 
         // the graph have changed so B should be found in the new graph
-        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null);
+        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class,null,null);
         assertFalse(bList.isEmpty());
     }
 

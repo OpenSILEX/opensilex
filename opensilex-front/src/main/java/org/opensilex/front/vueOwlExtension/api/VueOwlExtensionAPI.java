@@ -197,11 +197,14 @@ public class VueOwlExtensionAPI {
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
         VueRDFTypeDTO.fromModel(classProperties, classDescription, classExtension);
 
-        ClassModel parentModel = sparql.loadByURI(ClassModel.class, classDescription.getParent().getUri(), currentUser.getLanguage(), (select) -> {
-            if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classDescription.getParent().getUri())) {
-                select.addWhere(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentType));
-            }
-        });
+        URI classParent = classDescription.getParent().getUri();
+        ClassModel parentModel;
+
+        if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classParent)) {
+            parentModel = dao.getClassModel(classParent,parentType,currentUser.getLanguage());
+        }else{
+            parentModel = dao.getClassModel(classParent,null,currentUser.getLanguage());
+        }
 
         dao.buildProperties(parentModel, currentUser.getLanguage());
 

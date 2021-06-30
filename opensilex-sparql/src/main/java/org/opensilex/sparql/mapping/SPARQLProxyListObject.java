@@ -71,7 +71,7 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
             } else {
                 select.addWhere(nodeURI, property, makeVar(mapper.getURIFieldName()));
             }
-        });
+        },null);
     }
 
 }

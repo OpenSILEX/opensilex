@@ -11,6 +11,7 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.api.csv.EventCsvImporter;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
@@ -53,6 +54,7 @@ import org.opensilex.utils.TokenGenerator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -385,10 +387,7 @@ public class EventAPI {
 
     @GET
     @ApiOperation(
-            value = "Search events",
-            notes = "Use the following order key for sort on start/end : \n\n" +
-                    "_start__timestamp : value of event start\n\n"+
-                    "_end__timestamp : value of event end\n\n"
+            value = "Search events"
 
     )
     @ApiProtected
@@ -647,6 +646,24 @@ public class EventAPI {
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+    @GET
+    @Path("/count")
+    @ApiOperation("Count events")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of events associated to targets", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countEvents(
+            @ApiParam(value = "Targets URIs", required = true) @QueryParam("targets") @NotNull @NotEmpty List<URI> targets) throws Exception {
+
+        EventDAO<EventModel> dao = new EventDAO<>(sparql,nosql);
+        int count = dao.count(targets);
+
+        return new SingleObjectResponse<>(count).getResponse();
     }
 
 }

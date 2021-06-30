@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.expr.E_Str;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
@@ -37,14 +39,15 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLLabel;
+
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ThrowingBiConsumer;
 
 /**
- *
  * @author vincent
  */
 public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
@@ -56,9 +59,9 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
     private final URI baseGraphURI;
-    
+
     private final URI generationPrefixURI;
-    
+
     private Constructor<T> constructor;
     protected SPARQLClassQueryBuilder classQueryBuilder;
     protected SPARQLClassAnalyzer classAnalizer;
@@ -306,28 +309,31 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public AskBuilder getAskBuilder(String lang) {
-        return getAskBuilder(getDefaultGraph(), lang);
-    }
-
     public AskBuilder getAskBuilder(Node graph, String lang) {
         return classQueryBuilder.getAskBuilder(graph, lang);
     }
 
-    public SelectBuilder getSelectBuilder(String lang) {
-        return getSelectBuilder(getDefaultGraph(), lang);
+    public AskBuilder getAskBuilder(Node graph, String lang, Map<String, WhereHandler> customHandlerByFields) {
+        return classQueryBuilder.getAskBuilder(graph, lang,customHandlerByFields);
     }
+
 
     public SelectBuilder getSelectBuilder(Node graph, String lang) {
-        return classQueryBuilder.getSelectBuilder(graph, lang);
+        return getSelectBuilder(graph,lang,null);
     }
 
-    public SelectBuilder getCountBuilder(String countFieldName, String lang) {
-        return getCountBuilder(getDefaultGraph(), countFieldName, lang);
+    public SelectBuilder getSelectBuilder(Node graph, String lang, Map<String, WhereHandler> customHandlerByFields) {
+        return classQueryBuilder.getSelectBuilder(graph, lang,customHandlerByFields);
     }
+
 
     public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
-        return classQueryBuilder.getCountBuilder(graph, countFieldName, lang);
+        return getCountBuilder(graph, countFieldName, lang,null);
+    }
+
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang, Map<String, WhereHandler> customHandlerByFields) {
+        return classQueryBuilder.getCountBuilder(graph, countFieldName, lang,customHandlerByFields);
+
     }
 
     public UpdateBuilder getCreateBuilder(T instance) throws Exception {
@@ -446,7 +452,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     /**
-     *
      * @param fieldName the var name to put in the {@link Expr}
      * @return an @{@link Expr} with the {@link Field} corresponding with the given fieldName in the
      * {@link #classAnalizer}, else return an {@link Expr} with the given fieldName
@@ -559,46 +564,46 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     private <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap, boolean reverse) {
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
-            if ((reverse && classAnalizer.isReverseRelation(field))
-                    || (!reverse && !classAnalizer.isReverseRelation(field))) {
-                Object fieldValue = classAnalizer.getFieldValue(field, instance);
+                    if ((reverse && classAnalizer.isReverseRelation(field))
+                            || (!reverse && !classAnalizer.isReverseRelation(field))) {
+                        Object fieldValue = classAnalizer.getFieldValue(field, instance);
 
-                if (fieldValue != null) {
-                    SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(fieldValue.getClass());
-                    URI propertyFieldURI = mapper.getURI(fieldValue);
+                        if (fieldValue != null) {
+                            SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(fieldValue.getClass());
+                            URI propertyFieldURI = mapper.getURI(fieldValue);
 
-                    if (propertyFieldURI != null) {
-                        if (!existingMap.containsKey(mapper)) {
-                            existingMap.put(mapper, new HashSet());
+                            if (propertyFieldURI != null) {
+                                if (!existingMap.containsKey(mapper)) {
+                                    existingMap.put(mapper, new HashSet());
+                                }
+                                existingMap.get(mapper).add(propertyFieldURI);
+                            }
                         }
-                        existingMap.get(mapper).add(propertyFieldURI);
                     }
-                }
-            }
-        }, Field.class,
+                }, Field.class,
                 Property.class,
                 Exception.class
         ));
 
         classAnalizer.forEachObjectPropertyList(ThrowingBiConsumer.wrap((field, property) -> {
-            if ((reverse && classAnalizer.isReverseRelation(field))
-                    || (!reverse && !classAnalizer.isReverseRelation(field))) {
-                List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
-                if (values != null && !values.isEmpty()) {
-                    for (SPARQLResourceModel value : values) {
-                        SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(value.getClass());
-                        URI propertyFieldURI = mapper.getURI(value);
+                    if ((reverse && classAnalizer.isReverseRelation(field))
+                            || (!reverse && !classAnalizer.isReverseRelation(field))) {
+                        List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
+                        if (values != null && !values.isEmpty()) {
+                            for (SPARQLResourceModel value : values) {
+                                SPARQLClassObjectMapper<SPARQLResourceModel> mapper = mapperIndex.getForClass(value.getClass());
+                                URI propertyFieldURI = mapper.getURI(value);
 
-                        if (propertyFieldURI != null) {
-                            if (!existingMap.containsKey(mapper)) {
-                                existingMap.put(mapper, new HashSet());
+                                if (propertyFieldURI != null) {
+                                    if (!existingMap.containsKey(mapper)) {
+                                        existingMap.put(mapper, new HashSet());
+                                    }
+                                    existingMap.get(mapper).add(propertyFieldURI);
+                                }
                             }
-                            existingMap.get(mapper).add(propertyFieldURI);
                         }
                     }
-                }
-            }
-        }, Field.class,
+                }, Field.class,
                 Property.class,
                 Exception.class
         ));

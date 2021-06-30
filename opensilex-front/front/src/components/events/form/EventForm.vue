@@ -20,6 +20,7 @@
                 <opensilex-TypeForm
                     :type.sync="form.rdf_type"
                     :baseType="baseType"
+                    :ignoreRoot="false"
                     :required="false"
                     :disabled="editMode"
                     placeholder="Event.type-placeholder"

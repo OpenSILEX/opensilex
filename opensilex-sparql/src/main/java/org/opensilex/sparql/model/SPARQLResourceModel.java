@@ -43,6 +43,7 @@ public class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLTypeRDFLabel()
     protected SPARQLLabel rdfTypeName;
+    public static final String TYPE_NAME_FIELD = "rdfTypeName";
 
     @SPARQLProperty(
             ontology = DCTerms.class,

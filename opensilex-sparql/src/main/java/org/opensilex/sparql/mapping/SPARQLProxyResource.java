@@ -34,7 +34,7 @@ class SPARQLProxyResource<T extends SPARQLResourceModel> extends SPARQLProxy<T> 
         if (graph != null && !this.useDefaultGraph) {
             data = service.loadByURI(graph, type, uri, lang);
         } else {
-            data = service.loadByURI(type, uri, lang);
+            data = service.loadByURI(type, uri, lang,null);
         }
 
         return data;

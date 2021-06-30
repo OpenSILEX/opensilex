@@ -194,7 +194,13 @@
         </b-card>
       </div>
       <div class="col-md-6">
-        <opensilex-ScientificObjectDetail v-if="selected" :selected="selected" :tabs="detailTabs" :experiment="uri"/>
+        <b-card v-if="selected">
+            <h5>
+              <opensilex-Icon icon="ik#ik-target" class="title-icon" />
+              <slot name="name">&nbsp;{{ $t(selected.name) }}</slot>
+            </h5>
+        <opensilex-ScientificObjectDetail :selected="selected" :tabs="detailTabs" :experiment="uri"/>
+        </b-card>
       </div>
     </div>
 
@@ -311,25 +317,32 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   visualize() {
+    this.selectAllLimit = 10;
+    if(this.selectedObjects.length > this.selectAllLimit) {
+      alert(this.$t('ExperimentScientificObjects.alertSelectAllLimitSize') + this.selectAllLimit);
+      this.selectAll=false;
+    } 
+    else {
     //build selectedNamedObject
-    this.selectedNamedObjects = [];
-    this.selectedObjects.forEach(value => {
-      this.selectedNamedObjects.push({
-        uri: value,
-        name: this.namedObjectsArray[value]
-      });
-    });
-    this.showDataVisuView = true;
-    let that =this
-    this.$nextTick(() =>
-      setTimeout(function() {
-        that.page.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest"
+      this.selectedNamedObjects = [];
+      this.selectedObjects.forEach(value => {
+        this.selectedNamedObjects.push({
+          uri: value,
+          name: this.namedObjectsArray[value]
         });
-      }, 100)
-    );
+      });
+      this.showDataVisuView = true;
+      let that =this
+      this.$nextTick(() =>
+        setTimeout(function() {
+          that.page.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest"
+          });
+        }, 100)
+      );
+    }
   }
 
   onGraphicCreated() {

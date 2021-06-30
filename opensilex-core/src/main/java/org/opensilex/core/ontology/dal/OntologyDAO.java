@@ -868,7 +868,6 @@ public final class OntologyDAO {
         StringWriter strWriter = new StringWriter();
         CSVWriter writer = new CSVWriter(strWriter,
                 lang.equals("fr") ? ';' : CSVWriter.DEFAULT_SEPARATOR,
-                CSVWriter.NO_QUOTE_CHARACTER,
                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                 CSVWriter.DEFAULT_LINE_END);
 

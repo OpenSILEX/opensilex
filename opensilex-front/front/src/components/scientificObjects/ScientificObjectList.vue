@@ -201,6 +201,11 @@
       :targets="selectedUris"
       :isMove="true"
     ></opensilex-EventCsvForm>
+
+    <opensilex-ScientificObjectForm
+        ref="soForm"
+        @onUpdate="redirectToDetail"
+      ></opensilex-ScientificObjectForm>
   </div>
 </template>
 
@@ -258,6 +263,7 @@ export default class ScientificObjectList extends Vue {
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
+  @Ref("soForm") readonly soForm!: any;
 
   selectedUris: Array<string> = [];
 

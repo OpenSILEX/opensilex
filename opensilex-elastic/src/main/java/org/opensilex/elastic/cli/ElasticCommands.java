@@ -28,13 +28,10 @@ import org.opensilex.core.device.api.DeviceGetDetailsDTO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.api.EventDetailsDTO;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.project.api.ProjectDTO;
 import org.opensilex.core.project.api.ProjectGetDTO;
-import org.opensilex.core.project.api.ProjectGetDetailDTO;
 
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.elastic.service.ElasticService;
 import org.opensilex.sparql.service.SPARQLService;
@@ -70,10 +67,10 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         try {
             ElasticService elasticService = getOpenSilex().getServiceInstance(ElasticService.DEFAULT_ELASTIC_SERVICE, ElasticService.class);
             elasticClient = elasticService.getClient();
-            indexProject();
-            indexVariable();
-            indexDevice();
-            //indexEvent();
+                        //indexProject();
+                        //indexVariable();
+                       // indexDevice();
+            indexEvent();
 
         } finally {
             if (elasticClient != null) {
@@ -171,8 +168,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         String json;                
 
         for (VariableModel p : Variables) {
-            //VariableDetailsDTO var = new VariableDetailsDTO(p);
-            //VariableGetDTO var = VariableGetDTO.fromModel(p);
+          
             VariableDetailsDTO var = VariableDetailsDTO.fromModel(p);
                 
             json = gson.toJson(var);
@@ -228,7 +224,7 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         private void indexEvent() throws Exception {
 
         List<EventModel> Events = sparql.search(EventModel.class, "en");
-        //System.out.println("eveeeeeeeeeeeents"+Events.toString());
+        System.out.println("eveeeeeeeeeeeents"+Events.toString());
     
 
         try {

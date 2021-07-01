@@ -29,6 +29,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.utils.Ontology;
+import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +101,7 @@ class SPARQLClassQueryBuilder {
     }
 
 
-    public SelectBuilder getSelectBuilder(Node graph, String lang, Map<String,WhereHandler> customHandlerByFields) {
+    public SelectBuilder getSelectBuilder(Node graph, String lang, ThrowingConsumer<SelectBuilder,Exception> filterHandler, Map<String,WhereHandler> customHandlerByFields) throws Exception {
         SelectBuilder selectBuilder = new SelectBuilder();
         selectBuilder.setDistinct(true);
 
@@ -120,22 +121,42 @@ class SPARQLClassQueryBuilder {
         analyzer.forEachLabelProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());
         });
-        initializeQueryBuilder(selectBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
+
+        initializeQueryBuilder(selectBuilder, graph, lang,customHandlerByFields);
+        if(filterHandler != null){
+            filterHandler.accept(selectBuilder);
+        }
+        appendBlankNodeFilter(selectBuilder);
+
         return selectBuilder;
     }
 
 
-    public AskBuilder getAskBuilder(Node graph, String lang) {
-       return getAskBuilder(graph,lang,null);
+    public AskBuilder getAskBuilder(Node graph, String lang) throws Exception {
+       return getAskBuilder(graph,lang,null,null);
     }
 
-    public AskBuilder getAskBuilder(Node graph, String lang, Map<String,WhereHandler> customHandlerByFields) {
+    public AskBuilder getAskBuilder(Node graph, String lang, ThrowingConsumer<AskBuilder,Exception> filterHandler, Map<String,WhereHandler> customHandlerByFields) throws Exception {
         AskBuilder askBuilder = new AskBuilder();
-        initializeQueryBuilder(askBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
+
+        initializeQueryBuilder(askBuilder, graph, lang, customHandlerByFields);
+        if(filterHandler != null){
+            filterHandler.accept(askBuilder);
+        }
+        appendBlankNodeFilter(askBuilder);
+
         return askBuilder;
     }
 
-    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang, boolean allowBlankNode, Map<String,WhereHandler> customHandlerByFields) {
+    private void appendBlankNodeFilter(AbstractQueryBuilder<?> builder){
+        if (!analyzer.allowBlankNode()) {
+            ExprFactory exprFactory = new ExprFactory();
+            Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(analyzer.getURIFieldName())));
+            builder.getWhereHandler().addFilter(noBlankNodeFilter);
+        }
+    }
+
+    public void initializeQueryBuilder(AbstractQueryBuilder<?> builder, Node graph, String lang,Map<String,WhereHandler> customHandlerByFields) {
         String uriFieldName = analyzer.getURIFieldName();
         WhereHandler rootWhereHandler = new WhereHandler();
 
@@ -162,12 +183,6 @@ class SPARQLClassQueryBuilder {
                 },
                 customHandlerByFields
         );
-
-        if (!allowBlankNode) {
-            ExprFactory exprFactory = new ExprFactory();
-            Expr noBlankNodeFilter = exprFactory.not(exprFactory.isBlank(makeVar(uriFieldName)));
-            rootWhereHandler.addFilter(noBlankNodeFilter);
-        }
 
         // attach a filter/where just after the field definition
         if (customHandlerByFields != null) {
@@ -238,7 +253,7 @@ class SPARQLClassQueryBuilder {
 
     }
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang, Map<String, WhereHandler> customHandlerByFields) {
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang, ThrowingConsumer<SelectBuilder,Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
         String uriFieldName = analyzer.getURIFieldName();
 
         SelectBuilder countBuilder = new SelectBuilder();
@@ -250,15 +265,14 @@ class SPARQLClassQueryBuilder {
             LOGGER.error("Error while building count query (should never happend)", ex);
         }
 
-        initializeQueryBuilder(countBuilder, graph, lang, analyzer.allowBlankNode(),customHandlerByFields);
+        initializeQueryBuilder(countBuilder, graph, lang,customHandlerByFields);
+
+        if(filterHandler != null){
+            filterHandler.accept(countBuilder);
+        }
+        appendBlankNodeFilter(countBuilder);
 
         return countBuilder;
-    }
-
-
-
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
-        return getCountBuilder(graph,countFieldName,lang,null);
     }
 
     private void addSelectUriTypeVars(SelectBuilder select) {

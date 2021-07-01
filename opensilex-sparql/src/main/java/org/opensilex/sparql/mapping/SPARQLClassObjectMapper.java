@@ -18,6 +18,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.ClassUtils;
+import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -309,30 +310,30 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public AskBuilder getAskBuilder(Node graph, String lang) {
+    public AskBuilder getAskBuilder(Node graph, String lang) throws Exception {
         return classQueryBuilder.getAskBuilder(graph, lang);
     }
 
-    public AskBuilder getAskBuilder(Node graph, String lang, Map<String, WhereHandler> customHandlerByFields) {
-        return classQueryBuilder.getAskBuilder(graph, lang,customHandlerByFields);
+    public AskBuilder getAskBuilder(Node graph, String lang, ThrowingConsumer<AskBuilder,Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
+        return classQueryBuilder.getAskBuilder(graph, lang,filterHandler,customHandlerByFields);
     }
 
 
-    public SelectBuilder getSelectBuilder(Node graph, String lang) {
-        return getSelectBuilder(graph,lang,null);
+    public SelectBuilder getSelectBuilder(Node graph, String lang) throws Exception {
+        return getSelectBuilder(graph,lang,null,null);
     }
 
-    public SelectBuilder getSelectBuilder(Node graph, String lang, Map<String, WhereHandler> customHandlerByFields) {
-        return classQueryBuilder.getSelectBuilder(graph, lang,customHandlerByFields);
+    public SelectBuilder getSelectBuilder(Node graph, String lang, ThrowingConsumer<SelectBuilder,Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
+        return classQueryBuilder.getSelectBuilder(graph, lang,filterHandler,customHandlerByFields);
     }
 
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) {
-        return getCountBuilder(graph, countFieldName, lang,null);
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang) throws Exception {
+        return getCountBuilder(graph, countFieldName, lang,null,null);
     }
 
-    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang, Map<String, WhereHandler> customHandlerByFields) {
-        return classQueryBuilder.getCountBuilder(graph, countFieldName, lang,customHandlerByFields);
+    public SelectBuilder getCountBuilder(Node graph, String countFieldName, String lang,ThrowingConsumer<SelectBuilder,Exception> filterHandler,  Map<String, WhereHandler> customHandlerByFields) throws Exception {
+        return classQueryBuilder.getCountBuilder(graph, countFieldName, lang,filterHandler,customHandlerByFields);
 
     }
 

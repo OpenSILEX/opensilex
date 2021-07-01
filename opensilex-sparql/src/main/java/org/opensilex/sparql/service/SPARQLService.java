@@ -379,13 +379,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        SelectBuilder select = mapper.getSelectBuilder(graph, lang,customHandlerByFields);
+        SelectBuilder select = mapper.getSelectBuilder(graph, lang,filterHandler,customHandlerByFields);
 
         select.addValueVar(mapper.getURIFieldExprVar(), SPARQLDeserializers.nodeURI(uri));
-
-        if (filterHandler != null) {
-            filterHandler.accept(select);
-        }
 
         List<SPARQLResult> results = executeSelectQuery(select);
 
@@ -506,11 +502,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             lang = getDefaultLang();
         }
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        SelectBuilder select = mapper.getSelectBuilder(graph, lang);
-
-        if (filterHandler != null) {
-            filterHandler.accept(select);
-        }
+        SelectBuilder select = mapper.getSelectBuilder(graph, lang,filterHandler,null);
 
         List<URI> resultList = new ArrayList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
@@ -585,10 +577,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         Map<String, List<T>> objectMapByParent = new HashMap<>();
-        SelectBuilder objectListQuery = mapper.getSelectBuilder(graph, language);
-        if (filterHandler != null) {
-            filterHandler.accept(objectListQuery);
-        }
+        SelectBuilder objectListQuery = mapper.getSelectBuilder(graph, language,filterHandler,null);
 
         if (maxDepth == 2 && parentURI == null) {
             objectListQuery.addFilter(SPARQLQueryHelper.inURIFilter(parentField, rootURIs));
@@ -691,11 +680,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                                           Map<String,WhereHandler> customHandlerByFields,
                                                                           Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
 
-        SelectBuilder select = mapper.getSelectBuilder(graph, language,customHandlerByFields);
-
-        if (filterHandler != null) {
-            filterHandler.accept(select);
-        }
+        SelectBuilder select = mapper.getSelectBuilder(graph, language,filterHandler,customHandlerByFields);
 
         if (orderByList != null) {
             orderByList.forEach((OrderBy orderBy) -> {
@@ -783,13 +768,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             lang = getDefaultLang();
         }
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        SelectBuilder selectCount = mapper.getCountBuilder(graph, "count", lang,customHandlerByFields);
+        SelectBuilder selectCount = mapper.getCountBuilder(graph, "count", lang,filterHandler,customHandlerByFields);
 
         // save the original COUNT var expression
         Map<Var, Expr> oldCountVars = new HashMap<>(selectCount.getSelectHandler().getProject().getExprs());
 
         if (filterHandler != null) {
-            filterHandler.accept(selectCount);
 
             // ensure that there are no ORDER BY clause provided by the handler, into the COUNT query, else the query will be incorrect
             Query countQuery = selectCount.getHandlerBlock().getAggregationHandler().getQuery();

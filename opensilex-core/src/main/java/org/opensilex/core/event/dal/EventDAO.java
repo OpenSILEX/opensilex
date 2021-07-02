@@ -16,7 +16,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDFS;
@@ -53,7 +52,6 @@ import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -265,9 +263,9 @@ public class EventDAO<T extends EventModel> {
         SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets);
     }
 
-    protected void appendTargetRegexFilter(ElementGroup eventGraphGroupElem, String targetPattern, List<OrderBy> orderByList) throws URISyntaxException {
+    protected void appendTargetEqFilter(ElementGroup eventGraphGroupElem, URI target, List<OrderBy> orderByList) throws Exception {
 
-        boolean targetFiltering = !StringUtils.isEmpty(targetPattern);
+        boolean targetFiltering = target != null;
         boolean addTargetTriple;
 
         if (targetFiltering) {
@@ -281,25 +279,13 @@ public class EventDAO<T extends EventModel> {
             return;
         }
 
-        // append where between event uri and the multi-valued EventModel.TARGETS_FIELD property because
-        // the sparql service don't fetch multi-valued property during the search call
-        eventGraphGroupElem.addTriplePattern(targetTriple);
-
         if (targetFiltering) {
-
-            String targetStr;
-            try {
-                URI targetUri = new URI(targetPattern);
-
-                // if the patten include an URI with a prefix, then we must expand URI in order to match with the target str
-                targetStr = targetUri.getScheme() != null ? SPARQLDeserializers.getExpandedURI(targetPattern) : targetPattern;
-
-            } catch (URISyntaxException e) {
-                targetStr = targetPattern;
-            }
-
-            Expr targetRegexFilter = SPARQLQueryHelper.regexStrFilter(targetVar.getVarName(), targetStr);
-            eventGraphGroupElem.addElementFilter(new ElementFilter(targetRegexFilter));
+            Node targetNode = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(target));
+            eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetNode));
+        }else{
+            // append where between event uri and the multi-valued EventModel.TARGETS_FIELD property because
+            // the sparql service don't fetch multi-valued property during the search call
+            eventGraphGroupElem.addTriplePattern(targetTriple);
         }
     }
 
@@ -393,7 +379,7 @@ public class EventDAO<T extends EventModel> {
         }
     }
 
-    public ListWithPagination<EventModel> search(String targetPattern,
+    public ListWithPagination<EventModel> search(URI target,
                                                  String descriptionPattern,
                                                  URI type,
                                                  OffsetDateTime start, OffsetDateTime end,
@@ -404,10 +390,7 @@ public class EventDAO<T extends EventModel> {
 
         this.updateOrderByList(orderByList);
 
-        // custom result handler, direct convert SPARQLResult to EventModel
-        ThrowingFunction<SPARQLResult,EventModel,Exception> resultHandler = (result -> fromResult(result, lang, new EventModel()));
-
-        // set the custom filter on field
+        // set the custom filter on type
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         appendTypeFilter(customHandlerByFields, type);
 
@@ -423,12 +406,15 @@ public class EventDAO<T extends EventModel> {
 
                     // for each optional field, the filtering must be applied outside of the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
-                    appendTargetRegexFilter(eventGraphGroupElem, targetPattern, orderByList);
+                    appendTargetEqFilter(eventGraphGroupElem, target, orderByList);
                     appendTimeFilter(select, eventGraphGroupElem, start, end);
                     initialSelect.set(select);
                 }),
                 customHandlerByFields,
-                resultHandler,
+
+                // custom result handler, direct convert SPARQLResult to EventModel
+                (result -> fromResult(result, lang, new EventModel())),
+
                 orderByList,
                 page,
                 pageSize
@@ -440,7 +426,7 @@ public class EventDAO<T extends EventModel> {
 
         // Check if the <?uri,oeev:concerns,?target> triple is already into select (due to filtering and/or ordering)
         // If so then no need to add it one more time
-        boolean addTargetTriple = StringUtils.isEmpty(targetPattern) && orderByList.stream().noneMatch(order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD));
+        boolean addTargetTriple = target == null && orderByList.stream().noneMatch(order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD));
 
         fieldsToFetch.put(EventModel.TARGETS_FIELD, addTargetTriple);
 

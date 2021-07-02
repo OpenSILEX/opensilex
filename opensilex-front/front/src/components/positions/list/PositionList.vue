@@ -1,143 +1,125 @@
 <template>
-    <div class="row">
-        <div class="col col-xl-12">
+    <div class="card">
+        <opensilex-PageActions>
 
-            <div class="card">
-                <div class="card-header" v-if="displayTitle">
-                    <h3>
-                        <i class="ik ik-clipboard"></i>
-                        {{ $t('Position.list-title') }}
-                    </h3>
-                </div>
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="Move.add"
+                @click="showForm"
+            ></opensilex-CreateButton>
 
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="OntologyCsvImporter.import"
+                @click="showCsvForm"
+            ></opensilex-CreateButton>
+
+        </opensilex-PageActions>
+
+        <opensilex-PageContent v-if="renderComponent">
+            <template v-slot>
                 <div class="card-body">
-                    <opensilex-PageActions>
+                    <opensilex-TableAsyncView
+                        ref="tableRef"
+                        :searchMethod="search"
+                        :fields="fields"
+                        :isSelectable="isSelectable">
 
-                        <opensilex-CreateButton
-                            v-if="user.hasCredential(modificationCredentialId)"
-                            label="Move.add"
-                            @click="eventModalForm.showCreateForm()"
-                        ></opensilex-CreateButton>
 
-                        <opensilex-CreateButton
-                            v-if="user.hasCredential(modificationCredentialId)"
-                            label="OntologyCsvImporter.import"
-                            @click="showCsvForm"
-                        ></opensilex-CreateButton>
-
-                        <span style="padding-left:1%"></span>
-                        <span>
-                            <label class="alert-warning">
-                                <img alt="Warning" src="../../../../theme/phis/images/construction.png"/>
-                                {{ $t("component.common.warningInstruction") }}
-                            </label>
-                        </span>
-
-                    </opensilex-PageActions>
-
-                    <opensilex-PageContent>
-                        <template v-slot>
-
-                            <opensilex-TableAsyncView
-                                ref="tableRef"
-                                :searchMethod="search"
-                                :fields="fields"
-                                :isSelectable="isSelectable">
-
-                                <template v-slot:cell(uri)="{data}">
-                                    <opensilex-UriLink
-                                        :uri="data.item.event"
-                                        :value="data.item.event"
-                                        @click="showEventView(data.item)"
-                                    ></opensilex-UriLink>
-                                </template>
-
-                                <template v-slot:cell(to)="{data}">
-                                    <opensilex-StringView
-                                        v-if="data.item.to"
-                                        :value="data.item.to.name">
-                                    </opensilex-StringView>
-                                </template>
-
-                                <template v-slot:cell(end)="{data}">
-                                    <opensilex-StringView
-                                        v-if="data.item.move_time"
-                                        :value="new Date(data.item.move_time).toLocaleString()">
-                                    </opensilex-StringView>
-                                </template>
-
-                                <template v-slot:cell(coordinates)="{data}">
-                                    <opensilex-GeometryView
-                                        v-if="data.item.position && data.item.position.point"
-                                        label="Position.coordinates"
-                                        :value="data.item.position.point"
-                                        :displayLabel="false"
-                                    ></opensilex-GeometryView>
-                                </template>
-
-                                <template v-slot:cell(custom_coordinates)="{data}">
-                                    <opensilex-StringView :value="customCoordinatesText(data.item.position)">
-                                    </opensilex-StringView>
-                                </template>
-
-                                <template v-slot:cell(textual_position)="{data}">
-                                    <opensilex-StringView
-                                        v-if="data.item.position && data.item.position.text"
-                                        :value="data.item.position.text">
-                                    </opensilex-StringView>
-                                </template>
-
-                                <template v-slot:cell(actions)="{data}">
-                                    <b-button-group size="sm">
-                                        <opensilex-EditButton
-                                            v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                                            @click="editEvent(data.item.event)"
-                                            :small="true"
-                                        ></opensilex-EditButton>
-                                        <opensilex-DeleteButton
-                                            v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                                            @click="deleteEvent(data.item.event)"
-                                            label="EventForm.delete"
-                                            :small="true"
-                                        ></opensilex-DeleteButton>
-                                    </b-button-group>
-                                </template>
-                            </opensilex-TableAsyncView>
+                        <template v-slot:cell(to)="{data}">
+                            <opensilex-UriLink v-if="data.item.to"
+                                               :uri="data.item.event"
+                                               :value="data.item.to.name"
+                                               @click="showEventView(data.item)"
+                            ></opensilex-UriLink>
                         </template>
-                    </opensilex-PageContent>
 
-                    <opensilex-EventModalView
-                        modalSize="lg"
-                        ref="eventModalView"
-                        :dto.sync="selectedEvent"
-                        :type.sync="selectedEvent.type"
-                    ></opensilex-EventModalView>
+                        <template v-slot:cell(coordinates)="{data}">
+                            <opensilex-UriLink v-if="! data.item.to && data.item.position && data.item.position.point"
+                                               :uri="data.item.event"
+                                               :value="getGeometryView(data.item.position.point)"
+                                               @click="showEventView(data.item)"
+                            ></opensilex-UriLink>
+                            <opensilex-GeometryView
+                                v-else-if="data.item.position && data.item.position.point"
+                                label="Position.coordinates"
+                                :value="data.item.position.point"
+                                :displayLabel="false"
+                            ></opensilex-GeometryView>
+                        </template>
 
-                    <opensilex-EventModalForm
-                        ref="eventModalForm"
-                        :target="target"
-                        defaultEventType="oeev:Move"
-                        @onCreate="refresh"
-                        @onUpdate="refresh"
-                    ></opensilex-EventModalForm>
+                        <template v-slot:cell(end)="{data}">
+                            <opensilex-TextView
+                                v-if="data.item.move_time"
+                                :value="new Date(data.item.move_time).toLocaleString()">
+                            </opensilex-TextView>
+                        </template>
 
-                    <opensilex-EventCsvForm
-                        ref="moveCsvForm"
-                        @csvImported="onImport"
-                        :targets="[this.target]"
-                        :isMove="true"
-                    ></opensilex-EventCsvForm>
 
+                        <template v-slot:cell(custom_coordinates)="{data}">
+                            <opensilex-TextView :value="customCoordinatesText(data.item.position)">
+                            </opensilex-TextView>
+                        </template>
+
+                        <template v-slot:cell(textual_position)="{data}">
+                            <opensilex-TextView
+                                v-if="data.item.position && data.item.position.text"
+                                :value="data.item.position.text">
+                            </opensilex-TextView>
+                        </template>
+
+                        <template v-slot:cell(actions)="{data}">
+                            <b-button-group size="sm">
+                                <opensilex-EditButton
+                                    v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                                    @click="editEvent(data.item.event)"
+                                    :small="true"
+                                ></opensilex-EditButton>
+                                <opensilex-DeleteButton
+                                    v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
+                                    @click="deleteEvent(data.item.event)"
+                                    label="EventForm.delete"
+                                    :small="true"
+                                ></opensilex-DeleteButton>
+                            </b-button-group>
+                        </template>
+                    </opensilex-TableAsyncView>
                 </div>
-            </div>
-        </div>
+            </template>
+        </opensilex-PageContent>
+
+        <opensilex-EventModalView
+            modalSize="lg"
+            ref="eventModalView"
+            :dto.sync="selectedEvent"
+            :type.sync="selectedEvent.type"
+        ></opensilex-EventModalView>
+
+        <opensilex-EventModalForm
+            v-if="renderModalForm"
+            ref="modalForm"
+            :target="target"
+            defaultEventType="oeev:Move"
+            @onCreate="refresh"
+            @onUpdate="refresh"
+        ></opensilex-EventModalForm>
+
+        <opensilex-EventCsvForm
+            v-if="renderCsvForm"
+            ref="csvForm"
+            @csvImported="onImport"
+            :targets="[this.target]"
+            :isMove="true"
+        ></opensilex-EventCsvForm>
+
     </div>
 
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
+import {stringify} from "wkt";
 
 // @ts-ignore
 import {PositionsService} from "opensilex-core/api/positions.service";
@@ -158,12 +140,8 @@ export default class PositionList extends Vue {
 
     @Ref("tableRef") readonly tableRef!: any;
     @Ref("eventModalView") readonly eventModalView!: EventModalView;
-    @Ref("eventModalForm") readonly eventModalForm!: EventModalForm;
-    @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
-
-    showCsvForm() {
-        this.moveCsvForm.show();
-    }
+    @Ref("modalForm") readonly modalForm!: EventModalForm;
+    @Ref("csvForm") readonly csvForm!: EventCsvForm;
 
     $opensilex: OpenSilexVuePlugin;
     $positionService: PositionsService;
@@ -185,8 +163,13 @@ export default class PositionList extends Vue {
     @Prop({default: true})
     enableActions;
 
-    @Prop({default: () => new Set(["from", "to", "end", "coordinates", "custom_coordinates", "textual_position"])})
+    @Prop({default: PositionList.getDefaultColumns()})
     columnsToDisplay: Set<string>;
+
+    static getDefaultColumns(): Set<string> {
+        return new Set(["from", "to", "end", "coordinates", "custom_coordinates", "textual_position"]);
+    }
+
 
     @Prop({default: false})
     displayFilters: boolean;
@@ -202,6 +185,21 @@ export default class PositionList extends Vue {
     baseType: string;
 
     minPageSize = 5;
+
+    renderComponent = true;
+
+    @Watch("target")
+    onTargetChange() {
+        this.renderComponent = false;
+
+        this.$nextTick(() => {
+            // Add the component back in
+            this.renderComponent = true;
+        });
+    }
+
+    renderModalForm = false;
+    renderCsvForm = false;
 
     created() {
         this.$positionService = this.$opensilex.getService("opensilex.PositionsService");
@@ -231,16 +229,28 @@ export default class PositionList extends Vue {
         );
     }
 
+    showForm() {
+        this.renderModalForm = true;
+        this.$nextTick(() => {
+            this.modalForm.showCreateForm();
+        });
+    }
+
+    showCsvForm() {
+        this.renderCsvForm = true;
+        this.$nextTick(() => {
+            this.csvForm.show();
+        });
+
+    }
+
     successMessage(form) {
         return this.$t("ResultModalView.data-imported");
     }
 
-
     get fields() {
 
         let tableFields = [];
-
-        tableFields.push({key: "uri", label: "component.common.uri", sortable: true});
 
         if (this.columnsToDisplay.has("to")) {
             tableFields.push({key: "to", label: "Move.location", sortable: true});
@@ -293,12 +303,13 @@ export default class PositionList extends Vue {
     }
 
     editEvent(uri) {
-        this.eventModalForm.showEditForm(uri,this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI);
+        this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI);
     }
 
     getItemsToDisplay(targets) {
         return targets.slice(0, 3);
     }
+
 
     customCoordinatesText(position: any): string {
 
@@ -334,6 +345,10 @@ export default class PositionList extends Vue {
         this.refresh();
     }
 
+    getGeometryView(point) {
+        return stringify(point);
+    }
+
 }
 </script>
 
@@ -351,6 +366,8 @@ fr:
     Position:
         list-title: Positions
         end: "Date d'arrivée"
+
+
 
 
 </i18n>

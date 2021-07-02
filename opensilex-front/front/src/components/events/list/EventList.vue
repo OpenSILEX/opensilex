@@ -7,7 +7,7 @@
             <opensilex-CreateButton
                 v-if="user.hasCredential(modificationCredentialId)"
                 label="Event.add"
-                @click="showEventForm"
+                @click="showForm"
             ></opensilex-CreateButton>
 
             <opensilex-CreateButton
@@ -43,7 +43,7 @@
                     <opensilex-StringFilter
                         id="target"
                         :filter.sync="filter.target"
-                        placeholder="GermplasmList.filter.uri-placeholder"
+                        placeholder="component.common.uri-filter-placeholder"
                     ></opensilex-StringFilter>
                 </opensilex-FilterField>
 
@@ -114,8 +114,8 @@
                         </template>
 
                         <template v-slot:cell(targets)="{data}">
-                            <span :key="index" v-for="(uri, index) in getItemsToDisplay(data.item.targets)">
-                                <span :title="uri">{{ uri }}</span>
+                            <span :key="index" v-for="(uri, index) in data.item.targets">
+                                 <opensilex-TextView :value="uri"></opensilex-TextView>
                                 <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
                                 <span v-if="index >= 2"> ... </span>
                             </span>
@@ -154,8 +154,8 @@
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
-            v-if="renderEventModalForm"
-            ref="eventModalForm"
+            v-if="renderModalForm"
+            ref="modalForm"
             :target="target"
             @onCreate="displayAfterCreation"
             @onUpdate="refresh"
@@ -163,8 +163,9 @@
 
         <opensilex-EventCsvForm
             v-if="renderCsvForm"
-            ref="eventCsvForm"
+            ref="csvForm"
             @csvImported="onImport"
+            :targets="[this.target]"
         ></opensilex-EventCsvForm>
 
     </div>
@@ -187,8 +188,8 @@ export default class EventList extends Vue {
 
     @Ref("tableRef") readonly tableRef!: any;
     @Ref("eventModalView") readonly eventModalView!: EventModalView;
-    @Ref("eventModalForm") readonly eventModalForm!: EventModalForm;
-    @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
+    @Ref("modalForm") readonly modalForm!: EventModalForm;
+    @Ref("csvForm") readonly csvForm!: EventCsvForm;
 
     $opensilex: OpenSilexVuePlugin;
     $service: EventsService
@@ -209,8 +210,12 @@ export default class EventList extends Vue {
     @Prop({default: true})
     enableActions;
 
-    @Prop({default: new Set(["type", "start", "end", "description"])})
+    @Prop({default: EventList.getDefaultColumns})
     columnsToDisplay: Set<string>;
+
+    static getDefaultColumns(): Set<string> {
+      return new Set(["type", "start", "end", "targets","description"]);
+    }
 
     @Prop({default: 10})
     maxPageSize: number;
@@ -246,20 +251,20 @@ export default class EventList extends Vue {
         });
     }
 
-    renderEventModalForm = false;
+    renderModalForm = false;
     renderCsvForm = false;
 
-    showEventForm(){
-        this.renderEventModalForm = true;
+    showForm(){
+        this.renderModalForm = true;
         this.$nextTick(() => {
-            this.eventModalForm.showCreateForm();
+            this.modalForm.showCreateForm();
         });
     }
 
     showCsvForm() {
         this.renderCsvForm = true;
         this.$nextTick(() => {
-            this.eventCsvForm.show();
+            this.csvForm.show();
         });
     }
 
@@ -420,11 +425,7 @@ export default class EventList extends Vue {
     }
 
     editEvent(uri, type) {
-        this.eventModalForm.showEditForm(uri, type);
-    }
-
-    getItemsToDisplay(targets) {
-        return targets.slice(0, 3);
+        this.modalForm.showEditForm(uri, type);
     }
 
     onImport(response) {

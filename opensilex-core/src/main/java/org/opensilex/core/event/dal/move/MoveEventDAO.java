@@ -6,7 +6,6 @@ import com.mongodb.client.model.Projections;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -14,7 +13,6 @@ import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -35,8 +33,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -54,8 +50,8 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
 
     static {
-        toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(MoveModel.TO_FIELD));
-        fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(MoveModel.FROM_FIELD));
+        toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.TO_FIELD));
+        fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.FROM_FIELD));
     }
 
     public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
@@ -205,7 +201,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
                     
                     appendTimeAfterFilter(eventGraphGroupElem, dateTime);
-                    appendTargetRegexFilter(eventGraphGroupElem, target.toString(), null);
+                    appendTargetEqFilter(eventGraphGroupElem, target, null);
                     select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
                 }),
                 null,
@@ -246,15 +242,13 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
 
 
     public Stream<MoveModel> searchMoveEvents(
-            String targetPattern,
+            URI target,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
             List<OrderBy> orderByList,
             Integer page, Integer pageSize) throws Exception {
 
         this.updateOrderByList(orderByList);
-
-        ThrowingFunction<SPARQLResult, MoveModel,Exception> resultHandler = (result -> fromResult(result, null, new MoveModel()));
 
         return sparql.searchAsStream(
                 eventGraph,
@@ -267,7 +261,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
                     // description is an optional field, so the filtering must be done outside of the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
 
-                    appendTargetRegexFilter(eventGraphGroupElem, targetPattern, orderByList);
+                    appendTargetEqFilter(eventGraphGroupElem, target, orderByList);
                     appendTimeFilter(select,eventGraphGroupElem, start, end);
 
                     if (CollectionUtils.isEmpty(orderByList)) {
@@ -275,7 +269,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
                     }
                 }),
                 null,
-                resultHandler,
+                (result -> fromResult(result, null, new MoveModel())),
                 orderByList,
                 page,
                 pageSize
@@ -360,7 +354,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
     }
 
     /**
-     * @param concernedItem the object on which we get the position
+     * @param target the object on which we get the position
      * @param start the time at which we search the position
      * @return the position of the given object during a time interval with a descending sort on the move end.
      *
@@ -376,19 +370,19 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
      * </ul>
      *
      *
-     * @see MoveEventDAO#searchMoveEvents(String, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
+     * @see MoveEventDAO#searchMoveEvents(URI, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
      */
     public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(
-            URI concernedItem,
+            URI target,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
             List<OrderBy> orderByList,
             Integer page, Integer pageSize) throws Exception {
         
-        Objects.requireNonNull(concernedItem);
+        Objects.requireNonNull(target);
 
         // search move history sorted with DESC order on move end, from SPARQL repository
-        Stream<MoveModel> locationHistory = searchMoveEvents(concernedItem.toString(), descriptionPattern, start, end, orderByList, page, pageSize);
+        Stream<MoveModel> locationHistory = searchMoveEvents(target, descriptionPattern, start, end, orderByList, page, pageSize);
 
         // Index of position by uri, sorted by event end time
         LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
@@ -401,7 +395,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
         });
         
         if (start != null) {
-            MoveModel lastMove = getMoveEvent(concernedItem, start);
+            MoveModel lastMove = getMoveEvent(target, start);
             if (lastMove != null) {
                 positionsByUri.put(lastMove.getUri(), null);
             }
@@ -410,7 +404,7 @@ public class MoveEventDAO extends EventDAO<MoveModel>{
         if (!positionsByUri.isEmpty()) {
             
             Bson eventInIdFilter = getEventIdInFilter(positionsByUri.keySet().stream());
-            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(concernedItem);
+            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(target);
 
             // found all positions from mongodb collection according the filter
             moveEventCollection

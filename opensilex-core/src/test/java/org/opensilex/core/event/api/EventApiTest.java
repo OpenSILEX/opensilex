@@ -501,12 +501,6 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri)));
         assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri2)));
 
-        // search given a concernedItem witch partial match both events
-        params.put(TARGET_QUERY_PARAM, so2.getName());
-        results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
-        });
-        assertEquals(2, results.size());
-
         // search given a concernedItem witch match no events
         params.put(TARGET_QUERY_PARAM, "test:scientificObject4");
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {

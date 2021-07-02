@@ -96,8 +96,8 @@
       v-if="isEventTab"
       ref="eventList"
       :target="selected.uri"
-      :columnsToDisplay="new Set(['type', 'end', 'description'])"
       :displayTargetFilter="false"
+      :columnsToDisplay="getEventColumnToDisplay()"
       :maximizeFilterSize="true"
       :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
       :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
@@ -107,9 +107,8 @@
       v-if="isPositionTab"
       ref="positionList"
       :target="selected.uri"
-      :modificationCredentialId="
-        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-      "
+      :columnsToDisplay="getPositionsColumnToDisplay()"
+      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
       :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
     ></opensilex-PositionList>
   </div>
@@ -148,6 +147,15 @@ export default class ScientificObjectDetail extends Vue {
     default: null,
   })
   experiment;
+
+  getEventColumnToDisplay() : Set<string>{
+      return this.globalView ? EventList.getDefaultColumns() : new Set(['type', 'end', 'description']) ;
+  }
+
+  getPositionsColumnToDisplay() : Set<string>{
+      return this.globalView ? PositionList.getDefaultColumns() : new Set(['to', 'end', 'coordinates']) ;
+  }
+
 
   @Prop({
     default: () => {

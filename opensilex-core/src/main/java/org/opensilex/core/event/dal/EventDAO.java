@@ -367,6 +367,10 @@ public class EventDAO<T extends EventModel> {
 
     protected void updateOrderByList(List<OrderBy> orderByList) {
 
+        if(orderByList == null){
+            return;
+        }
+        
         // specific ordering on end/start -> ordering on timestamp
         for (int i = 0; i < orderByList.size(); i++) {
             OrderBy orderBy = orderByList.get(i);

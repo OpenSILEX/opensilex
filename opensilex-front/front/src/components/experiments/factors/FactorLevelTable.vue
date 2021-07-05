@@ -49,7 +49,7 @@
       <b-row>
         <b-col cols="10">
           <ValidationProvider
-            rules="requiredTabulator"
+            rules="requiredTabulator|badNameTabulator"
             ref="validationProvider"
             :skipIfEmpty="false"
             v-slot="{ errors }"
@@ -98,6 +98,28 @@ extend("requiredTabulator", (value) => {
 
   if (!valid) {
     return "component.factorLevel.errors.factor-empty-levels";
+  } else {
+    return valid;
+  }
+});
+
+extend("badNameTabulator", (value) => {
+  var substrings = ["-", "+", "=", "<", ">", "=", "?", "/", "*", "&"];
+  let valid = true;
+  if (value.length != 0) {
+    value.some(function (factorLevel) {
+      if (factorLevel.name != null && factorLevel.name.trim() !== "") {
+        substrings.forEach((substring) => {
+          if (factorLevel.name.indexOf(substring) != -1) {
+            valid = false;
+          }
+        });
+      }
+    });
+  }
+
+  if (!valid) {
+    return "component.factorLevel.errors.factor-badname-levels";
   } else {
     return valid;
   }
@@ -438,6 +460,7 @@ en:
         factor-already-exists: Factor level already exists with this URI.
         factor-empty-row: You can't add several empty rows
         factor-empty-levels: Missing factor levels
+        factor-badname-levels: Must not contains -,+,=,<,>,=,?,/,*,&
         associated-factor-level : You can't remove a factor level which is associated to a scientific object 
         minimum-factor-level : You must have one factor level a least
 fr:
@@ -463,6 +486,7 @@ fr:
         factor-already-exists: URI du niveau de facteur déjà existante.
         factor-empty-row: Vous ne pouvez pas ajouter plusieurs lignes vides
         factor-empty-levels: Niveaux de facteurs manquants
+        factor-badname-levels: Ne doit pas contenir -,+,=,<,>,=,?,/,*,&
         associated-factor-level : Vous ne pouvez pas supprimer un niveau de facteur associé à un objet scientifique
         minimum-factor-level : Vous devez au moins avoir un niveau de facteur
         

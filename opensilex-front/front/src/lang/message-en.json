@@ -615,7 +615,8 @@
         "emailOrUrl": "The {_field_} field must be a valid URL or email address",
         "decimal": "The {_field_} field must contain only decimal values",
         "wkt": "The {_field_} field must be a valid WKT geometry",
-        "dateDiff" : "The {_field_} must not be before the start date"
+        "dateDiff" : "The {_field_} must not be before the start date",
+        "nameFiltered" : "The {_field_} must not contains -,+,=,<,>,=,?,/,*,&"
     },
     "icon": {
         "component": {

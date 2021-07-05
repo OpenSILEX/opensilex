@@ -24,6 +24,7 @@
       <!-- Name -->
       <div id="v-step-0">
         <opensilex-InputForm
+          rules="nameFiltered"
           :value.sync="form.name"
           label="component.factor.name"
           helpMessage="component.factor.name-help"

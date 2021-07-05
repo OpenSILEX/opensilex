@@ -12,6 +12,7 @@ package org.opensilex.core.experiment.factor.api;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.server.rest.validation.FilteredName;
 
 /**
  * 
@@ -22,6 +23,7 @@ public class FactorLevelCreationDTO extends FactorLevelGetDTO{
     
     @ApiModelProperty(example = "WW")
     @Override
+    @FilteredName
     @NotNull
     public String getName() {
         return name;

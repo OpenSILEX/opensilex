@@ -21,6 +21,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorCategorySKOSModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.server.rest.validation.FilteredName;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -64,6 +65,7 @@ public class FactorCreationDTO extends SKOSReferencesDTO {
     }
 
     @Required
+    @FilteredName
     @ApiModelProperty(required = true, example = "Irrigation")
     public String getName() {
         return name;

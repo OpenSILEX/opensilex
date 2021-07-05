@@ -298,6 +298,20 @@ extend("dateDiff", {
   }
 });
 
+extend("nameFiltered", ( value) => {
+  let substrings = ['-','+','=','<','>','=','?','/','*','&'];
+  let valid = true;
+  substrings.forEach((substring) => {
+    console.log(value,substring,value.indexOf(substring))
+    if (value.indexOf(substring) != -1) {
+      console.log(value)
+      valid = false;
+    }
+  }); 
+
+  return valid;
+});
+
 import { parse } from "wkt";
 extend("wkt", {
   validate: (value) => {

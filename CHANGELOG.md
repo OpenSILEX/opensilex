@@ -11,13 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Global data management
+- Geospatial vizualisation improvement with control panel and simple filters
+- Global data management : tabular view and datafile view
+- Data vizualisation on device, object in or out of experiments : enriched with events view, manual data annotation and event addition.
 - Add CHANGLOG.md file to track changes
 
 ### Changed
 
-- Data API
-- Events improvement
+- Data API : list to single scientific object association
+- Events improvement : specific properties for class management and optimisation.
 
 ## [1.0.0-beta+1] - 2021-04-27
 

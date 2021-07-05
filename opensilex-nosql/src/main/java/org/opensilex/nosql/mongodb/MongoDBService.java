@@ -510,6 +510,7 @@ public class MongoDBService extends BaseService {
 
     public <T extends MongoModel> DeleteResult deleteOnCriteria(Class<T> instanceClass, String collectionName, Document filter) throws Exception {
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
+        startTransaction();
         try {
             DeleteResult result = collection.deleteMany(session, filter);
             commitTransaction();
@@ -517,9 +518,6 @@ public class MongoDBService extends BaseService {
         } catch (Exception exception) {
             rollbackTransaction();
             throw exception;
-        } finally {
-            session.close();
-            session = null;
         }
     }
 

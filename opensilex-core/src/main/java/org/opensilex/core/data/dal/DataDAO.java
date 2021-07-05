@@ -505,13 +505,24 @@ public class DataDAO {
 
     public DeleteResult deleteWithFilter(UserModel user, URI experimentUri, URI objectUri, URI variableUri, URI provenanceUri) throws Exception {
         List<URI> provenances = new ArrayList<>();
-        provenances.add(provenanceUri);
+        if (provenanceUri != null) {
+            provenances.add(provenanceUri);
+        }
+        
         List<URI> objects = new ArrayList<>();
-        objects.add(objectUri);
+        if (objectUri != null) {
+            objects.add(objectUri);
+        }
+        
         List<URI> variables = new ArrayList<>();
-        variables.add(variableUri);
+        if (variableUri != null) {
+            variables.add(variableUri);
+        }
+
         List<URI> experiments = new ArrayList<>();
-        experiments.add(experimentUri);
+        if (experimentUri != null) {
+            experiments.add(experimentUri);
+        }
         
         Document filter = searchFilter(user, experiments, objects, variables, provenances, null, null, null, null, null);
         DeleteResult result = nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);

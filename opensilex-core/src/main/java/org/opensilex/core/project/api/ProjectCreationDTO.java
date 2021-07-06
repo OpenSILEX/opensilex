@@ -31,38 +31,46 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setDescription(description);
         model.setObjective(objective);
         model.setHomePage(homePage);
+        
+        if(administrativeContacts != null){
+            List<UserModel> adminList = new ArrayList<>(administrativeContacts.size());
+            administrativeContacts.forEach((URI u) -> {
+                UserModel user = new UserModel();
+                user.setUri(u);
+                adminList.add(user);
+            });
+             model.setAdministrativeContacts(adminList);
+        }
+       
+        if(coordinators != null){
+            List<UserModel> coordList = new ArrayList<>(coordinators.size());
+            coordinators.forEach((URI u) -> {
+                UserModel user = new UserModel();
+                user.setUri(u);
+                coordList.add(user);
+            });
+            model.setCoordinators(coordList);
+        }
 
-        List<UserModel> adminList = new ArrayList<>(administrativeContacts.size());
-        administrativeContacts.forEach((URI u) -> {
-            UserModel user = new UserModel();
-            user.setUri(u);
-            adminList.add(user);
-        });
-        model.setAdministrativeContacts(adminList);
+        if(scientificContacts != null){
+            List<UserModel> scientList = new ArrayList<>(scientificContacts.size());
+            scientificContacts.forEach((URI u) -> {
+                UserModel user = new UserModel();
+                user.setUri(u);
+                scientList.add(user);
+            });
+            model.setScientificContacts(scientList);
+        }
 
-        List<UserModel> coordList = new ArrayList<>(coordinators.size());
-        coordinators.forEach((URI u) -> {
-            UserModel user = new UserModel();
-            user.setUri(u);
-            coordList.add(user);
-        });
-        model.setCoordinators(coordList);
-
-        List<UserModel> scientList = new ArrayList<>(scientificContacts.size());
-        scientificContacts.forEach((URI u) -> {
-            UserModel user = new UserModel();
-            user.setUri(u);
-            scientList.add(user);
-        });
-        model.setScientificContacts(scientList);
-
-        List<ProjectModel> projectList = new ArrayList<>(relatedProjects.size());
-        relatedProjects.forEach((URI u) -> {
-            ProjectModel project = new ProjectModel();
-            project.setUri(u);
-            projectList.add(project);
-        });
-        model.setRelatedProjects(projectList);
+        if(relatedProjects != null){
+            List<ProjectModel> projectList = new ArrayList<>(relatedProjects.size());
+            relatedProjects.forEach((URI u) -> {
+                ProjectModel project = new ProjectModel();
+                project.setUri(u);
+                projectList.add(project);
+            });
+            model.setRelatedProjects(projectList);
+        }
 
         return model;
     }

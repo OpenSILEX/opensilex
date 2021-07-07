@@ -60,16 +60,17 @@
               :value.sync="filter.start_date"
               label="component.common.begin"
               name="startDate"
+              :max-date="filter.end_date ? filter.end_date : undefined" 
           ></opensilex-DateTimeForm>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
           <!-- End Date -->
           <opensilex-DateTimeForm
-              :isTime="true"
               :value.sync="filter.end_date"
               label="component.common.end"
               name="endDate"
+              :min-date="filter.start_date ? filter.start_date : undefined"
           ></opensilex-DateTimeForm>
         </opensilex-FilterField>
 
@@ -78,10 +79,8 @@
           <opensilex-ProvenanceSelector
             ref="provSelector"
             :provenances.sync="filter.provenance"
-            :filterLabel="filterProvenanceLabel"
             label="ExperimentData.provenance"
             @select="loadProvenance"
-            @clear="filterLabel = null"
             :experiment="uri"
             :multiple="false"
             :viewHandler="showProvenanceDetails"

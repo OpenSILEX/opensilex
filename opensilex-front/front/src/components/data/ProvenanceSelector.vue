@@ -92,63 +92,13 @@ export default class ProvenanceSelector extends Vue {
   }
 
   loadProvenances(provenancesURI) {
-
-    if (provenancesURI == undefined || provenancesURI === ".*") {
-      if (this.experiment == null && this.scientificObject == null && this.device== null) {
-        return this.$opensilex
-          .getService("opensilex.ExperimentsService")
-          .searchProvenance()
-          .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>
-            ) => {
-              return [http.response.result];
-            }
-          );
-      } else if (this.scientificObject) {
-        return this.$opensilex
-          .getService("opensilex.ScientificObjectsService")
-          .getScientificObjectDataProvenances(this.scientificObject)
-          .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>
-            ) => {
-              return [http.response.result];
-            }
-          );
-      } else if (this.device) {
-        return this.$opensilex
-          .getService("opensilex.DevicesService")
-          .getDeviceDataProvenances(this.device)
-          .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>
-            ) => {
-              return [http.response.result];
-            }
-          );
-      } else {
-        return this.$opensilex
-          .getService("opensilex.DataService")
-          .searchExperimentProvenances(this.experiment)
-          .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>
-            ) => {
-              return [http.response.result];
-            }
-          );
-      }
-    } else {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(provenancesURI)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
-            return [http.response.result];
-          }
-        );
-    }
+    return this.$opensilex
+      .getService("opensilex.DataService")
+      .getProvenancesByURIs(provenancesURI)
+      .then(
+      (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
+        http.response.result
+    );
   }
 
   searchProvenances(label, page, pageSize) {
@@ -189,80 +139,6 @@ export default class ProvenanceSelector extends Vue {
           (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
             http
         );
-    }
-  }
-
-  loadOptions(query, page, pageSize) {
-    this.filterLabel = query;
-
-    if (this.filterLabel === ".*") {
-      this.filterLabel = undefined;
-    }
-
-    if (this.experiment == null && this.scientificObject == null && this.device== null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(this.filterLabel)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
-
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
-    } else if (this.scientificObject) {
-      return this.$opensilex
-        .getService("opensilex.ScientificObjectsService")
-        .getScientificObjectDataProvenances(this.scientificObject)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
-
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
-    } else if (this.device) {
-      return this.$opensilex
-        .getService("opensilex.DevicesService")
-        .getDeviceDataProvenances(this.device)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
-
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
-    } else {
-      return this.$opensilex
-        .getService("opensilex.ExperimentsService")
-        .searchExperimentProvenances(this.experiment, this.filterLabel)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http.response.result
-        )
-        .then((result: any[]) => {
-          let nodeList = [];
-
-          for (let prov of result) {
-            nodeList.push(this.provenancesToSelectNode(prov));
-          }
-          return nodeList;
-        });
     }
   }
 

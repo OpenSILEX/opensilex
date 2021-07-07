@@ -67,6 +67,7 @@ import java.time.format.DateTimeParseException;
 
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 
 /**
  *
@@ -821,13 +822,17 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getDeviceDataProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
         ) throws Exception {
         
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
-        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+        ListWithPagination<ProvenanceModel> provenances = dao.getProvenancesByDevice(currentUser, uri, name, orderByList, page, pageSize, DataDAO.FILE_COLLECTION_NAME);
+        ListWithPagination<ProvenanceGetDTO> resultDTOList = provenances.convert(ProvenanceGetDTO.class, ProvenanceGetDTO::fromModel);
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
     @GET
@@ -840,13 +845,17 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getDeviceDataFilesProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
         ) throws Exception {
         
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
-        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+        ListWithPagination<ProvenanceModel> provenances = dao.getProvenancesByDevice(currentUser, uri, name, orderByList, page, pageSize, DataDAO.FILE_COLLECTION_NAME);
+        ListWithPagination<ProvenanceGetDTO> resultDTOList = provenances.convert(ProvenanceGetDTO.class, ProvenanceGetDTO::fromModel);
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

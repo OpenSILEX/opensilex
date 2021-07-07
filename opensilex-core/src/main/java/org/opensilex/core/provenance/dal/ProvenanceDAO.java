@@ -10,16 +10,19 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.naming.NamingException;
 import org.bson.Document;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
         
@@ -155,4 +158,11 @@ public class ProvenanceDAO {
         return uris;
     }
     
+    public ListWithPagination<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String label, List<OrderBy> orderByList, int page, int pageSize, String collectionName) throws Exception {
+        DataDAO dataDAO = new DataDAO(nosql, null, null);
+        Document filter = dataDAO.searchByDeviceFilter(uri, user, null, null, null, null, null, null, null, null, null);
+        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+        
+        return search(provenancesURIs, label, collectionName, uri, uri, uri, uri, orderByList, Integer.SIZE, Integer.SIZE);
+    }
 }

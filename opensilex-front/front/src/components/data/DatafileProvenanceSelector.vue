@@ -4,7 +4,8 @@
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
-    :optionsLoadingMethod="getProvenances"
+    :searchMethod="searchProvenances"
+    :itemLoadingMethod="loadProvenances"
     :conversionMethod="provenancesToSelectNode"
     :placeholder="
       multiple
@@ -51,6 +52,11 @@ export default class DatafileProvenanceSelector extends Vue {
   })
   required;
 
+  @Prop({
+    default: "component.data.provenance.search"
+  })
+  label;
+
   @Prop()
   scientificObject
 
@@ -75,6 +81,8 @@ export default class DatafileProvenanceSelector extends Vue {
   })
   viewHandlerDetailsVisible: boolean;
 
+  filterLabel: string;
+
   refresh() {
     this.selectForm.refresh();
   }
@@ -93,26 +101,33 @@ export default class DatafileProvenanceSelector extends Vue {
     this.$emit("deselect", value);
   }
 
-  getProvenances() {
+  loadProvenances(provenancesURI) {
+    return this.$opensilex
+      .getService("opensilex.DataService")
+      .getProvenancesByURIs(provenancesURI)
+      .then(
+      (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
+        http.response.result
+    );
+  }
+
+  searchProvenances(label, page, pageSize) {
+    this.filterLabel = label;
+
+    if (this.filterLabel === ".*") {
+      this.filterLabel = undefined;
+    }
     if (this.scientificObject) {
       return this.$opensilex
-      .getService("opensilex.ScientificObjectsService")
-      .getScientificObjectDataFilesProvenances(this.scientificObject)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-          http.response.result
-      );
-
+        .getService("opensilex.ScientificObjectsService")
+        .getScientificObjectDataFilesProvenances(this.scientificObject, this.filterLabel)
+        
     } else if (this.device) {
       return this.$opensilex
       .getService("opensilex.DevicesService")
-      .getDeviceDataFilesProvenances(this.device)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-          http.response.result
-      );
+      .getDeviceDataFilesProvenances(this.device, this.filterLabel)
+      
     }
-    
   }
 
 }

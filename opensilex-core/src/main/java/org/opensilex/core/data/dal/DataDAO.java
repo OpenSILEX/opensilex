@@ -77,7 +77,7 @@ public class DataDAO {
     protected final FileStorageService fs; 
     
     private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
-    
+        
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
         this.RDFTYPE_VARIABLE = new URI(Oeso.Variable.toString());
         this.RDFTYPE_SCIENTIFICOBJECT = new URI(Oeso.ScientificObject.toString());
@@ -212,7 +212,7 @@ public class DataDAO {
 
     }
     
-    private Document searchByDeviceFilter(
+    public Document searchByDeviceFilter(
             URI deviceURI,
             UserModel user,
             List<URI> experiments,
@@ -444,12 +444,6 @@ public class DataDAO {
         List<URI> scientificObjects = new ArrayList();
         scientificObjects.add(uri);
         Document filter = searchFilter(user, null, scientificObjects, null, null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
-    }
-    
-    public List<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String collectionName) throws Exception {
-        Document filter = searchByDeviceFilter(uri, user, null, null, null, null, null, null, null, null, null);
         Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
         return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
     }

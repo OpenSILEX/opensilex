@@ -22,7 +22,6 @@ import javax.naming.NamingException;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -37,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -208,7 +208,7 @@ public class ProvenanceAPI {
         List<URI> provenances = new ArrayList();
         provenances.add(uri);
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        ListWithPagination<DataModel> resultList = dataDAO.search(
+        ListWithPagination<DataModel> dataList = dataDAO.search(
                 currentUser,
                 null,
                 null,
@@ -223,8 +223,22 @@ public class ProvenanceAPI {
                 0,
                 1
         );
+        
+        ListWithPagination<DataFileModel> datafilesList = dataDAO.searchFiles(
+                currentUser,
+                null,
+                null,
+                null,
+                provenances,
+                null,
+                null,
+                null,
+                null,
+                0,
+                1
+        );
 
-        if (resultList.getTotal() > 0) {
+        if (dataList.getTotal() > 0 || datafilesList.getTotal() > 0) {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "The provenance is linked to some data",
@@ -291,20 +305,11 @@ public class ProvenanceAPI {
         ProvenanceDAO dao = new ProvenanceDAO(nosql);
         List<ProvenanceModel> models = dao.getListByURIs(uris);
 
-        if (!models.isEmpty()) {
-            List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-            });
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
+        models.forEach(result -> {
+            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+        });
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } else {
-            // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Provenances not found",
-                    "Unknown provenances URIs"
-            ).getResponse();
-        }
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

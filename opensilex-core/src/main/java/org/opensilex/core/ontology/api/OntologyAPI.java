@@ -5,7 +5,7 @@
  */
 package org.opensilex.core.ontology.api;
 
-import org.opensilex.core.ontology.api.cache.OntologyApiCache;
+import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -109,7 +109,7 @@ public class OntologyAPI {
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern ,
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
-        List<ResourceTreeDTO> treeDto = OntologyApiCache.getInstance(sparql).searchSubClassesOf(currentUser,parentClass,stringPattern,ignoreRootClasses);
+        List<ResourceTreeDTO> treeDto = OntologyCache.getInstance(sparql).searchSubClassesOf(currentUser,parentClass,stringPattern,ignoreRootClasses);
         return new ResourceTreeResponse(treeDto).getResponse();
     }
 
@@ -195,6 +195,8 @@ public class OntologyAPI {
                 }
                 dto.toModel(dtModel);
                 dao.createDataProperty(propertyGraph, dtModel);
+
+
                 return new ObjectUriResponse(Response.Status.CREATED, dtModel.getUri()).getResponse();
             } else {
                 ObjectPropertyModel objModel = new ObjectPropertyModel();
@@ -217,8 +219,6 @@ public class OntologyAPI {
                 range.setUri(dto.getRange());
                 objModel.setRange(range);
                 dao.createObjectProperty(propertyGraph, objModel);
-
-                OntologyApiCache.getInstance(sparql).invalidateProperties();
 
                 return new ObjectUriResponse(Response.Status.CREATED, objModel.getUri()).getResponse();
             }
@@ -264,6 +264,7 @@ public class OntologyAPI {
             }
             dto.toModel(dtModel);
             dao.updateDataProperty(propertyGraph, dtModel);
+
             return new ObjectUriResponse(Response.Status.CREATED, dtModel.getUri()).getResponse();
         } else {
             ObjectPropertyModel objModel = new ObjectPropertyModel();
@@ -286,8 +287,6 @@ public class OntologyAPI {
             range.setUri(dto.getRange());
             objModel.setRange(range);
             dao.updateObjectProperty(propertyGraph, objModel);
-
-            OntologyApiCache.getInstance(sparql).invalidateProperties();
 
             return new ObjectUriResponse(Response.Status.CREATED, objModel.getUri()).getResponse();
         }
@@ -342,15 +341,15 @@ public class OntologyAPI {
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI URI propertyURI,
             @ApiParam(value = "Property type") @QueryParam("propertyType") @ValidURI URI propertyType
     ) throws Exception {
+
+        OntologyDAO dao = new OntologyDAO(sparql);
         Node propertyGraph = getPropertyGraph();
 
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
-            sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
+            dao.deleteDataProperty(propertyGraph, propertyURI);
         } else {
-            sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
+            dao.deleteObjectProperty(propertyGraph, propertyURI);
         }
-
-        OntologyApiCache.getInstance(sparql).invalidateProperties();
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
@@ -368,7 +367,7 @@ public class OntologyAPI {
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
 
-        List<ResourceTreeDTO> properties = OntologyApiCache.getInstance(sparql).getProperties(currentUser,domainURI);
+        List<ResourceTreeDTO> properties = OntologyCache.getInstance(sparql).getProperties(currentUser,domainURI);
         return new ResourceTreeResponse(properties).getResponse();
     }
 
@@ -387,7 +386,6 @@ public class OntologyAPI {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         SPARQLTreeListModel<?> dataPropertyTree = dao.searchDataProperties(domainURI, currentUser);
-
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(dataPropertyTree)).getResponse();
     }
 
@@ -406,7 +404,6 @@ public class OntologyAPI {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         SPARQLTreeListModel objectPropertyTree = dao.searchObjectProperties(domainURI, currentUser);
-
         return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(objectPropertyTree)).getResponse();
     }
 
@@ -432,7 +429,7 @@ public class OntologyAPI {
             return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
 
-        OntologyApiCache.getInstance(sparql).invalidateClasses();
+        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
@@ -457,7 +454,7 @@ public class OntologyAPI {
         dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
 
         // clean cache after delete
-        OntologyApiCache.getInstance(sparql).invalidateClasses();
+        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
@@ -480,7 +477,7 @@ public class OntologyAPI {
         dao.updateClassPropertyRestriction(getPropertyGraph(), dto.getClassURI(), restriction, currentUser.getLanguage());
 
         // clean cache after update
-        OntologyApiCache.getInstance(sparql).invalidateClasses();
+        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }

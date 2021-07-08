@@ -29,7 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
-import org.opensilex.core.ontology.api.cache.OntologyApiCache;
+import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -82,7 +82,6 @@ public class VueOwlExtensionAPI {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         ClassModel classDescription = ontologyDAO.getClassModel(rdfType, parentType, currentUser.getLanguage());
-
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
 
         return new SingleObjectResponse<>(VueRDFTypeDTO.fromModel(new VueRDFTypeDTO(), classDescription, classExtension)).getResponse();
@@ -109,8 +108,6 @@ public class VueOwlExtensionAPI {
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
             dao.createExtendedClass(classModel, classExtModel);
 
-            OntologyApiCache.getInstance(sparql).invalidateClasses();
-
             return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
@@ -130,14 +127,12 @@ public class VueOwlExtensionAPI {
     public Response updateRDFType(
             @ApiParam("RDF type definition") @Valid VueRDFTypeDTO dto
     ) throws Exception {
+
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
         ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
-
         VueClassExtensionModel classExtModel = dto.getExtClassModel();
-
         dao.updateExtendedClass(classModel, classExtModel);
-        OntologyApiCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
     }
@@ -174,8 +169,10 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI URI classURI
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
+
         dao.deleteExtendedClass(classURI);
-        OntologyApiCache.getInstance(sparql).invalidateClasses();
+        OntologyCache.getInstance(sparql).invalidateClasses();
+
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }
 

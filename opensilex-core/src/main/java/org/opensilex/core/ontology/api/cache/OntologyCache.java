@@ -24,18 +24,18 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * The expire after write duration is 30 min.
  */
-public class OntologyApiCache {
+public class OntologyCache {
 
-    private static OntologyApiCache INSTANCE;
+    private static OntologyCache INSTANCE;
 
     /**
      * @apiNote use synchronized keyword in order to ensure thread-safety
      * @param sparql the {@link SPARQLService} used to access {@link OntologyDAO} if no entry was found into cache
      * @return OntologyApiCache shared instance
      */
-    public synchronized static OntologyApiCache getInstance(SPARQLService sparql){
+    public synchronized static OntologyCache getInstance(SPARQLService sparql){
         if(INSTANCE == null){
-            INSTANCE = new OntologyApiCache(sparql);
+            INSTANCE = new OntologyCache(sparql);
         }
         return INSTANCE;
     }
@@ -54,7 +54,7 @@ public class OntologyApiCache {
             .expireAfterWrite(30, TimeUnit.MINUTES)
             .build();
 
-    private OntologyApiCache(SPARQLService sparql) {
+    private OntologyCache(SPARQLService sparql) {
         this.ontologyDAO = new OntologyDAO(sparql);
     }
 

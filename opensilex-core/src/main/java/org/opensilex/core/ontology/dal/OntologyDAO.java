@@ -32,10 +32,10 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -602,10 +602,12 @@ public final class OntologyDAO {
 
     public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.create(graph, dataProperty);
+        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.create(graph, objectProperty);
+        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
@@ -641,10 +643,22 @@ public final class OntologyDAO {
 
     public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.update(graph, dataProperty);
+        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public void updateObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.update(graph, objectProperty);
+        OntologyCache.getInstance(sparql).invalidateProperties();
+    }
+
+    public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {
+        sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
+        OntologyCache.getInstance(sparql).invalidateProperties();
+    }
+
+    public void deleteObjectProperty(Node propertyGraph, URI propertyURI) throws Exception {
+        sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
+        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public boolean addClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {

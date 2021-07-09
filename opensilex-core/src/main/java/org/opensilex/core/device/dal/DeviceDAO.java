@@ -16,12 +16,18 @@ import java.util.List;
 import java.time.LocalDate;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -35,7 +41,9 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -131,6 +139,7 @@ public class DeviceDAO {
     public ListWithPagination<DeviceModel> search(
             String namePattern,
             URI rdfType,
+            boolean includeSubTypes,
             Integer year,
             LocalDate existenceDate,
             String brandPattern,
@@ -161,14 +170,21 @@ public class DeviceDAO {
         if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
             return new ListWithPagination<>(new ArrayList());
         } else {
+            // set the custom filter on type
+            Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+            if (includeSubTypes) {
+                appendTypeFilter(customHandlerByFields, rdfType);
+            }           
+            
             returnList = sparql.searchWithPagination(
+                    sparql.getDefaultGraph(DeviceModel.class),
                     DeviceModel.class,
                     currentUser.getLanguage(),
-                    (SelectBuilder select) -> {
+                    (SelectBuilder select) -> {                        
                         if (namePattern != null && !namePattern.trim().isEmpty()) {
                             select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
                         }
-                        if (rdfType != null) {
+                        if (rdfType != null && !includeSubTypes) {
                             select.addFilter(SPARQLQueryHelper.eq(DeviceModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
                         }
                         if (brandPattern != null && !brandPattern.trim().isEmpty()) {
@@ -208,6 +224,8 @@ public class DeviceDAO {
                             select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filteredUris));
                         }
                     },
+                    customHandlerByFields,
+                    null,
                     orderByList,
                     page,
                     pageSize);
@@ -230,6 +248,7 @@ public class DeviceDAO {
     public List<DeviceModel> searchForExport(
             String namePattern,
             URI rdfType,
+            boolean includeSubTypes,
             Integer year,
             LocalDate existenceDate,
             String brandPattern,
@@ -256,14 +275,20 @@ public class DeviceDAO {
         if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
             deviceList = new ArrayList();
         } else {
+            // set the custom filter on type
+            Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+            if (includeSubTypes) {
+                appendTypeFilter(customHandlerByFields, rdfType);
+            }
             deviceList = sparql.search(
+                    sparql.getDefaultGraph(DeviceModel.class),
                     DeviceModel.class,
                     currentUser.getLanguage(),
                     (SelectBuilder select) -> {
                         if (namePattern != null && !namePattern.trim().isEmpty()) {
                             select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
                         }
-                        if (rdfType != null) {
+                        if (rdfType != null && !includeSubTypes) {
                             select.addFilter(SPARQLQueryHelper.eq(DeviceModel.TYPE_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(rdfType.toString()))));
                         }
                         if (brandPattern != null && !brandPattern.trim().isEmpty()) {
@@ -301,7 +326,12 @@ public class DeviceDAO {
                         if (filteredUris != null) {
                             select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filteredUris));
                         }
-                    }
+                    },
+                customHandlerByFields,
+                null,
+                null,
+                0,
+                0
             );
         }
 
@@ -318,6 +348,14 @@ public class DeviceDAO {
     private void appendDateFilters(SelectBuilder select, LocalDate Date) throws Exception {
         Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date, null, null);
         select.addFilter(dateRangeExpr);
+    }
+    
+    private void appendTypeFilter(Map<String, WhereHandler> customHandlerByFields, URI type) throws Exception {
+        if (type != null) {
+            WhereHandler handler = new WhereHandler();
+            handler.addWhere(new TriplePath(makeVar(DeviceModel.TYPE_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(type)));
+            customHandlerByFields.put(DeviceModel.TYPE_FIELD, handler);
+        }
     }
 
     public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {

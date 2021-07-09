@@ -59,6 +59,7 @@ export default class DeviceSelector extends Vue {
 
     return this.$service.searchDevices(
         undefined, // rdf_type filter
+        undefined, // include_subtypes boolean
         query, // name filter
         undefined, // year filter
         undefined, // existence_date filter

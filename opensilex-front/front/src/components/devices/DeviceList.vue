@@ -328,6 +328,7 @@ export default class DeviceList extends Vue {
     //this.updateExportFilters();
     return this.service.searchDevices(
       this.filter.rdf_type, // rdf_type filter
+      true, // include_subtypes boolean
       this.filter.name, // name filter
       this.filter.start_up, // year filter
       this.filter.existence_date, // existence_date filter

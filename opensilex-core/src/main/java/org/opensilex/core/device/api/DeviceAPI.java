@@ -87,6 +87,10 @@ public class DeviceAPI {
 
     public static final String CREDENTIAL_DEVICE_DELETE_ID = "device-delete";
     public static final String CREDENTIAL_DEVICE_DELETE_LABEL_KEY = "credential.device.delete";
+    
+    public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
+    public static final String DEVICE_EXAMPLE_YEAR = "2017";
+    public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
 
     @CurrentUser
     UserModel currentUser;
@@ -146,14 +150,15 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
     })    
     public Response searchDevices(
-            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
-            @ApiParam(value = "Search by metadata", example = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}") @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -170,6 +175,7 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         ListWithPagination<DeviceModel> devices = dao.search(name,
             rdfType,
+            includeSubTypes,
             year,
             existenceDate,
             brand,
@@ -366,19 +372,20 @@ public class DeviceAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportDevices(
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("namePattern") String namePattern,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:SensingDevice") @QueryParam("rdfType") @ValidURI URI rdfType,
-            @ApiParam(value = "Search by year", example = "2017") @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
+            @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
-            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brandPattern") String brandPattern,
-            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("modelPattern") String modelPattern,
-            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serialNumberPattern") String snPattern,
-            @ApiParam(value = "Search by metadata", example = "{}") @QueryParam("metadata") String metadataParam
+            @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
+            @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
+            @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
+            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata            
     ) throws Exception {
         Document metadataFilter = null;
-        if (metadataParam != null) {
+        if (metadata != null) {
             try {
-                metadataFilter = Document.parse(metadataParam);
+                metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();                
             }
@@ -387,13 +394,14 @@ public class DeviceAPI {
         // Search device with device DAO
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         List<DeviceModel> resultList = dao.searchForExport(
-            namePattern,
+            name,
             rdfType,
+            includeSubTypes,
             year,
             existenceDate,
-            brandPattern,
-            modelPattern,
-            snPattern,
+            brand,
+            model,
+            serialNumber,
             metadataFilter,
             currentUser
         );

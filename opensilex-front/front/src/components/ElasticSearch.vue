@@ -21,7 +21,6 @@
             </opensilex-TableAsyncView>
 
         </b-modal>
-
       </div>
     </div>
   </div>

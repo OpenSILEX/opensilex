@@ -451,12 +451,13 @@ export default class ScientificObjectList extends Vue {
     let objectURIs = [];
     for (let select of this.tableRef.getSelected()) {
       objectURIs.push(select.uri);
-    }
+    } 
+    
     this.$opensilex.downloadFilefromPostService(
       path,
       filename,
       "csv",
-      {
+      {        
         uris: objectURIs,
       },
       this.lang

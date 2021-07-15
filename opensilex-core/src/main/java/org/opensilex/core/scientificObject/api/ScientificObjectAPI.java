@@ -88,6 +88,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -798,6 +799,8 @@ public class ScientificObjectAPI {
         customColumns.add(Oeso.isPartOf.toString());
         customColumns.add(Oeso.hasCreationDate.toString());
         customColumns.add(Oeso.hasDestructionDate.toString());
+        customColumns.add(Oeso.hasFactorLevel.toString());
+        customColumns.add(Oeso.hasFacility.toString());
         customColumns.add(GEOMETRY_COLUMN_ID);
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
@@ -816,6 +819,18 @@ public class ScientificObjectAPI {
                 return value.getCreationDate().toString();
             } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
                 return value.getDestructionDate().toString();
+            } else if (columnID.equals(Oeso.hasFactorLevel.toString()) && value.getFactorLevels() != null) {
+                try {
+                    for (FactorLevelModel factorLevel : value.getFactorLevels()) {
+                        if (factorLevel != null && factorLevel.getUri() != null) {
+                            return factorLevel.getUri().toString();
+                        }                   
+                    }
+
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+                return null;
             } else if (columnID.equals(Oeso.hasFacility.toString())) {
                 try {
                     MoveModel lastMove = moveDAO.getLastMoveEvent(value.getUri());

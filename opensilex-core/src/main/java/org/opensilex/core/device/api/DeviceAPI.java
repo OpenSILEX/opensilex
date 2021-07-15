@@ -63,6 +63,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeParseException;
 
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
@@ -124,12 +125,12 @@ public class DeviceAPI {
             return error.getResponse();
         }
         if (!checkOnly){
-            try{
+            try {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
                 URI uri = deviceDAO.create(devModel, deviceDTO.getRelations(), currentUser);
                 return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
-            }catch(SPARQLAlreadyExistingUriException ex){
+            } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
                     Response.Status.CONFLICT,
                     "Device URI already exists",
@@ -303,7 +304,6 @@ public class DeviceAPI {
         
     }
     
-    
     private ErrorResponse check(DeviceDTO deviceDTO, DeviceDAO deviceDAO) throws Exception {
 
         // check if device URI already exists
@@ -328,6 +328,19 @@ public class DeviceAPI {
                     "Device label already exists for this type",
                     "Duplicated label: " + deviceDTO.getName()
             );
+        }
+        //Check format date
+        if (deviceDTO.getStartUp() != null) {
+            DateTimeFormatter pattern = DateTimeFormatter.ofPattern("YYYY-MM-DD");
+            try {
+                LocalDate.parse(deviceDTO.getStartUp().toString(), pattern);
+            } catch (DateTimeParseException e) {
+                return new ErrorResponse(
+                Response.Status.BAD_REQUEST,
+                "Expected date format : YYYY-MM-DD,DD-MM-YYYY,DD/MM/YYYY",
+                "Wrong date format: " + deviceDTO.getStartUp()
+                );
+            }            
         }
 
         //Check that the given person exist in DB

@@ -15,10 +15,10 @@
       <span v-if="node.data != null">
         <div v-if="node.isLeaf && node.data.parent" class="leaf-spacer"></div>
         <b-form-checkbox
+          aria-checked="mixed"
           class="selection-box"
           v-if="enableSelection"
           :checked="getSelection(node.data.uri)"
-          unchecked-value="false"
           @change="onSelectionChange(node.data.uri)"
           switches
         ></b-form-checkbox>
@@ -104,6 +104,11 @@ export default class TreeViewAsync extends Vue {
     if (nodes.length > 0) {
       let node = nodes[nodes.length - 1];
       if (node.data != null) {
+        if (node.isLeaf) {
+          let root = this.asyncTree.getPrevNode(node.path, null);
+          nodes.push(root.data);
+          this.onSelectionChange(root.data.uri);
+        }
         this.$emit("select", nodes[0]);
       }
     }
@@ -288,7 +293,7 @@ export default class TreeViewAsync extends Vue {
     return r;
   }
 
-  onSelectionChange(uri) {
+  onSelectionChange(uri) {    
     if (this.multiSelect) {
       let uriIndex = this.multiSelect.indexOf(uri);
       if (uriIndex >= 0) {
@@ -296,7 +301,7 @@ export default class TreeViewAsync extends Vue {
       } else {
         this.multiSelect.push(uri);
       }
-    }
+    }        
   }
 }
 </script>

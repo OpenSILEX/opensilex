@@ -203,9 +203,10 @@
     ></opensilex-EventCsvForm>
 
     <opensilex-ScientificObjectForm
-        ref="soForm"
-        @onUpdate="redirectToDetail"
-      ></opensilex-ScientificObjectForm>
+      v-if="!noValidation"
+      ref="soForm"
+      @onUpdate="redirectToDetail"
+    ></opensilex-ScientificObjectForm>
   </div>
 </template>
 
@@ -243,6 +244,10 @@ export default class ScientificObjectList extends Vue {
   })
   noUpdateURL;
 
+  @Prop({
+    default: false
+  })
+  noValidation;
 
   @PropSync("searchFilter", {
     default: () => {

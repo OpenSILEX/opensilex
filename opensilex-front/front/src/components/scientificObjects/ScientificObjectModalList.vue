@@ -25,7 +25,8 @@
         :noActions="true"
         :pageSize="10"
         :searchFilter.sync="filter"
-        :noUpdateURL="true">
+        :noUpdateURL="true"
+        :noValidation="true">
       </opensilex-ScientificObjectList>
     </div>
   </b-modal>

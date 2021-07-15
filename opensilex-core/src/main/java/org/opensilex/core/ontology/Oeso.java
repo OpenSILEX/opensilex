@@ -149,6 +149,7 @@ public class Oeso {
     // ---- DOCUMENTS ----
     public static final Resource Document = Ontology.resource(NS, "Document");
     public static final Property hasAuthor = Ontology.property(NS, "hasAuthor");
+    public static final Resource Datafile = Ontology.resource(NS, "Datafile");
     
      // ---- DEVICES ----
     public static final Resource Device = Ontology.resource(NS, "Device");

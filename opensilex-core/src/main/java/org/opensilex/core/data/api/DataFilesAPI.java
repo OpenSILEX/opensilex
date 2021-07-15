@@ -46,6 +46,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -58,7 +59,7 @@ import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -78,9 +79,9 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -494,6 +495,8 @@ public class DataFilesAPI {
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
         Set<URI> expURIs= new HashSet<>();
         Set<URI> notFoundedExpURIs = new HashSet<>();
+        Set<URI> fileTypes= new HashSet<>();
+        Set<URI> notFoundedFileTypes = new HashSet<>();
         
         for (DataFileCreationDTO dto : dtoList) {          
             
@@ -527,16 +530,31 @@ public class DataFilesAPI {
                     } 
                 }
             }
+            
+            // check rdfType
+            if (!fileTypes.contains(dto.getRdfType())) {
+                fileTypes.add(dto.getRdfType());
+                if (!sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, Oeso.Datafile)
+                    )
+                ) {
+                    notFoundedFileTypes.add(dto.getRdfType());
+                }
+            }
+            
         }      
         
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris", new ArrayList<>(objectURIs));
+            throw new NoSQLInvalidUriListException("wrong scientific_object uris: ", new ArrayList<>(notFoundedObjectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
         }
         if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
+        }
+        if (!notFoundedFileTypes.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong rdf_types: ", new ArrayList<>(notFoundedFileTypes));
         }
     }
 }

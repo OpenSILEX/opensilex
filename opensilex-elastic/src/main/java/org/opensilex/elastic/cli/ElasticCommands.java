@@ -67,10 +67,10 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         try {
             ElasticService elasticService = getOpenSilex().getServiceInstance(ElasticService.DEFAULT_ELASTIC_SERVICE, ElasticService.class);
             elasticClient = elasticService.getClient();
-                        //indexProject();
-                        //indexVariable();
-                       // indexDevice();
-            indexEvent();
+            indexProject();
+            indexVariable();
+            indexDevice();
+            //indexEvent();
 
         } finally {
             if (elasticClient != null) {

@@ -12,8 +12,8 @@
               ></opensilex-StringFilter>
               
           <b-button v-b-modal.modal-scrollable>Show results </b-button>
-          <b-modal id="modal-scrollable" scrollable title="Search results">
-            
+          <b-modal id="modal-scrollable" size="xl" scrollable title="Search results">
+
             <opensilex-TableAsyncView 
               ref="tableRef"
               :searchMethod="loadData"
@@ -21,7 +21,7 @@
             </opensilex-TableAsyncView>
 
         </b-modal>
-      
+
       </div>
     </div>
   </div>

@@ -598,16 +598,16 @@ public class DataAPI {
         }      
         
         if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris", new ArrayList<>(variableURIs));
+            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
         }
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris", new ArrayList<>(objectURIs));
+            throw new NoSQLInvalidUriListException("wrong scientific_object uris: ", new ArrayList<>(notFoundedObjectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
         }
         if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
         }
 
     }

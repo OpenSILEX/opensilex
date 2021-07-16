@@ -163,6 +163,25 @@ public class DataDAO {
 
     }
     
+     public int count(
+            UserModel user,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> provenances,
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata) throws Exception {
+
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+        int count = nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
+
+        return count;
+
+    }
+    
     public ListWithPagination<DataModel> searchByDevice(
             URI deviceURI,
             UserModel user,
@@ -184,6 +203,27 @@ public class DataDAO {
         ListWithPagination<DataModel> datas = nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);  
 
         return datas;
+
+    }
+    
+     public int countByDevice(
+            URI deviceURI,
+            UserModel user,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> provenances,
+            Instant startDate,
+            Instant endDate,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata) throws Exception {
+        
+        Document filter = searchByDeviceFilter(deviceURI, user, experiments, objects, variables, provenances, startDate, endDate, confidenceMin, confidenceMax, metadata);
+
+        int count = nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
+
+        return count;
 
     }
     

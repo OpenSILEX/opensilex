@@ -304,7 +304,22 @@ public class MongoDBService extends BaseService {
         return new ListWithPagination(results, page, pageSize, total);
 
     }
+    
+    public <T> int count( 
+            Class<T> instanceClass,
+            String collectionName,
+            Document filter) {
+        
+        LOGGER.debug("MONGO COUNT - Collection : " + collectionName + " - Order : "  + " - Filter : " + filter.toString());
 
+        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
+        long resultsNumber = collection.countDocuments(filter);
+        int total = (int) resultsNumber;
+        
+        return total;
+        
+    }
+    
     public <T> List<T> search(
             Class<T> instanceClass,
             String collectionName,

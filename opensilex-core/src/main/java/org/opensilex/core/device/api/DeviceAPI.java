@@ -638,6 +638,82 @@ public class DeviceAPI {
     }
     
     @GET
+    @Path("{uri}/data/count")
+    @ApiOperation("Count device data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the number of data", response = Integer.class),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response countDeviceData(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,            
+            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+          
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, null);
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (startDate != null) {
+            try {
+                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        if (endDate != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        Document metadataFilter = null;
+        if (metadata != null) {
+            try {
+                metadataFilter = Document.parse(metadata);
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+
+        int count = dao.countByDevice(
+                uri,
+                currentUser,
+                experiments,
+                null,
+                variables,
+                provenances,
+                startInstant,
+                endInstant,
+                confidenceMin,
+                confidenceMax,
+                metadataFilter
+        );
+
+        return new SingleObjectResponse<>(count).getResponse();
+    }
+    
+    @GET
     @Path("{uri}/datafiles")
     @ApiOperation("Search device datafiles descriptions")
     @ApiProtected

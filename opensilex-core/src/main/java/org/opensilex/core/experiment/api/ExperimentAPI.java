@@ -965,7 +965,7 @@ public class ExperimentAPI {
                     dataModel.setDate(parsedDateTimeMongo.getInstant());
                     dataModel.setOffset(parsedDateTimeMongo.getOffset());
                     dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-                    dataModel.setScientificObject(object.getUri());
+                    dataModel.setTarget(object.getUri());
                     dataModel.setProvenance(provenanceModel);
                     URI varURI = URI.create(headerByIndex.get(colIndex));
                     dataModel.setVariable(varURI);

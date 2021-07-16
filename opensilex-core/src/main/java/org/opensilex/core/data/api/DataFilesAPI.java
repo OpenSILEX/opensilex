@@ -46,6 +46,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -58,7 +59,6 @@ import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -78,8 +78,6 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -498,11 +496,11 @@ public class DataFilesAPI {
         for (DataFileCreationDTO dto : dtoList) {          
             
             //check objects uri
-            if (dto.getScientificObject() != null) {
-                if (!objectURIs.contains(dto.getScientificObject())) {
-                    objectURIs.add(dto.getScientificObject());
-                    if (!sparql.uriExists(ScientificObjectModel.class, dto.getScientificObject())) {
-                        notFoundedObjectURIs.add(dto.getScientificObject());
+            if (dto.getTarget() != null) {
+                if (!objectURIs.contains(dto.getTarget())) {
+                    objectURIs.add(dto.getTarget());
+                    if (!sparql.uriExists((Node) null, dto.getTarget())) {
+                        notFoundedObjectURIs.add(dto.getTarget());
                     }
                 }         
             }
@@ -530,7 +528,7 @@ public class DataFilesAPI {
         }      
         
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris", new ArrayList<>(objectURIs));
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(objectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));

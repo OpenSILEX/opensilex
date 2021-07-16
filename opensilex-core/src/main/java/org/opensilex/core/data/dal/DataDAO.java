@@ -320,7 +320,7 @@ public class DataDAO {
         if (objects != null && !objects.isEmpty()) {
             Document inFilter = new Document(); 
             inFilter.put("$in", objects);
-            filter.put("scientificObject", inFilter);
+            filter.put("target", inFilter);
         }
 
         if (variables != null && !variables.isEmpty()) {
@@ -587,8 +587,8 @@ public class DataDAO {
         Map<URI, ExperimentModel> experiments = new HashMap();
         
         for (DataModel dataModel : resultList) {
-            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
-                objects.put(dataModel.getScientificObject(), null);
+            if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
+                objects.put(dataModel.getTarget(), null);
             }
             
             if (!variables.contains(dataModel.getVariable())) {
@@ -612,7 +612,7 @@ public class DataDAO {
                     ExportDataIndex exportDataIndex = new ExportDataIndex(
                             exp,
                             dataModel.getProvenance().getUri(), 
-                            dataModel.getScientificObject()
+                            dataModel.getTarget()
                     );
 
                     if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
@@ -753,8 +753,8 @@ public class DataDAO {
 
                             // object
                             ScientificObjectModel os = null;
-                            if(dataGetDTO.getScientificObject() != null){
-                               os = objects.get(dataGetDTO.getScientificObject());
+                            if(dataGetDTO.getTarget() != null){
+                               os = objects.get(dataGetDTO.getTarget());
                             }
 
                             if(os != null){
@@ -839,8 +839,8 @@ public class DataDAO {
 
         HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
         for (DataModel dataModel : resultList) {
-            if (dataModel.getScientificObject() != null && !objects.containsKey(dataModel.getScientificObject())) {
-                objects.put(dataModel.getScientificObject(), null);
+            if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
+                objects.put(dataModel.getTarget(), null);
             }
             if (!variables.containsKey(dataModel.getVariable())) {
                 variables.put(dataModel.getVariable(), null);
@@ -951,8 +951,8 @@ public class DataDAO {
                         }            
                     
                         ScientificObjectModel os = null;
-                        if(dataGetDTO.getScientificObject() != null){
-                           os = objects.get(dataGetDTO.getScientificObject());
+                        if(dataGetDTO.getTarget() != null){
+                           os = objects.get(dataGetDTO.getTarget());
                         }
                         // object
                         if(os != null){

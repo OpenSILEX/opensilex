@@ -31,7 +31,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author sammy
  */
-@JsonPropertyOrder({"uri", "date","timezone", "scientific_object", "variable", "value", "confidence", "provenance",  "metadata"})
+@JsonPropertyOrder({"uri", "date","timezone", "target", "variable", "value", "confidence", "provenance",  "metadata"})
 public class DataCreationDTO {
     
     public static final String[] NA_VALUES = {"na", "n/a", "NA", "N/A"};
@@ -45,9 +45,8 @@ public class DataCreationDTO {
     @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
     private String date;
     
-    @JsonProperty("scientific_object")
-    @ApiModelProperty(value = "scientific objects URI on which the data have been collected", example = "http://plot01")
-    private URI scientificObject;
+    @ApiModelProperty(value = "target URI on which the data have been collected (e.g. a scientific object)", example = "http://plot01")
+    private URI target;
     
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
     protected String timezone;
@@ -84,12 +83,12 @@ public class DataCreationDTO {
         this.uri = uri;
     }
 
-    public URI getScientificObject() {
-        return scientificObject;
+    public URI getTarget() {
+        return target;
     }
 
-    public void setScientificObject(URI scientificObject) {
-        this.scientificObject = scientificObject;
+    public void setTarget(URI target) {
+        this.target = target;
     }
 
     public URI getVariable() {
@@ -160,7 +159,7 @@ public class DataCreationDTO {
         DataModel model = new DataModel();
 
         model.setUri(getUri());        
-        model.setScientificObject(getScientificObject());
+        model.setTarget(getTarget());
         model.setVariable(getVariable());
         model.setProvenance(getProvenance());       
         

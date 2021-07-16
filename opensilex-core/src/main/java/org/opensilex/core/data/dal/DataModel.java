@@ -11,8 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -24,7 +22,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
  */
 public class DataModel extends MongoModel {
 
-    private URI scientificObject;
+    private URI target;
     
     private URI variable;
     
@@ -44,12 +42,12 @@ public class DataModel extends MongoModel {
 
     private Document metadata;  
 
-    public URI getScientificObject() {
-        return scientificObject;
+    public URI getTarget() {
+        return target;
     }
 
-    public void setScientificObject(URI scientificObject) {
-        this.scientificObject = scientificObject;
+    public void setTarget(URI target) {
+        this.target = target;
     }
 
     public URI getVariable() {
@@ -134,8 +132,8 @@ public class DataModel extends MongoModel {
         }
         
         String objectsString = "";
-        if (getScientificObject() != null) {
-            objectsString = getScientificObject().toString();
+        if (getTarget() != null) {
+            objectsString = getTarget().toString();
         }
         
         String md5Hash = DigestUtils.md5Hex(getVariable().toString() + objectsString + provenanceString);

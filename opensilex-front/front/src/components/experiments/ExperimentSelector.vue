@@ -55,44 +55,6 @@ export default class ExperimentSelector extends Vue {
 
   loadExperiments(experiments) {
 
-    if (!experiments){
-        return undefined;
-    }
-
-    if(! Array.isArray(experiments)){
-        experiments = [experiments];
-    }else if(experiments.length == 0){
-        return undefined;
-    }
-
-    let dtosToReturn = [];
-
-    if (this.experimentsByUriCache.size == 0) {
-      experiments.forEach(exp => {
-        // if the experiment is an object (and not an uri) with an already filled name and uri, then no need to call service
-        if (exp.name && exp.name.length > 0 && exp.uri && exp.uri.length > 0) {
-            dtosToReturn.push(exp);
-        }
-      })
-
-      // if all element to load are objects then just return them
-      if (dtosToReturn.length == experiments.length) {
-          return dtosToReturn;
-      }
-
-    } else {
-
-      // if object have already been loaded, then it's not needed to call the GET{uri} service just for retrieve the object name
-      // since the name is returned by the SEARCH service and the result is cached into dtoByUriCache
-
-      experiments.forEach(exp => {
-          let loadedDto = this.experimentsByUriCache.get(exp);
-          dtosToReturn.push(loadedDto);
-      });
-
-      return dtosToReturn;
-    }
-
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .getExperimentsByURIs(experiments)

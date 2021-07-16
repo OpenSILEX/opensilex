@@ -307,6 +307,7 @@ export default class DataFilesView extends Vue {
   }
 
   refresh() {
+    this.updateURLFilters();
     this.tableRef.refresh();
   }
 

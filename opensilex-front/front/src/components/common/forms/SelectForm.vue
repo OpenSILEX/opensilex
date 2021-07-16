@@ -145,6 +145,7 @@
         @onValidate="updateValues"
         @shown="showModalSearch"
         @close='$emit("close")'
+        @clear='$emit("clear")'
       ></component>
     </template>
   </opensilex-FormField>

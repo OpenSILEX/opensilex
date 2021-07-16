@@ -436,6 +436,8 @@ import ScientificObjectSelector from './scientificObjects/ScientificObjectSelect
 components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
+import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
+components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
 import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
 components["opensilex-ScientificObjectView"] = ScientificObjectView;
 
@@ -536,6 +538,8 @@ import ProvenanceList from './data/ProvenanceList.vue';
 components["opensilex-ProvenanceList"] = ProvenanceList;
 import AgentTypeSelector from './data/AgentTypeSelector.vue';
 components["opensilex-AgentTypeSelector"] = AgentTypeSelector;
+import DataList from './data/DataList.vue';
+components["opensilex-DataList"] = DataList;
 
 // PHIS
 //IMAGES

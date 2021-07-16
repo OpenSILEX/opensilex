@@ -21,7 +21,7 @@
     <div class="card">
       <opensilex-SearchFilterField
         @search="refresh()"
-        @clear="reset()"
+        @clear="$emit('clear')"
         label="ScientificObjectList.filter.label"
         :showAdvancedSearch="true"
       >
@@ -34,14 +34,6 @@
             :filter.sync="filter.name"
             placeholder="ScientificObjectList.name-placeholder"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
-        <!-- Experiments -->
-        <opensilex-FilterField>
-          <opensilex-ExperimentSelector
-            label="GermplasmList.filter.experiment"
-            :multiple="false"
-            :experiments.sync="filter.experiment"
-          ></opensilex-ExperimentSelector>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
@@ -110,7 +102,7 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import ScientificObjectList from "./ScientificObjectList.vue";
 
 @Component
-export default class ScientificObjectModalList extends ScientificObjectList {
+export default class ScientificObjectModalListByExp extends ScientificObjectList {
 
   @Ref("soList") readonly soList!: any;
 
@@ -135,6 +127,7 @@ export default class ScientificObjectModalList extends ScientificObjectList {
   refresh() {
     this.soList.refresh();
   }
+
 }
 </script>
 

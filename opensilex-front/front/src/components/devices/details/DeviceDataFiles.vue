@@ -5,7 +5,6 @@
           <opensilex-SearchFilterField
             ref="searchField"
             :withButton="true"
-            :showTitle="true"
             @search="refresh()"
             @clear="clear()"
             :showAdvancedSearch="false"
@@ -113,77 +112,13 @@
             
           </opensilex-SearchFilterField>
 
-          <opensilex-TableAsyncView
-            ref="dataRef"
-            :searchMethod="searchData"
-            :fields="fields"
-          >
-            <!-- <template v-slot:export>
-              <b-button class="mb-2 mr-2" @click="exportData('long')">{{
-                $t("ExperimentData.export-long")
-              }}</b-button>
-              <b-button class="mb-2 mr-2" @click="exportData('wide')">{{
-                $t("ExperimentData.export-wide")
-              }}</b-button>
-            </template> -->
-            <template v-slot:cell(scientific_objects)="{ data }">
-                <opensilex-UriLink v-for="scientific_object in data.item.scientific_objects" :key="scientific_object"
-                  :uri="scientific_object"
-                  :value="objects[scientific_object]"
-                  :to="{
-                    path:
-                      '/scientific-objects/details/' +
-                      encodeURIComponent(scientific_object),
-                  }"
-                ></opensilex-UriLink>
-            </template>
-
-            <template v-slot:cell(provenance)="{ data }">
-              <opensilex-UriLink
-                :uri="data.item.provenance.uri"
-                :value="provenances[data.item.provenance.uri]"
-                :noExternalLink="true"
-                @click="showProvenanceDetailsModal(data.item)"
-              ></opensilex-UriLink>
-            </template>
-          
-            <template v-slot:cell(type)="{ data }">
-              <div>{{ rdf_types[data.item.rdf_type] }}</div>
-            </template>
-
-          <template v-slot:cell(actions)="{data}">
-            <b-button-group size="sm">
-              <opensilex-Button
-                :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-                component="opensilex-DocumentDetails"
-                @click="showImage(data.item)"
-                label="ScientificObjectDataFiles.displayImage"
-                :small="true"
-                icon= "fa#image"
-                variant="outline-info"
-              ></opensilex-Button>
-              <opensilex-DetailButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-                @click="showDataProvenanceDetailsModal(data.item)"
-                label="DataFilesView.details"
-                :small="true"
-            ></opensilex-DetailButton>
-            </b-button-group>
-          </template>
-
-          </opensilex-TableAsyncView>
-          <opensilex-DataProvenanceModalView 
-            ref="dataProvenanceModalView"
-            :datafile="true"          
-          ></opensilex-DataProvenanceModalView>
+          <opensilex-DataFilesList 
+          ref="datafilesList"
+          :filter="filter"
+          :device="uri">
+        </opensilex-DataFilesList>
       </div>
     </div>
-
-    <opensilex-ImageModal      
-      ref="imageModal"
-      :fileUrl.sync="imageUrl"
-    ></opensilex-ImageModal>
-
   </div>
 </template>
 
@@ -227,16 +162,12 @@ export default class DeviceDataFiles extends Vue {
       creationDate: undefined,
     };
 
-  imageUrl = null;
-
   @Prop()
   uri;
 
-  @Ref("dataRef") readonly dataRef!: any;
-  @Ref("imageModal") readonly imageModal!: any;
+  @Ref("datafilesList") readonly datafilesList!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
   @Ref("soSelector") readonly soSelector!: any;
 
   created() {
@@ -326,136 +257,14 @@ export default class DeviceDataFiles extends Vue {
         this.selectedProvenance = prov;
       });
     }
-  }
-
-  fields = [
-    {
-      key: "date",
-      label: "ExperimentData.date",
-      sortable: true
-    },
-    {
-      key: "type",
-      label: "ScientificObjectDataFiles.rdfType",
-      sortable: false
-    },
-    {
-      key: "provenance",
-      label: "ExperimentData.provenance",
-      sortable: false
-    },
-    {
-      key: "scientific_objects",
-      label: "DeviceDataFiles.objects",
-      sortable: false
-    },
-    {
-      key: "actions",
-      label: "component.common.actions"
-    }
-  ];
-
-  objects = {};
-  provenances = {};
-  images_rdf_types = [];
-  rdf_types = {};
-
-  searchData(options) {
-    let provUris = undefined;
-    if (this.filter.provenance != null) {
-      provUris = [this.filter.provenance];
-    }
-
-    let start_date = this.$opensilex.prepareGetParameter(
-      this.filter.start_date
-    );
-    let end_date = this.$opensilex.prepareGetParameter(this.filter.end_date);
-
-    return new Promise((resolve, reject) => {
-      this.$opensilex
-        .getService("opensilex.DevicesService")
-        .searchDeviceDatafiles(
-          this.uri,
-          this.filter.rdf_type, //rdf_type
-          start_date, // start_date
-          end_date, // end_date
-          undefined, // timezone,
-          this.filter.experiments, //experiments
-          this.filter.scientificObjects, // objectUris
-          provUris, // provenance_uri
-          undefined, // metadata
-          options.orderBy, // order_by
-          options.currentPage,
-          options.pageSize,
-        )
-        .then((http) => {
-          let objectToLoad = [];
-          let provenancesToLoad = [];
-          if (http.response.result.length > 0) {
-            for (let i in http.response.result) {
-              let provenanceURI = http.response.result[i].provenance.uri;
-              if (!provenancesToLoad.includes(provenanceURI)) {
-                provenancesToLoad.push(provenanceURI);
-              }
-
-              let objectsURIs = http.response.result[i].scientific_objets;
-              for (let k in objectsURIs) {
-                if (!objectsURIs[i] &&  !objectToLoad.includes(objectsURIs[i])) {
-                  objectToLoad.push(objectsURIs[i]);
-                }
-              }
-            }           
-
-            if (provenancesToLoad.length > 0) {
-              this.$opensilex
-                .getService("opensilex.DataService")
-                .getProvenancesByURIs(provenancesToLoad)
-                .then((httpObj) => {
-                  for (let j in httpObj.response.result) {
-                    let prov = httpObj.response.result[j];
-                    this.provenances[prov.uri] = prov.name;
-                  }
-                  resolve(http);
-                })
-                .catch(reject);
-            }
-
-            if (objectToLoad.length > 0) {
-              this.$opensilex
-                .getService("opensilex.ScientificObjectsService")
-                .getScientificObjectsListByUris(this.uri, objectToLoad)
-                .then((httpObj) => {
-                  for (let j in httpObj.response.result) {
-                    let obj = httpObj.response.result[j];
-                    this.objects[obj.uri] =
-                      obj.name + " (" + obj.rdf_type_name + ")";
-                  }
-                  resolve(http);
-                })
-                .catch(reject);
-            }
-
-          } else {
-            resolve(http);
-          }
-        })
-        .catch(reject);
-    });
-  }
+  }  
 
   refresh() {
-    this.dataRef.refresh();
+    this.datafilesList.refresh();
   }
 
-  showImage(item: any) {
-    let path = "/core/datafiles/" + encodeURIComponent(item.uri) + "/thumbnail?scaled_width=600&scaled_height=600";
-      let promise = this.$opensilex.viewImageFromGetService(path);
-      promise.then((result) => {
-        this.imageUrl = result;
-        this.imageModal.show();
-      })    
-  }
-
+  images_rdf_types = [];
+  rdf_types = {};
   loadTypes() {
     this.$opensilex.getService("opensilex.OntologyService")
     .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
@@ -485,19 +294,6 @@ export default class DeviceDataFiles extends Vue {
       }
     })
     .catch(this.$opensilex.errorHandler);
-  }
-
-  showProvenanceDetailsModal(item) {
-    this.$opensilex.enableLoader();
-    this.getProvenance(item.provenance.uri)
-    .then(result => {
-      let value = {
-        provenance: result,
-        data: item
-      }
-      this.dataProvenanceModalView.setProvenance(value);
-      this.dataProvenanceModalView.show();
-    });    
   }
 
   soGetDTOToSelectNode(dto) {

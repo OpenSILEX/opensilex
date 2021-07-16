@@ -144,7 +144,6 @@ export default class DataView extends Vue {
   disabled = false;
 
   visibleDetails: boolean = false;
-  usedVariables: any[] = [];
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
 
@@ -162,7 +161,6 @@ export default class DataView extends Vue {
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
-  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
   @Ref("soSelector") readonly soSelector!: any;
 
   filter = {
@@ -225,40 +223,6 @@ export default class DataView extends Vue {
     }    
   }
 
-  get fields() {
-    let tableFields: any = [
-      {
-        key: "scientific_object",
-        label: "ExperimentData.object",
-      },
-      {
-        key: "date",
-        label: "DataView.list.date",
-        sortable: true,
-      },
-      {
-        key: "variable",
-        label: "DataView.list.variable",
-        sortable: true,
-      },
-      {
-        key: "value",
-        label: "DataView.list.value",
-        sortable: false,
-      },
-      {
-        key: "provenance",
-        label: "DataView.list.provenance",
-        sortable: false
-      },
-      {
-        key: "actions",
-        label: "component.common.actions"
-      }
-    ];
-    return tableFields;
-  }
-
   refresh() {
     this.updateURLFilters();
     this.dataList.refresh();
@@ -301,19 +265,6 @@ export default class DataView extends Vue {
         this.selectedProvenance = prov;
       });
     }
-  }
-
-  showDataProvenanceDetailsModal(item) {
-    this.$opensilex.enableLoader();
-    this.getProvenance(item.provenance.uri)
-    .then(result => {
-      let value = {
-        provenance: result,
-        data: item
-      }
-      this.dataProvenanceModalView.setProvenance(value);
-      this.dataProvenanceModalView.show();
-    });    
   }
 
   afterCreateData(results) {

@@ -11,7 +11,6 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.result.DeleteResult;
-import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.Api;
@@ -22,7 +21,6 @@ import io.swagger.annotations.ApiResponses;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -55,6 +53,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -84,14 +83,11 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
-import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
-import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -275,7 +271,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -354,7 +350,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
-            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by target uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -509,7 +505,7 @@ public class DataAPI {
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteDataOnSearch(
             @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
-            @ApiParam(value = "Search by object uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_object") URI objectUri,
+            @ApiParam(value = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
@@ -595,11 +591,11 @@ public class DataAPI {
             }            
             
             //check objects uri
-            if (data.getScientificObject() != null) {
-                if (!objectURIs.contains(data.getScientificObject())) {
-                    objectURIs.add(data.getScientificObject());
-                    if (!sparql.uriExists(ScientificObjectModel.class, data.getScientificObject())) {
-                        notFoundedObjectURIs.add(data.getScientificObject());
+            if (data.getTarget() != null) {
+                if (!objectURIs.contains(data.getTarget())) {
+                    objectURIs.add(data.getTarget());
+                    if (!sparql.uriExists((Node) null, data.getTarget())) {
+                        notFoundedObjectURIs.add(data.getTarget());
                     }
                 }         
             }
@@ -631,7 +627,7 @@ public class DataAPI {
             throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
         }
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris: ", new ArrayList<>(notFoundedObjectURIs));
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
@@ -1250,7 +1246,7 @@ public class DataAPI {
                         dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
                         
                         if (object != null) {
-                            dataModel.setScientificObject(object.getUri());
+                            dataModel.setTarget(object.getUri());
                         }                        
                         dataModel.setProvenance(provenanceModel);
                         URI varURI = URI.create(headerByIndex.get(colIndex));

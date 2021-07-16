@@ -996,41 +996,32 @@ public class ExperimentAPI {
                     break;
                 }
             } else {
-                if (headerByIndex.containsKey(colIndex)) {
-                    
-                    // If value is not blank and null
-                    if (!StringUtils.isEmpty(values[colIndex])) {
+                // If value is not blank and null
+                if (!StringUtils.isEmpty(values[colIndex])) {
 
-                        DataModel dataModel = new DataModel();
-                        DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                        provenanceModel.setUri(provenance.getUri());
-                        List<URI> experiments = new ArrayList<>();
-                        experiments.add(experimentURI);
-                        provenanceModel.setExperiments(experiments);
-                        dataModel.setDate(parsedDateTimeMongo.getInstant());
-                        dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                        dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-                        dataModel.setScientificObject(object.getUri());
-                        dataModel.setProvenance(provenanceModel);                        
-                        
-                        URI varURI = URI.create(headerByIndex.get(colIndex));
-                        dataModel.setVariable(varURI);
-                        dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                        if (colIndex+1<values.length) {
-                            if (!headerByIndex.containsKey(colIndex+1) && values[colIndex+1] != null) {
-                                dataModel.setRawData(returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
-                            }
-                        }                        
-                        csvValidation.addData(dataModel, rowIndex);
-                        // check for duplicate data
-                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri());
-                        if (!duplicateDataByIndex.contains(importDataIndex)) {
-                            duplicateDataByIndex.add(importDataIndex);
-                        } else {
-                            String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                            CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                            csvValidation.addDuplicatedDataError(duplicateCell);
-                        }
+                    DataModel dataModel = new DataModel();
+                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                    provenanceModel.setUri(provenance.getUri());
+                    List<URI> experiments = new ArrayList<>();
+                    experiments.add(experimentURI);
+                    provenanceModel.setExperiments(experiments);
+                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+                    dataModel.setTarget(object.getUri());
+                    dataModel.setProvenance(provenanceModel);
+                    URI varURI = URI.create(headerByIndex.get(colIndex));
+                    dataModel.setVariable(varURI);
+                    dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                    csvValidation.addData(dataModel, rowIndex);
+                    // check for duplicate data
+                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri());
+                    if (!duplicateDataByIndex.contains(importDataIndex)) {
+                        duplicateDataByIndex.add(importDataIndex);
+                    } else {
+                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                        csvValidation.addDuplicatedDataError(duplicateCell);
                     }
                 }
             }

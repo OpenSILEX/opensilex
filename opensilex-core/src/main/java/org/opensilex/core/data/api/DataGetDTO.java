@@ -7,7 +7,6 @@
 package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.time.Instant;
@@ -56,7 +55,7 @@ public class DataGetDTO extends DataCreationDTO {
     
     public void fromModel(DataModel model) {
         setUri(model.getUri());
-        setScientificObject(model.getScientificObject());
+        setTarget(model.getTarget());
         setVariable(model.getVariable());      
         setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         setConfidence(model.getConfidence());

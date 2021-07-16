@@ -425,7 +425,11 @@ export default class EventList extends Vue {
     }
 
     editEvent(uri, type) {
-        this.modalForm.showEditForm(uri, type);
+        this.renderModalForm = true;
+        this.$nextTick(() => {
+             this.modalForm.showEditForm(uri, type);
+        });
+      
     }
 
     onImport(response) {

@@ -678,9 +678,9 @@ public class ExperimentAPI {
         Response prepareCSVExport = null;
 
         if (csvFormat.equals("long")) {
-            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, currentUser);
+            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, currentUser, xpUri);
         } else {
-            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, currentUser);
+            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, currentUser, xpUri);
         }
 
         Instant finish = Instant.now();

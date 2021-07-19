@@ -40,6 +40,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -57,6 +58,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -655,7 +657,7 @@ public class DataDAO {
 
         List<URI> variables = new ArrayList<>();
 
-        Map<URI, ScientificObjectModel> objects = new HashMap<>();
+        Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
         Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
         Map<URI, List<DataModel>> dataByExp = new HashMap<>();
@@ -707,7 +709,7 @@ public class DataDAO {
         // first static columns
 
         defaultColumns.add("Experiment");        
-        defaultColumns.add("Scientific Object");
+        defaultColumns.add("Target");
         defaultColumns.add("Date");
 
         List<String> methods = new ArrayList<>();
@@ -761,18 +763,19 @@ public class DataDAO {
         for (int i=0; i<experiments.size(); i++) {
            defaultColumns.add("Experiment URI"); 
         }
-        defaultColumns.add("Scientific Object URI");
+
+        defaultColumns.add("Target URI");
         defaultColumns.add("Provenance URI");
 
         Instant variableTime = Instant.now();
         LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
-        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(sparql.getDefaultGraphURI(ScientificObjectModel.class), new ArrayList<>(objects.keySet()), user);
-        for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
-            objects.put(scientificObjectModel.getUri(), scientificObjectModel);
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(new ArrayList<>(objects.keySet()), user.getLanguage(), null);
+        for (SPARQLNamedResourceModel obj : objectsList) {
+            objects.put(obj.getUri(), obj);
         }
-        Instant scientificObjectTime = Instant.now();
-        LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
+        Instant targetTime = Instant.now();
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
@@ -780,9 +783,8 @@ public class DataDAO {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(scientificObjectTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
 
-        ExperimentDAO expDAO = new ExperimentDAO(sparql);
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         for (ExperimentModel exp : listExp) {
@@ -811,7 +813,7 @@ public class DataDAO {
                 for (Map.Entry<ExportDataIndex, List<DataExportDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
                     List<DataExportDTO> val = provUriObjectEntry.getValue();             
 
-                    ArrayList<String> csvRow = new ArrayList<>();;
+                    ArrayList<String> csvRow = new ArrayList<>();
                     //first is used to have value with the same dates on the same line
                     boolean first = true;
 
@@ -834,14 +836,14 @@ public class DataDAO {
                                 csvRow.add("");
                             }                            
 
-                            // object
-                            ScientificObjectModel os = null;
+                            // target
+                            SPARQLNamedResourceModel target = null;
                             if(dataGetDTO.getTarget() != null){
-                               os = objects.get(dataGetDTO.getTarget());
+                               target = objects.get(dataGetDTO.getTarget());
                             }
 
-                            if(os != null){
-                                csvRow.add(os.getName());
+                            if(target != null){
+                                csvRow.add(target.getName());
                             }else{
                                 csvRow.add("");
                             }
@@ -871,9 +873,9 @@ public class DataDAO {
                                 csvRow.add("");
                             }
 
-                            // object URI
-                             if(os != null){
-                                csvRow.add(os.getUri().toString());
+                            // target URI
+                             if(target != null){
+                                csvRow.add(target.getUri().toString());
                             }else{
                                 csvRow.add("");
                             }
@@ -930,7 +932,7 @@ public class DataDAO {
         Instant data = Instant.now();
 
         Map<URI, VariableModel> variables = new HashMap<>();
-        Map<URI, ScientificObjectModel> objects = new HashMap<>();
+        Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
         Map<URI, ExperimentModel> experiments = new HashMap();
 
@@ -964,7 +966,7 @@ public class DataDAO {
         List<String> defaultColumns = new ArrayList<>();
 
         defaultColumns.add("Experiment"); 
-        defaultColumns.add("Scientific Object");
+        defaultColumns.add("Target");
         defaultColumns.add("Date");
         defaultColumns.add("Variable");
         defaultColumns.add("Method");
@@ -976,7 +978,7 @@ public class DataDAO {
         defaultColumns.add("Data Description");
         defaultColumns.add("");
         defaultColumns.add("Experiment URI"); 
-        defaultColumns.add("Scientific Object URI");
+        defaultColumns.add("Target URI");
         defaultColumns.add("Variable URI");
         defaultColumns.add("Data Description URI");
 
@@ -987,13 +989,13 @@ public class DataDAO {
             variables.put(variableModel.getUri(), variableModel);
         }
         LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
-        ScientificObjectDAO scientificObjectDao = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectModel> listScientificObjectDao = scientificObjectDao.searchByURIs(sparql.getDefaultGraphURI(ScientificObjectModel.class), new ArrayList<>(objects.keySet()), user);
-        for (ScientificObjectModel scientificObjectModel : listScientificObjectDao) {
-            objects.put(scientificObjectModel.getUri(), scientificObjectModel);
+        OntologyDAO ontologyDao = new OntologyDAO(sparql);
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(new ArrayList<>(objects.keySet()), user.getLanguage(), null);
+        for (SPARQLNamedResourceModel obj : objectsList) {
+            objects.put(obj.getUri(), obj);
         }
-        Instant scientificObjectTime = Instant.now();
-        LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
+        Instant targetTime = Instant.now();
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
@@ -1001,9 +1003,8 @@ public class DataDAO {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(scientificObjectTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
 
-        ExperimentDAO expDAO = new ExperimentDAO(sparql);
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         for (ExperimentModel exp : listExp) {
@@ -1013,7 +1014,7 @@ public class DataDAO {
         LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
 
         // See defaultColumns order
-        //        Object
+        //        Target
         //        Date
         //        Variable
         //        Method
@@ -1021,7 +1022,7 @@ public class DataDAO {
         //        Value
         //        Data Description
         //        
-        //        Object URI
+        //        Target URI
         //        Variable URI
         //        Data Description URI
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
@@ -1050,13 +1051,13 @@ public class DataDAO {
                             csvRow.add("");
                         }            
                     
-                        ScientificObjectModel os = null;
+                        SPARQLNamedResourceModel target = null;
                         if(dataGetDTO.getTarget() != null){
-                           os = objects.get(dataGetDTO.getTarget());
+                           target = objects.get(dataGetDTO.getTarget());
                         }
-                        // object
-                        if(os != null){
-                            csvRow.add(os.getName());
+                        // target name
+                        if(target != null){
+                            csvRow.add(target.getName());
                         }else{
                             csvRow.add("");
                         }
@@ -1104,9 +1105,9 @@ public class DataDAO {
                             csvRow.add("");
                         }
 
-                        // object uri
-                        if (os != null) {
-                            csvRow.add(os.getUri().toString());
+                        // target uri
+                        if (target != null) {
+                            csvRow.add(target.getUri().toString());
                         } else {
                             csvRow.add("");
                         }

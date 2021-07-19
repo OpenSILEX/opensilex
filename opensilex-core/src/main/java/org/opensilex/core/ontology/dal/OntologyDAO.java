@@ -29,12 +29,17 @@ import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.OpenSilex;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
@@ -46,6 +51,7 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLMultipleObjectException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -736,6 +742,54 @@ public final class OntologyDAO {
         }
 
         return name;
+    }
+    
+    public List<SPARQLNamedResourceModel> getURILabels(List<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+        SelectBuilder select = new SelectBuilder();
+        select.setDistinct(true);
+
+        String nameField = "name";
+        String namesField = "names";
+        Var nameVar = makeVar(nameField);
+        select.addVar("(GROUP_CONCAT(DISTINCT ?"+ nameField +";separator=\"|\"))", makeVar(namesField));
+        String uriField = "uri";
+        Var uriVar = makeVar(uriField);
+        select.addVar(uriVar);
+        String typeField = "type";
+        Var typeVar = makeVar(typeField);
+        select.addVar(typeVar);
+        String typeNameField = "typeName";
+        Var typeNameVar = makeVar(typeNameField);
+        select.addVar(typeNameVar);
+        
+        if (context != null) {
+            select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
+        } else {
+            select.addWhere(uriVar, RDFS.label, nameVar);
+        }   
+        select.addWhere(uriVar, RDF.type, typeVar);
+        select.addWhere(typeVar, RDFS.label, typeNameVar);
+        select.addGroupBy("?" + uriField + " ?" + typeField + " ?" + typeNameField);
+        Locale locale = Locale.forLanguageTag(language);
+        select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.langFilter(typeNameField, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.inURIFilter(uriField, uris));  
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
+        for (SPARQLResult result : results) {
+            SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+            model.setName(result.getStringValue(namesField));
+            model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
+            model.setType(uriDeserializer.fromString(result.getStringValue(typeField)));
+            SPARQLLabel typeLabel = new SPARQLLabel();
+            typeLabel.setDefaultLang(locale.getLanguage());
+            typeLabel.setDefaultValue(result.getStringValue(typeNameField));
+            model.setTypeLabel(typeLabel);
+            resultList.add(model);
+        };
+
+        return resultList;
     }
 
     private static final String CSV_URI_KEY = "uri";

@@ -8,7 +8,7 @@
             @click="editingMode = true"
         ></opensilex-CreateButton>
         <!-- map panel, controls -->
-        <b-button v-b-toggle.map-sidebar>{{ $t("MapView.configuration") }}</b-button>
+        <b-button v-b-toggle.map-sidebar>{{ $t("MapView.mapPanel") }}</b-button>
         <!--// map panel, controls -->
         <opensilex-Button icon="fa#crosshairs" label="MapView.center" @click="defineCenter"></opensilex-Button>
       </div>
@@ -186,15 +186,16 @@
 
     <b-sidebar id="map-sidebar" no-header class="sidebar-content">
       <template #default="{ hide }">
-        <div class="b-sidebar-header">
-          <strong id="map-sidebar___title__">{{ $t('MapView.configuration') }}</strong>
-          <button class="hamburger hamburger--collapse is-active" @click="hide">
-            <span class="hamburger-box">
-              <span class="hamburger-inner"></span>
-            </span>
-          </button>
+        <div class="b-sidebar-header header-brand hamburger-container" style="height: 60px">
+          <div class="d-flex">
+            <span id="map-sidebar___title__" class="text mr-auto p-3">{{ $t('MapView.mapPanelTitle').toUpperCase() }}</span>
+            <button class="hamburger hamburger--collapse is-active p-3" @click="hide">
+              <span class="hamburger-box">
+                <span class="hamburger-inner"></span>
+              </span>
+            </button>
+          </div>
         </div>
-        <br/>
         <b-tabs content-class="mt-3">
           <b-tab :title="$t('MapView.display')" active>
             <ul class="list-group">
@@ -413,6 +414,10 @@ export default class MapView extends Vue {
     return this.$store.state.credentials;
   }
 
+  get isMapHasLayer() {
+    return this.featuresOS.length > 0 || this.featuresArea.length > 0;
+  }
+
   displayScientificObjects() {
     if (this.displaySO == "false") {
       for (const feature of this.featuresOS) {
@@ -584,15 +589,19 @@ export default class MapView extends Vue {
       condition: platformModifierKeyOnly,
       onBoxEnd: () => {
         // features that intersect the box are selected
-        const extent = dragBox.getGeometry().getExtent();
-        (this.$refs.vectorSource as any).forEach(vector => {
-          const source = vector.$source;
-
-          source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
-            feature = olExt.writeGeoJsonFeature(feature);
-            this.selectedFeatures.push(feature);
-          });
-        });
+        if (this.isMapHasLayer) {
+          const extent = dragBox.getGeometry().getExtent();
+          if (this.$refs.vectorSource) {
+            (this.$refs.vectorSource as any).forEach(vector => {
+              const source = vector.$source;
+  
+              source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
+                feature = olExt.writeGeoJsonFeature(feature);
+                this.selectedFeatures.push(feature);
+              });
+            });
+          }
+        }
       }
     });
 
@@ -1057,7 +1066,8 @@ en:
     update: Update element
     display: Layers
     displayFilter: Filters ({count})
-    configuration: Configuration
+    mapPanel: Manage map panel
+    mapPanelTitle: Map Panel
     center: Refocus the map
     noFilter: No filter applied. To add one, use the form below the map
   Area:
@@ -1091,7 +1101,8 @@ fr:
     update: Mise à jour de l'élément
     display: Couches
     displayFilter: Filtres ({count})
-    configuration: Configuration
+    mapPanel: Gérer la carte
+    mapPanelTitle: Carte
     center: Recentrer la carte
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
   Area:

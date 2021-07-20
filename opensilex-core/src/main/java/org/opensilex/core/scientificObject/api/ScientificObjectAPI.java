@@ -68,6 +68,7 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +100,7 @@ import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectURIGenerator;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -1127,10 +1129,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
-        List<URI> objects = new ArrayList<>();
-        objects.add(uri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, objects);
-
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 

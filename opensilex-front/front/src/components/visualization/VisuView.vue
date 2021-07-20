@@ -355,6 +355,7 @@ export default class VisuView extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
         0,
         1000000
       )
@@ -436,6 +437,7 @@ export default class VisuView extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
         0,
         5000
       )
@@ -492,6 +494,7 @@ export default class VisuView extends Vue {
         null,
         undefined,
         point.concernedItem,
+        undefined,
         undefined,
         undefined,
         undefined,

@@ -50,6 +50,8 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
+import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
 import org.opensilex.core.data.dal.DataDAO;
 import static org.opensilex.core.data.dal.DataDAO.FS_FILE_PREFIX;
 import org.opensilex.core.data.dal.DataFileModel;
@@ -61,7 +63,9 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -400,6 +404,7 @@ public class DataFilesAPI {
      * @param timezone
      * @param experiments
      * @param page
+     * @param devices
      * @param rdfType
      * @param metadata
      * @param orderByList
@@ -422,6 +427,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
             @ApiParam(value = "Search by object uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by devices uris", example = "http://example.com/") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -474,6 +480,7 @@ public class DataFilesAPI {
                 experiments,
                 objects,
                 provenances,
+                devices,
                 startInstant,
                 endInstant,
                 metadataFilter,
@@ -556,5 +563,34 @@ public class DataFilesAPI {
         if (!notFoundedFileTypes.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong rdf_types: ", new ArrayList<>(notFoundedFileTypes));
         }
+    }
+ 
+    @GET
+    @Path("provenances")
+    @ApiOperation("Get provenances linked to datafiles")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getDatafilesProvenances(
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = "http://example.com/") @QueryParam("devices") List<URI> devices            
+    ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, objects, variables, devices);
+
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
+        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
+        
+        resultList.forEach(result -> {
+            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+        });
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 }

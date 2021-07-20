@@ -464,6 +464,8 @@ import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
+import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
+components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -510,6 +512,8 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
+import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
+components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import ResultModalView from './data/ResultModalView.vue';

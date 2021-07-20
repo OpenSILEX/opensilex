@@ -101,6 +101,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -118,6 +119,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -433,122 +435,6 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
-    @GET
-    @Path("{uri}/variables")
-    @ApiOperation("Get variables involved in an experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
-    })
-    public Response getUsedVariables(
-            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
-    ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-        xpDAO.validateExperimentAccess(xpUri, currentUser);
-
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        List<URI> experiments = new ArrayList<>();
-        experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects);
-
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
-
-    }
-
-    @GET
-    @Path("{uri}/data")
-    @ApiOperation("Search data")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
-    })
-    public Response searchExperimentDataList(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
-            @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
-            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
-            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
-            @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-    ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        //convert dates
-        Instant startInstant = null;
-        Instant endInstant = null;
-
-        if (startDate != null) {
-            try {
-                startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
-
-        if (endDate != null) {
-            try {
-                endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
-            } catch (UnableToParseDateException e) {
-                return new ErrorResponse(e).getResponse();
-            } catch (ZoneRulesException e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
-                        .getResponse();
-            }
-        }
-
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();
-            }
-        }
-
-        // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
-
-        xpDAO.validateExperimentAccess(xpUri, currentUser);
-
-        List<URI> experiments = new ArrayList<>();
-        experiments.add(xpUri);
-
-        ListWithPagination<DataModel> resultList = dao.search(
-                currentUser,
-                experiments,
-                objects,
-                variables,
-                provenances,
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                orderByList,
-                page,
-                pageSize
-        );
-
-        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
-
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
-    }
-
     /**
      *
      * @param xpUri experimentUri
@@ -671,7 +557,7 @@ public class ExperimentAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, null, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 

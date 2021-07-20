@@ -4,8 +4,7 @@
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
-    :searchMethod="searchProvenances"
-    :itemLoadingMethod="loadProvenances"
+    :optionsLoadingMethod="loadProvenances"
     :conversionMethod="provenancesToSelectNode"
     :placeholder="
       multiple
@@ -58,6 +57,9 @@ export default class DatafileProvenanceSelector extends Vue {
   label;
 
   @Prop()
+  experiment;
+
+  @Prop()
   scientificObject
 
   @Prop()
@@ -101,33 +103,28 @@ export default class DatafileProvenanceSelector extends Vue {
     this.$emit("deselect", value);
   }
 
-  loadProvenances(provenancesURI) {
+  loadProvenances() {
+    let experiments = null;    
+    if (this.experiment != null) {
+      experiments = [this.experiment]
+    }
+
+    let objects = null;
+    if (this.scientificObject != null) {
+      objects = [this.scientificObject]
+    }
+
+    let devices = null;
+    if (this.device != null) {
+      devices = [this.device]
+    }
+
     return this.$opensilex
       .getService("opensilex.DataService")
-      .getProvenancesByURIs(provenancesURI)
-      .then(
-      (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-        http.response.result
-    );
-  }
-
-  searchProvenances(label, page, pageSize) {
-    this.filterLabel = label;
-
-    if (this.filterLabel === ".*") {
-      this.filterLabel = undefined;
-    }
-    if (this.scientificObject) {
-      return this.$opensilex
-        .getService("opensilex.ScientificObjectsService")
-        .getScientificObjectDataFilesProvenances(this.scientificObject, this.filterLabel)
-        
-    } else if (this.device) {
-      return this.$opensilex
-      .getService("opensilex.DevicesService")
-      .getDeviceDataFilesProvenances(this.device, this.filterLabel)
-      
-    }
+      .getDatafilesProvenances(experiments, objects, null, devices)
+      .then(http => {
+        return http.response.result;
+      });
   }
 
 }

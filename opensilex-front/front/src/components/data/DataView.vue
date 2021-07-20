@@ -14,6 +14,102 @@
         ></opensilex-CreateButton>
       </template>
     </opensilex-PageActions> -->
+
+    <opensilex-SearchFilterField
+      @search="refresh()"
+      @clear="reset()"
+      label="DataView.filter.label"
+      :showTitle="false"
+    >
+      <template v-slot:filters>
+
+          <!-- Variables -->
+          <opensilex-FilterField>
+            <opensilex-UsedVariableSelector
+            label="DataView.filter.variables"
+            :multiple="true"
+            :variables.sync="filter.variables"
+            ></opensilex-UsedVariableSelector>
+          </opensilex-FilterField>
+        
+          <!-- Experiments -->
+          <opensilex-FilterField>
+            <opensilex-ExperimentSelector
+              label="DataView.filter.experiments"
+              :experiments.sync="filter.experiments"
+              :multiple="true"
+              @select="updateSOFilter"
+              @clear="updateSOFilter"
+            ></opensilex-ExperimentSelector>
+          </opensilex-FilterField> 
+        
+          <!-- Scientific objects -->
+          <opensilex-FilterField halfWidth="true">
+            <opensilex-SelectForm
+              ref="soSelector"
+              label="DataView.filter.scientificObjects"
+              placeholder="DataView.filter.scientificObjects-placeholder"
+              :selected.sync="filter.scientificObjects"
+              :conversionMethod="soGetDTOToSelectNode"
+              modalComponent="opensilex-ScientificObjectModalList"
+              :itemLoadingMethod="loadSO"
+              :filter.sync="soFilter"
+              :isModalSearch="true"
+              :clearable="true"
+              :multiple="true"
+              @clear="refreshSoSelector"
+            ></opensilex-SelectForm>
+          </opensilex-FilterField>
+
+          <opensilex-FilterField>
+            <!-- Start Date -->
+            <opensilex-DateTimeForm
+                :value.sync="filter.start_date"
+                label="component.common.begin"
+                name="startDate"
+                :max-date="filter.end_date ? filter.end_date : undefined"                
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
+
+          <opensilex-FilterField>
+            <!-- End Date -->
+            <opensilex-DateTimeForm
+                :value.sync="filter.end_date"
+                label="component.common.end"
+                name="endDate"
+                :min-date="filter.start_date ? filter.start_date : undefined"
+            ></opensilex-DateTimeForm>
+          </opensilex-FilterField>
+
+          <!-- Provenance -->
+          <opensilex-FilterField halfWidth="true">
+            <opensilex-UsedProvenanceSelector
+              ref="provSelector"
+              :provenances.sync="filter.provenance"
+              :filterLabel="filterProvenanceLabel"
+              label="ExperimentData.provenance"
+              @select="loadProvenance"
+              @clear="filterLabel = null"
+              :multiple="false"
+              :viewHandler="showProvenanceDetails"
+              :viewHandlerDetailsVisible="visibleDetails"
+              :showURI="false"
+            ></opensilex-UsedProvenanceSelector>
+
+            <b-collapse
+              v-if="selectedProvenance"
+              id="collapse-4"
+              v-model="visibleDetails"
+              class="mt-2"
+            >
+              <opensilex-ProvenanceDetails
+                :provenance="getSelectedProv"
+              ></opensilex-ProvenanceDetails>
+            </b-collapse>
+          </opensilex-FilterField>
+      </template>
+    </opensilex-SearchFilterField>
+
     <opensilex-PageContent>
       <template v-slot>
 

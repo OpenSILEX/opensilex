@@ -149,7 +149,8 @@ export default class DeviceDataFiles extends Vue {
     rdf_type: undefined,
     provenance: undefined,
     experiments: [],
-    scientificObjects: []
+    scientificObjects: [],
+    devices: []
   };
 
   soFilter = {
@@ -206,7 +207,8 @@ export default class DeviceDataFiles extends Vue {
       rdf_type: null,
       provenance: null,
       experiments: [],
-      scientificObjects: []
+      scientificObjects: [],
+      devices: [this.uri]
     };    
   }
 

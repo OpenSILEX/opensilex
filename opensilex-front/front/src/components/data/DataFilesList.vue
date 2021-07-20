@@ -213,43 +213,20 @@ export default class DataFilesList extends Vue {
     }
 
     return new Promise((resolve, reject) => {
-
-      let promise;
-      if (this.device != null) {
-        promise = this.$opensilex.getService("opensilex.DevicesService")
-        .searchDeviceDatafiles(
-          this.device,
-          this.$opensilex.prepareGetParameter(this.filter.rdf_type), //rdf_type
-          this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
-          this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
-          undefined, // timezone,
-          this.filter.experiments, //experiments
-          this.filter.scientificObjects, // objectUris
-          provUris, // provenance_uri
-          undefined, // metadata
-          options.orderBy, // order_by
-          options.currentPage,
-          options.pageSize,
-        )
-
-      } else {
-
-        promise = this.service.getDataFileDescriptionsBySearch(
+        this.service.getDataFileDescriptionsBySearch(
           this.$opensilex.prepareGetParameter(this.filter.rdf_type),
           this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
           this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
           undefined, // timezone,
           this.filter.experiments, // experiments
           this.filter.scientificObjects, // scientific_object
-          provUris, // provenance
+          provUris, // provenances
+          this.filter.devices, //devices
           undefined, // metadata
           undefined, // order_by
           options.currentPage,
           options.pageSize
-        )
-      }
-
-      promise.then((http) => {
+        ).then((http) => {
         let promiseArray = [];
         let objectsToLoad = [];
         let provenancesToLoad = [];

@@ -11,6 +11,7 @@ import com.mongodb.client.model.Indexes;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -157,12 +158,5 @@ public class ProvenanceDAO {
         Set uris = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return uris;
     }
-    
-    public ListWithPagination<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String label, List<OrderBy> orderByList, int page, int pageSize, String collectionName) throws Exception {
-        DataDAO dataDAO = new DataDAO(nosql, null, null);
-        Document filter = dataDAO.searchByDeviceFilter(uri, user, null, null, null, null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        
-        return search(provenancesURIs, label, collectionName, uri, uri, uri, uri, orderByList, Integer.SIZE, Integer.SIZE);
-    }
+
 }

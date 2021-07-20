@@ -697,13 +697,13 @@ public class DeviceAPI {
             }
         }
 
-        int count = dao.countByDevice(
-                uri,
+        int count = dao.count(
                 currentUser,
                 experiments,
                 null,
                 variables,
                 provenances,
+                Arrays.asList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -793,7 +793,7 @@ public class DeviceAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables measured by the device")
@@ -810,52 +810,6 @@ public class DeviceAPI {
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
-    }
-
-    @GET
-    @Path("{uri}/data/provenances")
-    @ApiOperation("Get provenances of data that have been measured on this device")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
-    })
-    public Response getDeviceDataProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-        ) throws Exception {
-        
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
-        ListWithPagination<ProvenanceModel> provenances = dao.getProvenancesByDevice(currentUser, uri, name, orderByList, page, pageSize, DataDAO.FILE_COLLECTION_NAME);
-        ListWithPagination<ProvenanceGetDTO> resultDTOList = provenances.convert(ProvenanceGetDTO.class, ProvenanceGetDTO::fromModel);
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
-    }
-    
-    @GET
-    @Path("{uri}/datafiles/provenances")
-    @ApiOperation("Get provenances of datafiles linked to this device")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
-    })
-    public Response getDeviceDataFilesProvenances(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-        ) throws Exception {
-        
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
-        ListWithPagination<ProvenanceModel> provenances = dao.getProvenancesByDevice(currentUser, uri, name, orderByList, page, pageSize, DataDAO.FILE_COLLECTION_NAME);
-        ListWithPagination<ProvenanceGetDTO> resultDTOList = provenances.convert(ProvenanceGetDTO.class, ProvenanceGetDTO::fromModel);
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
 }

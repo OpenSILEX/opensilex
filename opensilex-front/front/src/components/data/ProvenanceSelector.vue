@@ -107,39 +107,14 @@ export default class ProvenanceSelector extends Vue {
     if (this.filterLabel === ".*") {
       this.filterLabel = undefined;
     }
-    if (this.experiment == null && this.scientificObject == null && this.device== null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .searchProvenance(this.filterLabel)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http
-        );
-    } else if (this.scientificObject) {
-      return this.$opensilex
-        .getService("opensilex.ScientificObjectsService")
-        .getScientificObjectDataProvenances(this.scientificObject)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http
-        );
-    } else if (this.device) {
-      return this.$opensilex
-        .getService("opensilex.DevicesService")
-        .getDeviceDataProvenances(this.device)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http
-        );
-    } else {
-      return this.$opensilex
-        .getService("opensilex.ExperimentsService")
-        .searchExperimentProvenances(this.experiment, this.filterLabel)
-        .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-            http
-        );
-    }
+    
+    return this.$opensilex
+      .getService("opensilex.DataService")
+      .searchProvenance(this.filterLabel)
+      .then(
+        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
+          http
+      );
   }
 
   getAllProvenances(label) {}

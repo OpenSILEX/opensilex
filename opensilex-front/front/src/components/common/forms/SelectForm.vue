@@ -142,6 +142,7 @@
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
+        :noUpdateURL="true"
         @onValidate="updateValues"
         @shown="showModalSearch"
         @close='$emit("close")'

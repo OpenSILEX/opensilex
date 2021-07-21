@@ -20,11 +20,12 @@
             <template v-slot:filters>
               <!-- Variables -->
               <opensilex-FilterField halfWidth="true">
-                <opensilex-VariableSelector
+                <opensilex-UsedVariableSelector
                 label="DataView.filter.variables"
                 :multiple="true"
                 :variables.sync="filter.variables"
-                ></opensilex-VariableSelector>
+                :experiment="uri"
+                ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
             
               <!-- Scientific objects -->
@@ -67,18 +68,16 @@
 
               <!-- Provenance -->
               <opensilex-FilterField halfWidth="true">
-                <opensilex-ProvenanceSelector
+                <opensilex-UsedProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
-                  :filterLabel="filterProvenanceLabel"
                   label="ExperimentData.provenance"
                   @select="loadProvenance"
-                  @clear="filterLabel = null"
                   :multiple="false"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
-                ></opensilex-ProvenanceSelector>
+                ></opensilex-UsedProvenanceSelector>
 
                 <b-collapse
                   v-if="selectedProvenance"
@@ -94,7 +93,7 @@
             </template>
           </opensilex-SearchFilterField>
           <opensilex-DataList
-            ref="dataRef"
+            ref="dataList"
             :filter="filter">
           </opensilex-DataList>
         </template>
@@ -137,8 +136,6 @@ export default class ExperimentData extends Vue {
   usedVariables: any[] = [];
   selectedProvenance: any = null;
 
-  filterProvenanceLabel: string = null;
-
   filter = {
     start_date: null,
     end_date: null,
@@ -158,7 +155,7 @@ export default class ExperimentData extends Vue {
     creationDate: undefined,
   };
 
-  @Ref("dataRef") readonly dataRef!: any;
+  @Ref("dataList") readonly dataList!: any;
   @Ref("dataForm") readonly dataForm!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
@@ -175,8 +172,6 @@ export default class ExperimentData extends Vue {
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
-    let query: any = this.$route.query;
-
     this.resetFilters();
 
     this.soFilter = {
@@ -272,8 +267,7 @@ export default class ExperimentData extends Vue {
     this.searchVisible = false;
     this.selectedProvenance = null;
     this.resetFilters();
-    this.filterProvenanceLabel = null;
-    this.dataRef.refresh();
+    this.refresh();
   }
 
   mounted() {
@@ -283,8 +277,8 @@ export default class ExperimentData extends Vue {
 
   refreshVariables() {
     this.$opensilex
-      .getService("opensilex.ExperimentsService")
-      .getUsedVariables(this.uri)
+      .getService("opensilex.DataService")
+      .getUsedVariables([this.uri], null, null, null)
       .then((http) => {
         let variables = http.response.result;
         this.usedVariables = [];
@@ -319,11 +313,8 @@ export default class ExperimentData extends Vue {
 
   refresh() {
     this.searchVisible = true;
-    this.searchField.validatorRef.validate().then((isValid) => {
-      if (isValid && this.dataRef) {
-        this.dataRef.refresh();
-      }
-    });
+    this.dataList.refresh();
+    this.$opensilex.updateURLParameter("experiments", null, "");
   }
 
   loadSO(scientificObjectsURIs) {

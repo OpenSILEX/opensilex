@@ -618,7 +618,7 @@ export default class OpenSilexVuePlugin {
         try {
             let queryParams = new URLSearchParams(window.location.search);
             let rootQuery = window.location.pathname;
-            if (!value || (defaultValue != null && value == defaultValue)) {
+            if (!value || (defaultValue != null && value == defaultValue) || (Array.isArray(value) && value.length==0)) {
                 queryParams.delete(key);
             } else {
                 queryParams.set(key, encodeURI(value));

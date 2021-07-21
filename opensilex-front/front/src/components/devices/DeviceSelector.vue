@@ -1,32 +1,30 @@
 <template>
-  <opensilex-SelectForm
-      id="deviceSelector"
-      :label="label"
-      placeholder="DeviceSelector.placeholder"
-      noResultsText="DeviceSelector.no-results-text"
-      :selected.sync="deviceURIs"
-      :multiple="multiple"
-      :required="required"
-      :searchMethod="search"
-      :itemLoadingMethod="load"
-      :conversionMethod="dtoToSelectNode"
-      :key="lang"
-      @clear="$emit('clear')"
-      @select="$emit('select')"
-      @deselect="$emit('deselect')"
-      :showCount="true"
+  <opensilex-SelectForm v-if="renderComponent"
+    ref="deviceSelector"
+    :label="label"
+    placeholder="DeviceSelector.placeholder"
+    noResultsText="DeviceSelector.no-results-text"
+    :selected.sync="deviceURIs"
+    :multiple="multiple"
+    :required="required"
+    :searchMethod="search"
+    :itemLoadingMethod="load"
+    :conversionMethod="dtoToSelectNode"
+    :key="lang"
+    @clear="$emit('clear')"
+    @select="$emit('select')"
+    @deselect="$emit('deselect')"
+    :showCount="true"
   ></opensilex-SelectForm>
-
 </template>
 
 <script lang="ts">
 
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {DevicesService} from "opensilex-core/index";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 
 
 @Component
@@ -36,8 +34,13 @@ export default class DeviceSelector extends Vue {
   $service: DevicesService;
   $store: any;
 
-  @PropSync("value")
+  renderComponent = true;
+
+  @PropSync("devices")
   deviceURIs;
+
+  @Prop()
+  deviceType;
 
   @Prop({default: false})
   multiple;
@@ -48,7 +51,18 @@ export default class DeviceSelector extends Vue {
   @Prop({default: "component.menu.devices"})
   label;
 
+  @Watch("deviceType")
+  onTypeChange() {
+    this.renderComponent = false;
+    this.$nextTick(() => {
+      // Add the component back in
+      this.renderComponent = true;
+    });
+  }
+
   dtoByUriCache: Map<string,DeviceGetDTO>;
+
+  @Ref("deviceSelector") readonly deviceSelector!: any;
 
   created() {
     this.$service = this.$opensilex.getService("opensilex.DevicesService");
@@ -58,8 +72,8 @@ export default class DeviceSelector extends Vue {
   search(query, page, pageSize) {
 
     return this.$service.searchDevices(
-        undefined, // rdf_type filter
-        undefined, // include_subtypes boolean
+        this.deviceType, // rdf_type filter
+        true, // include_subtypes boolean
         query, // name filter
         undefined, // year filter
         undefined, // existence_date filter
@@ -124,7 +138,7 @@ export default class DeviceSelector extends Vue {
         }
 
         return this.$service
-            .getDeviceByUris(undefined,devices)
+            .getDeviceByUris(devices)
             .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
                 return (http && http.response) ? http.response.result : undefined
             }).catch(this.$opensilex.errorHandler);

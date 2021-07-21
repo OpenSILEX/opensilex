@@ -1,58 +1,124 @@
 <template>
-  <div>
-    <b-form>
-      <br />
-      <!-- Label -->
-      <opensilex-InputForm
-        :value.sync="form.name"
-        :disabled="false"
-        label="DatasetForm.provenance.name"
-        helpMessage="DatasetForm.provenance.name-help"
-        type="text"
-        placeholder="DatasetForm.provenance.name-placeholder"
-      ></opensilex-InputForm>
+  <b-form>
+    <!-- URI-->
+    <opensilex-UriForm
+      :uri.sync="form.uri" 
+      label="DocumentForm.uri"
+      :editMode="editMode"
+      :generated.sync="uriGenerated"
+      helpMessage="DocumentForm.uri-help"
+    ></opensilex-UriForm>
+    
+    <!-- Label -->
+    <opensilex-InputForm
+      :value.sync="form.name"
+      label="ProvenanceForm.name"
+      helpMessage="ProvenanceForm.name-help"
+      type="text"
+      placeholder="ProvenanceForm.name-placeholder"
+      :required="true"
+      :validationDisabled="validationDisabled"
+    ></opensilex-InputForm>
 
-      <opensilex-UserSelector
-        label="DatasetForm.provenance.operators"
-        helpMessage="DatasetForm.provenance.operators-help"
-        :users.sync="users"
-        :multiple="true"
-        @select="selectedOperators"
-        @deselect="deselectedOperators"
-      ></opensilex-UserSelector>
+    <!-- description -->
+    <opensilex-TextAreaForm            
+      :value.sync="form.description"
+      helpMessage="ProvenanceForm.description-help"
+      label="ProvenanceForm.description"
+      placeholder="ProvenanceForm.description-placeholder"
+    ></opensilex-TextAreaForm>
 
-      <!-- description -->
-      <opensilex-TextAreaForm
-        :value.sync="form.description"
-        helpMessage="DatasetForm.provenance.description-help"
-        label="DatasetForm.provenance.description"
-        placeholder="DatasetForm.provenance.description-placeholder"
-      ></opensilex-TextAreaForm>
-      <!-- <p class="alert-warning">//TODO Add Settings , etc ...</p>
-      <vue-json-editor
-        v-model="json"
-        :show-btns="false"
-        :expandedOnStart="false"
-        mode="tree"
-        @json-change="onJsonChange"
-      ></vue-json-editor>
-      <br />
-      <p class="alert-warning">//TODO Add document at creation , etc ...</p> -->
-    </b-form>
-  </div>
+    <!--activity -->
+    <b-card :title="$t('ProvenanceForm.activity')" bg-variant="light">
+      <!-- type -->
+      <opensilex-TypeForm
+        :type.sync="form.activity_type"
+        :baseType="Prov.ACTIVITY_TYPE_URI"
+        :required="true"
+        helpMessage="ProvenanceForm.type-help"
+        placeholder="ProvenanceForm.type-placeholder"
+        :validationDisabled="validationDisabled"
+      ></opensilex-TypeForm>
+
+      <!-- start_date  & end_date-->
+      <div class="row">
+        <div class="col">
+          <opensilex-DateTimeForm
+            :value.sync="form.activity_start_date"
+            label="ProvenanceForm.start"
+            :required="true"
+            helpMessage="ProvenanceForm.start-help"
+            :validationDisabled="validationDisabled"
+          ></opensilex-DateTimeForm>
+        </div>
+
+        <div class="col">
+          <opensilex-DateTimeForm
+            :value.sync="form.activity_end_date"
+            label="ProvenanceForm.end"
+            helpMessage="ProvenanceForm.end-help"
+            :validationDisabled="validationDisabled"
+          ></opensilex-DateTimeForm>
+        </div>
+      </div>
+
+    <!-- uri -->
+    <opensilex-InputForm
+      :value.sync="form.activity_uri"
+      label="url"
+      type="url"
+      rules="url"
+      helpMessage=""
+    ></opensilex-InputForm>
+    </b-card>
+
+    <!-- agents -->
+    <b-card :title="$t('ProvenanceForm.agents')" bg-variant="light">
+
+      <b-button variant="primary" @click="addAgent">{{ $t('ProvenanceForm.add-agent') }}</b-button>
+
+      <div class="row" v-for="agent in form.agents" v-bind:key="agent.rdf_type">
+
+        <div class="col">
+          <!-- agent type -->
+          <opensilex-AgentTypeSelector
+            :agentType.sync="agent.rdf_type"
+            :multiple="false"
+            :typesToRemove="typesToRemove"
+            @clear="updateTypesToRemove"
+            @update:agentType="agent.uris=[]"
+          ></opensilex-AgentTypeSelector>
+        </div>
+        <div class="col">
+
+          <!-- agent -->
+          <opensilex-UserSelector 
+            v-if="agent.rdf_type == 'vocabulary:Operator'"
+            :users.sync="agent.uris"
+            label="ProvenanceForm.agent"
+            helpMessage="ProvenanceForm.agent-help"
+            :multiple="true"
+          ></opensilex-UserSelector>
+
+          <opensilex-DeviceSelector
+            v-else-if="agent.rdf_type != undefined && agent.rdf_type != null"
+            label="ProvenanceForm.agent"
+            :devices.sync="agent.uris"
+            :multiple="true"
+            :deviceType.sync="agent.rdf_type"
+            helpMessage="ProvenanceForm.agent-help"
+          ></opensilex-DeviceSelector>
+        </div>      
+      </div>
+    </b-card>
+  </b-form>
 </template>
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VueRouter from "vue-router";
-import Oeso from "../../../ontologies/Oeso";
-//TODO Add document at creation , etc ...</p> -->
-// import vueJsonEditor from "vue-json-editor";
-// Vue.component("vue-json-editor", vueJsonEditor);
-// @ts-ignore
-import { AgentModel, ProvenanceGetDTO } from "opensilex-core/index";
-// @ts-ignore
+import Prov from "../../../ontologies/Prov";
+import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component
@@ -61,30 +127,25 @@ export default class ProvenanceForm extends Vue {
   $store: any;
   $i18n: any;
   $t: any;
+  Prov = Prov;
 
   @Ref("validatorRef") readonly validatorRef!: any;
   
-  //TODO Add document at creation , etc ...</p> -->
-  // onJsonChange(value) {
-  //   console.log("value:", value);
-  // }
-  // json = {
-  //   startedAtTime: "",
-  //   endedAtTime: "",
-  //   settings: {},
-  //   rdf_type: "",
-  // };
-  provenance = null;
-  users = [];
   @Prop({
     default: () => {
       return {
         uri: null,
         name: null,
         description: null,
-        experiments: [],
-        prov_activity: [],
-        prov_agent: [],
+        activity_type: null,
+        activity_start_date: null,
+        activity_end_date: null,
+        activity_uri: null,
+        agentTypes: [],
+        agents: [{
+            uris: [], 
+            rdf_type: null
+          }]
       };
     },
   })
@@ -93,52 +154,74 @@ export default class ProvenanceForm extends Vue {
   @Prop()
   editMode;
 
+  @Prop({ default: true })
+  uriGenerated;
+
+  @Prop({
+    default: false
+  })
+  validationDisabled: boolean;
+
+  typesToRemove = [];
+
   getEmptyForm() {
     return {
       uri: null,
       name: null,
       description: null,
       experiments: [],
-      prov_activity: [],
-      prov_agent: [],
+      activity_type: null,
+      activity_start_date: null,
+      activity_end_date: null,
+      activity_uri: null,
+      agentTypes: [],
+      agents: [{
+            uris: [], 
+            rdf_type: null
+          }]
     };
-  }
+  }  
 
-  selectedOperators(valueToSelect) {
-    let agent: AgentModel = {};
-    agent.uri = valueToSelect.id;
-    agent.rdf_type = Oeso.OPERATOR_TYPE_URI;
-    agent.settings = {};
-    this.form.prov_agent.push(agent);
-  }
-  deselectedOperators(valueToDeselect) {
-    this.form.prov_agent = this.form.prov_agent.filter(function (
-      agent,
-      index,
-      arr
-    ) {
-      return agent.uri != valueToDeselect.id;
-    });
-  }
+  create(form) {
+    let agents = []
+    for (let i = 0; i < form.agents.length; i++) {
+      for (let j = 0; j < form.agents[i].uris.length; j++) {
+        agents.push({
+          uri: form.agents[i].uris[j],
+          rdf_type: form.agents[i].rdf_type
+        })
+      }
+    }
 
-  create() {
     // format form
-    let formNew = JSON.parse(JSON.stringify(this.form));
+    let provenance = {
+      uri: null,
+      name: null,
+      description: null,
+      prov_activity: [],
+      prov_agent: []
+  }
+    provenance.name = this.form.name;
+    provenance.description = this.form.description;
+
+    let activity = {
+      rdf_type: this.form.activity_type,
+      start_date: this.form.activity_start_date,
+      end_date: this.form.activity_end_date,
+      uri: this.form.activity_uri
+    }
+    provenance.prov_activity.push(activity);
+    provenance.prov_agent = agents;
 
     return this.$opensilex
       .getService("opensilex.DataService")
-      .createProvenance(formNew)
+      .createProvenance(provenance)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("provenance created", uri);
-        formNew.uri = uri;
-        return formNew;
+        provenance.uri = uri;
+        return provenance;
       });
-  }
-  update(form) {}
-
-  reset() {
-    this.users = [];
   }
 
   loadProvenance(selectedValue) {
@@ -151,6 +234,69 @@ export default class ProvenanceForm extends Vue {
         });
     }
   }
+
+  update(form) {
+    let agents = []
+    for (let i = 0; i < form.agents.length; i++) {
+      for (let j = 0; j < form.agents[i].uris.length; j++) {
+        agents.push({
+          uri: form.agents[i].uris[j],
+          rdf_type: form.agents[i].rdf_type
+        })
+      }
+    }
+
+    // format form
+    let provenance = {
+      uri: null,
+      name: null,
+      description: null,
+      prov_activity: [],
+      prov_agent: []
+  }
+    provenance.uri = form.uri;
+    provenance.name = form.name;
+    provenance.description = form.description;
+
+    let activity = {
+      rdf_type: this.form.activity_type,
+      start_date: this.form.activity_start_date,
+      end_date: this.form.activity_end_date,
+      uri: this.form.activity_uri
+    }
+    provenance.prov_activity.push(activity);
+    provenance.prov_agent = agents;
+
+    return this.$opensilex
+      .getService("opensilex.DataService")
+      .updateProvenance(provenance)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let uri = http.response.result;
+        console.debug("provenance updated", uri);
+        provenance.uri = uri;
+        return provenance;
+      });
+  }
+
+  addAgent() {
+    let i = this.form.agents.length;
+    //remove selected agent types from the agent list to avoid having selecting twice the same agent type
+    if (i>0) {
+      this.typesToRemove.push(this.form.agents[i-1].rdf_type)
+    }    
+    this.form.agents.push({uris: [], rdf_type: null});   
+  }
+
+  updateTypesToRemove() {
+    //when clearing agent_type, the selected type is back in agent_type list
+    this.typesToRemove = [];
+    for (let i = 0; i < this.form.agents.length; i++) {
+      if (this.form.agents[i].rdf_type != undefined) {
+        this.typesToRemove.push(this.form.agents[i].rdf_type)
+      }      
+    }
+  }
+
 }
 </script>
 <style scoped lang="scss">
@@ -159,3 +305,47 @@ export default class ProvenanceForm extends Vue {
   border-bottom: 1px solid #a7a7a7;
 }
 </style>
+
+<i18n>
+en:
+  ProvenanceForm:
+    name: Name
+    name-help: Enter a name
+    name-placeholder: Enter a name
+    description: Description
+    description-help: Describe provenance
+    description-placeholder: Describe provenance
+    agent: Agent
+    agent-help: Select agents
+    agent-placeholder: Select agents
+    activity: Activity
+    start: Start Date
+    start-help: Start Date
+    end: End Date
+    end-date: End Date
+    agents: Provenance agents
+    add-agent: Add an agent
+    type-placeholder: Select a type of activity
+    type-help: Select a type of activity
+
+fr:
+  ProvenanceForm:
+    name: Nom
+    name-help: Entrer un nom
+    name-placeholder: Entrer un nom
+    description: Description
+    description-help: Décrire la provenance
+    description-placeholder: Décrire la provenance
+    agent: Agent
+    agent-help: Selectionner agents
+    agent-placeholder: Selectionner agents
+    activity: Activité
+    start: Date de début
+    start-help: Date de début
+    end: Date de fin
+    end-date: Date de fin
+    agents: Agents de la provenance
+    add-agent: Ajouter un agent
+    type-placeholder: Selectionner un type d'activité
+    type-help: Selectionner un type d'activité
+</i18n>

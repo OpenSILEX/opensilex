@@ -27,6 +27,7 @@ import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
+import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -59,7 +60,9 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         
         //create provenance
         ProvenanceAPITest provAPI = new ProvenanceAPITest();
-        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), provAPI.getCreationProvDTO());
+        ProvenanceCreationDTO prov = new ProvenanceCreationDTO();
+        prov.setName("name");
+        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), prov);
         
         provenance = new DataProvenanceModel();
         provenance.setUri(extractUriFromResponse(postResultProv));   

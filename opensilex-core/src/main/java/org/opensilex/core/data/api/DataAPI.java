@@ -575,7 +575,7 @@ public class DataAPI {
             }
         
             //check provenance uri
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {

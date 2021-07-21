@@ -265,7 +265,7 @@ public class DataDAO {
             Float confidenceMax,
             Document metadata) throws Exception {
         
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         List<URI> agents = new ArrayList<>();
         agents.add(deviceURI);
         Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(agents);        
@@ -691,7 +691,7 @@ public class DataDAO {
         Instant scientificObjectTime = Instant.now();
         LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
@@ -895,7 +895,7 @@ public class DataDAO {
         Instant scientificObjectTime = Instant.now();
         LOGGER.debug("Get " + listScientificObjectDao.size() + " scientificObject(s) " + Long.toString(Duration.between(variableTime, scientificObjectTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);

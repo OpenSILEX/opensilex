@@ -82,8 +82,8 @@ public class ActivityGetDTO {
         ActivityGetDTO dto = new ActivityGetDTO();
         
         dto.setRdfType(model.getRdfType());
-        model.setUri(model.getUri());
-        model.setSettings(model.getSettings());
+        dto.setUri(model.getUri());
+        dto.setSettings(model.getSettings());
         
         
         if (model.getStartDate() != null) {

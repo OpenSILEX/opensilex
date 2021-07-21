@@ -64,11 +64,11 @@ menu:
       #   route:
       #     path: /template
       #     component: opensilex-Template
-      # - id: provenance
-      #   label: component.menu.data.provenance
-      #   route:
-      #     path: /provenance
-      #     component: opensilex-ProvenanceView
+      - id: provenances
+        label: component.menu.data.provenance
+        route:
+          path: /provenances
+          component: opensilex-ProvenanceView
       - id: data
         label: component.menu.data.tabularData
         route:
@@ -256,6 +256,15 @@ routes:
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
+
+  - path: /provenances/details/:uri
+    component: opensilex-ProvenanceDetailsPage
+    credentials: []
+  - path: /provenances/annotations/:uri
+    component: opensilex-ProvenanceDetailsPage
+  - path: /provenances/documents/:uri
+    component: opensilex-ProvenanceDetailsPage
+
   # Route item example:
   #  - path: /users/create
   #    component: opensilex-UserCreate

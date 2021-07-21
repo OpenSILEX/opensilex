@@ -177,17 +177,13 @@
       </template>
 
       <template v-slot:cell(provenance)="{ data }">
-        <!-- <opensilex-UriLink
+        <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
           :to="{
             path: '/provenances/details/' +
               encodeURIComponent(data.item.provenance.uri),
           }"
-        ></opensilex-UriLink> -->
-        <opensilex-UriLink
-          :uri="data.item.provenance.uri"
-          :value="provenances[data.item.provenance.uri]"
         ></opensilex-UriLink>
       </template>
 

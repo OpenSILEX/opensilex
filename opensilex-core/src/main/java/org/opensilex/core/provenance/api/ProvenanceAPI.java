@@ -16,7 +16,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.validation.Valid;
@@ -34,10 +37,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.URITypesModel;
+import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
@@ -54,7 +64,9 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -71,6 +83,7 @@ import org.opensilex.utils.OrderBy;
 )
 public class ProvenanceAPI {
 
+    public static final String PROVENANCE_ACTIVITY_TYPE = "http://www.w3.org/ns/prov#Activity";
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";
 
     @CurrentUser
@@ -99,8 +112,22 @@ public class ProvenanceAPI {
             @ApiParam("Provenance description") @Valid ProvenanceCreationDTO provDTO
     ) throws Exception {
         
+        if (provDTO.getActivity() != null) {
+            ErrorResponse actError = checkActivityTypes(provDTO.getActivity());
+            if (actError != null) {
+                return actError.getResponse();
+            }
+        }        
+        
+        if (provDTO.getAgents() != null) {
+            ErrorResponse error = checkAgents(provDTO.getAgents());
+            if (error != null) {
+                return error.getResponse();
+            }
+        }
+        
         try {
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);                    
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);                    
             ProvenanceModel model = provDTO.newModel();
             ProvenanceModel provenance = provDAO.create(model);
 
@@ -135,7 +162,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         try {
             ProvenanceModel provenance = dao.get(uri);
             return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
@@ -176,7 +203,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         ListWithPagination<ProvenanceModel> resultList = dao.search(null, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
         
         // Convert paginated list to DTO
@@ -202,7 +229,7 @@ public class ProvenanceAPI {
     })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
 
         //check if the provenance can be deleted (not linked to data)
         List<URI> provenances = new ArrayList();
@@ -268,11 +295,11 @@ public class ProvenanceAPI {
         @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class)
     })
 
-    public Response update(
+    public Response updateProvenance(
             @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
     ) throws Exception {
         try {
-            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+            ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel newProvenance = dto.newModel();
             newProvenance = dao.update(newProvenance);
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
@@ -302,7 +329,7 @@ public class ProvenanceAPI {
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> models = dao.getListByURIs(uris);
 
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
@@ -312,4 +339,93 @@ public class ProvenanceAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
+    private ErrorResponse checkActivityTypes(List<ActivityCreationDTO> activities) throws URISyntaxException, Exception {
+        
+        Set<URI> checkedActivityTypes = new HashSet<>();
+        Set<URI> notActivityTypes = new HashSet<>();
+        
+        for (ActivityCreationDTO activity:activities) {
+            if (!checkedActivityTypes.contains(activity.getRdfType())) {
+                boolean exists = sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(activity.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(PROVENANCE_ACTIVITY_TYPE))
+                );
+                if (!exists) {
+                    notActivityTypes.add(activity.getRdfType());
+                }
+                checkedActivityTypes.add(activity.getRdfType());
+            }   
+        }
+        
+        if (!notActivityTypes.isEmpty()) {
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "wrong activity rdf_types",
+                    "wrong activity rdf_types: " + notActivityTypes.toString()
+            );
+        } else {
+            return null;
+        }
+        
+    }
+
+    private ErrorResponse checkAgents(List<AgentModel> dtos) throws URISyntaxException, Exception {
+        //TODO replace FOAF.Agent by Oeso.Operator
+        List<URI> agentTypes = Arrays.asList(new URI(Oeso.Device.toString()), new URI(FOAF.Agent.toString()));
+        
+        Set<URI> checkedAgentTypes = new HashSet<>();
+        Set<URI> notAgentTypes = new HashSet<>();
+        Set<URI> notAgentUris = new HashSet<>();
+        List<URI> uris = new ArrayList();
+        
+        for (AgentModel dto:dtos) {
+            uris.add(dto.getUri());
+            if (!checkedAgentTypes.contains(dto.getRdfType())) {  
+                //TODO replace FOAF.Agent by Oeso.Operator                
+                boolean isAgent = sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(FOAF.Agent.toString()))
+                );
+
+                if (!isAgent) {
+                    isAgent = sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(Oeso.Device.toString()))
+                    );
+                }
+
+                if (!isAgent) {
+                    notAgentTypes.add(dto.getRdfType());
+                }
+                checkedAgentTypes.add(dto.getRdfType());
+            }            
+        }
+        
+        if (!notAgentTypes.isEmpty()) {
+            return new ErrorResponse(
+                    Response.Status.BAD_REQUEST,
+                    "wrong agent rdfTypes",
+                    "wrong agent rdfTypes: " + notAgentTypes.toString()
+            );
+        } else {
+            if (!uris.isEmpty()) {
+                OntologyDAO dao = new OntologyDAO(sparql);
+                List<URITypesModel> checkedTypes = dao.checkURIsTypes(uris, agentTypes);
+
+                for (URITypesModel model:checkedTypes) {
+                    if (model.getRdfTypes().isEmpty()) {
+                        notAgentUris.add(model.getUri());
+                    }
+                }
+
+                if (!notAgentUris.isEmpty()) {
+                    return new ErrorResponse(
+                            Response.Status.BAD_REQUEST,
+                            "Agent uris don't exist or given uris are not agents",
+                            "wrong agent uris: " + notAgentUris.toString()
+                    );
+                }
+            }
+        }
+        return null;
+    }
+    
 }

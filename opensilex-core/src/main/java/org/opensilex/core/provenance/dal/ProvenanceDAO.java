@@ -19,6 +19,7 @@ import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
         
@@ -29,16 +30,19 @@ import org.opensilex.utils.OrderBy;
 public class ProvenanceDAO {
     
     public static final String PROVENANCE_COLLECTION_NAME = "provenance";
+    public static final String PROVENANCE_PREFIX = "id/provenance";
     protected final MongoDBService nosql; 
+    protected final SPARQLService sparql;
     
-    public ProvenanceDAO(MongoDBService nosql) {
+    public ProvenanceDAO(MongoDBService nosql, SPARQLService sparql) {
         this.nosql = nosql;
+        this.sparql = sparql;
     }  
 
     public ProvenanceModel create(ProvenanceModel provenance) throws Exception {
 
         nosql.getDatabase().getCollection(PROVENANCE_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
-        nosql.create(provenance, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, "id/provenance");
+        nosql.create(provenance, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, PROVENANCE_PREFIX);
         return provenance;
     }
     
@@ -150,4 +154,5 @@ public class ProvenanceDAO {
         Set uris = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return uris;
     }
+    
 }

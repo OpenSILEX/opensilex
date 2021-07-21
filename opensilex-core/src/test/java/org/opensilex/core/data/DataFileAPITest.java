@@ -38,6 +38,7 @@ import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
+import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -63,15 +64,11 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         //create provenance
         ProvenanceAPITest provAPI = new ProvenanceAPITest();
-        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), provAPI.getCreationProvDTO());
+        ProvenanceCreationDTO prov = new ProvenanceCreationDTO();
+        prov.setName("name");
+        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), prov);
         provenance = new DataProvenanceModel();
         provenance.setUri(extractUriFromResponse(postResultProv)); 
-        
-        //create scientific object
-//        ScientificObjectAPITest soAPI = new ScientificObjectAPITest();
-//        Response postResultSO = getJsonPostResponse(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
-//        scientificObjects = new ArrayList<>();
-//        scientificObjects.add(extractUriFromResponse(postResultSO)); 
 
     }
     

@@ -18,12 +18,14 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import static junit.framework.TestCase.assertEquals;
 import org.bson.Document;
+import org.junit.After;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.provenance.dal.ActivityModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -42,20 +44,51 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
     
-    public ProvenanceCreationDTO getCreationProvDTO() throws URISyntaxException {
+    public String devicePath = "/core/devices";
+    public String deviceUriPath = devicePath + "/{uri}";
+    private URI deviceURI;
+    private URI deviceType = URI.create(Oeso.SensingDevice.toString());
+    private URI activityType = URI.create(Oeso.ImageAnalysis.toString());
+    
+    public DeviceCreationDTO getCreationDeviceDTO() throws URISyntaxException {
+        DeviceCreationDTO device = new DeviceCreationDTO();
+        device.setName("sensor01");
+        device.setType(new URI(deviceType.toString()));
+        return device;
+    }
+    
+    @Before
+    public void beforeTest() throws Exception {
+        final Response postResultXP = getJsonPostResponse(target(devicePath), getCreationDeviceDTO());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultXP.getStatus());
+
+        // ensure that the result is a well formed URI, else throw exception
+        deviceURI = extractUriFromResponse(postResultXP);
+        final Response getResultXP = getJsonGetByUriResponse(target(deviceUriPath), deviceURI.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), getResultXP.getStatus());
+    }
+    
+    @After
+    public void afterTest() throws Exception {
+        final Response delResult = getDeleteByUriResponse(target(deviceUriPath), deviceURI.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+        deviceURI = null;
+    }
+    
+    public ProvenanceCreationDTO getCreationProvDTO(URI activityType, URI agentType) throws URISyntaxException {
         ProvenanceCreationDTO provDTO = new ProvenanceCreationDTO();
         provDTO.setName("label");
         provDTO.setDescription("comment");
         
         ActivityCreationDTO activity = new ActivityCreationDTO();
-        activity.setRdfType(new URI(Oeso.ImageAnalysis.toString()));
+        activity.setRdfType(activityType);
         ArrayList activities = new ArrayList();
         activities.add(activity);
         provDTO.setActivity(activities);
         
         AgentModel agent = new AgentModel();
-        agent.setRdfType(new URI(Oeso.SensingDevice.toString()));
-        agent.setUri(new URI("http://opensilex.org/sensor#s001"));
+        agent.setRdfType(agentType);
+        agent.setUri(deviceURI);
         Document settings = new Document();
         settings.put("param", "value");
         agent.setSettings(settings);
@@ -66,13 +99,27 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         return provDTO;        
     }    
     
+    public ProvenanceCreationDTO getCreationProvDTO() throws URISyntaxException {
+        return getCreationProvDTO(activityType, deviceType);
+    }
+    
     @Test
     public void testCreate() throws Exception {
         
         // create provenance
         final Response postResultProvenance = getJsonPostResponse(target(createPath), getCreationProvDTO());
-        LOGGER.info(postResultProvenance.toString());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());        
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());
+        
+        // test that creating a provenance is not possible if activity type doesn't exist
+        ProvenanceCreationDTO prov = getCreationProvDTO(new URI(Oeso.Accession.toString()), deviceType);
+        final Response postResult1 = getJsonPostResponse(target(createPath), prov);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult1.getStatus());
+
+        
+        // test test that creating a provenance is not possible if sensor doesn't exist
+        ProvenanceCreationDTO prov2 = getCreationProvDTO(activityType, new URI(Oeso.Accession.toString()));
+        final Response postResult2 = getJsonPostResponse(target(createPath), prov2);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult2.getStatus());
     }
     
     @Test

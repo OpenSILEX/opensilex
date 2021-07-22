@@ -49,3 +49,7 @@ phisws:
 #    enableLogs: true
 #server:
 #    pathPrefix: /sunagri
+
+
+front:
+    headerComponent: opensilex-elastic-ElasticHeaderComponent

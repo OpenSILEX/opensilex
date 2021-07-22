@@ -37,10 +37,10 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 // @ts-ignore
-import { ElasticSearchService } from "../../../../opensilex-elastic/front/src/lib";
+import { ElasticSearchService } from "../../../../../opensilex-front/front/src/lib";
 
 @Component
-export default class ElasticSearch extends Vue {
+export default class ElasticSearchBar extends Vue {
   $opensilex: any;
   $store: any;
 

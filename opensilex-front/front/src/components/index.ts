@@ -672,8 +672,8 @@ import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
 
 //Elasticsearch
-import ElasticSearch from './ElasticSearch.vue';
-components["opensilex-ElasticSearch"] = ElasticSearch;
+//import ElasticHeaderComponent from './ElasticHeaderComponent.vue';
+//components["opensilex-ElasticHeaderComponent"] = ElasticHeaderComponent;
 
 
 export default components;

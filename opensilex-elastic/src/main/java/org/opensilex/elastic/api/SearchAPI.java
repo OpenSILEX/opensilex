@@ -31,6 +31,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -125,7 +126,6 @@ public class SearchAPI {
         List<VariableModel> results = Arrays.stream(searchHits)
                 .map(hit -> JSON.parseObject(hit.getSourceAsString(), VariableModel.class))
                 .collect(Collectors.toList());
-
 
         
         ListWithPagination<VariableGetDTO> resultDTOList = new ListWithPagination(

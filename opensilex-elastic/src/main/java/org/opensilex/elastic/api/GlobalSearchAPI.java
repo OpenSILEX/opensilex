@@ -21,8 +21,10 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -38,12 +40,18 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.opensilex.elastic.cli.ElasticCommands;
 import org.opensilex.elastic.service.ElasticService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
 
@@ -69,6 +77,12 @@ public class GlobalSearchAPI  {
     @Inject
     ElasticService elastic;
 
+    @Inject
+    MongoDBService mongodb;
+     
+    @Inject
+    SPARQLService sparql;
+      
     @GET
     @Path("search")
     @ApiOperation(
@@ -89,7 +103,7 @@ public class GlobalSearchAPI  {
         int from = page*pageSize;
         
         //Creates the SearchRequest. Without arguments this runs against all indices.
-        SearchRequest searchRequest = new SearchRequest("variables","projects","devices");
+        SearchRequest searchRequest = new SearchRequest();
         
         QueryStringQueryBuilder query  = QueryBuilders.queryStringQuery(namePattern);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); 
@@ -107,7 +121,7 @@ public class GlobalSearchAPI  {
         
          
         SearchHit[] searchHits = response.getHits().getHits();
-        CountRequest countRequest = new CountRequest("variables","projects","devices"); 
+        CountRequest countRequest = new CountRequest(); 
         countRequest.source(sourceBuilder);
         
 
@@ -130,6 +144,53 @@ public class GlobalSearchAPI  {
                 new ArrayList<>(results),page,pageSize,count);
 
        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    
+    @POST
+    @Path("reload-indexes")
+    @ApiOperation(value = "Reload Elasticsearch indexes (available indexes : variables, devices, events)")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Indexes Reloaded", response =  SingleObjectResponse.class),
+        @ApiResponse(code = 500, message = "Indexes not reloaded", response = ErrorDTO.class)
+
+    })
+    @ApiProtected
+ 
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reloadIndexes(           
+       @ApiParam(value = "Index name", example = "variables") @QueryParam("indexName") String indexName
+       ) throws Exception {
+        System.out.println("org.opensilex.elastic.api.GlobalSearchAPI.reloadIndexes()");
+        ElasticCommands elasticCommands = new ElasticCommands();
+        boolean index = elasticCommands.index(indexName,elastic, mongodb, sparql);
+     
+        return new SingleObjectResponse<>(index).getResponse();
+
+
+    }
+
+    @DELETE
+    @Path("delete-indexes")
+    @ApiOperation(value = "Delete Elasticsearch indexes (available indexes : variables, devices, events)")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Indexes deleted", response =  SingleObjectResponse.class),
+        @ApiResponse(code = 500, message = "Indexes not deleted", response = ErrorDTO.class)
+
+    })
+    @ApiProtected
+ 
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteIndexes(           
+       @ApiParam(value = "Index name", example = "variables",required = true) @QueryParam("indexName") @Required String indexName
+       ) throws Exception {
+        System.out.println("org.opensilex.elastic.api.GlobalSearchAPI.reloadIndexes()");
+        ElasticCommands elasticCommands = new ElasticCommands();
+        boolean index = elasticCommands.index(indexName,elastic, mongodb, sparql);
+     
+        return new SingleObjectResponse<>(index).getResponse();
+
+
     }
 
 }

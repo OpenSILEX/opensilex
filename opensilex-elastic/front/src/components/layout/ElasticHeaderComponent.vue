@@ -19,6 +19,9 @@
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
           
+          <opensilex-elastic-ElasticSearchBar >
+          </opensilex-elastic-ElasticSearchBar>
+          
           <b-dropdown
             id="langDropdown"
             :title="user.getEmail()"
@@ -72,7 +75,6 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-import { User } from "../../models/User";
 
 @Component
 export default class DefaultHeaderComponent extends Vue {

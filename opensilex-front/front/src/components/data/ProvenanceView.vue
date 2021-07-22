@@ -57,7 +57,6 @@ export default class ProvenanceView extends Vue {
   selectedProvenance: any = null;
   agentTypes: any[] = [];
 
-
   get user() {
     return this.$store.state.user;
   }

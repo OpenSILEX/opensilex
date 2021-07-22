@@ -16,8 +16,7 @@
       helpMessage="ProvenanceForm.name-help"
       type="text"
       placeholder="ProvenanceForm.name-placeholder"
-      :required="true"
-      :validationDisabled="validationDisabled"
+      :required="!disableValidation"
     ></opensilex-InputForm>
 
     <!-- description -->
@@ -34,10 +33,9 @@
       <opensilex-TypeForm
         :type.sync="form.activity_type"
         :baseType="Prov.ACTIVITY_TYPE_URI"
-        :required="true"
+        :required="!disableValidation"
         helpMessage="ProvenanceForm.type-help"
         placeholder="ProvenanceForm.type-placeholder"
-        :validationDisabled="validationDisabled"
       ></opensilex-TypeForm>
 
       <!-- start_date  & end_date-->
@@ -46,9 +44,8 @@
           <opensilex-DateTimeForm
             :value.sync="form.activity_start_date"
             label="ProvenanceForm.start"
-            :required="true"
+            :required="!disableValidation"
             helpMessage="ProvenanceForm.start-help"
-            :validationDisabled="validationDisabled"
           ></opensilex-DateTimeForm>
         </div>
 
@@ -57,7 +54,6 @@
             :value.sync="form.activity_end_date"
             label="ProvenanceForm.end"
             helpMessage="ProvenanceForm.end-help"
-            :validationDisabled="validationDisabled"
           ></opensilex-DateTimeForm>
         </div>
       </div>
@@ -160,7 +156,7 @@ export default class ProvenanceForm extends Vue {
   @Prop({
     default: false
   })
-  validationDisabled: boolean;
+  disableValidation: boolean;
 
   typesToRemove = [];
 

@@ -4,6 +4,8 @@
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
     @hide="$emit('hide')"
+    @shown="validationDisabled=false"
+    @hidden="validationDisabled=true"
     :size="modalSize"
     :static="true"
     no-close-on-backdrop
@@ -46,7 +48,7 @@
 
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form">
+        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :disableValidation="disableValidation">
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -104,6 +106,8 @@ export default class ModalForm extends Vue {
     default: "component.common.element"
   })
   successMessage: string | Function;
+
+  disableValidation: boolean = true;
 
   validate() {
     this.validatorRef.validate().then(isValid => {

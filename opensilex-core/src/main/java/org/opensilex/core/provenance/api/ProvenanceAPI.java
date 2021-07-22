@@ -120,6 +120,9 @@ public class ProvenanceAPI {
         }        
         
         if (provDTO.getAgents() != null) {
+            List<AgentModel> agentsWithoutDuplicates = new ArrayList<>(new HashSet<>(provDTO.getAgents()));
+            provDTO.setAgents(agentsWithoutDuplicates);
+            
             ErrorResponse error = checkAgents(provDTO.getAgents());
             if (error != null) {
                 return error.getResponse();
@@ -299,6 +302,22 @@ public class ProvenanceAPI {
             @ApiParam("Provenance description") @Valid ProvenanceUpdateDTO dto
     ) throws Exception {
         try {
+            if (dto.getActivity() != null) {
+                ErrorResponse actError = checkActivityTypes(dto.getActivity());
+                if (actError != null) {
+                    return actError.getResponse();
+                }
+            }        
+
+            if (dto.getAgents() != null) {
+                List<AgentModel> agentsWithoutDuplicates = new ArrayList<>(new HashSet<>(dto.getAgents()));
+                dto.setAgents(agentsWithoutDuplicates);
+
+                ErrorResponse error = checkAgents(dto.getAgents());
+                if (error != null) {
+                    return error.getResponse();
+                }
+            }
             ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel newProvenance = dto.newModel();
             newProvenance = dao.update(newProvenance);

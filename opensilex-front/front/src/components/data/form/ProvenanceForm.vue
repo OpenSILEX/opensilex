@@ -68,7 +68,7 @@
       label="url"
       type="url"
       rules="url"
-      helpMessage=""
+      helpMessage="ProvenanceForm.url-help"
     ></opensilex-InputForm>
     </b-card>
 
@@ -327,6 +327,7 @@ en:
     add-agent: Add an agent
     type-placeholder: Select a type of activity
     type-help: Select a type of activity
+    url-help: External link describing the activity
 
 fr:
   ProvenanceForm:
@@ -348,4 +349,5 @@ fr:
     add-agent: Ajouter un agent
     type-placeholder: Selectionner un type d'activité
     type-help: Selectionner un type d'activité
+    url-help: Lien externe décrivant l'activity
 </i18n>

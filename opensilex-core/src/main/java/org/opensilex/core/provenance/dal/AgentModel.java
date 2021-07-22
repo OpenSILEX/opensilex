@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.bson.Document;
 
 /**
@@ -50,6 +52,31 @@ public class AgentModel {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof AgentModel))
+            return false;
+        if (obj == this)
+            return true;
+
+        AgentModel agent = (AgentModel) obj;
+        return new EqualsBuilder().
+            append(rdfType, agent.rdfType).
+            append(uri, agent.uri).
+            append(settings, agent.settings).
+            isEquals();
+
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+            append(rdfType).
+            append(uri).
+            append(settings).
+            toHashCode();       
     }
 
 }

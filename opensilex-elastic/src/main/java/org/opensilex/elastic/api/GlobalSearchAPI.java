@@ -30,8 +30,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
@@ -76,13 +78,14 @@ public class GlobalSearchAPI  {
 
     @Inject
     ElasticService elastic;
-
+    
     @Inject
     MongoDBService mongodb;
      
     @Inject
     SPARQLService sparql;
       
+    
     @GET
     @Path("search")
     @ApiOperation(
@@ -156,7 +159,7 @@ public class GlobalSearchAPI  {
 
     })
     @ApiProtected
- 
+
     @Produces(MediaType.APPLICATION_JSON)
     public Response reloadIndexes(           
        @ApiParam(value = "Index name", example = "variables") @QueryParam("indexName") String indexName
@@ -184,11 +187,14 @@ public class GlobalSearchAPI  {
     public Response deleteIndexes(           
        @ApiParam(value = "Index name", example = "variables",required = true) @QueryParam("indexName") @Required String indexName
        ) throws Exception {
-        System.out.println("org.opensilex.elastic.api.GlobalSearchAPI.reloadIndexes()");
+        System.out.println("org.opensilex.elastic.api.GlobalSearchAPI.deleteIndexes()");
         ElasticCommands elasticCommands = new ElasticCommands();
-        boolean index = elasticCommands.index(indexName,elastic, mongodb, sparql);
-     
-        return new SingleObjectResponse<>(index).getResponse();
+        RestHighLevelClient elasticClient = elastic.getClient();
+
+        DeleteIndexRequest request = new DeleteIndexRequest(indexName);
+        AcknowledgedResponse deleteIndexResponse = elasticClient.indices().delete(request, RequestOptions.DEFAULT);
+
+        return new SingleObjectResponse<>(deleteIndexResponse).getResponse();
 
 
     }

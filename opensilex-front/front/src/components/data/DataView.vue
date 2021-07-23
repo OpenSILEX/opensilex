@@ -6,14 +6,25 @@
       description="DataView.description"
     ></opensilex-PageHeader>
 
-    <!-- <opensilex-PageActions>
+    <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
           @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
         ></opensilex-CreateButton>
       </template>
-    </opensilex-PageActions> -->
+    </opensilex-PageActions>
+
+    <opensilex-ModalForm
+      ref="modalDataForm"
+      createTitle="DatasetForm.create"
+      editTitle="DatasetForm.update"
+      component="opensilex-DataImportForm"
+      icon="fa#vials"
+      modalSize="xl"
+      @onCreate="afterCreateData"
+      :successMessage="successMessage"
+    ></opensilex-ModalForm>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -156,7 +167,7 @@ export default class DataView extends Vue {
 
   @Ref("templateForm") readonly templateForm!: any;
   @Ref("dataList") readonly dataList!: any;
-  // @Ref("modalDataForm") readonly modalDataForm!: any;
+  @Ref("modalDataForm") readonly modalDataForm!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;

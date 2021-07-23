@@ -104,6 +104,12 @@ export default class GenerateDataTemplateFrom extends Vue {
   @Prop({ default: null })
   experiment: string;
 
+  @Prop({ default: true })
+  acceptSONames;
+
+  @Prop()
+  devices;
+
   variables: any[] = [];
 
   variableFilter: string;

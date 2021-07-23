@@ -544,6 +544,8 @@ import DataList from './data/DataList.vue';
 components["opensilex-DataList"] = DataList;
 import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
+import DataImportForm from './data/form/DataImportForm.vue';
+components["opensilex-DataImportForm"] = DataImportForm;
 
 // PHIS
 //IMAGES

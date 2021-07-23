@@ -4,8 +4,8 @@
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
     @hide="$emit('hide')"
-    @shown="validationDisabled=false"
-    @hidden="validationDisabled=true"
+    @shown="disableValidation=false"
+    @hidden="disableValidation=true"
     :size="modalSize"
     :static="true"
     no-close-on-backdrop

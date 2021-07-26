@@ -476,4 +476,23 @@ public class ExperimentDAO {
     public List<ExperimentModel> getByURIs(List<URI> uris, UserModel currentUser) throws Exception {
         return sparql.getListByURIs(ExperimentModel.class, uris, currentUser.getLanguage());
     }
+
+    public ExperimentModel getByName(String name) throws Exception {
+        ListWithPagination<ExperimentModel> results = sparql.searchWithPagination(
+            ExperimentModel.class,
+            null,
+            (SelectBuilder select) -> {
+                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.LABEL_FIELD, name));
+            },
+            null,
+            0,
+            1
+        );
+        
+        if (results.getList().isEmpty()) {
+            return null;
+        }
+
+        return results.getList().get(0);
+    }
 }

@@ -1,7 +1,7 @@
 <template>
   <b-form>
     <b-row>
-      <b-col cols="4">
+      <b-col cols="5">
         <opensilex-FormField
           :required="true"
           label="DataImportForm.use-default-provenance"
@@ -56,7 +56,7 @@
 
     
     <b-row>
-      <b-col>
+      <b-col cols="5">
         <opensilex-FormField
           :required="true"
           label="DataImportForm.add-device-column"
@@ -70,14 +70,19 @@
         </opensilex-FormField>
       </b-col>
       <b-col>
-        <opensilex-AgentTypeSelector
+
+        <opensilex-SelectForm
           v-if="withDeviceColumn"
+          label="ProvenanceView.agent_type"
+          :selected.sync="selectedAgentTypes"
+          :options="agentTypes"
           :multiple="true"
-          :agentType.sync="selectedAgentTypes"
-          @clear="filter.agent = undefined"
-          @select="filter.agent = undefined"
-        >
-        </opensilex-AgentTypeSelector>
+          :required="required"
+          placeholder="ProvenanceView.agent_type-placeholder"
+          @clear="$emit('clear')"
+          @select="$emit('select')"
+          @deselect="$emit('deselect')"
+        ></opensilex-SelectForm>
       </b-col>
     </b-row>
 
@@ -99,8 +104,7 @@
       <opensilex-GenerateDataTemplateFrom
         :selectExperiment="false"
         :acceptSONames="false"
-        :withDeviceColumn="withDeviceColumn"
-        :agents="selected"
+        :deviceColumns="getAgentsNames(selectedAgentTypes)"
         ref="templateForm"
       ></opensilex-GenerateDataTemplateFrom>
       <div>
@@ -141,8 +145,8 @@
         <opensilex-DataHelpTableView
           ref="helpTable"
           :acceptSONames="false"
-          :agents="selected"
           :visibleAtFirst="false"
+          :deviceColumns="getAgentsNames(selectedAgentTypes)"
         >
         </opensilex-DataHelpTableView>
       </div>
@@ -183,7 +187,7 @@ import Oeso from "../../../ontologies/Oeso";
 import moment from "moment";
 
 // @ts-ignore
-import { AgentModel, ProvenanceGetDTO } from "opensilex-core/index";
+import { AgentModel, ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 // @ts-ignore
@@ -229,6 +233,7 @@ export default class DataForm extends Vue {
   selectDefaultProvenance: boolean = true;
   withDeviceColumn: boolean = false;
   selectedAgentTypes = [];
+  agentTypes: any[] = [];
 
   @Prop({
     default: () => {
@@ -246,11 +251,34 @@ export default class DataForm extends Vue {
   })
   form;
 
-  options = [
-        { text: 'Sensor', value: 'sensor' },
-        { text: 'Operator', value: 'operator' },
-        { text: 'Software', value: 'software' },
-      ]
+  mounted() {
+    this.loadAgentTypes();
+  }
+
+  agentTypesMap: Map<string, string> = new Map();
+  loadAgentTypes() {
+    this.$opensilex.getService("opensilex.OntologyService")
+    .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
+    .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
+      for (let i = 0; i < http.response.result.length; i++) { 
+        this.agentTypes.push({
+          id: http.response.result[i].uri,
+          label: http.response.result[i].name,
+        });
+        this.agentTypesMap[http.response.result[i].uri] = http.response.result[i].name;
+      }      
+    })
+    .catch(this.$opensilex.errorHandler);   
+
+  }
+
+  getAgentsNames(urisList) {
+    let namesList = [];
+    for (let i in urisList) {
+      namesList.push(this.agentTypesMap[urisList[i]]);
+    }
+    return namesList;
+  }
 
   getEmptyForm() {
     return {
@@ -507,8 +535,8 @@ en:
     use-default-provenance-help: The data will be linked to a default provenance. Uncheck to select another provenance.
     experiments: Select the experiments associated to the data (optionnal)
     add-device-column: Add device column 
-    add-device-column-title: Check if you need to specify a device on each piece of data (not necessary if the device is already defined in the provenance)
-    add-device-column-help: If the device is already defined in the provenance, then it is not necessary to 
+    add-device-column-title: Check if you need to specify a device on each piece of data
+    add-device-column-help: Check if you need to add a device column, then select the device types. If the device is already defined in the provenance, then it is not necessary to specify device.
     
 fr:
   DataForm:
@@ -516,5 +544,8 @@ fr:
     use-default-provenance-title: Décocher pour choisir une autre provenance
     use-default-provenance-help: Les données seront liées à la provenance standard. Décocher pour sélectionner une autre provenance.
     experiments: Selectionner les expérimentations associées aux données (facultatif)
+    add-device-column: Ajouter des colonnes equipement
+    add-device-column-title: Cocher pour spécifier un équipement sur chaque donnée
+    add-device-column-help: Cocher pour ajouter des colonnes équipements et sélectionner les types d'équipements à ajouter. Si l'équipement en question est déjà spécifié dans la provenance, il n'est pas nécessaire de le repréciser dans le fichier d'import.
     
 </i18n>

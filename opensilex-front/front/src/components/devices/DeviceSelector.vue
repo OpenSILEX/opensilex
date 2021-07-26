@@ -98,51 +98,11 @@ export default class DeviceSelector extends Vue {
   }
 
     load(devices) {
-
-        if (!devices){
-            return undefined;
-        }
-
-        if(! Array.isArray(devices)){
-            devices = [devices];
-        }else if(devices.length == 0){
-            return undefined;
-        }
-
-        let dtosToReturn = [];
-
-        if (this.dtoByUriCache.size == 0) {
-            devices.forEach(device => {
-
-                // if the device is an object (and not an uri) with an already filled name and uri, then no need to call service
-                if (device.name && device.name.length > 0 && device.uri && device.uri.length > 0) {
-                    dtosToReturn.push(device);
-                }
-            })
-
-            // if all element to load are objects then just return them
-            if (dtosToReturn.length == devices.length) {
-                return dtosToReturn;
-            }
-        }else {
-
-            // if object have already been loaded, then it's not needed to call the GET{uri} service just for retrieve the object name
-            // since the name is returned by the SEARCH service and the result is cached into dtoByUriCache
-
-            devices.forEach(device => {
-                let loadedDto = this.dtoByUriCache.get(device);
-                dtosToReturn.push(loadedDto);
-            });
-
-            return dtosToReturn;
-        }
-
-        return this.$service
-            .getDeviceByUris(devices)
-            .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
-                return (http && http.response) ? http.response.result : undefined
-            }).catch(this.$opensilex.errorHandler);
-
+      return this.$service
+        .getDeviceByUris(devices)
+        .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
+            return (http && http.response) ? http.response.result : undefined
+        }).catch(this.$opensilex.errorHandler);
     }
 
   dtoToSelectNode(dto: DeviceGetDTO) {

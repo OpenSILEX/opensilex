@@ -262,11 +262,9 @@ export default class DatasetForm extends Vue {
   }
 
   afterCreateProvenance(data) {
-    data.then((data) => {
-      this.provenance = data.uri;
-      this.filterLabel = data.name;
-      this.provenanceSelector.select({ id: data.uri, label: data.name });
-    });
+    this.provenance = data.uri;
+    this.filterLabel = data.name;
+    this.provenanceSelector.select({ id: data.uri, label: data.name });
   }
 
   getProvenance(uri) {

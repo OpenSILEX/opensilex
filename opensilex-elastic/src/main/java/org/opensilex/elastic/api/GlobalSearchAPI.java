@@ -64,8 +64,8 @@ import org.opensilex.utils.ListWithPagination;
 @Api(GlobalSearchAPI.CREDENTIAL_SEARCH_GROUP_ID)
 @Path("/elastic")
 @ApiCredentialGroup(
-        groupId = SearchAPI.CREDENTIAL_SEARCH_GROUP_ID,
-        groupLabelKey = SearchAPI.CREDENTIAL_SEARCH_GROUP_LABEL_KEY
+        groupId = GlobalSearchAPI.CREDENTIAL_SEARCH_GROUP_ID,
+        groupLabelKey = GlobalSearchAPI.CREDENTIAL_SEARCH_GROUP_LABEL_KEY
 )
 
 public class GlobalSearchAPI  {
@@ -187,6 +187,7 @@ public class GlobalSearchAPI  {
     public Response deleteIndexes(           
        @ApiParam(value = "Index name", example = "variables",required = true) @QueryParam("indexName") @Required String indexName
        ) throws Exception {
+        
         System.out.println("org.opensilex.elastic.api.GlobalSearchAPI.deleteIndexes()");
         ElasticCommands elasticCommands = new ElasticCommands();
         RestHighLevelClient elasticClient = elastic.getClient();

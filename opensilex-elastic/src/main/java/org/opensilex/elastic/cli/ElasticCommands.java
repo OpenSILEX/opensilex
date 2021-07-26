@@ -10,7 +10,6 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import org.elasticsearch.ElasticsearchException;
@@ -240,9 +239,6 @@ public class ElasticCommands extends AbstractOpenSilexCommand implements OpenSil
         for (DeviceModel d : Devices) {
             DeviceGetDetailsDTO var = DeviceGetDetailsDTO.getDTOFromModel(d);
             json = gson.toJson(var);
-
-            System.out.println("----------------------------------------------------------------------------");
-            System.out.println(json);
 
             IndexRequest indexRequest = new IndexRequest(DEVICE_INDEX_NAME);
 

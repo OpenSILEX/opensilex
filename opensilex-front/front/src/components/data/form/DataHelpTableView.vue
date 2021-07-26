@@ -14,6 +14,8 @@
               >{{ $t("DataHelp.objectId")
               }}<span class="required"> *</span></b-th
             >
+            <b-th v-for="device in this.deviceColumns" v-bind:key="device">
+              {{device}}</b-th>
             <b-th>Date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
             <b-th>uri:variable...</b-th>
@@ -23,6 +25,8 @@
           <b-tr>
             <b-th>2</b-th>
             <b-td>{{ $t("DataHelp.objectId-help") }}</b-td>
+            <b-td v-for="device in this.deviceColumns" v-bind:key="device">
+              device uri</b-td>
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
@@ -34,6 +38,10 @@
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
               ><br /><strong>{{ $t("DataHelp.required") }}</strong></b-td
             >
+            <b-td v-for="device in this.deviceColumns" v-bind:key="device"
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ stringType }}</strong>
+            </b-td>
             <b-td>
               {{ $t("DataHelp.column-type-help") }}
               <strong>
@@ -74,7 +82,7 @@
           <b-tr class="alert alert-info">
             <b-th>4</b-th>
             <b-td
-              colspan="4"
+              :colspan = (4+deviceColumns.length).toString()
               v-html="
                 $t('DataHelp.text-help', {
                   decimalSeparator: '<strong>.</strong>',
@@ -105,6 +113,16 @@ export default class DataHelpTableView extends Vue {
   $store: any;
   $t: any;
   visible: boolean = true;
+
+  @Prop({default: (() => [])})
+  deviceColumns;
+
+  stringType: string;
+  integerType: string;
+
+  created() {
+    this.stringType = this.getDataTypeLabel("xsd:string");
+  }
 
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {

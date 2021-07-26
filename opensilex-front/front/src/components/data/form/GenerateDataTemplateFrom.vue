@@ -107,8 +107,8 @@ export default class GenerateDataTemplateFrom extends Vue {
   @Prop({ default: true })
   acceptSONames;
 
-  @Prop()
-  devices;
+  @Prop({default: (() => [])})
+  deviceColumns: string[];
 
   variables: any[] = [];
 
@@ -173,33 +173,40 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   csvExportDataExample() {
 
-    let line1 = [
-      this.$t("DataHelp.objectId").toString(),
-      "Date",
-      "demo:variable#variable.air_temperature"
-    ];
-    
-    let line2 = [
-      this.$t("DataHelp.objectId-help").toString(),
-      this.$t("DataHelp.date-help").toString(),
-      "Air_Temperature"
-    ];
-
+    //column object
+    let line1 = [this.$t("DataHelp.objectId")];    
+    let line2 = [this.$t("DataHelp.objectId-help")];
     let line3 = [
-      this.$t("DataHelp.column-type-help").toString() +
-        this.getDataTypeLabel("xsd:string") +
-        "\n" +
-        this.$t("DataHelp.required").toString(),
-      this.$t("DataHelp.column-type-help").toString() +
-        this.getDataTypeLabel("xsd:date") +
-        "\n" +
-        this.$t("DataHelp.required").toString(),
-      this.$t("DataHelp.column-type-help").toString() +
-        this.getDataTypeLabel("xsd:integer"),
+      this.$t("DataHelp.column-type-help")+
+      this.getDataTypeLabel("xsd:string") +
+      "\n" +
+      this.$t("DataHelp.required")
     ];
+    let line4 = ["test"];
 
-    let line4 = ["test", "2020-09-21T00:00:00+0100", "30"];
+    //column devices (1 column per deviceType)
+    if (this.deviceColumns.length>0) {
+      for (let i in this.deviceColumns) {
+        line1.push(this.deviceColumns[i]);
+        line2.push("DataHelp.deviceId-help");
+        line3.push(this.$t("DataHelp.column-type-help")+
+          this.getDataTypeLabel("xsd:string"));
+        line4.push("uri");
+      }      
+    }
 
+    //columns date & first variable
+    line1.push("Date", "demo:variable#variable.air_temperature");
+    line2.push(this.$t("DataHelp.date-help"),
+      "Air_Temperature");
+    line3.push(this.$t("DataHelp.column-type-help")+
+      this.getDataTypeLabel("xsd:date") +
+      "\n" + this.$t("DataHelp.required"),
+      this.$t("DataHelp.column-type-help") +
+      this.getDataTypeLabel("xsd:integer"));
+    line4.push("2020-09-21T00:00:00+0100", "30");
+
+    //column rawData for first variable
     if (this.withRawData) {
       line1.push("raw_data");
       line2.push(this.$t("DataTemplateForm.raw-data"));
@@ -209,12 +216,14 @@ export default class GenerateDataTemplateFrom extends Vue {
       line4.push("30,31,29");
     }
 
+    //column 2nd variable
     line1.push("demo:variable#variable.fruit_color/2");
     line2.push("Fruit_Color");
     line3.push(this.$t("DataHelp.column-type-help") +
           this.getDataTypeLabel("xsd:string"),);
     line4.push("Red");
 
+    //column rawData for 2nd variable
     if (this.withRawData) {
       line1.push("raw_data");
       line2.push(this.$t("DataTemplateForm.raw-data"));
@@ -224,12 +233,14 @@ export default class GenerateDataTemplateFrom extends Vue {
       line4.push('Red,Red,Red');
     }
 
+    //column 3rd variable
     line1.push("demo:variable#variable.veraison_date");
     line2.push("Veraison_Date");
     line3.push(this.$t("DataHelp.column-type-help") +
           this.getDataTypeLabel("xsd:date"));
     line4.push("2020-09-21");
 
+    //column rawData for 3rd variable
     if (this.withRawData) {
       line1.push("raw_data");
       line2.push(this.$t("DataTemplateForm.raw-data"));
@@ -251,44 +262,57 @@ export default class GenerateDataTemplateFrom extends Vue {
     this.validateTemplate().then((isValid) => {
       // fill in large
       if (isValid) {
-        let variableUriInfo = [this.$t("DataHelp.objectId").toString(), "Date"];
-        let otherHeaders = [
-          this.$t("DataHelp.objectId-help").toString(),
-          this.$t("DataHelp.date-help").toString(),
-        ];
-        let otherExample = [
-          this.$t("DataHelp.column-type-help").toString() +
+        //column object
+        let line1 = [this.$t("DataHelp.objectId")];
+        let line2 = [this.$t("DataHelp.objectId-help")];
+        let line3 = [
+          this.$t("DataHelp.column-type-help") +
             this.getDataTypeLabel("xsd:string") +
             "\n" +
-            this.$t("DataHelp.required").toString(),
-          this.$t("DataHelp.column-type-help").toString() +
-            this.getDataTypeLabel("xsd:date") +
-            "\n" +
-            this.$t("DataHelp.required").toString(),
+            this.$t("DataHelp.required")
         ];
+
+        //column devices (1 column per deviceType)
+        if (this.deviceColumns.length>0) {
+          for (let i in this.deviceColumns) {
+            line1.push(this.deviceColumns[i]);
+            line2.push("DataHelp.deviceId-help");
+            line3.push(this.$t("DataHelp.column-type-help")+
+              this.getDataTypeLabel("xsd:string"));
+          }
+        }
+
+        //columns date
+        line1.push("Date");
+        line2.push(this.$t("DataHelp.date-help"));
+        line3.push( this.getDataTypeLabel("xsd:date") +
+          "\n" + this.$t("DataHelp.required"));
 
         this.service.getVariablesByURIs(this.variables).then((http) => {
           for (let element of http.response.result) {
-            variableUriInfo.push(element.uri);
-            otherHeaders.push(element.name);
+
+            //column variable
+            line1.push(element.uri);
+            line2.push(element.name);
             if (element.datatype === undefined || element.datatype === null) {
               element.datatype = "xsd:string";
             } 
-            otherExample.push(
+            line3.push(
               this.$t("DataHelp.column-type-help").toString() +
               this.getDataTypeLabel(element.datatype)
             );
 
+            //column raw_data
             if (this.withRawData) {
-              variableUriInfo.push("raw_data");
-              otherHeaders.push(this.$t("DataTemplateForm.raw-data-example"));
-              otherExample.push(
+              line1.push("raw_data");
+              line2.push(this.$t("DataTemplateForm.raw-data"));
+              line3.push(
                 this.$t("DataHelp.column-type-help").toString() +
                 this.$t("DataTemplateForm.type-list") +
                 this.getDataTypeLabel(element.datatype));
             }
           }
-          arrData = [variableUriInfo, otherHeaders, otherExample];
+          arrData = [line1, line2, line3];
           this.$papa.download(
             this.$papa.unparse(arrData, { delimiter: this.separator }),
             "datasetTemplate"

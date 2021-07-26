@@ -82,7 +82,10 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -108,6 +111,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
@@ -826,7 +830,7 @@ public class DataAPI {
 
         DataCSVValidationModel validation;
         
-        validation = validateWholeCSV(xpUris, provenanceModel, file, user);
+        validation = validateWholeCSV(provenanceModel, file, user);
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -886,16 +890,9 @@ public class DataAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "Experiment URIs", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") @NotNull @ValidURI List<URI> xpUris,
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        // test exp
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);        
-        Set<URI> userExp = xpDAO.getUserExperiments(user);
-        if (!userExp.containsAll(xpUris)) {
-            throw new Exception("no access to all the experiments");
-        }
 
         // test prov
         ProvenanceModel provenanceModel = null;
@@ -910,7 +907,7 @@ public class DataAPI {
         DataCSVValidationModel validation;
 
         Instant start = Instant.now();
-        validation = validateWholeCSV(xpUris, provenanceModel, file, user);
+        validation = validateWholeCSV(provenanceModel, file, user);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
@@ -925,9 +922,13 @@ public class DataAPI {
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
     
-    private DataCSVValidationModel validateWholeCSV(List<URI> experimentURIs, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
+    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
+        List<String> notExistingExperiments = new ArrayList<>();
+        List<String> deviceTypes = getDevicesTypes();
 
         List<URI> scientificObjectsNotInDB = new ArrayList<>();
 
@@ -993,7 +994,19 @@ public class DataAPI {
                 boolean validateCSVRow = false;
                 while ((values = csvReader.parseNext()) != null) {
                     try {
-                        validateCSVRow = validateCSVRow(provenance, values, rowIndex, csvValidation, headerByIndex, experimentURIs, scientificObjectDAO, scientificObjectsNotInDB, mapVariableUriDataType, duplicateDataByIndex);
+                        validateCSVRow = validateCSVRow(
+                                provenance, 
+                                values, 
+                                rowIndex, 
+                                csvValidation, 
+                                headerByIndex, 
+                                xpDAO,
+                                notExistingExperiments,
+                                nameURIExperiments, 
+                                scientificObjectDAO, 
+                                scientificObjectsNotInDB, 
+                                mapVariableUriDataType, 
+                                duplicateDataByIndex);
                     } catch (CSVDataTypeException e) {
                         csvValidation.addInvalidDataTypeError(e.getCsvCell());
                     }
@@ -1015,15 +1028,55 @@ public class DataAPI {
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, List<URI> experimentURIs, ScientificObjectDAO scientificObjectDAO, List<URI> scientificObjectsNotInDB, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
-
+    private boolean validateCSVRow(
+            ProvenanceModel provenance, 
+            String[] values, 
+            int rowIndex, 
+            DataCSVValidationModel csvValidation, 
+            Map<Integer, String> headerByIndex, 
+            ExperimentDAO xpDAO, 
+            List<String> notExistingExperiments,
+            Map<String, ExperimentModel> nameURIExperiments,
+            ScientificObjectDAO scientificObjectDAO, 
+            List<URI> scientificObjectsNotInDB, 
+            HashMap<URI, URI> mapVariableUriDataType, 
+            List<ImportDataIndex> duplicateDataByIndex) 
+        throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
+        
+        List<String> deviceTypes = getDevicesTypes();
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
+        
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             URI objectUri = null;
             
+            ExperimentModel exp = null;
             if (colIndex == 0) {
+                //check experiment column
+                String expNameOrUri = values[colIndex];
+                // test in uri list
+                if (!StringUtils.isEmpty(expNameOrUri) && nameURIExperiments.containsKey(expNameOrUri)) {
+                    exp = nameURIExperiments.get(expNameOrUri);
+                } else {
+                    // test not in uri list
+                    if (!StringUtils.isEmpty(expNameOrUri) && !notExistingExperiments.contains(expNameOrUri)) {
+                        exp = getExperimentByNameOrURI(xpDAO, expNameOrUri);
+                    }
+                    if (exp == null) {
+                        notExistingExperiments.add(expNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
+                        validRow = false;
+                        break;
+                    } else {
+                        nameURIExperiments.put(expNameOrUri, exp);
+                    }
+                }
+                
+            
+            } else if (colIndex == 1) {
+                //check object column
                 String objectUriString = values[colIndex];                
                 
                 if (objectUriString != null) {
@@ -1047,8 +1100,12 @@ public class DataAPI {
 
                     }
                 }
+                
+            } else if (deviceTypes.contains(headerByIndex.get(colIndex))){
+                // check deviceURI
+                
 
-            } else if (colIndex == 1) {
+            } else if (headerByIndex.get(colIndex).equals("Date")) {
                 // check date
                 // TODO : Validate timezone ambiguity
                 parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(values[colIndex], null);
@@ -1058,6 +1115,7 @@ public class DataAPI {
                     validRow = false;
                     break;
                 }
+               
             } else {
                 // If value is not blank and null
                 if(!StringUtils.isEmpty(values[colIndex])){
@@ -1065,7 +1123,7 @@ public class DataAPI {
                     DataModel dataModel = new DataModel();
                     DataProvenanceModel provenanceModel = new DataProvenanceModel();
                     provenanceModel.setUri(provenance.getUri());
-                    provenanceModel.setExperiments(experimentURIs);
+                    provenanceModel.setExperiments(Arrays.asList(exp.getUri()));
                     dataModel.setDate(parsedDateTimeMongo.getInstant());
                     dataModel.setOffset(parsedDateTimeMongo.getOffset());
                     dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
@@ -1090,5 +1148,25 @@ public class DataAPI {
         }
         return validRow;
     }
-    
+
+    private List<String> getDevicesTypes() throws URISyntaxException, Exception {
+        List<String> devicesTypes = new ArrayList<>();
+        List<ResourceTreeDTO> treeDtos = OntologyCache.getInstance(sparql).searchSubClassesOf(user, new URI(Oeso.Device.toString()), null, true);
+        for (ResourceTreeDTO tree:treeDtos) {
+            devicesTypes.add(tree.getUri().toString());
+        }
+        return devicesTypes;
+    }
+
+    private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
+        ExperimentModel exp;
+        if (URIDeserializer.validateURI(expNameOrUri)) {
+            URI expUri = URI.create(expNameOrUri);
+            exp = xpDAO.get(expUri, user);
+        } else {
+            exp = xpDAO.getByName(expNameOrUri);
+        }
+        return exp;
+    }
+
 }

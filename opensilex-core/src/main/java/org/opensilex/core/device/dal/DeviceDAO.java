@@ -449,4 +449,23 @@ public class DeviceDAO {
     public List<DeviceModel> getList(List<URI> uris, UserModel userModel) throws Exception {
         return sparql.getListByURIs(DeviceModel.class, uris, userModel.getLanguage());
     }
+
+    public DeviceModel getByName(String name) throws Exception {
+        ListWithPagination<DeviceModel> results = sparql.searchWithPagination(
+            DeviceModel.class,
+            null,
+            (SelectBuilder select) -> {
+                select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name));
+            },
+            null,
+            0,
+            1
+        );
+        
+        if (results.getList().isEmpty()) {
+            return null;
+        }
+
+        return results.getList().get(0);
+    }
 }

@@ -37,55 +37,6 @@
         </b-collapse>
       </b-col>
     </b-row>
-    <opensilex-ExperimentSelector
-      label="DataImportForm.experiments"
-      :experiments.sync="experiments"
-      :multiple="true"
-    ></opensilex-ExperimentSelector>
-
-    <!-- <opensilex-SelectForm
-      label="DataView.filter.provenance"
-      placeholder="DataView.filter.provenance-placeholder"
-      :selected.sync="provenance"
-      :conversionMethod="provenanceGetDTOToSelectNode"
-      modalComponent="opensilex-ProvenanceModalList"
-      :isModalSearch="true"
-      :clearable="false"
-      
-    ></opensilex-SelectForm> -->
-
-    
-    <b-row>
-      <b-col cols="5">
-        <opensilex-FormField
-          :required="true"
-          label="DataImportForm.add-device-column"
-          helpMessage="DataImportForm.add-device-column-help"
-        >
-          <template v-slot:field="field">
-            <b-form-checkbox v-model="withDeviceColumn" switch>
-              {{$t('DataImportForm.add-device-column-title')}}
-            </b-form-checkbox>
-          </template>
-        </opensilex-FormField>
-      </b-col>
-      <b-col>
-
-        <opensilex-SelectForm
-          v-if="withDeviceColumn"
-          label="ProvenanceView.agent_type"
-          :selected.sync="selectedAgentTypes"
-          :options="agentTypes"
-          :multiple="true"
-          :required="required"
-          placeholder="ProvenanceView.agent_type-placeholder"
-          @clear="$emit('clear')"
-          @select="$emit('select')"
-          @deselect="$emit('deselect')"
-        ></opensilex-SelectForm>
-      </b-col>
-    </b-row>
-
 
     <opensilex-ModalForm
       ref="provenanceForm"
@@ -142,12 +93,8 @@
         <br />
       </div>
       <div>
-        <opensilex-DataHelpTableView
-          ref="helpTable"
-          :acceptSONames="false"
-          :visibleAtFirst="false"
-          :deviceColumns="getAgentsNames(selectedAgentTypes)"
-        >
+        <opensilex-DataHelpTableView 
+          :byExperiment="false">
         </opensilex-DataHelpTableView>
       </div>
       <!-- validation report  -->

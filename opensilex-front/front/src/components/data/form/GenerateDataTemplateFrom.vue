@@ -21,10 +21,18 @@
           :experiments.sync="experiment"
           :required="true"
         ></opensilex-ExperimentSelector>
+
+      <b-form-group label="DataTemplateForm.select-columns" v-slot="{ ariaDescribedby }">
+        <b-form-checkbox-group
+          v-model="selectedColumns"
+          :options="options"
+          :aria-describedby="ariaDescribedby"
+        ></b-form-checkbox-group>
+      </b-form-group>
         <b-row>
           <b-col cols="9">
             <opensilex-VariableSelector
-              label="VariableView.title"
+              label="DataTemplateForm.select-variables"
               placeholder="VariableList.label-filter-placeholder"
               :multiple="true"
               :variables.sync="variables"
@@ -78,13 +86,25 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   separator = ",";
 
+  selectedColumns = [];
+
   withRawData = false;
+
+  readonly expColumn = "experiment";
+  readonly soColumn = "scientific_object";
+  readonly deviceColumn = "device";
 
   @Prop()
   editMode;
 
   @Prop({ default: true })
   uriGenerated;
+
+  options = [
+          { text: "experiment", value: this.expColumn },
+          { text: 'scientific_object', value: this.soColumn },
+          { text: 'device', value: this.deviceColumn }
+        ];
 
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
@@ -103,12 +123,6 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   @Prop({ default: null })
   experiment: string;
-
-  @Prop({ default: true })
-  acceptSONames;
-
-  @Prop({default: (() => [])})
-  deviceColumns: string[];
 
   variables: any[] = [];
 
@@ -173,26 +187,40 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   csvExportDataExample() {
 
-    //column object
-    let line1 = [this.$t("DataHelp.objectId")];    
-    let line2 = [this.$t("DataHelp.objectId-help")];
-    let line3 = [
-      this.$t("DataHelp.column-type-help")+
-      this.getDataTypeLabel("xsd:string") +
-      "\n" +
-      this.$t("DataHelp.required")
-    ];
-    let line4 = ["test"];
+    let line1 = [];
+    let line2 = [];
+    let line3 = [];
+    let line4 = [];
 
-    //column devices (1 column per deviceType)
-    if (this.deviceColumns.length>0) {
-      for (let i in this.deviceColumns) {
-        line1.push(this.deviceColumns[i]);
-        line2.push("DataHelp.deviceId-help");
-        line3.push(this.$t("DataHelp.column-type-help")+
-          this.getDataTypeLabel("xsd:string"));
-        line4.push("uri");
-      }      
+    //column experiment
+    if (this.selectedColumns.includes(this.expColumn)) {
+      line1.push(this.expColumn);
+      line2.push("DataHelp.experiment-help");
+      line3.push(this.$t("DataHelp.column-type-help")+
+        this.getDataTypeLabel("xsd:string"));
+      line4.push("exp-test");
+    }
+
+    //column object
+    if (this.selectedColumns.includes(this.soColumn)) {
+      line1.push(this.soColumn);
+      line2.push(this.$t("DataHelp.objectId-help")); 
+      line2.push(
+        this.$t("DataHelp.column-type-help")+
+        this.getDataTypeLabel("xsd:string") +
+        "\n" +
+        this.$t("DataHelp.required")
+      );
+      line4.push("test");
+    }
+
+    //column device
+    if (this.selectedColumns.includes(this.deviceColumn)) {      
+      line1.push(this.deviceColumn);
+      line2.push("DataHelp.device-help");
+      line3.push(this.$t("DataHelp.column-type-help")+
+        this.getDataTypeLabel("xsd:string"));
+      line4.push("device-test");
     }
 
     //columns date & first variable
@@ -262,24 +290,35 @@ export default class GenerateDataTemplateFrom extends Vue {
     this.validateTemplate().then((isValid) => {
       // fill in large
       if (isValid) {
+        let line1 = [];
+        let line2 = [];
+        let line3 = [];
+
+        //column experiment
+        if (this.selectedColumns.includes(this.expColumn)) {
+          line1.push(this.expColumn);
+          line2.push(this.$t("DataHelp.experiment-help"));
+          line3.push(this.$t("DataHelp.column-type-help") +
+              this.getDataTypeLabel("xsd:string")
+          );
+        }
+        
+
         //column object
-        let line1 = [this.$t("DataHelp.objectId")];
-        let line2 = [this.$t("DataHelp.objectId-help")];
-        let line3 = [
-          this.$t("DataHelp.column-type-help") +
-            this.getDataTypeLabel("xsd:string") +
-            "\n" +
-            this.$t("DataHelp.required")
-        ];
+        if (this.selectedColumns.includes(this.soColumn)) {
+          line1.push(this.soColumn);
+          line2.push(this.$t("DataHelp.objectId-help"));
+          line3.push(this.$t("DataHelp.column-type-help") +
+              this.getDataTypeLabel("xsd:string")
+          );
+        }
 
         //column devices (1 column per deviceType)
-        if (this.deviceColumns.length>0) {
-          for (let i in this.deviceColumns) {
-            line1.push(this.deviceColumns[i]);
-            line2.push("DataHelp.deviceId-help");
+        if (this.selectedColumns.includes(this.deviceColumn)) {
+            line1.push(this.deviceColumn);
+            line2.push("DataHelp.device-help");
             line3.push(this.$t("DataHelp.column-type-help")+
               this.getDataTypeLabel("xsd:string"));
-          }
         }
 
         //columns date
@@ -354,6 +393,8 @@ en :
     raw-data: "Raw data"
     type-list: "Array of "
     raw-data-example: "Raw data (e.g. 20.3,20.4,20.5)"
+    select-columns: Select the optionnal columns you need
+    select-variables: Select the variables you need
     example :
       column-data-type : "Column data type: "
 fr :
@@ -362,6 +403,8 @@ fr :
     raw-data: "Données brutes"
     type-list: "Liste de "
     raw-data-example: "Données brutes (ex : 20.3,20.4,20.5)"
+    select-columns: Sélectionnez les colonnes optionnelles dont vous avez besoin
+    select-variables: Sélectionnez les variables dont vous avez besoin
     example :
       column-data-type : "Type de données colonne : " 
  </i18n>

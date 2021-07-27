@@ -49,7 +49,7 @@
           <opensilex-DeviceSelector
             ref="deviceSelector"
             label="ProvenanceForm.agent"
-            :devices.sync="filter.agent"
+            :value.sync="filter.agent"
             :multiple="false"
             :deviceType="filter.agent_type"
           ></opensilex-DeviceSelector>

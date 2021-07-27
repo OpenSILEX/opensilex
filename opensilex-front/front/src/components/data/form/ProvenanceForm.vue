@@ -99,7 +99,7 @@
           <opensilex-DeviceSelector
             v-else-if="agent.rdf_type != undefined && agent.rdf_type != null"
             label="ProvenanceForm.agent"
-            :devices.sync="agent.uris"
+            :value.sync="agent.uris"
             :multiple="true"
             :deviceType.sync="agent.rdf_type"
             helpMessage="ProvenanceForm.agent-help"

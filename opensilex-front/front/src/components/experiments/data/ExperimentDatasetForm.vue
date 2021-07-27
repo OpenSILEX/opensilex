@@ -76,7 +76,9 @@
         <br />
       </div>
       <div>
-        <opensilex-DataHelpTableView></opensilex-DataHelpTableView>
+        <opensilex-DataHelpTableView
+          :byExperiment="true"
+        ></opensilex-DataHelpTableView>
       </div>
       <!-- validation report  -->
       <opensilex-DataValidationReport

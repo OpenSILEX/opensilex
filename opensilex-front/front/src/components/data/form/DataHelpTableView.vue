@@ -10,13 +10,10 @@
         <b-thead>
           <b-tr>
             <b-th>1</b-th>
-            <b-th
-              >{{ $t("DataHelp.objectId")
-              }}<span class="required"> *</span></b-th
-            >
-            <b-th v-for="device in this.deviceColumns" v-bind:key="device">
-              {{device}}</b-th>
-            <b-th>Date <span class="required"> *</span></b-th>
+            <b-th v-if="!byExperiment">experiment</b-th>
+            <b-th>scientific_object<span v-if="byExperiment" class="required"> *</span></b-th>
+            <b-th v-if="!byExperiment">device</b-th>
+            <b-th>date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
             <b-th>uri:variable...</b-th>
           </b-tr>
@@ -24,23 +21,36 @@
         <b-tbody>
           <b-tr>
             <b-th>2</b-th>
+            <b-td v-if="!byExperiment">{{ $t("DataHelp.experiment-help") }}</b-td>
             <b-td>{{ $t("DataHelp.objectId-help") }}</b-td>
-            <b-td v-for="device in this.deviceColumns" v-bind:key="device">
-              device uri</b-td>
+            <b-td v-if="!byExperiment">{{ $t("DataHelp.device-help") }}</b-td>
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
           </b-tr>
           <b-tr>
             <b-th>3</b-th>
-            <b-td
+            <b-td v-if="!byExperiment"
               >{{ $t("DataHelp.column-type-help")
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
-              ><br /><strong>{{ $t("DataHelp.required") }}</strong></b-td
+              ></b-td
             >
-            <b-td v-for="device in this.deviceColumns" v-bind:key="device"
+            <b-td v-if="!byExperiment"
               >{{ $t("DataHelp.column-type-help")
-              }}<strong>{{ stringType }}</strong>
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
+              >
+            </b-td>
+            <b-td v-else
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}<br />{{
+                  $t("DataHelp.required")
+                }}</strong
+              >
+            </b-td>
+            <b-td v-if="!byExperiment"
+              >{{ $t("DataHelp.column-type-help")
+              }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
+              >
             </b-td>
             <b-td>
               {{ $t("DataHelp.column-type-help") }}
@@ -82,7 +92,7 @@
           <b-tr class="alert alert-info">
             <b-th>4</b-th>
             <b-td
-              :colspan = (4+deviceColumns.length).toString()
+              :colspan = "6"
               v-html="
                 $t('DataHelp.text-help', {
                   decimalSeparator: '<strong>.</strong>',
@@ -114,11 +124,11 @@ export default class DataHelpTableView extends Vue {
   $t: any;
   visible: boolean = true;
 
-  @Prop({default: (() => [])})
-  deviceColumns;
-
   stringType: string;
   integerType: string;
+
+  @Prop()
+  byExperiment;
 
   created() {
     this.stringType = this.getDataTypeLabel("xsd:string");
@@ -219,6 +229,8 @@ en :
     columns: CSV Files columns 
     file-rules: CSV editing rules
     objectId-help: Scientific object name or URI
+    experiment-help: Experiment name or URI
+    device-help: Device name or URI
     variable-help : Variable 1 name
     variables-help : Other variables names
     text-help:  "You can insert data from this row. <br /> \n
@@ -253,6 +265,8 @@ fr :
     columns: Colonnes du fichier CSV
     file-rules: Règles d'édition du CSV
     objectId-help: Nom ou l'URI de l'objet scientifique
+    experiment-help: Nom ou l'URI de l'expérimentation
+    device-help: Nom ou l'URI du device
     variable-help : Nom de la variable 1 
     variables-help : Autres noms de variables
     text-help:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n

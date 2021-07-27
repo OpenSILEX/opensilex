@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta+2.1] - 2021-07-27
+
+### Added
+
+- Add global provenances management interface allows to create and visualize them
+
+###  Fixed
+
+- Issue on device association
+- Miscellaneous data bugs fixed
+
 ## [1.0.0-beta+2] - 2021-05-07
 
 ### Added

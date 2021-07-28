@@ -624,6 +624,7 @@ public class DataAPI {
      * @param provenances provenanceUris
      * @param metadata metadata json filter
      * @param csvFormat long or wide format
+     * @param withRawData export raw_data if true
      * @param orderByList orderByList
      * @param page page number
      * @param pageSize page size
@@ -652,6 +653,7 @@ public class DataAPI {
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
+            @ApiParam(value = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -700,9 +702,9 @@ public class DataAPI {
         Response prepareCSVExport = null;
 
         if (csvFormat.equals("long")) {
-            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user);
+            prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, withRawData);
         } else {
-            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user);
+            prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, withRawData);
         }
 
         Instant finish = Instant.now();

@@ -31,6 +31,10 @@
               :required="requiredField"
             >
             </opensilex-VariableSelector>
+            <opensilex-CheckboxForm
+              :value.sync="withRawData"
+              title="DataTemplateForm.with-raw-data"
+            ></opensilex-CheckboxForm>            
           </b-col>
           <b-col>
             <opensilex-CSVSelectorInputForm :separator.sync="separator">
@@ -73,6 +77,8 @@ export default class GenerateDataTemplateFrom extends Vue {
   requiredField: boolean = false;
 
   separator = ",";
+
+  withRawData = false;
 
   @Prop()
   editMode;
@@ -160,39 +166,74 @@ export default class GenerateDataTemplateFrom extends Vue {
   }
 
   csvExportDataExample() {
-    let arrData = [
-      [
-        this.$t("DataHelp.objectId").toString(),
-        "Date",
-        "demo:variable#variable.air_temperature",
-        "demo:variable#variable.fruit_color/2",
-        "demo:variable#variable.veraison_date",
-      ],
-      [
-        this.$t("DataHelp.objectId-help").toString(),
-        this.$t("DataHelp.date-help").toString(),
-        "Air_Temperature",
-        "Fruit_Color",
-        "Veraison_Date",
-      ],
-      [
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:string") +
-          "\n" +
-          this.$t("DataHelp.required").toString(),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date") +
-          "\n" +
-          this.$t("DataHelp.required").toString(),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:integer"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:string"),
-        this.$t("DataHelp.column-type-help").toString() +
-          this.getDataTypeLabel("xsd:date"),
-      ],
-      ["test", "2020-09-21T00:00:00+0100", "30", "Red", "2020-09-21"],
+
+    let line1 = [
+      this.$t("DataHelp.objectId").toString(),
+      "Date",
+      "demo:variable#variable.air_temperature"
     ];
+    
+    let line2 = [
+      this.$t("DataHelp.objectId-help").toString(),
+      this.$t("DataHelp.date-help").toString(),
+      "Air_Temperature"
+    ];
+
+    let line3 = [
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:string") +
+        "\n" +
+        this.$t("DataHelp.required").toString(),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:date") +
+        "\n" +
+        this.$t("DataHelp.required").toString(),
+      this.$t("DataHelp.column-type-help").toString() +
+        this.getDataTypeLabel("xsd:integer"),
+    ];
+
+    let line4 = ["test", "2020-09-21T00:00:00+0100", "30"];
+
+    if (this.withRawData) {
+      line1.push("raw_data");
+      line2.push(this.$t("DataTemplateForm.raw-data"));
+      line3.push(this.$t("DataHelp.column-type-help") +
+        this.$t("DataTemplateForm.type-list") +
+        this.getDataTypeLabel("xsd:integer"));
+      line4.push("30,31,29");
+    }
+
+    line1.push("demo:variable#variable.fruit_color/2");
+    line2.push("Fruit_Color");
+    line3.push(this.$t("DataHelp.column-type-help") +
+          this.getDataTypeLabel("xsd:string"),);
+    line4.push("Red");
+
+    if (this.withRawData) {
+      line1.push("raw_data");
+      line2.push(this.$t("DataTemplateForm.raw-data"));
+      line3.push(this.$t("DataHelp.column-type-help") +
+        this.$t("DataTemplateForm.type-list") +
+        this.getDataTypeLabel("xsd:string"));
+      line4.push('Red,Red,Red');
+    }
+
+    line1.push("demo:variable#variable.veraison_date");
+    line2.push("Veraison_Date");
+    line3.push(this.$t("DataHelp.column-type-help") +
+          this.getDataTypeLabel("xsd:date"));
+    line4.push("2020-09-21");
+
+    if (this.withRawData) {
+      line1.push("raw_data");
+      line2.push(this.$t("DataTemplateForm.raw-data"));
+      line3.push(this.$t("DataHelp.column-type-help") +
+        this.$t("DataTemplateForm.type-list") +
+        this.getDataTypeLabel("xsd:date"));
+      line4.push("2020-09-21,2020-09-21,2020-09-21");
+    }
+
+    let arrData = [line1, line2, line3, line4];
     this.$papa.download(
       this.$papa.unparse(arrData, { delimiter: this.separator }),
       "dataTemplateExample"
@@ -221,17 +262,24 @@ export default class GenerateDataTemplateFrom extends Vue {
         ];
 
         this.service.getVariablesByURIs(this.variables).then((http) => {
-          let varsList = [];
           for (let element of http.response.result) {
             variableUriInfo.push(element.uri);
             otherHeaders.push(element.name);
-            if (element.datatype != undefined && element.datatype != null) {
+            if (element.datatype === undefined || element.datatype === null) {
+              element.datatype = "xsd:string";
+            } 
+            otherExample.push(
+              this.$t("DataHelp.column-type-help").toString() +
+              this.getDataTypeLabel(element.datatype)
+            );
+
+            if (this.withRawData) {
+              variableUriInfo.push("raw_data");
+              otherHeaders.push(this.$t("DataTemplateForm.raw-data-example"));
               otherExample.push(
                 this.$t("DataHelp.column-type-help").toString() +
-                  this.getDataTypeLabel(element.datatype)
-              );
-            } else {
-              otherExample.push(this.getDataTypeLabel("xsd:string"));
+                this.$t("DataTemplateForm.type-list") +
+                this.getDataTypeLabel(element.datatype));
             }
           }
           arrData = [variableUriInfo, otherHeaders, otherExample];
@@ -272,10 +320,18 @@ export default class GenerateDataTemplateFrom extends Vue {
 <i18n>
 en :
   DataTemplateForm:
+    with-raw-data: "With raw data columns"
+    raw-data: "Raw data"
+    type-list: "Array of "
+    raw-data-example: "Raw data (e.g. 20.3,20.4,20.5)"
     example :
       column-data-type : "Column data type: "
 fr :
   DataTemplateForm:
+    with-raw-data: "Avec colonnes 'raw data' (données brutes)"
+    raw-data: "Données brutes"
+    type-list: "Liste de "
+    raw-data-example: "Données brutes (ex : 20.3,20.4,20.5)"
     example :
       column-data-type : "Type de données colonne : " 
  </i18n>

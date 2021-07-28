@@ -575,7 +575,7 @@ public class DataDAO {
         return sparql.getListByURIs(VariableModel.class, variableURIs, user.getLanguage());
     }
     
-    public Response prepareCSVWideExportResponse(List<DataModel> resultList, UserModel user) throws Exception {
+    public Response prepareCSVWideExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
         List<URI> variables = new ArrayList<>();
@@ -671,15 +671,23 @@ public class DataDAO {
             units.add(unitID);
             variablesList.add(variableModel.getName() + " (" + variableModel.getUri() + ")");
             defaultColumns.add(variableModel.getName());
-            variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 1));
+            if (withRawData) {
+                defaultColumns.add("Raw data");
+                methods.add("");
+                units.add("");
+                variablesList.add("");
+                variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 2));
+            } else {
+                variableUriIndex.put(variableModel.getUri(), (defaultColumns.size() - 1));
+            }
         }
         // static supplementary columns
-        defaultColumns.add("Data Description");
+        defaultColumns.add("Provenance");
         for (int i=0; i<experiments.size(); i++) {
            defaultColumns.add("Experiment URI"); 
         }
         defaultColumns.add("Scientific Object URI");
-        defaultColumns.add("Data Description URI");
+        defaultColumns.add("Provenance URI");
 
         Instant variableTime = Instant.now();
         LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
@@ -765,9 +773,13 @@ public class DataDAO {
 
                             // date
                             csvRow.add(dataGetDTO.getDate());
-                            // write blank columns
+                            
+                            // write blank columns for value and rawData
                             for (int i = 0; i < variables.size(); i++) {
                                 csvRow.add("");
+                                if (withRawData) {
+                                    csvRow.add("");
+                                }
                             }
 
                             // provenance
@@ -803,6 +815,16 @@ public class DataDAO {
                         } else {
                             csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
                         }
+                        
+                        // raw data
+                        if (withRawData) {
+                            if (dataGetDTO.getRawData() == null){
+                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable())+1, null);
+                            } else {
+                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable())+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                            } 
+                        }
+                        
                     }
                     
 
@@ -829,7 +851,7 @@ public class DataDAO {
         }
     }
 
-    public Response prepareCSVLongExportResponse(List<DataModel> resultList, UserModel user) throws Exception {
+    public Response prepareCSVLongExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
         Map<URI, VariableModel> variables = new HashMap<>();
@@ -873,6 +895,9 @@ public class DataDAO {
         defaultColumns.add("Method");
         defaultColumns.add("Unit");
         defaultColumns.add("Value");
+        if (withRawData) {
+            defaultColumns.add("Raw data");
+        }        
         defaultColumns.add("Data Description");
         defaultColumns.add("");
         defaultColumns.add("Experiment URI"); 
@@ -978,6 +1003,15 @@ public class DataDAO {
                             csvRow.add(null);
                         }else{
                             csvRow.add(dataGetDTO.getValue().toString());
+                        }
+                        
+                        // rawData
+                        if (withRawData) {
+                            if(dataGetDTO.getRawData() == null){
+                                csvRow.add(null);
+                            }else{
+                                csvRow.add(Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                            }
                         }
 
                         // provenance

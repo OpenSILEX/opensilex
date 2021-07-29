@@ -28,6 +28,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -464,6 +465,10 @@ public class DeviceDAO {
         
         if (results.getList().isEmpty()) {
             return null;
+        }
+        
+        if (results.getList().size() > 1) {
+            throw new DuplicateNameException(name);
         }
 
         return results.getList().get(0);

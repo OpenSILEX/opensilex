@@ -180,7 +180,7 @@ export default class DataImportForm extends Vue {
   selectedAgentTypes = [];
   agentTypes: any[] = [];
 
-  readonly standardProvURI = "dev:id/provenance/standard_provenance";
+  standardProvURI;
 
   @Prop({
     default: () => {
@@ -197,6 +197,14 @@ export default class DataImportForm extends Vue {
     },
   })
   form;
+
+  created() {
+    this.$opensilex.getService("opensilex.DataService")
+    .searchProvenance("standard_provenance")
+    .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          this.standardProvURI = http.response.result[0].uri;
+        });
+  }
 
   mounted() {
     this.loadAgentTypes();

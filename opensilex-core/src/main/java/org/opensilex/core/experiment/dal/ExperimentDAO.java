@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
@@ -486,11 +487,15 @@ public class ExperimentDAO {
             },
             null,
             0,
-            1
+            2
         );
         
         if (results.getList().isEmpty()) {
             return null;
+        }
+        
+        if (results.getList().size() > 1) {
+            throw new DuplicateNameException(name);
         }
 
         return results.getList().get(0);

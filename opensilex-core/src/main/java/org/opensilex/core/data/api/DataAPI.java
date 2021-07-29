@@ -75,6 +75,7 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
@@ -930,13 +931,17 @@ public class DataAPI {
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
         Map<String, ScientificObjectModel> nameURIScientificObjects = new HashMap<>();
         List<String> notExistingObjects = new ArrayList<>();
+        List<String> duplicatedObjects = new ArrayList<>();
+        
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
+        List<String> duplicatedExperiments = new ArrayList<>();
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
-        List<String> notExistingDevices = new ArrayList<>();        
+        List<String> notExistingDevices = new ArrayList<>();
+        List<String> duplicatedDevices = new ArrayList<>();
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -1018,12 +1023,15 @@ public class DataAPI {
                                 headerByIndex, 
                                 xpDAO,
                                 notExistingExperiments,
+                                duplicatedExperiments,
                                 nameURIExperiments,                                
                                 scientificObjectDAO,
                                 notExistingObjects,
+                                duplicatedObjects,
                                 nameURIScientificObjects,
                                 deviceDAO,
                                 notExistingDevices,
+                                duplicatedDevices,
                                 nameURIDevices,
                                 mapVariableUriDataType, 
                                 duplicateDataByIndex);
@@ -1056,12 +1064,15 @@ public class DataAPI {
             Map<Integer, String> headerByIndex, 
             ExperimentDAO xpDAO, 
             List<String> notExistingExperiments,
+            List<String> duplicatedExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
             ScientificObjectDAO scientificObjectDAO, 
             List<String> notExistingObjects,
+            List<String> duplicatedObjects,
             Map<String, ScientificObjectModel> nameURIScientificObjects,
             DeviceDAO deviceDAO, 
-            List<String> notExistingDevice,
+            List<String> notExistingDevices,
+            List<String> duplicatedDevices,
             Map<String, DeviceModel> nameURIDevices,
             HashMap<URI, URI> mapVariableUriDataType, 
             List<ImportDataIndex> duplicateDataByIndex) 
@@ -1088,8 +1099,22 @@ public class DataAPI {
                         exp = nameURIExperiments.get(expNameOrUri);
                     } else {
                         // test not in uri list
+                        if (duplicatedExperiments.contains(expNameOrUri)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
+                            csvValidation.addDuplicateExperimentError(cell);
+                            duplicatedExperiments.add(expNameOrUri);
+                            break;
+                        }
+                        
                         if (!notExistingExperiments.contains(expNameOrUri)) {
-                            exp = getExperimentByNameOrURI(xpDAO, expNameOrUri);
+                            try {
+                                exp = getExperimentByNameOrURI(xpDAO, expNameOrUri);
+                            } catch (DuplicateNameException e) {
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
+                                csvValidation.addDuplicateExperimentError(cell);
+                                duplicatedExperiments.add(expNameOrUri);
+                                break;
+                            }
                         }
                         if (exp == null) {
                             notExistingExperiments.add(expNameOrUri);
@@ -1116,12 +1141,26 @@ public class DataAPI {
                         object = nameURIScientificObjects.get(objectNameOrUri);
                     } else {
                         // test not in uri list
+                        if (duplicatedObjects.contains(objectNameOrUri)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                            csvValidation.addDuplicateObjectError(cell);
+                            duplicatedObjects.add(objectNameOrUri);
+                            break;
+                        }
+                        
                         if (!notExistingObjects.contains(objectNameOrUri)) {
-                            object = ExperimentAPI.getObjectByNameOrURI(scientificObjectDAO, null, objectNameOrUri);
+                            try {
+                                object = ExperimentAPI.getObjectByNameOrURI(scientificObjectDAO, null, objectNameOrUri);
+                            } catch (DuplicateNameException e) {
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                                csvValidation.addDuplicateObjectError(cell);
+                                duplicatedObjects.add(objectNameOrUri);
+                                break;
+                            }                            
                         }
                         if (object == null) {
                             notExistingObjects.add(objectNameOrUri);
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "EXPERIMENT_ID");
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
                             csvValidation.addInvalidObjectError(cell);
                             validRow = false;
                             break;
@@ -1153,11 +1192,25 @@ public class DataAPI {
                         device = nameURIDevices.get(deviceNameOrUri);                    
                     } else {
                         // test not in uri list
-                        if (!StringUtils.isEmpty(deviceNameOrUri) && !notExistingExperiments.contains(deviceNameOrUri)) {
-                            device = getDeviceByNameOrURI(deviceDAO, deviceNameOrUri);
+                        if (duplicatedDevices.contains(deviceNameOrUri)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
+                            csvValidation.addDuplicateDeviceError(cell);
+                            duplicatedDevices.add(deviceNameOrUri);
+                            break;
+                        }
+                        
+                        if (!notExistingDevices.contains(deviceNameOrUri)) {
+                            try {
+                                device = getDeviceByNameOrURI(deviceDAO, deviceNameOrUri);
+                            } catch (DuplicateNameException e) {
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
+                                csvValidation.addDuplicateDeviceError(cell);
+                                duplicatedDevices.add(deviceNameOrUri);
+                                break;
+                            }
                         }
                         if (device == null) {
-                            notExistingDevice.add(deviceNameOrUri);
+                            notExistingDevices.add(deviceNameOrUri);
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addInvalidDeviceError(cell);
                             validRow = false;
@@ -1195,8 +1248,10 @@ public class DataAPI {
                         dataModel.setDate(parsedDateTimeMongo.getInstant());
                         dataModel.setOffset(parsedDateTimeMongo.getOffset());
                         dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                        dataModel.setScientificObject(object.getUri());
+                        
+                        if (object != null) {
+                            dataModel.setScientificObject(object.getUri());
+                        }                        
                         dataModel.setProvenance(provenanceModel);
                         URI varURI = URI.create(headerByIndex.get(colIndex));
                         dataModel.setVariable(varURI);
@@ -1209,7 +1264,11 @@ public class DataAPI {
                         
                         csvValidation.addData(dataModel,rowIndex);
                         // check for duplicate data
-                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), object.getUri());
+                        URI objectUri = null;
+                        if (object != null) {
+                            objectUri = object.getUri();
+                        }
+                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), objectUri);
                         if (!duplicateDataByIndex.contains(importDataIndex)) { 
                             duplicateDataByIndex.add(importDataIndex);
                         }else{
@@ -1250,7 +1309,7 @@ public class DataAPI {
             URI expUri = URI.create(expNameOrUri);
             exp = xpDAO.get(expUri, user);
         } else {
-            exp = xpDAO.getByName(expNameOrUri);
+            exp = xpDAO.getByName(expNameOrUri);         
         }
         return exp;
     }

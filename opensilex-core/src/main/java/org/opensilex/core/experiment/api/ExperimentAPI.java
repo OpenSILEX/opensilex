@@ -82,6 +82,7 @@ import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DataTypeException;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
@@ -952,7 +953,7 @@ public class ExperimentAPI {
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException {
+    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, Exception {
 
         boolean validRow = true;
         ScientificObjectModel object = null;
@@ -967,7 +968,12 @@ public class ExperimentAPI {
                 } else {
                     // test not in uri list
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                        object = getObjectByNameOrURI(scientificObjectDAO, experimentURI, objectNameOrUri);
+                        try {
+                            object = getObjectByNameOrURI(scientificObjectDAO, experimentURI, objectNameOrUri);
+                        } catch (DuplicateNameException e) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                            csvValidation.addDuplicateObjectError(cell); 
+                        }
                     }
                     if (object == null) {
                         scientificObjectsNotInXp.add(objectNameOrUri);
@@ -1032,12 +1038,9 @@ public class ExperimentAPI {
         return validRow;
     }
 
-    public static ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+    public static ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
         ScientificObjectModel object = null;
-        try {
-            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
-        } catch (Exception ex) {
-        }
+        object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
         return object;
     }
 
@@ -1048,7 +1051,11 @@ public class ExperimentAPI {
 
             object = scientificObjectDAO.getObjectByURI(objectUri, contextUri);
         } else {
-            object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
+            try {
+                object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
+            } catch (DuplicateNameException e) {
+                throw e;
+            }
         }
 
         return object;

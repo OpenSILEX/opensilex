@@ -30,6 +30,9 @@ public class DataCSVValidationModel extends CSVValidationModel{
     private Map<Integer, List<CSVCell>> invalidDeviceErrors = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> duplicatedDataErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> duplicatedObjectErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> duplicatedExperimentErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> duplicatedDeviceErrors = new HashMap<>();
 
     private List<String> headers = new ArrayList<>();
        
@@ -174,7 +177,12 @@ public class DataCSVValidationModel extends CSVValidationModel{
         return super.hasErrors() 
                 || tooLargeDataset
                 || duplicatedDataErrors.size() > 0
+                || duplicatedExperimentErrors.size() > 0
+                || duplicatedDeviceErrors.size() > 0
+                || duplicatedObjectErrors.size() > 0
                 || invalidObjectErrors.size() > 0
+                || invalidExperimentErrors.size() > 0
+                || invalidDeviceErrors.size() > 0
                 || invalidDateErrors.size() > 0
                 || invalidDataTypeErrors.size() > 0
                 ;
@@ -261,6 +269,56 @@ public class DataCSVValidationModel extends CSVValidationModel{
     
     public void setInvalidDeviceErrors(Map<Integer, List<CSVCell>> invalidDeviceErrors) {
         this.invalidDeviceErrors = invalidDeviceErrors;
+    }
+    
+    public void addDuplicateObjectError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!duplicatedObjectErrors.containsKey(rowIndex)) {
+            duplicatedObjectErrors.put(rowIndex, new ArrayList<>());
+        }
+        duplicatedObjectErrors.get(rowIndex).add(cell);
+    }
+
+    public void addDuplicateExperimentError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!duplicatedExperimentErrors.containsKey(rowIndex)) {
+            duplicatedExperimentErrors.put(rowIndex, new ArrayList<>());
+        }
+        duplicatedExperimentErrors.get(rowIndex).add(cell);
+    }
+
+    public Map<Integer, List<CSVCell>> getDuplicatedObjectErrors() {
+        return duplicatedObjectErrors;
+    }
+
+    public void setDuplicatedObjectErrors(Map<Integer, List<CSVCell>> duplicatedObjectErrors) {
+        this.duplicatedObjectErrors = duplicatedObjectErrors;
+    }
+
+    public Map<Integer, List<CSVCell>> getDuplicatedExperimentErrors() {
+        return duplicatedExperimentErrors;
+    }
+
+    public void setDuplicatedExperimentErrors(Map<Integer, List<CSVCell>> duplicatedExperimentErrors) {
+        this.duplicatedExperimentErrors = duplicatedExperimentErrors;
+    }
+
+    public Map<Integer, List<CSVCell>> getDuplicatedDeviceErrors() {
+        return duplicatedDeviceErrors;
+    }
+
+    public void setDuplicatedDeviceErrors(Map<Integer, List<CSVCell>> duplicatedDeviceErrors) {
+        this.duplicatedDeviceErrors = duplicatedDeviceErrors;
+    }
+    
+    
+    
+    public void addDuplicateDeviceError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!duplicatedDeviceErrors.containsKey(rowIndex)) {
+            duplicatedDeviceErrors.put(rowIndex, new ArrayList<>());
+        }
+        duplicatedDeviceErrors.get(rowIndex).add(cell);
     }
     
 }

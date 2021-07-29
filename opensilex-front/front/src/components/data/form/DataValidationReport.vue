@@ -157,6 +157,9 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("invalidDeviceErrors", errors, globalErrors);
     this.loadErrorType("invalidDataTypeErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDataErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedExperimentErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedObjectErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedDeviceErrors", errors, globalErrors);
 
     this.loadErrorType("alreadyExistingURIErrors", errors, globalErrors);
     this.loadErrorType("duplicateURIErrors", errors, globalErrors);
@@ -262,6 +265,21 @@ export default class DataValidationReport extends Vue {
       case "duplicatedData":
         return this.$t(
           "DataValidationReport.validationErrorDuplicatedDataMessage",
+          validationError
+        );
+      case "duplicatedExperimentErrors":
+        return this.$t(
+          "DataValidationReport.invalidExperimentErrorMessage",
+          validationError
+        );
+      case "duplicatedObjectErrors":
+        return this.$t(
+          "DataValidationReport.invalidObjectErrorMessage",
+          validationError
+        );
+      case "duplicatedDeviceErrors":
+        return this.$t(
+          "DataValidationReport.invalidDeviceErrorMessage",
           validationError
         );
       case "invalidValueErrors":
@@ -418,6 +436,9 @@ en:
     invalidDateErrors: Invalid date format
     invalidExperimentErrors: Experiment name or uri not found
     invalidDeviceErrors: Device name or uri not found
+    duplicatedExperimentErrors: Duplicate experiment name (you must use uri)
+    duplicatedDeviceErrors: Duplicate device name (you must use uri)
+    duplicatedObjectErrors: Duplicate object name (you must use uri)
     alreadyExistingURIErrors:  URI already existing
     duplicateURIErrors: Duplicate URI
     invalidDataTypeErrorMessage: Invalid value data type
@@ -428,7 +449,9 @@ en:
     validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
     validationErrorDuplicatedDataMessage : "Column: '{header}' - Value: '{value}'"
     invalidValueErrorMessage: "Column: '{header}' - Value: '{value}'"
-    invalidObjectErrorMessage: "Column: Object name / URI - Value: '{value}'" 
+    invalidObjectErrorMessage: "Column: scientific_object - Value: '{value}'" 
+    invalidExperimentErrorMessage: "Column: experiment - Value: '{value}'" 
+    invalidDeviceErrorMessage: "Column: device - Value: '{value}'" 
     invalidDateErrorMessage: "Column: Date - Value: '{value}'" 
     CSVIsValid: Your CSV file has passed the first validation step, click OK to continue
     CSVIsInvalid: Your CSV has failed the first validation step
@@ -470,6 +493,9 @@ fr:
     invalidDateErrors: Format de date invalide
     invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
     invalidDeviceErrors: Le nom ou l'uri du device n'existe pas
+    duplicatedExperimentErrors: Doublon sur le nom de l'experimentation (utilisez l'uri)
+    duplicatedDeviceErrors: Doublon sur le nom du device (utilisez l'uri)
+    duplicatedObjectErrors: Doublon sur le nom de l'objet (utilisez l'uri)
     alreadyExistingURIErrors: URI déjà existante
     duplicateURIErrors: URI dupliquée
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
@@ -479,7 +505,9 @@ fr:
     validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
     validationErrorDuplicatedDataMessage : "Colonne: '{header}' - Valeur: '{value}'"
     invalidValueErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
-    invalidObjectErrorMessage: "Colonne: Objet scientifique Nom/ URI - Valeur: '{value}'" 
+    invalidObjectErrorMessage: "Colonne: scientific_object - Valeur: '{value}'" 
+    invalidExperimentErrorMessage: "Colonne: experiment - Valeur: '{value}'" 
+    invalidDeviceErrorMessage: "Colonne: device - Valeur: '{value}'" 
     invalidDateErrorMessage: "Colonne:  Date - Valeur: '{value}'" 
     invalidDataTypeErrorMessage: Le type de données attendu n'est pas valide
     CSVIsValid: La première étape de validation est un succès, cliquez OK pour continuer

@@ -33,6 +33,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -627,6 +628,10 @@ public class ScientificObjectDAO {
         );
         if (searchWithPagination.getList().isEmpty()) {
             return null;
+        }
+        
+        if (searchWithPagination.getList().size() > 1) {
+            throw new DuplicateNameException(objectName);
         }
 
         return searchWithPagination.getList().get(0);

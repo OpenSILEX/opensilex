@@ -11,6 +11,17 @@
         <b-button v-b-toggle.map-sidebar>{{ $t("MapView.mapPanel") }}</b-button>
         <!--// map panel, controls -->
         <opensilex-Button icon="fa#crosshairs" label="MapView.center" @click="defineCenter"></opensilex-Button>
+        <opensilex-Button icon="fa#save" label="MapView.save" @click="saveMap"></opensilex-Button>
+        <b-modal id="modal-save-map">
+          <template #default>
+            <p>{{ $t("MapView.save-confirmation") }}</p>
+          </template>
+          <template #modal-footer>
+            <b-button variant="danger" @click="savePDF(titleFile)">PDF</b-button>
+            <b-button variant="info" @click="savePNG(titleFile)">PNG</b-button>
+            <b-button variant="success" @click="saveShapefile(titleFile)">Shapefile</b-button>
+          </template>
+        </b-modal>
       </div>
       <span class="p-2">
         <label class="alert-warning">
@@ -197,60 +208,98 @@
           </div>
         </div>
         <b-tabs content-class="mt-3">
-          <b-tab :title="$t('MapView.display')" active>
-            <ul class="list-group">
-              <li class="list-group-item">
-                <opensilex-CheckboxForm
-                    :value.sync="displaySO"
-                    class="col-lg-2"
-                    title="ScientificObjects.display"
-                    @update:value="displayScientificObjects"
-                ></opensilex-CheckboxForm>
-                <div
-                    v-for="layerSO in featuresOS"
-                    :key="layerSO.id"
-                    class="d-flex justify-content-around"
-                >
-                  <opensilex-CheckboxForm
-                      :disabled="displaySO === 'false'"
-                      :title="nameType(layerSO[0].properties.type)"
-                      :value.sync="layerSO[0].properties.display"
-                      class="p-2 bd-highlight"
-                  ></opensilex-CheckboxForm>
-                </div>
-              </li>
-              <li class="list-group-item">
-                <opensilex-CheckboxForm :value.sync="displayAreas" class="p2"
-                                        title="Area.display"></opensilex-CheckboxForm>
-              </li>
-            </ul>
-          </b-tab>
-          <b-tab :title="$t('MapView.displayFilter',{count : tabLayer.length})">
-            <template v-if="tabLayer.length===0">{{ $t('MapView.noFilter') }}</template>
-            <li v-for="layer in tabLayer" :key="layer.ref" class="d-flex justify-content-around">
+
+          <opensilex-TreeView :nodes.sync="scientificObjects">
+            <template v-slot:node="{ node }">
+              <span class="item-icon">
+              </span>&nbsp;
+              <span v-if="node.title == 'Scientific Object'">{{ $t('MapView.mapPanelScientificObjects') }} ({{ getNumberScientificObjects(featuresOS) }})</span>
+              <span v-else>{{ getType(node.data.properties.type) }} ({{ getNumberScientificObjectsByType(getType(node.data.properties.type)) }})</span>
+            </template>
+
+            <template v-slot:buttons="{ node }">
               <opensilex-CheckboxForm
-                  :title="layer.titleDisplay"
-                  :value.sync="layer.display"
-                  class="p-2 bd-highlight"
+                :value.sync="displaySO"
+                class="col-lg-2"
+                v-if="node.title == 'Scientific Object'"
+                :small="true"
+                @update:value="displayScientificObjects"
               ></opensilex-CheckboxForm>
-              <div class="p-2 bd-highlight col-2">
-                <opensilex-InputForm
-                    v-if="layer.vlStyleStrokeColor"
-                    :value.sync="layer.vlStyleStrokeColor"
-                    type="color"
+
+              <opensilex-CheckboxForm
+                :value="node.data.properties.display"
+                :disabled="displaySO === 'false'"
+                v-if="node.title != 'Scientific Object'"
+                class="col-lg-2"
+                :small="true"
+                @update:value="updateScientificObject(node)"
+              ></opensilex-CheckboxForm>
+            </template>
+          </opensilex-TreeView>
+
+          <opensilex-TreeView :nodes.sync="areas">
+            <template v-slot:node="{ }">
+              <span class="item-icon">
+              </span>&nbsp;
+              <span>{{ $t('MapView.mapPanelAreas') }} ({{ featuresArea.length }})</span>
+            </template>
+
+            <template v-slot:buttons="">
+
+              <opensilex-CheckboxForm
+                :value.sync="displayAreas"
+                class="col-lg-2"
+                :small="true"
+              ></opensilex-CheckboxForm>
+            </template>
+          </opensilex-TreeView>
+
+          <opensilex-TreeView :nodes.sync="filters">
+            <template v-slot:node="{ node }">
+              <span class="item-icon">
+              </span>&nbsp;
+                <span v-if="node.title == 'Filters'">{{ $t('MapView.mapPanelFilters') }} ({{ tabLayer.length }})</span>
+                <span class="p-2 bd-highlight" v-else>{{ node.title }}</span>
+            </template>
+
+            <template v-slot:buttons="{ node }">
+
+              <div class="d-flex flex-row mx-auto" v-if="node.title != 'Filters'">
+                <opensilex-CheckboxForm
+                v-if="node.title != 'Filters'"
+                :value="true"
+                @update:value="updateFilterDisplay(node)"
+                class="align-self-center"
+                :small="true"
+                ></opensilex-CheckboxForm>
+                <opensilex-InputForm style="width: 35px !important;"
+                  v-if="node.data.vlStyleStrokeColor"
+                  type="color"
+                  :value.sync="node.data.vlStyleStrokeColor"
+                  @update:value="updateColorFilter(node, 'vlStyleStrokeColor')"
+                class="align-self-center"
                 ></opensilex-InputForm>
-                <opensilex-InputForm
-                    v-if="layer.vlStyleFillColor"
-                    :value.sync="layer.vlStyleFillColor"
-                    type="color"
+                <opensilex-InputForm style="width: 35px !important;"
+                  v-if="node.data.vlStyleFillColor"
+                  type="color"
+                  :value.sync="node.data.vlStyleFillColor"
+                  @update:value="updateColorFilter(node, 'vlStyleFillColor')"
+                class="align-self-center"
                 ></opensilex-InputForm>
-              </div>
-              <opensilex-DeleteButton
+                <opensilex-DeleteButton
                   label="FilterMap.filter.delete-button"
-                  @click="tabLayer.splice(tabLayer.indexOf(layer), 1)"
-              ></opensilex-DeleteButton>
-            </li>
-          </b-tab>
+                  :small="true"
+                  @click="tabLayer.forEach((element, index) => { if (element.titleDisplay == node.data.titleDisplay) tabLayer.splice(index, 1) })"
+                  class="align-self-center"
+                ></opensilex-DeleteButton>
+              </div>
+            </template>
+          </opensilex-TreeView>
+          <opensilex-CreateButton
+            class="ml-50 mt-10"
+            label="MapView.create-filter"
+            @click="filterForm.showCreateForm();"
+        ></opensilex-CreateButton>
         </b-tabs>
       </template>
     </b-sidebar>
@@ -258,7 +307,16 @@
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
     <span id="Area">{{ $t("MapView.LegendArea") }}</span>
-    <opensilex-FilterMap :experiment="experiment" :featureOS="featuresOS" :tabLayer="tabLayer"></opensilex-FilterMap>
+    <opensilex-ModalForm
+      v-if="!errorGeometry"
+        ref="filterForm"
+        component="opensilex-FilterMap"
+        createTitle="Filter.add"
+        editTitle="Filter.update"
+        icon="fa#sun"
+        modalSize="m"
+        @onCreate="showFiltersDetails"
+    ></opensilex-ModalForm>
     <div id="selectedTable">
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -334,8 +392,14 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {DragBox} from "ol/interaction";
+import { GeoJSON } from "ol/format";
+import { Vector } from 'ol/source';
+import Feature from 'ol/Feature';
+import Polygon from 'ol/geom/Polygon';
+import Point from 'ol/geom/Point';
 import {platformModifierKeyOnly} from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
+let shpwrite = require('shp-write');
 // @ts-ignore
 import {ScientificObjectNodeDTO} from "opensilex-core/index";
 // @ts-ignore
@@ -350,6 +414,8 @@ import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import {defaults, ScaleLine} from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
+import { jsPDF } from "jspdf"
+import { saveAs } from 'file-saver';
 // @ts-ignore
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 
@@ -359,6 +425,7 @@ export default class MapView extends Vue {
   @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
   @Ref("areaForm") readonly areaForm!: any;
+  @Ref("filterForm") readonly filterForm!: any;
   @Ref("soForm") readonly soForm!: any;
 
   $opensilex: any;
@@ -388,7 +455,6 @@ export default class MapView extends Vue {
     }
   ];
   selectedFeatures: any[] = [];
-  nodes: any[] = [];
 
   private editingMode: boolean = false;
   private displayAreas: String = "true";
@@ -405,6 +471,17 @@ export default class MapView extends Vue {
   private scientificObjectsService = "opensilex.ScientificObjectsService";
   private areaService = "opensilex.AreaService";
   private scientificObjectURI: string;
+  private scientificObjects: any = [];
+  private areas: any = [{
+    "title": "Areas",
+    "isLeaf": true,
+    "children": [],
+    "isExpanded": false,
+    "isSelected": null,
+    "isDraggable": false,
+    "isSelectable": false,
+    "isCheckable": true
+  }];
 
   get user() {
     return this.$store.state.user;
@@ -416,6 +493,156 @@ export default class MapView extends Vue {
 
   get isMapHasLayer() {
     return this.featuresOS.length > 0 || this.featuresArea.length > 0;
+  }
+
+  get titleFile(): String {
+    return this.getType(this.$attrs.uri) + '-map';
+  }
+
+  get filters() {
+    let result = [];
+    let filt = {
+        "title": "Filters",
+        "data": {
+          "isCheckable": true,
+          "name": "Filters",
+          "selected": false,
+          "disabled": false,
+        },
+        "isLeaf": false,
+        "children": [],
+        "isExpanded": true,
+        "isSelected": null,
+        "isDraggable": false,
+        "isSelectable": false,
+        "isCheckable": true
+      }
+    for (let filter of this.tabLayer) {
+      let tmp: any = {
+        title: filter.titleDisplay,
+        isLeaf: true,
+      };
+      tmp.isSelectable = false
+      tmp.isDraggable = false
+      tmp.isCheckable = true;
+      tmp.isExpanded = false;
+      tmp.isSelected = null;
+      tmp.data = filter;
+      tmp.data.vlStyleFillColor = filter.vlStyleFillColor;
+      filt.children.push(tmp);
+    }
+    result.push(filt);
+    return result;
+  }
+
+  getNumberScientificObjects(featureOs): Number {
+    let res = 0;
+
+    for (let layer of this.featuresOS) {
+      for (let obj of layer) {
+        res += 1;
+      }
+    }
+    return res;
+  }
+
+  getNumberScientificObjectsByType(type: String): Number {
+    let res = 0;
+    for (let layer of this.featuresOS) {
+      for (let obj of layer) {
+        if (this.getType(obj.properties.type) == type) {
+          res += 1;
+        }
+      }
+    }
+    return res;
+  }
+
+  updateFilterDisplay(node) {
+    for (let layer of this.tabLayer) {
+      if (layer.titleDisplay == node.title) {
+        if (layer.display == "false") {
+          layer.display = "true";
+          node.data.display = "true";
+        } else {
+          layer.display = "false";
+          node.data.display = "false";
+        }
+        return;
+      }
+    }
+  }
+
+  updateColorFilter(node: any, type: String) {
+    this.tabLayer.forEach(layer => {
+      if (layer.titleDisplay == node.title) {
+        if (type == 'vlStyleStrokeColor') {
+          layer.vlStyleStrokeColor = node.data.vlStyleStrokeColor;
+        } else {
+          layer.vlStyleFillColor = node.data.vlStyleFillColor;
+        }
+        return;
+      }
+    })
+  }
+
+  updateScientificObject(node) {
+    this.featuresOS.forEach(item => {
+      if (item[0].properties.name == node.title) {
+        if (item[0].properties.display == "false")
+          item[0].properties.display = "true"
+        else
+          item[0].properties.display = "false"
+        return;
+      }
+    });
+  }
+
+  getType(type: String) {
+    type = type.split("").reverse().join("");
+    type = type.split(":")[0];
+    type = type.split("").reverse().join("");
+    return type
+  }
+
+  initScientificObjects() {
+    let scientificObject: any = {
+      "title": "Scientific Object",
+      "data": {
+        "isCheckable": true,
+        "name": "Scientific Object",
+        "selected": false,
+        "disabled": false,
+      },
+      "isLeaf": false,
+      "children": [],
+      "isExpanded": true,
+      "isSelected": null,
+      "isDraggable": false,
+      "isSelectable": false,
+      "isCheckable": true
+    };
+    this.featuresOS.forEach(item => {
+      if (item[0].properties.name) {
+        item[0].title = item[0].properties.name
+        item[0].isLeaf = true
+        item[0].isSelectable = false
+        item[0].isDraggable = false
+        item[0].isCheckable = true;
+        item[0].isExpanded = false;
+        item[0].isSelected = null;
+        item[0].data = {
+          "children": [],
+          "name": item[0].properties.name,
+          "disabled": false,
+          "selected": false,
+        }
+        item[0].data.properties = item[0].properties;
+        item[0].data.geometry = item[0].geometry;
+      }
+      scientificObject.children.push(item[0]);
+    });
+    this.scientificObjects.push(scientificObject);
   }
 
   displayScientificObjects() {
@@ -459,10 +686,23 @@ export default class MapView extends Vue {
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then(areaUri => {
+        console.log("DEBUG 4 : ", areaUri)
         this.recoveryShowArea(areaUri);
       });
     } else {
+      console.log("DEBUG 5 : ", areaUriResult)
       this.recoveryShowArea(areaUriResult);
+    }
+  }
+
+  showFiltersDetails(filterResult: any) {
+    if (filterResult.ref) {
+      this.tabLayer.forEach((element, index) => {
+        if (element.ref == filterResult.ref) {
+          this.tabLayer.splice(index, 1)
+        }
+      })
+      this.tabLayer.push(filterResult);
     }
   }
 
@@ -485,13 +725,14 @@ export default class MapView extends Vue {
   callAreaUpdate(areaUriResult) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then(areaUri => {
+        console.log("DEBUG : ", areaUri);
         this.recoveryArea(areaUri);
       });
     } else {
       this.recoveryArea(areaUriResult);
     }
   }
-
+  
   callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
@@ -712,10 +953,84 @@ export default class MapView extends Vue {
     return "rgba(" + parseInt(color.slice(1, 3), 16) + "," + parseInt(color.slice(3, 5), 16) + "," + parseInt(color.slice(5, 7), 16) + ",0.5)"
   }
 
+  saveMap() {
+    this.$bvModal.show('modal-save-map');
+  }
+
+  savePNG(titleFile: String) {
+    let canvas = document.getElementsByTagName('canvas')[0];
+    canvas.toBlob((blob) => {
+      saveAs(blob, titleFile + '.png');
+    });
+    this.$bvModal.hide('modal-save-map');
+  }
+
+  savePDF(titleFile: String) {
+    let map = this.map.$map;
+    let dim = [297, 210]; // Dimension A4
+    let resolution = 72;
+    let width = Math.round(dim[0] * resolution / 25.4);
+    let height = Math.round(dim[1] * resolution / 25.4);
+    let size = map.getSize();
+    let extent = map.getView().calculateExtent(size);
+    map.once('rendercomplete', (event) => {
+      let canvas = event.context.canvas;
+      let data = canvas.toDataURL('image/jpeg');
+      let pdf = new jsPDF('landscape', undefined, 'a4');
+      pdf.addImage(data, 'JPEG', 0, 0, dim[0], dim[1]);
+      pdf.save(titleFile + '.pdf');
+      this.$bvModal.hide('modal-save-map');
+      map.setSize(size);
+      map.getView().fit(extent, { size: size });
+    });
+    let printSize = [width, height];
+    map.setSize(printSize);
+  }
+
+  saveShapefile(titleFile: String) {
+    let vectorSource = new Vector();
+    let geometry = null;
+    let feature = null;
+    for (let layer of this.featuresOS) {
+      for (let obj of layer) {
+        geometry = null;
+        if (obj.geometry.type == 'Point') {
+          geometry = new Point(obj.geometry.coordinates);
+        } else {
+          geometry = new Polygon(obj.geometry.coordinates);
+        }
+        feature = new Feature({
+          geometry,
+          name: obj.properties.name,
+        });
+        vectorSource.addFeature(feature)
+      }
+    }
+    for (let layer of this.featuresArea) {
+      geometry = null;
+      if (layer.geometry.type == 'Point') {
+        geometry = new Point(layer.geometry.coordinates);
+      } else {
+        geometry = new Polygon(layer.geometry.coordinates);
+      }
+      feature = new Feature({
+        geometry,
+        name: layer.properties.name
+      });
+      vectorSource.addFeature(feature)
+    }
+    let writer = new GeoJSON();
+    let geojsonStr = writer.writeFeatures(vectorSource.getFeatures());
+    let geoJson = JSON.parse(geojsonStr);
+    shpwrite.download(geoJson);
+    this.$bvModal.hide('modal-save-map');
+  }
+
   private recoveryShowArea(areaUri) {
     if (areaUri != undefined) {
       this.editingMode = false;
-      console.debug("showAreaDetails", areaUri);
+      console.log("this.areaService", this.areaService);
+      console.log("areaUri", areaUri.toString());
       this.$opensilex
           .getService(this.areaService)
           .getByURI(areaUri.toString())
@@ -736,6 +1051,7 @@ export default class MapView extends Vue {
   }
 
   private recoveryArea(areaUri) {
+    console.log("DEBUG 2: ", areaUri);
     if (areaUri != undefined) {
       this.removeFromFeaturesArea(areaUri, this.featuresArea);
       this.removeFromFeaturesArea(areaUri, this.selectedFeatures);
@@ -799,6 +1115,7 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler)
         .finally(() => {
           this.$opensilex.hideLoader();
+          this.initScientificObjects();
         });
   }
 
@@ -1068,13 +1385,22 @@ en:
     displayFilter: Filters ({count})
     mapPanel: Manage map panel
     mapPanelTitle: Map Panel
+    mapPanelScientificObjects: Scientific Objects
+    mapPanelAreas: Areas
+    mapPanelFilters: Filters
+    create-filter: Create filter
     center: Refocus the map
+    save: Save the map
     noFilter: No filter applied. To add one, use the form below the map
+    save-confirmation: Do you want to export the map as PNG image or PDF ?
   Area:
     title: Area
     add: Description of the area
     update: Update Area
     display: Areas
+  Filter:
+    add: Creation of the filter
+    update: Update Filter
   ScientificObjects:
     title: Scientific object
     update: Scientific object has been updated
@@ -1102,14 +1428,23 @@ fr:
     display: Couches
     displayFilter: Filtres ({count})
     mapPanel: Gérer la carte
-    mapPanelTitle: Carte
+    mapPanelTitle: Contrôle
+    mapPanelScientificObjects: Objets Scientifiques
+    mapPanelAreas: Zones
+    mapPanelFilters: Filtres
+    create-filter: Créer un filtre
     center: Recentrer la carte
+    save: Enregistrer la carte
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
+    save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
   Area:
     title: Zone
     add: Description de la zone
     update: Mise à jour de la zone
     display: Zones
+  Filter:
+    add: Création d'un filtre
+    update: Mise à jour du filtre
   ScientificObjects:
     title: Objet scientifique
     update: L'objet scientifique a été mis à jour

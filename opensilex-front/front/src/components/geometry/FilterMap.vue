@@ -1,31 +1,25 @@
 <template>
-  <div>
-    <div id="germplasm" class="row">
-      <div class="col-4">
-        <!-- Germplasm -->
-        <opensilex-GermplasmSelector
-            :experiment="experiment"
-            :germplasm.sync="filter.germplasm"
-            :multiple="false"
-            label=""
-        ></opensilex-GermplasmSelector>
-      </div>
-      <div class="col-4">
+  <b-form id="germplasm" >
+    <!-- Germplasm -->
+    <opensilex-GermplasmSelector
+        :experiment="experiment"
+        :germplasm.sync="filter.germplasm"
+        :multiple="false"
+        label=""
+    ></opensilex-GermplasmSelector>
         <!-- Factor -->
-        <opensilex-FactorLevelSelector
-            id="factorLevels"
-            :experimentURI="experiment"
-            :factorLevels.sync="filter.factorLevels"
-            :multiple="false"
-            :required="false"
-        ></opensilex-FactorLevelSelector>
-      </div>
-      <div class="col-1">
-        <opensilex-InputForm
-            :value.sync="color"
-            type="color"
-        ></opensilex-InputForm>
-      </div>
+    <opensilex-FactorLevelSelector
+        id="factorLevels"
+        :experimentURI="experiment"
+        :factorLevels.sync="filter.factorLevels"
+        :multiple="false"
+        :required="false"
+    ></opensilex-FactorLevelSelector>
+    <div class="col-3 mx-auto">
+      <opensilex-InputForm
+          :value.sync="color"
+          type="color"
+      ></opensilex-InputForm>
       <toggle-button
           v-model="isStrikeColor"
           :labels="{
@@ -35,24 +29,8 @@
           :sync="true"
           :width="68"
       />
-      <div class="col">
-        <opensilex-CreateButton
-            :disabled=" (filter.factorLevels === undefined && filter.germplasm === undefined) || IsThereReference()"
-            label="FilterMap.filter.filter"
-            @click="searchScientificObject()"
-        ></opensilex-CreateButton>
-        <slot name="clear">
-          <opensilex-Button
-              :small="false"
-              icon="ik#ik-x"
-              label="component.common.search.clear-button"
-              variant="light"
-              @click="reset"
-          ></opensilex-Button>
-        </slot>
-      </div>
     </div>
-  </div>
+  </b-form>
 </template>
 
 <script lang="ts">
@@ -64,17 +42,32 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {GermplasmGetSingleDTO} from "opensilex-core/model/germplasmGetSingleDTO";
 // @ts-ignore
 import {FactorDetailsGetDTO} from "opensilex-core/model/factorDetailsGetDTO";
+// @ts-ignore
+import {ScientificObjectNodeDTO} from "opensilex-core/index";
 
 @Component
 export default class FilterMap extends Vue {
-  @Prop()
   featureOS: any[];
 
-  @Prop()
-  tabLayer: any[];
+  experiment: string;
 
   @Prop()
-  experiment: string;
+  editMode;
+  @Prop()
+  title: string;
+  @Prop({
+    default: () => {
+      return {
+        ref: null,
+        tabFeatures: [],
+        vlStyleStrokeColor: null,
+        vlStyleFillColor: null,
+        display: "false",
+        titleDisplay: "unknow",
+      };
+    },
+  })
+  form;
 
   color: string = this.getRandomColor();
   isStrikeColor: boolean = false;
@@ -117,133 +110,170 @@ export default class FilterMap extends Vue {
     return color;
   }
 
-  searchScientificObject() {
-    const {germplasm, factorLevels} = this.filter;
-    if (this.IsThereReference()) return;
+  created() {
+    this.$opensilex.showLoader();
 
-    this.feature.splice(0, this.feature.length);
-
-    let pageSize = 0;
-    for (const feature of this.featureOS) {
-      pageSize += feature.length;
-    }
-
-    this.$opensilex
-        .getService("opensilex.ScientificObjectsService")
-        .searchScientificObjects(
-            this.experiment, // experiment uri?: string,
-            [], // rdfTypes?: Array<string>,
-            "", // pattern?: string,
-            undefined, // parentURI?: string,
-            germplasm || undefined,
-            factorLevels, // factorLevels?: Array<string>,
-            undefined, // facility?: string,
-            undefined,
-            undefined,
-            [],
-            0,
-            pageSize
-        )
-        .then((http) => {
-          http.response.result.forEach(({rdf_type, uri}) => {
-            this.featureOS.forEach((item) => {
-              if (rdf_type === item[0].properties.type) {
-                for (const itemElement of item) {
-                  if (uri === itemElement.properties.uri) {
-                    this.feature.push(itemElement);
-                  }
-                }
-              }
-            });
-          });
-          this.getNameDisplay();
-        });
+    this.experiment = decodeURIComponent(this.$route.params.uri);
+    this.recoveryScientificObjects();
   }
 
-  addFilter() {
-    let ref = this.ReferenceDefinition();
-    let strokeColor = "";
-    let fillColor = "";
+  searchScientificObject() {
+    return new Promise((resolve, reject) => {
+      const {germplasm, factorLevels} = this.filter;
+      if (this.IsThereReference()) return;
+  
+      this.feature.splice(0, this.feature.length);
+  
+      let pageSize = 0;
+      for (const feature of this.featureOS) {
+        pageSize += feature.length;
+      }
+  
+      this.$opensilex
+          .getService("opensilex.ScientificObjectsService")
+          .searchScientificObjects(
+              this.experiment, // experiment uri?: string,
+              [], // rdfTypes?: Array<string>,
+              "", // pattern?: string,
+              undefined, // parentURI?: string,
+              germplasm || undefined,
+              factorLevels, // factorLevels?: Array<string>,
+              undefined, // facility?: string,
+              undefined,
+              undefined,
+              [],
+              0,
+              pageSize
+          )
+          .then((http) => {
+            http.response.result.forEach(({rdf_type, uri}) => {
+              this.featureOS.forEach((item) => {
+                if (rdf_type === item[0].properties.type) {
+                  for (const itemElement of item) {
+                    if (uri === itemElement.properties.uri) {
+                      this.feature.push(itemElement);
+                    }
+                  }
+                }
+              });
+            });
+            this.getNameDisplay().then(() => {
+              resolve("");
+            });
+          });
+    })
+  }
 
-    if (this.isStrikeColor) {
-      strokeColor = this.color;
-    } else {
-      fillColor = this.color;
-    }
+  create(form) {
+    return this.searchScientificObject().then(() => { 
+      let ref = this.ReferenceDefinition();
+      let strokeColor = "";
+      let fillColor = "";
+  
+      if (this.isStrikeColor) {
+        strokeColor = this.color;
+      } else {
+        fillColor = this.color;
+      }
 
-    this.tabLayer.push({
-      ref: ref,
-      tabFeatures: this.feature,
-      vlStyleStrokeColor: strokeColor, // outline color
-      vlStyleFillColor: fillColor,
-      display: "true",
-      titleDisplay: this.titleDisplay,
-    });
-    this.reset();
+      if (ref == null) {
+        this.$opensilex.showErrorToast(this.$i18n.t("FilterMap.filter.empty-filter-error"))
+        return false;
+      }
+  
+      let newFilter = {
+        ref: ref,
+        tabFeatures: this.feature,
+        vlStyleStrokeColor: strokeColor, // outline color
+        vlStyleFillColor: fillColor,
+        display: "true",
+        titleDisplay: this.titleDisplay
+      };
+      return newFilter;
+    })
+  }
+
+  update(form) {
+    return null;
+  }
+
+  getEmptyForm() {
+    return {
+      ref: null,
+      tabFeatures: [],
+      vlStyleStrokeColor: null,
+      vlStyleFillColor: null,
+      display: "false",
+      titleDisplay: "unknow",
+    };
   }
 
   getNameDisplay() {
-    if (this.filter.germplasm !== undefined) {
-      // Germplasm
-      this.$opensilex
-          .getService("opensilex.GermplasmService")
-          .getGermplasm(this.filter.germplasm)
-          .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
-                this.titleDisplay = http.response.result.name;
-                // Factor
-                let promiseName = [];
-                for (let i = 0; i < this.filter.factorLevels.length; i++) {
-                  const factorLevel = this.filter.factorLevels[i];
-                  promiseName.push(
-                      this.$opensilex
-                          .getService("opensilex.FactorsService")
-                          .getFactorLevel(factorLevel)
-                          .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-                                return http.response.result.name;
-                              }
-                          )
-                  );
-                }
-                Promise.all(promiseName).then((items) => {
-                  items.forEach((item) => {
-                    this.titleDisplay.length == 0
-                        ? (this.titleDisplay = item)
-                        : (this.titleDisplay += " - " + item);
+    return new Promise((resolve, reject) => {
+      if (this.filter.germplasm !== undefined) {
+        // Germplasm
+        this.$opensilex
+            .getService("opensilex.GermplasmService")
+            .getGermplasm(this.filter.germplasm)
+            .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
+                  this.titleDisplay = http.response.result.name;
+                  // Factor
+                  let promiseName = [];
+                  for (let i = 0; i < this.filter.factorLevels.length; i++) {
+                    const factorLevel = this.filter.factorLevels[i];
+                    promiseName.push(
+                        this.$opensilex
+                            .getService("opensilex.FactorsService")
+                            .getFactorLevel(factorLevel)
+                            .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+                                  return http.response.result.name;
+                                }
+                            )
+                    );
+                  }
+                  Promise.all(promiseName).then((items) => {
+                    items.forEach((item) => {
+                      this.titleDisplay.length == 0
+                          ? (this.titleDisplay = item)
+                          : (this.titleDisplay += " - " + item);
+                    });
+                    resolve("");
                   });
-                  this.addFilter();
-                });
-              }
+                }
+            );
+      } else {
+        // Factor
+        let promiseName = [];
+        for (let i = 0; i < this.filter.factorLevels.length; i++) {
+          const factorLevel = this.filter.factorLevels[i];
+          promiseName.push(
+              this.$opensilex
+                  .getService("opensilex.FactorsService")
+                  .getFactorLevel(factorLevel)
+                  .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
+                        return http.response.result.name;
+                      }
+                  )
           );
-    } else {
-      // Factor
-      let promiseName = [];
-      for (let i = 0; i < this.filter.factorLevels.length; i++) {
-        const factorLevel = this.filter.factorLevels[i];
-        promiseName.push(
-            this.$opensilex
-                .getService("opensilex.FactorsService")
-                .getFactorLevel(factorLevel)
-                .then((http: HttpResponse<OpenSilexResponse<FactorDetailsGetDTO>>) => {
-                      return http.response.result.name;
-                    }
-                )
-        );
-      }
-      Promise.all(promiseName).then((items) => {
-        items.forEach((item) => {
-          this.titleDisplay.length == 0
-              ? (this.titleDisplay = item)
-              : (this.titleDisplay += " - " + item);
+        }
+        Promise.all(promiseName).then((items) => {
+          items.forEach((item) => {
+            this.titleDisplay.length == 0
+                ? (this.titleDisplay = item)
+                : (this.titleDisplay += " - " + item);
+          });
+          resolve("");
         });
-        this.addFilter();
-      });
-    }
+      }
+    })
   }
 
   private ReferenceDefinition() {
     let ref = "";
     ref = this.filter.germplasm;
-    this.filter.factorLevels.forEach((item) => (ref += item));
+    if (this.filter.factorLevels) {
+      this.filter.factorLevels.forEach((item) => (ref += item));
+    }
 
     return ref;
   }
@@ -256,11 +286,46 @@ export default class FilterMap extends Vue {
     }
 
     let ref = this.ReferenceDefinition();
-
-    for (const tabLayerElement of this.tabLayer) {
-      if (tabLayerElement.ref == ref) return true;
-    }
     return false;
+  }
+
+  private recoveryScientificObjects() {
+    this.featureOS = [];
+    const scientificObjectsService = "opensilex.ScientificObjectsService";
+
+    this.$opensilex
+        .getService(scientificObjectsService)
+        .searchScientificObjectsWithGeometryListByUris(this.experiment)
+        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
+              const res = http.response.result as any;
+              res.forEach(element => {
+                if (element.geometry != null) {
+                  element.geometry.properties = {
+                    uri: element.uri,
+                    name: element.name,
+                    type: element.rdf_type,
+                    nature: "ScientificObjects",
+                    display: "true"
+                  };
+
+                  let inserted = false;
+                  this.featureOS.forEach(item => {
+                    if (item[0].properties.type == element.rdf_type) {
+                      item.push(element.geometry);
+                      inserted = true;
+                    }
+                  });
+                  if (!inserted) {
+                    this.featureOS.push([element.geometry]);
+                  }
+                }
+              });
+            }
+        )
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.hideLoader();
+        });
   }
 }
 </script>
@@ -280,6 +345,7 @@ en:
       strokeColor: Stroke
       fillColor: Fill
       crossFilter: Cross filter
+      empty-filter-error: Filter must have at least one criterion.
 fr:
   FilterMap:
     filter:
@@ -288,4 +354,5 @@ fr:
       strokeColor: Trait
       fillColor: Remplir
       crossFilter: Filtre croisé
+      empty-filter-error: Le filtre doit avoir au moins un critère.
 </i18n>

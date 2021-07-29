@@ -928,15 +928,15 @@ public class DataAPI {
         
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        Map<String, ScientificObjectModel> nameURIScientificObjects = new HashMap<>();
+        List<String> notExistingObjects = new ArrayList<>();
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
-        List<String> notExistingDevices = new ArrayList<>();
-
-        List<URI> scientificObjectsNotInDB = new ArrayList<>();
+        List<String> notExistingDevices = new ArrayList<>();        
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -1019,8 +1019,9 @@ public class DataAPI {
                                 xpDAO,
                                 notExistingExperiments,
                                 nameURIExperiments,                                
-                                scientificObjectDAO, 
-                                scientificObjectsNotInDB,
+                                scientificObjectDAO,
+                                notExistingObjects,
+                                nameURIScientificObjects,
                                 deviceDAO,
                                 notExistingDevices,
                                 nameURIDevices,
@@ -1057,7 +1058,8 @@ public class DataAPI {
             List<String> notExistingExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
             ScientificObjectDAO scientificObjectDAO, 
-            List<URI> scientificObjectsNotInDB,
+            List<String> notExistingObjects,
+            Map<String, ScientificObjectModel> nameURIScientificObjects,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevice,
             Map<String, DeviceModel> nameURIDevices,
@@ -1072,13 +1074,13 @@ public class DataAPI {
         
         List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
+        ScientificObjectModel object = null;
         
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            URI objectUri = null;
-            
-            ExperimentModel exp = null;
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {            
+                        
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
+                ExperimentModel exp = null;
                 String expNameOrUri = values[colIndex];
                 // test in uri list
                 if (!StringUtils.isEmpty(expNameOrUri)) {
@@ -1104,29 +1106,28 @@ public class DataAPI {
                     experiments.add(exp.getUri());
                 }
                 
+            
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
                 //check object column
-                String objectUriString = values[colIndex];                
+                String objectNameOrUri = values[colIndex];                
                 
-                if (!StringUtils.isEmpty(objectUriString)) {
-                    objectUri = new URI(objectUriString);
-
-                    if (scientificObjectsNotInDB.contains(objectUri)) {                    
-                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectUriString, "OBJECT_ID");
-                        csvValidation.addInvalidObjectError(cell);
-                        validRow = false;
-                        break;  
-                        
+                if (!StringUtils.isEmpty(objectNameOrUri)) {
+                    if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
+                        object = nameURIScientificObjects.get(objectNameOrUri);
                     } else {
                         // test not in uri list
-                        if (!sparql.uriExists(ScientificObjectModel.class, objectUri)) {   
-                            scientificObjectsNotInDB.add(objectUri);
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectUriString, "OBJECT_ID");
+                        if (!notExistingObjects.contains(objectNameOrUri)) {
+                            object = ExperimentAPI.getObjectByNameOrURI(scientificObjectDAO, null, objectNameOrUri);
+                        }
+                        if (object == null) {
+                            notExistingObjects.add(objectNameOrUri);
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addInvalidObjectError(cell);
                             validRow = false;
-                            break;                    
+                            break;
+                        } else {
+                            nameURIScientificObjects.put(objectNameOrUri, object);
                         }
-
                     }
                 }
 
@@ -1195,7 +1196,7 @@ public class DataAPI {
                         dataModel.setOffset(parsedDateTimeMongo.getOffset());
                         dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
 
-                        dataModel.setScientificObject(objectUri);
+                        dataModel.setScientificObject(object.getUri());
                         dataModel.setProvenance(provenanceModel);
                         URI varURI = URI.create(headerByIndex.get(colIndex));
                         dataModel.setVariable(varURI);
@@ -1208,7 +1209,7 @@ public class DataAPI {
                         
                         csvValidation.addData(dataModel,rowIndex);
                         // check for duplicate data
-                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), objectUri);
+                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), object.getUri());
                         if (!duplicateDataByIndex.contains(importDataIndex)) { 
                             duplicateDataByIndex.add(importDataIndex);
                         }else{

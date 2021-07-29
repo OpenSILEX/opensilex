@@ -1032,7 +1032,7 @@ public class ExperimentAPI {
         return validRow;
     }
 
-    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+    public static ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
         ScientificObjectModel object = null;
         try {
             object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
@@ -1041,7 +1041,7 @@ public class ExperimentAPI {
         return object;
     }
 
-    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
+    private static ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
         ScientificObjectModel object;
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);

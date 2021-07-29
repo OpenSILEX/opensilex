@@ -12,17 +12,7 @@
 
     <div>
       <ValidationObserver ref="validatorRefDataTemplate">
-        <br />
-        <!-- Experiments -->
-        <opensilex-ExperimentSelector
-          v-if="selectExperiment"
-          label="DataForm.experiment"
-          :multiple="false"
-          :experiments.sync="experiment"
-          :required="true"
-        ></opensilex-ExperimentSelector>
-
-      <b-form-group label="DataTemplateForm.select-columns" v-slot="{ ariaDescribedby }">
+      <b-form-group v-if="experiment==null" :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
         <b-form-checkbox-group
           v-model="selectedColumns"
           :options="options"
@@ -96,15 +86,12 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   @Prop()
   editMode;
-
-  @Prop({ default: true })
-  uriGenerated;
-
+  
   options = [
-          { text: "experiment", value: this.expColumn },
-          { text: 'scientific_object', value: this.soColumn },
-          { text: 'device', value: this.deviceColumn }
-        ];
+    { text: "experiment", value: this.expColumn },
+    { text: 'scientific_object', value: this.soColumn },
+    { text: 'device', value: this.deviceColumn }
+  ];
 
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
@@ -117,9 +104,6 @@ export default class GenerateDataTemplateFrom extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
   }
-
-  @Prop({ default: true })
-  selectExperiment: boolean;
 
   @Prop({ default: null })
   experiment: string;
@@ -202,7 +186,7 @@ export default class GenerateDataTemplateFrom extends Vue {
     }
 
     //column object
-    if (this.selectedColumns.includes(this.soColumn)) {
+    if (this.selectedColumns.includes(this.soColumn) || this.experiment != null) {
       line1.push(this.soColumn);
       line2.push(this.$t("DataHelp.objectId-help")); 
       line2.push(
@@ -305,7 +289,7 @@ export default class GenerateDataTemplateFrom extends Vue {
         
 
         //column object
-        if (this.selectedColumns.includes(this.soColumn)) {
+        if (this.selectedColumns.includes(this.soColumn) || this.experiment != null) {
           line1.push(this.soColumn);
           line2.push(this.$t("DataHelp.objectId-help"));
           line3.push(this.$t("DataHelp.column-type-help") +

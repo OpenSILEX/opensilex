@@ -42,7 +42,7 @@ export default class ProvenanceDetails extends Vue {
   $i18n: any;
 
   @Prop({
-    default: "DatasetForm.provenance.description",
+    default: "DataImportForm.provenance.description",
   })
   label: string;
 

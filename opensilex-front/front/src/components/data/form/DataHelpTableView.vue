@@ -10,9 +10,9 @@
         <b-thead>
           <b-tr>
             <b-th>1</b-th>
-            <b-th v-if="!byExperiment">experiment</b-th>
-            <b-th>scientific_object<span v-if="byExperiment" class="required"> *</span></b-th>
-            <b-th v-if="!byExperiment">device</b-th>
+            <b-th v-if="experiment == null">experiment</b-th>
+            <b-th>scientific_object<span v-if="experiment != null" class="required"> *</span></b-th>
+            <b-th v-if="experiment == null">device</b-th>
             <b-th>date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
             <b-th>uri:variable...</b-th>
@@ -21,21 +21,21 @@
         <b-tbody>
           <b-tr>
             <b-th>2</b-th>
-            <b-td v-if="!byExperiment">{{ $t("DataHelp.experiment-help") }}</b-td>
+            <b-td v-if="experiment == null">{{ $t("DataHelp.experiment-help") }}</b-td>
             <b-td>{{ $t("DataHelp.objectId-help") }}</b-td>
-            <b-td v-if="!byExperiment">{{ $t("DataHelp.device-help") }}</b-td>
+            <b-td v-if="experiment == null">{{ $t("DataHelp.device-help") }}</b-td>
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
           </b-tr>
           <b-tr>
             <b-th>3</b-th>
-            <b-td v-if="!byExperiment"
+            <b-td v-if="experiment == null"
               >{{ $t("DataHelp.column-type-help")
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
               ></b-td
             >
-            <b-td v-if="!byExperiment"
+            <b-td v-if="experiment == null"
               >{{ $t("DataHelp.column-type-help")
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
               >
@@ -47,7 +47,7 @@
                 }}</strong
               >
             </b-td>
-            <b-td v-if="!byExperiment"
+            <b-td v-if="experiment == null"
               >{{ $t("DataHelp.column-type-help")
               }}<strong>{{ this.getDataTypeLabel("xsd:string") }}</strong
               >
@@ -114,7 +114,6 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
 export default class DataHelpTableView extends Vue {
@@ -128,7 +127,7 @@ export default class DataHelpTableView extends Vue {
   integerType: string;
 
   @Prop()
-  byExperiment;
+  experiment;
 
   created() {
     this.stringType = this.getDataTypeLabel("xsd:string");
@@ -235,10 +234,9 @@ en :
     variables-help : Other variables names
     text-help:  "You can insert data from this row. <br /> \n
             First three rows of CSV content will be ignored. <br /> \n
-            <strong>You can't change the two first columns' order </strong> and \n
-            you can add new ones as long as you don't change the variable URI \n
-            the of the first row. \n
-            <br /> \n
+            <strong>The \"experiment\", \"scientific_object\" and \"device\" columns are optional. You can remove them. </strong> <br /> \n
+            If needed, you can duplicate the columns \"experiment\" or \"device\" to link your data to several experiments or devices <br />\n
+            If needed, you can add a \"raw_data\" column to the right of each variable column. (see template generation) <br />\n
             Accepted CSV separators : <strong>{comma} or {semicolon}</strong><br /> \n
             Decimal separator is  <strong>\"{decimalSeparator}\"</strong><br /> \n
             <strong> If you don't specify offsets of date, the system will use the \n
@@ -271,9 +269,9 @@ fr :
     variables-help : Autres noms de variables
     text-help:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
-            <strong>Vous ne pouvez pas changer l'ordre des deux premières colonnes  \n
-            et vous pouvez en ajouter de nouvelles tant que vous ne changez pas l'URI variable de la première ligne.</strong> \n
-            <br /> \n
+            <strong>Les colonnes \"experiment\", \"scientific_object\" et \"device\" sont optionnelles. Vous pouvez les enlever. </strong> <br /> \n
+            Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos donner à plusieurs expérimentations ou équipements <br />\n
+            Si besoin, vous pouvez ajouter une colonne \"raw_data\" à droite de chaque colonne variable. (Voir la génération du template) <br />\n
             Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n
             Le séparateur décimal est le suivant : <strong>\"{decimalSeparator}\"</strong><br /> \n
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n

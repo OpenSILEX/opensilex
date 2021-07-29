@@ -153,6 +153,8 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("invalidValueErrors", errors, globalErrors);
     this.loadErrorType("invalidObjectErrors", errors, globalErrors);
     this.loadErrorType("invalidDateErrors", errors, globalErrors);
+    this.loadErrorType("invalidExperimentErrors", errors, globalErrors);
+    this.loadErrorType("invalidDeviceErrors", errors, globalErrors);
     this.loadErrorType("invalidDataTypeErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDataErrors", errors, globalErrors);
 
@@ -235,6 +237,16 @@ export default class DataValidationReport extends Vue {
       case "invalidDateErrors":
         return this.$t(
           "DataValidationReport.invalidDateErrorMessage",
+          validationError
+        );
+      case "invalidExperimentErrors":
+        return this.$t(
+          "DataValidationReport.invalidExperimentErrorMessage",
+          validationError
+        );
+      case "invalidDeviceErrors":
+        return this.$t(
+          "DataValidationReport.invalidDeviceErrorMessage",
           validationError
         );
       case "duplicateURIErrors":
@@ -404,6 +416,8 @@ en:
     invalidValueErrors: Invalid value
     invalidObjectErrors: Object name or uri not found in this experiment
     invalidDateErrors: Invalid date format
+    invalidExperimentErrors: Experiment name or uri not found
+    invalidDeviceErrors: Device name or uri not found
     alreadyExistingURIErrors:  URI already existing
     duplicateURIErrors: Duplicate URI
     invalidDataTypeErrorMessage: Invalid value data type
@@ -453,7 +467,9 @@ fr:
     missingRequiredValueErrors: Valeur obligatoire manquante
     invalidValueErrors: Valeur invalide
     invalidObjectErrors: Le nom ou l'uri de l'objet n'est pas présent dans cette expérimentation
-    invalidDateErrors: Invalid date format
+    invalidDateErrors: Format de date invalide
+    invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
+    invalidDeviceErrors: Le nom ou l'uri du device n'existe pas
     alreadyExistingURIErrors: URI déjà existante
     duplicateURIErrors: URI dupliquée
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"

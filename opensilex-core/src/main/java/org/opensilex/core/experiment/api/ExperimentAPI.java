@@ -1054,7 +1054,7 @@ public class ExperimentAPI {
         return object;
     }
 
-    private List<Object> returnValidRawData(URI variable, String rawDataCell, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
+    public static List<Object> returnValidRawData(URI variable, String rawDataCell, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
         String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
         List<Object> formatedRawData = Arrays.asList(rawDataCell.split(","));
         if (dataType == null) {

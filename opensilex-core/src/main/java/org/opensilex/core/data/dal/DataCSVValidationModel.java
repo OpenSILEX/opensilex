@@ -24,10 +24,10 @@ public class DataCSVValidationModel extends CSVValidationModel{
     private HashMap<DataModel, Integer> data = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
-
     private Map<Integer, List<CSVCell>> invalidDateErrors = new HashMap<>();
-
     private Map<Integer, List<CSVCell>> invalidDataTypeErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> invalidExperimentErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> invalidDeviceErrors = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> duplicatedDataErrors = new HashMap<>();
 
@@ -229,7 +229,38 @@ public class DataCSVValidationModel extends CSVValidationModel{
         this.invalidDataTypeErrors = invalidDataTypeErrors;
     }
     
+     public Map<Integer, List<CSVCell>> getInvalidExperimentErrors() {
+        return invalidExperimentErrors;
+    }
+
     
+     public void addInvalidExperimentError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!invalidExperimentErrors.containsKey(rowIndex)) {
+            invalidExperimentErrors.put(rowIndex, new ArrayList<>());
+        }
+        invalidExperimentErrors.get(rowIndex).add(cell);
+    }
     
+    public void setInvalidExperimentErrors(Map<Integer, List<CSVCell>> invalidExperimentErrors) {
+        this.invalidExperimentErrors = invalidExperimentErrors;
+    }
+    
+     public Map<Integer, List<CSVCell>> getInvalidDeviceErrors() {
+        return invalidDeviceErrors;
+    }
+
+    
+     public void addInvalidDeviceError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!invalidDeviceErrors.containsKey(rowIndex)) {
+            invalidDeviceErrors.put(rowIndex, new ArrayList<>());
+        }
+        invalidDeviceErrors.get(rowIndex).add(cell);
+    }
+    
+    public void setInvalidDeviceErrors(Map<Integer, List<CSVCell>> invalidDeviceErrors) {
+        this.invalidDeviceErrors = invalidDeviceErrors;
+    }
     
 }

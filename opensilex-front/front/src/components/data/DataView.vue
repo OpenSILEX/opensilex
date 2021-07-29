@@ -17,10 +17,10 @@
 
     <opensilex-ModalForm
       ref="modalDataForm"
-      createTitle="DatasetForm.create"
-      editTitle="DatasetForm.update"
+      createTitle="DataImportForm.create"
+      editTitle="DataImportForm.update"
       component="opensilex-DataImportForm"
-      icon="fa#vials"
+      icon="ik#ik-bar-chart-line"
       modalSize="xl"
       @onCreate="afterCreateData"
       :successMessage="successMessage"
@@ -260,7 +260,7 @@ export default class DataView extends Vue {
     if(results instanceof Promise){
       results.then((res) => {
         this.resultModal.setNbLinesImported(
-          res.validation.dataErrors.nb_lines_imported
+          res.validation.dataErrors.nbLinesImported
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
@@ -271,7 +271,7 @@ export default class DataView extends Vue {
       });
     }else{ 
       this.resultModal.setNbLinesImported(
-        results.validation.dataErrors.nb_lines_imported
+        results.validation.dataErrors.nbLinesImported
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();

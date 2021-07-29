@@ -337,8 +337,6 @@ import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
 components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
-import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
-components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
 

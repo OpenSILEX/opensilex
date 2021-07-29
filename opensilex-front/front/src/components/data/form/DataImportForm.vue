@@ -53,14 +53,12 @@
     
       <!-- Upload file  -->
       <opensilex-GenerateDataTemplateFrom
-        :selectExperiment="false"
-        :acceptSONames="false"
-        :deviceColumns="getAgentsNames(selectedAgentTypes)"
         ref="templateForm"
+        :experiment="form.experiment"
       ></opensilex-GenerateDataTemplateFrom>
       <div>
         <label
-          >{{ $t("DatasetForm.dataFile") }}
+          >{{ $t("DataImportForm.import-file") }}
           <span class="required">*</span></label
         >
 
@@ -71,8 +69,8 @@
               ref="inputFile"
               accept="text/csv, .csv"
               @input="uploadCSV"
-              :placeholder="$t('DatasetForm.csv-file-placeholder')"
-              :drop-placeholder="$t('DatasetForm.csv-file-drop-placeholder')"
+              :placeholder="$t('DataImportForm.csv-file-placeholder')"
+              :drop-placeholder="$t('DataImportForm.csv-file-drop-placeholder')"
               :browse-text="$t('component.common.import-files.select-button')"
               v-model="file"
               :state="Boolean(file)"
@@ -94,7 +92,7 @@
       </div>
       <div>
         <opensilex-DataHelpTableView 
-          :byExperiment="false">
+          :experiment="form.experiment">
         </opensilex-DataHelpTableView>
       </div>
       <!-- validation report  -->
@@ -104,13 +102,13 @@
       >
       </opensilex-DataValidationReport>
       <p v-if="!isImported && isValid && insertionError" class="alert-warning">
-        {{ $t("DatasetForm.data-not-imported") }}
+        {{ $t("DataImportForm.data-not-imported") }}
       </p>
       <p
         v-if="!isImported && tooLargeDataset && insertionError"
         class="alert alert-warning"
       >
-        {{ $t("DatasetForm.data-too-much-data") }}
+        {{ $t("DataImportForm.data-too-much-data") }}
       </p>
       <p
         v-if="
@@ -118,9 +116,9 @@
         "
         class="alert alert-warning"
       >
-        {{ $t("DatasetForm.error") }} : {{ insertionDataError.title }}
+        {{ $t("DataImportForm.error") }} : {{ insertionDataError.title }}
         <br />
-        {{ $t("DatasetForm.message") }} : {{ insertionDataError.message }}
+        {{ $t("DataImportForm.message") }} : {{ insertionDataError.message }}
       </p>
       <br />
   </b-form>
@@ -141,7 +139,7 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { ExperimentGetDTO } from "opensilex-core/index";
 
 @Component
-export default class DataForm extends Vue {
+export default class DataImportForm extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
@@ -181,6 +179,8 @@ export default class DataForm extends Vue {
   withDeviceColumn: boolean = false;
   selectedAgentTypes = [];
   agentTypes: any[] = [];
+
+  readonly standardProvURI = "dev:id/provenance/standard_provenance";
 
   @Prop({
     default: () => {
@@ -236,7 +236,8 @@ export default class DataForm extends Vue {
         prov_activity: [],
         prov_agent: [],
       },
-      dataFile: null
+      dataFile: null,
+      experiment: null
     };
   }
 
@@ -260,7 +261,7 @@ export default class DataForm extends Vue {
   }
 
   successMessage(form) {
-    return this.$t("DatasetForm.provenance.success-message");
+    return this.$t("DataImportForm.provenance.success-message");
   }
 
   initForm(form) {
@@ -335,17 +336,37 @@ export default class DataForm extends Vue {
       if (this.isImported) {
         resolve(true);
       } else {
-        return this.$opensilex
-          .uploadFileToService(
-            "/core/data/import",
-            {
-              file: this.form.dataFile
-            },
-            {
-              experiments: this.experiments,
-              provenance: this.provenance
-            }
-          )
+        let promise;
+
+        if (this.form.experiment != null) {
+          promise = this.$opensilex
+            .uploadFileToService(
+              "/core/experiments/" +
+              encodeURIComponent(this.form.experiment) +
+              "/data/import",
+              {
+                file: this.form.dataFile
+              },
+              {
+                experiments: this.experiments,
+                provenance: this.form.provenance.uri
+              }
+            )
+        } else {
+          promise = this.$opensilex
+            .uploadFileToService(
+              "/core/data/import",
+              {
+                file: this.form.dataFile
+              },
+              {
+                experiments: this.experiments,
+                provenance: this.form.provenance.uri
+              }
+            )
+        }
+
+        return promise
           .then((data) => {
             this.checkCSVValidation(data);
             if (this.isValid) {
@@ -364,7 +385,7 @@ export default class DataForm extends Vue {
                   this.insertionError = true;
                   this.$opensilex.disableLoader();
                 } else if (results.dataErrors.duplicateData) {
-                  this.importedLines = results.dataErrors.nb_lines_imported;
+                  this.importedLines = results.dataErrors.nbLinesImported;
                   this.duplicateData = true;
                   this.duplicatedData = results.dataErrors.duplicatedData;
                   this.isImported = false;
@@ -372,7 +393,7 @@ export default class DataForm extends Vue {
                   this.$opensilex.disableLoader();
                   resolve(false);
                 } else {
-                  this.importedLines = results.dataErrors.nb_lines_imported;
+                  this.importedLines = results.dataErrors.nbLinesImported;
                   this.isImported = true;
                   this.insertionError = false;
                   this.$opensilex.disableLoader();
@@ -416,9 +437,10 @@ export default class DataForm extends Vue {
 
   checkUploadedData() {
     if (this.selectDefaultProvenance) {
-      this.provenance="dev:id/provenance/standard_provenance"
+      this.form.provenance.uri = this.standardProvURI;
+      this.form.provenance.name = "standard provenance";
     }
-    if (this.form.dataFile !== null && this.provenance !== null) {
+    if (this.form.dataFile !== null && this.form.provenance.uri !== null) {
       this.insertionError = false;
       this.insertionDataError = null;
       this.isImported = false;
@@ -427,24 +449,46 @@ export default class DataForm extends Vue {
       this.duplicatedData = [];
       this.tooLargeDataset = false;
 
-      return this.$opensilex
-        .uploadFileToService(
-          "/core/data/import_validation",
-          {
-            file: this.form.dataFile
-          },
-          {
-            experiments: this.experiments,
-            provenance: this.provenance
-          }
-        )
-        .then((response) => {
-          this.checkCSVValidation(response);
-          this.$opensilex.disableLoader();
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      if (this.form.experiment != null) {
+        return this.$opensilex
+          .uploadFileToService(
+            "/core/experiments/" +
+            encodeURIComponent(this.form.experiment) +
+            "/data/import_validation",
+            {
+              file: this.form.dataFile
+            },
+            {
+              provenance: this.form.provenance.uri
+            }
+          )
+          .then((response) => {
+            this.checkCSVValidation(response);
+            this.$opensilex.disableLoader();
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      } else {
+        return this.$opensilex
+          .uploadFileToService(
+            "/core/data/import_validation",
+            {
+              file: this.form.dataFile
+            },
+            {
+              provenance: this.form.provenance.uri
+            }
+          )
+          .then((response) => {
+            this.checkCSVValidation(response);
+            this.$opensilex.disableLoader();
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      }
+      
     } else {
       if (this.validationReport != undefined) {
         this.validationReport.reset();
@@ -484,6 +528,24 @@ en:
     add-device-column: Add device column 
     add-device-column-title: Check if you need to specify a device on each piece of data
     add-device-column-help: Check if you need to add a device column, then select the device types. If the device is already defined in the provenance, then it is not necessary to specify device.
+    create: Add Data
+    update: Update
+    experiment: Choose experiment
+    describe: Describe information involved in the production of data
+    provenance-success-message: Provenance has been successfully created      
+    choose-experiment: First choose an experiment
+    choosen-experiment: Choosen experiment
+    choosen-provenance: Choosen provenance
+    selected-file: Selected file
+    no-selected-file: No selected file
+    csv-file-placeholder: Drop CSV Data file or select a file...
+    csv-file-drop-placeholder: Drop CSV Data file here...
+    data-duplicated: Duplicated data
+    data-not-imported: Data has not been imported. An error has occured during the importation process
+    error: Erreur 
+    message: Message
+    reset-file: Reset file
+    import-file : Import data CSV
     
 fr:
   DataForm:
@@ -494,5 +556,23 @@ fr:
     add-device-column: Ajouter des colonnes equipement
     add-device-column-title: Cocher pour spécifier un équipement sur chaque donnée
     add-device-column-help: Cocher pour ajouter des colonnes équipements et sélectionner les types d'équipements à ajouter. Si l'équipement en question est déjà spécifié dans la provenance, il n'est pas nécessaire de le repréciser dans le fichier d'import.
+    create: Ajouter des données
+    update: Modifier
+    experiment: Choisir une experimentation
+    describe: Décrivez les informations impliquées dans la production des données
+    provenance-success-message: La provenance a été créé avec succès
+    choose-experiment: Choisissez une expérimentation
+    choosen-experiment: Expérimentation choisie
+    choosen-provenance: Provenance choisie
+    selected-file: Fichier sélectionné
+    no-selected-file: Aucun fichier sélectionné
+    csv-file-placeholder: Déposez le CSV de données ici ou sélectionner un fichier..
+    csv-file-drop-placeholder: Déposez le CSV de données ici ...    
+    data-duplicated: Données dupliquées
+    data-not-imported: Données non importées. Une erreur s'est produite durant le processus d'importation
+    error: Error
+    message: Message
+    reset-file: Reinitialiser fichier
+    import-file : Importez des données
     
 </i18n>

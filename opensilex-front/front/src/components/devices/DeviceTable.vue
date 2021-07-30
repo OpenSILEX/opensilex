@@ -874,7 +874,7 @@ en:
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
     infoMessageDevInserted: device inserted
-    infoVariable: Only SensingDevice, SoftSensors and Actuator can have variable. To add variable use <Add column variable> button
+    infoVariable: Only SensingDevice, SoftSensors and Actuator can have variable. To add variable use <Add variable column> button
     infoAttributes: To add informations, you can add personnal column
     checkingStatusMessage: ready
     insertionStatusMessage: created

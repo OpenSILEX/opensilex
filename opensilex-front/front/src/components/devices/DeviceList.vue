@@ -249,28 +249,9 @@ export default class DeviceList extends Vue {
     this.refresh();
   }
 
-  updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])) {
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }
-      }
-    }
-  }
-
-  updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");
-    }
-  }
-
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
-    this.updateFiltersFromURL();
+    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
 
   editDevice(uri: string) {
@@ -320,7 +301,7 @@ export default class DeviceList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-    this.updateURLFilters();
+    this.$opensilex.updateURLParameters(this.filter);
     this.tableRef.refresh();
   }
 

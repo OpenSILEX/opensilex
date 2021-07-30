@@ -271,27 +271,8 @@ export default class GermplasmList extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.GermplasmService")    
     this.loadSpecies();
-    this.updateFiltersFromURL();
-  }
-  
-  updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])){
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }        
-      }
-    }
-  }  
-
-  updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");
-    }    
-  }
+    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
+  } 
 
   get fields() {
     let tableFields = [
@@ -324,7 +305,7 @@ export default class GermplasmList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-    this.updateURLFilters();
+    this.$opensilex.updateURLParameters(this.filter);
     this.tableRef.refresh();
   }
 

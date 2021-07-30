@@ -67,6 +67,7 @@ import java.time.format.DateTimeParseException;
 
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 
 /**
  *
@@ -92,6 +93,7 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
+    public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
 
     @CurrentUser
     UserModel currentUser;
@@ -203,7 +205,7 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = DeviceGetDetailsDTO.class)
     })
     public Response getDevice(
-            @ApiParam(value = "device URI", example = "http://example.com/", required = true)
+            @ApiParam(value = "device URI", example = DEVICE_EXAMPLE_URI, required = true)
             @PathParam("uri") URI uri
     ) throws Exception {
 
@@ -292,7 +294,7 @@ public class DeviceAPI {
         @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
     public Response deleteDevice(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true)
+            @ApiParam(value = "Device URI", example = DEVICE_EXAMPLE_URI, required = true)
             @PathParam("uri")
             @NotNull
             @ValidURI URI uri
@@ -553,7 +555,27 @@ public class DeviceAPI {
                 .build();
 
     }
-    
+
+    /**
+     *
+     * @param uri
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param experiments
+     * @param variables
+     * @param confidenceMin
+     * @param confidenceMax
+     * @param provenances
+     * @param metadata
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data with the parameter devices
+     */
+    @Deprecated
     @GET
     @Path("{uri}/data")
     @ApiOperation("Search device data")
@@ -615,13 +637,13 @@ public class DeviceAPI {
             }
         }
 
-        ListWithPagination<DataModel> resultList = dao.searchByDevice(
-                uri,
+        ListWithPagination<DataModel> resultList = dao.search(
                 currentUser,
                 experiments,
                 null,
                 variables,
                 provenances,
+                Arrays.asList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -637,6 +659,23 @@ public class DeviceAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
+    /**
+     *
+     * @param uri
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param experiments
+     * @param variables
+     * @param confidenceMin
+     * @param confidenceMax
+     * @param provenances
+     * @param metadata
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/count with the parameter devices
+     */
+    @Deprecated
     @GET
     @Path("{uri}/data/count")
     @ApiOperation("Count device data")
@@ -696,13 +735,13 @@ public class DeviceAPI {
             }
         }
 
-        int count = dao.countByDevice(
-                uri,
+        int count = dao.count(
                 currentUser,
                 experiments,
                 null,
                 variables,
                 provenances,
+                Arrays.asList(uri),
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -713,6 +752,25 @@ public class DeviceAPI {
         return new SingleObjectResponse<>(count).getResponse();
     }
     
+    /**
+     *
+     * @param uri
+     * @param rdfType
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param experiments
+     * @param objects
+     * @param provenances
+     * @param metadata
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET datafiles with the parameter devices
+     */
+    @Deprecated
     @GET
     @Path("{uri}/datafiles")
     @ApiOperation("Search device datafiles descriptions")
@@ -795,7 +853,7 @@ public class DeviceAPI {
     
     @GET
     @Path("{uri}/variables")
-    @ApiOperation("Get variables measured by the device")
+    @ApiOperation("Get variables linked to the device")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -803,7 +861,7 @@ public class DeviceAPI {
         @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getDeviceVariables(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {        
         DeviceDAO dao = new DeviceDAO(sparql, nosql);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
@@ -811,6 +869,14 @@ public class DeviceAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
+    /**
+     *
+     * @param uri
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/provenances with the parameter devices
+     */
+    @Deprecated
     @GET
     @Path("{uri}/data/provenances")
     @ApiOperation("Get provenances of data that have been measured on this device")
@@ -826,10 +892,18 @@ public class DeviceAPI {
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
-        List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        List<ProvenanceGetDTO> resultDTOList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
+    /**
+     *
+     * @param uri
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET datafiles/provenances with the parameter devices
+     */
+    @Deprecated
     @GET
     @Path("{uri}/datafiles/provenances")
     @ApiOperation("Get provenances of datafiles linked to this device")

@@ -21,7 +21,7 @@
     <div class="card">
       <opensilex-SearchFilterField
         @search="refresh()"
-        @clear="reset()"
+        @clear="$emit('clear')"
         label="ScientificObjectList.filter.label"
         :showAdvancedSearch="true"
       >
@@ -34,14 +34,6 @@
             :filter.sync="filter.name"
             placeholder="ScientificObjectList.name-placeholder"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
-        <!-- Experiments -->
-        <opensilex-FilterField>
-          <opensilex-ExperimentSelector
-            label="GermplasmList.filter.experiment"
-            :multiple="false"
-            :experiments.sync="filter.experiment"
-          ></opensilex-ExperimentSelector>
         </opensilex-FilterField>
 
         <opensilex-FilterField>
@@ -106,61 +98,11 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import { Component, Ref, Prop } from "vue-property-decorator";
+import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component
-export default class ScientificObjectModalList extends Vue {
-
-  filter = {
-    name: "",
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  };
-
-  @Ref("soList") readonly soList!: any;
-  @Ref("modalRef") readonly modalRef!: any;
-
-  unSelect(row) {
-    this.soList.onItemUnselected(row);
-  }
-
-  show() {
-    this.modalRef.show();
-  }
-
-  hide(validate: boolean) {
-    this.modalRef.hide();
-
-    if (validate) {
-      this.$emit("onValidate", this.soList.getSelected());
-    }
-  }
-
-  refresh() {
-    this.soList.refresh();
-  }
-
-  reset() {
-    this.filter = {
-      name: "",
-      experiment: undefined,
-      germplasm: undefined,
-      factorLevels: [],
-      types: [],
-      existenceDate: undefined,
-      creationDate: undefined,
-    };
-    this.refresh();
-  }
-
-  refreshWithKeepingSelection() {
-    this.soList.refreshWithKeepingSelection();
-  }
+export default class ScientificObjectModalListByExp extends ScientificObjectModalList {
 
 }
 </script>

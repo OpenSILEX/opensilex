@@ -618,7 +618,7 @@ export default class OpenSilexVuePlugin {
         try {
             let queryParams = new URLSearchParams(window.location.search);
             let rootQuery = window.location.pathname;
-            if (!value || (defaultValue != null && value == defaultValue)) {
+            if (!value || (defaultValue != null && value == defaultValue) || (Array.isArray(value) && value.length==0)) {
                 queryParams.delete(key);
             } else {
                 queryParams.set(key, encodeURI(value));
@@ -632,6 +632,24 @@ export default class OpenSilexVuePlugin {
             window.history.replaceState(queryParams.toString(), document.title, url);
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    public updateURLParameters(filter) {
+        for (let [key, value] of Object.entries(filter)) {
+            this.updateURLParameter(key, value, "");
+        } 
+    }
+
+    public updateFiltersFromURL(query, filter) {
+        for (let [key, value] of Object.entries(filter)) {
+            if (query[key]) {
+                if (Array.isArray(filter[key])){
+                    filter[key] = decodeURIComponent(query[key]).split(",");
+                } else {
+                    filter[key] = decodeURIComponent(query[key]);
+                }        
+            }
         }
     }
 

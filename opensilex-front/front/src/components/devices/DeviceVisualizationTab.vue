@@ -292,20 +292,22 @@ export default class DeviceVisualizationTab extends Vue {
   }
 
   buildDataSerie() {
-    return this.devicesService
-      .searchDeviceData(
-        this.device,
+    return this.$opensilex.getService("opensilex.DataService")
+
+      .searchDataList(
         this.form.startDate != undefined && this.form.startDate != ""
           ? this.form.startDate
-          : undefined,
+          : undefined, // start_date
         this.form.endDate != undefined && this.form.endDate != ""
           ? this.form.endDate
-          : undefined,
-        undefined, //timezone
-        undefined, //experiment
-        [this.form.variable],
-        undefined, //min confidence
-        undefined, //max confidence
+          : undefined, // end_date
+        undefined, // timezone,
+        undefined, // experiments
+        undefined, // scientific_object
+        [this.form.variable], // variables,
+        [this.device], // devices
+        undefined, // min_confidence
+        undefined, // max_confidence
         this.form.provenance ? [this.form.provenance] : undefined,
         undefined, //this.addMetadataFilter(),
         ["date=asc"], //order by

@@ -196,25 +196,6 @@ export default class ProvenanceList extends Vue {
     };
   }
 
-  updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])){
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }        
-      }
-    }
-  }  
-
-  updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");
-    }    
-  }
-
   clearAgents() {
     this.filter.agent = undefined;
     this.filter.operator = undefined;
@@ -251,7 +232,7 @@ export default class ProvenanceList extends Vue {
   }
 
   refresh() {
-    this.updateURLFilters();
+    this.$opensilex.updateURLParameters(this.filter);
     this.tableRef.refresh();
   }
 
@@ -262,9 +243,8 @@ export default class ProvenanceList extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DataService");
-    let query: any = this.$route.query;
     this.loadActivityTypes();
-    this.updateFiltersFromURL();
+    this.$opensilex.updateFiltersFromURL(this.$route.query);
   }
 
   get getSelectedProv() {

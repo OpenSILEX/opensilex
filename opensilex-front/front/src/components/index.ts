@@ -428,14 +428,14 @@ import ScientificObjectVisualizationTab from './scientificObjects/ScientificObje
 components["opensilex-ScientificObjectVisualizationTab"] = ScientificObjectVisualizationTab;
 import ScientificObjectVisualizationForm from './scientificObjects/visualization/ScientificObjectVisualizationForm.vue';
 components["opensilex-ScientificObjectVisualizationForm"] = ScientificObjectVisualizationForm;
-import ScientificObjectVariableSelector from './scientificObjects/visualization/ScientificObjectVariableSelector.vue';
-components["opensilex-ScientificObjectVariableSelector"] = ScientificObjectVariableSelector;
 import ScientificObjectDataFiles from './scientificObjects/ScientificObjectDataFiles.vue';
 components["opensilex-ScientificObjectDataFiles"] = ScientificObjectDataFiles;
 import ScientificObjectSelector from './scientificObjects/ScientificObjectSelector.vue';
 components["opensilex-ScientificObjectSelector"] = ScientificObjectSelector;
 import ScientificObjectModalList from './scientificObjects/ScientificObjectModalList.vue';
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
+import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
+components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
 import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
 components["opensilex-ScientificObjectView"] = ScientificObjectView;
 
@@ -462,6 +462,8 @@ import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
+import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
+components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -508,6 +510,8 @@ import DataView from './data/DataView.vue';
 components["opensilex-DataView"] = DataView;
 import ProvenanceSelector from './data/ProvenanceSelector.vue';
 components["opensilex-ProvenanceSelector"] = ProvenanceSelector;
+import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
+components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
 import ResultModalView from './data/ResultModalView.vue';
@@ -536,6 +540,10 @@ import ProvenanceList from './data/ProvenanceList.vue';
 components["opensilex-ProvenanceList"] = ProvenanceList;
 import AgentTypeSelector from './data/AgentTypeSelector.vue';
 components["opensilex-AgentTypeSelector"] = AgentTypeSelector;
+import DataList from './data/DataList.vue';
+components["opensilex-DataList"] = DataList;
+import DataFilesList from './data/DataFilesList.vue';
+components["opensilex-DataFilesList"] = DataFilesList;
 
 // PHIS
 //IMAGES
@@ -640,8 +648,6 @@ import DeviceVisualizationTab from './devices/DeviceVisualizationTab.vue';
 components["opensilex-DeviceVisualizationTab"] = DeviceVisualizationTab;
 import DeviceVisualizationForm from './devices/visualization/DeviceVisualizationForm.vue';
 components["opensilex-DeviceVisualizationForm"] = DeviceVisualizationForm;
-import DeviceVariableSelector from './devices/visualization/DeviceVariableSelector.vue';
-components["opensilex-DeviceVariableSelector"] = DeviceVariableSelector;
 import DeviceDataFiles from './devices/details/DeviceDataFiles.vue';
 components["opensilex-DeviceDataFiles"] = DeviceDataFiles;
 import  DeviceTypes from './devices/DeviceTypes.vue';

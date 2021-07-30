@@ -161,6 +161,11 @@ export default class ProjectList extends Vue {
   @Prop()
   maximumSelectedRows;
 
+  @Prop({
+    default: false
+  })
+  noUpdateURL;
+
   filter = {
     year: undefined,
     name: "",
@@ -177,29 +182,10 @@ export default class ProjectList extends Vue {
     };
     this.refresh();
   }
-  
-  updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])){
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }        
-      }
-    }
-  }
-
-  updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");       
-    }    
-  }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ProjectsService");
-    this.updateFiltersFromURL();
+    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
 
   get fields() {
@@ -251,7 +237,11 @@ export default class ProjectList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-    this.updateURLFilters();
+
+    if (!this.noUpdateURL) {
+      this.$opensilex.updateURLParameters(this.filter);
+    }
+
     this.tableRef.refresh();
   }
 

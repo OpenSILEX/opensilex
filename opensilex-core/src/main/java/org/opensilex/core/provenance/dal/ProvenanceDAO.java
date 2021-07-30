@@ -154,5 +154,5 @@ public class ProvenanceDAO {
         Set uris = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return uris;
     }
-    
+
 }

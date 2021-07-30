@@ -11,18 +11,14 @@ import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.result.DeleteResult;
-import com.opencsv.CSVWriter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import java.io.StringWriter;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
@@ -52,6 +49,7 @@ import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -61,14 +59,10 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.utils.ExportDataIndex;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -87,7 +81,7 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -208,8 +202,6 @@ public class DataAPI {
             throw new NotFoundException(e.getMessage());
         }        
     }
-        
-    
     
     @GET
     @Path("{uri}")
@@ -249,6 +241,7 @@ public class DataAPI {
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
             @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
@@ -295,6 +288,7 @@ public class DataAPI {
                 objects,
                 variables,
                 provenances,
+                devices,
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -309,7 +303,6 @@ public class DataAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
     
     @GET
     @Path("/count")
@@ -327,6 +320,7 @@ public class DataAPI {
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
             @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
@@ -370,6 +364,7 @@ public class DataAPI {
                 objects,
                 variables,
                 provenances,
+                devices,
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -486,7 +481,6 @@ public class DataAPI {
         DeleteResult result = dao.deleteWithFilter(user, experimentUri, objectUri, variableUri, provenanceUri);
         return new SingleObjectResponse(result).getResponse(); 
     }
-
     
     /**
      * Check one data type
@@ -598,16 +592,16 @@ public class DataAPI {
         }      
         
         if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris", new ArrayList<>(variableURIs));
+            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
         }
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris", new ArrayList<>(objectURIs));
+            throw new NoSQLInvalidUriListException("wrong scientific_object uris: ", new ArrayList<>(notFoundedObjectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
         }
         if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris", new ArrayList<>(provenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
         }
 
     }
@@ -619,6 +613,7 @@ public class DataAPI {
      * @param experiments experimentUris
      * @param objects objectUris
      * @param variables variableUris
+     * @param devices
      * @param confidenceMin confidenceMin
      * @param confidenceMax confidenceMax
      * @param provenances provenanceUris
@@ -648,6 +643,7 @@ public class DataAPI {
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Search by objects", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
@@ -695,7 +691,7 @@ public class DataAPI {
         }
         
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -712,6 +708,56 @@ public class DataAPI {
         LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
 
         return prepareCSVExport;
+    }
+    
+    @GET
+    @Path("provenances")
+    @ApiOperation("Get provenances linked to data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getUsedProvenances(
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices
+    ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, objects, variables, devices);
+
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
+        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
+        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
+        
+        resultList.forEach(result -> {
+            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
+        });
+        return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    @GET
+    @Path("variables")
+    @ApiOperation("Get variables linked to data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getUsedVariables(
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances
+    ) throws Exception {
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances);
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
 }

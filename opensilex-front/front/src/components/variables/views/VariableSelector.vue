@@ -11,7 +11,7 @@
     :placeholder="placeholder"
     :required="required"
     :defaultSelectedValue="defaultSelectedValue"
-    noResultsText="component.experiment.form.selector.filter-search-no-result"
+    noResultsText="VariableSelector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
@@ -51,8 +51,8 @@ export default class VariableSelector extends Vue {
 
   get placeholder() {
     return this.multiple
-      ? "component.experiment.form.selector.variables.placeholder-multiple"
-      : "component.experiment.form.selector.variables.placeholder";
+      ? "VariableSelector.placeholder-multiple"
+      : "VariableSelector.variables.placeholder";
   }
 
   searchVariables(query, page, pageSize) {
@@ -101,27 +101,19 @@ export default class VariableSelector extends Vue {
 
 <style scoped lang="scss">
 </style>
+
 <i18n>
 
 en:
-  component: 
-    experiment: 
-        form:
-          selector:
-            variables:
-              placeholder : Select one variable
-              placeholder-multiple : Select one ou several variables
-              filter-search-no-result : No variable found
-    
+  VariableSelector:    
+    placeholder : Select one variable
+    placeholder-multiple : Select one ou several variables
+    filter-search-no-result : No variable found    
             
 fr:
-  component: 
-    experiment: 
-        form: 
-          selector:
-            variables:
-              placeholder : Sélectionner une variable
-              placeholder-multiple : Sélectionner une ou plusieurs variables
-              filter-search-no-result : Aucune variable trouvée
+  VariableSelector:
+    placeholder : Sélectionner une variable
+    placeholder-multiple : Sélectionner une ou plusieurs variables
+    filter-search-no-result : Aucune variable trouvée
 
 </i18n>

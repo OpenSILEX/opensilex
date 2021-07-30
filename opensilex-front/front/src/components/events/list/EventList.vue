@@ -271,7 +271,7 @@ export default class EventList extends Vue {
     created() {
         this.$service = this.$opensilex.getService("opensilex.EventsService");
         this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
-        this.updateFiltersFromURL();
+        this.$opensilex.updateFiltersFromURL(this.$route.query, EventList.newFilter());
     }
 
     get user() {
@@ -284,7 +284,7 @@ export default class EventList extends Vue {
 
     refresh() {
         this.tableRef.refresh();
-        this.updateURLFilters();
+        this.$opensilex.updateURLParameters(this.filter);
     }
 
     displayAfterCreation(event) {
@@ -305,26 +305,6 @@ export default class EventList extends Vue {
     reset() {
         this.filter = EventList.newFilter();
         this.refresh();
-    }
-
-    updateFiltersFromURL() {
-        this.filter = EventList.newFilter();
-        let query: any = this.$route.query;
-        for (let [key, value] of Object.entries(this.filter)) {
-            if (query[key]) {
-                if (Array.isArray(this.filter[key])) {
-                    this.filter[key] = decodeURIComponent(query[key]).split(",");
-                } else {
-                    this.filter[key] = decodeURIComponent(query[key]);
-                }
-            }
-        }
-    }
-
-    updateURLFilters() {
-        for (let [key, value] of Object.entries(this.filter)) {
-            this.$opensilex.updateURLParameter(key, value, "");
-        }
     }
 
     cleanFilter() {

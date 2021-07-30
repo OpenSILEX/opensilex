@@ -11,14 +11,14 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-DeviceVariableSelector
+            <opensilex-UsedVariableSelector
               label="ScientificObjectVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
               :device="device"
               :clearable="true"
               :required="true"
-            ></opensilex-DeviceVariableSelector>
+            ></opensilex-UsedVariableSelector>
           </opensilex-FilterField>
 
           <opensilex-FilterField :halfWidth="true">

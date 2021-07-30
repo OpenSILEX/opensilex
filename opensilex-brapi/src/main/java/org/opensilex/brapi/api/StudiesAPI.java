@@ -228,7 +228,7 @@ public class StudiesAPI implements BrapiCall {
         experiments.add(studyDbId);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, page, pageSize);
+        ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, page, pageSize);
         ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
         return new PaginatedListResponse<>(observations).getResponse();
 

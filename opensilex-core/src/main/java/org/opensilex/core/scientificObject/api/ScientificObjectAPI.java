@@ -54,7 +54,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
-
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -68,6 +67,7 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +88,6 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -102,7 +101,6 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -1113,6 +1111,14 @@ public class ScientificObjectAPI {
      */
     private static final String CLAIM_CONTEXT_URI = "context";
 
+    /**
+     *
+     * @param uri
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/variables with the parameters objects
+     */
+    @Deprecated
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables measured on this scientific object")
@@ -1127,15 +1133,20 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
-        List<URI> objects = new ArrayList<>();
-        objects.add(uri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, objects);
-
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 
-    }
+}
 
+    /**
+     *
+     * @param uri
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/provenances with the parameters objects
+     */
+    @Deprecated
     @GET
     @Path("{uri}/data/provenances")
     @ApiOperation("Get provenances of data that have been measured on this scientific object")
@@ -1155,6 +1166,14 @@ public class ScientificObjectAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
+    /**
+     *
+     * @param uri
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET datafiles/provenances with the parameters objects
+     */
+    @Deprecated
     @GET
     @Path("{uri}/datafiles/provenances")
     @ApiOperation("Get provenances of datafiles linked to this scientific object")

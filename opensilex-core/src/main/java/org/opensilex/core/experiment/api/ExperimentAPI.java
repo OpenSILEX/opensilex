@@ -101,6 +101,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -118,6 +119,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
@@ -433,6 +435,15 @@ public class ExperimentAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
+    /**
+     *
+     * @param xpUri
+     * @param objects
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/variables with the parameter experiments
+     */
+    @Deprecated
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables involved in an experiment")
@@ -452,13 +463,33 @@ public class ExperimentAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects);
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 
     }
 
+    /**
+     *
+     * @param xpUri
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param objects
+     * @param variables
+     * @param confidenceMin
+     * @param confidenceMax
+     * @param provenances
+     * @param metadata
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data with the parameter experiments
+     */
+    @Deprecated
     @GET
     @Path("{uri}/data")
     @ApiOperation("Search data")
@@ -534,6 +565,7 @@ public class ExperimentAPI {
                 objects,
                 variables,
                 provenances,
+                null,
                 startInstant,
                 endInstant,
                 confidenceMin,
@@ -567,7 +599,9 @@ public class ExperimentAPI {
      * @param pageSize page size
      * @return
      * @throws Exception
+     * @deprecated better use directly the service GET data/export with the parameter experiments
      */
+    @Deprecated
     @GET
     @Path("{uri}/data/export")
     @ApiOperation("export experiment data")
@@ -671,7 +705,7 @@ public class ExperimentAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, null, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -1174,6 +1208,23 @@ public class ExperimentAPI {
         return value;
     }
 
+    /**
+     *
+     * @param xpUri
+     * @param name
+     * @param description
+     * @param activityUri
+     * @param activityType
+     * @param agentURI
+     * @param agentType
+     * @param orderByList
+     * @param page
+     * @param pageSize
+     * @return
+     * @throws Exception
+     * @deprecated better use directly the service GET data/provenances with the parameter experiments
+     */
+    @Deprecated
     @GET
     @Path("{uri}/provenances")
     @ApiOperation("Get provenances involved in an experiment")

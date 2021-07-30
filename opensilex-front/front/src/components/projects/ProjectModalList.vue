@@ -20,10 +20,12 @@
 
     <div class="card">
       <opensilex-ProjectList 
-      ref="projectSelection"
-       :isSelectable="true"
+        ref="projectSelection"
+        :isSelectable="true"
         :maximumSelectedRows="maximumSelectedRows"
-        :noActions="true"></opensilex-ProjectList>
+        :noActions="true"
+        :noUpdateURL="true"
+        ></opensilex-ProjectList>
     </div>
   </b-modal>
 </template>
@@ -36,9 +38,6 @@ import ProjectList from "./ProjectList.vue";
 export default class ProjectModalList extends ProjectList {
   @Ref("projectSelection") readonly projectSelection!: any;
 
-
-  @Prop()
-  maximumSelectedRows;
   unSelect(row) {
     this.projectSelection.onItemUnselected(row);
   }

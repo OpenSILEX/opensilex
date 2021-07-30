@@ -67,7 +67,7 @@
             :isModalSearch="true"
             :clearable="true"
             :multiple="true"
-            @clear="refreshSoSelector"
+            @clear="filter.projects=null"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -225,7 +225,7 @@ export default class ExperimentList extends Vue {
   refresh() {
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-    this.updateURLFilters();
+    this.$opensilex.updateURLParameters(this.filter);
     this.tableRef.refresh();
   }
 
@@ -248,25 +248,6 @@ export default class ExperimentList extends Vue {
       state: "",
     };   
     this.refresh();
-  }
-
-  updateFiltersFromURL() {
-    let query: any = this.$route.query;
-    for (let [key, value] of Object.entries(this.filter)) {
-      if (query[key]) {
-        if (Array.isArray(this.filter[key])){
-          this.filter[key] = decodeURIComponent(query[key]).split(",");
-        } else {
-          this.filter[key] = decodeURIComponent(query[key]);
-        }        
-      }
-    }
-  }
-
-  updateURLFilters() {
-    for (let [key, value] of Object.entries(this.filter)) {
-      this.$opensilex.updateURLParameter(key, value, "");       
-    }    
   }
 
   searchExperiments(options) {
@@ -304,7 +285,7 @@ export default class ExperimentList extends Vue {
   created() {
     this.loadSpecies();
     this.refreshStateLabel();
-    this.updateFiltersFromURL();
+    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
 
   private langUnwatcher;

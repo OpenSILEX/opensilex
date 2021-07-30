@@ -4,8 +4,7 @@
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
-    :searchMethod="searchProvenances"
-    :itemLoadingMethod="loadProvenances"
+    :optionsLoadingMethod="loadProvenances"
     :conversionMethod="provenancesToSelectNode"
     :placeholder="
       multiple
@@ -27,14 +26,11 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
+import Vue from "vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
 
 @Component
-export default class ProvenanceSelector extends Vue {
+export default class UsedProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
@@ -79,8 +75,6 @@ export default class ProvenanceSelector extends Vue {
   })
   viewHandlerDetailsVisible: boolean;
 
-  filterLabel: string;
-
   @Prop()
   scientificObject;
 
@@ -91,35 +85,29 @@ export default class ProvenanceSelector extends Vue {
     this.selectForm.refresh();
   }
 
-  loadProvenances(provenancesURI) {
-    return this.$opensilex
-      .getService("opensilex.DataService")
-      .getProvenancesByURIs(provenancesURI)
-      .then(
-      (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-        http.response.result
-    );
-  }
-
-  searchProvenances(label, page, pageSize) {
-    this.filterLabel = label;
-
-    if (this.filterLabel === ".*") {
-      this.filterLabel = undefined;
+  loadProvenances() {
+    let experiments = null;    
+    if (this.experiment != null) {
+      experiments = [this.experiment]
     }
-    
+
+    let objects = null;
+    if (this.scientificObject != null) {
+      objects = [this.scientificObject]
+    }
+
+    let devices = null;
+    if (this.device != null) {
+      devices = [this.device]
+    }
+
     return this.$opensilex
       .getService("opensilex.DataService")
-      .searchProvenance(this.filterLabel)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-          http
-      );
+      .getUsedProvenances(experiments, objects, null, devices)
+      .then(http => {
+        return http.response.result;
+      });
   }
-
-  getAllProvenances(label) {}
-
-  getProvenancesInExperiment(label, experimentURI) {}
 
   provenancesToSelectNode(dto: ProvenanceGetDTO) {
     return {
@@ -139,23 +127,3 @@ export default class ProvenanceSelector extends Vue {
 
 <style scoped lang="scss">
 </style>
-<i18n>
-
-en:
-  component: 
-    data: 
-        form: 
-         selector:
-            placeholder  : Select one provenance
-            placeholder-multiple  : Select one or more provenance(s)
-            filter-search-no-result : No provenance found
-fr:
-  component: 
-    data: 
-        form:
-          selector:
-            placeholder : Sélectionner une provenance
-            placeholder-multiple : Sélectionner une ou plusieurs provenance(s)   
-            filter-search-no-result : Aucune provenance trouvée
-
-</i18n>

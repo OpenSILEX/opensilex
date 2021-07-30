@@ -4,7 +4,7 @@
     :label="label"
     :selected.sync="provenancesURI"
     :multiple="multiple"
-    :optionsLoadingMethod="getProvenances"
+    :optionsLoadingMethod="loadProvenances"
     :conversionMethod="provenancesToSelectNode"
     :placeholder="
       multiple
@@ -51,6 +51,14 @@ export default class DatafileProvenanceSelector extends Vue {
   })
   required;
 
+  @Prop({
+    default: "component.data.provenance.search"
+  })
+  label;
+
+  @Prop()
+  experiment;
+
   @Prop()
   scientificObject
 
@@ -75,6 +83,8 @@ export default class DatafileProvenanceSelector extends Vue {
   })
   viewHandlerDetailsVisible: boolean;
 
+  filterLabel: string;
+
   refresh() {
     this.selectForm.refresh();
   }
@@ -93,26 +103,28 @@ export default class DatafileProvenanceSelector extends Vue {
     this.$emit("deselect", value);
   }
 
-  getProvenances() {
-    if (this.scientificObject) {
-      return this.$opensilex
-      .getService("opensilex.ScientificObjectsService")
-      .getScientificObjectDataFilesProvenances(this.scientificObject)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-          http.response.result
-      );
-
-    } else if (this.device) {
-      return this.$opensilex
-      .getService("opensilex.DevicesService")
-      .getDeviceDataFilesProvenances(this.device)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) =>
-          http.response.result
-      );
+  loadProvenances() {
+    let experiments = null;    
+    if (this.experiment != null) {
+      experiments = [this.experiment]
     }
-    
+
+    let objects = null;
+    if (this.scientificObject != null) {
+      objects = [this.scientificObject]
+    }
+
+    let devices = null;
+    if (this.device != null) {
+      devices = [this.device]
+    }
+
+    return this.$opensilex
+      .getService("opensilex.DataService")
+      .getDatafilesProvenances(experiments, objects, null, devices)
+      .then(http => {
+        return http.response.result;
+      });
   }
 
 }

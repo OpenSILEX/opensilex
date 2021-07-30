@@ -41,9 +41,11 @@
               <!-- Variables -->
               <opensilex-FilterField>
                 <opensilex-UsedVariableSelector
+                ref="varSelector"
                 label="DataView.filter.variables"
                 :multiple="true"
                 :variables.sync="filter.variables"
+                :key="refreshKey"
                 ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
             
@@ -107,6 +109,7 @@
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
+                  :key="refreshKey"
                 ></opensilex-UsedProvenanceSelector>
 
                 <b-collapse
@@ -156,6 +159,7 @@ export default class DataView extends Vue {
   visibleDetails: boolean = false;
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
+  refreshKey = null;
 
   get user() {
     return this.$store.state.user;
@@ -172,6 +176,7 @@ export default class DataView extends Vue {
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
+  @Ref("varSelector") readonly varSelector!: any;
 
   filter = {
     start_date: null,
@@ -264,10 +269,9 @@ export default class DataView extends Vue {
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
+        this.refreshKey = res.form.provenance.uri;
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
-        this.provSelector.refresh();
-        this.loadProvenance({id:res.form.provenance.uri})
       });
     }else{ 
       this.resultModal.setNbLinesImported(
@@ -275,10 +279,9 @@ export default class DataView extends Vue {
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
+      this.refreshKey = results.form.provenance.uri;
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
-      this.provSelector.refresh();
-      this.loadProvenance({id:results.form.provenance.uri}) 
     }
     
   }
@@ -294,7 +297,7 @@ export default class DataView extends Vue {
   }
 
   refreshDataAfterImportation(){
-    this.loadProvenance({id: this.filter.provenance})
+    this.refresh();
   }
 
   loadSO(scientificObjectsURIs) {

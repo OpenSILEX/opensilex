@@ -473,6 +473,12 @@
         </template>
       </opensilex-TableView>
     </div>
+    <opensilex-Timeline
+      :items="temporalAreas"
+      :selectedFeatures="selectedFeatures"
+      @onClick="updateSelectedFeatures"
+      >
+    </opensilex-Timeline>
   </div>
 </template>
 

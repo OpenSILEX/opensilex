@@ -336,7 +336,7 @@ en:
       date: Date
       variable: Variable
       value: Value
-      object: Object
+      object: Target
       provenance: provenance
       details: view data details
     filter:
@@ -357,7 +357,7 @@ fr:
       date: Date
       variable: Variable
       value: Valeur
-      object: objet
+      object: Target
       provenance: provenance
       details: Voir les détails de la donnée
     filter:

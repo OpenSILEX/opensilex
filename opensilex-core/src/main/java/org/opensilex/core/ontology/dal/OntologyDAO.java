@@ -751,7 +751,7 @@ public final class OntologyDAO {
         String nameField = "name";
         String namesField = "names";
         Var nameVar = makeVar(nameField);
-        select.addVar("(GROUP_CONCAT(DISTINCT ?"+ nameField +";separator=\"|\"))", makeVar(namesField));
+        select.addVar("(GROUP_CONCAT(DISTINCT ?"+ nameField +";separator=\" | \"))", makeVar(namesField));
         String uriField = "uri";
         Var uriVar = makeVar(uriField);
         select.addVar(uriVar);

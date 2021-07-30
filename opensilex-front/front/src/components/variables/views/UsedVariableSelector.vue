@@ -18,10 +18,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync} from "vue-property-decorator";
+import { Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
+import { NamedResourceDTO } from "opensilex-core/index";
 
 @Component
 export default class UsedVariableSelector extends Vue {
@@ -55,6 +54,8 @@ export default class UsedVariableSelector extends Vue {
   device;
 
   filterLabel = "";
+
+  @Ref("selectForm") readonly selectForm!: any;
 
   get placeholder() {
     return this.multiple

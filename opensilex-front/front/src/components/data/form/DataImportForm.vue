@@ -312,11 +312,8 @@ export default class DataImportForm extends Vue {
   }
 
   afterCreateProvenance(data) {
-    data.then((data) => {
-      this.provenance = data.uri;
-      this.filterProvenanceLabel = data.name;
-      this.provenanceSelector.select({ id: data.uri, label: data.name });
-    });
+    this.provenance = data.uri;
+    this.provenanceSelector.select({ id: data.uri, label: data.name });
   }
 
   getProvenance(uri) {

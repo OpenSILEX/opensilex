@@ -81,10 +81,6 @@ export default class UsedProvenanceSelector extends Vue {
   @Prop()
   device;
 
-  refresh() {
-    this.selectForm.refresh();
-  }
-
   loadProvenances() {
     let experiments = null;    
     if (this.experiment != null) {

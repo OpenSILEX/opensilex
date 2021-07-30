@@ -81,16 +81,16 @@ export default class GenerateDataTemplateFrom extends Vue {
   withRawData = false;
 
   readonly expColumn = "experiment";
-  readonly soColumn = "scientific_object";
+  readonly soColumn = "target";
   readonly deviceColumn = "device";
 
   @Prop()
   editMode;
   
   options = [
-    { text: "experiment", value: this.expColumn },
-    { text: 'scientific_object', value: this.soColumn },
-    { text: 'device', value: this.deviceColumn }
+    { text: this.expColumn, value: this.expColumn },
+    { text: this.soColumn, value: this.soColumn },
+    { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
@@ -189,11 +189,9 @@ export default class GenerateDataTemplateFrom extends Vue {
     if (this.selectedColumns.includes(this.soColumn) || this.experiment != null) {
       line1.push(this.soColumn);
       line2.push(this.$t("DataHelp.objectId-help")); 
-      line2.push(
+      line3.push(
         this.$t("DataHelp.column-type-help")+
-        this.getDataTypeLabel("xsd:string") +
-        "\n" +
-        this.$t("DataHelp.required")
+        this.getDataTypeLabel("xsd:string")
       );
       line4.push("test");
     }

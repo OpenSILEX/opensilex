@@ -11,7 +11,7 @@
           <b-tr>
             <b-th>1</b-th>
             <b-th v-if="experiment == null">experiment</b-th>
-            <b-th>scientific_object<span v-if="experiment != null" class="required"> *</span></b-th>
+            <b-th>target<span v-if="experiment != null" class="required"> *</span></b-th>
             <b-th v-if="experiment == null">device</b-th>
             <b-th>date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
@@ -212,7 +212,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 en :
   DataHelp:
     exceptedFormat: Expected format
-    objectId : Scientific Object name / URI
+    objectId : Target name / URI
     title: Generate Data template
     required: "Required : yes"
     variables-associated : Experiment variables associated
@@ -227,15 +227,16 @@ en :
     variable-data-help: Value of the variable (real number, text ou date)
     columns: CSV Files columns 
     file-rules: CSV editing rules
-    objectId-help: Scientific object name or URI
+    objectId-help: "Target (ex: scientific object) name or URI "
     experiment-help: Experiment name or URI
     device-help: Device name or URI
     variable-help : Variable 1 name
     variables-help : Other variables names
     text-help:  "You can insert data from this row. <br /> \n
             First three rows of CSV content will be ignored. <br /> \n
-            <strong>The \"experiment\", \"scientific_object\" and \"device\" columns are optional. You can remove them. </strong> <br /> \n
-            If needed, you can duplicate the columns \"experiment\" or \"device\" to link your data to several experiments or devices <br />\n
+            <strong>The \"experiment\", \"target\" and \"device\" columns are optional. You can remove them. In all three columns, you can give URIs or names. </strong> <br /> \n
+            Target can be a scientific object or a facility. <br /> \n
+            If needed, you can duplicate the columns \"experiment\" or \"device\" to link your data to several experiments or devices. <br />\n
             If needed, you can add a \"raw_data\" column to the right of each variable column. (see template generation) <br />\n
             Accepted CSV separators : <strong>{comma} or {semicolon}</strong><br /> \n
             Decimal separator is  <strong>\"{decimalSeparator}\"</strong><br /> \n
@@ -262,15 +263,16 @@ fr :
     variable-data-help: Variable value (Real number, text or Date)
     columns: Colonnes du fichier CSV
     file-rules: Règles d'édition du CSV
-    objectId-help: Nom ou l'URI de l'objet scientifique
+    objectId-help: "Nom ou l'URI du target (ex: object scientifique)"
     experiment-help: Nom ou l'URI de l'expérimentation
     device-help: Nom ou l'URI du device
     variable-help : Nom de la variable 1 
     variables-help : Autres noms de variables
     text-help:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
-            <strong>Les colonnes \"experiment\", \"scientific_object\" et \"device\" sont optionnelles. Vous pouvez les enlever. </strong> <br /> \n
-            Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos donner à plusieurs expérimentations ou équipements <br />\n
+            <strong>Les colonnes \"experiment\", \"target\" et \"device\" sont optionnelles. Vous pouvez les enlever. Dans ces 3 colonnes, vous pouvez mettre des URIs ou des noms. </strong> <br /> \n
+            Le target peut être un objet scientifique ou une installation. <br /> \n
+            Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos donner à plusieurs expérimentations ou équipements. <br />\n
             Si besoin, vous pouvez ajouter une colonne \"raw_data\" à droite de chaque colonne variable. (Voir la génération du template) <br />\n
             Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n
             Le séparateur décimal est le suivant : <strong>\"{decimalSeparator}\"</strong><br /> \n

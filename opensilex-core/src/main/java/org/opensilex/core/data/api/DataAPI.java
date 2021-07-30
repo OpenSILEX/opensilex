@@ -90,8 +90,6 @@ import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -918,7 +916,7 @@ public class DataAPI {
     }
     
     private final String expHeader = "experiment";
-    private final String soHeader = "scientific_object";
+    private final String soHeader = "target";
     private final String dateHeader = "date";
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
@@ -1324,10 +1322,14 @@ public class DataAPI {
     }
     
     private SPARQLNamedResourceModel getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
-        SPARQLNamedResourceModel target;
+        SPARQLNamedResourceModel target = new SPARQLNamedResourceModel();;
         if (URIDeserializer.validateURI(targetNameOrUri)) {
             URI targetUri = URI.create(targetNameOrUri);
-            target = sparql.getByURI(SPARQLNamedResourceModel.class, targetUri, user.getLanguage());
+            String label = dao.getURILabel(targetUri, user.getLanguage());
+            if (label != null) {                
+                target.setUri(targetUri);
+                target.setName(label);
+            } 
         } else {
             List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);  
             if (results.size()>1) {

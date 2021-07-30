@@ -49,6 +49,7 @@
       :initForm="initForm"
       :successMessage="successMessage"
       :validationDisabled="validateProvenanceForm"
+      @onCreate="afterCreateProvenance"
     ></opensilex-ModalForm>
     
       <!-- Upload file  -->

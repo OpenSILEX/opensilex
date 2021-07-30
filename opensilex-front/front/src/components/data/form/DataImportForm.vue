@@ -18,7 +18,7 @@
         <opensilex-ProvenanceSelector     
           v-if="!selectDefaultProvenance" 
           ref="provenanceSelector"
-          :provenances.sync="provenance"
+          :provenances.sync="form.provenance.uri"
           :filterLabel="filterProvenanceLabel"
           label="Select a provenance"
           @select="loadProvenanceAndCheckUploadedData"

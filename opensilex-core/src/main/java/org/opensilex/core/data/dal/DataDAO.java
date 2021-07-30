@@ -96,16 +96,15 @@ public class DataDAO {
         MongoCollection dataCollection = nosql.getDatabase()
                 .getCollection(DATA_COLLECTION_NAME, DataModel.class);
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "scientificObject", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "scientificObject", "date"));
+        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), unicityOptions);
+        dataCollection.createIndex(Indexes.ascending("variable", "target", "date"));
 
         MongoCollection fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", "scientificObject", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("scientificObject"
-                + "", "date"));
+        fileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
+        dataCollection.createIndex(Indexes.ascending("target", "date"));
 
     }
 

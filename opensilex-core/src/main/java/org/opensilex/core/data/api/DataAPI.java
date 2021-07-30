@@ -87,6 +87,7 @@ import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -112,6 +113,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
@@ -924,8 +926,8 @@ public class DataAPI {
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
         
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-        Map<String, ScientificObjectModel> nameURIScientificObjects = new HashMap<>();
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        Map<String, SPARQLNamedResourceModel> nameURIScientificObjects = new HashMap<>();
         List<String> notExistingObjects = new ArrayList<>();
         List<String> duplicatedObjects = new ArrayList<>();
         
@@ -1021,7 +1023,7 @@ public class DataAPI {
                                 notExistingExperiments,
                                 duplicatedExperiments,
                                 nameURIExperiments,                                
-                                scientificObjectDAO,
+                                ontologyDAO,
                                 notExistingObjects,
                                 duplicatedObjects,
                                 nameURIScientificObjects,
@@ -1062,10 +1064,10 @@ public class DataAPI {
             List<String> notExistingExperiments,
             List<String> duplicatedExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
-            ScientificObjectDAO scientificObjectDAO, 
+            OntologyDAO ontologyDAO, 
             List<String> notExistingObjects,
             List<String> duplicatedObjects,
-            Map<String, ScientificObjectModel> nameURIScientificObjects,
+            Map<String, SPARQLNamedResourceModel> nameURIScientificObjects,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevices,
             List<String> duplicatedDevices,
@@ -1081,7 +1083,7 @@ public class DataAPI {
         
         List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
-        ScientificObjectModel object = null;
+        SPARQLNamedResourceModel object = null;
         
         for (int colIndex = 0; colIndex < values.length; colIndex++) {            
                         
@@ -1146,7 +1148,7 @@ public class DataAPI {
                         
                         if (!notExistingObjects.contains(objectNameOrUri)) {
                             try {
-                                object = ExperimentAPI.getObjectByNameOrURI(scientificObjectDAO, null, objectNameOrUri);
+                                object = getTargetByNameOrURI(ontologyDAO, objectNameOrUri);
                             } catch (DuplicateNameException e) {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
                                 csvValidation.addDuplicateObjectError(cell);
@@ -1319,6 +1321,22 @@ public class DataAPI {
             device = deviceDAO.getByName(deviceNameOrUri);
         }
         return device;
+    }
+    
+    private SPARQLNamedResourceModel getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
+        SPARQLNamedResourceModel target;
+        if (URIDeserializer.validateURI(targetNameOrUri)) {
+            URI targetUri = URI.create(targetNameOrUri);
+            target = sparql.getByURI(SPARQLNamedResourceModel.class, targetUri, user.getLanguage());
+        } else {
+            List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);  
+            if (results.size()>1) {
+                throw new DuplicateNameException(targetNameOrUri);
+            } else {
+                target = results.get(0);
+            }
+        }
+        return target;
     }
 
 }

@@ -1107,4 +1107,25 @@ public final class OntologyDAO {
         return rdfTypes;
     }  
 
+    public List<SPARQLNamedResourceModel> getByName(String targetNameOrUri) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+        SelectBuilder select = new SelectBuilder();
+        select.setDistinct(true);
+        String uriField = "uri";
+        Var uriVar = makeVar(uriField);
+        select.addVar(uriVar);
+        select.addWhere(uriVar, RDFS.label, targetNameOrUri);  
+          
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
+        for (SPARQLResult result : results) {
+            SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+            model.setName(targetNameOrUri);
+            model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
+            resultList.add(model);
+        };
+
+        return resultList;
+    }
+
 }

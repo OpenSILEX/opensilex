@@ -47,10 +47,16 @@
                 label="ProvenanceDetails.uri"
                 :uri="provenance.uri"
               ></opensilex-UriView>
+
               <opensilex-StringView
                 label="ProvenanceDetails.label"
                 :value="provenance.name"
               ></opensilex-StringView>
+
+              <opensilex-TextView
+                label="ProvenanceDetails.description"
+                :value="provenance.description"
+              ></opensilex-TextView>
 
               <opensilex-StringView 
                 v-if="provenance.prov_activity != null && provenance.prov_activity.length>0"
@@ -91,7 +97,7 @@
                 :fields="tableFields"
               >
                 <template v-slot:cell(name)="{data}">
-                  <opensilex-UriLink v-if="data.item.rdf_type != 'vocabulary:Operator'"
+                  <opensilex-UriLink v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
                     :uri="data.item.uri"
                     :value="data.item.name"
                     :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
@@ -228,7 +234,7 @@ export default class ProvenanceDetailsPage extends Vue {
         if (prov.prov_agent != null) {
           for (let i = 0; i < prov.prov_agent.length; i++) {
             let promiseAgent;
-            if (prov.prov_agent[i].rdf_type == "vocabulary:Operator") {
+            if (this.$opensilex.Oeso.checkURIs(prov.prov_agent[i].rdf_type, this.$opensilex.Oeso.OPERATOR_TYPE_URI)) {
               promiseAgent = this.$opensilex.getService("opensilex.SecurityService")
               .getUser(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
@@ -332,6 +338,10 @@ export default class ProvenanceDetailsPage extends Vue {
       label: "component.common.type",
     }
   ];
+
+  successMessage(form) {
+    return this.$t("ProvenanceView.success-message") + " " + form.name;
+  }
   
 }
 </script>
@@ -342,8 +352,7 @@ export default class ProvenanceDetailsPage extends Vue {
 <i18n>
 en:
   ProvenanceDetailsPage:
-    title: Provenance
-    description: 
+    title: Provenance 
     agents: Provenance agents
     activity: Activity type
     activity_start_date: Start Date

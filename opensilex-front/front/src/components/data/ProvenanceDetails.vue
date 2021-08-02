@@ -9,6 +9,8 @@
           <opensilex-UriView
             label="ProvenanceDetails.uri"
             :uri="provenance.uri"
+            :value="provenance.uri"
+            :to="{path: '/provenances/details/'+ encodeURIComponent(provenance.uri)}"
           ></opensilex-UriView>
           <opensilex-StringView
             label="ProvenanceDetails.label"
@@ -19,7 +21,14 @@
             label="ProvenanceDetails.description"
             :value="provenance.description"
           ></opensilex-StringView>
-          <opensilex-UriListView
+
+          <opensilex-StringView 
+            v-if="provenance.prov_activity != null && provenance.prov_activity.length>0"
+            label="ProvenanceDetailsPage.activity"
+            :value="provenance.prov_activity[0].rdf_type"
+          ></opensilex-StringView>
+
+          <opensilex-UriListView v-if="agentList.length>0"
             label="ProvenanceDetails.agent"
             :list="agentList"
           ></opensilex-UriListView>
@@ -108,7 +117,6 @@ en:
     uri : Uri
     label: Name
     description : Description
-    provenanceLevels: Levels
     no-provenance-found: No provenance found
     agent : Agent(s)
 fr:
@@ -116,8 +124,7 @@ fr:
     uri : Uri
     label: Name
     description : Description
-    provenanceLevels: Niveaux de facteurs associés
-    no-provenance-found: Aucun provenance trouvée
+    no-provenance-found: Aucune provenance trouvée
     agent : Agent(s)
 
 </i18n>

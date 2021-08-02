@@ -35,6 +35,10 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprList;
+import org.apache.jena.sparql.expr.aggregate.AggGroupConcat;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -744,22 +748,23 @@ public final class OntologyDAO {
         return name;
     }
     
-    public List<SPARQLNamedResourceModel> getURILabels(List<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+    public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
         SelectBuilder select = new SelectBuilder();
         select.setDistinct(true);
 
         String nameField = "name";
         String namesField = "names";
         Var nameVar = makeVar(nameField);
-        select.addVar("(GROUP_CONCAT(DISTINCT ?"+ nameField +";separator=\" | \"))", makeVar(namesField));
-        String uriField = "uri";
-        Var uriVar = makeVar(uriField);
+        ExprFactory exprFactory = select.getExprFactory();
+        Aggregator groupConcat = AggregatorFactory.createGroupConcat(true, exprFactory.asExpr(nameVar), " | ", null); 
+        Var fieldConcatVar = makeVar(namesField); 
+        select.addVar(groupConcat.toString(),fieldConcatVar);        
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         select.addVar(uriVar);
-        String typeField = "type";
-        Var typeVar = makeVar(typeField);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         select.addVar(typeVar);
-        String typeNameField = "typeName";
-        Var typeNameVar = makeVar(typeNameField);
+        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
         select.addVar(typeNameVar);
         
         if (context != null) {
@@ -769,22 +774,23 @@ public final class OntologyDAO {
         }   
         select.addWhere(uriVar, RDF.type, typeVar);
         select.addWhere(typeVar, RDFS.label, typeNameVar);
-        select.addGroupBy("?" + uriField + " ?" + typeField + " ?" + typeNameField);
+        select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
         Locale locale = Locale.forLanguageTag(language);
         select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
-        select.addFilter(SPARQLQueryHelper.langFilter(typeNameField, locale.getLanguage()));
-        select.addFilter(SPARQLQueryHelper.inURIFilter(uriField, uris));  
+        select.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
+        
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
         for (SPARQLResult result : results) {
             SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
             model.setName(result.getStringValue(namesField));
-            model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
-            model.setType(uriDeserializer.fromString(result.getStringValue(typeField)));
+            model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+            model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
             SPARQLLabel typeLabel = new SPARQLLabel();
             typeLabel.setDefaultLang(locale.getLanguage());
-            typeLabel.setDefaultValue(result.getStringValue(typeNameField));
+            typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
             model.setTypeLabel(typeLabel);
             resultList.add(model);
         };

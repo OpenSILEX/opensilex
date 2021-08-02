@@ -833,9 +833,10 @@ public class DataAPI {
 
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
+            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
-                dao.createAll(new ArrayList<>(validation.getData().keySet()));
-                validation.setNbLinesImported(validation.getData().keySet().size());
+                dao.createAll(data);
+                validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
 
@@ -843,11 +844,10 @@ public class DataAPI {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
                     int index = bulkErrors.get(i).getIndex();
-                    ArrayList<DataModel> arrayList = new ArrayList<>(validation.getData().keySet());
-                    DataGetDTO fromModel = DataGetDTO.getDtoFromModel(arrayList.get(index));
+                    DataGetDTO fromModel = DataGetDTO.getDtoFromModel(data.get(index));
                     int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
                     String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(arrayList.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
             } catch (MongoCommandException e) {
@@ -961,7 +961,7 @@ public class DataAPI {
                 for (int i = 0; i < ids.length; i++) {
                     String header = ids[i];
                     if (header == null) {
-                        csvValidation.addInvalidHeaderURI(i, header);
+                        csvValidation.addEmptyHeader(i+1);
                     } else {                       
                     
                         if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(soHeader) 
@@ -1322,7 +1322,7 @@ public class DataAPI {
     }
     
     private SPARQLNamedResourceModel getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
-        SPARQLNamedResourceModel target = new SPARQLNamedResourceModel();;
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel();;
         if (URIDeserializer.validateURI(targetNameOrUri)) {
             URI targetUri = URI.create(targetNameOrUri);
             String label = dao.getURILabel(targetUri, user.getLanguage());

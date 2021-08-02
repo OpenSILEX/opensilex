@@ -177,6 +177,13 @@ export default class DataValidationReport extends Vue {
         generalErrors.firstErrorType = "missingHeaders";
       }
     }
+    if (errors.emptyHeaders.length > 0) {
+      generalErrors.list.emptyHeaders = errors.emptyHeaders;
+      generalErrors.listSize++;
+      if (!generalErrors.firstErrorType) {
+        generalErrors.firstErrorType = "emptyHeaders";
+      }
+    }
     if (Object.keys(errors.invalidHeaderURIs).length > 0) {
       let invalidHeaderURIsList = Object.values(errors.invalidHeaderURIs);
       generalErrors.list.invalidHeaderURIs = invalidHeaderURIsList;
@@ -286,6 +293,13 @@ export default class DataValidationReport extends Vue {
         return this.$t(
           "DataValidationReport.invalidValueErrorMessage",
           validationError
+        );
+      case "emptyHeaders":
+        return this.$t(
+          "DataValidationReport.validationErrorMissingRequiredMessage",
+          {
+            header: "#" + validationError,
+          }
         );
 
       default:
@@ -425,6 +439,7 @@ en:
     csvErrors: Error(s) detected in CSV file
     duplicatedDataErrors : Duplicate data in CSV File
     missingHeaders: Missing column headers
+    emptyHeaders: Missing column headers
     invalidHeaderURIs: "Invalid header URI, valid URIs are required on the line N°1"
     datatypeErrors: Data type error
     uriNotFoundErrors: URI not found

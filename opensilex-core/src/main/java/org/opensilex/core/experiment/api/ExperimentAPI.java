@@ -767,9 +767,10 @@ public class ExperimentAPI {
 
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
-            try {
-                dao.createAll(new ArrayList<>(validation.getData().keySet()));
-                validation.setNbLinesImported(validation.getData().keySet().size());
+            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
+            try {                
+                dao.createAll(data);
+                validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
 
@@ -777,11 +778,10 @@ public class ExperimentAPI {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
                     int index = bulkErrors.get(i).getIndex();
-                    ArrayList<DataModel> arrayList = new ArrayList<>(validation.getData().keySet());
-                    DataGetDTO fromModel = DataGetDTO.getDtoFromModel(arrayList.get(index));
+                    DataGetDTO fromModel = DataGetDTO.getDtoFromModel(data.get(index));
                     int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
                     String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(arrayList.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
             } catch (MongoCommandException e) {
@@ -947,7 +947,19 @@ public class ExperimentAPI {
         return csvValidation;
     }
 
-    private boolean validateCSVRow(ProvenanceModel provenance, String[] values, int rowIndex, DataCSVValidationModel csvValidation, Map<Integer, String> headerByIndex, URI experimentURI, ScientificObjectDAO scientificObjectDAO, Map<String, ScientificObjectModel> nameURIScientificObjects, List<String> scientificObjectsNotInXp, HashMap<URI, URI> mapVariableUriDataType, List<ImportDataIndex> duplicateDataByIndex) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, Exception {
+    private boolean validateCSVRow(
+            ProvenanceModel provenance, 
+            String[] values, 
+            int rowIndex, 
+            DataCSVValidationModel csvValidation, 
+            Map<Integer, String> headerByIndex, 
+            URI experimentURI, 
+            ScientificObjectDAO scientificObjectDAO, 
+            Map<String, ScientificObjectModel> nameURIScientificObjects, 
+            List<String> scientificObjectsNotInXp, 
+            HashMap<URI, URI> mapVariableUriDataType, 
+            List<ImportDataIndex> duplicateDataByIndex
+    ) throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, Exception {
 
         boolean validRow = true;
         ScientificObjectModel object = null;
@@ -1030,7 +1042,7 @@ public class ExperimentAPI {
     private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
         ScientificObjectModel object = null;
         try {
-        object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
+            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
         } catch (Exception ex) {
         }
         return object;

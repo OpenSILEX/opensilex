@@ -10,8 +10,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -31,6 +33,8 @@ public class CSVValidationModel {
     private Map<String, List<URI>> uriByNames = new HashMap<>();
 
     private List<String> missingHeaders = new ArrayList<>();
+    
+    private Set<Integer> emptyHeaders = new HashSet<>();
 
     private Map<Integer, String> invalidHeaderURIs = new HashMap<>();
 
@@ -117,7 +121,8 @@ public class CSVValidationModel {
                 || getInvalidHeaderURIs().size() > 0
                 || getInvalidValueErrors().size() > 0
                 || getAlreadyExistingURIErrors().size() > 0
-                || getDuplicateURIErrors().size() > 0;
+                || getDuplicateURIErrors().size() > 0
+                || getEmptyHeaders().size() > 0;
     }
 
     public void addMissingHeaders(Collection<String> headers) {
@@ -198,6 +203,14 @@ public class CSVValidationModel {
 
     public void addObjectMetadata(String metadataKey, Object value) {
         objectsMetadata.put(metadataKey, value);
+    }
+
+    public Set<Integer> getEmptyHeaders() {
+        return emptyHeaders;
+    }
+
+    public void addEmptyHeader(Integer emptyHeader) {
+        emptyHeaders.add(emptyHeader);
     }
 
 }

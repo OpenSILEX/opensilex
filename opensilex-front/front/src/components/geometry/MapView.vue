@@ -59,6 +59,7 @@
         modalSize="lg"
         @onCreate="showAreaDetails"
         @onUpdate="callAreaUpdate"
+        @hide="areaFormClosed"
     ></opensilex-ModalForm>
     <opensilex-ScientificObjectForm
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
@@ -473,12 +474,6 @@
         </template>
       </opensilex-TableView>
     </div>
-    <opensilex-Timeline
-      :items="temporalAreas"
-      :selectedFeatures="selectedFeatures"
-      @onClick="updateSelectedFeatures"
-      >
-    </opensilex-Timeline>
   </div>
 </template>
 
@@ -969,6 +964,10 @@ export default class MapView extends Vue {
     } else {
       this.selectPointerMove = { name: null, type: null};
     }
+  }
+
+  areaFormClosed() {
+    this.editingMode = false;
   }
 
   callAreaUpdate(areaUriResult) {

@@ -81,7 +81,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   withRawData = false;
 
   readonly expColumn = "experiment";
-  readonly soColumn = "target";
+  readonly targetColumn = "target";
   readonly deviceColumn = "device";
 
   @Prop()
@@ -89,7 +89,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   
   options = [
     { text: this.expColumn, value: this.expColumn },
-    { text: this.soColumn, value: this.soColumn },
+    { text: this.targetColumn, value: this.targetColumn },
     { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
@@ -186,20 +186,30 @@ export default class GenerateDataTemplateFrom extends Vue {
     }
 
     //column object
-    if (this.selectedColumns.includes(this.soColumn) || this.experiment != null) {
-      line1.push(this.soColumn);
+    if (this.experiment != null) {
+      line1.push(this.$t("DataHelp.objectId"));
       line2.push(this.$t("DataHelp.objectId-help")); 
       line3.push(
         this.$t("DataHelp.column-type-help")+
         this.getDataTypeLabel("xsd:string")
       );
       line4.push("test");
-    }
+    } else {
+      if (this.selectedColumns.includes(this.targetColumn)) {
+        line1.push(this.targetColumn);
+        line2.push(this.$t("DataHelp.targetId-help")); 
+        line3.push(
+          this.$t("DataHelp.column-type-help")+
+          this.getDataTypeLabel("xsd:string")
+        );
+        line4.push("test");
+      }
+    }    
 
     //column device
     if (this.selectedColumns.includes(this.deviceColumn)) {      
       line1.push(this.deviceColumn);
-      line2.push("DataHelp.device-help");
+      line2.push(this.$t("DataHelp.device-help"));
       line3.push(this.$t("DataHelp.column-type-help")+
         this.getDataTypeLabel("xsd:string"));
       line4.push("device-test");
@@ -285,20 +295,29 @@ export default class GenerateDataTemplateFrom extends Vue {
           );
         }
         
-
         //column object
-        if (this.selectedColumns.includes(this.soColumn) || this.experiment != null) {
-          line1.push(this.soColumn);
-          line2.push(this.$t("DataHelp.objectId-help"));
-          line3.push(this.$t("DataHelp.column-type-help") +
-              this.getDataTypeLabel("xsd:string")
+        if (this.experiment != null) {
+          line1.push(this.$t("DataHelp.objectId"));
+          line2.push(this.$t("DataHelp.objectId-help")); 
+          line3.push(
+            this.$t("DataHelp.column-type-help")+
+            this.getDataTypeLabel("xsd:string")
           );
+        } else {
+          if (this.selectedColumns.includes(this.targetColumn)) {
+            line1.push(this.targetColumn);
+            line2.push(this.$t("DataHelp.targetId-help")); 
+            line3.push(
+              this.$t("DataHelp.column-type-help")+
+              this.getDataTypeLabel("xsd:string")
+            );
+          }
         }
 
         //column devices (1 column per deviceType)
         if (this.selectedColumns.includes(this.deviceColumn)) {
             line1.push(this.deviceColumn);
-            line2.push("DataHelp.device-help");
+            line2.push(this.$t("DataHelp.device-help"));
             line3.push(this.$t("DataHelp.column-type-help")+
               this.getDataTypeLabel("xsd:string"));
         }

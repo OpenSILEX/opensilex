@@ -460,7 +460,7 @@ public class DeviceDAO {
             },
             null,
             0,
-            1
+            2
         );
         
         if (results.getList().isEmpty()) {

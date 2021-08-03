@@ -8,26 +8,16 @@
     >
 
       <template v-slot:export>
-        <b-dropdown
-          dropup
-          :small="false"
-          :text="$t('ExperimentData.export')"
-        >
-          <b-dropdown-item-button @click="exportData('long')">
-            {{ $t("ExperimentData.export-long") }}
-            <opensilex-FormInputLabelHelper
-              :helpMessage="$t('ExperimentData.export-long-help')"
-            >
-            </opensilex-FormInputLabelHelper>
-          </b-dropdown-item-button>
-          <b-dropdown-item-button @click="exportData('wide')"
-            >{{ $t("ExperimentData.export-wide") }}
-            <opensilex-FormInputLabelHelper
-              :helpMessage="$t('ExperimentData.export-wide-help')"
-            >
-            </opensilex-FormInputLabelHelper
-          ></b-dropdown-item-button>
-        </b-dropdown>
+        <b-button
+          @click="exportModal.show()"
+          variant="secondary"
+        >export
+        </b-button>
+
+        <opensilex-DataExportModal
+          ref="exportModal"
+          :filter="filter"
+        ></opensilex-DataExportModal>
       </template>
 
       <template v-slot:cell(scientific_object)="{ data }">
@@ -126,10 +116,7 @@ export default class DataList extends Vue {
   @Ref("templateForm") readonly templateForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
-
-
-
-
+  @Ref("exportModal") readonly exportModal!: any;
 
   get fields() {
     let tableFields: any = [
@@ -169,8 +156,7 @@ export default class DataList extends Vue {
     this.tableRef.refresh();
     this.$nextTick(() => {
       this.$opensilex.updateURLParameters(this.filter);
-    });
-    
+    });    
   }
 
   created() {
@@ -325,27 +311,6 @@ export default class DataList extends Vue {
       })
       .catch(reject);
     });
-  }
-
-  exportData(mode: string) {
-    let path = "/core/data/export";
-    let today = new Date();
-    let filename =
-      "export_data_" +
-      today.getFullYear() +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      String(today.getDate()).padStart(2, "0");
-
-    let params = {
-      start_date: this.filter.start_date,
-      end_date: this.filter.end_date,
-      scientific_objects: this.filter.scientificObjects,
-      experiments: this.filter.experiments,
-      variables: this.filter.variables,
-      provenances: [this.filter.provenance],
-      mode: mode
-    }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", params);
   }
 
 }

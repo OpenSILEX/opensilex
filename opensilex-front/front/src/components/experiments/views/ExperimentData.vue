@@ -25,6 +25,7 @@
                 :multiple="true"
                 :variables.sync="filter.variables"
                 :experiment="uri"
+                :key="refreshKey"
                 ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
             
@@ -77,6 +78,7 @@
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
+                  :key="refreshKey"
                 ></opensilex-UsedProvenanceSelector>
 
                 <b-collapse
@@ -135,6 +137,7 @@ export default class ExperimentData extends Vue {
   searchVisible: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
+  refreshKey = null;
 
   filter = {
     start_date: null,
@@ -227,26 +230,26 @@ export default class ExperimentData extends Vue {
     if(results instanceof Promise){
       results.then((res) => {
         this.resultModal.setNbLinesImported(
-          res.validation.dataErrors.nb_lines_imported
+          res.validation.dataErrors.nbLinesImported
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
         this.refreshVariables();
-        this.provSelector.refresh();
+        this.refreshKey = res.form.provenance.uri;
         this.loadProvenance({id:res.form.provenance.uri})
       });
     }else{ 
       this.resultModal.setNbLinesImported(
-        results.validation.dataErrors.nb_lines_imported
+        results.validation.dataErrors.nbLinesImported
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
       this.refreshVariables();
-      this.provSelector.refresh();
+      this.refreshKey = results.form.provenance.uri;
       this.loadProvenance({id:results.form.provenance.uri}) 
     }
     

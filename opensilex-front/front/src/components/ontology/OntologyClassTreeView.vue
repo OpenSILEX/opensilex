@@ -108,14 +108,18 @@ export default class OntologyClassTreeView extends Vue {
       }
 
       let treeNode = [];
-      this.resourceTree = results[0].response.result;
-      for (let i in this.resourceTree[0].children) {
-        let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
-        treeNode.push(node);
+      if(results[0].response.result.length > 0){
+        this.resourceTree = results[0].response.result;
+        for (let i in this.resourceTree[0].children) {
+          let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
+          treeNode.push(node);
 
-        this.nodes = treeNode;
+          this.nodes = treeNode;
+        }
+      }else{
+         this.nodes = treeNode;
       }
-
+      
       if (selection) {
         this.displayClassDetail(selection.uri);
       }

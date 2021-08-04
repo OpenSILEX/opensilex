@@ -12,14 +12,24 @@
 
     <div>
       <ValidationObserver ref="validatorRefDataTemplate">
-      <b-form-group v-if="experiment==null" :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
-        <b-form-checkbox-group
-          v-model="selectedColumns"
-          :options="options"
-          :aria-describedby="ariaDescribedby"
-          @change="change"
-        ></b-form-checkbox-group>
-      </b-form-group>
+        <b-row>
+          <b-col>
+            <b-form-group v-if="experiment==null" :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
+              <b-form-checkbox-group
+                v-model="selectedColumns"
+                :options="options"
+                :aria-describedby="ariaDescribedby"
+                @change="change"
+              ></b-form-checkbox-group>
+            </b-form-group>
+          </b-col>
+          <b-col cols="7">
+            <b-alert v-if="experiment==null"
+              variant="danger" 
+              :show="!validSelection"
+            >{{$t("DataTemplateForm.target-device-required")}}</b-alert>
+          </b-col>
+        </b-row>
         <b-row>
           <b-col cols="9">
             <opensilex-VariableSelector
@@ -40,11 +50,10 @@
             </opensilex-CSVSelectorInputForm>
           </b-col>
         </b-row>
-        <b-alert variant="danger" :show="!validSelection">{{$t("DataTemplateForm.target-device-required")}}</b-alert>
         <b-button 
           @click="csvExport" 
           variant="outline-primary" 
-          :disabled="!validSelection">{{
+          :disabled="experiment==null && !validSelection">{{
           $t("OntologyCsvImporter.downloadTemplate")
         }}</b-button>
         <b-button
@@ -52,7 +61,7 @@
           class="float-right"
           @click="csvExportDataExample"
           variant="outline-info"
-          :disabled="!validSelection"
+          :disabled="experiment==null && !validSelection"
           >{{ $t("DataHelp.download-template-example") }}</b-button
         >
         <hr />
@@ -408,6 +417,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   shown() {
     this.validSelection = this.hasDeviceAgent;
     this.requiredField = true;
+    this.selectedColumns = [];
   }
 
 }
@@ -419,7 +429,7 @@ en :
     raw-data: "Raw data"
     type-list: "Array of "
     raw-data-example: "Raw data (e.g. 20.3,20.4,20.5)"
-    select-columns: Select the optionnal columns you need
+    select-columns: Select the optional columns you need
     select-variables: Select the variables you need
     target-device-required: The provenance you selected doesn't contain any device agent, so you must add the target or the device column
     example :

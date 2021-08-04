@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -54,7 +55,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -112,10 +115,12 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -942,12 +947,15 @@ public class DataAPI {
         
         List<AgentModel> agents = provenance.getAgents();
         Boolean hasDevice = false;
-        for (AgentModel agent:agents) {
-            if (deviceDAO.isDeviceType(agent.getRdfType())) {
-                hasDevice = true;
-                break;
+        if (agents !=  null) {
+            for (AgentModel agent:agents) {
+                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                    hasDevice = true;
+                    break;
+                }
             }
         }
+        
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -961,7 +969,7 @@ public class DataAPI {
 
             // Line 1
             String[] ids = csvReader.parseNext();
-            Set<String> headers = Arrays.stream(ids).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
+            Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(soHeader) && !hasDevice) {
                 csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + soHeader));
             }  
@@ -1158,6 +1166,7 @@ public class DataAPI {
                        missingTargetOrDevice = false;
                    }
                 } else {
+                    missingTargetOrDevice = false;
                     if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
                         object = nameURIScientificObjects.get(objectNameOrUri);
                     } else {
@@ -1214,6 +1223,7 @@ public class DataAPI {
                         missingTargetOrDevice = false;
                     }                    
                 } else {
+                    missingTargetOrDevice = false;
                      if (nameURIDevices.containsKey(deviceNameOrUri)) {                    
                         device = nameURIDevices.get(deviceNameOrUri);                    
                     } else {
@@ -1361,14 +1371,16 @@ public class DataAPI {
     }
     
     private SPARQLNamedResourceModel getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
-        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel();;
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel();
         if (URIDeserializer.validateURI(targetNameOrUri)) {
             URI targetUri = URI.create(targetNameOrUri);
-            String label = dao.getURILabel(targetUri, user.getLanguage());
-            if (label != null) {                
+            if (sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(targetUri), RDFS.label, "?label")
+                    )) {
                 target.setUri(targetUri);
-                target.setName(label);
-            } 
+            } else {
+                target = null;
+            }
         } else {
             List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);  
             if (results.size()>1) {

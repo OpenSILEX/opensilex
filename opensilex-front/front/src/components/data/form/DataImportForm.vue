@@ -201,31 +201,6 @@ export default class DataImportForm extends Vue {
         });
   }
 
-  // mounted() {
-  //   this.loadDeviceTypes();
-  // }
-
-  // agentTypesMap: Map<string, string> = new Map();
-  // loadDeviceTypes() {
-  //   this.$opensilex.getService("opensilex.OntologyService")
-  //   .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
-  //   .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
-  //     for (let i = 0; i < http.response.result.length; i++) {
-  //       this.agentTypesMap.set(http.response.result[i].uri, http.response.result[i].name);
-  //     }      
-  //   })
-  //   .catch(this.$opensilex.errorHandler);   
-
-  // }
-
-  // getAgentsNames(urisList) {
-  //   let namesList = [];
-  //   for (let i in urisList) {
-  //     namesList.push(this.agentTypesMap[urisList[i]]);
-  //   }
-  //   return namesList;
-  // }
-
   getEmptyForm() {
     return {
       provenance: {

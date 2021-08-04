@@ -47,6 +47,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -424,7 +425,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Search by object uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
@@ -507,11 +508,11 @@ public class DataFilesAPI {
         for (DataFileCreationDTO dto : dtoList) {          
             
             //check objects uri
-            if (dto.getScientificObject() != null) {
-                if (!objectURIs.contains(dto.getScientificObject())) {
-                    objectURIs.add(dto.getScientificObject());
-                    if (!sparql.uriExists(ScientificObjectModel.class, dto.getScientificObject())) {
-                        notFoundedObjectURIs.add(dto.getScientificObject());
+            if (dto.getTarget() != null) {
+                if (!objectURIs.contains(dto.getTarget())) {
+                    objectURIs.add(dto.getTarget());
+                    if (!sparql.uriExists((Node) null, dto.getTarget())) {
+                        notFoundedObjectURIs.add(dto.getTarget());
                     }
                 }         
             }
@@ -551,7 +552,7 @@ public class DataFilesAPI {
         }      
         
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong scientific_object uris: ", new ArrayList<>(notFoundedObjectURIs));
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs));
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));

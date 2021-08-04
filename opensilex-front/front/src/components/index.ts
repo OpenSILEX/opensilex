@@ -337,8 +337,6 @@ import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
 components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
-import ExperimentDatasetForm from './experiments/data/ExperimentDatasetForm.vue';
-components["opensilex-ExperimentDatasetForm"] = ExperimentDatasetForm;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
 
@@ -546,6 +544,8 @@ import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
 import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
+import DataImportForm from './data/form/DataImportForm.vue';
+components["opensilex-DataImportForm"] = DataImportForm;
 
 // PHIS
 //IMAGES

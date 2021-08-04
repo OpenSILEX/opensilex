@@ -41,7 +41,7 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
         model.setMetadata(getMetadata());
         model.setProvenance(getProvenance());
         model.setRdfType(getRdfType());
-        model.setScientificObject(getScientificObject());
+        model.setTarget(getTarget());
         model.setUri(getUri());
 
         model.setPath(relativePath);        

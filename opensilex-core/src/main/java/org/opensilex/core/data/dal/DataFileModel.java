@@ -58,8 +58,8 @@ public class DataFileModel extends DataModel {
         }
         
         String objectsString = "";
-        if (getScientificObject() != null) {
-            objectsString = getScientificObject().toString();
+        if (getTarget() != null) {
+            objectsString = getTarget().toString();
         }
         
         String md5Hash = DigestUtils.md5Hex(objectsString + provenanceString);

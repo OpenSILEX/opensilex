@@ -523,7 +523,7 @@ export default class VisuView extends Vue {
           encodeURIComponent(element.uri) +
           "?scaledHeight=800",
         type: element.rdf_type,
-        objectUri: element.scientific_object,
+        objectUri: element.target,
         date: element.date,
         provenanceUri: element.provenance.uri,
         imageIndex: point.imageIndex,

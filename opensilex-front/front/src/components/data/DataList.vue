@@ -20,14 +20,14 @@
         ></opensilex-DataExportModal>
       </template>
 
-      <template v-slot:cell(scientific_object)="{ data }">
+      <template v-slot:cell(target)="{ data }">
         <opensilex-UriLink
-          :uri="data.item.scientific_object"
-          :value="objects[data.item.scientific_object]"
+          :uri="data.item.target"
+          :value="objects[data.item.target]"
           :to="{
             path:
               '/scientific-objects/details/' +
-              encodeURIComponent(data.item.scientific_object),
+              encodeURIComponent(data.item.target),
           }"
         ></opensilex-UriLink>
       </template>
@@ -121,8 +121,8 @@ export default class DataList extends Vue {
   get fields() {
     let tableFields: any = [
       {
-        key: "scientific_object",
-        label: "ExperimentData.object",
+        key: "target",
+        label: "DataView.list.object",
       },
       {
         key: "date",
@@ -222,7 +222,7 @@ export default class DataList extends Vue {
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
         this.filter.experiments, // experiments
-        this.filter.scientificObjects, // scientific_object
+        this.filter.scientificObjects, // targets
         this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
         undefined, // devices
         undefined, // min_confidence
@@ -243,7 +243,7 @@ export default class DataList extends Vue {
         if (http.response.result.length > 0) {
           for (let i in http.response.result) {
 
-            let objectURI = http.response.result[i].scientific_object;
+            let objectURI = http.response.result[i].target;
             if (objectURI != null && !objectsToLoad.includes(objectURI)) {
               objectsToLoad.push(objectURI);
             }
@@ -261,8 +261,8 @@ export default class DataList extends Vue {
           
           if (objectsToLoad.length > 0) {
             let promiseObject = this.$opensilex
-              .getService("opensilex.ScientificObjectsService")
-              .getScientificObjectsListByUris(undefined, objectsToLoad)
+              .getService("opensilex.OntologyService")
+              .getURILabelsList(objectsToLoad)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {
                   let obj = httpObj.response.result[j];

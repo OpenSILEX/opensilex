@@ -54,6 +54,8 @@ import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
@@ -499,6 +501,27 @@ public class OntologyAPI {
         String uriLabel = dao.getURILabel(uri, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(uriLabel).getResponse();
+    }
+    
+    @GET
+    @Path("/uris_labels")
+    @ApiOperation("Return associated rdfs:label of uris if they exist")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return URI label", response = String.class)
+    })
+    public Response getURILabelsList(
+            @ApiParam(value = "URIs to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris,
+            @ApiParam(value = "Context URI") @QueryParam("context") @ValidURI URI context
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<SPARQLNamedResourceModel> results = dao.getURILabels(uris, currentUser.getLanguage(), context);
+        List<NamedResourceDTO> dtoList = results.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+
+        return new SingleObjectResponse<>(dtoList).getResponse();
     }
     
     @POST

@@ -6,14 +6,25 @@
       description="DataView.description"
     ></opensilex-PageHeader>
 
-    <!-- <opensilex-PageActions>
+    <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
           @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
         ></opensilex-CreateButton>
       </template>
-    </opensilex-PageActions> -->
+    </opensilex-PageActions>
+
+    <opensilex-ModalForm
+      ref="modalDataForm"
+      createTitle="DataImportForm.create"
+      editTitle="DataImportForm.update"
+      component="opensilex-DataImportForm"
+      icon="ik#ik-bar-chart-line"
+      modalSize="xl"
+      @onCreate="afterCreateData"
+      :successMessage="successMessage"
+    ></opensilex-ModalForm>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -30,9 +41,11 @@
               <!-- Variables -->
               <opensilex-FilterField>
                 <opensilex-UsedVariableSelector
+                ref="varSelector"
                 label="DataView.filter.variables"
                 :multiple="true"
                 :variables.sync="filter.variables"
+                :key="refreshKey"
                 ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
             
@@ -96,6 +109,7 @@
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
+                  :key="refreshKey"
                 ></opensilex-UsedProvenanceSelector>
 
                 <b-collapse
@@ -145,6 +159,7 @@ export default class DataView extends Vue {
   visibleDetails: boolean = false;
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
+  refreshKey = null;
 
   get user() {
     return this.$store.state.user;
@@ -156,11 +171,12 @@ export default class DataView extends Vue {
 
   @Ref("templateForm") readonly templateForm!: any;
   @Ref("dataList") readonly dataList!: any;
-  // @Ref("modalDataForm") readonly modalDataForm!: any;
+  @Ref("modalDataForm") readonly modalDataForm!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
+  @Ref("varSelector") readonly varSelector!: any;
 
   filter = {
     start_date: null,
@@ -249,25 +265,23 @@ export default class DataView extends Vue {
     if(results instanceof Promise){
       results.then((res) => {
         this.resultModal.setNbLinesImported(
-          res.validation.dataErrors.nb_lines_imported
+          res.validation.dataErrors.nbLinesImported
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
+        this.refreshKey = res.form.provenance.uri;
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
-        this.provSelector.refresh();
-        this.loadProvenance({id:res.form.provenance.uri})
       });
     }else{ 
       this.resultModal.setNbLinesImported(
-        results.validation.dataErrors.nb_lines_imported
+        results.validation.dataErrors.nbLinesImported
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
+      this.refreshKey = results.form.provenance.uri;
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
-      this.provSelector.refresh();
-      this.loadProvenance({id:results.form.provenance.uri}) 
     }
     
   }
@@ -283,7 +297,7 @@ export default class DataView extends Vue {
   }
 
   refreshDataAfterImportation(){
-    this.loadProvenance({id: this.filter.provenance})
+    this.refresh();
   }
 
   loadSO(scientificObjectsURIs) {
@@ -322,7 +336,7 @@ en:
       date: Date
       variable: Variable
       value: Value
-      object: Object
+      object: Target
       provenance: provenance
       details: view data details
     filter:
@@ -343,7 +357,7 @@ fr:
       date: Date
       variable: Variable
       value: Valeur
-      object: objet
+      object: Target
       provenance: provenance
       details: Voir les détails de la donnée
     filter:

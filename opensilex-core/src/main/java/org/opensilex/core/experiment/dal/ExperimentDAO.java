@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
@@ -475,5 +476,29 @@ public class ExperimentDAO {
 
     public List<ExperimentModel> getByURIs(List<URI> uris, UserModel currentUser) throws Exception {
         return sparql.getListByURIs(ExperimentModel.class, uris, currentUser.getLanguage());
+    }
+
+    public ExperimentModel getByName(String name) throws Exception {
+        //pageSize=2 in order to detect duplicated names
+        ListWithPagination<ExperimentModel> results = sparql.searchWithPagination(
+            ExperimentModel.class,
+            null,
+            (SelectBuilder select) -> {
+                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.LABEL_FIELD, name));
+            },
+            null,
+            0,
+            2
+        );
+        
+        if (results.getList().isEmpty()) {
+            return null;
+        }
+        
+        if (results.getList().size() > 1) {
+            throw new DuplicateNameException(name);
+        }
+
+        return results.getList().get(0);
     }
 }

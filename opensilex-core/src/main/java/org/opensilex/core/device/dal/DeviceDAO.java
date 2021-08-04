@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
@@ -28,6 +29,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -40,6 +42,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -448,5 +451,35 @@ public class DeviceDAO {
 
     public List<DeviceModel> getList(List<URI> uris, UserModel userModel) throws Exception {
         return sparql.getListByURIs(DeviceModel.class, uris, userModel.getLanguage());
+    }
+
+    public DeviceModel getByName(String name) throws Exception {
+        //pageSize=2 in order to detect duplicated names
+        ListWithPagination<DeviceModel> results = sparql.searchWithPagination(
+            DeviceModel.class,
+            null,
+            (SelectBuilder select) -> {
+                select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name));
+            },
+            null,
+            0,
+            2
+        );
+        
+        if (results.getList().isEmpty()) {
+            return null;
+        }
+        
+        if (results.getList().size() > 1) {
+            throw new DuplicateNameException(name);
+        }
+
+        return results.getList().get(0);
+    }
+
+    public boolean isDeviceType(URI rdfType) throws SPARQLException {
+        return sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.Device)
+        );
     }
 }

@@ -1,49 +1,66 @@
 <template>
   <b-form>
-    <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID) && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-      ref="provenanceForm"
-      modalSize="lg"
-      :initForm="initForm"
-      component="opensilex-ProvenanceForm"
-      createTitle="DatasetForm.provenance.label"
-      editTitle="component.factor.update"
-      icon="fa#sun"
-      @onCreate="afterCreateProvenance"
-      :successMessage="successMessage"
-    ></opensilex-ModalForm>
-    <br />
+    <b-row>
+      <b-col cols="5">
+        <opensilex-FormField
+          :required="true"
+          label="DataImportForm.use-default-provenance"
+          helpMessage="DataImportForm.use-default-provenance-help"
+        >
+          <template v-slot:field="field">
+            <b-form-checkbox v-model="selectDefaultProvenance" switch @change="changeCheckBox($event)">
+              {{$t('DataImportForm.use-default-provenance-title')}}
+            </b-form-checkbox>
+          </template>
+        </opensilex-FormField>
+      </b-col>
+      <b-col>
+        <opensilex-ProvenanceSelector     
+          v-if="!selectDefaultProvenance" 
+          ref="provenanceSelector"
+          :provenances.sync="form.provenance.uri"
+          :filterLabel="filterProvenanceLabel"
+          label="Select a provenance"
+          @select="loadProvenanceAndCheckUploadedData"
+          @clear="reset()"
+          :multiple="false"
+          :actionHandler="showProvenanceCreateForm"
+          :viewHandler="showProvenanceDetails"
+          :viewHandlerDetailsVisible="visibleDetails"
+          :showURI="false"
+          :required="true"
+        ></opensilex-ProvenanceSelector>
+        <b-collapse id="collapse-4" v-model="visibleDetails" class="mt-2">
+          <opensilex-ProvenanceDetails
+            :provenance="this.form.provenance"
+          ></opensilex-ProvenanceDetails>
+        </b-collapse>
+      </b-col>
+    </b-row>
 
-    <!-- Provenance selector if Experiment not choosen-->
-    <div v-if="form.experiment != null">
-      <h4>{{ $t("DatasetForm.describe") }}</h4>
-      <opensilex-ProvenanceSelector
-        ref="provenanceSelector"
-        :provenances.sync="provenance"
-        :filterLabel="filterLabel"
-        label="DatasetForm.provenance.name-search"
-        @select="loadProvenanceAndCheckUploadedData"
-        @clear="resetProvenanceForm"
-        :multiple="false"
-        :actionHandler="showCreateForm"
-        :viewHandler="showProvenanceDetails"
-        :viewHandlerDetailsVisible="visibleDetails"
-        :required="true"
-      ></opensilex-ProvenanceSelector>
-      <b-collapse id="collapse-4" v-model="visibleDetails" class="mt-2">
-        <opensilex-ProvenanceDetails
-          :provenance="this.form.provenance"
-        ></opensilex-ProvenanceDetails>
-      </b-collapse>
+    <opensilex-ModalForm
+      ref="provenanceForm"
+      component="opensilex-ProvenanceForm"
+      createTitle="ProvenanceView.add"
+      editTitle="ProvenanceView.update"
+      icon="fa#seedling"
+      modalSize="lg"
+      @hide="validateProvenanceForm='true'"
+      :initForm="initForm"
+      :successMessage="successMessage"
+      :validationDisabled="validateProvenanceForm"
+      @onCreate="afterCreateProvenance"
+    ></opensilex-ModalForm>
+    
       <!-- Upload file  -->
       <opensilex-GenerateDataTemplateFrom
-        :experiment="this.form.experiment"
-        :selectExperiment="false"
         ref="templateForm"
+        :experiment="form.experiment"
+        :hasDeviceAgent="hasDeviceAgent"
       ></opensilex-GenerateDataTemplateFrom>
       <div>
         <label
-          >{{ $t("DatasetForm.dataFile") }}
+          >{{ $t("DataImportForm.import-file") }}
           <span class="required">*</span></label
         >
 
@@ -54,8 +71,8 @@
               ref="inputFile"
               accept="text/csv, .csv"
               @input="uploadCSV"
-              :placeholder="$t('DatasetForm.csv-file-placeholder')"
-              :drop-placeholder="$t('DatasetForm.csv-file-drop-placeholder')"
+              :placeholder="$t('DataImportForm.csv-file-placeholder')"
+              :drop-placeholder="$t('DataImportForm.csv-file-drop-placeholder')"
               :browse-text="$t('component.common.import-files.select-button')"
               v-model="file"
               :state="Boolean(file)"
@@ -76,7 +93,9 @@
         <br />
       </div>
       <div>
-        <opensilex-DataHelpTableView></opensilex-DataHelpTableView>
+        <opensilex-DataHelpTableView 
+          :experiment="form.experiment">
+        </opensilex-DataHelpTableView>
       </div>
       <!-- validation report  -->
       <opensilex-DataValidationReport
@@ -85,13 +104,13 @@
       >
       </opensilex-DataValidationReport>
       <p v-if="!isImported && isValid && insertionError" class="alert-warning">
-        {{ $t("DatasetForm.data-not-imported") }}
+        {{ $t("DataImportForm.data-not-imported") }}
       </p>
       <p
         v-if="!isImported && tooLargeDataset && insertionError"
         class="alert alert-warning"
       >
-        {{ $t("DatasetForm.data-too-much-data") }}
+        {{ $t("DataImportForm.data-too-much-data") }}
       </p>
       <p
         v-if="
@@ -99,13 +118,11 @@
         "
         class="alert alert-warning"
       >
-        {{ $t("DatasetForm.error") }} : {{ insertionDataError.title }}
+        {{ $t("DataImportForm.error") }} : {{ insertionDataError.title }}
         <br />
-        {{ $t("DatasetForm.message") }} : {{ insertionDataError.message }}
+        {{ $t("DataImportForm.message") }} : {{ insertionDataError.message }}
       </p>
       <br />
-    </div>
-    <div v-else>{{ $t("DatasetForm.choose-experiment") }}</div>
   </b-form>
 </template>
 
@@ -117,14 +134,14 @@ import Oeso from "../../../ontologies/Oeso";
 import moment from "moment";
 
 // @ts-ignore
-import { AgentModel, ProvenanceGetDTO } from "opensilex-core/index";
+import { AgentModel, ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 // @ts-ignore
 import { ExperimentGetDTO } from "opensilex-core/index";
 
 @Component
-export default class DatasetForm extends Vue {
+export default class DataImportForm extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
@@ -133,13 +150,9 @@ export default class DatasetForm extends Vue {
   file = null;
 
   @Ref("warningModal") readonly warningModal!: any;
-
   @Ref("provenanceForm") readonly provenanceForm!: any;
-
   @Ref("provenanceSelector") readonly provenanceSelector!: any;
-
   @Ref("validationReport") readonly validationReport!: any;
-
   @Ref("templateForm") readonly templateForm!: any;
 
   users: any[] = [];
@@ -153,9 +166,16 @@ export default class DatasetForm extends Vue {
   duplicatedData: any[] = [];
   tooLargeDataset: boolean = false;
   importedLines: number = 0;
+  withSOcolumn: boolean = true;
+  validateProvenanceForm: boolean = true;
+  showTable: boolean;
 
   provenance = null;
-  filterLabel = null;
+  experiments = [];
+  filterProvenanceLabel = null;
+  selectDefaultProvenance: boolean = true;
+  hasDeviceAgent: boolean = false;
+  standardProvURI;
 
   @Prop({
     default: () => {
@@ -164,17 +184,22 @@ export default class DatasetForm extends Vue {
           uri: null,
           name: null,
           comment: null,
-          experiments: [],
           provActivity: [],
           provAgent: [],
         },
-        experiment: null,
-        dataFile: null,
-        selectExperiment: null,
+        dataFile: null
       };
     },
   })
   form;
+
+  created() {
+    this.$opensilex.getService("opensilex.DataService")
+    .searchProvenance("standard_provenance")
+    .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          this.standardProvURI = http.response.result[0].uri;
+        });
+  }
 
   getEmptyForm() {
     return {
@@ -182,20 +207,23 @@ export default class DatasetForm extends Vue {
         uri: null,
         name: null,
         comment: null,
-        experiments: [],
         prov_activity: [],
         prov_agent: [],
       },
-      experiment: null,
       dataFile: null,
-      selectExperiment: null,
+      experiment: null
     };
   }
 
   showProvenanceDetails() {
-    if (this.provenance != null) {
+    if (this.form.provenance != null) {
       this.visibleDetails = !this.visibleDetails;
     }
+  }
+
+  showProvenanceCreateForm() {
+    this.validateProvenanceForm = false;
+    this.provenanceForm.showCreateForm();
   }
 
   get credentials() {
@@ -205,29 +233,17 @@ export default class DatasetForm extends Vue {
   get user() {
     return this.$store.state.user;
   }
-  showCreateForm() {
-    this.provenanceForm.showCreateForm();
-  }
 
   successMessage(form) {
-    return this.$t("DatasetForm.provenance.success-message");
+    return this.$t("DataImportForm.provenance.success-message");
   }
 
   initForm(form) {
     let date = new Date();
     let formattedDate = moment(date).format("YYYY-MM-DDTHH:MM:SS");
-    let service = this.$opensilex.getService("opensilex.ExperimentsService");
-    service
-      .getExperiment(this.form.experiment)
-      .then((http: HttpResponse<OpenSilexResponse<ExperimentGetDTO>>) => {
-        let experimentName = http.response.result.name;
-        let name = "PROV_" + experimentName.toUpperCase() + "_" + formattedDate;
-        form.name = name;
-        form.experiments = [this.form.experiment];
-      })
-      .catch((error) => {
-        this.$opensilex.errorHandler(error);
-      });
+    let name = "PROV_" + formattedDate;
+    form.name = name;
+    form.experiments = [];
   }
 
   selectedOperators(valueToSelect) {
@@ -249,13 +265,12 @@ export default class DatasetForm extends Vue {
   resetProvenanceForm() {
     this.users = [];
     this.provenance = null;
-    this.filterLabel = null;
-    let experiment = this.form.experiment;
+    this.filterProvenanceLabel = null;
     this.form.provenance = {
       uri: null,
       name: null,
       comment: null,
-      experiments: [{ uri: experiment }],
+      experiments: this.form.experiments,
       prov_activity: [],
       prov_agent: [],
     };
@@ -263,7 +278,6 @@ export default class DatasetForm extends Vue {
 
   afterCreateProvenance(data) {
     this.provenance = data.uri;
-    this.filterLabel = data.name;
     this.provenanceSelector.select({ id: data.uri, label: data.name });
   }
 
@@ -279,10 +293,13 @@ export default class DatasetForm extends Vue {
   }
 
   loadProvenanceAndCheckUploadedData(selectedValue) {
+    this.hasDeviceAgent = false;
     if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id).then((prov) => {
         this.form.provenance = prov;
+        this.hasDevice(prov);
       });
+
       this.checkUploadedData();
     }
   }
@@ -293,18 +310,37 @@ export default class DatasetForm extends Vue {
       if (this.isImported) {
         resolve(true);
       } else {
-        return this.$opensilex
-          .uploadFileToService(
-            "/core/experiments/" +
+        let promise;
+
+        if (this.form.experiment != null) {
+          promise = this.$opensilex
+            .uploadFileToService(
+              "/core/experiments/" +
               encodeURIComponent(this.form.experiment) +
               "/data/import",
-            {
-              file: this.form.dataFile,
-            },
-            {
-              provenance: this.form.provenance.uri,
-            }
-          )
+              {
+                file: this.form.dataFile
+              },
+              {
+                experiments: this.experiments,
+                provenance: this.form.provenance.uri
+              }
+            )
+        } else {
+          promise = this.$opensilex
+            .uploadFileToService(
+              "/core/data/import",
+              {
+                file: this.form.dataFile
+              },
+              {
+                experiments: this.experiments,
+                provenance: this.form.provenance.uri
+              }
+            )
+        }
+
+        return promise
           .then((data) => {
             this.checkCSVValidation(data);
             if (this.isValid) {
@@ -323,7 +359,7 @@ export default class DatasetForm extends Vue {
                   this.insertionError = true;
                   this.$opensilex.disableLoader();
                 } else if (results.dataErrors.duplicateData) {
-                  this.importedLines = results.dataErrors.nb_lines_imported;
+                  this.importedLines = results.dataErrors.nbLinesImported;
                   this.duplicateData = true;
                   this.duplicatedData = results.dataErrors.duplicatedData;
                   this.isImported = false;
@@ -331,7 +367,7 @@ export default class DatasetForm extends Vue {
                   this.$opensilex.disableLoader();
                   resolve(false);
                 } else {
-                  this.importedLines = results.dataErrors.nb_lines_imported;
+                  this.importedLines = results.dataErrors.nbLinesImported;
                   this.isImported = true;
                   this.insertionError = false;
                   this.$opensilex.disableLoader();
@@ -374,7 +410,11 @@ export default class DatasetForm extends Vue {
   }
 
   checkUploadedData() {
-    if (this.form.dataFile !== null && this.provenance !== null) {
+    if (this.selectDefaultProvenance) {
+      this.form.provenance.uri = this.standardProvURI;
+      this.form.provenance.name = "standard provenance";
+    }
+    if (this.form.dataFile !== null && this.form.provenance.uri !== null) {
       this.insertionError = false;
       this.insertionDataError = null;
       this.isImported = false;
@@ -383,25 +423,46 @@ export default class DatasetForm extends Vue {
       this.duplicatedData = [];
       this.tooLargeDataset = false;
 
-      return this.$opensilex
-        .uploadFileToService(
-          "/core/experiments/" +
+      if (this.form.experiment != null) {
+        return this.$opensilex
+          .uploadFileToService(
+            "/core/experiments/" +
             encodeURIComponent(this.form.experiment) +
             "/data/import_validation",
-          {
-            file: this.form.dataFile,
-          },
-          {
-            provenance: this.form.provenance.uri,
-          }
-        )
-        .then((response) => {
-          this.checkCSVValidation(response);
-          this.$opensilex.disableLoader();
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+            {
+              file: this.form.dataFile
+            },
+            {
+              provenance: this.form.provenance.uri
+            }
+          )
+          .then((response) => {
+            this.checkCSVValidation(response);
+            this.$opensilex.disableLoader();
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      } else {
+        return this.$opensilex
+          .uploadFileToService(
+            "/core/data/import_validation",
+            {
+              file: this.form.dataFile
+            },
+            {
+              provenance: this.form.provenance.uri
+            }
+          )
+          .then((response) => {
+            this.checkCSVValidation(response);
+            this.$opensilex.disableLoader();
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      }
+      
     } else {
       if (this.validationReport != undefined) {
         this.validationReport.reset();
@@ -417,32 +478,67 @@ export default class DatasetForm extends Vue {
     this.validationReport.checkValidation(errors, false);
     this.isValid = this.validationReport.isValid;
   }
+
+  provenanceGetDTOToSelectNode(dto) {
+    if (dto) {
+      return {
+        id: dto.uri,
+        label: dto.name
+      };
+    }
+    return null;
+  }
+
+  hasDevice(provenance) {
+    let uris = [];
+    for (let i in provenance.prov_agent) {
+      uris.push(provenance.prov_agent[i].uri);
+    }
+
+    if (uris.length>0) {
+      let body = {
+        uris: uris
+      }
+      this.$opensilex.getService("opensilex.OntologyService")
+      .checkURIsTypes(new Array(Oeso.DEVICE_TYPE_URI), body)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
+        let results = http.response.result;
+        for (let i in results) {
+          if (results[i].rdf_types.includes(Oeso.DEVICE_TYPE_URI)) {
+            this.hasDeviceAgent= true;
+            break;
+          }
+        }          
+      })
+      .catch(this.$opensilex.errorHandler);
+      }
+    
+  }
+
+  changeCheckBox(value) {
+    if (value) {
+      this.hasDeviceAgent = false;
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
 </style>
 <i18n>
 en:
-  DatasetForm:
+  DataImportForm:
+    use-default-provenance: Use standard provenance 
+    use-default-provenance-title: Uncheck to select another provenance
+    use-default-provenance-help: The data will be linked to a default provenance. Uncheck to select another provenance.
+    experiments: Select the experiments associated to the data (optionnal)
+    add-device-column: Add device column 
+    add-device-column-title: Check if you need to specify a device on each piece of data
+    add-device-column-help: Check if you need to add a device column, then select the device types. If the device is already defined in the provenance, then it is not necessary to specify device.
     create: Add Data
     update: Update
     experiment: Choose experiment
     describe: Describe information involved in the production of data
-    provenance: 
-      label: Provenance
-      operators: Operators
-      operators-help: Who have generated these data ?
-      name: Name 
-      name-search: Data provenance name in this experiment
-      name-help: Give a name
-      description : Description
-      description-help : Other comment(s) about your data environment parameters
-      description-placeholder : Add description
-      title: Create a new provenance
-      title-create : Create a new provenance
-      title-use : Use an already existing provenance
-      already-exists: Provenance already existing
-      success-message : Provenance has been successfully created
+    provenance-success-message: Provenance has been successfully created      
     choose-experiment: First choose an experiment
     choosen-experiment: Choosen experiment
     choosen-provenance: Choosen provenance
@@ -455,28 +551,22 @@ en:
     error: Erreur 
     message: Message
     reset-file: Reset file
-    dataFile : Import data CSV
+    import-file : Import data CSV
     
 fr:
-  DatasetForm:
+  DataForm:
+    use-default-provenance: Utiliser la provenance standard
+    use-default-provenance-title: Décocher pour choisir une autre provenance
+    use-default-provenance-help: Les données seront liées à la provenance standard. Décocher pour sélectionner une autre provenance.
+    experiments: Selectionner les expérimentations associées aux données (facultatif)
+    add-device-column: Ajouter des colonnes equipement
+    add-device-column-title: Cocher pour spécifier un équipement sur chaque donnée
+    add-device-column-help: Cocher pour ajouter des colonnes équipements et sélectionner les types d'équipements à ajouter. Si l'équipement en question est déjà spécifié dans la provenance, il n'est pas nécessaire de le repréciser dans le fichier d'import.
     create: Ajouter des données
     update: Modifier
     experiment: Choisir une experimentation
     describe: Décrivez les informations impliquées dans la production des données
-    provenance:
-      label: Provenance
-      operators: Operateurs
-      agent-help: Qui a produit ces données ?
-      name: Nom 
-      name-search: Nom de la provenance des données de l'expérimentation
-      name-help: Nommez votre provenance
-      description: Description
-      description-help: Autres commentaires à propos de vos données ?
-      description-placeholder: Ajouter une description
-      title-create: Créer la provenance des données
-      title-use: Utilisation de la provenance des données
-      already-exists: La provenance existe déjà
-      success-message : La provenance a été créé avec succès
+    provenance-success-message: La provenance a été créé avec succès
     choose-experiment: Choisissez une expérimentation
     choosen-experiment: Expérimentation choisie
     choosen-provenance: Provenance choisie
@@ -489,6 +579,6 @@ fr:
     error: Error
     message: Message
     reset-file: Reinitialiser fichier
-    dataFile : Importez des données
+    import-file : Importez des données
     
 </i18n>

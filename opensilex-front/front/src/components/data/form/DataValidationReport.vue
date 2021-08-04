@@ -153,8 +153,13 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("invalidValueErrors", errors, globalErrors);
     this.loadErrorType("invalidObjectErrors", errors, globalErrors);
     this.loadErrorType("invalidDateErrors", errors, globalErrors);
+    this.loadErrorType("invalidExperimentErrors", errors, globalErrors);
+    this.loadErrorType("invalidDeviceErrors", errors, globalErrors);
     this.loadErrorType("invalidDataTypeErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDataErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedExperimentErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedObjectErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedDeviceErrors", errors, globalErrors);
 
     this.loadErrorType("alreadyExistingURIErrors", errors, globalErrors);
     this.loadErrorType("duplicateURIErrors", errors, globalErrors);
@@ -170,6 +175,13 @@ export default class DataValidationReport extends Vue {
       generalErrors.listSize++;
       if (!generalErrors.firstErrorType) {
         generalErrors.firstErrorType = "missingHeaders";
+      }
+    }
+    if (errors.emptyHeaders.length > 0) {
+      generalErrors.list.emptyHeaders = errors.emptyHeaders;
+      generalErrors.listSize++;
+      if (!generalErrors.firstErrorType) {
+        generalErrors.firstErrorType = "emptyHeaders";
       }
     }
     if (Object.keys(errors.invalidHeaderURIs).length > 0) {
@@ -237,6 +249,16 @@ export default class DataValidationReport extends Vue {
           "DataValidationReport.invalidDateErrorMessage",
           validationError
         );
+      case "invalidExperimentErrors":
+        return this.$t(
+          "DataValidationReport.invalidExperimentErrorMessage",
+          validationError
+        );
+      case "invalidDeviceErrors":
+        return this.$t(
+          "DataValidationReport.invalidDeviceErrorMessage",
+          validationError
+        );
       case "duplicateURIErrors":
         return this.$t(
           "DataValidationReport.validationErrorDuplicateURIMessage",
@@ -252,10 +274,32 @@ export default class DataValidationReport extends Vue {
           "DataValidationReport.validationErrorDuplicatedDataMessage",
           validationError
         );
+      case "duplicatedExperimentErrors":
+        return this.$t(
+          "DataValidationReport.invalidExperimentErrorMessage",
+          validationError
+        );
+      case "duplicatedObjectErrors":
+        return this.$t(
+          "DataValidationReport.invalidObjectErrorMessage",
+          validationError
+        );
+      case "duplicatedDeviceErrors":
+        return this.$t(
+          "DataValidationReport.invalidDeviceErrorMessage",
+          validationError
+        );
       case "invalidValueErrors":
         return this.$t(
           "DataValidationReport.invalidValueErrorMessage",
           validationError
+        );
+      case "emptyHeaders":
+        return this.$t(
+          "DataValidationReport.validationErrorMissingRequiredMessage",
+          {
+            header: "#" + validationError,
+          }
         );
 
       default:
@@ -395,6 +439,7 @@ en:
     csvErrors: Error(s) detected in CSV file
     duplicatedDataErrors : Duplicate data in CSV File
     missingHeaders: Missing column headers
+    emptyHeaders: Missing column headers
     invalidHeaderURIs: "Invalid header URI, valid URIs are required on the line N°1"
     datatypeErrors: Data type error
     uriNotFoundErrors: URI not found
@@ -404,6 +449,11 @@ en:
     invalidValueErrors: Invalid value
     invalidObjectErrors: Object name or uri not found in this experiment
     invalidDateErrors: Invalid date format
+    invalidExperimentErrors: Experiment name or uri not found
+    invalidDeviceErrors: Device name or uri not found
+    duplicatedExperimentErrors: Duplicate experiment name (you must use uri)
+    duplicatedDeviceErrors: Duplicate device name (you must use uri)
+    duplicatedObjectErrors: Duplicate object name (you must use uri)
     alreadyExistingURIErrors:  URI already existing
     duplicateURIErrors: Duplicate URI
     invalidDataTypeErrorMessage: Invalid value data type
@@ -414,7 +464,9 @@ en:
     validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
     validationErrorDuplicatedDataMessage : "Column: '{header}' - Value: '{value}'"
     invalidValueErrorMessage: "Column: '{header}' - Value: '{value}'"
-    invalidObjectErrorMessage: "Column: Object name / URI - Value: '{value}'" 
+    invalidObjectErrorMessage: "Column: scientific_object - Value: '{value}'" 
+    invalidExperimentErrorMessage: "Column: experiment - Value: '{value}'" 
+    invalidDeviceErrorMessage: "Column: device - Value: '{value}'" 
     invalidDateErrorMessage: "Column: Date - Value: '{value}'" 
     CSVIsValid: Your CSV file has passed the first validation step, click OK to continue
     CSVIsInvalid: Your CSV has failed the first validation step
@@ -453,7 +505,12 @@ fr:
     missingRequiredValueErrors: Valeur obligatoire manquante
     invalidValueErrors: Valeur invalide
     invalidObjectErrors: Le nom ou l'uri de l'objet n'est pas présent dans cette expérimentation
-    invalidDateErrors: Invalid date format
+    invalidDateErrors: Format de date invalide
+    invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
+    invalidDeviceErrors: Le nom ou l'uri du device n'existe pas
+    duplicatedExperimentErrors: Doublon sur le nom de l'experimentation (utilisez l'uri)
+    duplicatedDeviceErrors: Doublon sur le nom du device (utilisez l'uri)
+    duplicatedObjectErrors: Doublon sur le nom de l'objet (utilisez l'uri)
     alreadyExistingURIErrors: URI déjà existante
     duplicateURIErrors: URI dupliquée
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
@@ -463,7 +520,9 @@ fr:
     validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
     validationErrorDuplicatedDataMessage : "Colonne: '{header}' - Valeur: '{value}'"
     invalidValueErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
-    invalidObjectErrorMessage: "Colonne: Objet scientifique Nom/ URI - Valeur: '{value}'" 
+    invalidObjectErrorMessage: "Colonne: scientific_object - Valeur: '{value}'" 
+    invalidExperimentErrorMessage: "Colonne: experiment - Valeur: '{value}'" 
+    invalidDeviceErrorMessage: "Colonne: device - Valeur: '{value}'" 
     invalidDateErrorMessage: "Colonne:  Date - Valeur: '{value}'" 
     invalidDataTypeErrorMessage: Le type de données attendu n'est pas valide
     CSVIsValid: La première étape de validation est un succès, cliquez OK pour continuer

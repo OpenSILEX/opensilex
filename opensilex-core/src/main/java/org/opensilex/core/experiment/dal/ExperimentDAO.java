@@ -479,6 +479,7 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel getByName(String name) throws Exception {
+        //pageSize=2 in order to detect duplicated names
         ListWithPagination<ExperimentModel> results = sparql.searchWithPagination(
             ExperimentModel.class,
             null,

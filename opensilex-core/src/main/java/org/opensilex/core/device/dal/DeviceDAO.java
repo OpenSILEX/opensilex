@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
@@ -41,6 +42,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -452,6 +454,7 @@ public class DeviceDAO {
     }
 
     public DeviceModel getByName(String name) throws Exception {
+        //pageSize=2 in order to detect duplicated names
         ListWithPagination<DeviceModel> results = sparql.searchWithPagination(
             DeviceModel.class,
             null,
@@ -472,5 +475,11 @@ public class DeviceDAO {
         }
 
         return results.getList().get(0);
+    }
+
+    public boolean isDeviceType(URI rdfType) throws SPARQLException {
+        return sparql.executeAskQuery(new AskBuilder()
+                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.Device)
+        );
     }
 }

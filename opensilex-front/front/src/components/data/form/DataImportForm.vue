@@ -8,7 +8,7 @@
           helpMessage="DataImportForm.use-default-provenance-help"
         >
           <template v-slot:field="field">
-            <b-form-checkbox v-model="selectDefaultProvenance" switch>
+            <b-form-checkbox v-model="selectDefaultProvenance" switch @change="changeCheckBox($event)">
               {{$t('DataImportForm.use-default-provenance-title')}}
             </b-form-checkbox>
           </template>
@@ -56,6 +56,7 @@
       <opensilex-GenerateDataTemplateFrom
         ref="templateForm"
         :experiment="form.experiment"
+        :hasDeviceAgent="hasDeviceAgent"
       ></opensilex-GenerateDataTemplateFrom>
       <div>
         <label
@@ -149,13 +150,9 @@ export default class DataImportForm extends Vue {
   file = null;
 
   @Ref("warningModal") readonly warningModal!: any;
-
   @Ref("provenanceForm") readonly provenanceForm!: any;
-
   @Ref("provenanceSelector") readonly provenanceSelector!: any;
-
   @Ref("validationReport") readonly validationReport!: any;
-
   @Ref("templateForm") readonly templateForm!: any;
 
   users: any[] = [];
@@ -177,10 +174,7 @@ export default class DataImportForm extends Vue {
   experiments = [];
   filterProvenanceLabel = null;
   selectDefaultProvenance: boolean = true;
-  withDeviceColumn: boolean = false;
-  selectedAgentTypes = [];
-  agentTypes: any[] = [];
-
+  hasDeviceAgent: boolean = false;
   standardProvURI;
 
   @Prop({
@@ -207,34 +201,30 @@ export default class DataImportForm extends Vue {
         });
   }
 
-  mounted() {
-    this.loadAgentTypes();
-  }
+  // mounted() {
+  //   this.loadDeviceTypes();
+  // }
 
-  agentTypesMap: Map<string, string> = new Map();
-  loadAgentTypes() {
-    this.$opensilex.getService("opensilex.OntologyService")
-    .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
-    .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
-      for (let i = 0; i < http.response.result.length; i++) { 
-        this.agentTypes.push({
-          id: http.response.result[i].uri,
-          label: http.response.result[i].name,
-        });
-        this.agentTypesMap[http.response.result[i].uri] = http.response.result[i].name;
-      }      
-    })
-    .catch(this.$opensilex.errorHandler);   
+  // agentTypesMap: Map<string, string> = new Map();
+  // loadDeviceTypes() {
+  //   this.$opensilex.getService("opensilex.OntologyService")
+  //   .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
+  //   .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
+  //     for (let i = 0; i < http.response.result.length; i++) {
+  //       this.agentTypesMap.set(http.response.result[i].uri, http.response.result[i].name);
+  //     }      
+  //   })
+  //   .catch(this.$opensilex.errorHandler);   
 
-  }
+  // }
 
-  getAgentsNames(urisList) {
-    let namesList = [];
-    for (let i in urisList) {
-      namesList.push(this.agentTypesMap[urisList[i]]);
-    }
-    return namesList;
-  }
+  // getAgentsNames(urisList) {
+  //   let namesList = [];
+  //   for (let i in urisList) {
+  //     namesList.push(this.agentTypesMap[urisList[i]]);
+  //   }
+  //   return namesList;
+  // }
 
   getEmptyForm() {
     return {
@@ -251,7 +241,7 @@ export default class DataImportForm extends Vue {
   }
 
   showProvenanceDetails() {
-    if (this.provenance != null) {
+    if (this.form.provenance != null) {
       this.visibleDetails = !this.visibleDetails;
     }
   }
@@ -328,10 +318,13 @@ export default class DataImportForm extends Vue {
   }
 
   loadProvenanceAndCheckUploadedData(selectedValue) {
+    this.hasDeviceAgent = false;
     if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id).then((prov) => {
         this.form.provenance = prov;
+        this.hasDevice(prov);
       });
+
       this.checkUploadedData();
     }
   }
@@ -519,6 +512,38 @@ export default class DataImportForm extends Vue {
       };
     }
     return null;
+  }
+
+  hasDevice(provenance) {
+    let uris = [];
+    for (let i in provenance.prov_agent) {
+      uris.push(provenance.prov_agent[i].uri);
+    }
+
+    if (uris.length>0) {
+      let body = {
+        uris: uris
+      }
+      this.$opensilex.getService("opensilex.OntologyService")
+      .checkURIsTypes(new Array(Oeso.DEVICE_TYPE_URI), body)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
+        let results = http.response.result;
+        for (let i in results) {
+          if (results[i].rdf_types.includes(Oeso.DEVICE_TYPE_URI)) {
+            this.hasDeviceAgent= true;
+            break;
+          }
+        }          
+      })
+      .catch(this.$opensilex.errorHandler);
+      }
+    
+  }
+
+  changeCheckBox(value) {
+    if (value) {
+      this.hasDeviceAgent = false;
+    }
   }
 }
 </script>

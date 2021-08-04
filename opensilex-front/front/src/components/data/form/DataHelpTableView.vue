@@ -264,7 +264,8 @@ en :
     text-help-global:  "You can insert data from this row. <br /> \n
             First three rows of CSV content will be ignored. <br /> \n
             <strong>The \"experiment\", \"target\" and \"device\" columns are optional. You can remove them. In all three columns, you can give URIs or names. </strong> <br /> \n
-            Target can be a scientific object or a facility. <br /> \n
+            Target can be a scientific object, a facility or an event. <br /> \n
+            If a device is already defined in the provenance, then it is not necessary to add the device column to the file.  If there is no device in the selected provenance, then it is mandatory to fill the \"device\" or the \"target\" column. <br />\n
             If needed, you can duplicate the columns \"experiment\" or \"device\" to link your data to several experiments or devices. <br />\n
             If needed, you can add a \"raw_data\" column to the right of each variable column. (see template generation) <br />\n
             Accepted CSV separators : <strong>{comma} or {semicolon}</strong><br /> \n
@@ -312,7 +313,8 @@ fr :
     text-help-global:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
             <strong>Les colonnes \"experiment\", \"target\" et \"device\" sont optionnelles. Vous pouvez les enlever. Dans ces 3 colonnes, vous pouvez mettre des URIs ou des noms. </strong> <br /> \n
-            Le target peut être un objet scientifique ou une installation. <br /> \n
+            Le target peut être un objet scientifique ou une installation ou un événement. <br /> \n
+            Si vous avez déjà renseigné le device dans la provenance, alors il n'est pas nécessaire d'ajouter la colonne device au fichier. Au contraire, si aucun device n'est renseigné dans la provenance sélectionnée alors il est nécessaire de remplir la colonne \"device\" ou \"target\". <br />\n
             Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos donner à plusieurs expérimentations ou équipements. <br />\n
             Si besoin, vous pouvez ajouter une colonne \"raw_data\" à droite de chaque colonne variable. (Voir la génération du template) <br />\n
             Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n

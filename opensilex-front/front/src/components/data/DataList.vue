@@ -313,30 +313,6 @@ export default class DataList extends Vue {
     });
   }
 
-<<<<<<< 798e69cb9121a4712e03e533776c5d978881cee9
-=======
-  exportData(mode: string) {
-    let path = "/core/data/export";
-    let today = new Date();
-    let filename =
-      "export_data_" +
-      today.getFullYear() +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      String(today.getDate()).padStart(2, "0");
-
-    let params = {
-      start_date: this.filter.start_date,
-      end_date: this.filter.end_date,
-      targets: this.filter.scientificObjects,
-      experiments: this.filter.experiments,
-      variables: this.filter.variables,
-      provenances: [this.filter.provenance],
-      mode: mode
-    }
-    this.$opensilex.downloadFilefromService(path, filename, "csv", params);
-  }
-
->>>>>>> update Data interface with new dataModel
 }
 </script>
 

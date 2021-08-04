@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -89,6 +90,7 @@ import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -921,8 +923,7 @@ public class DataAPI {
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
     
-    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
-        
+    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {       
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<String, SPARQLNamedResourceModel> nameURIScientificObjects = new HashMap<>();
@@ -938,6 +939,15 @@ public class DataAPI {
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();
+        
+        List<AgentModel> agents = provenance.getAgents();
+        Boolean hasDevice = false;
+        for (AgentModel agent:agents) {
+            if (deviceDAO.isDeviceType(agent.getRdfType())) {
+                hasDevice = true;
+                break;
+            }
+        }
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -951,7 +961,11 @@ public class DataAPI {
 
             // Line 1
             String[] ids = csvReader.parseNext();
-
+            Set<String> headers = Arrays.stream(ids).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
+            if (!headers.contains(deviceHeader) && !headers.contains(soHeader) && !hasDevice) {
+                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + soHeader));
+            }  
+            
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
  
@@ -965,8 +979,8 @@ public class DataAPI {
                     } else {                       
                     
                         if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(soHeader) 
-                                || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader)
-                                || header.equalsIgnoreCase(rawdataHeader)) {
+                            || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader)
+                            || header.equalsIgnoreCase(rawdataHeader)) {
                             headerByIndex.put(i, header);                            
                         
                         } else {                        
@@ -1012,7 +1026,8 @@ public class DataAPI {
                 while ((values = csvReader.parseNext()) != null) {
                     try {
                         validateCSVRow = validateCSVRow(
-                                provenance, 
+                                provenance,
+                                hasDevice,
                                 values, 
                                 rowIndex, 
                                 csvValidation, 
@@ -1054,6 +1069,7 @@ public class DataAPI {
 
     private boolean validateCSVRow(
             ProvenanceModel provenance, 
+            Boolean hasDevice,
             String[] values, 
             int rowIndex, 
             DataCSVValidationModel csvValidation, 
@@ -1082,6 +1098,10 @@ public class DataAPI {
         List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel object = null;
+        
+        Boolean missingTargetOrDevice = true;
+        int targetColIndex = 0;
+        int deviceColIndex = 0;
         
         for (int colIndex = 0; colIndex < values.length; colIndex++) {            
                         
@@ -1130,9 +1150,14 @@ public class DataAPI {
             
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
                 //check object column
-                String objectNameOrUri = values[colIndex];                
+                String objectNameOrUri = values[colIndex];   
+                targetColIndex = colIndex;
                 
-                if (!StringUtils.isEmpty(objectNameOrUri)) {
+                if (StringUtils.isEmpty(objectNameOrUri)) {
+                   if (hasDevice) {
+                       missingTargetOrDevice = false;
+                   }
+                } else {
                     if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
                         object = nameURIScientificObjects.get(objectNameOrUri);
                     } else {
@@ -1179,11 +1204,16 @@ public class DataAPI {
             
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(deviceHeader)){
                 // check device column
-                String deviceType = headerByIndex.get(colIndex);
                 DeviceModel device = null;
                 String deviceNameOrUri = values[colIndex];
+                deviceColIndex = colIndex;
+                
                 // test in uri list
-                if (!StringUtils.isEmpty(deviceNameOrUri)) {
+                if (StringUtils.isEmpty(deviceNameOrUri)) {
+                    if (hasDevice) {
+                        missingTargetOrDevice = false;
+                    }                    
+                } else {
                      if (nameURIDevices.containsKey(deviceNameOrUri)) {                    
                         device = nameURIDevices.get(deviceNameOrUri);                    
                     } else {
@@ -1276,6 +1306,15 @@ public class DataAPI {
                 }
             } 
         }
+        
+        if (missingTargetOrDevice) {
+            //the device or the target is mandatory if there is no device in the provenance
+            CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, "DEVICE_ID");
+            CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, "TARGET_ID");
+            csvValidation.addMissingRequiredValue(cell1);
+            csvValidation.addMissingRequiredValue(cell2);
+        }
+        
         return validRow;
     }
 

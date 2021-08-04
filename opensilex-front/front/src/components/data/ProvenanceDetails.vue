@@ -51,7 +51,7 @@ export default class ProvenanceDetails extends Vue {
   $i18n: any;
 
   @Prop({
-    default: "DataImportForm.provenance.description",
+    default: "ProvenanceDetails.title",
   })
   label: string;
 
@@ -119,6 +119,7 @@ en:
     description : Description
     no-provenance-found: No provenance found
     agent : Agent(s)
+    title: Provenance description
 fr:
   ProvenanceDetails:
     uri : Uri
@@ -126,5 +127,6 @@ fr:
     description : Description
     no-provenance-found: Aucune provenance trouvée
     agent : Agent(s)
+    title: Description de la provenance
 
 </i18n>

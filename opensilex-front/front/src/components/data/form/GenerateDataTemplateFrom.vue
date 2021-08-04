@@ -5,7 +5,7 @@
     ok-only
     :static="true"
     @hide="requiredField = false"
-    @show="requiredField = true"
+    @show="shown()"
   >
     <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
@@ -17,6 +17,7 @@
           v-model="selectedColumns"
           :options="options"
           :aria-describedby="ariaDescribedby"
+          @change="change"
         ></b-form-checkbox-group>
       </b-form-group>
         <b-row>
@@ -39,7 +40,11 @@
             </opensilex-CSVSelectorInputForm>
           </b-col>
         </b-row>
-        <b-button @click="csvExport" variant="outline-primary">{{
+        <b-alert variant="danger" :show="!validSelection">{{$t("DataTemplateForm.target-device-required")}}</b-alert>
+        <b-button 
+          @click="csvExport" 
+          variant="outline-primary" 
+          :disabled="!validSelection">{{
           $t("OntologyCsvImporter.downloadTemplate")
         }}</b-button>
         <b-button
@@ -47,6 +52,7 @@
           class="float-right"
           @click="csvExportDataExample"
           variant="outline-info"
+          :disabled="!validSelection"
           >{{ $t("DataHelp.download-template-example") }}</b-button
         >
         <hr />
@@ -80,12 +86,17 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   withRawData = false;
 
+  validSelection = true;
+
   readonly expColumn = "experiment";
   readonly targetColumn = "target";
   readonly deviceColumn = "device";
 
   @Prop()
   editMode;
+
+  @Prop({ default: false })
+  hasDeviceAgent;  
   
   options = [
     { text: this.expColumn, value: this.expColumn },
@@ -385,6 +396,20 @@ export default class GenerateDataTemplateFrom extends Vue {
     let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).label_key);
     return label.charAt(0).toUpperCase() + label.slice(1);
   }
+
+  change() {
+    if (this.selectedColumns.includes(this.targetColumn) || this.selectedColumns.includes(this.deviceColumn)) {
+      this.validSelection = true;
+    } else {
+      this.validSelection = false;
+    }
+  }
+
+  shown() {
+    this.validSelection = this.hasDeviceAgent;
+    this.requiredField = true;
+  }
+
 }
 </script>
 <i18n>
@@ -396,6 +421,7 @@ en :
     raw-data-example: "Raw data (e.g. 20.3,20.4,20.5)"
     select-columns: Select the optionnal columns you need
     select-variables: Select the variables you need
+    target-device-required: The provenance you selected doesn't contain any device agent, so you must add the target or the device column
     example :
       column-data-type : "Column data type: "
 fr :
@@ -406,6 +432,7 @@ fr :
     raw-data-example: "Données brutes (ex : 20.3,20.4,20.5)"
     select-columns: Sélectionnez les colonnes optionnelles dont vous avez besoin
     select-variables: Sélectionnez les variables dont vous avez besoin
+    target-device-required: "La provenance sélectionnée ne contient pas de device, vous devez donc ajouter la colonne \"target\" ou \"device\""
     example :
       column-data-type : "Type de données colonne : " 
  </i18n>

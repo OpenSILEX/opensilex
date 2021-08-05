@@ -101,7 +101,6 @@ export default class TypeForm extends Vue {
   }
 
   loadTypes(callback?) {
-
     this.$opensilex.disableLoader();
     this.service
       .getSubClassesOf(this.baseType, this.ignoreRoot)

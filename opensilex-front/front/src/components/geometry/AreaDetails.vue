@@ -154,6 +154,8 @@ import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 // @ts-ignore
 import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+// @ts-ignore
+import { EventGetDTO } from 'opensilex-core/model/eventGetDTO';
 
 @Component
 export default class AreaDetails extends Vue {
@@ -279,6 +281,9 @@ export default class AreaDetails extends Vue {
         .getService("opensilex.AreaService")
         .deleteArea(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+          if (this.rdf_type == "vocabulary:TemporalArea") {
+            return this.deleteEvent();
+          }
           let message =
               this.$i18n.t("component.area.title") +
               " " +
@@ -286,9 +291,33 @@ export default class AreaDetails extends Vue {
               " " +
               this.$i18n.t("component.common.success.delete-success-message");
           this.$opensilex.showSuccessToast(message);
-          this.$router.push({path: "/"});
         })
         .catch(this.$opensilex.errorHandler);
+  }
+
+  private deleteEvent() {
+    const eventsService = "EventsService";
+    this.$opensilex
+      .getService(eventsService)
+      .searchEvents(undefined, undefined, undefined, this.uri)
+      .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
+        const res = http.response.result[0] as any;
+        this.$opensilex
+          .getService(eventsService)
+          .deleteEvent(res.uri)
+          .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            let message =
+              this.$i18n.t("component.area.title") +
+              " " +
+              this.uri +
+              " " +
+              this.$i18n.t("component.common.success.delete-success-message");
+              console.debug("Event deleted");
+            this.$opensilex.showSuccessToast(message);
+          })
+          .catch(this.$opensilex.errorHandler);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

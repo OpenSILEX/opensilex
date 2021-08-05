@@ -595,6 +595,8 @@ import AreaDetails from "./geometry/AreaDetails.vue";
 components["opensilex-AreaDetails"] = AreaDetails;
 import FilterMap from "./geometry/FilterMap.vue";
 components["opensilex-FilterMap"] = FilterMap;
+import Timeline from './geometry/Timeline.vue'
+components["opensilex-Timeline"] = Timeline;
 import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.vue";
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 

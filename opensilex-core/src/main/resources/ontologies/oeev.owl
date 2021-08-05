@@ -495,6 +495,13 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:label xml:lang="en">Pest attack</rdfs:label>
     </owl:Class>
     
+    <!-- http://www.opensilex.org/vocabulary/oeev#Flooding -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Flooding">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Incident"/>
+        <rdfs:label xml:lang="fr">Inondation</rdfs:label>
+        <rdfs:label xml:lang="en">Flooding</rdfs:label>
+    </owl:Class>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#PhenologyScoring -->

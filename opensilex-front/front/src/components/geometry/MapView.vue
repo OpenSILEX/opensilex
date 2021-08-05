@@ -22,6 +22,14 @@
             <b-button variant="success" @click="saveShapefile(titleFile)">Shapefile</b-button>
           </template>
         </b-modal>
+        <b-button
+        v-b-toggle.event-sidebar
+        :title="$t('MapView.time')"
+        >
+          <slot name="icon">
+            <opensilex-Icon :icon="'ik#ik-activity'" />
+          </slot>
+          </b-button>
       </div>
       <span class="p-2">
         <label class="alert-warning">
@@ -120,12 +128,32 @@
         </vl-overlay>
 
         <template v-if="endReceipt">
-          <vl-layer-vector :visible="displayAreas === 'true'">
-            <vl-source-vector ref="vectorSourceArea" :features.sync="featuresArea"></vl-source-vector>
-            <vl-style-box>
-              <vl-style-stroke color="green"></vl-style-stroke>
-              <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
-            </vl-style-box>
+          <vl-layer-vector
+            :visible="displayAreas === 'true'"
+            v-for="area in featuresArea"
+            :key="area.id"
+          >
+            <div v-if="area.properties.type != temporalAreaType && displayPerennialAreas == 'true'">
+              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+              <vl-style-box>
+                <vl-style-stroke color="green"></vl-style-stroke>
+                <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
+              </vl-style-box>
+            </div>
+            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas == 'true' && !isSelectedArea(area)">
+              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+              <vl-style-box>
+                <vl-style-stroke color="red"></vl-style-stroke>
+                <vl-style-fill color="rgba(128,139,150,0.4)"></vl-style-fill>
+              </vl-style-box>
+            </div>
+            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas == 'true' && isSelectedArea(area)">
+              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+              <vl-style-box>
+                <vl-style-stroke color="#33A0CC" :width="3"></vl-style-stroke>
+                <vl-style-fill color="rgba(255,255,255,0.6)"></vl-style-fill>
+              </vl-style-box>
+            </div>
           </vl-layer-vector>
           <vl-layer-vector
               v-for="layerSO in featuresOS"
@@ -174,7 +202,7 @@
                 v-if="editingMode"
                 source="the-source"
                 type="Polygon"
-                @drawend="areaForm.showCreateForm()"
+                @drawend="showCreateForm()"
             >
               <vl-style-box>
                 <vl-style-stroke color="blue"></vl-style-stroke>
@@ -195,9 +223,40 @@
       </vl-map>
     </div>
 
+    <b-sidebar id="event-sidebar" width="400px" right class="sidebar-content" no-header shadow>
+      <template #default="{ hide }">
+        <div class="b-sidebar-header header-brand hamburger-container opensilex-sidebar-header">
+          <div class="d-flex">
+            <span id="map-sidebar___title__" class="text mr-auto p-3">
+              {{ $t('MapView.eventPanelTitle').toUpperCase() }}
+              &nbsp;
+              <font-awesome-icon
+                icon="question-circle"
+                v-b-tooltip.hover.top="$t('MapView.eventPanel-help')"
+              />
+            </span>
+            <button class="hamburger hamburger--collapse is-active p-3" @click="hide">
+              <span class="hamburger-box">
+                <span class="hamburger-inner"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <div v-if="temporalAreas.length == 0" class="p-3">
+          <p>{{ $t('MapView.noTemporalAreas') }}</p>
+        </div>
+        <opensilex-Timeline
+          :items="temporalAreas"
+          :selectedFeatures="selectedFeatures"
+          @onClick="updateSelectedFeatures"
+          >
+        </opensilex-Timeline>
+      </template>
+    </b-sidebar>
+
     <b-sidebar id="map-sidebar" no-header class="sidebar-content">
       <template #default="{ hide }">
-        <div class="b-sidebar-header header-brand hamburger-container" style="height: 60px">
+        <div class="b-sidebar-header header-brand hamburger-container opensilex-sidebar-header">
           <div class="d-flex">
             <span id="map-sidebar___title__" class="text mr-auto p-3">{{ $t('MapView.mapPanelTitle').toUpperCase() }}</span>
             <button class="hamburger hamburger--collapse is-active p-3" @click="hide">
@@ -238,16 +297,32 @@
           </opensilex-TreeView>
 
           <opensilex-TreeView :nodes.sync="areas">
-            <template v-slot:node="{ }">
+            <template v-slot:node="{ node }">
               <span class="item-icon">
               </span>&nbsp;
-              <span>{{ $t('MapView.mapPanelAreas') }} ({{ featuresArea.length }})</span>
+              <span v-if="node.title == 'Areas'">{{ $t('MapView.mapPanelAreas') }} ({{ featuresArea.length }})</span>
+              <span v-else>{{ $t('MapView.mapPanelAreas' + node.title) }} ({{ getNumberByZone(node.title) }})</span>
             </template>
 
-            <template v-slot:buttons="">
+            <template v-slot:buttons="{ node }">
 
               <opensilex-CheckboxForm
+                v-if="node.title == 'Areas'"
                 :value.sync="displayAreas"
+                class="col-lg-2"
+                :small="true"
+              ></opensilex-CheckboxForm>
+              <opensilex-CheckboxForm
+                :disabled="displayAreas === 'false'"
+                v-if="node.title == 'PerennialZone'"
+                :value.sync="displayPerennialAreas"
+                class="col-lg-2"
+                :small="true"
+              ></opensilex-CheckboxForm>
+              <opensilex-CheckboxForm
+                :disabled="displayAreas === 'false'"
+                v-if="node.title == 'TemporalZone'"
+                :value.sync="displayTemporalAreas"
                 class="col-lg-2"
                 :small="true"
               ></opensilex-CheckboxForm>
@@ -317,7 +392,7 @@
         modalSize="m"
         @onCreate="showFiltersDetails"
     ></opensilex-ModalForm>
-    <div id="selectedTable">
+    <div id="selectedTable" v-if="selectedFeatures.length !== 0" class="selected-features" >
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
           :fields="fieldsSelected"
@@ -394,6 +469,8 @@ import Vue from "vue";
 import {DragBox} from "ol/interaction";
 import { GeoJSON } from "ol/format";
 import { Vector } from 'ol/source';
+import Collection from 'ol/Collection';
+import Select from 'ol/interaction/Select';
 import Feature from 'ol/Feature';
 import Polygon from 'ol/geom/Polygon';
 import Point from 'ol/geom/Point';
@@ -407,6 +484,8 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 // @ts-ignore
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
+// @ts-ignore
+import { EventGetDTO } from 'opensilex-core/model/eventGetDTO';
 // @ts-ignore
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 // @ts-ignore
@@ -436,10 +515,13 @@ export default class MapView extends Vue {
   featuresOS: any[] = [];
   featuresArea: any[] = [];
   temporaryArea: any[] = [];
+  temporalAreas: any[] = [];
   selectPointerMove: any[] = [];
   overlayCoordinate: any[] = [];
   centerMap: any[] = [];
   tabLayer: any[] = [];
+  selectInteraction: any = null;
+  collection: any = null;
   fieldsSelected = [
     {
       key: "name",
@@ -458,6 +540,10 @@ export default class MapView extends Vue {
 
   private editingMode: boolean = false;
   private displayAreas: String = "true";
+  private displayPerennialAreas: String = "true";
+  private displayTemporalAreas: String = "false";
+  private temporalAreaType: String = "vocabulary:TemporalArea";
+  private perennialAreaType: String = "vocabulary:Area";
   private displaySO: String = "true";
   private subDisplaySO: string[] = [];
   private detailsSO: boolean = false;
@@ -470,13 +556,35 @@ export default class MapView extends Vue {
   private experiment: string;
   private scientificObjectsService = "opensilex.ScientificObjectsService";
   private areaService = "opensilex.AreaService";
+  private eventsService = "EventsService";
   private scientificObjectURI: string;
   private scientificObjects: any = [];
   private areas: any = [{
     "title": "Areas",
-    "isLeaf": true,
-    "children": [],
-    "isExpanded": false,
+    "isLeaf": false,
+    "children": [
+      {
+        "title": "PerennialZone",
+        "isLeaf": true,
+        "isSelectable": false,
+        "isDraggable": false,
+        "isCheckable": true,
+        "isExpanded": false,
+        "isSelected": null,
+        "children": []
+      },
+      {
+        "title": "TemporalZone",
+        "isLeaf": true,
+        "isSelectable": false,
+        "isDraggable": false,
+        "isCheckable": true,
+        "isExpanded": false,
+        "isSelected": null,
+        "children": []
+      }
+    ],
+    "isExpanded": true,
     "isSelected": null,
     "isDraggable": false,
     "isSelectable": false,
@@ -516,7 +624,8 @@ export default class MapView extends Vue {
         "isDraggable": false,
         "isSelectable": false,
         "isCheckable": true
-      }
+    };
+
     for (let filter of this.tabLayer) {
       let tmp: any = {
         title: filter.titleDisplay,
@@ -535,24 +644,56 @@ export default class MapView extends Vue {
     return result;
   }
 
+  set filters(value) {
+  }
+
   getNumberScientificObjects(featureOs): Number {
     let res = 0;
 
-    for (let layer of this.featuresOS) {
-      for (let obj of layer) {
-        res += 1;
-      }
+    for (let layer of featureOs) {
+      res += layer.length
     }
     return res;
   }
 
   getNumberScientificObjectsByType(type: String): Number {
     let res = 0;
+
     for (let layer of this.featuresOS) {
       for (let obj of layer) {
         if (this.getType(obj.properties.type) == type) {
           res += 1;
         }
+      }
+    }
+    return res;
+  }
+
+  getNumberByZone(zoneType: String): Number {
+    if (zoneType == 'PerennialZone') {
+      return this.getNumberPerennialZone();
+    } else {
+      return this.getNumberTemporalZone();
+    }
+  }
+
+  getNumberPerennialZone(): Number {
+    let res = 0;
+
+    for (let area of this.featuresArea) {
+      if (area.properties.type != this.temporalAreaType) {
+        res += 1;
+      }
+    }
+    return res;
+  }
+
+  getNumberTemporalZone(): Number {
+    let res = 0;
+
+    for (let area of this.featuresArea) {
+      if (area.properties.type == this.temporalAreaType) {
+        res += 1;
       }
     }
     return res;
@@ -583,7 +724,7 @@ export default class MapView extends Vue {
         }
         return;
       }
-    })
+    });
   }
 
   updateScientificObject(node) {
@@ -598,11 +739,13 @@ export default class MapView extends Vue {
     });
   }
 
-  getType(type: String) {
-    type = type.split("").reverse().join("");
-    type = type.split(":")[0];
-    type = type.split("").reverse().join("");
-    return type
+  getType(type: string): String {
+    const res = new URL(type);
+    if (res.hash != '') { // long type (example: http://opensilex.dev/set/area#youpi)
+      return res.hash;
+    } else { // short type (example: Vocabulary#Area)
+      return res.pathname;
+    }
   }
 
   initScientificObjects() {
@@ -622,6 +765,7 @@ export default class MapView extends Vue {
       "isSelectable": false,
       "isCheckable": true
     };
+
     this.featuresOS.forEach(item => {
       if (item[0].properties.name) {
         item[0].title = item[0].properties.name
@@ -665,6 +809,15 @@ export default class MapView extends Vue {
     }
   }
 
+  isSelectedArea(area) {
+    for (let selected of this.selectedFeatures) {
+      if (selected.properties.uri == area.properties.uri) {
+        return true;  
+      }
+    }
+    return false;
+  }
+
   // Used to display details on the map and in the table
   showDetails(data, isMap = false) {
     if (isMap) {
@@ -686,11 +839,9 @@ export default class MapView extends Vue {
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then(areaUri => {
-        console.log("DEBUG 4 : ", areaUri)
         this.recoveryShowArea(areaUri);
       });
     } else {
-      console.log("DEBUG 5 : ", areaUriResult)
       this.recoveryShowArea(areaUriResult);
     }
   }
@@ -725,11 +876,24 @@ export default class MapView extends Vue {
   callAreaUpdate(areaUriResult) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then(areaUri => {
-        console.log("DEBUG : ", areaUri);
         this.recoveryArea(areaUri);
       });
     } else {
       this.recoveryArea(areaUriResult);
+    }
+  }
+
+  updateSelectedFeatures(uri) {
+    for (let area of this.featuresArea) {
+      if (area.properties.uri == uri) {
+        for (let i = 0; i < this.selectedFeatures.length; i++) {
+          if (this.selectedFeatures[i].properties.uri == uri) {
+            this.selectedFeatures.splice(i, 1)
+            return;
+          }
+        }
+        this.selectedFeatures.push(area);
+      }
     }
   }
   
@@ -848,6 +1012,12 @@ export default class MapView extends Vue {
 
     map.$map.addInteraction(dragBox);
 
+    this.map.$map.on('click', (event) => {
+      let isFeatureSelected = this.map.$map.getFeaturesAtPixel(event.pixel);
+      if (!isFeatureSelected && !this.editingMode)
+        this.selectedFeatures = [];
+    });
+
     // clear selection when drawing a new box and when clicking on the map
     dragBox.on("boxStart", () => {
       this.selectedFeatures = [];
@@ -921,6 +1091,9 @@ export default class MapView extends Vue {
           .getService(this.areaService)
           .deleteArea(uri)
           .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            if (data.item.properties.type == "vocabulary:TemporalArea") {
+              return this.deleteEvent(uri);
+            }
             let message =
                 this.$i18n.t("Area.title") +
                 " " +
@@ -1026,11 +1199,24 @@ export default class MapView extends Vue {
     this.$bvModal.hide('modal-save-map');
   }
 
+  appendTemporalArea(obj) {
+    this.$opensilex
+      .getService(this.eventsService)
+      .searchEvents(undefined, undefined, undefined, obj.uri)
+      .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
+        const res = http.response.result[0] as any;
+        res.targets = [obj.uri];
+        this.temporalAreas.push(res);
+        this.temporalAreas.sort((a: any, b: any) => {
+          return new Date(b.end).getTime() - new Date(a.end).getTime();
+        })
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
   private recoveryShowArea(areaUri) {
     if (areaUri != undefined) {
       this.editingMode = false;
-      console.log("this.areaService", this.areaService);
-      console.log("areaUri", areaUri.toString());
       this.$opensilex
           .getService(this.areaService)
           .getByURI(areaUri.toString())
@@ -1043,7 +1229,19 @@ export default class MapView extends Vue {
                 type: res.rdf_type,
                 nature: "Area"
               };
+              for (let area of this.featuresArea) {
+                if (area.properties.uri == res.geometry.properties.uri) { // Check if already exists
+                  return;
+                }
+              }
               this.featuresArea.push(res.geometry);
+              if (res.geometry.properties.type == this.temporalAreaType) {
+                this.appendTemporalArea(res.geometry.properties);
+                this.displayTemporalAreas = "true";
+              } else {
+                this.displayPerennialAreas = "true";
+              }
+              return;
             }
           })
           .catch(this.$opensilex.errorHandler);
@@ -1051,10 +1249,10 @@ export default class MapView extends Vue {
   }
 
   private recoveryArea(areaUri) {
-    console.log("DEBUG 2: ", areaUri);
     if (areaUri != undefined) {
       this.removeFromFeaturesArea(areaUri, this.featuresArea);
       this.removeFromFeaturesArea(areaUri, this.selectedFeatures);
+      this.removeFromTemporalAreasByTarget(areaUri, this.temporalAreas);
 
       this.$opensilex
           .getService(this.areaService)
@@ -1068,7 +1266,15 @@ export default class MapView extends Vue {
                 type: res.rdf_type,
                 nature: "Area"
               };
+              for (let area of this.featuresArea) {
+                if (area.properties.uri == res.geometry.properties.uri) { // Check if already exists
+                  return;
+                }
+              }
               this.featuresArea.push(res.geometry);
+              if (res.geometry.properties.type == this.temporalAreaType) {
+                this.appendTemporalArea(res.geometry.properties);
+              }
               this.selectedFeatures.push(res.geometry);
             }
           })
@@ -1155,6 +1361,28 @@ export default class MapView extends Vue {
     });
   }
 
+  private removeFromTemporalAreas(uri, features) {
+    features.forEach(item => {
+      const uriItem = item.uri;
+      let regExp = /events:.+|events#.+/;
+
+      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
+        features.splice(features.indexOf(item), 1);
+      }
+    });
+  }
+
+  private removeFromTemporalAreasByTarget(uri, features) {
+    features.forEach(item => {
+      const uriItem = item.targets[0];
+      let regExp = /area:.+|area#.+/;
+
+      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
+        features.splice(features.indexOf(item), 1);
+      }
+    });
+  }
+
   private removeFromFeatureOS(uri, features, higherLevelFeatures = []) {
     features.forEach(item => {
       if (item.type === undefined) {
@@ -1176,6 +1404,32 @@ export default class MapView extends Vue {
         }
       }
     });
+  }
+
+  private deleteEvent(uri) {
+    const eventsService = "EventsService";
+    this.$opensilex
+      .getService(eventsService)
+      .searchEvents(undefined, undefined, undefined, uri)
+      .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
+        const res = http.response.result[0] as any;
+        this.$opensilex
+          .getService(eventsService)
+          .deleteEvent(res.uri)
+          .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            let message =
+              this.$i18n.t("component.area.title") +
+              " " +
+              uri +
+              " " +
+              this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+            this.removeFromFeaturesArea(uri, this.featuresArea);
+            this.removeFromTemporalAreas(http.response.result, this.temporalAreas);
+          })
+          .catch(this.$opensilex.errorHandler);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: String; name: String }[]) {
@@ -1232,6 +1486,7 @@ export default class MapView extends Vue {
       };
 
       this.featuresArea = [];
+      this.temporalAreas = [];
       this.$opensilex
           .getService(this.areaService)
           .searchIntersects(JSON.parse(JSON.stringify(geometry)))
@@ -1246,7 +1501,18 @@ export default class MapView extends Vue {
                   description: element.description,
                   nature: "Area"
                 };
-                this.featuresArea.push(element.geometry);
+                let bool = true;
+                for (let area of this.featuresArea) {
+                  if (area.properties.uri == element.geometry.properties.uri) { // Check if already exists
+                    bool = false;
+                  }
+                }
+                if (bool) {
+                  this.featuresArea.push(element.geometry);
+                  if (element.geometry.properties.type == this.temporalAreaType) {
+                    this.appendTemporalArea(element.geometry.properties);
+                  }
+                }
               }
             });
             this.endReceipt = true;
@@ -1358,6 +1624,28 @@ p {
 .hamburger-box {
   width: 30px;
 }
+
+.opensilex-sidebar-header {
+  width: 99%;
+  height: 60px;
+}
+
+.selected-features {
+  animation-name: slide-up;
+  animation-duration: 0.6s;
+}
+
+@keyframes slide-up {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 </style>
 
 <i18n>
@@ -1385,14 +1673,20 @@ en:
     displayFilter: Filters ({count})
     mapPanel: Manage map panel
     mapPanelTitle: Map Panel
+    eventPanelTitle: Events Panel
+    eventPanel-help: The event panel displays all the events linked to the temporal areas. They are ordered from most recent to oldest.
     mapPanelScientificObjects: Scientific Objects
     mapPanelAreas: Areas
+    mapPanelAreasPerennialZone: Perennial zone
+    mapPanelAreasTemporalZone: Temporal zone
     mapPanelFilters: Filters
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
+    time: See temporal(s) zone(s)
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image or PDF ?
+    noTemporalAreas: No temporal areas are displayed on the map.
   Area:
     title: Area
     add: Description of the area
@@ -1429,14 +1723,20 @@ fr:
     displayFilter: Filtres ({count})
     mapPanel: Gérer la carte
     mapPanelTitle: Contrôle
+    eventPanelTitle: Évènements
+    eventPanel-help: Le panneau des événements affiche tous les événements liés aux zones temporelles. Ils sont affichés des plus récents aux plus anciens.
     mapPanelScientificObjects: Objets Scientifiques
     mapPanelAreas: Zones
+    mapPanelAreasPerennialZone: Zone pérenne
+    mapPanelAreasTemporalZone: Zone temporelle
     mapPanelFilters: Filtres
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
+    time: Visualiser les zones temporelles
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
+    noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
   Area:
     title: Zone
     add: Description de la zone

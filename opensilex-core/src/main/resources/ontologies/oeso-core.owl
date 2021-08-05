@@ -1435,7 +1435,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#TemporalArea -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#TemporalArea">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
         <rdfs:comment xml:lang="en">Area that are link to an event.</rdfs:comment>
         <rdfs:label xml:lang="en">Temporal area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone temporel</rdfs:label>

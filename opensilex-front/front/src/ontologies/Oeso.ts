@@ -33,6 +33,7 @@ let ontologies = {
     DOCUMENT_TYPE_URI: OESO_URI + "#Document",
     CONCERNS: OESO_URI + "#concerns",
     AREA_TYPE_URI: OESO_URI + "#Area",
+    STRUCTURAL_AREA_TYPE_URI: OESO_URI + "#StructuralArea",
     OPERATOR_TYPE_URI: OESO_URI + "#Operator",
     SENSOR_TYPE_URI: OESO_URI + "#SensingDevice",
     VECTOR_TYPE_URI: OESO_URI + "#Vector",

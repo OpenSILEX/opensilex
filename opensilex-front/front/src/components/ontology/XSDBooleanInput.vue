@@ -2,7 +2,7 @@
     <opensilex-CheckboxForm
       :value.sync="internalValue"
       :label="property.name"
-      :title="internalValue == 'true' ? $t('component.common.yes') : $t('component.common.no')"
+      :title="internalValue ? $t('component.common.yes') : $t('component.common.no')"
     ></opensilex-CheckboxForm>
 </template>
 

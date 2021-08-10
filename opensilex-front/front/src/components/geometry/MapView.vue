@@ -129,25 +129,25 @@
 
         <template v-if="endReceipt">
           <vl-layer-vector
-            :visible="displayAreas === 'true'"
+            :visible="displayAreas"
             v-for="area in featuresArea"
             :key="area.id"
           >
-            <div v-if="area.properties.type != temporalAreaType && displayPerennialAreas == 'true'">
+            <div v-if="area.properties.type != temporalAreaType && displayPerennialAreas">
               <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="green"></vl-style-stroke>
                 <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas == 'true' && !isSelectedArea(area)">
+            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas && !isSelectedArea(area)">
               <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="red"></vl-style-stroke>
                 <vl-style-fill color="rgba(128,139,150,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas == 'true' && isSelectedArea(area)">
+            <div v-if="area.properties.type == temporalAreaType && displayTemporalAreas && isSelectedArea(area)">
               <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="#33A0CC" :width="3"></vl-style-stroke>
@@ -158,7 +158,7 @@
           <vl-layer-vector
               v-for="layerSO in featuresOS"
               :key="layerSO.id"
-              :visible="displaySO === 'true' && layerSO[0].properties.display==='true'"
+              :visible="displaySO && layerSO[0].properties.display === 'true'"
           >
             <vl-source-vector ref="vectorSource" :features="layerSO" @mounted="defineCenter"></vl-source-vector>
           </vl-layer-vector>
@@ -287,7 +287,7 @@
 
               <opensilex-CheckboxForm
                 :value="node.data.properties.display"
-                :disabled="displaySO === 'false'"
+                :disabled="!displaySO"
                 v-if="node.title != 'Scientific Object'"
                 class="col-lg-2"
                 :small="true"
@@ -313,14 +313,14 @@
                 :small="true"
               ></opensilex-CheckboxForm>
               <opensilex-CheckboxForm
-                :disabled="displayAreas === 'false'"
+                :disabled="!displayAreas"
                 v-if="node.title == 'PerennialZone'"
                 :value.sync="displayPerennialAreas"
                 class="col-lg-2"
                 :small="true"
               ></opensilex-CheckboxForm>
               <opensilex-CheckboxForm
-                :disabled="displayAreas === 'false'"
+                :disabled="!displayAreas"
                 v-if="node.title == 'TemporalZone'"
                 :value.sync="displayTemporalAreas"
                 class="col-lg-2"
@@ -539,12 +539,12 @@ export default class MapView extends Vue {
   selectedFeatures: any[] = [];
 
   private editingMode: boolean = false;
-  private displayAreas: String = "true";
-  private displayPerennialAreas: String = "true";
-  private displayTemporalAreas: String = "false";
+  private displayAreas: boolean = true;
+  private displayPerennialAreas: boolean = true;
+  private displayTemporalAreas: boolean = false;
   private temporalAreaType: String = "vocabulary:TemporalArea";
   private perennialAreaType: String = "vocabulary:Area";
-  private displaySO: String = "true";
+  private displaySO: boolean = true;
   private subDisplaySO: string[] = [];
   private detailsSO: boolean = false;
   private endReceipt: boolean = false;
@@ -790,7 +790,7 @@ export default class MapView extends Vue {
   }
 
   displayScientificObjects() {
-    if (this.displaySO == "false") {
+    if (!this.displaySO) {
       for (const feature of this.featuresOS) {
         if (feature[0].properties.display == "true") {
           feature[0].properties.display = "false";
@@ -1237,9 +1237,9 @@ export default class MapView extends Vue {
               this.featuresArea.push(res.geometry);
               if (res.geometry.properties.type == this.temporalAreaType) {
                 this.appendTemporalArea(res.geometry.properties);
-                this.displayTemporalAreas = "true";
+                this.displayTemporalAreas = true;
               } else {
-                this.displayPerennialAreas = "true";
+                this.displayPerennialAreas = true;
               }
               return;
             }

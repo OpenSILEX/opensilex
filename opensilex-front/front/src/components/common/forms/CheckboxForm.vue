@@ -9,10 +9,10 @@
       <b-form-checkbox
         :id="field.id"
         v-model="booleanValue"
-        value="true"
+        :value="true"
         :disabled="disabled"
         :required="required"
-        unchecked-value="false"
+        :unchecked-value="false"
         switches
       >{{$t(title)}}</b-form-checkbox>
     </template>

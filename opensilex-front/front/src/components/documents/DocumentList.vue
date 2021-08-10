@@ -210,7 +210,7 @@ export default class DocumentList extends Vue {
     authors: undefined,
     keywords: undefined,
     multiple: undefined,
-    deprecated: "false"
+    deprecated: false
   };
 
   resetFilters() {
@@ -222,7 +222,7 @@ export default class DocumentList extends Vue {
       authors: undefined,
       keywords: undefined,
       multiple: undefined,
-      deprecated: "false"
+      deprecated: false
     };
     this.refresh();
   }
@@ -263,7 +263,7 @@ export default class DocumentList extends Vue {
       this.filter.authors, // user filter
       this.filter.keywords, // keywords filter
       this.filter.multiple, // multiple filter
-      this.filter.deprecated, // deprecated filter
+      this.filter.deprecated.toString(), // deprecated filter
       options.orderBy,
       options.currentPage,
       options.pageSize

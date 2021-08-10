@@ -284,6 +284,19 @@ body {
         border-right: 20px solid transparent;
         border-bottom: 20px solid rgb(95, 95, 95);
     }
+    .arrowhead{
+        width: 0;
+        position: absolute;
+        top: 0;
+        left: 50px;
+        margin-top: -3px;
+        margin-left: -20px;
+        
+        border-top: 0 solid transparent;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-bottom: 20px solid rgb(95, 95, 95);
+    }
 
     > li {
         margin-bottom: 15px;

@@ -34,7 +34,7 @@
         "moment-timezone": "^0.5.33",
         "preval.macro": "5.0.0",
         "sass-loader": "10.1.1",
-        "shp-write": "0.2.3",
+        "shp-write": "git+https://github.com/Mitix-EPI/shp-write.git",
         "sl-vue-tree": "^1.8.5",
         "style-loader": "2.0.0",
         "tabulator-tables": "4.8.4",

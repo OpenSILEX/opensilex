@@ -9480,12 +9480,12 @@ shell-quote@^1.6.1:
   resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.7.2.tgz#67a7d02c76c9da24f99d20808fcaded0e0e04be2"
   integrity sha512-mRz/m/JVscCrkMyPqHc/bczi3OQHkLTqXHEFu0zDhK/qfv3UcOA4SVmRCLmos4bhjr9ekVQubj/R7waKapmiQg==
 
-shp-write@0.2.3:
+"shp-write@git+https://github.com/Mitix-EPI/shp-write.git":
   version "0.2.3"
-  resolved "https://registry.yarnpkg.com/shp-write/-/shp-write-0.2.3.tgz#c4a1d1739f243b96aa8bfd3c8d8fe6ef24d97c77"
-  integrity sha1-xKHRc58kO5aqi/08jY/m7yTZfHc=
+  resolved "git+https://github.com/Mitix-EPI/shp-write.git#3de73135dec24884497996aa50cbe6993ad8804c"
   dependencies:
     dbf "0.1.0"
+    file-saver "^2.0.5"
     jszip "2.5.0"
 
 signal-exit@^3.0.0, signal-exit@^3.0.2:

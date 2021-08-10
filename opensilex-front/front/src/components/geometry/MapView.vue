@@ -282,7 +282,7 @@
                 class="col-lg-2"
                 v-if="node.title == 'Scientific Object'"
                 :small="true"
-                @update:value="displayScientificObjects"
+                @update:value="updateScientificObject(node)"
               ></opensilex-CheckboxForm>
 
               <opensilex-CheckboxForm
@@ -311,12 +311,14 @@
                 :value.sync="displayAreas"
                 class="col-lg-2"
                 :small="true"
+                @update:value="updateArea(node)"
               ></opensilex-CheckboxForm>
               <opensilex-CheckboxForm
                 :disabled="!displayAreas"
                 v-if="node.title == 'PerennialZone'"
                 :value.sync="displayPerennialAreas"
                 class="col-lg-2"
+                @update:value="updateArea(node)"
                 :small="true"
               ></opensilex-CheckboxForm>
               <opensilex-CheckboxForm
@@ -324,6 +326,7 @@
                 v-if="node.title == 'TemporalZone'"
                 :value.sync="displayTemporalAreas"
                 class="col-lg-2"
+                @update:value="updateArea(node)"
                 :small="true"
               ></opensilex-CheckboxForm>
             </template>
@@ -727,14 +730,61 @@ export default class MapView extends Vue {
     });
   }
 
+  updateArea(node) {
+    const type: 'Areas' | 'PerennialZone' | 'TemporalZone' = node.title;
+    const layers = this.map.$map.getLayers();
+    layers.forEach((element, index) => {
+      const source = element.getSource();
+      const collection = source.featuresCollection_;
+      if (collection) {
+        const array = collection.array_;
+        if (array && array.length > 0) {
+          if (array[0].values_.nature == "Area" && (type == 'Areas' ||
+          (type == 'PerennialZone' && this.getType(array[0].values_.type) != 'TemporalZone')
+          || (type == 'TemporalZone' && this.getType(array[0].values_.type) == 'TemporalArea'))) {
+            let status: boolean = false;
+            if (type == 'Areas') {
+              status = this.displayAreas;
+              if (status) { // Trick to save or get the last visible status
+                status = element.get("last-visible-status");
+              } else {
+                element.set("last-visible-status", element.getVisible());
+              }
+            } else {
+              status = !element.getVisible();
+            }
+            element.setVisible(status);
+          }
+        }
+      }
+    });
+  }
+
   updateScientificObject(node) {
-    this.featuresOS.forEach(item => {
-      if (item[0].properties.name == node.title) {
-        if (item[0].properties.display == "false")
-          item[0].properties.display = "true"
-        else
-          item[0].properties.display = "false"
-        return;
+    const isAllScientificObjects: boolean = node.title == 'Scientific Object';
+    const layers = this.map.$map.getLayers();
+    layers.forEach((element, index) => {
+      const source = element.getSource();
+      const collection = source.featuresCollection_;
+      if (collection) {
+        const array = collection.array_;
+        if (array && array.length > 0) {
+          if (array[0].values_.nature == "ScientificObjects" && (isAllScientificObjects // All Scientific Objects
+          || array[0].values_.name == node.title)) { // Only the only type selected
+            let status: boolean = false;
+            if (isAllScientificObjects) {
+              status = this.displaySO;
+              if (status) { // Trick to save or get the last visible status
+                status = element.get("last-visible-status");
+              } else {
+                element.set("last-visible-status", element.getVisible());
+              }
+            } else {
+              status = !element.getVisible();
+            }
+            element.setVisible(status);
+          }
+        }
       }
     });
   }

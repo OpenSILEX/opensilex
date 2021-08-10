@@ -204,7 +204,8 @@ export default class AreaDetails extends Vue {
     this.service = this.$opensilex.getService("opensilex.AreaService");
     if (this.withBasicProperties)
       this.loadArea(decodeURIComponent(this.$route.params.uri));
-    else this.loadArea(this.uri);
+    else
+      this.loadArea(this.uri);
   }
 
   loadArea(uri) {

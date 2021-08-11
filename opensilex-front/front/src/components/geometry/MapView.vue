@@ -785,8 +785,6 @@ export default class MapView extends Vue {
           }
         }
       }
-        }
-      }
     });
   }
 

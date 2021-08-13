@@ -2,7 +2,7 @@
     <div>
         <opensilex-OntologyCsvImporter
                 ref="importForm"
-                :baseType="$opensilex.Oeev.EVENT_TYPE_URI"
+                :baseType="isMove ? this.$opensilex.Oeev.MOVE_TYPE_URI : this.$opensilex.Oeev.EVENT_TYPE_URI"
                 :validateCSV="validateCSV"
                 :uploadCSV="uploadCSV"
                 @csvImported="onCsvImported"
@@ -94,7 +94,8 @@
 
         onCsvImported(response){
             this.nbLinesImported = response.result.nb_lines_imported;
-            this.$opensilex.showSuccessToast(this.nbLinesImported+ " "+this.$i18n.t("Event.move-multiple-insert"));
+            let msgKey = this.isMove ? "Event.move-multiple-insert" : "Event.multiple-insert";
+            this.$opensilex.showSuccessToast(this.nbLinesImported+ " "+this.$i18n.t(msgKey));
             this.$emit("csvImported", response);
         }
 

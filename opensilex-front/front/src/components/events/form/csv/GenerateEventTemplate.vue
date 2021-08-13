@@ -19,7 +19,7 @@
                             :type.sync="types"
                             :multiple="true"
                             :required="false"
-                            :baseType="this.$opensilex.Oeev.EVENT_TYPE_URI"
+                            :baseType="isMove ? this.$opensilex.Oeev.MOVE_TYPE_URI : this.$opensilex.Oeev.EVENT_TYPE_URI"
                             :ignoreRoot="false"
                             placeholder="Event.type-placeholder"
                         ></opensilex-TypeForm>

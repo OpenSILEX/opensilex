@@ -111,6 +111,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opensilex.utils.OrderBy;
 
+
 /**
  * @author Julien BONNEFONT
  */
@@ -819,16 +820,16 @@ public class ScientificObjectAPI {
                 return value.getDestructionDate().toString();
             } else if (columnID.equals(Oeso.hasFactorLevel.toString()) && value.getFactorLevels() != null) {
                 try {
+                    List<String> levels = new ArrayList<>();
                     for (FactorLevelModel factorLevel : value.getFactorLevels()) {
                         if (factorLevel != null && factorLevel.getUri() != null) {
-                            return factorLevel.getUri().toString();
-                        }                   
+                            levels.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
+                        } 
                     }
-
+                    return levels.toString();
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
-                return null;
             } else if (columnID.equals(Oeso.hasFacility.toString())) {
                 try {
                     MoveModel lastMove = moveDAO.getLastMoveEvent(value.getUri());

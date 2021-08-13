@@ -51,6 +51,11 @@
             </div>
         </div>
 
+        <opensilex-DocumentTabList
+            :uri="event.uri"
+            :search=false
+        ></opensilex-DocumentTabList>
+
         <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
 
     </b-modal>

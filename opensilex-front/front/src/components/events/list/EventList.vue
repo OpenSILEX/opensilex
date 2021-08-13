@@ -87,9 +87,24 @@
                         ref="tableRef"
                         :searchMethod="search"
                         :fields="fields"
-                        :isSelectable="isSelectable"
+                        :isSelectable="true"
                         defaultSortBy=""
+                        labelNumberOfSelectedRow="EventList.selected"
+                        iconNumberOfSelectedRow="ik#ik-layers"
                     >
+
+                        <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+                            <b-dropdown
+                            dropright
+                            class="mb-2 mr-2"
+                            :small="true"
+                            :disabled="numberOfSelectedRows == 0"
+                            text=actions>
+                                <b-dropdown-item-button    
+                                @click="createDocument()"
+                                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+                            </b-dropdown>
+                        </template>
                         <template v-slot:cell(rdf_type_name)="{data}">
                             <opensilex-UriLink
                                 v-if="data.item.rdf_type_name"
@@ -168,6 +183,16 @@
             :targets="[this.target]"
         ></opensilex-EventCsvForm>
 
+        <opensilex-ModalForm
+            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            ref="documentForm"
+            component="opensilex-DocumentForm"
+            createTitle="component.common.addDocument"
+            modalSize="lg"
+            :initForm="initForm"
+            icon="ik#ik-file-text"
+        ></opensilex-ModalForm>
+
     </div>
 
 </template>
@@ -190,6 +215,7 @@ export default class EventList extends Vue {
     @Ref("eventModalView") readonly eventModalView!: EventModalView;
     @Ref("modalForm") readonly modalForm!: EventModalForm;
     @Ref("csvForm") readonly csvForm!: EventCsvForm;
+    @Ref("documentForm") readonly documentForm!: any;
 
     $opensilex: OpenSilexVuePlugin;
     $service: EventsService
@@ -416,9 +442,47 @@ export default class EventList extends Vue {
         this.refresh();
     }
 
+    createDocument() {
+    this.documentForm.showCreateForm();
+    }
+
+    initForm() {
+        let targetURI = [];
+        for (let select of this.tableRef.getSelected()) {
+            targetURI.push(select.uri);
+        }
+
+        return {
+            description: {
+                uri: undefined,
+                identifier: undefined,
+                rdf_type: undefined,
+                title: undefined,
+                date: undefined,
+                description: undefined,
+                targets: targetURI,
+                authors: undefined,
+                language: undefined,
+                deprecated: undefined,
+                keywords: undefined
+            },
+            file: undefined
+        }
+    }
 }
 </script>
 
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+    EventList:
+        selected: Selected events
+fr:
+    EventList:
+        selected: Évènements selectionnés
+
+</i18n>
+

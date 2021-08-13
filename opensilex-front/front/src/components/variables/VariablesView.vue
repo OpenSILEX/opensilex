@@ -92,6 +92,7 @@
                 <div class="col-md-6">
                     <!-- Element details page -->
                     <opensilex-VariableStructureDetails v-show="! loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-VariableStructureDetails>
+
                     <!-- Unit specialized details page -->
                     <opensilex-UnitDetails v-show="! loadVariableList() && ! useGenericDetailsPage()" :selected="selected"></opensilex-UnitDetails>
 
@@ -101,6 +102,15 @@
                             <opensilex-ExternalReferencesDetails :skosReferences="selected"></opensilex-ExternalReferencesDetails>
                         </template>
                     </opensilex-Card>
+
+                    <opensilex-DocumentTabList
+                        v-if="selected && selected.uri"
+                        v-show="! loadVariableList() && useGenericDetailsPage() && documentMethodPage()" 
+                        :selected="selected"
+                        :uri="selected.uri"
+                        :search=false
+                    ></opensilex-DocumentTabList>
+
                 </div>
             </div>
         </div>
@@ -210,6 +220,10 @@ export default class VariablesView extends Vue {
 
     private useGenericDetailsPage() : boolean{
         return this.elementType != VariablesView.UNIT_TYPE;
+    }
+
+    private documentMethodPage() : boolean{
+        return this.elementType == VariablesView.METHOD_TYPE;
     }
 
     selected = {

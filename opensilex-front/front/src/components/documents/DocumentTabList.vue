@@ -1,112 +1,98 @@
 <template>
-    <div class="row">
-      <div class="col col-xl-12">
-        <div class="card">
-          <div class="card-header">
-            <h3>
-              <i class="ik ik-clipboard"></i>
-              {{ $t('DocumentTabList.documents') }}
-            </h3>
-          </div>
+  <div class="card">
+    <div class="card-header">
+      <h3>
+        <i class="ik ik-clipboard"></i>
+        {{ $t('DocumentTabList.documents') }}
+      </h3>
+    </div>
 
-          <div class="card-body">
-            <div class="button-zone">
-            <opensilex-CreateButton
-              v-if="user.hasCredential(modificationCredentialId)"
-              @click="createDocument()"
-              label="DocumentTabList.add"
-            ></opensilex-CreateButton>
-            </div>
-
-            <opensilex-SearchFilterField
-              @search="refresh()"
-              @clear="resetFilters()"
-              withButton="false"
-            >
-              <template v-slot:filters>
-                <!-- title -->
-                <div class="col col-xl-12 col-sm-12 col-12">
-                  <opensilex-StringFilter
-                    style="margin-bottom:10px;"
-                    :filter.sync="filter.title"
-                    placeholder="DocumentList.filter.title-placeholder"
-                  ></opensilex-StringFilter>
-                </div>
-              </template>
-            </opensilex-SearchFilterField>
-
-            <opensilex-PageContent
-                v-if="renderComponent">
-                <template v-slot>
-                  <opensilex-TableAsyncView
-                        ref="tableRef"
-                        :searchMethod="searchDocuments"
-                        :fields="fields"
-                        defaultSortBy="name"
-                      >
-                        <template v-slot:cell(uri)="{data}">
-                          <opensilex-UriLink :uri="data.item.uri"
-                          :value="data.item.title"
-                          :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
-                          ></opensilex-UriLink>
-                        </template>
-
-                        <template v-slot:row-details>
-                        </template>
-
-                         <template v-slot:cell(authors)="{data}">
-                          <span v-if="data.item.authors">
-                          <span :key="index" v-for="(author, index) in data.item.authors">
-                              <span :title="author">{{ author }}</span>
-                              <span v-if="index + 1 < data.item.authors.length"> - </span>
-                          </span>   
-                          </span>  
-                        </template>
-
-                        <template v-slot:cell(actions)="{data}">
-                          <b-button-group size="sm">
-                            <opensilex-EditButton
-                              v-if="user.hasCredential(modificationCredentialId)"
-                              @click="editDocument(data.item.uri)"
-                              label="DocumentTabList.update"
-                              :small="true"
-                            ></opensilex-EditButton>
-                            <opensilex-DeprecatedButton
-                              v-if="user.hasCredential(modificationCredentialId)"
-                              :deprecated="data.item.deprecated"
-                              @click="deprecatedDocument(data.item.uri)"
-                              :small="true"
-                            ></opensilex-DeprecatedButton>
-                            <opensilex-Button
-                              component="opensilex-DocumentDetails"
-                              @click="loadFile(data.item.uri, data.item.title, data.item.format)"
-                              label="DocumentList.download"
-                              :small="true"
-                              icon= "ik#ik-download"
-                              variant="outline-info"
-                            ></opensilex-Button>
-                          </b-button-group>
-                        </template>
-
-                      </opensilex-TableAsyncView>
-                </template>
-            </opensilex-PageContent>
-     
-            <opensilex-ModalForm
-              v-if="user.hasCredential(modificationCredentialId)"
-              ref="documentForm"
-              component="opensilex-DocumentForm"
-              createTitle="DocumentTabList.add"
-              editTitle="DocumentTabList.update"
-              modalSize="lg"
-              :initForm="initForm"
-              icon="ik#ik-file-text"
-              @onCreate="refresh()"
-              @onUpdate="refresh()"
-            ></opensilex-ModalForm>
-          </div>
-        </div>
+    <div class="card-body">
+      <div class="button-zone">
+      <opensilex-CreateButton
+        v-if="user.hasCredential(modificationCredentialId)"
+        @click="createDocument()"
+        label="DocumentTabList.add"
+      ></opensilex-CreateButton>
       </div>
+
+      <opensilex-StringFilter
+          v-if="search"
+          :filter.sync="filter.title"
+          @update="updateFilters()"
+          placeholder="DocumentList.filter.title-placeholder"
+      ></opensilex-StringFilter>
+
+      <opensilex-PageContent
+          v-if="renderComponent">
+          <template v-slot>
+            <opensilex-TableAsyncView
+                  ref="tableRef"
+                  :searchMethod="searchDocuments"
+                  :fields="fields"
+                  defaultSortBy="name"
+                >
+                  <template v-slot:cell(uri)="{data}">
+                    <opensilex-UriLink :uri="data.item.uri"
+                    :value="data.item.title"
+                    :to="{path: '/document/details/'+ encodeURIComponent(data.item.uri)}"
+                    ></opensilex-UriLink>
+                  </template>
+
+                  <template v-slot:row-details>
+                  </template>
+
+                    <template v-slot:cell(authors)="{data}">
+                    <span v-if="data.item.authors">
+                    <span :key="index" v-for="(author, index) in data.item.authors">
+                        <span :title="author">{{ author }}</span>
+                        <span v-if="index + 1 < data.item.authors.length"> - </span>
+                    </span>   
+                    </span>  
+                  </template>
+
+                  <template v-slot:cell(actions)="{data}">
+                    <b-button-group size="sm">
+                      <opensilex-EditButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        @click="editDocument(data.item.uri)"
+                        label="DocumentTabList.update"
+                        :small="true"
+                      ></opensilex-EditButton>
+                      <opensilex-DeprecatedButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        :deprecated="data.item.deprecated"
+                        @click="deprecatedDocument(data.item.uri)"
+                        :small="true"
+                      ></opensilex-DeprecatedButton>
+                      <opensilex-Button
+                        component="opensilex-DocumentDetails"
+                        @click="loadFile(data.item.uri, data.item.title, data.item.format)"
+                        label="DocumentList.download"
+                        :small="true"
+                        icon= "ik#ik-download"
+                        variant="outline-info"
+                      ></opensilex-Button>
+                    </b-button-group>
+                  </template>
+
+                </opensilex-TableAsyncView>
+          </template>
+      </opensilex-PageContent>
+
+      <opensilex-ModalForm
+        v-if="user.hasCredential(modificationCredentialId)"
+        ref="documentForm"
+        component="opensilex-DocumentForm"
+        createTitle="DocumentTabList.add"
+        editTitle="DocumentTabList.update"
+        modalSize="lg"
+        :initForm="initForm"
+        icon="ik#ik-file-text"
+        @onCreate="refresh()"
+        @onUpdate="refresh()"
+      ></opensilex-ModalForm>
+    </div>
   </div>
 </template>
 
@@ -133,6 +119,11 @@ export default class DocumentTabList extends Vue {
   @Prop()
   modificationCredentialId;
   
+  @Prop({
+    default: true
+  })
+  search: boolean;
+
   @Watch("uri")
   onTargetChange() {
       this.renderComponent = false;
@@ -317,6 +308,17 @@ export default class DocumentTabList extends Vue {
     let path = "/core/documents/" + encodeURIComponent(uri);
     this.$opensilex
      .downloadFilefromService(path, title, format);
+  }
+
+  updateFilters() {
+    this.$opensilex.updateURLParameter("name", this.filter.title, "");
+    this.refresh();
+  }
+
+  resetSearch() {
+    this.filter.title = "";
+    this.$opensilex.updateURLParameter("name", undefined, undefined);
+    this.refresh();
   }
 
 }

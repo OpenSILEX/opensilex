@@ -112,6 +112,9 @@
       ref="soList"
       :searchFilter="filter"
       @update="soForm.editScientificObject($event)"
+      @createDocument="createDocument"
+      @createEvents="createEvents"
+      @createMoves="createMoves"
     ></opensilex-ScientificObjectList>
     </opensilex-PageContent>
 

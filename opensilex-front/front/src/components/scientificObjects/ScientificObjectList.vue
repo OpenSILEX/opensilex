@@ -19,17 +19,17 @@
             :disabled="numberOfSelectedRows == 0"
             text="actions"
           >
-            <b-dropdown-item-button @click="createDocument()">
+            <b-dropdown-item-button @click="$emit('createDocument')">
               {{ $t("component.common.addDocument") }}
             </b-dropdown-item-button>
             <b-dropdown-item-button @click="exportCSV">
               Export CSV
             </b-dropdown-item-button>
 
-            <b-dropdown-item-button @click="createEvents()">
+            <b-dropdown-item-button @click="$emit('createEvents')">
               {{ $t("Event.add-multiple") }}
             </b-dropdown-item-button>
-            <b-dropdown-item-button @click="createMoves()">
+            <b-dropdown-item-button @click="$emit('createMoves')">
               {{ $t("Move.add") }}
             </b-dropdown-item-button>
           </b-dropdown>

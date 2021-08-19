@@ -86,14 +86,19 @@
             </ValidationObserver>
             <div class="trademark">
               <p>
-                {{ $t("component.login.copyright.1") }}
+                {{ $t("component.login.copyright.1" ) }}
                 <br />
-                {{ $t("component.login.copyright.2") }}
+                {{ $t("component.login.copyright.2", {
+                  version: this.getPHISModuleVersion()
+                }) }}
+                <br />
+                {{ $t("component.login.copyright.3", {
+                  version: this.versionInfo.version
+                }) }}
                 <br />
                 {{
-                $t("component.login.copyright.3", {
-                version: release.version,
-                date: release.date,
+                $t("component.login.copyright.4", {
+                  version: this.versionInfo.version
                 })
                 }}
               </p>
@@ -115,9 +120,17 @@ import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import { FrontConfigDTO } from "../../lib";
+// @ts-ignore
+import { SystemService, versionInfoDTO } from "opensilex-core/index";
 
 @Component
-export default class DefaultLoginComponent extends Vue {
+export default class DefaultLoginComponent extends Vue { 
+  service: SystemService;
+  versionInfo: versionInfoDTO = {};
+  $store: any;
+  $router: any;
+  $t: any;
+
   get form() {
     return {
       email: "",
@@ -125,15 +138,21 @@ export default class DefaultLoginComponent extends Vue {
     };
   }
 
-  $store: any;
-  $router: any;
 
   get user() {
     return this.$store.state.user;
   }
 
-  get release() {
-    return this.$store.state.release;
+  getPHISModuleVersion(){
+    for(let module_version_index in this.versionInfo.modules_version){
+      let module = this.versionInfo.modules_version[module_version_index]
+
+      console.log(module)
+      if(module.name.includes("PhisWsModule")){
+        return module.version;
+      }
+    }
+    return 'Version undefined'
   }
 
   loginMethod = "password";
@@ -156,6 +175,10 @@ export default class DefaultLoginComponent extends Vue {
     }
 
     return options;
+  }
+
+  created() {
+    this.versionInfo = this.$opensilex.versionInfo;
   }
 
   loginMethodChange(loginMethod) {

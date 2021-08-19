@@ -51,3 +51,15 @@ phisws:
 #    enableLogs: true
 #server:
 #    pathPrefix: /sunagri
+
+# Base system configuration OpenSilex (OpenSilexConfig)
+#system:
+#  instanceTitle: OpenSILEX
+#  # Instance description (String)
+#  instanceDescription: OpenSILEX is an ontology-driven Information System designed for life science data.
+#  # Contact name (String)
+#  contactName: OpenSILEX Team
+#  # Contact e-mail (String)
+#  contactEmail: opensilex-help@groupes.renater.fr
+#  # Project homepage (String)
+#  projectHomepage: http://www.opensilex.org/

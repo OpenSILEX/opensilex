@@ -151,6 +151,19 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - is-admin
+      - id: system
+        label: component.menu.tools.system
+        route:
+          path: /system
+          component: opensilex-SystemView 
+  - id: tools
+    label: component.menu.tools.label
+    children:
+      - id: packages
+        label: component.menu.tools.packages
+        route:
+          path: /packages
+          component: opensilex-PackagesView
 
 routes:
   - path: /infrastructure/details/:uri

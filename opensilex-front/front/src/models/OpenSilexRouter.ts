@@ -11,7 +11,7 @@ export class OpenSilexRouter {
     private menu: Array<MenuItemDTO> = [];
     private router: any;
     private pathPrefix: string
-    private PUBLIC_ROUTE_PUBLIC: string = "public";
+    private PUBLIC_ROUTE: string = "public";
 
     constructor(pathPrefix: string) {
         this.pathPrefix = pathPrefix;
@@ -69,7 +69,7 @@ export class OpenSilexRouter {
                         meta:{public: false}
                     });
                 }
-                if(route.credentials.includes(this.PUBLIC_ROUTE_PUBLIC)){ 
+                if(route.credentials.includes(this.PUBLIC_ROUTE)){ 
                     routes.push({
                         path: route.path,
                         component: this.getAsyncComponentLoader($opensilex, route.component),

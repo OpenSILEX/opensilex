@@ -51,5 +51,5 @@ public interface ServerConfig {
             value = "Application path prefix, must start with '/' and do not end with '/' or be an empty string",
             defaultString = ""
     )
-    String pathPrefix();
+    String pathPrefix();    
 }

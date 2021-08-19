@@ -20,7 +20,10 @@ module.exports = {
         resolve: {
             extensions: ['.md'],
             alias: {
-                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js')
+                'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
+                "opensilex-security": path.resolve("../../opensilex-security/front/src"),
+                "opensilex-core": path.resolve("../../opensilex-core/front/src"),
+                "opensilex-phis": path.resolve("../../opensilex-phis/front/src")
             }
         },
         performance: {

@@ -1,6 +1,7 @@
 import { Container } from 'inversify';
 import moment from 'moment';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
+import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
 import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';
@@ -1031,6 +1032,20 @@ export default class OpenSilexVuePlugin {
                         this.datatypesByURI[datatype.short_uri] = datatype;
                     }
                     resolve(this.datatypes);
+                })
+                .catch(reject);
+        });
+    }
+
+    public versionInfo: any = [];
+
+    public loadVersionInfo() {
+        return new Promise((resolve, reject) => {
+            this.getService<SystemService>("opensilex.SystemService")
+                .getVersionInfo()
+                .then((http) => {
+                    this.versionInfo = http.response.result;
+                    resolve(this.versionInfo);
                 })
                 .catch(reject);
         });

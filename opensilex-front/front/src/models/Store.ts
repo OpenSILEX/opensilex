@@ -8,7 +8,8 @@ import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 // @ts-ignore
 import { AuthenticationService } from 'opensilex-security/index';
-import { Release } from './Release';
+// @ts-ignore
+import { SystemService, VersionInfoDTO } from 'opensilex-core/index';
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -107,7 +108,6 @@ let store = new Vuex.Store({
     menu: menu,
     menuVisible: true,
     disconnected: false,
-    release: new Release(),
     lang: "en",
     previousPageCandidate: null,
     previousPage: [],

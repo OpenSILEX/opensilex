@@ -17,6 +17,7 @@
     <artifactId>opensilex-phis</artifactId>
     <packaging>jar</packaging>
     <name>opensilex-phis</name>
+    <version>${revision}</version>
 
     <parent>
         <groupId>org.opensilex</groupId>

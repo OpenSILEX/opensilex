@@ -17,6 +17,7 @@
     <artifactId>opensilex-front</artifactId>
     <packaging>jar</packaging>
     <name>opensilex-front</name>
+    <version>${revision}</version>
     
     <url>https://www.opensilex.org/</url>
     

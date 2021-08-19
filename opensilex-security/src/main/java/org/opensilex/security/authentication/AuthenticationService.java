@@ -112,8 +112,7 @@ public class AuthenticationService extends BaseService implements Service {
     /**
      * JWT token validity duration
      */
-    private static final long TOKEN_VALIDITY_DURATION = 30;
-//    private static final long TOKEN_VALIDITY_DURATION = 60;
+    private static final long TOKEN_VALIDITY_DURATION = 45;
 
     /**
      * JWT token validity duration unit

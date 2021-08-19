@@ -27,11 +27,10 @@
 
     <artifactId>opensilex-dev-tools</artifactId>
     <packaging>jar</packaging>
-    
     <name>opensilex-dev-tools</name>
-
     <url>https://www.opensilex.org/</url>
-
+    <version>${revision}</version>
+ 
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex</artifactId>

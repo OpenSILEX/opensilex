@@ -137,7 +137,8 @@
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
             "copyUrl": "Copier l'URL dans le presse papier",
-            "copyEmail": "Copier l'adresse email de ce contact"
+            "copyEmail": "Copier l'adresse email de ce contact",
+            "copyText": "Copier le texte dans le presse papier"
         },
         "header": {
             "language": {
@@ -195,8 +196,13 @@
             "scientific-organisation": "Organisation scientifique",
             "devices": "Dispositifs",
             "events" : "Évènements",
-            "vocabulary" : "Vocabulaire"
-
+            "vocabulary" : "Vocabulaire",
+            "tools" : {
+                "label": "Outils",
+                "system": "Système",
+                "packages": "Librairies"
+            },
+            "web-api" : "API web"
         },
         "login": {
             "input": {
@@ -212,16 +218,17 @@
                 "login": "Connexion"
             },
             "copyright": {
-                "1": "Copyright © 2019 - 2020 INRA Tous Droits Déservés",
-                "2": "PHIS - Phenotyping Hybrid Information System",
-                "3": "Version {version} du {date}"
+                "1": "PHIS - Phenotyping Hybrid Information System",
+                "2": "Version {version} ",
+                "3": "Basé sur OpenSILEX version {version}",
+                "4": "Copyright © 2021 - INRAE"
             },
             "errors": {
                 "invalid-credentials": "Identifiants invalides"
             }
         },
         "footer": {
-            "copyright": "Copyright © 2019 - 2020 INRA Tous Droits Déservés. PHIS {version} version du {date}"
+            "copyright": "Copyright © 2021 INRAE Tous Droits Déservés. PHIS {version} "
         },
         "user": {
             "description": "Gérer et configurer les utilisateurs",

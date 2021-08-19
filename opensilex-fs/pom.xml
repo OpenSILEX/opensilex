@@ -13,7 +13,8 @@
     <artifactId>opensilex-fs</artifactId>
     <packaging>jar</packaging>
     <name>opensilex-fs</name>
-
+    <version>${revision}</version>
+    
     <url>https://www.opensilex.org/</url>
 
     <parent>

@@ -3,7 +3,7 @@
     <div class="w-100 clearfix">
       <span
         class="text-center text-sm-left d-md-inline-block"
-      >{{ $t('component.footer.copyright', { version: release.version, date: release.date }) }}</span>
+      >{{ $t('component.footer.copyright', { version: $opensilex.version}) }}</span>
     </div>
   </div>
 </template>
@@ -11,13 +11,18 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
+// @ts-ignore
+import { versionInfoDTO } from "opensilex-core/index";
 
 @Component
 export default class DefaultFooterComponent extends Vue {
+  $opensilex: any;
   $store: any;
 
-  get release() {
-    return this.$store.state.release;
+  versionInfo: versionInfoDTO;
+
+  created() {
+    this.versionInfo = this.$opensilex.versionInfo;
   }
 
 }

@@ -64,6 +64,7 @@
         </template>
       </b-table>
       <b-pagination
+        v-if="withPagination"
         v-model="currentPage"
         :aria-controls="this.uuid"
         :per-page="pageSize"
@@ -120,6 +121,11 @@ export default class TableView extends Vue {
     default: true
   })
   showCount: boolean;
+
+  @Prop({
+    default: true
+  })
+  withPagination: boolean;
 
   filter: string = null;
 

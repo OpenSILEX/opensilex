@@ -183,8 +183,8 @@ variables:
 opensilex:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == "update-version-ci-cd-trigger"
 
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
@@ -221,7 +221,7 @@ trigger:phis:deploy:test2:
     - if: $CI_COMMIT_BRANCH == "update-version-ci-cd-trigger"
   needs:
     - job: "opensilex:build"   
-    
+
 # # Trigger pipeline for data-analysis module deployment
 # trigger:dataanalysis:deploy:test:
 #   stage: deploy

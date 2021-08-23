@@ -983,6 +983,8 @@ public class ScientificObjectDAO {
         DateDeserializer deserializer = new DateDeserializer();
         
         Expr range = null;
+        Expr notStartBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(startVar));
+        Expr notEndBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(endVar));
         
         if (endDate == null) {
             range = SPARQLQueryHelper.getExprFactory().ge(startVar, deserializer.getNode(startDate)); // constructionDate > startDate
@@ -991,10 +993,14 @@ public class ScientificObjectDAO {
         } else {
             LocalDate start = startDate == null ? null : LocalDate.parse(startDate.toString());
             LocalDate end = endDate == null ? null : LocalDate.parse(endDate.toString());
-            range = SPARQLQueryHelper.dateRange(endDateVarName, start, startDateVarName, end); // If destructionDate > startDate && creationDate < endDate
+            Expr range1 = SPARQLQueryHelper.dateRange(endDateVarName, start, startDateVarName, end); // If destructionDate > startDate && creationDate < endDate
+
+            Expr range2 = SPARQLQueryHelper.getExprFactory().ge(endVar, deserializer.getNode(startDate)); // If destructionDate > startDate
+            Expr range3 = SPARQLQueryHelper.getExprFactory().and(range2, SPARQLQueryHelper.getExprFactory().bound(startVar)); // AND creationDate exists
+
+            Expr rang4 = SPARQLQueryHelper.getExprFactory().or(range1, notEndBounded); // range1 OR destructionDate does not exist
+            range = SPARQLQueryHelper.getExprFactory().or(range4, rang3); // range1 OR destructionDate does not exist OR creationDate exists AND destructionDate > startDate
         }
-        Expr notStartBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(startVar));
-        Expr notEndBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(endVar));
         Expr notBoundedDates = SPARQLQueryHelper.getExprFactory().and(notStartBounded, notEndBounded); // If SO has no creation and destruction dates
         Expr res = SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);
         return res;

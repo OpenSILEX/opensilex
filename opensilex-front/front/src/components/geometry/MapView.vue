@@ -395,16 +395,26 @@
     <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
     &nbsp;-&nbsp;
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
-    <opensilex-ModalForm
-      v-if="!errorGeometry"
-        ref="filterForm"
-        component="opensilex-FilterMap"
-        createTitle="Filter.add"
-        editTitle="Filter.update"
-        icon="fa#sun"
-        modalSize="m"
-        @onCreate="showFiltersDetails"
-    ></opensilex-ModalForm>
+    <div class="timeline-slider" v-if="min != null && max != null">
+      <JqxRangeSelector
+        ref="JqxRangeSelector"
+        class="mx-auto"
+        width="75%"
+        padding="35px"
+        height="15"
+        :min="min"
+        :max="max"
+        :range="range"
+        :labelsOnTicks="false"
+        majorTicksInterval="day"
+        minorTicksInterval="hour"
+        labelsFormat="ddd"
+        theme="dark"
+        :markersFormatFunction=markersDateRangeFormat
+        @change="onChangeDateRange($event)"
+        >
+      </JqxRangeSelector>
+    </div>
     <div id="selectedTable" v-if="selectedFeatures.length !== 0" class="selected-features" >
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -514,6 +524,7 @@ import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDe
 
 @Component
 export default class MapView extends Vue {
+  @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
@@ -552,6 +563,9 @@ export default class MapView extends Vue {
   ];
   selectedFeatures: any[] = [];
   timelineSidebarVisibility: boolean = false;
+  min: Date = null;
+  max: Date = null;
+  range: { from: Date, to: Date } = { from: null, to: null };
 
   private editingMode: boolean = false;
   private displayAreas: boolean = true;
@@ -606,6 +620,7 @@ export default class MapView extends Vue {
     "isSelectable": false,
     "isCheckable": true
   }];
+  private langUnwatcher;
 
   get user() {
     return this.$store.state.user;
@@ -661,6 +676,20 @@ export default class MapView extends Vue {
   }
 
   set filters(value) {
+  }
+
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.rangeSelector.refresh(); // Refresh date range
+        this.rangeSelector.setRange(this.range.from, this.range.to);
+      }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   displayInfoInOverlay(): string {
@@ -878,6 +907,7 @@ export default class MapView extends Vue {
       }
       scientificObject.children.push(item[0]);
     });
+    this.scientificObjects = [];
     this.scientificObjects.push(scientificObject);
   }
 
@@ -972,6 +1002,82 @@ export default class MapView extends Vue {
       });
     } else {
       this.recoveryArea(areaUriResult);
+    }
+  }
+
+  markersDateRangeFormat(value: string, position: string) {
+    const date = new Date(value);
+    let res: string = "";
+    
+    if (position == 'left')
+      res += this.$i18n.t("MapView.marketFrom");
+    else
+      res += this.$i18n.t("MapView.marketTo");
+    res += ": ";
+    if (this.$store.getters.language == 'en') {
+      res += String(date.getMonth() + 1).padStart(2, '0') + "/" + String(date.getDate()).padStart(2, '0');
+    } else {
+      res += String(date.getDate()).padStart(2, '0') + "/" + String(date.getMonth() + 1).padStart(2, '0');
+    }
+    res += "/" + date.getFullYear();
+    return "<span>" + res + "<span>";
+  }
+
+  onChangeDateRange(event) {
+    this.range = { from: event.args.from, to: event.args.to }
+
+    this.$opensilex.showLoader();
+    let startDate: string = this.formatDate(this.range.from);
+    let endDate: string = this.formatDate(this.range.to);
+    this.recoveryScientificObjects(startDate, endDate);
+  }
+
+  formatDate(date): string {
+    let d = new Date(date),
+        month = String(d.getMonth() + 1).padStart(2, '0'),
+        day = String(d.getDate()).padStart(2, '0'),
+        year = d.getFullYear();
+
+    return [year, month, day].join('-');
+  }
+
+  calcDifferenceDateInDays(from: Date, to: Date): number {
+    let diffInTime = to.getTime() - from.getTime();
+    let diffInDays = diffInTime / (1000 * 3600 * 24);
+
+    return diffInDays;
+  }
+
+  majorTicksIntervalFct() {
+    const from = this.min;
+    const to = this.max;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'month';
+    } else {
+      return 'day';
+    }
+  }
+
+  minorTicksIntervalFct() {
+    const from = this.min;
+    const to = this.max;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'day';
+    } else {
+      return 'hour';
+    }
+  }
+
+  labelsFormatFct() {
+    const from = this.min;
+    const to = this.max;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'MMM';
+    } else {
+      return 'ddd';
     }
   }
 
@@ -1084,8 +1190,36 @@ export default class MapView extends Vue {
     this.$opensilex.showLoader();
 
     this.experiment = decodeURIComponent(this.$route.params.uri);
+
+    this.initDateRange();
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
+  }
+
+  initDateRange() {
+    // Recover start and end of the experiment
+    this.$opensilex
+      .getService("opensilex.ExperimentsService")
+      .getExperiment(this.experiment)
+      .then(http => {
+        let res = http.response.result;
+        this.min = new Date(res.start_date);
+        if (res.end_date) {
+          this.max = new Date(res.end_date);
+        } else {
+          this.max = new Date();
+        }
+        this.range = { from: this.min, to: this.max };
+        this.rangeSelector.min = this.min;
+        this.rangeSelector.max = this.max;
+        this.rangeSelector.range = this.range;
+        this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
+        this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
+        this.rangeSelector.labelsFormat = this.labelsFormatFct();
+        this.rangeSelector.refresh();
+        this.rangeSelector.setRange(this.range.from, this.range.to);
+        this.rangeSelector.render();
+      });
   }
 
   mapCreated(map) {
@@ -1389,13 +1523,13 @@ export default class MapView extends Vue {
     }
   }
 
-  private recoveryScientificObjects() {
+  private recoveryScientificObjects(startDate?, endDate?) {
     this.callSO = false;
     this.featuresOS = [];
 
     this.$opensilex
         .getService(this.scientificObjectsService)
-        .searchScientificObjectsWithGeometryListByUris(this.experiment)
+        .searchScientificObjectsWithGeometryListByUris(this.experiment, startDate, endDate)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach(element => {
@@ -1762,6 +1896,10 @@ p {
   height: 60px;
 }
 
+.timeline-slider {
+  padding-top: 10px;
+}
+
 .selected-features {
   animation-name: slide-up;
   animation-duration: 0.6s;
@@ -1820,6 +1958,8 @@ en:
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image or PDF ?
     noTemporalAreas: No temporal areas are displayed on the map.
+    marketFrom: From
+    marketTo: To
   Area:
     title: Area
     add: Description of the area
@@ -1871,6 +2011,8 @@ fr:
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
     noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
+    marketFrom: Du
+    marketTo: Jusqu'au
   Area:
     title: Zone
     add: Description de la zone

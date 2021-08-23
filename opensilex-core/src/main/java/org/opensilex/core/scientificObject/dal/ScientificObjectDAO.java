@@ -13,6 +13,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +58,7 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -938,4 +946,57 @@ public class ScientificObjectDAO {
         select.addFilter(SPARQLQueryHelper.eq(ScientificObjectModel.NAME_FIELD, name));
     }
 
+     
+    public Collection<String> getScientificObjectsByDate(URI contextURI, String startDate, String endDate, Collection<URI> uris) throws Exception {
+        Var uriVar = makeVar("uri");
+        Var typeVar = makeVar("type");
+        Var creationDateVar = makeVar("creationDate");
+        Var destructionDateVar = makeVar("destructionDate");
+        SelectBuilder select = new SelectBuilder();
+
+        Node context = SPARQLDeserializers.nodeURI(contextURI);
+        select.addGraph(context, uriVar, RDF.type, typeVar);
+        select.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
+        select.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+        LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
+        LocalDate end = endDate == null ? null : LocalDate.parse(endDate);
+        Expr expr = dateRange("creationDate", start, "destructionDate", end);
+        select.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
+        select.addFilter(expr);
+
+        Collection<String> types = new HashSet<>();
+        sparql.executeSelectQuery(select, (row) -> {
+            try {
+                URI uri = new URI(row.getStringValue("uri"));
+                types.add(SPARQLDeserializers.getShortURI(uri));
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        return types;
+    }
+    
+    public static Expr dateRange(String startDateVarName, Object startDate, String endDateVarName, Object endDate) throws Exception {
+        
+        Node startVar = NodeFactory.createVariable(startDateVarName);
+        Node endVar = NodeFactory.createVariable(endDateVarName);
+        DateDeserializer deserializer = new DateDeserializer();
+        
+        Expr range = null;
+        
+        if (endDate == null) {
+            range = SPARQLQueryHelper.getExprFactory().ge(startVar, deserializer.getNode(startDate)); // constructionDate > startDate
+        } else if (startDate == null) {
+            range = SPARQLQueryHelper.getExprFactory().le(startVar, deserializer.getNode(endDate));  // constructionDate < endDate
+        } else {
+            LocalDate start = startDate == null ? null : LocalDate.parse(startDate.toString());
+            LocalDate end = endDate == null ? null : LocalDate.parse(endDate.toString());
+            range = SPARQLQueryHelper.dateRange(endDateVarName, start, startDateVarName, end); // If destructionDate > startDate && creationDate < endDate
+        }
+        Expr notStartBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(startVar));
+        Expr notEndBounded = SPARQLQueryHelper.getExprFactory().not(SPARQLQueryHelper.getExprFactory().bound(endVar));
+        Expr notBoundedDates = SPARQLQueryHelper.getExprFactory().and(notStartBounded, notEndBounded); // If SO has no creation and destruction dates
+        Expr res = SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);
+        return res;
+    }
 }

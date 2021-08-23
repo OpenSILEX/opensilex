@@ -686,6 +686,7 @@ export default class MapView extends Vue {
         this.rangeSelector.setRange(this.range.from, this.range.to);
       }
     );
+    this.initDateRange();
   }
 
   beforeDestroy() {
@@ -1191,14 +1192,13 @@ export default class MapView extends Vue {
 
     this.experiment = decodeURIComponent(this.$route.params.uri);
 
-    this.initDateRange();
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
   }
 
-  initDateRange() {
-    // Recover start and end of the experiment
-    this.$opensilex
+  getRangeDatesOfExperiment(): Promise<any> {
+    return new Promise ((resolve) => {
+      this.$opensilex
       .getService("opensilex.ExperimentsService")
       .getExperiment(this.experiment)
       .then(http => {
@@ -1210,16 +1210,34 @@ export default class MapView extends Vue {
           this.max = new Date();
         }
         this.range = { from: this.min, to: this.max };
-        this.rangeSelector.min = this.min;
-        this.rangeSelector.max = this.max;
-        this.rangeSelector.range = this.range;
-        this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
-        this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
-        this.rangeSelector.labelsFormat = this.labelsFormatFct();
-        this.rangeSelector.refresh();
-        this.rangeSelector.setRange(this.range.from, this.range.to);
-        this.rangeSelector.render();
+        resolve("");
+      })
+      .catch(this.$opensilex.errorHandler);
+    });
+  }
+
+  configDateRange() {
+    this.rangeSelector.min = this.min;
+    this.rangeSelector.max = this.max;
+    this.rangeSelector.range = this.range;
+    this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
+    this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
+    this.rangeSelector.labelsFormat = this.labelsFormatFct();
+    this.rangeSelector.refresh();
+    this.rangeSelector.setRange(this.range.from, this.range.to);
+    this.rangeSelector.render();
+  }
+
+  initDateRange() {
+    // Recover start and end of the experiment
+    if (!this.min || !this.max || !this.range.from || !this.range.to) {
+      this.getRangeDatesOfExperiment()
+      .then(() => {
+        this.configDateRange();
       });
+    } else {
+      this.configDateRange();
+    }
   }
 
   mapCreated(map) {

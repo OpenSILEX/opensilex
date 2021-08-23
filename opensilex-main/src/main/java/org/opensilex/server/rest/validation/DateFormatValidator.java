@@ -8,6 +8,7 @@
 //******************************************************************************
 package org.opensilex.server.rest.validation;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -52,7 +53,7 @@ public class DateFormatValidator implements ConstraintValidator<Date, String> {
     public boolean validateDate(DateFormat pattern, String date) {
         try {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(pattern.toString());
-            ZonedDateTime zdt = ZonedDateTime.parse(date, dtf);
+            LocalDate zdt = dtf.parse(date, LocalDate::from);
         } catch (DateTimeParseException e) {
             return false;
         }

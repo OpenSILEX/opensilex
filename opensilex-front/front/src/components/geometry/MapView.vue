@@ -157,10 +157,11 @@
             </div>
           </vl-layer-vector>
           <vl-layer-vector
+              @mounted="defineCenter"
               v-for="layerSO in featuresOS"
               :key="layerSO.id"
           >
-            <vl-source-vector ref="vectorSource" :features="layerSO" @mounted="defineCenter"></vl-source-vector>
+            <vl-source-vector ref="vectorSource" :features="layerSO"></vl-source-vector>
           </vl-layer-vector>
           <vl-layer-vector
               v-for="layer in tabLayer"

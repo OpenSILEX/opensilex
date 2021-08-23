@@ -734,8 +734,8 @@ public class ScientificObjectDAO {
         } else if (startDate == null) {
             range = SPARQLQueryHelper.getExprFactory().le(startVar, deserializer.getNode(endDate));  // constructionDate < endDate
         } else {
-            LocalDate start = startDate == null ? null : LocalDate.parse(startDate.toString());
-            LocalDate end = endDate == null ? null : LocalDate.parse(endDate.toString());
+            LocalDate start = LocalDate.parse(startDate.toString());
+            LocalDate end = LocalDate.parse(endDate.toString());
             Expr range1 = SPARQLQueryHelper.dateRange(endDateVarName, start, startDateVarName, end); // If destructionDate > startDate && creationDate < endDate
 
             Expr range2 = SPARQLQueryHelper.getExprFactory().ge(endVar, deserializer.getNode(startDate)); // If destructionDate > startDate

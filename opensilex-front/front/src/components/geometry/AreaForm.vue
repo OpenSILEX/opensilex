@@ -43,7 +43,9 @@
         :baseType="baseType"
         :type.sync="form.rdf_type"
         :required="true"
+        :ignoreRoot="false"
         :placeholder="$t('AreaForm.form-rdfType-placeholder')"
+        @update:type="typeSwitch"
     ></opensilex-TypeForm>
 
     <div v-if="toggleAreaType == 'temporal-zone'">
@@ -97,6 +99,24 @@
         label="AreaForm.description"
         placeholder="AreaForm.description-placeholder"
     ></opensilex-TextAreaForm>
+
+    <div v-if="toggleAreaType == 'temporal-zone'">
+
+      <slot v-bind:form="form"></slot>
+
+      <div v-for="(relation, index) in typeRelations" v-bind:key="index">
+          <component
+              :is="getInputComponent(relation.property)"
+              :property="relation.property"
+              :label="relation.property.name"
+              :required="relation.property.is_required"
+              :multiple="relation.property.is_list"
+              :value.sync="relation.value"
+              @update:value="updateRelation($event,relation.property)"
+          ></component>
+      </div>
+      <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
+    </div>
   </b-form>
 </template>
 
@@ -109,6 +129,9 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 // @ts-ignore
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+// @ts-ignore
+import { EventGetDTO } from 'opensilex-core/model/eventGetDTO';
+import { VueJsOntologyExtensionService } from "../../lib";
 
 @Component
 export default class AreaForm extends Vue {
@@ -120,8 +143,10 @@ export default class AreaForm extends Vue {
   optionsArea: { label: string; id: string }[] = [];
   baseType: string = "";
   ontologyService: OntologyService;
+  vueOntologyService: VueJsOntologyExtensionService;
   startRequired: Boolean = true;
   endRequired: Boolean = true;
+  typeModel = null;
 
   @Prop()
   editMode;
@@ -135,6 +160,8 @@ export default class AreaForm extends Vue {
       return {
         uri: null,
         name: null,
+        relations: [],
+        targets: [],
         areaType: "perennial-zone",
         rdf_type: null,
         start: null,
@@ -142,6 +169,16 @@ export default class AreaForm extends Vue {
         is_instant: false,
         description: "",
         geometry: [],
+        targets_positions: [{
+          target: undefined,
+          position: {
+            point: undefined,
+            x: undefined,
+            y: undefined,
+            z: undefined,
+            text: undefined,
+          }
+        }]
       };
     },
   })
@@ -164,6 +201,38 @@ export default class AreaForm extends Vue {
     this.form.rdf_type = null;
   }
 
+  get typeRelations() {
+
+    let internalTypeProperties = [];
+
+    if (this.typeModel) {
+        for (let i in this.typeModel.data_properties) {
+            let dataProperty = this.typeModel.data_properties[i];
+            if (dataProperty.property != "rdfs:label") {
+
+                let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
+
+                internalTypeProperties.push({
+                    property: dataProperty,
+                    value: relation.value
+                });
+            }
+        }
+
+        for (let i in this.typeModel.object_properties) {
+
+            let objectProperty = this.typeModel.object_properties[i];
+            let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
+
+            internalTypeProperties.push({
+                property: objectProperty,
+                value: relation.value
+            });
+        }
+    }
+    return internalTypeProperties;
+  }
+
   reset() {
     this.uriGenerated = true;
   }
@@ -173,18 +242,60 @@ export default class AreaForm extends Vue {
   }
 
   created() {
+    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+    this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
     this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
   }
 
+  isMove(): boolean {
+    if (!this.form) {
+      return false;
+    }
+    return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
+      || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
+  }
+
+  private getEventFromUri(uri) {
+    const eventsService = "EventsService";
+    return new Promise((resolve) => {
+      this.$opensilex
+      .getService(eventsService)
+      .searchEvents(undefined, undefined, undefined, uri)
+      .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
+        const res = http.response.result[0] as any;
+        resolve(res);
+      })
+      .catch(this.$opensilex.errorHandler);
+    });
+  }
+
   update(form) {
+    console.debug(form);
     return this.$opensilex
         .getService("opensilex.AreaService")
         .updateArea(form)
         .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
           let uri = http.response.result;
-          console.debug("Area updated", uri);
-
-          return uri;
+          if (form.rdf_type == 'vocabulary:TemporalArea') {
+            return this.getEventFromUri(uri)
+            .then((event: any) => {
+              event.name = form.name;
+              event.description = form.description;
+              event.targets = [uri];
+              console.debug('Event', event);
+              return this.$opensilex
+              .getService('EventsService')
+              .updateEvent(event)
+              .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                let uriTemporalArea = http.response.result;
+                console.debug("Temporal Area updated", uriTemporalArea);
+                return uri;
+              })
+            })
+          } else {
+            console.debug("Area updated", uri);
+            return uri;
+          }
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -198,6 +309,8 @@ export default class AreaForm extends Vue {
     return {
       uri: null,
       name: null,
+      relations: [],
+      targets: [],
       areaType: "perennial-zone",
       rdf_type: null,
       start: null,
@@ -205,6 +318,16 @@ export default class AreaForm extends Vue {
       is_instant: false,
       description: "",
       geometry: [],
+      targets_positions: [{
+          target: undefined,
+          position: {
+            point: undefined,
+            x: undefined,
+            y: undefined,
+            z: undefined,
+            text: undefined,
+          }
+        }]
     };
   }
 
@@ -221,6 +344,21 @@ export default class AreaForm extends Vue {
             }
         }
     }
+
+  getInputComponent(property) {
+    if (property.input_components_by_property && property.input_components_by_property[property.property]) {
+        return property.input_components_by_property[property.property];
+    }
+    return property.input_component;
+  }
+
+  updateRelation(newValue,property){
+    let relation = this.form.relations.find(relation =>
+        relation.property == property.property
+    );
+
+    relation.value = newValue;
+  }
 
   setUri(uri: string) {
     this.form.uri = uri;
@@ -303,6 +441,52 @@ export default class AreaForm extends Vue {
       return this.createTemporalArea(form);
     }
   }
+
+  typeSwitch(type) {
+
+    if (!type || this.toggleAreaType == 'perennial-zone' || type == 'vocabulary:TemporalArea') {
+        return;
+    }
+    this.vueOntologyService
+      .getRDFTypeProperties(this.form.rdf_type, this.baseType)
+      .then(http => {
+          this.typeModel = http.response.result;
+          if (!this.editMode) {
+              let relations = [];
+              for (let i in this.typeModel.data_properties) {
+                  let dataProperty = this.typeModel.data_properties[i];
+                  if (dataProperty.is_list) {
+                      relations.push({
+                          value: [],
+                          property: dataProperty.property
+                      });
+                  } else {
+                      relations.push({
+                          value: undefined,
+                          property: dataProperty.property
+                      });
+                  }
+              }
+
+              for (let i in this.typeModel.object_properties) {
+                  let objectProperty = this.typeModel.object_properties[i];
+                  if (objectProperty.is_list) {
+                      relations.push({
+                          value: [],
+                          property: objectProperty.property
+                      });
+                  } else {
+                      relations.push({
+                          value: undefined,
+                          property: objectProperty.property
+                      });
+                  }
+              }
+
+              this.form.relations = relations;
+          }
+      });
+    }
 
 }
 </script>

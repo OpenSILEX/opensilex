@@ -21,7 +21,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="timeline-body">{{ item.description }}</div>
+                <div class="timeline-body">
+                    <div class="timeline-description">
+                        {{ item.description ? " - " + item.description : '' }}
+                    </div>
+                </div>
             </div>
         </li>
     </ul>
@@ -434,6 +438,7 @@ body {
 }
 
 .timeline-body {
+    word-break: break-all;
     > p,
     > ul {
         margin-bottom: 0;
@@ -442,6 +447,10 @@ body {
     > p + p {
         margin-top: 5px;
     }
+}
+
+.timeline-description {
+    font-style: italic;
 }
 
 .copy {

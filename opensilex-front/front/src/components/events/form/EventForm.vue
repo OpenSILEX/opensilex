@@ -43,6 +43,22 @@
         </div>
 
         <div class="row">
+            <div class="col">
+
+                <opensilex-FormField
+                    :required="true"
+                    label="Event.is-instant"
+                    helpMessage="Event.is-instant-help"
+                >
+                    <template v-slot:field="field">
+                        <b-form-checkbox v-model="form.is_instant" switch>
+                        </b-form-checkbox>
+                    </template>
+                </opensilex-FormField>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col" v-if="! form.is_instant">
                 <opensilex-DateTimeForm
                     :value.sync="form.start"
@@ -65,22 +81,6 @@
                 ></opensilex-DateTimeForm>
             </div>
 
-        </div>
-
-        <div class="row">
-            <div class="col">
-
-                <opensilex-FormField
-                    :required="true"
-                    label="Event.is-instant"
-                    helpMessage="Event.is-instant-help"
-                >
-                    <template v-slot:field="field">
-                        <b-form-checkbox v-model="form.is_instant" switch>
-                        </b-form-checkbox>
-                    </template>
-                </opensilex-FormField>
-            </div>
         </div>
 
         <br>

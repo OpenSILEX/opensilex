@@ -5,7 +5,7 @@
         :experiment="experiment"
         :germplasm.sync="filter.germplasm"
         :multiple="false"
-        label=""
+        :label="$t('FilterMap.filter.germplasm')"
     ></opensilex-GermplasmSelector>
         <!-- Factor -->
     <opensilex-FactorLevelSelector
@@ -14,21 +14,36 @@
         :factorLevels.sync="filter.factorLevels"
         :multiple="false"
         :required="false"
+        :label="$t('FilterMap.filter.factor-level')"
     ></opensilex-FactorLevelSelector>
-    <div class="col-3 mx-auto">
-      <opensilex-InputForm
-          :value.sync="color"
-          type="color"
-      ></opensilex-InputForm>
-      <toggle-button
-          v-model="isStrikeColor"
-          :labels="{
-            checked: $t('FilterMap.filter.strokeColor'),
-            unchecked: $t('FilterMap.filter.fillColor'),
-          }"
-          :sync="true"
-          :width="68"
-      />
+    <div class="row mx-md">
+      <div class="col px-md-5">
+        <opensilex-InputForm
+            :value.sync="color"
+            type="color"
+            :label="$t('FilterMap.filter.color')"
+        ></opensilex-InputForm>
+      </div>
+
+      <div class="col px-md-5">
+        <opensilex-FormInputLabelHelper
+          v-if="$t('FilterMap.filter.styleFilter')"
+          :label="$t('FilterMap.filter.styleFilter')"
+          :helpMessage="''"
+          :labelFor="''"
+        ></opensilex-FormInputLabelHelper>
+        <toggle-button
+            v-model="isStrikeColor"
+            :labels="{
+              checked: $t('FilterMap.filter.strokeColor'),
+              unchecked: $t('FilterMap.filter.fillColor'),
+            }"
+            :sync="true"
+            :width="68"
+        />
+      </div>
+    </div>
+    <div class="col-3 ">
     </div>
   </b-form>
 </template>
@@ -346,6 +361,10 @@ en:
       fillColor: Fill
       crossFilter: Cross filter
       empty-filter-error: Filter must have at least one criterion.
+      germplasm: Germplasm
+      factor-level: Factor level
+      styleFilter: Filter style
+      color: Selected color
 fr:
   FilterMap:
     filter:
@@ -355,4 +374,8 @@ fr:
       fillColor: Remplir
       crossFilter: Filtre croisé
       empty-filter-error: Le filtre doit avoir au moins un critère.
+      germplasm: Matériel génétique
+      factor-level: Niveau de facteur
+      styleFilter: Style de filtre
+      color: Couleur sélectionnée
 </i18n>

@@ -675,8 +675,7 @@ export default class MapView extends Vue {
     return result;
   }
 
-  set filters(value) {
-  }
+  set filters(value) { }
 
   mounted() {
     this.langUnwatcher = this.$store.watch(

@@ -102,7 +102,7 @@
         <vl-overlay
             id="overlay"
             :position="overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]"
-            :stop-event="selectPointerMove.name && selectPointerMove.type">
+            :stop-event="selectPointerMove.name && selectPointerMove.type ? true : false">
           <template slot-scope="scope">
             <div
                 class="panel-content"

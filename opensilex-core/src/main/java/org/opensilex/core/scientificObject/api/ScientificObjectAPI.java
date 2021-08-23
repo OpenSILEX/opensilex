@@ -54,6 +54,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
+
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -66,9 +67,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,15 +84,18 @@ import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -101,7 +109,10 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
+import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.server.rest.validation.Date;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -244,7 +255,9 @@ public class ScientificObjectAPI {
         @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI
+            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI,
+            @ApiParam(value = "Search by minimal date", example = "2020-08-21") @QueryParam("start_date") @Date(DateFormat.YMD) String startDate,
+            @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
 
         validateContextAccess(contextURI);
@@ -254,14 +267,38 @@ public class ScientificObjectAPI {
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
+        
+        Collection<String> filteredUris = new HashSet<>(); 
+
+        // Date
+        if (startDate != null || endDate != null) {
+            ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+            Collection<URI> uris = new HashSet<>();
+            
+            for (GeospatialModel geospatialModel : mapGeo) {
+                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                URI uri = dtoFromModel.getUri();
+                uris.add(uri);
+            }
+            filteredUris = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, uris);
+        }
 
         List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
         int lengthMapGeo = 0;
 
         for (GeospatialModel geospatialModel : mapGeo) {
-            ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-            dtoList.add(dtoFromModel);
-            lengthMapGeo++;
+            if (filteredUris.size() > 0) {
+                String uri = geospatialModel.getUri().toString();
+                if (filteredUris.contains(uri) == true) {
+                    ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                    dtoList.add(dtoFromModel);
+                    lengthMapGeo++;
+                }
+            } else {
+                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                dtoList.add(dtoFromModel);
+                lengthMapGeo++;
+            }
         }
 
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");

@@ -355,6 +355,9 @@ configure({
   }
 });
 
+import JqxRangeSelector from 'jqwidgets-scripts/jqwidgets-vue/vue_jqxrangeselector.vue';
+Vue.component('JqxRangeSelector', JqxRangeSelector);
+
 // Load vue draggable component
 import draggable from 'vuedraggable'
 Vue.component('draggable', draggable);

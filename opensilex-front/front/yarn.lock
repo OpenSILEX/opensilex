@@ -6853,6 +6853,11 @@ jdataview@~2.4.4:
   resolved "https://registry.yarnpkg.com/jdataview/-/jdataview-2.4.6.tgz#41aa5c75f9794f11605883d29bdaaf0998b3552b"
   integrity sha1-Qapcdfl5TxFgWIPSm9qvCZizVSs=
 
+jqwidgets-scripts@^12.1.2:
+  version "12.1.2"
+  resolved "https://registry.yarnpkg.com/jqwidgets-scripts/-/jqwidgets-scripts-12.1.2.tgz#f42c3058f9dbb0e2a25a3683abffdfef870de197"
+  integrity sha512-dmcl2vM4qSOHWKqoMLaIJbj8lBk+4z/hvkwiw0EA9kzWagbVtvJgDvfRteJeNkWBy0C9RRSHlL8rl4iSOpYU+Q==
+
 js-message@1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/js-message/-/js-message-1.0.7.tgz#fbddd053c7a47021871bb8b2c95397cc17c20e47"

@@ -1203,11 +1203,13 @@ export default class MapView extends Vue {
       .then(http => {
         let res = http.response.result;
         this.min = new Date(res.start_date);
+        this.min.setHours(0,0,0,0);
         if (res.end_date) {
           this.max = new Date(res.end_date);
         } else {
           this.max = new Date();
         }
+        this.max.setHours(0,0,0,0);
         this.range = { from: this.min, to: this.max };
         resolve("");
       })

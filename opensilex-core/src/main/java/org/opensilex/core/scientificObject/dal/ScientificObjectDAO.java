@@ -739,10 +739,10 @@ public class ScientificObjectDAO {
             Expr range1 = SPARQLQueryHelper.dateRange(endDateVarName, start, startDateVarName, end); // If destructionDate > startDate && creationDate < endDate
 
             Expr range2 = SPARQLQueryHelper.getExprFactory().ge(endVar, deserializer.getNode(startDate)); // If destructionDate > startDate
-            Expr range3 = SPARQLQueryHelper.getExprFactory().and(range2, SPARQLQueryHelper.getExprFactory().bound(startVar)); // AND creationDate exists
+            Expr range3 = SPARQLQueryHelper.getExprFactory().and(range2, notStartBounded); // AND creationDate does not exist
 
             Expr range4 = SPARQLQueryHelper.getExprFactory().or(range1, notEndBounded); // range1 OR destructionDate does not exist
-            range = SPARQLQueryHelper.getExprFactory().or(range4, range3); // range1 OR destructionDate does not exist OR creationDate exists AND destructionDate > startDate
+            range = SPARQLQueryHelper.getExprFactory().or(range4, range3); // range1 OR destructionDate does not exist OR creationDate does not exist AND destructionDate > startDate
         }
         Expr notBoundedDates = SPARQLQueryHelper.getExprFactory().and(notStartBounded, notEndBounded); // If SO has no creation and destruction dates
         Expr res = SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);

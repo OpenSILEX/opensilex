@@ -160,7 +160,7 @@
               v-for="layerSO in featuresOS"
               :key="layerSO.id"
           >
-            <vl-source-vector ref="vectorSource" :features="layerSO" @mounted="defineCenter"></vl-source-vector>
+            <vl-source-vector ref="vectorSource" :features="layerSO"></vl-source-vector>
           </vl-layer-vector>
           <vl-layer-vector
               v-for="layer in tabLayer"
@@ -1024,9 +1024,9 @@ export default class MapView extends Vue {
   }
 
   onChangeDateRange(event) {
+    this.$opensilex.showLoader();
     this.range = { from: event.args.from, to: event.args.to }
 
-    this.$opensilex.showLoader();
     let startDate: string = this.formatDate(this.range.from);
     let endDate: string = this.formatDate(this.range.to);
     this.recoveryScientificObjects(startDate, endDate);
@@ -1224,9 +1224,8 @@ export default class MapView extends Vue {
     this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
     this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
     this.rangeSelector.labelsFormat = this.labelsFormatFct();
+    this.rangeSelector.range = { from: this.range.from, to: this.range.to };
     this.rangeSelector.refresh();
-    this.rangeSelector.setRange(this.range.from, this.range.to);
-    this.rangeSelector.render();
   }
 
   initDateRange() {
@@ -1282,15 +1281,35 @@ export default class MapView extends Vue {
     return this.$i18n.t("MapView.label");
   }
 
-  defineCenter() {
+  private waitFor(conditionFunction) {
+
+    const poll = resolve => {
+      if(conditionFunction()) resolve();
+      else setTimeout(_ => poll(resolve), 400);
+    }
+
+    return new Promise(poll);
+  }
+
+  defineCenter(): Promise<boolean> {
+    return new Promise((resolve) => {
     if (this.featuresOS.length > 0) {
+      this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource[0].$source) // Wait all vectors charged
+      .then(() => {
       let extent = olExtent.createEmpty();
-      this.vectorSource.forEach(vector => {
+        for (let vector of this.vectorSource) {
+          if (vector && vector.$source) {
         let extentTemporary = vector.$source.getExtent();
         olExtent.extend(extent, extentTemporary);
-      });
+          }
+        }
       this.mapView.$view.fit(extent);
+          resolve(true);
+      })
+      } else {
+        resolve(false);
     }
+    })
   }
 
   select(value) {
@@ -1578,9 +1597,15 @@ export default class MapView extends Vue {
               }
             }
         )
-        .catch(this.$opensilex.errorHandler)
-        .finally(() => {
+        .catch((e) => {
+          this.$opensilex.errorHandler(e);
           this.$opensilex.hideLoader();
+        })
+        .finally(() => {
+          this.defineCenter()
+          .finally(() => {
+          this.$opensilex.hideLoader();
+          });
           this.initScientificObjects();
         });
   }

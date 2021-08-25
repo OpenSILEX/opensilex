@@ -2,7 +2,7 @@
   <sl-vue-tree
     ref="asyncTree"
     v-model="nodeList"
-    @select="selectItem"
+    @nodeclick="selectItem"
     @toggle="toggle"
   >
     <template slot="toggle" slot-scope="{ node }">
@@ -100,18 +100,9 @@ export default class TreeViewAsync extends Vue {
 
   copy = copy;
 
-  selectItem(nodes: any[]) {
-    if (nodes.length > 0) {
-      let node = nodes[nodes.length - 1];
-      if (node.data != null) {
-        if (node.isLeaf) {
-          let root = this.asyncTree.getPrevNode(node.path, null);
-          nodes.push(root.data);
-          this.onSelectionChange(root.data.uri);
-        }
-        this.$emit("select", nodes[0]);
-      }
-    }
+  selectItem(node: any) {
+    this.onSelectionChange(node.data.uri);
+    this.$emit("select", node);
   }
 
   @Ref("load") readonly load!: any;

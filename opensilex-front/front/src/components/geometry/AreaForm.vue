@@ -140,7 +140,6 @@ export default class AreaForm extends Vue {
   $store: any;
   $i18n: any;
   uriGenerated = true;
-  optionsArea: { label: string; id: string }[] = [];
   baseType: string = "";
   ontologyService: OntologyService;
   vueOntologyService: VueJsOntologyExtensionService;
@@ -234,7 +233,33 @@ export default class AreaForm extends Vue {
   }
 
   reset() {
+    this.startRequired = true;
+    this.endRequired = true;
     this.uriGenerated = true;
+    this.typeModel = null;
+    this.form = {
+      uri: null,
+      name: null,
+      relations: [],
+      targets: [],
+      areaType: "perennial-zone",
+      rdf_type: null,
+      start: null,
+      end: null,
+      is_instant: false,
+      description: "",
+      geometry: [],
+      targets_positions: [{
+        target: undefined,
+        position: {
+          point: undefined,
+          x: undefined,
+          y: undefined,
+          z: undefined,
+          text: undefined,
+        }
+      }]
+    };
   }
 
   resetRdfType(value) {

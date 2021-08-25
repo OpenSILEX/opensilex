@@ -1292,23 +1292,27 @@ export default class MapView extends Vue {
   }
 
   defineCenter(): Promise<boolean> {
-    return new Promise((resolve) => {
-    if (this.featuresOS.length > 0) {
-      this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource[0].$source) // Wait all vectors charged
-      .then(() => {
-      let extent = olExtent.createEmpty();
-        for (let vector of this.vectorSource) {
-          if (vector && vector.$source) {
-        let extentTemporary = vector.$source.getExtent();
-        olExtent.extend(extent, extentTemporary);
-          }
+    return new Promise((resolve, reject) => {
+      if (this.featuresOS.length > 0) {
+        try {
+          this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource[0].$source) // Wait all vectors charged
+          .then(() => {
+            let extent = olExtent.createEmpty();
+            for (let vector of this.vectorSource) {
+              if (vector && vector.$source) {
+                let extentTemporary = vector.$source.getExtent();
+                olExtent.extend(extent, extentTemporary);
+              }
+            }
+            this.mapView.$view.fit(extent);
+            resolve(true);
+          });
+        } catch (e) {
+          reject(false);
         }
-      this.mapView.$view.fit(extent);
-          resolve(true);
-      })
       } else {
         resolve(false);
-    }
+      }
     })
   }
 
@@ -1603,8 +1607,13 @@ export default class MapView extends Vue {
         })
         .finally(() => {
           this.defineCenter()
+          .catch(() => { // In case of OpenLayer error, recall function in 300ms
+            setTimeout(() => {
+              this.defineCenter();
+            }, 300);
+          })
           .finally(() => {
-          this.$opensilex.hideLoader();
+            this.$opensilex.hideLoader();
           });
           this.initScientificObjects();
         });
@@ -1849,6 +1858,10 @@ export default class MapView extends Vue {
 </script>
 
 <style lang="scss" scoped>
+
+@import "~jqwidgets-scripts/jqwidgets/styles/jqx.base.css";
+@import "~jqwidgets-scripts/jqwidgets/styles/jqx.dark.css";
+
 p {
   font-size: 115%;
   margin-top: 1em;
@@ -1882,6 +1895,18 @@ p {
   padding: 0;
   background-color: transparent;
   box-shadow: none;
+}
+
+::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark, .jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark {
+  background-color: transparent !important;
+}
+
+::v-deep .jqx-rangeselector-slider {
+  background-color: #3e3e42a8 !important;
+}
+
+::v-deep .jqx-rangeselector-inner-slider {
+  background: none;
 }
 
 .map {

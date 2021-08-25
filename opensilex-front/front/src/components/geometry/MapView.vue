@@ -23,14 +23,15 @@
           </template>
         </b-modal>
         <b-button
-        v-on:click="showTemporalAreas"
-        v-b-toggle.event-sidebar
-        :title="$t('MapView.time')"
-        >
+          v-on:click="showTemporalAreas"
+          v-b-toggle.event-sidebar
+          :title="$t('MapView.time')"
+          >
           <slot name="icon">
             <opensilex-Icon :icon="'ik#ik-activity'" />
           </slot>
-          </b-button>
+        </b-button>
+        <opensilex-Button icon="fa#stopwatch" label="MapView.dateRange" @click="handleDateRangeStatus"></opensilex-Button>
       </div>
       <span class="p-2">
         <label class="alert-warning">
@@ -397,6 +398,7 @@
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
     <div class="timeline-slider" v-if="min != null && max != null">
       <JqxRangeSelector
+        v-show="displayDateRange"
         ref="JqxRangeSelector"
         class="mx-auto"
         width="75%"
@@ -568,6 +570,7 @@ export default class MapView extends Vue {
   range: { from: Date, to: Date } = { from: null, to: null };
 
   private editingMode: boolean = false;
+  private displayDateRange: boolean = false;
   private displayAreas: boolean = true;
   private displayPerennialAreas: boolean = false;
   private displayTemporalAreas: boolean = false;
@@ -1078,6 +1081,13 @@ export default class MapView extends Vue {
       return 'MMM';
     } else {
       return 'ddd';
+    }
+  }
+
+  handleDateRangeStatus() {
+    this.displayDateRange = !this.displayDateRange;
+    if (this.displayDateRange == false) {
+      this.recoveryScientificObjects();
     }
   }
 
@@ -2029,6 +2039,7 @@ en:
     noTemporalAreas: No temporal areas are displayed on the map.
     marketFrom: From
     marketTo: To
+    dateRange: Handle scientific objects with date range
   Area:
     title: Area
     add: Description of the area
@@ -2082,6 +2093,7 @@ fr:
     noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
     marketFrom: Du
     marketTo: Jusqu'au
+    dateRange: Manipuler des objets scientifiques avec une plage de dates
   Area:
     title: Zone
     add: Description de la zone

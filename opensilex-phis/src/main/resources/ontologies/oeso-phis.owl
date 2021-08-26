@@ -756,6 +756,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#CO2Sensor -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#CO2Sensor">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#GasSensor"/>
+        <rdfs:label xml:lang="en">CO2 sensor</rdfs:label>
+        <rdfs:label xml:lang="fr">Capteur de CO2</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Camera -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Camera">
@@ -961,6 +971,16 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Vector"/>
         <rdfs:label xml:lang="en">gantry</rdfs:label>
         <rdfs:label xml:lang="fr">portique</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+        <rdfs:label xml:lang="fr">Capteur d&apos;air</rdfs:label>
+        <rdfs:label xml:lang="en">Gas sensor</rdfs:label>
     </owl:Class>
     
 

@@ -460,6 +460,9 @@ export default class AreaForm extends Vue {
   create(form) {
     form.geometry = this.$store.state.zone.geometry;
 
+    if (form.description.length == 0) {
+      form.description = null;
+    }
     if (form.areaType == 'perennial-zone') {
       return this.createArea(form);
     } else {

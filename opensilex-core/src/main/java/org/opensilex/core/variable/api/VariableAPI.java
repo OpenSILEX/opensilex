@@ -34,9 +34,24 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.*;
+import org.opensilex.core.data.api.DataClusterReturn;
+import org.opensilex.core.data.api.DataGetDTOCluster;
+import org.opensilex.core.data.clustering.ClusterDataSet;
+import org.opensilex.core.data.clustering.DataSet;
+import org.opensilex.core.data.clustering.Kmeans;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.exception.DateMappingExceptionResponse;
+import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 
 import org.opensilex.server.response.ErrorDTO;
+import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.server.rest.validation.Date;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -59,7 +74,10 @@ public class VariableAPI {
 
     @Inject
     private SPARQLService sparql;
-
+    @Inject
+    private MongoDBService nosql;
+    @Inject
+    private FileStorageService fs;
     @CurrentUser
     UserModel currentUser;
 
@@ -296,6 +314,89 @@ public class VariableAPI {
                     "Unknown variable URIs"
             ).getResponse();
         }
+    }
+
+    /**
+     * * Return a list of data corresponding to the given date and variable
+     *
+     * @param date date in format YYYY-MM-DD
+     * @param variableUri URI of the variable
+     * @param nbClusters nomber of clusters
+     * @param method method used to create clusters
+     * @param uris list of OS URIs
+     * @return Corresponding list of DataGetDTOCluster
+     * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
+     */
+    @POST
+    @Path("data_grouped_by_variable")
+    @ApiOperation("Get datas with clusters from variable and date")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variables", response = VariableDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Variable not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getVariablesByDate(
+            @ApiParam(value = "Date", example = "2020-08-21", required = true) @QueryParam("date") @Date({DateFormat.YMD, DateFormat.YMDTHMS, DateFormat.YMDTHMSMSX}) String date,
+            @ApiParam(value = "Variable URI", example = "http://www.phenome-fppn.fr/set/variables#variable.air_humidity_measurement_pourcentage", required = true) @QueryParam("variable") @NotNull URI variableUri, // http://opensilex.dev/set/variables/Plant_Height
+            @ApiParam(value = "Number of clusters", example = "4", required = true) @QueryParam("nb_clusters") @NotNull int nbClusters,
+            @ApiParam(value = "List of OS URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris,
+            @ApiParam(value = "Method", required = false) @QueryParam("method") String method
+   ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        
+        List<URI> listVariables = new ArrayList<>();
+        listVariables.add(variableUri);
+
+        Instant dateInstant = null;
+        DataClusterReturn res = new DataClusterReturn(method, nbClusters);
+        
+        if (date != null) {
+            try  {
+                dateInstant = DataValidateUtils.getDateInstant(date, null, Boolean.FALSE);
+            } catch (DateValidationException e) {
+                return new DateMappingExceptionResponse().toResponse(e);
+            }
+        }
+        List<DataModel> resultList = dao.searchByDate(
+            currentUser,
+            null,
+            null,
+            listVariables,
+            null,
+            null,
+            dateInstant,
+            null,
+            null,
+            null,
+            null
+        );
+        List<DataGetDTOCluster> resultDTOClusterList = new ArrayList<>();
+        List<ClusterDataSet> clusterDataList = new ArrayList<>();
+        resultList.forEach(dataModel -> {
+            resultDTOClusterList.add(DataGetDTOCluster.getDtoClusterFromModel(dataModel));
+            ClusterDataSet clusterData = new ClusterDataSet(dataModel.getUri(), dataModel.getValue());
+            clusterDataList.add(clusterData);
+        });
+        if (clusterDataList.isEmpty()) {
+            return new SingleObjectResponse<>(res).getResponse();
+        }
+        if (clusterDataList.size() < nbClusters) {
+            nbClusters = clusterDataList.size();
+            res.setNbClusters(nbClusters);
+        }
+        DataSet data = new DataSet(clusterDataList);
+        
+        Kmeans kmeans = new Kmeans();
+        kmeans.kmeans(data, nbClusters);
+        
+        // data.showResults(); // Display results in console
+        List<DataGetDTOCluster> resClusterList = data.getResults(resultDTOClusterList);
+        
+        res.setData(resClusterList);
+        return new SingleObjectResponse<>(res).getResponse();
     }
 }
 

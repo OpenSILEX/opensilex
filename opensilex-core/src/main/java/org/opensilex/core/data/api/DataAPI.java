@@ -413,6 +413,32 @@ public class DataAPI {
         return new SingleObjectResponse<>(count).getResponse();
     }
     
+    @GET
+    @Path("/data_info_by_variable")
+    @ApiOperation("Data informations on varailbes (dates range, start and end date)")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return variable data informations", response = DataInfoByVariable.class)
+    })
+    public Response dataInfoByVariable(
+    @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI ,required=true) @QueryParam("variable") URI variable,
+            @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
+           ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);     
+        
+        DataInfoByVariable dataInfoByVariable = new DataInfoByVariable();
+        List<Instant> datesRangesByVariable = dao.getDatesRangeByVariable(user, variable, objects); 
+        dataInfoByVariable.setDates(datesRangesByVariable);
+        if(!datesRangesByVariable.isEmpty()){
+            dataInfoByVariable.setEndDate(datesRangesByVariable.get(datesRangesByVariable.size() - 1));
+            dataInfoByVariable.setStartDate(datesRangesByVariable.get(0));
+        }
+        
+        return new SingleObjectResponse<>(datesRangesByVariable).getResponse();
+    }
+    
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete data")

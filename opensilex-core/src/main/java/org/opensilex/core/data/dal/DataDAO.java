@@ -1152,4 +1152,10 @@ public class DataDAO {
         return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, variables, devices);
     }
 
+    
+    public List<Instant> getDatesRangeByVariable(UserModel user,URI variable, List<URI> objects) throws Exception {        
+        Document filter = searchFilter(user, null, objects, Arrays.asList(variable), null, null, null, null, null, null, null);
+        Set<Instant> dates = nosql.distinct("date", Instant.class, DATA_COLLECTION_NAME, filter);
+        return new ArrayList<>(dates);
+    }
 }

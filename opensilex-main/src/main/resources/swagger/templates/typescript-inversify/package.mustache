@@ -14,7 +14,7 @@
     "postinstall": "echo export interface ModelObject {}; > ./model/modelObject.ts && yarn run build",
     "check:outdated": "yarn outdated || cd .",
     "check:security": "yarn audit || cd .",
-    "build:types": "dts-generator --project ./ --out ../../types/{{{npmName}}}.d.ts --prefix {{{npmName}}}"
+    "build:types": "dts-generator --project $(pwd) --out ../../types/{{{npmName}}}.d.ts --prefix {{{npmName}}}"
   },
   "dependencies": {
     "inversify": "^4.3.0",

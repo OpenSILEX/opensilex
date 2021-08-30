@@ -436,7 +436,7 @@ public class DataAPI {
             dataInfoByVariable.setStartDate(datesRangesByVariable.get(0));
         }
         
-        return new SingleObjectResponse<>(datesRangesByVariable).getResponse();
+        return new SingleObjectResponse<>(dataInfoByVariable).getResponse();
     }
     
     @DELETE

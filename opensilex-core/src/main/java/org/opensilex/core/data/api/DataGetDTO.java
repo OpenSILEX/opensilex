@@ -50,7 +50,7 @@ public class DataGetDTO extends DataCreationDTO {
             LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();            
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
             this.setDate(dtf.format(date));
-        }        
+        }
     }
     
     public void fromModel(DataModel model) {

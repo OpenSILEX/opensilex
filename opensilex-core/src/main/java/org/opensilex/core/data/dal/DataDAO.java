@@ -166,6 +166,28 @@ public class DataDAO {
 
     }
     
+    public List<DataModel> searchByDate(
+            UserModel user,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> provenances,
+            List<URI> devices,
+            Instant date,
+            Float confidenceMin,
+            Float confidenceMax,
+            Document metadata,
+            List<OrderBy> orderByList) throws Exception {
+
+        Document filter = searchFilter(user, experiments, objects, variables, provenances, devices, null, null, confidenceMin, confidenceMax, metadata);
+        if (date != null) {
+            filter.put("date", date);
+        }
+        List<DataModel> datas = nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
+
+        return datas;
+    }
+    
      public int count(
             UserModel user,
             List<URI> experiments,

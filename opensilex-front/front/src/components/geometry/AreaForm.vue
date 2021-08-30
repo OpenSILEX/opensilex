@@ -277,7 +277,7 @@ export default class AreaForm extends Vue {
       return false;
     }
     return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
-      || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
+    || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
   }
 
   private getEventFromUri(uri) {

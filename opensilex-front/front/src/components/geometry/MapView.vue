@@ -1086,8 +1086,12 @@ export default class MapView extends Vue {
 
   handleDateRangeStatus() {
     this.displayDateRange = !this.displayDateRange;
-    if (this.displayDateRange == false) {
+    if (this.displayDateRange == false &&
+    (this.range.from != this.minDate || this.range.to != this.maxDate)) { // If all SO are already charged
       this.recoveryScientificObjects();
+      this.minDate = this.range.from;
+      this.maxDate = this.range.to;
+      this.rangeSelector.refresh();
     }
   }
 

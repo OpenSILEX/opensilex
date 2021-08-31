@@ -396,7 +396,7 @@
     <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
     &nbsp;-&nbsp;
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
-    <div class="timeline-slider" v-if="min != null && max != null">
+    <div class="timeline-slider" v-if="minDate != null && maxDate != null">
       <JqxRangeSelector
         v-show="displayDateRange"
         ref="JqxRangeSelector"
@@ -404,8 +404,8 @@
         width="75%"
         padding="35px"
         height="15"
-        :min="min"
-        :max="max"
+        :min="minDate"
+        :max="maxDate"
         :range="range"
         :labelsOnTicks="false"
         majorTicksInterval="day"
@@ -565,8 +565,8 @@ export default class MapView extends Vue {
   ];
   selectedFeatures: any[] = [];
   timelineSidebarVisibility: boolean = false;
-  min: Date = null;
-  max: Date = null;
+  minDate: Date = null;
+  maxDate: Date = null;
   range: { from: Date, to: Date } = { from: null, to: null };
 
   private editingMode: boolean = false;
@@ -1052,8 +1052,8 @@ export default class MapView extends Vue {
   }
 
   majorTicksIntervalFct() {
-    const from = this.min;
-    const to = this.max;
+    const from = this.minDate;
+    const to = this.maxDate;
 
     if (this.calcDifferenceDateInDays(from, to) > 40) {
       return 'month';
@@ -1063,8 +1063,8 @@ export default class MapView extends Vue {
   }
 
   minorTicksIntervalFct() {
-    const from = this.min;
-    const to = this.max;
+    const from = this.minDate;
+    const to = this.maxDate;
 
     if (this.calcDifferenceDateInDays(from, to) > 40) {
       return 'day';
@@ -1074,8 +1074,8 @@ export default class MapView extends Vue {
   }
 
   labelsFormatFct() {
-    const from = this.min;
-    const to = this.max;
+    const from = this.minDate;
+    const to = this.maxDate;
 
     if (this.calcDifferenceDateInDays(from, to) > 40) {
       return 'MMM';
@@ -1212,15 +1212,15 @@ export default class MapView extends Vue {
       .getExperiment(this.experiment)
       .then(http => {
         let res = http.response.result;
-        this.min = new Date(res.start_date);
-        this.min.setHours(0,0,0,0);
+        this.minDate = new Date(res.start_date);
+        this.minDate.setHours(0,0,0,0);
         if (res.end_date) {
-          this.max = new Date(res.end_date);
+          this.maxDate = new Date(res.end_date);
         } else {
-          this.max = new Date();
+          this.maxDate = new Date();
         }
-        this.max.setHours(0,0,0,0);
-        this.range = { from: this.min, to: this.max };
+        this.maxDate.setHours(0,0,0,0);
+        this.range = { from: this.minDate, to: this.maxDate };
         resolve("");
       })
       .catch(this.$opensilex.errorHandler);
@@ -1228,8 +1228,8 @@ export default class MapView extends Vue {
   }
 
   configDateRange() {
-    this.rangeSelector.min = this.min;
-    this.rangeSelector.max = this.max;
+    this.rangeSelector.min = this.minDate;
+    this.rangeSelector.max = this.maxDate;
     this.rangeSelector.range = this.range;
     this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
     this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
@@ -1240,7 +1240,7 @@ export default class MapView extends Vue {
 
   initDateRange() {
     // Recover start and end of the experiment
-    if (!this.min || !this.max || !this.range.from || !this.range.to) {
+    if (!this.minDate || !this.maxDate || !this.range.from || !this.range.to) {
       this.getRangeDatesOfExperiment()
       .then(() => {
         this.configDateRange();

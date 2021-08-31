@@ -1309,7 +1309,9 @@ export default class MapView extends Vue {
     return new Promise((resolve, reject) => {
       if (this.featuresOS.length > 0) {
         try {
-          this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource[0].$source) // Wait all vectors charged
+          const isVectorSourceMounted = (vector) => vector && vector.$source && vector.$source.getExtent()
+          && vector.$source.getExtent()[0] && vector.$source.getExtent()[0] != Infinity; // Condition to be sure sources has been mounted
+          this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource.every(isVectorSourceMounted)) // Wait all vectors charged
           .then(() => {
             let extent = olExtent.createEmpty();
             for (let vector of this.vectorSource) {

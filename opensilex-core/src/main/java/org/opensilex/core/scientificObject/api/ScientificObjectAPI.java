@@ -297,7 +297,7 @@ public class ScientificObjectAPI {
         int lengthMapGeo = 0;
 
         for (GeospatialModel geospatialModel : mapGeo) {
-            if (filteredUris.size() > 0) {
+            if (startDate != null || endDate != null) {
                 String uri = geospatialModel.getUri().toString();
                 if (filteredUris.contains(uri) == true) {
                     ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);

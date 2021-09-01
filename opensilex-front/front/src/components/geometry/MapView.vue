@@ -1308,15 +1308,17 @@ export default class MapView extends Vue {
   private waitFor(conditionFunction) {
 
     const poll = resolve => {
-      if(conditionFunction()) resolve();
-      else setTimeout(_ => poll(resolve), 400);
+      if (conditionFunction()) resolve();
+      else setTimeout(_ => {
+        this.$opensilex.showLoader();
+        poll(resolve);
+      },200);
     }
 
     return new Promise(poll);
   }
 
   defineCenter(): Promise<boolean> {
-    this.$opensilex.showLoader();
     return new Promise((resolve, reject) => {
       if (this.featuresOS.length > 0) {
         try {
@@ -1340,7 +1342,6 @@ export default class MapView extends Vue {
           reject(false);
         }
       } else {
-        this.$opensilex.hideLoader();
         resolve(false);
       }
     })

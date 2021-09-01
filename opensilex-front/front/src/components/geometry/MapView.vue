@@ -390,6 +390,16 @@
         </b-tabs>
       </template>
     </b-sidebar>
+    <opensilex-ModalForm
+      v-if="!errorGeometry"
+        ref="filterForm"
+        component="opensilex-FilterMap"
+        createTitle="Filter.add"
+        editTitle="Filter.update"
+        icon="fa#sun"
+        modalSize="m"
+        @onCreate="showFiltersDetails"
+    ></opensilex-ModalForm>
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;

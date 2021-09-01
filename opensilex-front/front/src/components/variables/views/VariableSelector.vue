@@ -52,7 +52,7 @@ export default class VariableSelector extends Vue {
   get placeholder() {
     return this.multiple
       ? "VariableSelector.placeholder-multiple"
-      : "VariableSelector.variables.placeholder";
+      : "VariableSelector.placeholder";
   }
 
   searchVariables(query, page, pageSize) {
@@ -107,7 +107,7 @@ export default class VariableSelector extends Vue {
 en:
   VariableSelector:    
     placeholder : Select one variable
-    placeholder-multiple : Select one ou several variables
+    placeholder-multiple : Select one or several variables
     filter-search-no-result : No variable found    
             
 fr:

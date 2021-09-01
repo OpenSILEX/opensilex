@@ -98,7 +98,7 @@ en:
           selector:
             variables:
               placeholder : Select one variable
-              placeholder-multiple : Select one ou several variables
+              placeholder-multiple : Select one or several variables
               filter-search-no-result : No variable found
     
             

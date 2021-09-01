@@ -1316,6 +1316,7 @@ export default class MapView extends Vue {
   }
 
   defineCenter(): Promise<boolean> {
+    this.$opensilex.showLoader();
     return new Promise((resolve, reject) => {
       if (this.featuresOS.length > 0) {
         try {
@@ -1331,12 +1332,15 @@ export default class MapView extends Vue {
               }
             }
             this.mapView.$view.fit(extent);
+            this.$opensilex.hideLoader();
             resolve(true);
           });
         } catch (e) {
+          this.$opensilex.hideLoader();
           reject(false);
         }
       } else {
+        this.$opensilex.hideLoader();
         resolve(false);
       }
     })

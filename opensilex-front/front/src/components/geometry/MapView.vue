@@ -1932,7 +1932,24 @@ p {
 }
 
 ::v-deep .jqx-rangeselector-slider {
-  background-color: #3e3e42a8 !important;
+  background-color: #00a38d7e !important;
+}
+
+::v-deep .jqx-fill-state-normal-dark {
+    background: #00a38d;
+    border-color: #00a38d;
+}
+
+::v-deep .jqx-scrollbar-thumb-state-normal-dark, .jqx-scrollbar-thumb-state-normal-horizontal-dark {
+    background: transparent;
+    border-color: transparent;
+}
+
+::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark,
+.jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark{
+    background-color: #3e3e42a8 !important;
+    border: 1px solid #3e3e42a8;
+    border-left-color: #3e3e42a8;
 }
 
 ::v-deep .jqx-rangeselector-inner-slider {

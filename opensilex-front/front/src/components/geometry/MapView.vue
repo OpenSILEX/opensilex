@@ -388,8 +388,22 @@
             @click="filterForm.showCreateForm();"
         ></opensilex-CreateButton>
         </b-tabs>
+        <opensilex-CreateButton
+            class="mx-auto mt-20"
+            label="MapView.select-data-cluster"
+            @click="!allDatesClustering ? clusterDataForm.showCreateForm() : allDatesClustering = null"
+        ></opensilex-CreateButton>
       </template>
     </b-sidebar>
+    <opensilex-ModalForm
+        ref="clusterDataForm"
+        component="opensilex-ClusterForm"
+        createTitle="Cluster.add"
+        icon="fa#sun"
+        modalSize="m"
+        @onCreate="initClusterData"
+        :successMessage="successMessageClusterForm"
+    ></opensilex-ModalForm>
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
@@ -532,6 +546,7 @@ export default class MapView extends Vue {
   @Ref("vectorSource") readonly vectorSource!: any;
   @Ref("areaForm") readonly areaForm!: any;
   @Ref("filterForm") readonly filterForm!: any;
+  @Ref("clusterDataForm") readonly clusterDataForm!: any;
   @Ref("soForm") readonly soForm!: any;
 
   $opensilex: any;
@@ -1291,6 +1306,10 @@ export default class MapView extends Vue {
     return this.$i18n.t("MapView.label");
   }
 
+  successMessageClusterForm() {
+    return this.$t("MapView.Cluster.success-message");
+  }
+
   private waitFor(conditionFunction) {
 
     const poll = resolve => {
@@ -2031,6 +2050,7 @@ en:
     mapPanelAreasTemporalZone: Temporal zone
     mapPanelFilters: Filters
     create-filter: Create filter
+    select-data-cluster: Select data clusters
     center: Refocus the map
     save: Save the map
     time: See temporal(s) zone(s)
@@ -2048,6 +2068,9 @@ en:
   Filter:
     add: Creation of the filter
     update: Update Filter
+  Cluster:
+    add: Creation of clusters
+    success-message: Success to the selection of clusters
   ScientificObjects:
     title: Scientific object
     update: Scientific object has been updated
@@ -2085,6 +2108,7 @@ fr:
     mapPanelAreasTemporalZone: Zone temporelle
     mapPanelFilters: Filtres
     create-filter: Créer un filtre
+    select-data-cluster: Choisir des clusters de données
     center: Recentrer la carte
     save: Enregistrer la carte
     time: Visualiser les zones temporelles
@@ -2102,6 +2126,9 @@ fr:
   Filter:
     add: Création d'un filtre
     update: Mise à jour du filtre
+  Cluster:
+    add: Sélection de clusters
+    success-message: Succès de la sélection de clusters
   ScientificObjects:
     title: Objet scientifique
     update: L'objet scientifique a été mis à jour

@@ -1175,8 +1175,8 @@ public class DataDAO {
     }
 
     
-    public List<Instant> getDatesRangeByVariable(UserModel user,URI variable, List<URI> objects) throws Exception {        
-        Document filter = searchFilter(user, null, objects, Arrays.asList(variable), null, null, null, null, null, null, null);
+    public List<Instant> getDatesRangeByVariable(UserModel user,URI variable, List<URI> objects, Instant startDate, Instant endDate) throws Exception {        
+        Document filter = searchFilter(user, null, objects, Arrays.asList(variable), null, null, startDate, endDate, null, null, null);
         Set<Instant> dates = nosql.distinct("date", Instant.class, DATA_COLLECTION_NAME, filter);
         return new ArrayList<>(dates);
     }

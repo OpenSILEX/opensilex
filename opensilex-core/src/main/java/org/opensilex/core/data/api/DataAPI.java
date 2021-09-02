@@ -424,12 +424,34 @@ public class DataAPI {
     })
     public Response dataInfoByVariable(
     @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI ,required=true) @QueryParam("variable") URI variable,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
            ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);     
         
+         //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+        
+        if (startDate != null) {
+            try  {
+                startInstant = DataValidateUtils.getDateInstant(startDate, null, Boolean.FALSE);
+            } catch (DateValidationException e) {
+                return new DateMappingExceptionResponse().toResponse(e);
+            }          
+        }
+        
+        if (endDate != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(endDate, null, Boolean.TRUE);
+            } catch (DateValidationException e) {
+                return new DateMappingExceptionResponse().toResponse(e);
+            }
+        }
+        
         DataInfoByVariable dataInfoByVariable = new DataInfoByVariable();
-        List<Instant> datesRangesByVariable = dao.getDatesRangeByVariable(user, variable, objects); 
+        List<Instant> datesRangesByVariable = dao.getDatesRangeByVariable(user, variable, objects,startInstant,endInstant); 
         dataInfoByVariable.setDates(datesRangesByVariable);
         if(!datesRangesByVariable.isEmpty()){
             dataInfoByVariable.setEndDate(datesRangesByVariable.get(datesRangesByVariable.size() - 1));

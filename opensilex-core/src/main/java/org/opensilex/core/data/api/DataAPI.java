@@ -415,7 +415,7 @@ public class DataAPI {
     
     @GET
     @Path("/data_info_by_variable")
-    @ApiOperation("Data informations on varailbes (dates range, start and end date)")
+    @ApiOperation("Data informations on variables (dates range, start and end date)")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

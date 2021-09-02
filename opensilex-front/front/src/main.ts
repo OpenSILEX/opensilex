@@ -185,6 +185,11 @@ Vue.use(VueLayers, {
 import ToggleButton from 'vue-js-toggle-button'
 Vue.use(ToggleButton);
 
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/default.css";
+
+Vue.component("VueSlider", VueSlider);
+
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';

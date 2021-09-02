@@ -186,6 +186,27 @@
               </vl-style-circle>
             </vl-style-box>
           </vl-layer-vector>
+          <vl-layer-vector
+              v-for="layer in clusterLayers"
+              :key="layer.id"
+              :visible="clusterLayers.length > 0"
+          >
+            <vl-source-vector :ref="layer.id" :features.sync="layer.tabFeatures"></vl-source-vector>
+            <vl-style-box>
+              <!-- outline color -->
+              <vl-style-fill
+                  v-if="layer.vlStyleFillColor"
+                  :color="colorFeature(layer.vlStyleFillColor)"
+              ></vl-style-fill>
+              <vl-style-circle :radius="5">
+                <!-- outline color -->
+                <vl-style-fill
+                    v-if="layer.vlStyleFillColor"
+                    :color="colorFeature(layer.vlStyleFillColor)"
+                ></vl-style-fill>
+              </vl-style-circle>
+            </vl-style-box>
+          </vl-layer-vector>
         </template>
 
         <template v-on="editingMode">
@@ -396,6 +417,16 @@
       </template>
     </b-sidebar>
     <opensilex-ModalForm
+      v-if="!errorGeometry"
+        ref="filterForm"
+        component="opensilex-FilterMap"
+        createTitle="Filter.add"
+        editTitle="Filter.update"
+        icon="fa#sun"
+        modalSize="m"
+        @onCreate="showFiltersDetails"
+    ></opensilex-ModalForm>
+    <opensilex-ModalForm
         ref="clusterDataForm"
         component="opensilex-ClusterForm"
         createTitle="Cluster.add"
@@ -410,7 +441,10 @@
     <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
     &nbsp;-&nbsp;
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
-    <div class="timeline-slider" v-if="min != null && max != null">
+    <div class="mx-auto pt-35 w-80" v-if="allDatesClustering">
+      <vue-slider v-model="selectedStringDateClustering" :data="datesClusteringSlider" :marks="true" @change="saveDateClustering(value)"></vue-slider>
+    </div>
+    <div class="mx-auto pt-35" v-if="min != null && max != null">
       <JqxRangeSelector
         v-show="displayDateRange"
         ref="JqxRangeSelector"
@@ -521,6 +555,10 @@ let shpwrite = require('shp-write');
 import {ScientificObjectNodeDTO} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+// @ts-ignore
+import { VariableDetailsDTO } from 'opensilex-core/front/src/lib/model/variableDetailsDTO';
+// @ts-ignore
+import { DataInfoByVariable } from 'opensilex-core/front/src/lib/model/dataInfoByVariable';
 import {transformExtent} from "vuelayers/src/ol-ext/proj";
 // @ts-ignore
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
@@ -562,6 +600,7 @@ export default class MapView extends Vue {
   overlayCoordinate: any[] = [];
   centerMap: any[] = [];
   tabLayer: any[] = [];
+  clusterLayers: any[] = [];
   selectInteraction: any = null;
   collection: any = null;
   fieldsSelected = [
@@ -583,6 +622,9 @@ export default class MapView extends Vue {
   min: Date = null;
   max: Date = null;
   range: { from: Date, to: Date } = { from: null, to: null };
+  selectedDateClustering: Date = null;
+  selectedStringDateClustering: string = "";
+  allDatesClustering: Date[] = null;
 
   private editingMode: boolean = false;
   private displayDateRange: boolean = false;
@@ -691,6 +733,17 @@ export default class MapView extends Vue {
     }
     result.push(filt);
     return result;
+  }
+
+  get datesClusteringSlider(): Array<string> {
+    const tmp: string[] = ["2019-09-12T02:00:00+0200",
+    "2020-09-12T02:00:00+0200",
+    "2021-09-12T02:00:00+0200",
+    "2022-09-12T02:00:00+0200",
+    "2023-09-12T02:00:00+0200"];
+
+    // Return allDatesClustering stringified + in array
+    return tmp;
   }
 
   set filters(value) { }
@@ -994,6 +1047,92 @@ export default class MapView extends Vue {
         }
       })
       this.tabLayer.push(filterResult);
+    }
+  }
+
+  getRandomColor() {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  initClusterData(clusterFormResult: any) {
+    console.log(clusterFormResult);
+    if (clusterFormResult) {
+      // Show dateRange & cluster slider (Front)
+      this.displayDateRange = true;
+
+      let variable = clusterFormResult.variable;
+      let uris: string[] = []; // All featuresOS Uris
+      for (let os of this.featuresOS) {
+        uris.push(os.properties.uri);
+      }
+
+      // Get Dates (Arnaud API) in allDatesClustering
+      this.$opensilex
+      .getService("opensilex.DataService")
+      .dataInfoByVariable(variable, this.range.from, this.range.to, uris)
+      .then((http: HttpResponse<OpenSilexResponse<DataInfoByVariable>>) => {
+        const result = http.response.result as any;
+
+        // result.startDate
+        // result.endDate
+
+        this.allDatesClustering = [];
+        for (let date of result.dates) {
+          this.allDatesClustering.push(new Date(date));
+        }
+        // TODO add all the next part of the code here -> no asynchronous conflict
+      });
+
+      let date = this.allDatesClustering[0]; // first date of the all dates
+      let nbClusters = clusterFormResult.nbClusters;
+      let method = clusterFormResult.method;
+
+      // Get Data & ClusterInfo (Alexandre API)
+      this.$opensilex
+      .getService("opensilex.VariablesService")
+      .getVariablesByDate(date, variable, nbClusters, uris, method)
+      .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
+        const result = http.response.result as any;
+        console.log(result);
+        let clusterInfo = result.clusterInfo // Array of { id: int, min_value: int, max_value: int }
+        nbClusters = result.nbClusters // -> The number of clusters can be modified in back if there is not enough data 
+
+        
+        // filter to featuresOS to show only them
+        let datas = result.data;
+        this.featuresOS.filter((el) => {
+          for (let data of datas) {
+            if (el.properties.uri == data.uri) {
+              return true;
+            }
+          }
+          return false;
+        });
+
+        for (let cluster of clusterInfo) { // Fill clusterLayers with all clusters layers
+          let layerCluster: any = {};      // with each color property & featuresOS associated
+          for (let data of datas) {
+            if (cluster.id == data.clusterId) {
+              let featureOS = this.featuresOS.find(el => el.properties.uri == data.uri);
+              layerCluster.tabFeatures.push(featureOS);
+            }
+          }
+          layerCluster.vlStyleFillColor = this.getRandomColor();
+          layerCluster.id = Math.random() * 16;
+          this.clusterLayers.push(layerCluster);
+        }
+      });
+
+      // TODO show cluster infos & colors in the map Panel (Front + Aurélien internship work)
+
+      // TODO recall this function when slider changes with date selected
+
+      // TODO add 'remove cluster selection' button
     }
   }
 
@@ -1372,6 +1511,18 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
 
     this.typeLabel = typeLabel;
+  }
+
+  saveDateClustering(value: string) {
+    // Convert a string date into Data type to change the current date
+    const day = value.split("/")[0];
+    const month = value.split("/")[1];
+    const year = value.split("/")[2];
+    const newCurrentDate = new Date();
+    newCurrentDate.setUTCDate(parseInt(day));
+    newCurrentDate.setUTCMonth(parseInt(month) - 1); // Month start at index 0 in JS
+    newCurrentDate.setFullYear(parseInt(year));
+    this.selectedDateClustering = newCurrentDate;
   }
 
   nameType(uriType): string {

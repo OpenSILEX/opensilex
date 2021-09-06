@@ -54,11 +54,11 @@ public class DeviceCreationDTO extends DeviceDTO {
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
-    @Date({DateFormat.YMD, DateFormat.DMY})
+    @Date(DateFormat.YMD)
     @JsonProperty("start_up")
     protected String startUp;
     
-    @Date({DateFormat.YMD, DateFormat.DMY})
+    @Date(DateFormat.YMD)
     protected String removal;
     
     protected String description;

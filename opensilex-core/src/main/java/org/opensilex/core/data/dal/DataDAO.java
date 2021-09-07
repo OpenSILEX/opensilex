@@ -43,8 +43,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -58,7 +56,6 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +74,8 @@ public class DataDAO {
 
     protected final MongoDBService nosql;
     protected final SPARQLService sparql;
-    protected final FileStorageService fs; 
-    
+    protected final FileStorageService fs;
+
     private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
         
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
@@ -179,7 +176,7 @@ public class DataDAO {
             Float confidenceMax,
             Document metadata) throws Exception {
 
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata);
+        Document filter = searchFilter(user, experiments, objects, variables, provenances,devices, startDate, endDate, confidenceMin, confidenceMax, metadata);
         int count = nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
 
         return count;
@@ -339,9 +336,13 @@ public class DataDAO {
     public Document searchFilter(UserModel user, List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata) throws Exception {   
                 
         Document filter = new Document();
-        
-        filter = appendExperimentUserAccessFilter(filter, user, experiments);                
-        
+
+        // handle case some case in which some service/dao must have access to data collection, even if the user don't have direct access to xp
+        if(user != null){
+            filter = appendExperimentUserAccessFilter(filter, user, experiments);
+
+        }
+
         if (objects != null && !objects.isEmpty()) {
             Document inFilter = new Document(); 
             inFilter.put("$in", objects);
@@ -646,9 +647,8 @@ public class DataDAO {
 
     public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances) throws Exception {             
         Document filter = searchFilter(user, experiments, objects, provenances, null, null, null, null, null, null, null);
-        VariableDAO dao = new VariableDAO(sparql);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        return dao.getList(new ArrayList(variableURIs));
+        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs));
     }
     
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
@@ -727,8 +727,7 @@ public class DataDAO {
         }
         variablesList.add("Variable");
 
-        VariableDAO variableDao = new VariableDAO(sparql);
-        List<VariableModel> variablesModelList = variableDao.getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -982,8 +981,7 @@ public class DataDAO {
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        VariableDAO variableDao = new VariableDAO(sparql);
-        List<VariableModel> variablesModelList = variableDao.getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(variableModel.getUri(), variableModel);
         }

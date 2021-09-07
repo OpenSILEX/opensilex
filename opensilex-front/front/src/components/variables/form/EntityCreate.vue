@@ -93,10 +93,7 @@
                 })
                 .catch(error => {
                     if (error.status == 409) {
-                        this.$opensilex.errorHandler(
-                            error,
-                            this.$i18n.t("component.project.errors.project-already-exists")
-                        );
+                        this.$opensilex.errorHandler(error, this.$i18n.t("component.common.errors.uri-already-exists"));
                     } else {
                         this.$opensilex.errorHandler(error);
                     }

@@ -72,7 +72,8 @@
                 "server-error": "Une erreur s'est produite au niveau du serveur, merci de contacter votre administrateur local.",
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
                 "unauthorized-error": "Votre session a expiré, merci de vous connecter à nouveau.",
-                "form-step-errors": "Certains champs sont requis avant de passer à l'étape suivante"
+                "form-step-errors": "Certains champs sont requis avant de passer à l'étape suivante",
+                "uri-already-exists": "Cet URI existe déjà."
             },
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",

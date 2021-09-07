@@ -3,6 +3,7 @@ package org.opensilex.core.variable.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
@@ -27,7 +28,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 /**
  * @author Renaud COLIN
  */
-public class VariableApiTest extends AbstractSecurityIntegrationTest {
+public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     public String path = VariableAPI.PATH;
 
@@ -107,6 +108,36 @@ public class VariableApiTest extends AbstractSecurityIntegrationTest {
 
         postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+    }
+
+
+    @Test
+    public void testCreateFailWithInvalidObjects() throws Exception {
+
+        VariableCreationDTO dto = getCreationDto();
+        VariableCreationDTO badDto = getCreationDto();
+        badDto.setEntity(new URI("test:no-entity"));
+
+        Response postResult = getJsonPostResponse(target(createPath), badDto);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
+
+        // reset with good entity and bad characteristic
+        badDto.setEntity(dto.getEntity());
+        badDto.setCharacteristic(new URI("test:no-characteristic"));
+        postResult = getJsonPostResponse(target(createPath), badDto);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
+
+        // reset with good characteristic and bad method
+        badDto.setCharacteristic(dto.getCharacteristic());
+        badDto.setMethod(new URI("test:no-method"));
+        postResult = getJsonPostResponse(target(createPath), badDto);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
+
+        // reset with good method and bad unit
+        badDto.setMethod(dto.getMethod());
+        badDto.setUnit(new URI("test:no-unit"));
+        postResult = getJsonPostResponse(target(createPath), badDto);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
     }
 
     @Test

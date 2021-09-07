@@ -738,7 +738,8 @@ public class ExperimentAPI {
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
 
         // test exp
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
@@ -768,8 +769,8 @@ public class ExperimentAPI {
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
-            try {                
-                dao.createAll(data);
+            try {
+                dataDAO.createAll(data);
                 validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
@@ -822,6 +823,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         // test exp
+        DataDAO dataDAO = new DataDAO(nosql,sparql,fs);
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
 
@@ -876,8 +878,7 @@ public class ExperimentAPI {
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
 
-            Map<URI, Integer> variableUriIndex = new HashMap<>();
-            VariableDAO dao = new VariableDAO(sparql);
+            VariableDAO dao = new VariableDAO(sparql,nosql,fs);
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {

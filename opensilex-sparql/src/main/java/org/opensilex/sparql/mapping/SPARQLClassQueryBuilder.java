@@ -341,14 +341,11 @@ class SPARQLClassQueryBuilder {
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        Node uriNode = addCreateBuilder(graph, instance, create, blankNode);
-        if (createExtension != null) {
-            createExtension.accept(create, uriNode);
-        }
+        Node uriNode = addCreateBuilder(graph, instance, create, blankNode,createExtension);
         return create;
     }
 
-    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode) throws Exception {
+    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
                 create.addInsert(quad.asTriple());
@@ -360,6 +357,9 @@ class SPARQLClassQueryBuilder {
         // append INSERT clause from instance relations
         addRelationsQuads(graph,uriNode,instance,create);
 
+        if (createExtension != null) {
+            createExtension.accept(create, uriNode);
+        }
         return uriNode;
     }
 

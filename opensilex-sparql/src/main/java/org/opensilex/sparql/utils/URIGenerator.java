@@ -26,7 +26,7 @@ public interface URIGenerator<T> {
             return new URI(prefix + "#" + getInstanceURI(instance));
         }
     }
-
+    
     public default String getInstanceURI(T instance) throws UnsupportedEncodingException {
         return instance.toString();
     }

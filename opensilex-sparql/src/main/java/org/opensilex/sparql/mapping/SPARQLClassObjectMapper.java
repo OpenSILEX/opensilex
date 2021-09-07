@@ -350,11 +350,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public void addCreateBuilder(T instance, UpdateBuilder create) throws Exception {
-        addCreateBuilder(getDefaultGraph(), instance, create, false);
+        addCreateBuilder(getDefaultGraph(), instance, create, false,null);
     }
 
-    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode) throws Exception {
-        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode);
+    public void addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode,BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+        classQueryBuilder.addCreateBuilder(graph, instance, create, blankNode,createExtension);
     }
 
     public UpdateBuilder getDeleteBuilder(T instance) throws Exception {

@@ -18,24 +18,18 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.zone.ZoneRulesException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -54,6 +48,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -73,7 +68,17 @@ import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
+import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
@@ -84,17 +89,8 @@ import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.provenance.api.ProvenanceGetDTO;
-import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.cache.OntologyCache;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.provenance.api.ProvenanceAPI;
-import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -113,11 +109,12 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -128,7 +125,6 @@ import org.slf4j.LoggerFactory;
 import org.opensilex.utils.OrderBy;
 
 /**
- *
  * @author sammy
  */
 @Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
@@ -150,27 +146,26 @@ public class DataAPI {
     public static final String DATA_EXAMPLE_CONFIDENCE_MAX = "1";
     public static final String DATA_EXAMPLE_PROVENANCEURI = "http://opensilex.dev/provenance/1598001689415";
     public static final String DATA_EXAMPLE_VALUE = "8.6";
-    public static final String DATA_EXAMPLE_MINIMAL_DATE  = "2020-08-21T00:00:00+01:00";
+    public static final String DATA_EXAMPLE_MINIMAL_DATE = "2020-08-21T00:00:00+01:00";
     public static final String DATA_EXAMPLE_MAXIMAL_DATE = "2020-09-21T00:00:00+01:00";
     public static final String DATA_EXAMPLE_TIMEZONE = "Europe/Paris";
     public static final String DATA_EXAMPLE_METADATA = "{ \"LabelView\" : \"side90\",\n" +
-                                                        "\"paramA\" : \"90\"}";;
-    
+            "\"paramA\" : \"90\"}";
+
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.data.modification";
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
     public static final int SIZE_MAX = 50000;
-    
 
 
     @Inject
     private MongoDBService nosql;
-    
+
     @Inject
     private SPARQLService sparql;
-    
+
     @Inject
     private FileStorageService fs;
 
@@ -184,21 +179,21 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add data", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-   public Response addListData(
+            @ApiResponse(code = 201, message = "Add data", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response addListData(
             @ApiParam("Data description") @Valid List<DataCreationDTO> dtoList
-    ) throws Exception {            
-        DataDAO dao = new DataDAO(nosql, sparql, fs);        
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
 
-        List<DataModel> dataList = new ArrayList();
+        List<DataModel> dataList = new ArrayList<>();
         try {
-            if (dtoList.size()> SIZE_MAX) {
+            if (dtoList.size() > SIZE_MAX) {
                 throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
             }
-            
-            for(DataCreationDTO dto : dtoList ){            
+
+            for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
@@ -207,41 +202,42 @@ public class DataAPI {
 
             dataList = (List<DataModel>) dao.createAll(dataList);
             List<URI> createdResources = new ArrayList<>();
-            for (DataModel data : dataList){
+            for (DataModel data : dataList) {
                 createdResources.add(data.getUri());
             }
             return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
 
         } catch (NoSQLTooLargeSetException ex) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",
-                ex.getMessage()).getResponse();
+                    ex.getMessage()).getResponse();
 
         } catch (MongoBulkWriteException duplicateError) {
             List<DataCreationDTO> datas = new ArrayList();
             List<BulkWriteError> errors = duplicateError.getWriteErrors();
-            for (int i=0 ; i < errors.size() ; i++) {
+            for (int i = 0; i < errors.size(); i++) {
                 int index = errors.get(i).getIndex();
                 datas.add(dtoList.get(index));
-            }                    
+            }
             ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
             String json = mapper.writeValueAsString(datas);
 
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", json)
-            .getResponse();
+                    .getResponse();
 
         } catch (MongoCommandException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
-            .getResponse();
+                    .getResponse();
         } catch (DateValidationException e) {
             return new DateMappingExceptionResponse().toResponse(e);
         } catch (DataTypeException | NoVariableDataTypeException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_TYPE_ERROR", e.getMessage())
-            .getResponse();
+                    .getResponse();
         } catch (NoSQLInvalidUriListException e) {
             throw new NotFoundException(e.getMessage());
-        }        
+        }
     }
-    
+
+
     @GET
     @Path("{uri}")
     @ApiOperation("Get data")
@@ -249,29 +245,29 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDTO.class),
-        @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Data retrieved", response = DataGetDTO.class),
+            @ApiResponse(code = 404, message = "Data not found", response = ErrorResponse.class)})
     public Response getData(
             @ApiParam(value = "Data URI", /*example = "platform-data:irrigation",*/ required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
-        DataDAO dao = new DataDAO(nosql,sparql, fs);
-        
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+
         try {
             DataModel model = dao.get(uri);
             return new SingleObjectResponse<>(DataGetDTO.getDtoFromModel(model)).getResponse();
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
-        
+
     }
-    
+
     @GET
     @ApiOperation("Search data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
     })
     public Response searchDataList(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
@@ -290,19 +286,19 @@ public class DataAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        
+
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
-        
+
         if (startDate != null) {
-            try  {
+            try {
                 startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
             } catch (DateValidationException e) {
                 return new DateMappingExceptionResponse().toResponse(e);
-            }          
+            }
         }
-        
+
         if (endDate != null) {
             try {
                 endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
@@ -310,17 +306,17 @@ public class DataAPI {
                 return new DateMappingExceptionResponse().toResponse(e);
             }
         }
-                    
+
         Document metadataFilter = null;
         if (metadata != null) {
             try {
                 metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-            .getResponse();
+                        .getResponse();
             }
-        }        
-        
+        }
+
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 experiments,
@@ -337,12 +333,13 @@ public class DataAPI {
                 page,
                 pageSize
         );
-               
+
         ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
+
     @GET
     @Path("/count")
     @ApiOperation("Count data")
@@ -350,7 +347,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the number of data ", response = Integer.class)
+            @ApiResponse(code = 200, message = "Return the number of data ", response = Integer.class)
     })
     public Response countData(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
@@ -366,19 +363,19 @@ public class DataAPI {
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        
+
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
-        
+
         if (startDate != null) {
-            try  {
+            try {
                 startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
             } catch (DateValidationException e) {
                 return new DateMappingExceptionResponse().toResponse(e);
-            }          
+            }
         }
-        
+
         if (endDate != null) {
             try {
                 endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
@@ -386,17 +383,17 @@ public class DataAPI {
                 return new DateMappingExceptionResponse().toResponse(e);
             }
         }
-                    
+
         Document metadataFilter = null;
         if (metadata != null) {
             try {
                 metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-            .getResponse();
+                        .getResponse();
             }
-        }        
-        
+        }
+
         int count = dao.count(
                 user,
                 experiments,
@@ -412,7 +409,7 @@ public class DataAPI {
         );
         return new SingleObjectResponse<>(count).getResponse();
     }
-    
+
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete data")
@@ -421,21 +418,21 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteData(
-            @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) 
+            @ApiParam(value = "Data URI", example = DATA_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            DataDAO dao = new DataDAO(nosql,sparql, fs);        
+            DataDAO dao = new DataDAO(nosql, sparql, fs);
             dao.delete(uri);
-            return new ObjectUriResponse(Response.Status.OK, uri).getResponse(); 
-        } catch (NoSQLInvalidURIException e){
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
     }
-    
+
     @PUT
     @Path("{uri}/confidence")
     @ApiProtected
@@ -444,26 +441,26 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
     public Response updateConfidence(
             @ApiParam("Data description") @Valid DataConfidenceDTO dto,
             @ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, fs);  
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
         try {
             DataModel data = dao.get(uri);
             data.setConfidence(dto.getConfidence());
             dao.update(data);
             return new ObjectUriResponse(Response.Status.OK, data.getUri()).getResponse();
-        } catch (NoSQLInvalidURIException e){
+        } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
-        
+
     }
-    
+
     @PUT
     @ApiProtected
     @ApiOperation("Update data")
@@ -471,35 +468,35 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
     public Response update(
             @ApiParam("Data description") @Valid DataUpdateDTO dto
             //@ApiParam(value = "Data URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        
-        DataDAO dao = new DataDAO(nosql, sparql, fs);            
+
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
 
         try {
             DataModel model = dto.newModel();
-            validData(Arrays.asList(model));
+            validData(Collections.singletonList(model));
             dao.update(model);
             return new SingleObjectResponse<>(DataGetDTO.getDtoFromModel(model)).getResponse();
-        } catch (NoSQLInvalidURIException e){
+        } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
-        } catch (MongoBulkWriteException e) {                   
+        } catch (MongoBulkWriteException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getMessage())
-            .getResponse();            
+                    .getResponse();
         } catch (MongoCommandException e) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DUPLICATE_DATA_KEY", e.getErrorMessage())
-            .getResponse();
+                    .getResponse();
         } catch (DateValidationException e) {
-           return new DateMappingExceptionResponse().toResponse(e);
+            return new DateMappingExceptionResponse().toResponse(e);
         }
     }
- 
+
     @DELETE
     @ApiOperation("Delete data on criteria")
     @ApiProtected
@@ -507,20 +504,21 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteDataOnSearch(
             @ApiParam(value = "Search by experiment uri", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI experimentUri,
             @ApiParam(value = "Search by target uri", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("target") URI objectUri,
             @ApiParam(value = "Search by variable uri", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") URI variableUri,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") URI provenanceUri
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql,sparql, fs);
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
         DeleteResult result = dao.deleteWithFilter(user, experimentUri, objectUri, variableUri, provenanceUri);
-        return new SingleObjectResponse(result).getResponse(); 
+        return new SingleObjectResponse<>(result).getResponse();
     }
-    
+
+
     /**
      * Check one data type
      *
@@ -528,9 +526,7 @@ public class DataAPI {
      * @throws Exception
      */
     public void checkVariableDataTypes(DataModel data) throws Exception {
-        ArrayList<DataModel> dataList = new ArrayList();
-        dataList.add(data);
-        checkVariableDataTypes(dataList);
+        checkVariableDataTypes(Collections.singletonList(data));
     }
 
     /**
@@ -540,8 +536,9 @@ public class DataAPI {
      * @throws Exception
      */
     public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
-        Map<URI, URI> variableTypes = new HashMap();
+
+        VariableDAO dao = new VariableDAO(sparql, nosql,fs);
+        Map<URI, URI> variableTypes = new HashMap<>();
         int dataIndex = 0;
         for (DataModel data : datas) {
             checkVariableDatumTypes(dao, variableTypes, data, dataIndex);
@@ -567,36 +564,38 @@ public class DataAPI {
             }
         }
     }
-    
+
     private void validData(List<DataModel> dataList) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
-        Map<URI, URI> variableTypes = new HashMap();
+
+        VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs);
+
+        Map<URI, URI> variableTypes = new HashMap<>();
         Set<URI> variableURIs = new HashSet<>();
         Set<URI> notFoundedVariableURIs = new HashSet<>();
         Set<URI> objectURIs = new HashSet<>();
         Set<URI> notFoundedObjectURIs = new HashSet<>();
-        Set<URI> provenanceURIs= new HashSet<>();
+        Set<URI> provenanceURIs = new HashSet<>();
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
-        Set<URI> expURIs= new HashSet<>();
+        Set<URI> expURIs = new HashSet<>();
         Set<URI> notFoundedExpURIs = new HashSet<>();
-        
+
         int dataIndex = 0;
         for (DataModel data : dataList) {
             // check variable uri and datatype
             if (data.getVariable() != null) {
                 if (!variableURIs.contains(data.getVariable())) {
                     variableURIs.add(data.getVariable());
-                    VariableModel variable = dao.get(data.getVariable());
+                    VariableModel variable = variableDAO.get(data.getVariable());
 
                     if (variable == null) {
                         notFoundedVariableURIs.add(data.getVariable());
                     } else {
-                        checkVariableDatumTypes(dao, variableTypes, data, dataIndex);
+                        checkVariableDatumTypes(variableDAO, variableTypes, data, dataIndex);
                         dataIndex++;
                     }
                 }
-            }            
-            
+            }
+
             //check objects uri
             if (data.getTarget() != null) {
                 if (!objectURIs.contains(data.getTarget())) {
@@ -604,9 +603,9 @@ public class DataAPI {
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
                         notFoundedObjectURIs.add(data.getTarget());
                     }
-                }         
+                }
             }
-        
+
             //check provenance uri
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
@@ -614,22 +613,22 @@ public class DataAPI {
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 }
-            }  
-            
+            }
+
             // check experiments uri
             if (data.getProvenance().getExperiments() != null) {
-                for (URI exp:data.getProvenance().getExperiments()) {
+                for (URI exp : data.getProvenance().getExperiments()) {
                     if (!expURIs.contains(exp)) {
                         expURIs.add(exp);
                         if (!sparql.uriExists(ExperimentModel.class, exp)) {
                             notFoundedExpURIs.add(exp);
-                        }    
-                    } 
+                        }
+                    }
                 }
             }
-            
-        }      
-        
+
+        }
+
         if (!notFoundedVariableURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
         }
@@ -644,24 +643,22 @@ public class DataAPI {
         }
 
     }
-    
-      /**
-     * @param startDate startDate
-     * @param endDate endDate
-     * @param timezone timezone
-     * @param experiments experimentUris
-     * @param objects targetUris
-     * @param variables variableUris
-     * @param devices
+
+    /**
+     * @param startDate     startDate
+     * @param endDate       endDate
+     * @param timezone      timezone
+     * @param experiments   experimentUris
+     * @param objects       objectUris
+     * @param variables     variableUris
      * @param confidenceMin confidenceMin
      * @param confidenceMax confidenceMax
-     * @param provenances provenanceUris
-     * @param metadata metadata json filter
-     * @param csvFormat long or wide format
-     * @param withRawData export raw_data if true
-     * @param orderByList orderByList
-     * @param page page number
-     * @param pageSize page size
+     * @param provenances   provenanceUris
+     * @param metadata      metadata json filter
+     * @param csvFormat     long or wide format
+     * @param orderByList   orderByList
+     * @param page          page number
+     * @param pageSize      page size
      * @return
      * @throws Exception
      */
@@ -672,8 +669,8 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportData(
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
@@ -728,7 +725,7 @@ public class DataAPI {
                 return new ErrorResponse(e).getResponse();
             }
         }
-        
+
         Instant start = Instant.now();
         List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
         Instant data = Instant.now();
@@ -959,7 +956,7 @@ public class DataAPI {
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
-        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>(); 
+        List<ImportDataIndex> duplicateDataByIndex = new ArrayList<>();
 
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
@@ -976,8 +973,8 @@ public class DataAPI {
             
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
- 
-            VariableDAO dao = new VariableDAO(sparql);
+            VariableDAO dao = new VariableDAO(sparql,nosql,fs);
+
             if (ids != null) {
 
                 for (int i = 0; i < ids.length; i++) {
@@ -1330,8 +1327,10 @@ public class DataAPI {
 
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
-        List<ResourceTreeDTO> treeDtos = OntologyCache.getInstance(sparql).searchSubClassesOf(user, new URI(Oeso.Device.toString()), null, true);        
-        
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        SPARQLTreeListModel<ClassModel> classTree = ontologyDAO.searchSubClasses(new URI(Oeso.Device.toString()), ClassModel.class,null,user,true,null);
+        List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(classTree);
+
         Map<URI, URI> map = new HashMap<>();
         
         for (ResourceTreeDTO tree:treeDtos) {
@@ -1370,8 +1369,8 @@ public class DataAPI {
         return device;
     }
     
-    private SPARQLNamedResourceModel getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
-        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel();
+    private SPARQLNamedResourceModel<?> getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel<>();
         if (URIDeserializer.validateURI(targetNameOrUri)) {
             URI targetUri = URI.create(targetNameOrUri);
             if (sparql.executeAskQuery(new AskBuilder()
@@ -1382,7 +1381,7 @@ public class DataAPI {
                 target = null;
             }
         } else {
-            List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);  
+            List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);
             if (results.size()>1) {
                 throw new DuplicateNameException(targetNameOrUri);
             } else {

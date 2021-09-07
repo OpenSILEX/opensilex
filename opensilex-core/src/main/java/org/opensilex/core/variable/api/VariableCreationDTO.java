@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.plexus.util.StringUtils;
+import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.CharacteristicModel;
@@ -27,7 +29,7 @@ import javax.validation.constraints.NotNull;
 @JsonPropertyOrder({
     "uri", "name", "alternative_name", "description",
     "entity","characteristic", "trait", "trait_name", "method", "unit",
-    "datatype","time_interval", "sampling_interval",
+    "species","datatype","time_interval", "sampling_interval",
     "exact_match","close_match","broader","narrower"
 })
 public class VariableCreationDTO extends SKOSReferencesDTO {
@@ -62,6 +64,9 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @JsonProperty("unit")
     private URI unit;
+
+    @JsonProperty("species")
+    private URI species;
 
     @JsonProperty("time_interval")
     private String timeInterval;
@@ -189,6 +194,16 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     public void setSamplingInterval(String samplingInterval) { this.samplingInterval = samplingInterval; }
 
+    @ValidURI
+    @ApiModelProperty(notes = "URI of the species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    public URI getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(URI species) {
+        this.species = species;
+    }
+
     public VariableModel newModel() {
         VariableModel model = new VariableModel();
         model.setUri(uri);
@@ -208,6 +223,12 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
             model.setMethod(new MethodModel(method));
         }
         model.setUnit(new UnitModel(unit));
+
+        if(species != null){
+            SpeciesModel speciesModel = new SpeciesModel();
+            speciesModel.setUri(species);
+            model.setSpecies(speciesModel);
+        }
 
         if(trait != null){
             model.setTraitUri(trait);

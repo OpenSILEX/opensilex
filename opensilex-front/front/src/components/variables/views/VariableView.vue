@@ -85,7 +85,8 @@
                 exact_match: [],
                 close_match: [],
                 broad_match: [],
-                narrow_match: []
+                narrow_match: [],
+                species: undefined
             };
         }
 

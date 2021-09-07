@@ -28,8 +28,11 @@ import javax.ws.rs.core.Response;
 import org.opensilex.brapi.model.Call;
 import org.opensilex.brapi.model.ObservationVariableDTO;
 import org.opensilex.brapi.model.StudyDetailsDTO;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
@@ -50,7 +53,11 @@ import org.opensilex.utils.ListWithPagination;
 public class VariablesAPI implements BrapiCall {
     
     @Inject
-    private SPARQLService sparql;    
+    private SPARQLService sparql;
+    @Inject
+    private MongoDBService mongodb;
+    @Inject
+    private FileStorageService fs;
     
     @CurrentUser
     UserModel currentUser;
@@ -93,7 +100,8 @@ public class VariablesAPI implements BrapiCall {
             @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
-        VariableDAO varDAO = new VariableDAO(sparql);
+        VariableDAO varDAO = new VariableDAO(sparql,mongodb,fs);
+
         ListWithPagination<VariableModel> variables;
         if (observationVariableDbId != null) {
             VariableModel variable = varDAO.get(observationVariableDbId);
@@ -123,14 +131,14 @@ public class VariablesAPI implements BrapiCall {
     public Response getVariableDetails(
             @ApiParam(value = "A variable URI (Unique Resource Identifier)", required = true) @PathParam("observationVariableDbId") @NotNull URI observationVariableDbId
     ) throws Exception {
-        VariableDAO varDAO = new VariableDAO(sparql);
-        URI variableURI = observationVariableDbId;
-        VariableModel variable = varDAO.get(variableURI);
-        ObservationVariableDTO brapiVariable = new ObservationVariableDTO();
+
+        VariableDAO variableDAO = new VariableDAO(sparql,mongodb,fs);
+
+        VariableModel variable = variableDAO.get(observationVariableDbId);
         if (variable != null) {
             return new SingleObjectResponse<>(ObservationVariableDTO.fromModel(variable)).getResponse();
         } else {
-            throw new NotFoundURIException(variableURI);
+            throw new NotFoundURIException(observationVariableDbId);
         }        
     }
     

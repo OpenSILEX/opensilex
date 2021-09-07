@@ -15,25 +15,27 @@ import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * @author vidalmor
+ * @author rcolin
  */
 public class VariableDAO extends BaseVariableDAO<VariableModel> {
-
-    public VariableDAO(SPARQLService sparql) {
-        super(VariableModel.class, sparql);
-    }
 
     static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
     static Var characteristicLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.CHARACTERISTIC_FIELD_NAME));
@@ -47,14 +49,50 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
      * This {@link Map} is indexed by the variables names
      */
     static Map<String, Var> varsByVarName;
-
     static {
-
         varsByVarName = new HashMap<>();
         varsByVarName.put(entityLabelVar.getVarName(), entityLabelVar);
         varsByVarName.put(characteristicLabelVar.getVarName(), characteristicLabelVar);
         varsByVarName.put(methodLabelVar.getVarName(), methodLabelVar);
         varsByVarName.put(unitLabelVar.getVarName(), unitLabelVar);
+    }
+
+    protected final DataDAO dataDAO;
+
+    public VariableDAO(SPARQLService sparql,MongoDBService nosql, FileStorageService fs) throws URISyntaxException {
+        super(VariableModel.class, sparql);
+        this.dataDAO = new DataDAO(nosql,sparql,fs);
+    }
+
+    @Override
+    public void delete(URI varUri) throws Exception{
+        int linkedDataNb = getLinkedDataNb(varUri);
+        if(linkedDataNb > 0){
+            throw new ForbiddenURIAccessException(varUri,"Variable can't be deleted. "+linkedDataNb+" linked data");
+        }
+        super.delete(varUri);
+    }
+
+    protected int getLinkedDataNb(URI uri) throws Exception {
+        return dataDAO.count(null,null,null, Collections.singletonList(uri),null,null,null,null,null,null,null);
+    }
+
+    @Override
+    public VariableModel update(VariableModel instance) throws Exception {
+
+        VariableModel oldInstance = sparql.loadByURI(VariableModel.class,instance.getUri(),null,null);
+        if (oldInstance == null) {
+            throw new SPARQLInvalidURIException(instance.getUri());
+        }
+
+        // if the datatype has changed, check that they are no linked data
+        if(!SPARQLDeserializers.compareURIs(oldInstance.getDataType(),instance.getDataType())){
+            int linkedDataNb = getLinkedDataNb(instance.getUri());
+            if(linkedDataNb > 0){
+                throw new ForbiddenURIAccessException(instance.getUri(),"Variable datatype can't be updated. "+linkedDataNb+" linked data");
+            }
+        }
+        return super.update(instance);
     }
 
     /**

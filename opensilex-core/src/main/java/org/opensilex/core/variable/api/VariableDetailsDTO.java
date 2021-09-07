@@ -12,7 +12,9 @@ import java.net.URISyntaxException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
@@ -22,8 +24,8 @@ import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.CharacteristicModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-
 
 
 /**
@@ -34,14 +36,13 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 @JsonPropertyOrder({
         "uri", "name", "alternative_name", "description",
         "entity","characteristic", "trait", "trait_name", "method", "unit",
-        "time_interval", "sampling_interval", "datatype",
+        "species","time_interval", "sampling_interval", "datatype",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
 
-//         "exact_match","close_match","broader","narrower"
 public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("alternative_name")
@@ -65,6 +66,9 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     @JsonProperty("trait_name")
     private String traitName;
 
+    @JsonProperty("species")
+    private SpeciesDTO species;
+
     @JsonProperty("time_interval")
     private String timeInterval;
 
@@ -73,6 +77,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("datatype")
     private URI dataType;
+
 
     public VariableDetailsDTO(VariableModel model) {
         super(model);
@@ -92,6 +97,11 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.unit = new UnitGetDTO(unit);
 
         this.alternativeName = model.getAlternativeName();
+
+        if(model.getSpecies() != null){
+            this.species = SpeciesDTO.fromModel(model.getSpecies());
+        }
+
         this.timeInterval = model.getTimeInterval();
         this.samplingInterval = model.getSamplingInterval();
 
@@ -207,6 +217,16 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public void setDataType(URI dataType) {
         this.dataType = dataType;
+    }
+
+    @ValidURI
+    @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
+    public SpeciesDTO getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(SpeciesDTO species) {
+        this.species = species;
     }
 
 }

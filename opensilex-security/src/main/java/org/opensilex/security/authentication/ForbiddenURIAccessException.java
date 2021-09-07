@@ -20,6 +20,11 @@ public class ForbiddenURIAccessException extends Exception {
         this.uri = uri;
     }
 
+    public ForbiddenURIAccessException(URI uri,String message) {
+        super(message);
+        this.uri = uri;
+    }
+
     public String getUri() {
         if (uri == null) {
             return null;

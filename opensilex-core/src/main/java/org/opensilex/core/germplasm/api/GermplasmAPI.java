@@ -102,9 +102,9 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_DELETE_ID = "germplasm-delete";
     public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.germplasm.delete";
 
-    protected final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
-    protected static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
-    protected static final String GERMPLASM_EXAMPLE_SPECIES = "http://www.phenome-fppn.fr/id/species/zeamays";
+    public final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    public static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
+    public static final String GERMPLASM_EXAMPLE_SPECIES = "http://www.phenome-fppn.fr/id/species/zeamays";
     protected static final String GERMPLASM_EXAMPLE_VARIETY = "";
     protected static final String GERMPLASM_EXAMPLE_ACCESSION = "";
     protected static final String GERMPLASM_EXAMPLE_INSTITUTE = "INRA";

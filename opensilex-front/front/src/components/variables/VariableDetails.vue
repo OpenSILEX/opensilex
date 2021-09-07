@@ -88,6 +88,13 @@
             <b-col>
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
+
+                      <opensilex-UriView title="GermplasmList.speciesLabel"
+                                         :value="variable.species ? variable.species.name: undefined"
+                                         :uri="variable.species ? variable.species.uri : undefined"
+                                         :url="variable.species ? getSpeciesPageUrl(): undefined">
+                      </opensilex-UriView>
+
                         <opensilex-StringView label="OntologyPropertyForm.data-type"
                                               :value="getDataTypeLabel(variable.datatype)"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.time-interval"
@@ -117,6 +124,8 @@ import VariableCreate from "./form/VariableCreate.vue";
 import { VariablesService, VariableDetailsDTO } from "opensilex-core/index";
 import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {DataService} from "opensilex-core/api/data.service";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -127,6 +136,7 @@ export default class VariableDetails extends Vue {
     $t: any;
     $i18n: any;
     service: VariablesService;
+    dataService: DataService;
 
     get user() {
         return this.$store.state.user;
@@ -146,14 +156,25 @@ export default class VariableDetails extends Vue {
 
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
+        this.dataService = this.$opensilex.getService("opensilex-core.DataService");
     }
 
 
     showEditForm() {
-        // make a deep copy of the variable in order to not change the current dto
-        // In case a field has been updated into the form without confirmation (by sending update to the server)
-        let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
-        this.variableForm.showEditForm(variableDtoCopy);
+
+      this.getCountDataPromise(this.variable.uri).then(countResult => {
+        if (countResult && countResult.response) {
+
+            // make a deep copy of the variable in order to not change the current dto
+            // In case a field has been updated into the form without confirmation (by sending update to the server)
+            let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
+            if(variableDtoCopy.species && variableDtoCopy.species.uri){
+                variableDtoCopy.species = variableDtoCopy.species.uri;
+            }
+            this.variableForm.showEditForm(variableDtoCopy,countResult.response.result);
+        }
+      })
+
     }
 
     update(variable){
@@ -167,12 +188,35 @@ export default class VariableDetails extends Vue {
     }
 
     deleteVariable(){
-        this.service.deleteVariable(this.variable.uri).then(() => {
-            let message = this.$i18n.t("VariableView.name") + " " + this.variable.name + " " + this.$i18n.t("component.common.success.delete-success-message");
-            this.$opensilex.showSuccessToast(message);
-            this.$router.push({path: "/variables"});
-        }).catch(this.$opensilex.errorHandler);
+
+        this.getCountDataPromise(this.variable.uri)
+            .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                let count = http.response.result;
+                if(count > 0){
+                    this.$opensilex.showErrorToast(count + " "+this.$i18n.t("VariableView.associated-data-error"));
+                }else{
+                    this.service.deleteVariable(this.variable.uri).then(() => {
+                        let message = this.$i18n.t("VariableView.name") + " " + this.variable.name + " " + this.$i18n.t("component.common.success.delete-success-message");
+                        this.$opensilex.showSuccessToast(message);
+                        this.$router.push({path: "/variables"});
+                    }).catch(this.$opensilex.errorHandler);
+                }
+            });
     }
+
+  getCountDataPromise(uri){
+    return this.dataService.countData(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [uri],
+        undefined,
+        undefined,
+        undefined,
+        undefined);
+  }
 
     getDataTypeLabel(dataTypeUri: string): string{
         if(! dataTypeUri){
@@ -183,9 +227,8 @@ export default class VariableDetails extends Vue {
     }
 
     getEncodedUrlPage(elementType: string , uri : string) : string{
-        return  this.$opensilex.getURL("variables/?elementType="+elementType +"&selected="+encodeURIComponent(uri));
+        return this.$opensilex.getURL("variables/?elementType="+elementType +"&selected="+encodeURIComponent(uri));
     }
-
 
     getEntityPageUrl(): string{
         return this.getEncodedUrlPage(VariablesView.ENTITY_TYPE,this.variable.entity.uri);
@@ -201,6 +244,10 @@ export default class VariableDetails extends Vue {
 
     getUnitPageUrl(): string{
         return this.getEncodedUrlPage(VariablesView.UNIT_TYPE,this.variable.unit.uri);
+    }
+
+    getSpeciesPageUrl(): string{
+      return this.$opensilex.getURL("germplasm/details/"+encodeURIComponent(this.variable.species.uri));
     }
 
 }

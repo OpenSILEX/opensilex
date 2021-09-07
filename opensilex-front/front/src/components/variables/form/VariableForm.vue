@@ -33,7 +33,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-entity"
                         helpMessage="VariableForm.entity-help"
-                        @select="updateName"
+                        @select="updateEntity"
                         :actionHandler="showEntityCreateForm"
                     ></opensilex-SelectForm>
                     <opensilex-EntityCreate
@@ -56,7 +56,7 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-characteristic"
                         helpMessage="VariableForm.characteristic-help"
-                        @select="updateName"
+                        @select="updateCharacteristic"
                         :actionHandler="showCharacteristicCreateForm"
                     ></opensilex-SelectForm>
                     <opensilex-CharacteristicModalForm
@@ -109,7 +109,7 @@
                         placeholder="VariableForm.method-placeholder"
                         :conversionMethod="objectToSelectNode"
                         helpMessage="VariableForm.method-help"
-                        @select="updateName"
+                        @select="updateMethod"
                         :actionHandler="showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
                     ></opensilex-SelectForm>
@@ -131,7 +131,7 @@
                         :itemLoadingMethod="loadUnit"
                         :conversionMethod="objectToSelectNode"
                         placeholder="VariableForm.unit-placeholder"
-                        @select="updateName"
+                        @select="updateUnit"
                         :actionHandler="showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
                     ></opensilex-SelectForm>
@@ -165,10 +165,22 @@
             </div>
 
             <div class="row">
+                <div class="col-lg-6" id="v-step-species">
+                    <opensilex-SpeciesSelector
+                        label="SpeciesSelector.select-one"
+                        placeholder="SpeciesSelector.select-one-placeholder"
+                        :multiple="false"
+                        :species.sync="form.species"
+                    ></opensilex-SpeciesSelector>
+                </div>
+            </div>
+
+            <div class="row" >
                 <div class="col-lg-6" id="v-step-datatype">
                     <opensilex-SelectForm
                         label="OntologyPropertyForm.data-type"
                         :required="true"
+                        :disabled="hasLinkedData"
                         :selected.sync="form.datatype"
                         :options="datatypesNodes"
                         :itemLoadingMethod="loadDataType"
@@ -216,21 +228,31 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
 // @ts-ignore
-import { NamedResourceDTO, EntityCreationDTO, CharacteristicCreationDTO, MethodCreationDTO, UnitCreationDTO, VariablesService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {
+  CharacteristicCreationDTO,
+  EntityCreationDTO,
+  MethodCreationDTO,
+  NamedResourceDTO,
+  UnitCreationDTO,
+  VariablesService
+} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 // @ts-ignore
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
 // @ts-ignore
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class VariableForm extends Vue {
     $opensilex: any;
+    $store: any;
 
     @Prop()
     editMode: boolean;
@@ -246,10 +268,11 @@ export default class VariableForm extends Vue {
     savedVariable: any = {};
 
     service: VariablesService;
+    dataService: DataService;
 
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
-    @Ref("entitySelectForm") entitySelectForm!: any;
+    @Ref("entitySelectForm") entitySelectForm!: SelectForm;
     @Ref("characteristicSelectForm") characteristicSelectForm!: any;
     @Ref("methodSelectForm") methodSelectForm!: any;
     @Ref("unitSelectForm") unitSelectForm!: any;
@@ -260,11 +283,6 @@ export default class VariableForm extends Vue {
     @Ref("unitForm") readonly unitForm!: any;
 
     @Ref("traitForm") readonly traitForm!: ModalForm;
-
-    loadedEntities = [];
-    loadedUnits = [];
-    loadedMethods = [];
-    loadedCharacteristics = [];
 
     traitSteps = [
         {component: "opensilex-TraitForm"}
@@ -279,6 +297,7 @@ export default class VariableForm extends Vue {
 
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
+        this.dataService = this.$opensilex.getService("opensilex-core.DataService");
 
         for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
             this.periodList.push({
@@ -324,31 +343,52 @@ export default class VariableForm extends Vue {
         return "";
     }
 
+
+    selectedEntityName;
+    selectedCharacteristicName;
+    selectedMethodName;
+    selectedUnitName;
+
+    updateEntity(entity){
+        this.selectedEntityName = entity.label;
+        this.updateName();
+    }
+
+    updateCharacteristic(characteristic){
+        this.selectedCharacteristicName = characteristic.label;
+        this.updateName();
+    }
+
+    updateMethod(method){
+        this.selectedMethodName = method.label;
+        this.updateName();
+    }
+
+    updateUnit(unit){
+        this.selectedUnitName = unit.label;
+        this.updateName();
+    }
+
     updateName() {
         let form = this.form;
         let nameParts: string[] = [];
 
-        let buildLabel = this.getLabel(form.entity, this.loadedEntities);
-        if(buildLabel.length > 0 ){
-            nameParts.push(buildLabel);
+        if(this.selectedEntityName && this.selectedEntityName.length > 0 ){
+            nameParts.push(this.selectedEntityName);
         }
-        buildLabel = this.getLabel(form.characteristic, this.loadedCharacteristics);
-        if(buildLabel.length > 0 ){
-            nameParts.push(buildLabel);
+        if(this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0 ){
+            nameParts.push(this.selectedCharacteristicName);
         }
         if(nameParts.length){
             form.alternative_name = nameParts.join("_");
         }
 
-        buildLabel = this.getLabel(form.method, this.loadedMethods);
-        if(buildLabel.length > 0 ){
-            nameParts.push(buildLabel);
+        if(this.selectedMethodName && this.selectedMethodName.length > 0 ){
+            nameParts.push(this.selectedMethodName);
         }
-        buildLabel = this.getLabel(form.unit, this.loadedUnits);
-        if(buildLabel.length > 0 ){
-            nameParts.push(buildLabel);
+        if(this.selectedUnitName && this.selectedUnitName.length > 0 ){
+            nameParts.push(this.selectedUnitName);
         }
-
         if(nameParts.length){
             form.name = nameParts.join("_");
         }
@@ -379,26 +419,28 @@ export default class VariableForm extends Vue {
         }
     }
 
-    static getEmptyForm() : VariableCreationDTO{
-        return {
-            uri: undefined,
-            alternative_name: undefined,
-            name: undefined,
-            entity: undefined,
-            characteristic: undefined,
-            description: undefined,
-            time_interval: undefined,
-            sampling_interval: undefined,
-            datatype: undefined,
-            trait: undefined,
-            trait_name: undefined,
-            method: undefined,
-            unit: undefined,
-            exact_match: [],
-            close_match: [],
-            broad_match: [],
-            narrow_match: []
-        };
+    static getEmptyForm() {
+      return {
+        uri: undefined,
+        alternative_name: undefined,
+        name: undefined,
+        entity: undefined,
+        characteristic: undefined,
+        description: undefined,
+        time_interval: undefined,
+        sampling_interval: undefined,
+        datatype: undefined,
+        trait: undefined,
+        trait_name: undefined,
+        method: undefined,
+        unit: undefined,
+        exact_match: [],
+        close_match: [],
+        broad_match: [],
+        narrow_match: [],
+        species: undefined,
+        linked_data_nb: 0
+      };
     }
 
     getEmptyForm() {
@@ -408,119 +450,111 @@ export default class VariableForm extends Vue {
     searchEntities(name: string, page, pageSize){
         return this.service.searchEntities(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-                if (http && http.response) {
-                    for(let dto of http.response.result){
-                        this.loadedEntities.push(dto);
-                    }
-                }
                 return http;
             });
     }
 
-    loadEntity(entities: Array<any>) {
-        if (!entities || entities.length !== 1) {
+    loadEntity(uris: Array<any>) {
+
+        if (!uris || uris.length !== 1) {
             return undefined;
         }
+
         // in edit mode, the loaded entity is an object composed of uri and name
-        if (entities[0].uri) {
+        if (uris[0].uri) {
             return [this.form.entity];
         }
-        return [this.loadedEntities.find(dto => dto.uri === entities[0])];
+        return this.service.getEntity( uris[0]).then(http =>
+           [http.response.result]
+        );
     }
 
     setLoadedEntity(created: EntityCreationDTO) {
-        this.loadedEntities = [{uri: created.uri, name: created.name}];
-        this.entitySelectForm.select({id: created.uri});
+        this.form.entity = created.uri;
+        this.entitySelectForm.select({id: created.uri, label: created.name});
     }
 
     searchCharacteristics(name: string, page, pageSize){
         return this.service
             .searchCharacteristics(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
-                if (http && http.response) {
-                    for(let dto of http.response.result){
-                        this.loadedCharacteristics.push(dto);
-                    }
-                }
                 return http;
             });
     }
 
-    loadCharacteristic(characteristics: Array<any>) {
-        if(! characteristics || characteristics.length !== 1){
+    loadCharacteristic(uris: Array<any>) {
+        if (!uris || uris.length !== 1) {
             return undefined;
         }
+
         // in edit mode, the loaded characteristic is an object composed of uri and name
-        if(characteristics[0].uri){
+        if (uris[0].uri) {
             return [this.form.characteristic];
         }
-        return [this.loadedCharacteristics.find(dto => dto.uri == characteristics[0])];
+        return this.service.getCharacteristic(uris[0]).then(http =>
+            [http.response.result]
+        );
     }
 
     setLoadedCharacteristic(created: CharacteristicCreationDTO) {
-        this.loadedCharacteristics = [{uri: created.uri, name: created.name}];
-        this.characteristicSelectForm.select({id: created.uri});
+        this.form.characteristic = created.uri;
+        this.characteristicSelectForm.select({id: created.uri, label: created.name});
     }
 
     searchMethods(name: string, page, pageSize){
         return this.service
             .searchMethods(name, ["name=asc"], page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                if (http && http.response) {
-                    for(let dto of http.response.result){
-                        this.loadedMethods.push(dto);
-                    }
-                }
                 return http;
             });
     }
 
-    loadMethod(methods: Array<any>) {
-        if(! methods || methods.length !== 1){
+    loadMethod(uris: Array<any>) {
+        if (!uris || uris.length !== 1) {
             return undefined;
         }
-        // in edit mode, the loaded method is an object composed of uri and name
-        if(methods[0].uri){
+
+        // in edit mode, the loaded characteristic is an object composed of uri and name
+        if (uris[0].uri) {
             return [this.form.method];
         }
-        return [this.loadedMethods.find(dto => dto.uri == methods[0])];
+        return this.service.getMethod(uris[0]).then(http =>
+            [http.response.result]
+        );
     }
 
     setLoadedMethod(created: MethodCreationDTO) {
-        this.loadedMethods = [{uri: created.uri, name: created.name}];
-        this.methodSelectForm.select({id: created.uri});
+        this.form.method = created.uri;
+        this.methodSelectForm.select({id: created.uri, label: created.name});
     }
 
     searchUnits(name: string ,page, pageSize){
         return this.service
             .searchUnits(name, ["name=asc"], page,pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-                if (http && http.response) {
-                    for(let dto of http.response.result){
-                        this.loadedUnits.push(dto);
-                    }
-                }
                 return http;
             });
     }
 
-    loadUnit(units: Array<any>) {
-        if(! units || units.length !== 1){
+    loadUnit(uris: Array<any>) {
+        if(! uris || uris.length !== 1){
             return undefined;
         }
         // in edit mode, the loaded unit is an object composed of uri and name
-        if(units[0].uri){
+        if(uris[0].uri){
             return [this.form.unit];
         }
-        return [this.loadedUnits.find(dto => dto.uri == units[0])];
+        return this.service.getUnit(uris[0]).then(http =>
+            [http.response.result]
+        );
     }
 
     setLoadedUnit(created: UnitCreationDTO) {
-        this.loadedUnits = [{uri: created.uri, label: created.name}];
-        this.unitSelectForm.select({id: created.uri});
+        this.form.unit = created.uri;
+        this.unitSelectForm.select({id: created.uri, label: created.name});
     }
 
-    objectToSelectNode(dto: NamedResourceDTO) {
+    objectToSelectNode(dto) {
         if (dto) {
             return {id: dto.uri, label: dto.name};
         }
@@ -575,6 +609,8 @@ export default class VariableForm extends Vue {
         return [dataType];
     }
 
+
+
     private langUnwatcher;
     mounted() {
         this.langUnwatcher = this.$store.watch(
@@ -583,7 +619,16 @@ export default class VariableForm extends Vue {
         );
     }
 
-    beforeDestroy() {
+  get hasLinkedData() {
+    if(! this.form && this.form.linked_data_nb){
+      return true;
+    }else{
+      return this.form.linked_data_nb > 0;
+    }
+
+  }
+
+  beforeDestroy() {
         this.langUnwatcher();
     }
 
@@ -675,6 +720,12 @@ export default class VariableForm extends Vue {
                 params: {placement: "left"},
             },
             {
+                target: "#v-step-species",
+                header: { title: this.$i18n.t("component.experiment.species")},
+                content: this.$i18n.t("VariableForm.tutorial.species"),
+                params: {placement: "left"},
+            },
+            {
                 target: "#v-step-datatype",
                 header: { title: this.$i18n.t("OntologyPropertyForm.data-type")},
                 content: this.$i18n.t("VariableForm.tutorial.datatype"),
@@ -740,7 +791,7 @@ en:
         trait-form-edit-title: Edit trait
         trait-button: Trait already existing in an ontology
         trait-button-help: Add a trait (entity and characteristic) already existing in an ontology
-        datatype-help: Format of data recorded for this variable
+        datatype-help: Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).
         datatype-placeholder: Select a datatype
         dimension-values:
             unique: Unique measurement
@@ -775,6 +826,7 @@ en:
             sampling-interval: "Precise the sample interval which is associated with this variable. Here we obtained the grain yield by harvesting experimental microplot (10m * 2.5m)."
             datatype: "Precise the data type. Here we are using decimal numbers."
             description: "Finalize the variable with some text description of it."
+            species: "Select the species that is associated with this variable. Here rice."
         example:
             entity: "Seed"
             characteristic: "Yield"
@@ -786,6 +838,7 @@ en:
             sampling-interval: "Meter"
             datatype: "http://www.w3.org/2001/XMLSchema#decimal"
             description: "Grain yield obtained after harvesting an experimental microplot"
+            species: "Rice"
 fr:
     VariableForm:
         variable: La variable
@@ -821,7 +874,7 @@ fr:
         trait-form-edit-title: Éditer un trait
         trait-button: Trait existant déjà dans une ontologie
         trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
-        datatype-help: Format des données enregistrées pour cette variable
+        datatype-help: Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable).
         datatype-placeholder: Sélectionner un type de donnée
         dimension-values:
             unique: Enregistrement unique
@@ -857,6 +910,7 @@ fr:
             sampling-interval: "Renseigner l'échantillonnage qui a permis d'obtenir cette variable. Ici on a obtenu le rendement sur une microparcelle expérimentale de taille standard (2.5m*10m)."
             datatype: "Renseigner le type de données. Ici nous avons des nombre décimaux."
             description: "Finaliser la variable avec une description textuelle de la variable."
+            species: "Sélectionner l'espèce associée à la variable variable. Ici le 'riz'."
         example:
             entity: "Grain"
             characteristic: "Rendement"
@@ -868,4 +922,5 @@ fr:
             sampling-interval: "Mètre"
             datatype: "http://www.w3.org/2001/XMLSchema#decimal"
             description: "Rendement du grain obtenu après récolte d'une microparcelle expérimentale."
+            species: "Riz"
 </i18n>

@@ -11,6 +11,7 @@
         :createAction="create"
         :updateAction="update"
         :successMessage="successMessage"
+        :key="key"
     ></opensilex-ModalForm>
 
 </template>
@@ -38,6 +39,8 @@
 
         loadForm: boolean = false;
 
+        key: number = 1;
+
         get user() {
             return this.$store.state.user;
         }
@@ -53,19 +56,27 @@
         }
 
         showCreateForm() {
+            this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
-                this.variableForm.showCreateForm();
+              this.variableForm.showCreateForm();
             });
         }
 
-        showEditForm(form : VariableGetDTO) {
+        showEditForm(form,linkedDataNb) {
+          form.linked_data_nb = linkedDataNb;
+          this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
                 this.variableForm.showEditForm(form);
             });
         }
 
+
+        private refresh(){
+            // update the key force VueJs to re-render the component properly
+            this.key++;
+        }
 
         create(variable) {
 
@@ -81,7 +92,7 @@
                 if (error.status == 409) {
                     this.$opensilex.errorHandler(error,"Variable "+variable.uri+" : "+this.$i18n.t("VariableForm.already-exist"));
                 } else {
-                    this.$opensilex.errorHandler(error);
+                    this.$opensilex.errorHandler(error,error.response.result.message);
                 }
             });
         }
@@ -124,7 +135,9 @@
                 this.$opensilex.showSuccessToast(message);
 
                 this.$emit("onUpdate", variable);
-            }).catch(this.$opensilex.errorHandler);
+            }).catch((error) => {
+                this.$opensilex.errorHandler(error,error.response.result.message);
+            });
         }
     }
 </script>

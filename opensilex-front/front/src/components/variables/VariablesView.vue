@@ -129,8 +129,9 @@ import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 // @ts-ignore
 import { VariablesService } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {DataService} from "opensilex-core/api/data.service";
 
 @Component
 export default class VariablesView extends Vue {
@@ -140,6 +141,7 @@ export default class VariablesView extends Vue {
     $route: any;
     $router: any;
     service: VariablesService;
+    dataService: DataService;
 
     elementIndex: number = 0;
     elementType: string = VariablesView.VARIABLE_TYPE;
@@ -175,6 +177,7 @@ export default class VariablesView extends Vue {
 
     created(){
         this.service = this.$opensilex.getService("opensilex-core.VariablesService");
+        this.dataService = this.$opensilex.getService("opensilex-core.DataService");
 
         // load variable list by default
         let query: any = this.$route.query;
@@ -301,7 +304,6 @@ export default class VariablesView extends Vue {
     }
 
 
-
     showCreateForm(){
         this.getForm().showCreateForm();
     }
@@ -310,10 +312,31 @@ export default class VariablesView extends Vue {
         this.getForm().showEditForm(dto);
     }
 
-    showVariableEditForm(uri : string){
-        this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse>) => {
-            this.variableCreate.showEditForm(http.response.result);
-        });
+    getCountDataPromise(uri){
+      return this.dataService.countData(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [uri],
+          undefined,
+          undefined,
+          undefined,
+          undefined);
+    }
+
+    showVariableEditForm(uri: string) {
+
+        this.getCountDataPromise(uri).then(countResult => {
+            if (countResult && countResult.response) {
+                this.service.getVariable(uri).then((getResult: HttpResponse<OpenSilexResponse>) => {
+                    if (getResult && getResult.response) {
+                        this.variableCreate.showEditForm(getResult.response.result,countResult.response.result);
+                    }
+                });
+            }
+        })
     }
 
     updateReferences(variable){
@@ -327,11 +350,20 @@ export default class VariablesView extends Vue {
     }
 
     deleteVariable(uri: string) {
-        this.service.deleteVariable(uri).then(() => {
-            this.variableList.refresh();
-            let message = this.$i18n.t("VariableView.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
-            this.$opensilex.showSuccessToast(message);
-        }).catch(this.$opensilex.errorHandler);
+            this.getCountDataPromise(uri)
+            .then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                let count = http.response.result;
+                if(count > 0){
+                    this.$opensilex.showErrorToast(count + " "+this.$i18n.t("VariableView.associated-data-error"));
+                }else{
+                    this.service.deleteVariable(uri).then(() => {
+                        this.variableList.refresh();
+                        let message = this.$i18n.t("VariableView.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+                        this.$opensilex.showSuccessToast(message);
+                    }).catch(this.$opensilex.errorHandler);
+                }
+            });
+
     }
 
     showVariableDetails(variable) {
@@ -368,6 +400,7 @@ en:
         add-method: Add method
         unit: "Unit/Level"
         add-unit: Add unit
+        associated-data-error: "linked data. The variable can't be deleted."
 
 fr:
     VariableView:
@@ -384,6 +417,7 @@ fr:
         add-method: Ajouter une méthode
         unit: "Unité/Niveau"
         add-unit: Ajouter une unité
+        associated-data-error: "donnée(s) associée(s). La variable ne peut être supprimée."
 
 </i18n>
 

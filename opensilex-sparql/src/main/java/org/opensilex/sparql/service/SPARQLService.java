@@ -853,15 +853,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance, null, checkUriExist, false, null);
+        create(graph, instance, null, null,checkUriExist, false, null);
     }
 
-    /**
-     *
-     * @param mapper the SPARQL mapper used in order to generate query according instance fields
-     * @param subInstanceUpdateBuilder
-     * @param blankNode
-     */
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+        create(graph, instance, null, null, checkUriExist, blankNode, createExtension);
+    }
+
+
     /**
      * @param graph           the graph onto instance are created
      * @param instance        the instance to create
@@ -871,19 +870,24 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param createExtension additional modification to the UpdateBuilder
      * @param <T>             the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, UpdateBuilder updateBuilder, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+    protected  <T extends SPARQLResourceModel> void create(Node graph,
+                                                           T instance,
+                                                           SPARQLResourceModel parent,
+                                                           UpdateBuilder updateBuilder,
+                                                           boolean checkUriExist,
+                                                           boolean blankNode,
+                                                           BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
 
-        if (updateBuilder == null) {
-            prepareInstanceCreation(graph, instance, mapper, null, checkUriExist, blankNode);
-            UpdateBuilder create = mapper.getCreateBuilder(graph, instance, blankNode, createExtension);
+        boolean useNewBuilder = updateBuilder == null;
+        UpdateBuilder create = useNewBuilder ? new UpdateBuilder() : updateBuilder;
+        prepareInstanceCreation(graph, instance, parent, mapper, create, checkUriExist, blankNode);
+        mapper.addCreateBuilder(graph, instance, create, blankNode,createExtension);
+
+        if(useNewBuilder){
             executeUpdateQuery(create);
-        } else {
-            prepareInstanceCreation(graph, instance, mapper, updateBuilder, checkUriExist, blankNode);
-            mapper.addCreateBuilder(graph, instance, updateBuilder, blankNode);
         }
 
     }
@@ -897,7 +901,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param blankNode                indicate if the instance URI must be a blank node
      * @param <T>                      the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void prepareInstanceCreation(Node graph, T instance, SPARQLClassObjectMapper<T> mapper, UpdateBuilder subInstanceUpdateBuilder, boolean checkUriExist, boolean blankNode) throws Exception {
+    protected  <T extends SPARQLResourceModel> void prepareInstanceCreation(
+            Node graph,
+            T instance,
+            SPARQLResourceModel parent,
+            SPARQLClassObjectMapper<T> mapper,
+            UpdateBuilder subInstanceUpdateBuilder,
+            boolean checkUriExist,
+            boolean blankNode) throws Exception {
+
         URI rdfType = instance.getType();
         if (rdfType == null) {
             instance.setType(new URI(mapper.getRDFType().getURI()));
@@ -909,10 +921,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             generateUniqueUriIfNullOrValidateCurrent(graph, mapper, instance, checkUriExist);
         }
 
-        validate(instance);
+        validate(instance,parent);
 
         for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-            create(getDefaultGraph(subInstance.getClass()), subInstance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+            create(getDefaultGraph(subInstance.getClass()), subInstance,instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
         }
     }
 
@@ -944,7 +956,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
 
         if (instances.size() > 0) {
-            validate(instances);
+            validate(instances,null);
 
             UpdateBuilder updateBuilder = new UpdateBuilder();
 
@@ -959,8 +971,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
                 for (T instance : instances) {
                     SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
-                    prepareInstanceCreation(graph, instance, mapper, subInstanceUpdateBuilder, checkUriExist, false);
-                    mapper.addCreateBuilder(graph, instance, updateBuilder, false);
+                    prepareInstanceCreation(graph, instance, null,mapper, subInstanceUpdateBuilder, checkUriExist, false);
+                    mapper.addCreateBuilder(graph, instance, updateBuilder, false,null);
 
                     // if query limit is reached, then insert query and reset builder
                     if (reuseSameQuery && insertedInstanceNb++ == maxInstancePerQuery) {
@@ -995,12 +1007,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (uri == null) {
 
             int retry = 0;
-            String graphPrefix = getDefaultGenerationURI(instance.getClass()).toString();
-            uri = uriGenerator.generateURI(graphPrefix, instance, retry);
+            String prefix = getDefaultGenerationURI(instance.getClass()).toString();
+            uri = uriGenerator.generateURI(prefix, instance, retry);
 
             if (checkUriExist) {
                 while (uriExists(graph, uri)) {
-                    uri = uriGenerator.generateURI(graphPrefix, instance, ++retry);
+                    uri = uriGenerator.generateURI(prefix, instance, ++retry);
                 }
             }
 
@@ -1103,7 +1115,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             if (instances.size() > 0) {
 
-                validate(instances);
+                validate(instances,null);
 
                 for (T instance : instances) {
                     Node instanceGraph = graph;
@@ -1609,64 +1621,74 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return getMapperIndex().getForClass(modelClass).getURIFieldVar();
     }
 
-    public <T extends SPARQLResourceModel> void validate(T instance) throws Exception {
+    public <T extends SPARQLResourceModel> void validate(T instance, SPARQLResourceModel parent) throws Exception {
         if (!this.isShaclEnabled()) {
-//            validateRelations(instance);
+            validateRelations(instance,parent);
         }
 
-        validateReverseRelations(instance);
+        validateReverseRelations(instance,parent);
     }
 
-    public <T extends SPARQLResourceModel> void validate(Collection<T> instances) throws Exception {
+    public <T extends SPARQLResourceModel> void validate(Collection<T> instances,SPARQLResourceModel parent) throws Exception {
         if (!this.isShaclEnabled()) {
-            validateRelations(instances);
+            validateRelations(instances,parent);
         }
 
-        validateReverseRelations(instances);
+        validateReverseRelations(instances,parent);
     }
 
-    private <T extends SPARQLResourceModel> void validateRelations(Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers) throws Exception {
+    private <T extends SPARQLResourceModel> void validateRelations(Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers, SPARQLResourceModel parent) throws Exception {
         for (Map.Entry<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMapper : urisByMappers.entrySet()) {
             SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = urisByMapper.getKey();
-            Set<URI> uris = urisByMapper.getValue();
+            Set<URI> urisToCheck = urisByMapper.getValue();
 
-            Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(), uris, false);
-            if (!unknownUris.isEmpty()) {
-                // #TODO append property for which URI are unknown
-                throw new SPARQLInvalidUriListException("[" + modelMapper.getObjectClass().getSimpleName() + "] Unknown URIS : ", unknownUris);
+            // remove parent uri from uris to check, because the validation of the current relation come after the validation of the parent.
+            // the parent is not yet present in the triplestore, since it must be created, so we must not include the parent URI in uris to check.
+            if(parent != null){
+                urisToCheck.remove(parent.getUri());
             }
+
+            if (!urisToCheck.isEmpty()) {
+                Set<URI> unknownUris = getExistingUris(modelMapper.getObjectClass(), urisToCheck, false);
+                if (!unknownUris.isEmpty()) {
+                    // #TODO append property for which URI are unknown
+                    throw new SPARQLInvalidUriListException("[" + modelMapper.getObjectClass().getSimpleName() + "] Unknown URIS : ", unknownUris);
+                }
+            }
+
+
         }
     }
 
-    private <T extends SPARQLResourceModel> void validateRelations(T instance) throws Exception {
+    private <T extends SPARQLResourceModel> void validateRelations(T instance,SPARQLResourceModel parent) throws Exception {
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
-        validateRelations(mapper.getRelationsUrisByMapper(instance));
+        validateRelations(mapper.getRelationsUrisByMapper(instance),parent);
 
     }
 
-    private <T extends SPARQLResourceModel> void validateRelations(Collection<T> instances) throws Exception {
+    private <T extends SPARQLResourceModel> void validateRelations(Collection<T> instances,SPARQLResourceModel parent) throws Exception {
         Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
         for (T instance : instances) {
             SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
             mapper.getRelationsUrisByMapper(instance, urisByMappers);
         }
 
-        validateRelations(urisByMappers);
+        validateRelations(urisByMappers,parent);
     }
 
-    private <T extends SPARQLResourceModel> void validateReverseRelations(T instance) throws Exception {
+    private <T extends SPARQLResourceModel> void validateReverseRelations(T instance,SPARQLResourceModel parent) throws Exception {
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
-        validateRelations(mapper.getReverseRelationsUrisByMapper(instance));
+        validateRelations(mapper.getReverseRelationsUrisByMapper(instance),parent);
     }
 
-    private <T extends SPARQLResourceModel> void validateReverseRelations(Collection<T> instances) throws Exception {
+    private <T extends SPARQLResourceModel> void validateReverseRelations(Collection<T> instances,SPARQLResourceModel parent) throws Exception {
         Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> urisByMappers = new HashMap<>();
         for (T instance : instances) {
             SPARQLClassObjectMapper<SPARQLResourceModel> mapper = getMapperIndex().getForClass(instance.getClass());
             mapper.getReverseRelationsUrisByMapper(instance, urisByMappers);
         }
 
-        validateRelations(urisByMappers);
+        validateRelations(urisByMappers,parent);
     }
 
     public <T extends SPARQLResourceModel> SPARQLClassObjectMapper<T> getForClass(Class<T> modelClass) throws SPARQLException {

@@ -7,8 +7,11 @@ package org.opensilex.core.variable.api;
 
 import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -59,9 +62,18 @@ public class VariableAPI {
 
     @Inject
     private SPARQLService sparql;
+    @Inject
+    private MongoDBService mongodb;
+    @Inject
+    private FileStorageService fs;
+
 
     @CurrentUser
     UserModel currentUser;
+
+    private VariableDAO getDao() throws URISyntaxException {
+        return new VariableDAO(sparql,mongodb,fs);
+    }
 
     @POST
     @ApiOperation("Add a variable")
@@ -80,7 +92,7 @@ public class VariableAPI {
             @ApiParam("Variable description") @Valid VariableCreationDTO dto
     ) throws Exception {
         try {
-            VariableDAO dao = new VariableDAO(sparql);
+            VariableDAO dao = getDao();
             VariableModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
@@ -106,7 +118,7 @@ public class VariableAPI {
     public Response getVariable(
             @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
         VariableModel variable = dao.get(uri);
         if (variable == null) {
             throw new NotFoundURIException(uri);
@@ -131,7 +143,7 @@ public class VariableAPI {
     public Response updateVariable(
             @ApiParam("Variable description") @Valid VariableUpdateDTO dto
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
 
         VariableModel model = dto.newModel();
         dao.update(model);
@@ -156,7 +168,7 @@ public class VariableAPI {
     public Response deleteVariable(
             @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -183,7 +195,7 @@ public class VariableAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
         ListWithPagination<VariableModel> resultList = dao.search(
                 namePattern,
                 orderByList,
@@ -220,7 +232,7 @@ public class VariableAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
         ListWithPagination<VariableModel> resultList = dao.search(
                 namePattern,
                 orderByList,
@@ -278,7 +290,7 @@ public class VariableAPI {
     public Response getVariablesByURIs(
             @ApiParam(value = "Variables URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        VariableDAO dao = new VariableDAO(sparql);
+        VariableDAO dao = getDao();
         List<VariableModel> models = dao.getList(uris);
 
         if (!models.isEmpty()) {

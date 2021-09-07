@@ -6,7 +6,9 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.SKOS;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.utils.ClassURIGenerator;
@@ -91,6 +93,12 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private URI dataType;
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasSpecies"
+    )
+    private SpeciesModel species;
+
     public String getAlternativeName() { return alternativeName; }
 
     public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
@@ -150,6 +158,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public URI getDataType() { return dataType; }
 
     public void setDataType(URI dataType) { this.dataType = dataType; }
+
+    public SpeciesModel getSpecies() {
+        return species;
+    }
+
+    public void setSpecies(SpeciesModel species) {
+        this.species = species;
+    }
 
     @Override
     public String[] getUriSegments(VariableModel instance) {

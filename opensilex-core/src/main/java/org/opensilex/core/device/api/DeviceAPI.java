@@ -331,19 +331,6 @@ public class DeviceAPI {
                     "Duplicated label: " + deviceDTO.getName()
             );
         }
-        //Check format date
-        if (deviceDTO.getStartUp() != null) {
-            DateTimeFormatter pattern = DateTimeFormatter.ofPattern("YYYY-MM-DD");
-            try {
-                LocalDate.parse(deviceDTO.getStartUp().toString(), pattern);
-            } catch (DateTimeParseException e) {
-                return new ErrorResponse(
-                Response.Status.BAD_REQUEST,
-                "Expected date format : YYYY-MM-DD,DD-MM-YYYY,DD/MM/YYYY",
-                "Wrong date format: " + deviceDTO.getStartUp()
-                );
-            }            
-        }
 
         //Check that the given person exist in DB
         if (deviceDTO.getPersonInCharge()!= null) {

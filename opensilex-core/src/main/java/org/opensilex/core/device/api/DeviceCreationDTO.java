@@ -14,6 +14,8 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.server.rest.validation.Date;
 
 /**
  *
@@ -52,10 +54,12 @@ public class DeviceCreationDTO extends DeviceDTO {
     @JsonProperty("person_in_charge")
     protected URI personInCharge;
     
+    @Date(DateFormat.YMD)
     @JsonProperty("start_up")
-    protected LocalDate startUp;
+    protected String startUp;
     
-    protected LocalDate removal;
+    @Date(DateFormat.YMD)
+    protected String removal;
     
     protected String description;
     

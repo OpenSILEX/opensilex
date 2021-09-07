@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.time.LocalDate;
+
 
 /**
  * Used by DateFormat annotation to validate a string value with one or more 
@@ -52,7 +54,7 @@ public class DateFormatValidator implements ConstraintValidator<Date, String> {
     public boolean validateDate(DateFormat pattern, String date) {
         try {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(pattern.toString());
-            ZonedDateTime zdt = ZonedDateTime.parse(date, dtf);
+            LocalDate zdt = dtf.parse(date, LocalDate::from);
         } catch (DateTimeParseException e) {
             return false;
         }

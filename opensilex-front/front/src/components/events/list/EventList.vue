@@ -43,7 +43,7 @@
                     <opensilex-StringFilter
                         id="target"
                         :filter.sync="filter.target"
-                        placeholder="component.common.uri-filter-placeholder"
+                        placeholder="EventList.target-filter-placeholder"
                     ></opensilex-StringFilter>
                 </opensilex-FilterField>
 
@@ -360,7 +360,7 @@ export default class EventList extends Vue {
                 this.filter.type,
                 this.filter.start,
                 this.filter.end,
-                this.target,
+                this.filter.target,
                 this.filter.description,
                 options.orderBy,
                 options.currentPage,
@@ -480,9 +480,11 @@ export default class EventList extends Vue {
 en:
     EventList:
         selected: Selected events
+        target-filter-placeholder: Enter part or all of an URIsm
 fr:
     EventList:
         selected: Évènements selectionnés
+        target-filter-placeholder: Saisir une partie ou la totalité d'un URI
 
 </i18n>
 

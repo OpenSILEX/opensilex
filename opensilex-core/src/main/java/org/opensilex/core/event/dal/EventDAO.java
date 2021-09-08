@@ -431,10 +431,11 @@ public class EventDAO<T extends EventModel> {
 
         Map<String, Boolean> fieldsToFetch = new HashMap<>();
 
-        // Check if the <?uri,oeev:concerns,?target> triple is already into select (due to filtering and/or ordering)
-        // If so then no need to add it one more time
-        boolean addTargetTriple = target == null && orderByList.stream().noneMatch(order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD));
-
+        // Append he <?uri,oeev:concerns,?target> triple only if not already into select.
+        //  the triple is needed in case on ordering on targets, on filtering, the triple is not present.
+        boolean addTargetTriple = orderByList.stream().noneMatch(
+                order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD)
+        );
         fieldsToFetch.put(EventModel.TARGETS_FIELD, addTargetTriple);
 
         SPARQLListFetcher<EventModel> dataListFetcher = new SPARQLListFetcher<>(

@@ -124,7 +124,7 @@
                         <template v-slot:cell(targets)="{data}">
                             <span :key="index" v-for="(uri, index) in data.item.targets">
                                  <opensilex-TextView :value="uri"></opensilex-TextView>
-                                <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
+                                <span v-if="data.item.targets.length > 1 && index < 2"> </span>
                                 <span v-if="index >= 2"> ... </span>
                             </span>
                         </template>
@@ -469,7 +469,7 @@ export default class EventList extends Vue {
 en:
     EventList:
         selected: Selected events
-        target-filter-placeholder: Enter part or all of an URIsm
+        target-filter-placeholder: Enter part or all of an URI
 fr:
     EventList:
         selected: Évènements selectionnés

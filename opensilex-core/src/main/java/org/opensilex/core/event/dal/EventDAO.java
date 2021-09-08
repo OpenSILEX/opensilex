@@ -339,15 +339,15 @@ public class EventDAO<T extends EventModel> {
 
     public EventModel fromResult(SPARQLResult result, String lang, EventModel model) throws Exception {
 
-        model.setUri(new URI(SPARQLDeserializers.formatURI(result.getStringValue(EventModel.URI_FIELD))));
-        model.setType(new URI(result.getStringValue(EventModel.TYPE_FIELD)));
+        model.setUri(new URI(SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD))));
+        model.setType(new URI(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
 
         SPARQLLabel typeLabel = new SPARQLLabel();
         typeLabel.setDefaultLang(StringUtils.isEmpty(lang) ? OpenSilex.DEFAULT_LANGUAGE : lang);
-        typeLabel.setDefaultValue(result.getStringValue(EventModel.TYPE_NAME_FIELD));
+        typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
         model.setTypeLabel(typeLabel);
 
-        model.setIsInstant(Boolean.parseBoolean(result.getStringValue(EventModel.DESCRIPTION_FIELD)));
+        model.setIsInstant(Boolean.parseBoolean(result.getStringValue(EventModel.IS_INSTANT_FIELD)));
         model.setDescription(result.getStringValue(EventModel.DESCRIPTION_FIELD));
 
         String startStr = result.getStringValue(startInstantTimeStampVar.getVarName());
@@ -457,9 +457,7 @@ public class EventDAO<T extends EventModel> {
                 eventGraph,
                 EventModel.class,
                 null,
-                select -> {
-                    appendInTargetsValues(select, targets.stream(),targets.size());
-                },
+                select -> appendInTargetsValues(select, targets),
                 null
         );
     }

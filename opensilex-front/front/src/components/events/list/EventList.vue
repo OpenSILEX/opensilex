@@ -79,16 +79,10 @@
             </template>
 
         </opensilex-SearchFilterField>
-
-        <opensilex-PageContent v-if="renderComponent">
-            <template v-slot>
-                <div class="card-body">
-                    <opensilex-TableAsyncView
+        <opensilex-TableAsyncView
                         ref="tableRef"
                         :searchMethod="search"
                         :fields="fields"
-                        :isSelectable="true"
-                        defaultSortBy=""
                         labelNumberOfSelectedRow="EventList.selected"
                         iconNumberOfSelectedRow="ik#ik-layers"
                     >
@@ -100,11 +94,12 @@
                             :small="true"
                             :disabled="numberOfSelectedRows == 0"
                             text=actions>
-                                <b-dropdown-item-button    
+                                <b-dropdown-item-button
                                 @click="createDocument()"
                                 >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
                             </b-dropdown>
                         </template>
+
                         <template v-slot:cell(rdf_type_name)="{data}">
                             <opensilex-UriLink
                                 v-if="data.item.rdf_type_name"
@@ -112,9 +107,7 @@
                                 :value="data.item.rdf_type_name"
                                 @click="showEventView(data.item)"
                             ></opensilex-UriLink>
-                            <opensilex-TextView v-else
-                                                :value="data.item.rdf_type">
-                            </opensilex-TextView>
+
                         </template>
 
                         <template v-slot:cell(start)="{data}">
@@ -157,9 +150,6 @@
                             </b-button-group>
                         </template>
                     </opensilex-TableAsyncView>
-                </div>
-            </template>
-        </opensilex-PageContent>
 
         <opensilex-EventModalView
             modalSize="lg"
@@ -194,7 +184,6 @@
         ></opensilex-ModalForm>
 
     </div>
-
 </template>
 
 <script lang="ts">

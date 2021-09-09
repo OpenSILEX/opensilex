@@ -150,52 +150,5 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
     }
-//
-//    public ClassModel(ClassModel other) throws URISyntaxException {
-//        this(other,null,true);
-//
-//        if(other.getParent() != null){
-//            // copy parent from other ClassModel
-//            this.parent = new ClassModel(other.getParent(),null,false);
-//            if(CollectionUtils.isEmpty(this.parent.children)){
-//                this.parent.children = new LinkedList<>();
-//                this.parent.children.add(this);
-//            }
-//        }
-//    }
-//
-//    protected ClassModel(ClassModel other, ClassModel parent, boolean copyParentChildren) throws URISyntaxException {
-//        super(other);
-//
-//        // dont copy name, since this field is just here to override the super SPARQLNamedResourceModel.name field
-//
-//        if(other.getComment() != null){
-//            comment = new SPARQLLabel(other.getComment());
-//        }
-//        if(other.getLabel() != null){
-//            label = new SPARQLLabel(other.getLabel());
-//        }
-//
-//        if(parent != null){
-//            this.parent = parent;
-//        }
-//
-//        List<ClassModel> otherChildren = other.getChildren();
-//        if(copyParentChildren && !CollectionUtils.isEmpty(otherChildren)){
-//            children = new ArrayList<>(otherChildren.size());
-//            for(ClassModel otherChild : otherChildren){
-//                children.add(new ClassModel(otherChild,this,true));
-//            }
-//        }
-//
-//        if(!MapUtils.isEmpty(other.getDatatypeProperties())){
-//            datatypeProperties = new HashMap<>(other.getDatatypeProperties());
-//        }
-//        if(!MapUtils.isEmpty(other.getObjectProperties())){
-//            objectProperties = new HashMap<>(other.getObjectProperties());
-//        }
-//        if(!MapUtils.isEmpty(other.getRestrictions())){
-//            restrictions = new HashMap<>(other.getRestrictions());
-//        }
-//    }
+
 }

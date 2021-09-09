@@ -18,39 +18,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
+/**
+ * Abstract class which handle caching logic for class {@link ClassModel}, properties {@link PropertyModel} and restrictions ({@link OwlRestrictionModel}. <br>
+ * The effective data access primitives must be defined (read and write) into inherited classes.
+ * @author rcolin
+ */
 public abstract class AbstractOntologyCache implements OntologyCache {
 
     protected final OntologyDAO ontologyDAO;
     protected final URI topDataProperty;
     protected final URI topObjectProperty;
 
-    protected static class CachedTranslation {
-
-        protected final Map<String,String> names;
-        protected final Map<String,String> descriptions;
-
-        public CachedTranslation(SPARQLLabel name, SPARQLLabel description) {
-            this.names = name != null ? name.getAllTranslations() : Collections.emptyMap();
-            this.descriptions = description != null ? description.getAllTranslations() : Collections.emptyMap();
-        }
-
-        public Map<String, String> getNames() {
-            return names;
-        }
-
-        public Map<String, String> getDescriptions() {
-            return descriptions;
-        }
-    }
-
     protected AbstractOntologyCache(SPARQLService sparql) throws URISyntaxException, SPARQLException {
-
 
         this.ontologyDAO = new OntologyDAO(sparql);
         this.buildCache();
         topDataProperty = new URI(OWL2.topDataProperty.getURI());
         topObjectProperty = new URI(OWL2.topObjectProperty.getURI());
 
+        // define default classes to cache during cache initialisation
         List<Resource> rootModelsToLoad = Arrays.asList(
                 Oeso.Device,
                 Oeev.Event,
@@ -58,7 +44,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
                 Oeso.ScientificObject
         );
 
-        List<URI> classUris = new ArrayList<>();
+        List<URI> classUris = new ArrayList<>(rootModelsToLoad.size());
         for (Resource rootClass : rootModelsToLoad) {
             classUris.add(new URI(rootClass.getURI()));
         }
@@ -70,16 +56,12 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     @Override
     public void populate(List<URI> classUris) throws SPARQLException {
-
         Objects.requireNonNull(classUris);
 
         for (URI classUri : classUris) {
             getSubClassesOf(classUri, null, OpenSilex.DEFAULT_LANGUAGE, false);
         }
     }
-
-
-
 
     @Override
     public SPARQLTreeListModel<ClassModel> getSubClassesOf(URI classUri, String stringPattern, String lang, boolean ignoreRootClasses) throws SPARQLException {
@@ -104,6 +86,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     @Override
     public ClassModel getClassModel(URI classUri, URI parentClassUri, String lang) throws SPARQLException {
+
         URI formattedUri = SPARQLDeserializers.formatURI(classUri);
         ClassModel classModel = getClassFromCache(formattedUri);
         if (classModel == null) {
@@ -114,6 +97,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             addClass(formattedUri, classModel, false);
         }
 
+        // apply translation on model and on each model descendent
         classModel.visit(model -> {
             applyTranslation(model.getLabel(),lang);
             applyTranslation(model.getComment(),lang);
@@ -161,9 +145,11 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     private void loadAllTranslations(ClassModel classModel){
 
+        // load class translation for label and comment
         classModel.setLabel(getLabelWithAllTranslation(classModel.getLabel()));
         classModel.setComment(getLabelWithAllTranslation(classModel.getComment()));
 
+        // load data-property translations
         if(classModel.getDatatypeProperties() != null){
             classModel.getDatatypeProperties().forEach((uri, datatypePropertyModel) -> {
                 datatypePropertyModel.setLabel(getLabelWithAllTranslation(datatypePropertyModel.getLabel()));
@@ -171,6 +157,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             });
         }
 
+        // load object-property translations
         if(classModel.getObjectProperties() != null){
             classModel.getObjectProperties().forEach((uri, objectPropertyModel) -> {
                 objectPropertyModel.setLabel(getLabelWithAllTranslation(objectPropertyModel.getLabel()));
@@ -224,6 +211,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     @Override
     public SPARQLTreeListModel<DatatypePropertyModel> getDataProperties(URI domain, String lang) throws SPARQLException {
+
         ClassModel classModel = getClassModel(SPARQLDeserializers.formatURI(domain), lang);
         if (classModel == null) {
             return null;
@@ -244,6 +232,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     @Override
     public SPARQLTreeListModel<ObjectPropertyModel> getObjectProperties(URI domain, String lang) throws SPARQLException {
+
         ClassModel classModel = getClassModel(SPARQLDeserializers.formatURI(domain), lang);
         if (classModel == null) {
             return null;
@@ -363,6 +352,5 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         }
         classModel.getRestrictions().remove(restrictionUri);
     }
-
 
 }

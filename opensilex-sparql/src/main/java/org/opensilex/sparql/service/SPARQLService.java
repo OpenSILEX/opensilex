@@ -21,7 +21,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -33,6 +32,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
@@ -310,10 +310,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new SPARQLInvalidURIException("Invalid destination graph URI", newGraphURI);
         }
 
-        disableSHACL();
+        boolean isShaclEnabled = isShaclEnabled();
+        if (isShaclEnabled) {
+            disableSHACL();
+        }
         LOGGER.debug("MOVE GRAPH " + fullOldURI + " TO " + fullNewURI);
         connection.renameGraph(fullOldURI, fullNewURI);
-        enableSHACL();
+        if (isShaclEnabled) {
+            enableSHACL();
+        }
     }
 
     @Override
@@ -346,23 +351,25 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
-        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang);
+        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang,null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
+    public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
+                                                                 ThrowingFunction<SPARQLResult, T, Exception> resultHandler
+    ) throws Exception {
+        if (CollectionUtils.isEmpty(uris)) {
+            return Collections.emptyList();
+        }
+
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (lang == null) {
             lang = getDefaultLang();
         }
-        List<T> instances;
-        if (uris.size() > 0) {
-            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-            instances = mapper.createInstanceList(graph, uris, lang, this);
-        } else {
-            instances = new ArrayList<>();
-        }
-        return instances;
+
+        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+        return mapper.createInstanceList(graph, uris, lang, this);
     }
+
 
     public <T extends SPARQLResourceModel> T loadByURI(Class<T> objectClass, URI uri, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
         return loadByURI(getDefaultGraph(objectClass), objectClass, uri, lang, filterHandler,null);
@@ -395,36 +402,49 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> List<T> loadListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
-        return loadListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang);
+        return loadListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang,null,null);
     }
 
-    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
-        SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        if (lang == null) {
-            lang = getDefaultLang();
+    public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass,
+                                                                  Collection<URI> uris,
+                                                                  String lang,
+                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+                                                                  Map<String, Boolean> fieldsToFetch) throws Exception {
+
+        if (CollectionUtils.isEmpty(uris)) {
+            return Collections.emptyList();
         }
 
-        List<T> resultObjects;
+        SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
+        SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
-        if (uris.size() > 0) {
-            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-            SelectBuilder select = mapper.getSelectBuilder(graph, lang);
+        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(uris);
+        select.addValueVar(mapper.getURIFieldExprVar(), uriNodes);
 
-            Collection<Node> uriNodes = SPARQLDeserializers.nodeListURI(uris);
+        String finalLang = lang != null ? lang : getDefaultLang();
 
-            select.addValueVar(mapper.getURIFieldExprVar(), uriNodes.toArray());
+        List<T> results =  executeSelectQueryAsStream(select).map(
+                result -> {
+                    try {
+                        if (resultHandler == null) {
+                            return mapper.createInstance(graph, result, finalLang, this);
+                        } else {
+                            return resultHandler.apply(result);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Unexpected exception", e);
+                        throw new RuntimeException(new SPARQLException(e));
+                    }
+                }
+        ).collect(Collectors.toCollection(() -> new ArrayList<>(uris.size())));
 
-            List<SPARQLResult> results = executeSelectQuery(select);
-
-            resultObjects = new ArrayList<>(results.size());
-
-            for (SPARQLResult result : results) {
-                resultObjects.add(mapper.createInstance(graph, result, lang, this));
-            }
-        } else {
-            resultObjects = new ArrayList<>();
+        if(fieldsToFetch != null && ! fieldsToFetch.isEmpty()){
+            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(this, objectClass,graph,fieldsToFetch,select,results);
+            listFetcher.updateModels();
         }
-        return resultObjects;
+
+        return results;
+
     }
 
     public <T extends SPARQLResourceModel> T getByUniquePropertyValue(Class<T> objectClass, String lang, Property property, Object propertyValue) throws Exception {

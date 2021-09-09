@@ -719,4 +719,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         }
     }
 
+    public SPARQLClassAnalyzer getClassAnalizer() {
+        return classAnalizer;
+    }
 }

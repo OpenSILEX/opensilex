@@ -9,8 +9,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
-import java.net.URISyntaxException;
-
 /**
  *
  * @author vidalmor
@@ -36,17 +34,8 @@ public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extend
     @Override
     public String[] getUriSegments(T instance) {
         return new String[]{
-                instance.getName()
+            instance.getName()
         };
     }
-
-    public SPARQLNamedResourceModel() {
-
-    }
-
-    public SPARQLNamedResourceModel(SPARQLNamedResourceModel<T> other) throws URISyntaxException {
-        super(other);
-        name = other.getName();
-    }
+    
 }
-

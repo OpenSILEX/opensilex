@@ -69,14 +69,8 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.provenance.api.ProvenanceAPI;
-import org.opensilex.core.provenance.api.ProvenanceGetDTO;
-import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -90,7 +84,14 @@ import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
+import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -109,6 +110,8 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -117,7 +120,6 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.slf4j.Logger;
@@ -1079,7 +1081,7 @@ public class DataAPI {
             int rowIndex, 
             DataCSVValidationModel csvValidation, 
             Map<Integer, String> headerByIndex, 
-            ExperimentDAO xpDAO, 
+            ExperimentDAO xpDAO,
             List<String> notExistingExperiments,
             List<String> duplicatedExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
@@ -1327,10 +1329,9 @@ public class DataAPI {
 
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        SPARQLTreeListModel<ClassModel> classTree = ontologyDAO.searchSubClasses(new URI(Oeso.Device.toString()), ClassModel.class,null,user,true,null);
-        List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(classTree);
-
+        SPARQLTreeListModel<ClassModel> treeList = CaffeineOntologyCache.getInstance(sparql).getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(),true);
+        List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
+        
         Map<URI, URI> map = new HashMap<>();
         
         for (ResourceTreeDTO tree:treeDtos) {

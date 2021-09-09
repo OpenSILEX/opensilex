@@ -43,6 +43,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.api.ScientificObjectSearchDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -275,20 +276,13 @@ public class StudiesAPI implements BrapiCall {
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.search(
-                studyDbId,
-                null,
-                rdfTypes,
-                null,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                page,
-                limit,
-                null,
+
+        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.searchAsDto(
+                new ScientificObjectSearchDTO()
+                        .setExperiment(studyDbId)
+                        .setRdfTypes(rdfTypes)
+                        .setPage(page)
+                        .setPageSize(limit),
                 currentUser
         );
 

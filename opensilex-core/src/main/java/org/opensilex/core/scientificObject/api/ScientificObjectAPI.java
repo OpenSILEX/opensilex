@@ -15,9 +15,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.*;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -28,6 +29,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.bson.codecs.configuration.CodecConfigurationException;
@@ -67,15 +70,11 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
@@ -156,7 +155,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsListByUris(
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") URI contextURI,
@@ -166,7 +165,7 @@ public class ScientificObjectAPI {
             objectsURI = new ArrayList<>();
         }
         validateContextAccess(contextURI);
-        
+
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
@@ -179,7 +178,7 @@ public class ScientificObjectAPI {
         HashMap<String, Geometry> mapGeo = geoDAO.getGeometryByUris(contextURI, objectsURI);
         List<ScientificObjectNodeDTO> dtoList = scientificObjects.stream().map((model) -> ScientificObjectNodeDTO.getDTOFromModel(model, mapGeo.get(SPARQLDeserializers.getExpandedURI(model.getUri())))).collect(Collectors.toList());
 
-        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @GET
@@ -189,7 +188,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
     })
     public Response getUsedTypes(
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") @ValidURI URI experimentURI
@@ -241,7 +240,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
             @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI
@@ -275,7 +274,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the parent URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the parent URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsChildren(
             @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parent") URI parentURI,
@@ -283,7 +282,7 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
         validateContextAccess(experimentURI);
@@ -303,7 +302,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific objects corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return scientific objects corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjects(
             @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") final URI contextURI,
@@ -317,12 +316,12 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
 
         if (contextURI != null) {
             if (sparql.uriExists(ExperimentModel.class, contextURI)) {
+                ExperimentDAO xpDAO = new ExperimentDAO(sparql);
                 xpDAO.validateExperimentAccess(contextURI, currentUser);
             } else {
                 throw new NotFoundURIException("Experiment URI not found:", contextURI);
@@ -330,9 +329,25 @@ public class ScientificObjectAPI {
         }
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.search(contextURI, pattern, rdfTypes, parentURI, false, germplasm, factorLevels, facility, existenceDate, creationDate, page, pageSize, orderByList, currentUser);
 
-        return new PaginatedListResponse<ScientificObjectNodeDTO>(dtoList).getResponse();
+        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(
+                new ScientificObjectSearchDTO()
+                        .setExperiment(contextURI)
+                        .setPattern(pattern)
+                        .setRdfTypes(rdfTypes)
+                        .setParentURI(parentURI)
+                        .setGermplasm(germplasm)
+                        .setFactorLevels(factorLevels)
+                        .setFacility(facility)
+                        .setExistenceDate(existenceDate)
+                        .setCreationDate(creationDate)
+                        .setPage(page)
+                        .setPageSize(pageSize)
+                        .setOrderByList(orderByList),
+                currentUser
+        );
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @GET
@@ -342,7 +357,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given object URI", response = ScientificObjectDetailDTO.class)
+            @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given object URI", response = ScientificObjectDetailDTO.class)
     })
     public Response getScientificObjectDetail(
             @ApiParam(value = "scientific object URI", example = "http://opensilex.org/set/scientific-objects/so-1357dz_pg_34zm4384wwveg_323_37arch2017-03-30", required = true)
@@ -362,7 +377,7 @@ public class ScientificObjectAPI {
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
         MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
 
-        ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
+        ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
         GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
 
         if (model == null) {
@@ -379,7 +394,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment and object URI", response = ScientificObjectDetailByExperimentsDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment and object URI", response = ScientificObjectDetailByExperimentsDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDetailByExperiments(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
@@ -400,7 +415,7 @@ public class ScientificObjectAPI {
         for (URI contextURI : contexts) {
             ExperimentModel experiment = getExperiment(contextURI);
 
-            ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser);
+            ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
                 ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
@@ -425,8 +440,8 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a scientific object", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(code = 201, message = "Create a scientific object", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
@@ -509,7 +524,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Scientific object updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Scientific object updated", response = ObjectUriResponse.class)
     })
     public Response updateScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
@@ -576,8 +591,8 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Scientific object deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Scientific object deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })
     public Response deleteScientificObject(
             @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
@@ -617,7 +632,7 @@ public class ScientificObjectAPI {
     @Path("import")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
+            @ApiResponse(code = 201, message = "Data file and metadata saved", response = CSVValidationDTO.class)
     })
     @ApiProtected
     @ApiCredential(
@@ -762,11 +777,18 @@ public class ScientificObjectAPI {
         return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
     }
 
+    private final static Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
+            OntologyDAO.CSV_URI_KEY,
+            OntologyDAO.CSV_TYPE_KEY,
+            OntologyDAO.CSV_NAME_KEY,
+            GEOMETRY_COLUMN_ID
+    ));
+
     @POST
     @Path("export")
     @ApiOperation("Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file exported")
+            @ApiResponse(code = 201, message = "Data file exported")
     })
     @ApiProtected
     @ApiCredential(
@@ -776,72 +798,83 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
-            @ApiParam("CSV export configuration") @Valid ScientificObjectCsvExportDTO dto
+            @ApiParam("CSV export configuration") @Valid ScientificObjectSearchDTO dto
     ) throws Exception {
-        URI contextURI = dto.getExperiment();
-        validateContextAccess(contextURI);
 
-        Node contextNode;
-        if (contextURI == null) {
-            contextNode = sparql.getDefaultGraph(ScientificObjectModel.class);
-        } else {
-            contextNode = SPARQLDeserializers.nodeURI(contextURI);
-        }
-        List<ScientificObjectModel> objects = sparql.getListByURIs(contextNode, ScientificObjectModel.class, dto.getUris(), currentUser.getLanguage());
+        validateContextAccess(dto.getExperiment());
 
+        ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(null, dto.getUris());
-
-        List<String> customColumns = new ArrayList<>();
-        customColumns.add(Oeso.isPartOf.toString());
-        customColumns.add(Oeso.hasCreationDate.toString());
-        customColumns.add(Oeso.hasDestructionDate.toString());
-        customColumns.add(Oeso.hasFactorLevel.toString());
-        customColumns.add(Oeso.hasFacility.toString());
-        customColumns.add(GEOMETRY_COLUMN_ID);
-
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
+        // search objects according filtering and selected uris, fetch os factors
+        ListWithPagination<ScientificObjectModel> objects = soDao.search(dto, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD),currentUser);
+
+        // compute URI list in order to call getGeometryByUris()
+        List<URI> objectsUris;
+        if (!CollectionUtils.isEmpty(dto.getUris())) {
+            objectsUris = dto.getUris();
+        } else {
+            objectsUris = objects.getList().stream().map(ScientificObjectModel::getUri).collect(Collectors.toList());
+        }
+
+        // get geometry of objects
+        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(dto.getExperiment(), objectsUris);
+
+        // get last location of objects
+        Map<URI, URI> arrivalFacilityByOs = moveDAO.getLastLocations(objectsUris.stream(), objects.getList().size());
+
+        boolean hasExperiment = dto.getExperiment() != null;
+
+        // define csv headers
+        List<String> customColumns = new ArrayList<>();
+        if(hasExperiment){
+            customColumns.add(Oeso.isPartOf.toString());
+            customColumns.add(Oeso.hasCreationDate.toString());
+            customColumns.add(Oeso.hasDestructionDate.toString());
+            customColumns.add(Oeso.hasFactorLevel.toString());
+            customColumns.add(Oeso.hasFacility.toString());
+        }
+        customColumns.add(GEOMETRY_COLUMN_ID);
+
+        // define how to write value for each selected column from header
         BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
             if (value == null) {
                 return null;
             }
-            if (columnID.equals(Oeso.isPartOf.toString())) {
-                if (value.getParent() != null) {
-                    return SPARQLDeserializers.formatURI(value.getParent().getUri()).toString();
-                } else {
-                    return null;
-                }
-            } else if (columnID.equals(Oeso.hasCreationDate.toString()) && value.getCreationDate() != null) {
-                return value.getCreationDate().toString();
-            } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
-                return value.getDestructionDate().toString();
-            } else if (columnID.equals(Oeso.hasFactorLevel.toString()) && value.getFactorLevels() != null) {
-                try {
-                    List<String> levels = new ArrayList<>();
+            if(hasExperiment){
+                if (columnID.equals(Oeso.isPartOf.toString())) {
+                    if (value.getParent() != null) {
+                        return SPARQLDeserializers.formatURI(value.getParent().getUri()).toString();
+                    } else {
+                        return null;
+                    }
+                } else if (columnID.equals(Oeso.hasCreationDate.toString()) && value.getCreationDate() != null) {
+                    return value.getCreationDate().toString();
+                } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
+                    return value.getDestructionDate().toString();
+                } else if (columnID.equals(Oeso.hasFactorLevel.toString()) && value.getFactorLevels() != null) {
+
+                    StringBuilder sb = new StringBuilder();
+
                     for (FactorLevelModel factorLevel : value.getFactorLevels()) {
                         if (factorLevel != null && factorLevel.getUri() != null) {
-                            levels.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
-                        } 
+                            sb.append(factorLevel.getUri().toString()).append(" ");
+                        }
                     }
-                    return levels.toString();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            } else if (columnID.equals(Oeso.hasFacility.toString())) {
-                try {
-                    MoveModel lastMove = moveDAO.getLastMoveEvent(value.getUri());
-                    if (lastMove != null && lastMove.getTo() != null) {
-                        return lastMove.getTo().getUri().toString();
+                    // remove last space character
+                    return sb.length() > 0 ? sb.substring(0,sb.length()-1) : sb.toString();
+
+                } else if (columnID.equals(Oeso.hasFacility.toString())) {
+                    if (arrivalFacilityByOs.containsKey(value.getUri())) {
+                        return arrivalFacilityByOs.get(value.getUri()).toString();
                     }
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    return null;
                 }
-                return null;
-            } else if (columnID.equals(GEOMETRY_COLUMN_ID)) {
-                String uriString = SPARQLDeserializers.getExpandedURI(value.getUri());
+            }
+            if (columnID.equals(GEOMETRY_COLUMN_ID)) {
+                String uriString = value.getUri().toString();
                 if (geospatialMap.containsKey(uriString)) {
                     Geometry geo = geospatialMap.get(uriString);
                     try {
@@ -855,13 +888,15 @@ public class ScientificObjectAPI {
             } else {
                 return null;
             }
+
         };
         String csvContent = ontologyDAO.exportCSV(
-                objects,
+                objects.getList(),
                 new URI(Oeso.ScientificObject.toString()),
                 currentUser.getLanguage(),
                 customValueGenerator,
                 customColumns,
+                hasExperiment ? null : columnsWhenNoExperiment,
                 (colId1, colId2) -> {
                     if (colId1.equals(colId2)) {
                         return 0;
@@ -884,7 +919,7 @@ public class ScientificObjectAPI {
     @Path("import_validation")
     @ApiOperation(value = "Validate a CSV file for the given experiment URI and scientific object type.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
+            @ApiResponse(code = 201, message = "CSV validation errors or a validation token used for CSV import", response = CSVValidationDTO.class)
     })
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -1127,7 +1162,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectVariables(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
@@ -1155,7 +1190,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDataProvenances(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
@@ -1182,7 +1217,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDataFilesProvenances(
             @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri

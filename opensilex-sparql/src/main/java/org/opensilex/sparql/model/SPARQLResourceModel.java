@@ -6,7 +6,6 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +31,7 @@ import org.opensilex.sparql.utils.Ontology;
         resource = "Class",
         ignoreValidation = true
 )
-public class SPARQLResourceModel implements SPARQLModel, Cloneable {
+public class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLResourceURI()
     protected URI uri;
@@ -54,26 +53,6 @@ public class SPARQLResourceModel implements SPARQLModel, Cloneable {
     public static final String CREATOR_FIELD = "creator";
 
     protected List<SPARQLModelRelation> relations = new ArrayList<>();
-
-    public SPARQLResourceModel() {
-    }
-
-    public SPARQLResourceModel(SPARQLResourceModel other) throws URISyntaxException {
-
-        if(other.getUri() != null){
-            uri = new URI(other.getUri().toString());
-        }
-        if(other.getType() != null){
-            rdfType = new URI(other.getType().toString());
-        }
-        if(other.getCreator() != null){
-            creator = new URI(other.getCreator().toString());
-        }
-
-        if(other.getTypeLabel() != null){
-            rdfTypeName = new SPARQLLabel(other.getTypeLabel());
-        }
-    }
 
     public URI getUri() {
         return uri;
@@ -163,7 +142,5 @@ public class SPARQLResourceModel implements SPARQLModel, Cloneable {
 
         this.relations.add(r);
     }
-
-
 
 }

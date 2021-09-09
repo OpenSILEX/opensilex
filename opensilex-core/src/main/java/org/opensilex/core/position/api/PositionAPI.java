@@ -71,7 +71,7 @@ public class PositionAPI {
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        MoveModel model = moveDAO.getMoveEvent(
+        MoveModel model = moveDAO.getLastMoveAfter(
                 uri,
                 time != null ? OffsetDateTime.parse(time) : null
         );
@@ -109,7 +109,7 @@ public class PositionAPI {
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        MoveModel moveEvent = moveDAO.getMoveEvent(target, null);
+        MoveModel moveEvent = moveDAO.getLastMoveAfter(target, null);
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {

@@ -199,7 +199,7 @@ public class GeospatialDAO {
         HashMap<String, Geometry> mapGeo = new HashMap<>();
 
         for (GeospatialModel geospatialModel : modelList) {
-            mapGeo.put(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri()), geospatialModel.getGeometry());
+            mapGeo.put(SPARQLDeserializers.formatURI(geospatialModel.getUri().toString()), geospatialModel.getGeometry());
         }
 
         return mapGeo;
@@ -229,7 +229,7 @@ public class GeospatialDAO {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
             SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class, null,
-                    currentUser,
+                    currentUser.getLanguage(),
                     true,
                     null);
             List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);

@@ -11,6 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Ontology caching implementation based on Caffeine {@link Cache}
+ */
 public class CaffeineOntologyCache extends AbstractOntologyCache {
 
     private final static long EXPIRE_AFTER_WRITE_DURATION = 24;

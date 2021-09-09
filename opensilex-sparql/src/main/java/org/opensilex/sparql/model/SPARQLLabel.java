@@ -5,6 +5,8 @@
  */
 package org.opensilex.sparql.model;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,15 @@ public class SPARQLLabel {
         setDefaultValue(value);
         setDefaultLang(lang);
     }
+
+    public SPARQLLabel(SPARQLLabel label) {
+        this.defaultValue = label.getDefaultValue();
+        this.defaultLang = label.getDefaultLang();
+        if(!MapUtils.isEmpty(label.getTranslations())){
+            this.translations = new HashMap<>(label.getTranslations());
+        }
+    }
+
 
     public String getDefaultValue() {
         return defaultValue;

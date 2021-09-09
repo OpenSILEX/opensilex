@@ -83,6 +83,7 @@
                         ref="tableRef"
                         :searchMethod="search"
                         :fields="fields"
+                        defaultSortBy=""
                         labelNumberOfSelectedRow="EventList.selected"
                         iconNumberOfSelectedRow="ik#ik-layers"
                     >

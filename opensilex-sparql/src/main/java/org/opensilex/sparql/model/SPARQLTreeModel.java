@@ -41,13 +41,6 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
         this.children = children;
     }
 
-    public SPARQLTreeModel() {
-    }
-
-    public SPARQLTreeModel(SPARQLTreeModel<T> other) throws URISyntaxException {
-        super(other);
-    }
-
     public List<T> getNodes() {
 
         List<T> visited = new ArrayList<>();

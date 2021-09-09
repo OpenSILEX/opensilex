@@ -747,8 +747,6 @@ public final class OntologyDAO {
 
             sparql.commitTransaction();
 
-            CaffeineOntologyCache.getInstance(sparql).updateRestriction(restriction);
-
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
             throw ex;

@@ -29,7 +29,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
-import org.opensilex.core.ontology.api.cache.OntologyCache;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -171,7 +172,7 @@ public class VueOwlExtensionAPI {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
 
         dao.deleteExtendedClass(classURI);
-        OntologyCache.getInstance(sparql).invalidateClasses();
+//        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }

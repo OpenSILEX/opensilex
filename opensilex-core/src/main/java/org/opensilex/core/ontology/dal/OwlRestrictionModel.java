@@ -7,6 +7,7 @@ package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
 import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -22,6 +23,9 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
         allowBlankNode = true
 )
 public class OwlRestrictionModel extends SPARQLResourceModel {
+
+    @SPARQLIgnore
+    URI domain;
 
     @SPARQLProperty(
             ontology = OWL2.class,
@@ -119,6 +123,14 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
 
     public void setSomeValuesFrom(URI someValuesFrom) {
         this.someValuesFrom = someValuesFrom;
+    }
+
+    public URI getDomain() {
+        return domain;
+    }
+
+    public void setDomain(URI domain) {
+        this.domain = domain;
     }
 
     public boolean isList() {

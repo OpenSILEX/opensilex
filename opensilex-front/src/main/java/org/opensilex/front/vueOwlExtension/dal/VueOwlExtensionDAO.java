@@ -14,7 +14,6 @@ import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.ontology.api.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
@@ -45,7 +44,7 @@ public class VueOwlExtensionDAO {
             sparql.create(instance);
             sparql.create(instanceExtension);
             sparql.commitTransaction();
-            OntologyCache.getInstance(sparql).invalidateClasses();
+//            OntologyCache.getInstance(sparql).invalidateClasses();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
         }
@@ -57,7 +56,7 @@ public class VueOwlExtensionDAO {
             sparql.update(instance);
             sparql.update(instanceExtension);
             sparql.commitTransaction();
-            OntologyCache.getInstance(sparql).invalidateClasses();
+//            OntologyCache.getInstance(sparql).invalidateClasses();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
         }
@@ -69,7 +68,7 @@ public class VueOwlExtensionDAO {
             sparql.delete(ClassModel.class, classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
             sparql.commitTransaction();
-            OntologyCache.getInstance(sparql).invalidateClasses();
+//            OntologyCache.getInstance(sparql).invalidateClasses();
 
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

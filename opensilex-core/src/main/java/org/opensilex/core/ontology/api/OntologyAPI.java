@@ -5,7 +5,8 @@
  */
 package org.opensilex.core.ontology.api;
 
-import org.opensilex.core.ontology.api.cache.OntologyCache;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +15,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -111,7 +113,11 @@ public class OntologyAPI {
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern ,
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
-        List<ResourceTreeDTO> treeDto = OntologyCache.getInstance(sparql).searchSubClassesOf(currentUser,parentClass,stringPattern,ignoreRootClasses);
+
+        OntologyCache cache = CaffeineOntologyCache.getInstance(sparql);
+        SPARQLTreeListModel<ClassModel> treeList = cache.getSubClassesOf(parentClass,stringPattern,currentUser.getLanguage(),ignoreRootClasses);
+
+        List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
         return new ResourceTreeResponse(treeDto).getResponse();
     }
 
@@ -128,9 +134,9 @@ public class OntologyAPI {
             @ApiParam(value = "RDF type URI") @QueryParam("rdf_type") @NotNull @ValidURI URI rdfType,
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
-        OntologyDAO dao = new OntologyDAO(sparql);
 
-        ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
+        ClassModel classDescription = CaffeineOntologyCache.getInstance(sparql)
+                .getClassModel(rdfType,parentType,currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription)).getResponse();
     }
@@ -183,7 +189,7 @@ public class OntologyAPI {
             if (isDataProperty) {
                 DatatypePropertyModel dtModel = new DatatypePropertyModel();
                 if (dto.getParent() != null) {
-                    DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser);
+                    DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
                     if (parentModel == null) {
                         throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                     }
@@ -204,7 +210,7 @@ public class OntologyAPI {
                 ObjectPropertyModel objModel = new ObjectPropertyModel();
 
                 if (dto.getParent() != null) {
-                    ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser);
+                    ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
                     if (parentModel == null) {
                         throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                     }
@@ -252,7 +258,7 @@ public class OntologyAPI {
         if (isDataProperty) {
             DatatypePropertyModel dtModel = new DatatypePropertyModel();
             if (dto.getParent() != null) {
-                DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser);
+                DatatypePropertyModel parentModel = dao.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
                 if (parentModel == null) {
                     throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                 }
@@ -272,7 +278,7 @@ public class OntologyAPI {
             ObjectPropertyModel objModel = new ObjectPropertyModel();
 
             if (dto.getParent() != null) {
-                ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser);
+                ObjectPropertyModel parentModel = dao.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
                 if (parentModel == null) {
                     throw new SPARQLInvalidURIException("Parent URI not found", dto.getParent());
                 }
@@ -313,11 +319,11 @@ public class OntologyAPI {
 
         RDFPropertyDTO dto;
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
-            DatatypePropertyModel property = dao.getDataProperty(propertyURI, domainType, currentUser);
+            DatatypePropertyModel property = dao.getDataProperty(propertyURI, domainType, currentUser.getLanguage());
             dto = RDFPropertyDTO.fromModel(property, property.getParent());
             dto.setRange(property.getRange());
         } else {
-            ObjectPropertyModel property = dao.getObjectProperty(propertyURI, domainType, currentUser);
+            ObjectPropertyModel property = dao.getObjectProperty(propertyURI, domainType, currentUser.getLanguage());
             dto = RDFPropertyDTO.fromModel(property, property.getParent());
             if (property.getRange() != null) {
                 dto.setRange(property.getRange().getUri());
@@ -369,9 +375,15 @@ public class OntologyAPI {
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
 
-        List<ResourceTreeDTO> properties = OntologyCache.getInstance(sparql).getProperties(currentUser,domainURI);
+        OntologyCache cache = CaffeineOntologyCache.getInstance(sparql);
+
+        List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
+                cache.getDataProperties(domainURI,currentUser.getLanguage()),
+                cache.getObjectProperties(domainURI,currentUser.getLanguage()))
+        );
         return new ResourceTreeResponse(properties).getResponse();
     }
+
 
     @GET
     @Path("/data_properties")
@@ -385,10 +397,13 @@ public class OntologyAPI {
     public Response getDataProperties(
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
-        OntologyDAO dao = new OntologyDAO(sparql);
 
-        SPARQLTreeListModel<?> dataPropertyTree = dao.searchDataProperties(domainURI, currentUser);
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(dataPropertyTree)).getResponse();
+        OntologyCache cache = CaffeineOntologyCache.getInstance(sparql);
+
+        List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
+            cache.getDataProperties(domainURI,currentUser.getLanguage())
+        );
+        return new ResourceTreeResponse(properties).getResponse();
     }
 
     @GET
@@ -403,10 +418,13 @@ public class OntologyAPI {
     public Response getObjectProperties(
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
-        OntologyDAO dao = new OntologyDAO(sparql);
 
-        SPARQLTreeListModel objectPropertyTree = dao.searchObjectProperties(domainURI, currentUser);
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(objectPropertyTree)).getResponse();
+        OntologyCache cache = CaffeineOntologyCache.getInstance(sparql);
+
+        List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
+                cache.getObjectProperties(domainURI,currentUser.getLanguage())
+        );
+        return new ResourceTreeResponse(properties).getResponse();
     }
 
     @POST
@@ -431,8 +449,6 @@ public class OntologyAPI {
             return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
 
-        OntologyCache.getInstance(sparql).invalidateClasses();
-
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
 
@@ -452,11 +468,7 @@ public class OntologyAPI {
         Node propertyGraph = getPropertyGraph();
 
         OntologyDAO dao = new OntologyDAO(sparql);
-
         dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
-
-        // clean cache after delete
-        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
@@ -477,9 +489,6 @@ public class OntologyAPI {
 
         OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
         dao.updateClassPropertyRestriction(getPropertyGraph(), dto.getClassURI(), restriction, currentUser.getLanguage());
-
-        // clean cache after update
-        OntologyCache.getInstance(sparql).invalidateClasses();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
@@ -560,14 +569,15 @@ public class OntologyAPI {
             restriction.setMaxCardinality(1);
         }
 
-        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, dto.getDomain(), currentUser);
+        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, dto.getDomain(), currentUser.getLanguage());
         if (dataProp == null) {
-            URI objectRangeURI = dao.getObjectProperty(propertyURI, dto.getDomain(), currentUser).getRange().getUri();
+            URI objectRangeURI = dao.getObjectProperty(propertyURI, dto.getDomain(), currentUser.getLanguage()).getRange().getUri();
             restriction.setOnClass(objectRangeURI);
         } else {
             URI dataRangeURI = dataProp.getRange();
             restriction.setOnDataRange(dataRangeURI);
         }
+        restriction.setDomain(dto.getDomain());
 
         return restriction;
     }

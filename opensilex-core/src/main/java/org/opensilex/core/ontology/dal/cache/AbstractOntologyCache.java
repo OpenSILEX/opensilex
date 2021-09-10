@@ -29,27 +29,32 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     protected final URI topDataProperty;
     protected final URI topObjectProperty;
 
+    static{
+        try {
+            rootModelsToLoad = Arrays.asList(
+                    new URI(Oeso.Device.toString()),
+                    new URI(Oeev.Event.toString()),
+                    new URI(Oeso.InfrastructureFacility.toString()),
+                    new URI(Oeso.ScientificObject.toString())
+            );
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // define default classes to cache during cache initialisation
+    protected static List<URI> rootModelsToLoad;
+
+    public static List<URI> getRootModelsToLoad() {
+        return new ArrayList<>(rootModelsToLoad);
+    }
+
     protected AbstractOntologyCache(SPARQLService sparql) throws URISyntaxException, SPARQLException {
 
         this.ontologyDAO = new OntologyDAO(sparql);
         this.buildCache();
         topDataProperty = new URI(OWL2.topDataProperty.getURI());
         topObjectProperty = new URI(OWL2.topObjectProperty.getURI());
-
-        // define default classes to cache during cache initialisation
-        List<Resource> rootModelsToLoad = Arrays.asList(
-                Oeso.Device,
-                Oeev.Event,
-                Oeso.InfrastructureFacility,
-                Oeso.ScientificObject
-        );
-
-        List<URI> classUris = new ArrayList<>(rootModelsToLoad.size());
-        for (Resource rootClass : rootModelsToLoad) {
-            classUris.add(new URI(rootClass.getURI()));
-        }
-
-        this.populate(classUris);
     }
 
     protected abstract void buildCache();
@@ -62,6 +67,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             getSubClassesOf(classUri, null, OpenSilex.DEFAULT_LANGUAGE, false);
         }
     }
+
 
     @Override
     public SPARQLTreeListModel<ClassModel> getSubClassesOf(URI classUri, String stringPattern, String lang, boolean ignoreRootClasses) throws SPARQLException {

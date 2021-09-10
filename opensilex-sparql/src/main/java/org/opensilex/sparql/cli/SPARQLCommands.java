@@ -30,8 +30,8 @@ public class SPARQLCommands extends AbstractOpenSilexCommand implements OpenSile
 
     @CommandLine.Command(
             name = "reset-ontologies",
-            header = "Reset configred ontologies graph",
-            description = "Reset configred ontologies graph defined in each modules"
+            header = "Reset configured ontologies graph",
+            description = "Reset configured ontologies graph defined in each modules"
     )
     public void resetOntologies(
             @CommandLine.Mixin HelpOption help

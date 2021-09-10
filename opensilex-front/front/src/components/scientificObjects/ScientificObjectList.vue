@@ -336,7 +336,7 @@ export default class ScientificObjectList extends Vue {
       String(today.getDate()).padStart(2, "0");
 
     // export all OS corresponding to filter
-    let exportDto: ScientificObjectSearchDTO  = {
+    let exportDto  = {
       experiment: this.filter.experiment,
       rdf_types: this.filter.types,
       name: this.filter.name,

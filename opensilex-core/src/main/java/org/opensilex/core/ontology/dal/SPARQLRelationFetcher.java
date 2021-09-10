@@ -13,10 +13,10 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -34,18 +34,27 @@ import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
+/**
+ * Class used to optimize the fetching of multiple {@link SPARQLModelRelation} for a List of T, by retrieving
+ * all those relations in one SPARQL query.
+ *
+ * This class build a SPARQL query which use the same WHERE clause as the initial SPARQL query.
+ * Then the query is updated by adding a triple and a var corresponding to each data/object property which is defined into the ontology for
+ * the T type.
+ *
+ * Then, results from the new SPARQL query are linked to the initial T list, in order to update element of T.
+ *
+ * @param <T> : a type of {@link SPARQLModelRelation}
+ */
 public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
     private final SPARQLService sparql;
-    private final SPARQLClassObjectMapper<T> mapper;
 
     private final Node graph;
     private final URI graphUri;
     private final SelectBuilder initialSelect;
     private final List<T> results;
 
-    private final OntologyCache ontologyCache;
-    private final Set<URI> types;
     private final Set<PropertyModel> typesProperties;
     private final Map<URI, List<URI>> propertiesByType;
     private final Map<URI, List<String>> propertiesByTypeVarNames;
@@ -53,8 +62,8 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
     public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException {
         this.sparql = sparql;
-        this.mapper = sparql.getMapperIndex().getForClass(objectClass);
-        this.ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+        SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
+        OntologyCache ontologyCache = CaffeineOntologyCache.getInstance(sparql);
 
         this.graph = graph;
         this.graphUri = graph != null ? new URI(graph.getURI()) : null;
@@ -63,18 +72,18 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         //  #TODO optimize k types extraction from n results ?
         //   most of the time, k is much smaller than n, iteration could be costly with lot of results
-        this.types = results.stream().map(SPARQLResourceModel::getType).collect(Collectors.toSet());
+        Set<URI> types = results.stream().map(SPARQLResourceModel::getType).collect(Collectors.toSet());
 
         Set<URI> managedProperties = new HashSet<>();
         for (Property property : mapper.getClassAnalizer().getManagedProperties()) {
-            managedProperties.add(SPARQLDeserializers.formatURIasURI(property.toString()));
+            managedProperties.add(URIDeserializer.formatURI(property.toString()));
         }
 
         this.typesProperties = new HashSet<>();
         this.propertiesByType = new HashMap<>();
         this.propertiesByTypeVarNames = new HashMap<>();
 
-        for (URI type : this.types) {
+        for (URI type : types) {
 
             // get class from OntologyCache and compute stream of data/object property
             ClassModel classModel = ontologyCache.getClassModel(type, OpenSilex.DEFAULT_LANGUAGE);
@@ -105,8 +114,6 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             propertiesByType.put(classModel.getUri(), propertiesUris);
             propertiesByTypeVarNames.put(classModel.getUri(), propertiesNames);
         }
-
-
     }
 
 
@@ -191,7 +198,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
                 if (modelsIdx.get() >= results.size()) {
                     String errorMsg = uriValue +" : URI from SPARQL results (at index"+resultsIdx+") should be included into initial results.";
-                    throw new RuntimeException(errorMsg, new IllegalStateException(errorMsg));
+                    throw new IllegalStateException(errorMsg);
                 }
                 T model = results.get(modelsIdx.get());
                 if (SPARQLDeserializers.compareURIs(model.getUri().toString(), uriValue)) {
@@ -220,10 +227,6 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
             if (!StringUtils.isEmpty(relationValue)) {
                 URI propertyUri = typeProperties.get(i);
-
-//                OwlRestrictionModel restriction = new OwlRestrictionModel();
-//                restriction.getOnDataRange();
-
                 initialModel.addRelation(graphUri, propertyUri, null, relationValue);
             }
         }

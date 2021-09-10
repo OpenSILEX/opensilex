@@ -405,11 +405,27 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return loadListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang,null,null);
     }
 
+    /**
+     *
+     * @param graph graph to query
+     * @param objectClass {@link SPARQLResourceModel} class
+     * @param uris the list of URI to load
+     * @param lang lang
+     * @param resultHandler function which define a custom transformation of {@link SPARQLResult} into a instance of T. Can be null
+     * @param listFieldsToFetch . Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
+     * By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
+     * The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
+     * must be added into the query which getch these fields data.
+     *
+     * @param <T> type of {@link SPARQLResourceModel}
+     * @return the list of T corresponding to uris
+     * @throws Exception
+     */
     public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass,
                                                                   Collection<URI> uris,
                                                                   String lang,
                                                                   ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                  Map<String, Boolean> fieldsToFetch) throws Exception {
+                                                                  Map<String, Boolean> listFieldsToFetch) throws Exception {
 
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -438,8 +454,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 }
         ).collect(Collectors.toCollection(() -> new ArrayList<>(uris.size())));
 
-        if(fieldsToFetch != null && ! fieldsToFetch.isEmpty()){
-            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(this, objectClass,graph,fieldsToFetch,select,results);
+        if(listFieldsToFetch != null && ! listFieldsToFetch.isEmpty()){
+            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(this, objectClass,graph,listFieldsToFetch,select,results);
             listFetcher.updateModels();
         }
 
@@ -719,6 +735,37 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return select;
     }
 
+    /**
+     *
+
+     * @param uris the list of URI to load
+     * @param lang lang
+     * @param listFieldsToFetch . Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
+     * By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
+     * The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
+     * must be added into the query which getch these fields data.
+     *
+     * @throws Exception
+     */
+
+
+    /**
+     *
+     * @param graph graph to query
+     * @param objectClass {@link SPARQLResourceModel} class
+     * @param lang lang
+     * @param filterHandler function defined to update the SPARQL query used for search.
+     * @param customHandlerByFields map between {@link SPARQLResourceModel} field and a custom {@link WhereHandler}.
+     * By default, all fields are handled by {@link org.opensilex.sparql.mapping.SPARQLClassQueryBuilder},
+     * but in some case you may wan't so specifiy a custom way to handle this field into the query. Can be null
+     * @param resultHandler function which define a custom transformation of {@link SPARQLResult} into a instance of T. Can be null
+     * @param orderByList
+     * @param offset
+     * @param limit
+     * @param <T> type of {@link SPARQLResourceModel}
+     * @return a list of T
+     * @throws Exception
+     */
     public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang,
                                                           ThrowingConsumer<SelectBuilder, Exception> filterHandler,
                                                           Map<String,WhereHandler> customHandlerByFields,
@@ -735,14 +782,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
     }
-
-//    public <T extends SPARQLResourceModel> List<T> search(Node graph, Class<T> objectClass, String lang,
-//                                                          ThrowingConsumer<SelectBuilder, Exception> filterHandler,
-//                                                          Map<String,WhereHandler> customHandlerByFields,
-//                                                          Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
-//
-//        return search(graph, objectClass, lang, filterHandler, customHandlerByFields, null,orderByList, offset, limit);
-//    }
 
     public <T extends SPARQLResourceModel> Stream<T> searchAsStream(Node graph, Class<T> objectClass, String lang,
                                                                     ThrowingConsumer<SelectBuilder, Exception> filterHandler,

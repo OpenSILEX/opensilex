@@ -221,19 +221,6 @@ public class SPARQLDeserializers {
         }
     }
 
-    public static URI formatURIasURI(String value) {
-        return URIDeserializer.formatURI(value);
-    }
-
-    public static Collection<Node> nodeListURI(Collection<URI> uris) throws Exception {
-        SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
-        List<Node> uriNodes = new ArrayList<>(uris.size());
-        for (URI uri : uris) {
-            uriNodes.add(uriParser.getNodeFromString(uri.toString()));
-        }
-        return uriNodes;
-    }
-
     public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
 
@@ -244,7 +231,6 @@ public class SPARQLDeserializers {
         }
         return uriNodes;
     }
-
 
     public static boolean compareURIs(String uri1, String uri2) {
         return getExpandedURI(uri1).equals(getExpandedURI(uri2));

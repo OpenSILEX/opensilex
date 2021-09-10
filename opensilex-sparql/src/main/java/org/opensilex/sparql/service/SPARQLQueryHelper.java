@@ -271,7 +271,6 @@ public class SPARQLQueryHelper {
             nodes[i.getAndIncrement()] = SPARQLDeserializers.nodeURI(uri);
         });
 
-//        where.clearWhereValues();
         where.addWhereValueVar(varName, nodes);
     }
 

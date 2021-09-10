@@ -46,8 +46,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     private final Node graph;
     private final Map<String, Boolean> fieldsToFetch;
 
-    private SelectBuilder initialSelect;
-    private List<T> results;
+    private final SelectBuilder initialSelect;
+    private final List<T> results;
 
     private final Map<String,SPARQLClassObjectMapper<?>> objectMappers;
 
@@ -55,8 +55,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     private final List<Method> listSetters;
     private final Map<String,SPARQLDeserializer<?>> deserializersByConcatFields;
 
-    private final static String GROUP_CONCAT_SEPARATOR = ",";
-    private final static String CONCAT_VAR_SUFFIX = "__concat";
+    private static final String GROUP_CONCAT_SEPARATOR = ",";
+    private static final String CONCAT_VAR_SUFFIX = "__concat";
 
     /**
      * @param sparql               {@link SPARQLService} used to run additional SPARQL query
@@ -105,12 +105,12 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         deserializersByConcatFields = new HashMap<>();
         objectMappers = new HashMap<>();
 
+        for (Map.Entry<Field,String> entry : concatVarNameByFields.entrySet()) {
+            Field field = entry.getKey();
+            String concatFieldName = entry.getValue();
 
-        for (Field field : concatVarNameByFields.keySet()) {
             listSetters.add(mapper.classAnalizer.getSetterFromField(field));
-
             Class<?> listGenericType = ClassUtils.getGenericTypeFromField(field);
-            String concatFieldName = concatVarNameByFields.get(field);
 
             try {
                 // check if the type is a SPARQL model type known by the service
@@ -194,7 +194,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 throw new IllegalArgumentException(e);
             }
 
-            Boolean appendTriple = fieldsToFetch.get(field.getName());
+            boolean appendTriple = fieldsToFetch.get(field.getName());
             if (appendTriple) {
                 // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
                 Triple triple = new Triple(uriVar, property.asNode(), fieldVar);
@@ -223,7 +223,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
         int fieldIndex = 0;
 
-        for (String concatFieldName : concatVarNameByFields.values()) {
+        for(String concatFieldName : concatVarNameByFields.values()) {
 
             // parse multivalued property grouped by a separator
             String parsedValue = result.getStringValue(concatFieldName);
@@ -240,7 +240,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             List<Object> listPropertyValues = new ArrayList<>(stringValues.length);
 
             for (String strValue : stringValues) {
-                // if object, then create new object
+                // if value correspond to some object URI, then create new object
                 if (objectMapper != null) {
                     SPARQLResourceModel object = objectMapper.createInstance(new URI(SPARQLDeserializers.formatURI(strValue)));
                     listPropertyValues.add(object);

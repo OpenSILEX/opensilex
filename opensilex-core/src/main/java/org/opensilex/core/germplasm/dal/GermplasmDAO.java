@@ -400,6 +400,12 @@ public class GermplasmDAO {
             }            
         }
     }
+    
+    private void appendUriFilter(SelectBuilder select, URI uri) {
+        if (uri != null) {
+            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()))));
+        }
+    }
 
     private void appendRdfTypeFilter(SelectBuilder select, URI rdfType) throws Exception {
         if (rdfType != null) {
@@ -409,7 +415,7 @@ public class GermplasmDAO {
 
     private void appendRegexLabelFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(GermplasmModel.NAME_FIELD, label));
+            select.addFilter(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_FIELD, label));
         }
     }
 
@@ -621,7 +627,47 @@ public class GermplasmDAO {
         if (uris != null && !uris.isEmpty()) {
             select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.URI_FIELD, uris));            
         }
+    }   
+    
+    private void appendSpeciesListFilter(SelectBuilder select, Set<URI> species) {
+        if (species != null && !species.isEmpty()) {
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));            
+        }
     }
+    
+    public ListWithPagination<GermplasmModel> brapiSearch(UserModel user, URI germplasmDbId, String germplasmName, String germplasmSpecies, int page, int pageSize) throws Exception {
+        
+        final Set<URI> speciesURIs;
+        if (germplasmSpecies != null) {
+            List<URI> species = sparql.searchURIs(
+                                GermplasmModel.class,
+                                user.getLanguage(),
+                                (SelectBuilder select) -> {                              
+                                    appendRdfTypeFilter(select, new URI(Oeso.Species.toString()));                            
+                                    appendRegexLabelFilter(select, germplasmSpecies);
+                                });
+
+            speciesURIs = new HashSet(species);
+        } else {
+            speciesURIs = new HashSet();
+        }    
+        
+        ListWithPagination<GermplasmModel> germplasmList = sparql.searchWithPagination(
+                                GermplasmModel.class,
+                                user.getLanguage(),
+                                (SelectBuilder select) -> {
+                                    appendRdfTypeFilter(select, new URI(Oeso.Accession.toString()));
+                                    appendUriFilter(select, germplasmDbId);
+                                    appendRegexLabelFilter(select, germplasmName);
+                                    appendSpeciesListFilter(select, speciesURIs);                                    
+                                },
+                                null,
+                                page,
+                                pageSize);
+        
+        return germplasmList;
+    }
+
 
     private static class Key {
 

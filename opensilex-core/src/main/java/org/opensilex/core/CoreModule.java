@@ -111,8 +111,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public void install(boolean reset) throws Exception {
         insertDefaultProvenance();
 
-        // clean and reload cache
-        getOntologyCacheInstance().invalidate();
+        invalidateCache();
         populateOntologyCache();
     }
 
@@ -145,17 +144,35 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         if(ontologyCache != null){
             SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
             SPARQLService sparql = factory.provide();
-            assert(sparql != null);
 
-            ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+            /* #TODO : sparql should not be null , but when building module with maven, the sparql is null while it's not when launching StartServer
+            this quick (and dirty :/ ) fix should be improved and reviewed */
+
+            if(sparql != null){
+                ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+            }
         }
         return ontologyCache;
     }
 
+    protected void invalidateCache() throws URISyntaxException, SPARQLException {
+        OntologyCache ontologyCache = getOntologyCacheInstance();
+        if(ontologyCache != null){
+            LOGGER.info("Invalidate ontology cache");
+            ontologyCache.invalidate();
+            LOGGER.info("Ontology cache invalidated with success");
+        }
+    }
+
     protected void populateOntologyCache() throws SPARQLException, URISyntaxException {
-        LOGGER.info("Populating ontology cache");
-        getOntologyCacheInstance().populate(AbstractOntologyCache.getRootModelsToLoad());
-        LOGGER.info("Ontology cache loaded with success");
+
+        OntologyCache ontologyCache = getOntologyCacheInstance();
+        if(ontologyCache != null){
+            LOGGER.info("Populating ontology cache");
+            ontologyCache.populate(AbstractOntologyCache.getRootModelsToLoad());
+            LOGGER.info("Ontology cache loaded with success");
+        }
+
     }
 
 }

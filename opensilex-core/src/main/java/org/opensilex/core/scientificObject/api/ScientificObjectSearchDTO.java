@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.OrderBy;
 
@@ -192,5 +193,27 @@ public class ScientificObjectSearchDTO {
     public ScientificObjectSearchDTO setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
+    }
+
+    public ScientificObjectSearchFilter toModel(){
+
+        ScientificObjectSearchFilter filter = new ScientificObjectSearchFilter()
+                .setUris(uris)
+                .setExcludedUris(excludedUris)
+                .setExperiment(experiment)
+                .setRdfTypes(rdfTypes)
+                .setPattern(pattern)
+                .setParentURI(parentURI)
+                .setGermplasm(germplasm)
+                .setFactorLevels(factorLevels)
+                .setFacility(facility)
+                .setExistenceDate(existenceDate)
+                .setCreationDate(creationDate);
+
+        filter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
+
+        return filter;
     }
 }

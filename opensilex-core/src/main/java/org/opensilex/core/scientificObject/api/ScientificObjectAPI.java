@@ -34,6 +34,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.bson.codecs.configuration.CodecConfigurationException;
+import org.checkerframework.checker.units.qual.s;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -42,6 +43,7 @@ import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -328,25 +330,24 @@ public class ScientificObjectAPI {
             }
         }
 
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(contextURI)
+                .setPattern(pattern)
+                .setRdfTypes(rdfTypes)
+                .setParentURI(parentURI)
+                .setGermplasm(germplasm)
+                .setFactorLevels(factorLevels)
+                .setFacility(facility)
+                .setExistenceDate(existenceDate)
+                .setCreationDate(creationDate);
+
+        searchFilter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList)
+                .setLang(currentUser.getLanguage());
+
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-
-        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(
-                new ScientificObjectSearchDTO()
-                        .setExperiment(contextURI)
-                        .setPattern(pattern)
-                        .setRdfTypes(rdfTypes)
-                        .setParentURI(parentURI)
-                        .setGermplasm(germplasm)
-                        .setFactorLevels(factorLevels)
-                        .setFacility(facility)
-                        .setExistenceDate(existenceDate)
-                        .setCreationDate(creationDate)
-                        .setPage(page)
-                        .setPageSize(pageSize)
-                        .setOrderByList(orderByList),
-                currentUser
-        );
-
+        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(searchFilter);
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -808,8 +809,11 @@ public class ScientificObjectAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
+        ScientificObjectSearchFilter searchFilter = dto.toModel();
+        searchFilter.setLang(currentUser.getLanguage());
+
         // search objects according filtering and selected uris, fetch os factors
-        ListWithPagination<ScientificObjectModel> objects = soDao.search(dto, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD),currentUser);
+        ListWithPagination<ScientificObjectModel> objects = soDao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD));
 
         // compute URI list in order to call getGeometryByUris()
         List<URI> objectsUris;

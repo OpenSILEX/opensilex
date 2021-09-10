@@ -308,6 +308,7 @@ export default class TableAsyncView extends Vue {
       } else {
         orderBy.push(orderByText + "asc");
       }
+      return orderBy;
     }
   }
 

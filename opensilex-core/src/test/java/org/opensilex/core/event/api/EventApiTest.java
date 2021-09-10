@@ -381,7 +381,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
         EventCreationDTO postDto2 = getCreationDto();
         postDto2.setDescription("Grasshopper attack");
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto1));
+        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto2));
         postDto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
         // search given a description witch match both events
@@ -416,8 +416,8 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
-        checkEquals(postDto1,getDto1);
+        getDto2 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto2);
     }
 
 

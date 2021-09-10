@@ -463,6 +463,20 @@ components["opensilex-VariableSelector"] = VariableSelector;
 import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
 components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
 
+// GroupVariables
+import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';
+components["opensilex-GroupVariablesForm"] = GroupVariablesForm;
+import GroupVariablesDetails from './groupVariable/GroupVariablesDetails.vue';
+components["opensilex-GroupVariablesDetails"] = GroupVariablesDetails;
+import GroupVariablesDescription from './groupVariable/GroupVariablesDescription.vue';
+components["opensilex-GroupVariablesDescription"] = GroupVariablesDescription;
+import GroupVariablesHelp from './groupVariable/GroupVariablesHelp.vue';
+components["opensilex-GroupVariablesHelp"] = GroupVariablesHelp;
+import GroupVariablesList from './groupVariable/GroupVariablesList.vue';
+components["opensilex-GroupVariablesList"] = GroupVariablesList;
+import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue';
+components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
+
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
 components["opensilex-EntityForm"] = EntityForm;

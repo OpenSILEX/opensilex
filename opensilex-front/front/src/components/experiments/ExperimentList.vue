@@ -411,7 +411,7 @@ export default class ExperimentList extends Vue {
       };
     }
     return null;
-  }
+  } 
     createDocument() {
     this.documentForm.showCreateForm();
   }

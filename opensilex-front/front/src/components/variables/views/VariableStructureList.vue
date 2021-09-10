@@ -10,11 +10,13 @@
 
         <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
             <template v-slot:node="{ node }">
-        <span class="item-icon">
-          <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)"/>
-        </span>&nbsp;
+                <span class="item-icon">
+                    <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)"/>
+                </span>&nbsp;
                 <strong v-if="node.data.selected">{{ node.title }}</strong>
+                <!-- <strong v-if="node.data.selected" >{{ node.title + ' (' + node.data.variables.length + " variable(s))" }}</strong> -->
                 <span v-if="!node.data.selected">{{ node.title }}</span>
+                <!-- <span v-if="!node.data.selected">{{ node.title + ' (' + node.data.variables.length + " variable(s))" }}</span> -->
             </template>
 
             <template v-slot:buttons="{ node }">
@@ -24,6 +26,12 @@
                     label="Edit"
                     :small="true"
                 ></opensilex-EditButton>
+                <opensilex-DeleteButton
+                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && type == 'VariableGroup'"
+                    @click="deleteVariablesGroup(node.data.uri)"
+                    label="Delete"
+                    :small="true"
+                ></opensilex-DeleteButton>
             </template>
         </opensilex-TreeView>
 
@@ -45,6 +53,7 @@ export default class VariableStructureList extends Vue {
     $store: any;
     $route: any;
     service: VariablesService;
+    $i18n: any;
 
     @PropSync("_type")
     type: string;
@@ -107,7 +116,10 @@ export default class VariableStructureList extends Vue {
             case VariablesView.UNIT_TYPE: {
                 return this.service.searchUnits(nameFilter,orderBy);
             }
-            default: {
+            case VariablesView.GROUP_VARIABLE_TYPE: {
+                return this.service.searchVariablesGroups(nameFilter, undefined, orderBy);
+            }
+            default: { 
                 return this.service.searchEntities(this.nameFilter,orderBy);
             }
         }
@@ -155,6 +167,10 @@ export default class VariableStructureList extends Vue {
 
                 this.nodes = treeNode;
             }).catch(this.$opensilex.errorHandler);
+
+        if(this.nodes.length > 0){
+            this.selected = this.nodes[0].data;
+        }
     }
 
     private dtoToNode(dto: NamedResourceDTO, first: boolean, uri: string) {
@@ -201,6 +217,9 @@ export default class VariableStructureList extends Vue {
             case VariablesView.UNIT_TYPE: {
                 return this.service.getUnit(uri);
             }
+            case VariablesView.GROUP_VARIABLE_TYPE: {
+                return this.service.getVariablesGroup(uri);
+            }   
             default : {
                 return this.service.getEntity(uri);
             }
@@ -225,11 +244,35 @@ export default class VariableStructureList extends Vue {
     edit(uri) {
         if(this.type != VariablesView.VARIABLE_TYPE){
             this.getDetails(uri).then((http: HttpResponse<OpenSilexResponse>) => {
-              this.$emit("onEdit", http.response.result);
+                this.$emit("onEdit", http.response.result);
             });
         }
     }
 
+    deleteVariablesGroup(uri) {
+        if(this.type == VariablesView.GROUP_VARIABLE_TYPE){
+            this.service.deleteVariablesGroup(uri).then((http: HttpResponse<OpenSilexResponse>) => {
+            let message = this.$i18n.t(http.response.result) + " " + this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+              this.$emit("onDelete", http.response.result);
+              if(this.nodes.length > 0){
+                  this.selected = this.nodes[0].data;
+                this.$emit("onDelete", this.nodes[0].data);
+              }else{
+                  this.selected = undefined;
+              }
+              // récuperer l'élement en top de liste
+              // émettre un event @onDelete ou @topElement qui renvoie l'élement le plus haut
+              this.refresh(true);
+            });
+        }
+    }
+
+    firstObjectOfList(){
+        if(this.nodes.length > 0){
+            return this.nodes[0].data;
+        }
+    }
 }
 </script>
 

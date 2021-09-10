@@ -26,6 +26,7 @@
             "delete": "delete",
             "cancel": "cancel",
             "creator": "Creator",
+            "edit": "edit",
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
@@ -187,6 +188,7 @@
                 "factors": "Factors",
                 "germplasm": "Germplasm"
             },
+            "groupVariables": "Variables Groups",
             "infrastructures": "Organizations",
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",

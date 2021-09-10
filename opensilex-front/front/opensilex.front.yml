@@ -201,7 +201,12 @@ routes:
     component: opensilex-VariableView
     credentials: []
   - path: /variable/annotations/:uri
-    component: opensilex-VariableView
+    component: opensilex-VariableView  
+    
+  - path: /variables_group/details/:uri
+    component: opensilex-GroupVariablesDescription
+  - path: /variables_group/annotations/:uri
+    component: opensilex-GroupVariablesDescription
 
   - path: /project/details/:uri
     component: opensilex-ProjectDetails

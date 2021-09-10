@@ -57,7 +57,7 @@
           :disabled="numberOfSelectedRows == 0"
           text="actions"
         >
-          <b-dropdown-item-button @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>          
         </b-dropdown>
       </template>
       <template v-slot:cell(name)="{ data }">

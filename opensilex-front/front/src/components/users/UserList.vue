@@ -114,7 +114,7 @@ export default class UserList extends Vue {
   private filter: any = "";
   @Ref("tableRef") readonly tableRef!: any;
   currentURI = null;
-  groupDetails = [];
+  groupDetails = [];  
   created() {
     let query: any = this.$route.query;
     if (query.filter) {

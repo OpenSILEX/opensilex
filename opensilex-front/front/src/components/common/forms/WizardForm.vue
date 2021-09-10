@@ -129,8 +129,10 @@ export default class WizardForm extends Vue {
     for (let i = 0; i < this.steps.length; i++) {
       if (this.$refs["step" + i]) {
         let step: any = this.$refs["step" + i][0];
-        if (step.reset) {
-          step.reset();
+        if(step != undefined){
+          if (step.reset) {
+            step.reset();
+          }
         }
       }
     }

@@ -7,12 +7,31 @@
         ></opensilex-StringFilter>
 
         <opensilex-PageContent>
-            <template v-slot>
-                <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchVariables" :fields="fields"
-                                          defaultSortBy="name" :isSelectable="isSelectable"
-                :maximumSelectedRows="maximumSelectedRows"
-                labelNumberOfSelectedRow="VariableList.selected"
-                :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
+            <template>
+              <opensilex-TableAsyncView
+                ref="tableRef"
+                  :searchMethod="searchVariables"
+                  :fields="fields"
+                  defaultSortBy="name"
+                  :isSelectable="isSelectable"
+                  :maximumSelectedRows="maximumSelectedRows"
+                  labelNumberOfSelectedRow="VariableList.selected"
+                  :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
+
+                    <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+                      <b-dropdown
+                        dropright
+                        class="mb-2 mr-2"
+                        :small="true"
+                        :disabled="numberOfSelectedRows == 0"
+                        text="actions">
+
+                        <b-dropdown-item-button @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button >{{$t("VariableList.export-variables")}}</b-dropdown-item-button>
+
+                      </b-dropdown>
+                    </template>
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
@@ -50,6 +69,28 @@
                         </b-button-group>
                     </template>
                 </opensilex-TableAsyncView>
+
+                <opensilex-ModalForm
+                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                    ref="groupVariablesForm"
+                    modalSize="lg"
+                    @onCreate="refresh($event)"
+                    @onUpdate="refresh($event)"
+                    component="opensilex-GroupVariablesForm"
+                    createTitle="GroupVariablesForm.add"
+                    editTitle="GroupVariablesForm.edit"
+                    :initForm="initForm"
+                ></opensilex-ModalForm>
+
+                <opensilex-GroupVariablesModalList
+                  label="label"
+                  ref="groupVariableSelection"
+                  :isModalSearch="true"
+                  :required="true"
+                  :multiple="true"
+                  @onValidate="editGroupVariable"
+                ></opensilex-GroupVariablesModalList>
+
             </template>
         </opensilex-PageContent>
 
@@ -60,7 +101,10 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { VariablesService } from "opensilex-core/index";
+import { VariablesService, VariablesGroupGetDTO } from "opensilex-core/index";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import VariablesView from "./VariablesView.vue"
+import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue"
 
 @Component
 export default class VariableList extends Vue {
@@ -68,6 +112,7 @@ export default class VariableList extends Vue {
   $service: VariablesService;
   $store: any;
   $route: any;
+  $i18n: any;
 
   get user() {
     return this.$store.state.user;
@@ -77,7 +122,7 @@ export default class VariableList extends Vue {
     return this.$store.state.credentials;
   }
   @Prop({
-    default: false
+    default: true
   })
   isSelectable;
 
@@ -93,7 +138,27 @@ export default class VariableList extends Vue {
   iconNumberOfSelectedRow;
   private nameFilter: any = "";
 
+  @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
   @Ref("tableRef") readonly tableRef!: any;
+
+  initForm() {
+    let variableURIs = [];
+    for (let select of this.tableRef.getSelected()) {
+      variableURIs.push(select.uri);
+    }
+
+    return {
+      uri: undefined,
+      name: undefined,
+      description: undefined,
+      variables: variableURIs
+    };
+  }
+
+  @Ref("groupVariablesForm") readonly groupVariablesForm!: any;
+  showCreateForm(){
+    this.groupVariablesForm.showCreateForm();
+  }
 
   updateFilters() {
     this.$opensilex.updateURLParameter("name", this.nameFilter, "");
@@ -115,6 +180,7 @@ export default class VariableList extends Vue {
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
   }
+
   searchVariables(options) {
     return this.$service.searchVariables(
       this.nameFilter,
@@ -122,6 +188,40 @@ export default class VariableList extends Vue {
       options.currentPage,
       options.pageSize
     );
+  }
+
+  addVariablesToGroups() {
+    this.groupVariableSelection.show();
+  }
+
+  editGroupVariable(variableGroup) {
+    let selected = this.getSelected();
+    var form;
+    for(let vg = 0; vg < variableGroup.length; vg++){      
+      this.$service.getVariablesGroup(variableGroup[vg].uri)
+      .then((http: HttpResponse<OpenSilexResponse<VariablesGroupGetDTO>>) => {
+        let variablesGroup = http.response.result;
+        form = JSON.parse(JSON.stringify(variablesGroup));
+        let listUri = [];
+        for (let i = 0; i < selected.length; i++){
+          listUri.push(selected[i].uri); 
+        }
+        form.variables = listUri;
+        this.updateVariableGroup(form);
+      }).catch(this.$opensilex.errorHandler);      
+    }
+  }
+
+  updateVariableGroup(form) {
+    this.$service
+      .updateVariablesGroup(form)
+      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+        let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
+        let uri = http.response.result;
+        console.debug("variable group updated", uri);
+      })
+      .catch(this.$opensilex.errorHandler);
   }
 
   created() {
@@ -186,11 +286,17 @@ en:
         label-filter-placeholder: "Search variables, plant height, plant, humidity, image processing, percentage, air.*humidity, etc.
             This filter apply on URI, name, alternative name, or on entity/characteristic/method/unit name."
         selected: Selected Variables
+        add-groupVariable: Add to an existing group of variables
+        add-newGroupVariable: Add to a new group of variables
+        export-variables: Export variable list
 fr:
     VariableList:
         label-filter: Chercher une variable
         label-filter-placeholder: "Rechercher des variables : Hauteur de plante, plante, humidité, analyse d'image, pourcentage, air.*humidité, etc.
             Ce filtre s'applique à l'URI, au nom, au nom alternatif et au nom de l'entité/caractéristique/méthode/unité."
         selected: Variables Sélectionnées
+        add-groupVariable: Ajouter à un groupe de variables existant
+        add-newGroupVariable: Ajouter à un nouveau groupe de variables
+        export-variables: Exporter la liste de variables
 
 </i18n>

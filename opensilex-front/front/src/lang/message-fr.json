@@ -188,6 +188,7 @@
                 "factorLevels": "Niveaux de facteurs",
                 "germplasm": "Ressources Génétiques"
             },
+            "groupVariables": "Groupe de variables",
             "infrastructures": "Organisations",
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",

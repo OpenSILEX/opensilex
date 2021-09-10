@@ -88,6 +88,7 @@ public class VariableAPI {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    
     public Response createVariable(
             @ApiParam("Variable description") @Valid VariableCreationDTO dto
     ) throws Exception {

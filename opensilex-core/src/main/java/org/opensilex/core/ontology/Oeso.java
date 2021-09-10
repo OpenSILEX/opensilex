@@ -66,7 +66,11 @@ public class Oeso {
     public static final Property hasSamplingInterval = Ontology.property(NS, "hasSamplingInterval");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");
     public static final Property hasAlternativeSymbol = Ontology.property(NS, "hasAlternativeSymbol");
-
+    
+    // ---- VARIABLES GROUP ----
+    public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
+    public static final Property hasVariable = Ontology.property(NS, "hasVariable");
+    
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
     public static final Resource TechnicalSupervisor = Ontology.resource(NS, "TechnicalSupervisor");

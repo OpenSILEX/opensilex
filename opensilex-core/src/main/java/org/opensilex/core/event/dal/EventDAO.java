@@ -473,7 +473,7 @@ public class EventDAO<T extends EventModel> {
         fieldsToFetch.put(EventModel.TARGETS_FIELD, ! targetTripleAdded.get());
 
         // manually fetch targets
-        SPARQLDataListFetcher<EventModel> dataListFetcher = new SPARQLDataListFetcher<>(
+        SPARQLListFetcher<EventModel> dataListFetcher = new SPARQLListFetcher<>(
                 sparql,
                 EventModel.class,
                 eventGraph,
@@ -492,7 +492,7 @@ public class EventDAO<T extends EventModel> {
                 eventGraph,
                 EventModel.class,
                 null,
-                select -> appendInTargetsValues(select, targets),
+                select -> appendInTargetsValues(select, targets.stream(),targets.size()),
                 null
         );
     }

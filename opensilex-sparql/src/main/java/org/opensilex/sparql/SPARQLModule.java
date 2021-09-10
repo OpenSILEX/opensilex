@@ -106,6 +106,7 @@ public class SPARQLModule extends OpenSilexModule {
     }
 
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
+        // #TODO clean cache
         try {
             sparql.disableSHACL();
             // Allow any module implementing SPARQLExtension to add custom ontologies

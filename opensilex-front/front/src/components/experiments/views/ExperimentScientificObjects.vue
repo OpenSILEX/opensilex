@@ -101,7 +101,7 @@
                 <b-dropdown-item-button @click="createDocument()" >
                   {{$t('component.common.addDocument')}}
                 </b-dropdown-item-button>
-                <b-dropdown-item-button @click="exportCSV">
+                <b-dropdown-item-button @click="exportCSV(false)">
                   Export CSV
                 </b-dropdown-item-button>
 
@@ -120,6 +120,12 @@
                 >{{$t('ExperimentScientificObjects.visualize')}}
                 </b-dropdown-item-button>
             </b-dropdown>
+            <opensilex-CreateButton
+                class="mb-2 mr-2"
+                @click="exportCSV(true)"
+                :disabled="soTree && soTree.nodeList.length === 0"
+                label="ScientificObjectList.export-all"
+            ></opensilex-CreateButton>
           </div>
 
           <div>
@@ -537,7 +543,7 @@ export default class ExperimentScientificObjects extends Vue {
       });
   }
 
-  exportCSV() {
+  exportCSV(exportAll: boolean) {
     let path = "/core/scientific_objects/export";
     let today = new Date();
     let filename =
@@ -546,14 +552,27 @@ export default class ExperimentScientificObjects extends Vue {
       String(today.getMonth() + 1).padStart(2, "0") +
       String(today.getDate()).padStart(2, "0");
 
+    // export all OS corresponding to filter
+    let exportDto = {
+      experiment: this.uri,
+      rdf_types: this.filters.types,
+      name: this.filters.name,
+      factor_levels: this.filters.factorLevels,
+      parent: this.filters.parent
+    };
+
+    // export only selected URIS
+    if (!exportAll) {
+      Object.assign(exportDto, {
+        uris: this.selectedObjects,
+      });
+    }
+
     this.$opensilex.downloadFilefromPostService(
       path,
       filename,
       "csv",
-      {
-        experiment: this.uri,
-        uris: this.selectedObjects
-      },
+        exportDto,
       this.lang
     );
   }

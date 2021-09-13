@@ -36,6 +36,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.Call;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -52,7 +53,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -180,7 +180,7 @@ public class StudiesAPI implements BrapiCall {
         } else {
             ListWithPagination<ExperimentModel> resultList = xpDao.search(null, null, null, null, isEnded, null, null, currentUser, orderByList, page, pageSize);
             ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+            return new BrapiPaginatedListResponse(resultDTOList).getResponse();
         }
 
     }
@@ -230,7 +230,7 @@ public class StudiesAPI implements BrapiCall {
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, page, pageSize);
         ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
-        return new PaginatedListResponse<>(observations).getResponse();
+        return new BrapiPaginatedListResponse<>(observations).getResponse();
 
     }
 
@@ -251,7 +251,7 @@ public class StudiesAPI implements BrapiCall {
         ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, studyDbId, page, pageSize);
 
         ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     @GET
@@ -300,6 +300,6 @@ public class StudiesAPI implements BrapiCall {
             List<FactorLevelModel> factors = soUriFactorLevelMap.get(expandedUri);
             return ObservationUnitDTO.fromModel(item, factors);
         });
-        return new PaginatedListResponse<>(observations).getResponse();
+        return new BrapiPaginatedListResponse<>(observations).getResponse();
     }
 }

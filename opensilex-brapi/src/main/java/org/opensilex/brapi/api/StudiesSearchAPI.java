@@ -23,6 +23,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.Call;
 import org.opensilex.brapi.model.StudyDTO;
 import org.opensilex.brapi.model.StudyDetailsDTO;
@@ -34,7 +35,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.URL;
 import org.opensilex.sparql.service.SPARQLService;
@@ -132,7 +132,7 @@ public class StudiesSearchAPI implements BrapiCall {
             ListWithPagination<ExperimentModel> resultList = xpDao.search(null, null, null, null, isEnded, null, null, currentUser, orderByList, page, pageSize);
 
             ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+            return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
         }
     }
 }

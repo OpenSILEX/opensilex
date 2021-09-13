@@ -25,6 +25,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.Call;
 import org.opensilex.brapi.model.ObservationVariableDTO;
 import org.opensilex.brapi.model.StudyDetailsDTO;
@@ -37,7 +38,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.URL;
@@ -115,7 +115,7 @@ public class VariablesAPI implements BrapiCall {
         } else {
             variables = varDAO.search(null, null, page, pageSize); 
             ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+            return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
         }
         
     }

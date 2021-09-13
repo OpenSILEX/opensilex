@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.brapi.model.Call;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -104,6 +105,6 @@ public class CallsAPI implements BrapiCall {
         });
 
         ListWithPagination<Call> callsList = new ListWithPagination<Call>(callsInfoList, page, pageSize, callsInfoList.size());
-        return new PaginatedListResponse<>(callsList).getResponse();
+        return new BrapiPaginatedListResponse<>(callsList).getResponse();
     }
 }

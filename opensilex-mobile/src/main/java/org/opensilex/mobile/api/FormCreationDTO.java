@@ -11,7 +11,9 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
+import javax.validation.constraints.NotNull;
 import org.bson.Document;
+import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
@@ -21,16 +23,21 @@ import org.opensilex.mobile.dal.FormModel;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  */
-public class FormDTO {
+public class FormCreationDTO {
  
     @JsonProperty("creation_date")
-    @ApiModelProperty(value = "timestamp", example = "", required = true)
+    @ApiModelProperty(value = "timestamp", example = "YYYY-MM-DDTHH:MM:SSZ", required = true)
     private String creationDate;
 
     private URI type;
+    
+    //@ValidURI
+    //@ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
+    //protected URI uri;
 
     private Map formData;
 
@@ -40,6 +47,10 @@ public class FormDTO {
     public Map getFormData() {
         return formData;
     }
+    /*
+    public URI getUri(){
+        return uri;
+    }*/
 
     public void setFormData(Map formData) {
         this.formData = formData;
@@ -71,6 +82,9 @@ public class FormDTO {
 
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = new FormModel();
+        
+        //model.setUri(uri);
+        
         model.setType(type);
         model.setFormData(new Document(formData));
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getCreationDate(), getTimezone());
@@ -85,4 +99,19 @@ public class FormDTO {
         return model;
 
     }
+    /*
+    public void fromModel(FormModel model) {
+        this.setCreationDate(model.getCreationDate().toString());
+        this.setFormData(model.getFormData());
+        this.setTimezone(model.getOffset());
+        this.setType(model.getType());
+        //this.uri = model.getUri();
+    }
+    ///This will call from model
+    public static FormCreationDTO getDtoFromModel(FormModel model){
+        FormCreationDTO dto = new FormCreationDTO();
+        dto.fromModel(model);
+        return dto;
+    }
+*/
 }

@@ -2,7 +2,7 @@
   <sl-vue-tree
     ref="asyncTree"
     v-model="nodeList"
-    @select="selectItem"
+    @nodeclick="selectItem"
     @toggle="toggle"
   >
     <template slot="toggle" slot-scope="{ node }">
@@ -20,7 +20,6 @@
           v-if="enableSelection"
           :checked="getSelection(node.data.uri)"
           @change="onSelectionChange(node.data.uri)"
-          switches
         ></b-form-checkbox>
         <strong v-if="node.data.selected">
           <slot name="node" v-bind:node="node"></slot>
@@ -42,7 +41,7 @@
           }}
           <span>
             -
-            <a href="#" @click.prevent="loadMoreChildren(node)">
+            <a href="#" @click.prevent="loadMoreChildren(node,false)">
               {{ $t("TreeViewAsync.load-more") }}
             </a> </span
           >)
@@ -100,18 +99,33 @@ export default class TreeViewAsync extends Vue {
 
   copy = copy;
 
-  selectItem(nodes: any[]) {
-    if (nodes.length > 0) {
-      let node = nodes[nodes.length - 1];
-      if (node.data != null) {
-        if (node.isLeaf) {
-          let root = this.asyncTree.getPrevNode(node.path, null);
-          nodes.push(root.data);
-          this.onSelectionChange(root.data.uri);
-        }
-        this.$emit("select", nodes[0]);
+  selectItem(node: any) {
+    if (node.data != null) {
+      console.debug("current", node);
+      console.debug("isLeaf", node.isLeaf);
+      if (node.isLeaf) {
+        // let root = this.getNodeParent(node);
+        // this.selectElement(root.data.uri);
+      } else {
+        // if not selected select all others 
+         this.selectElement(node.data.uri);
+        this.selectAllChildren(node);
       }
+        
+      this.$emit("select", node);
     }
+  }
+
+  getNodeParent(node: any) {
+    console.debug("getNodeParent", node.path);
+    let array: any[] = node.path;
+    array.pop();
+    array.push(0);
+    let firstBranchNode = this.asyncTree.getNode(array);
+    let root = this.asyncTree.getPrevNode(firstBranchNode);
+    console.debug("nodeParent", root);
+
+    return root;
   }
 
   @Ref("load") readonly load!: any;
@@ -206,14 +220,13 @@ export default class TreeViewAsync extends Vue {
 
   private loadedRoots = [];
 
-  loadMoreChildren(node) {
+  loadMoreChildren(node, areSelected) {
     let nodeURI = node.data.uri;
 
     let root = this.nodeList[node.path[0]];
     for (let i = 1; i < node.path.length; i++) {
       root = root.children[node.path[i]];
-    }
-
+    } 
     if (
       this.searchMethodRootChildren &&
       node.path.length == 1 &&
@@ -222,6 +235,8 @@ export default class TreeViewAsync extends Vue {
       let page = Math.round(root.children.length / this.pageSize);
       this.searchMethodRootChildren(nodeURI, page, this.pageSize).then(
         (http) => {
+          console.debug("searchMethodRootChildren", http)
+
           let childrenNodes = [];
 
           for (let i in http.response.result) {
@@ -238,6 +253,12 @@ export default class TreeViewAsync extends Vue {
               isSelectable: true,
             };
             childrenNodes.push(soNode);
+            if(areSelected === true){
+              this.selectElement(soDTO.uri)
+            }
+            if(areSelected === false){
+              this.deselectElement(soDTO.uri)
+            }
           }
 
           root.children = root.children.concat(childrenNodes);
@@ -268,6 +289,12 @@ export default class TreeViewAsync extends Vue {
             isSelectable: true,
           };
           childrenNodes.push(soNode);
+          if(areSelected === true){
+              this.selectElement(soDTO.uri)
+            }
+            if(areSelected === false){
+              this.deselectElement(soDTO.uri)
+            }
         }
 
         root.children = root.children.concat(childrenNodes);
@@ -275,12 +302,64 @@ export default class TreeViewAsync extends Vue {
     }
   }
 
+  selectMoreChildren(node, areSelected) {
+    let nodeURI = node.data.uri;
+
+    let root = this.nodeList[node.path[0]];
+    for (let i = 1; i < node.path.length; i++) {
+      root = root.children[node.path[i]];
+    } 
+    if (
+      this.searchMethodRootChildren &&
+      node.path.length == 1 &&
+      this.loadedRoots.indexOf(root.data.uri) < 0
+    ) {
+      let page = Math.round(root.children.length / this.pageSize);
+      this.searchMethodRootChildren(nodeURI, page, this.pageSize).then(
+        (http) => {
+          console.debug("searchMethodRootChildren", http)
+
+          let childrenNodes = [];
+
+          for (let i in http.response.result) {
+            let soDTO = http.response.result[i];
+
+            if(areSelected === true){
+              this.selectElement(soDTO.uri)
+            }
+            if(areSelected === false){
+              this.deselectElement(soDTO.uri)
+            }
+          }
+
+          
+        }
+      );
+    } else if (root.children.length < node.data.child_count) {
+      let page = Math.round(root.children.length / this.pageSize);
+      this.searchMethod(nodeURI, page, this.pageSize).then((http) => {
+        let childrenNodes = [];
+        for (let i in http.response.result) {
+          let soDTO = http.response.result[i];
+
+          if(areSelected === true){
+              this.selectElement(soDTO.uri)
+            }
+            if(areSelected === false){
+              this.deselectElement(soDTO.uri)
+            }
+        }
+      });
+    }
+  }
+
+
   toggle(node) {
     if (
       !("child_count" in node.data) ||
       (node.children.length == 0 && node.data.child_count > 0)
     ) {
-      this.loadMoreChildren(node);
+      this.loadMoreChildren(node,true);
     }
     this.$emit("toggle", node);
   }
@@ -290,18 +369,84 @@ export default class TreeViewAsync extends Vue {
     if (this.multiSelect) {
       r = this.multiSelect.indexOf(uri) >= 0;
     }
+    // console.debug("getSelection", r, uri);
     return r;
   }
 
-  onSelectionChange(uri) {    
+  selectAllChildren(node :any) {
+    this.selectMoreChildren(node,true);
+    if (this.multiSelect) {
+      console.debug("selectAllChildren", node.children )
+      if (node.children.length > 0) {
+        for (let nbChild in node.children) {
+          console.debug("selectAllChild", node.children[nbChild])
+          if (node.children[nbChild].isLeaf) {
+            this.selectElement(node.children[nbChild].data.uri);
+          } else { 
+            this.selectAllChildren(node.children[nbChild]);
+            
+          }
+        }
+      }
+    }
+  }
+
+  deselectAllChildren(node :any) {
+    this.selectMoreChildren(node,false);
+    if (this.multiSelect) {
+      console.debug("deselectAllChildren", node.children )
+      if (node.children.length > 0) {
+        for (let nbChild in node.children) {
+          console.debug("deselectAllChild", node.children[nbChild])
+          if (node.children[nbChild].isLeaf) {
+            this.deselectElement(node.children[nbChild].data.uri);
+          } else {
+            this.deselectElement(node.children[nbChild].data.uri);
+            this.selectMoreChildren(node.children[nbChild],false);
+            this.deselectAllChildren(node.children[nbChild]);
+            
+          }
+        }
+      }
+    }
+  }
+
+  selectElement(uri) {
+    console.debug("uri: " + uri);
     if (this.multiSelect) {
       let uriIndex = this.multiSelect.indexOf(uri);
+      console.debug("uriIndex to select: " + uriIndex);
+      if (uriIndex == -1) {
+        this.multiSelect.push(uri);
+      }
+      console.debug("multiSelect after select", this.multiSelect);
+    }
+  }
+
+  deselectElement(uri) {
+    console.debug("uri: " + uri);
+    if (this.multiSelect) {
+      let uriIndex = this.multiSelect.indexOf(uri);
+      console.debug("uriIndex to deselect: " + uriIndex); 
+      if (uriIndex !== -1) {
+        this.multiSelect.splice(uriIndex, 1);
+      }
+      console.debug("multiSelect after deselect", this.multiSelect);
+    }
+  }
+
+  onSelectionChange(uri) {
+    console.debug("uri: " + uri);
+    if (this.multiSelect) {
+      let uriIndex = this.multiSelect.indexOf(uri);
+      console.debug("uriIndex", uriIndex);
       if (uriIndex >= 0) {
         this.multiSelect.splice(uriIndex, 1);
       } else {
         this.multiSelect.push(uri);
       }
-    }        
+      console.debug("multiSelect", this.multiSelect);
+    }
   }
 }
 </script>

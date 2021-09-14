@@ -123,13 +123,18 @@
           </div>
 
           <div>
-            <b-form-checkbox
-                class="selection-box custom-control custom-checkbox"
-                v-model="selectAll"
-                @change="onSelectAll()"
-                switches
-              >
-            </b-form-checkbox>
+            <b-row>
+              <b-col cols="1">
+                <b-form-checkbox
+                    class="selection-box custom-control custom-checkbox"
+                    v-model="selectAll"
+                    @change="onSelectAll()"
+                    switches
+                  >
+                </b-form-checkbox>
+              </b-col>
+              <b-col class="ml-2 mt-1"> {{$t('component.common.select-all')}}</b-col>
+            </b-row>
           </div>
 
 
@@ -199,7 +204,7 @@
               <opensilex-Icon icon="ik#ik-target" class="title-icon" />
               <slot name="name">&nbsp;{{ $t(selected.name) }}</slot>
             </h5>
-        <opensilex-ScientificObjectDetail :selected="selected" :tabs="detailTabs" :experiment="uri"/>
+        <opensilex-ScientificObjectDetail  :selected="selected" :tabs="detailTabs" :experiment="uri"/>
         </b-card>
       </div>
     </div>

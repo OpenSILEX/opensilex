@@ -65,6 +65,7 @@
             "year":"Année",
             "geometry": "Coordonnées géospatiales",
             "geometry-help": "Coordonnées géospatiales au format WKT",
+            "select-all" : "Sélectionner tout",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",

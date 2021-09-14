@@ -6,9 +6,7 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
@@ -18,7 +16,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
-    private final HashMap<URI, List<T>> map = new HashMap<URI, List<T>>();
+    private final HashMap<URI, List<T>> map = new HashMap<>();
 
     private final List<URI> selectionList;
     private final URI root;
@@ -30,7 +28,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         this(new ArrayList<>(), null, false);
     }
 
-    public SPARQLTreeListModel(List<T> selectionList, URI root, boolean excludeRoot) {
+    public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot, boolean addSelectionToTree) {
         this.selectionList = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
             this.selectionList.add(instance.getUri());
@@ -38,6 +36,18 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         }
         this.root = root;
         this.excludeRoot = excludeRoot;
+
+        if(addSelectionToTree){
+            selectionList.forEach(this::addTree);
+        }
+    }
+
+    public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot) {
+        this(selectionList,root,excludeRoot,false);
+    }
+
+    public SPARQLTreeListModel(T rootModel, boolean excludeRoot, boolean addSelectionToTree) {
+        this(rootModel.getNodes(),rootModel.getUri(),excludeRoot,addSelectionToTree);
     }
 
     public void listRoots(Consumer<T> handler) {
@@ -66,13 +76,14 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
             parentURI = parent.getUri();
         }
         if (this.map.containsKey(parentURI)) {
-            this.map.get(parentURI).forEach(handler);
+            if (this.map.containsKey(parentURI)) {
+                this.map.get(parentURI).forEach(handler);
+            }
         }
     }
 
     public T getParent(T candidate) {
-        T parent = itemParents.get(SPARQLDeserializers.getExpandedURI(candidate.getUri()));
-        return parent;
+        return itemParents.get(SPARQLDeserializers.getExpandedURI(candidate.getUri()));
     }
 
     public void addTree(T candidate) {
@@ -85,13 +96,13 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
             if (parent == null) {
                 if (!map.containsKey(null)) {
-                    map.put(null, new ArrayList<T>());
+                    map.put(null, new ArrayList<>());
                 }
                 addInMapIfExists(null, candidate);
             } else if (candidate.getUri().equals(root)) {
                 if (!excludeRoot) {
                     if (!map.containsKey(null)) {
-                        map.put(null, new ArrayList<T>());
+                        map.put(null, new ArrayList<>());
                     }
                     addInMapIfExists(null, candidate);
                 }
@@ -104,7 +115,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
                     if (parentURI != null) {
                         addTree(parent);
                     }
-                    map.put(parentURI, new ArrayList<T>());
+                    map.put(parentURI, new ArrayList<>());
                 }
 
                 addInMapIfExists(parentURI, candidate);
@@ -131,15 +142,15 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     public void traverse(Consumer<T> handler) {
-        listRoots((instance) -> {
-            traverseNode(instance, handler);
-        });
+        listRoots((instance) ->
+                traverseNode(instance, handler)
+        );
     }
 
     private void traverseNode(T instance, Consumer<T> handler) {
         handler.accept(instance);
-        listChildren(instance, (child) -> {
-            traverseNode(child, handler);
-        });
+        listChildren(instance, (child) ->
+                traverseNode(child, handler)
+        );
     }
 }

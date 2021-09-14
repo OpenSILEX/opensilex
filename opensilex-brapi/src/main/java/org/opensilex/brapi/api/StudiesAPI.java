@@ -44,8 +44,10 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.api.ScientificObjectSearchDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -275,22 +277,16 @@ public class StudiesAPI implements BrapiCall {
         }
 
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.search(
-                studyDbId,
-                null,
-                rdfTypes,
-                null,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                page,
-                limit,
-                null,
-                currentUser
-        );
+
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(studyDbId)
+                .setRdfTypes(rdfTypes);
+
+        searchFilter.setPage(page)
+                .setPageSize(limit)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<ScientificObjectNodeDTO> scientificObjects = soDAO.searchAsDto(searchFilter);
 
         Collection<URI> nodeUris = scientificObjects.getList().stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList());
         Map<String, List<FactorLevelModel>> soUriFactorLevelMap = soDAO.getScientificObjectsFactors(studyDbId, nodeUris, currentUser.getLanguage());

@@ -22,7 +22,7 @@
             <b-dropdown-item-button @click="$emit('createDocument')">
               {{ $t("component.common.addDocument") }}
             </b-dropdown-item-button>
-            <b-dropdown-item-button @click="exportCSV">
+            <b-dropdown-item-button @click="exportCSV(false)">
               Export CSV
             </b-dropdown-item-button>
 
@@ -33,6 +33,14 @@
               {{ $t("Move.add") }}
             </b-dropdown-item-button>
           </b-dropdown>
+
+          <opensilex-CreateButton
+              class="mb-2 mr-2"
+              @click="exportCSV(true)"
+              :disabled="tableRef.totalRow === 0"
+              label="ScientificObjectList.export-all"
+          ></opensilex-CreateButton>
+
         </template>
 
         <template v-slot:cell(name)="{ data }">
@@ -262,7 +270,10 @@ export default class ScientificObjectList extends Vue {
   }
 
   searchScientificObject(options) {
-    if (this.pageSize != null) {
+
+    if(this.tableRef.selectAll){
+      options.pageSize = this.tableRef.getSelectAllLimit();
+    }else if (this.pageSize != null) {
       options.pageSize = this.pageSize;
     }
 
@@ -270,18 +281,18 @@ export default class ScientificObjectList extends Vue {
       "opensilex.ScientificObjectsService"
     );
     return scientificObjectsService.searchScientificObjects(
-      this.filter.experiment ? this.filter.experiment : undefined, // experiment uri?: string,
-      this.filter.types, // rdfTypes?: Array<string>,
-      this.filter.name, // pattern?: string,
-      undefined, // parentURI?: string,
-      this.filter.germplasm ? this.filter.germplasm : undefined,
-      this.filter.factorLevels, // factorLevels?: Array<string>,
-      undefined, // facility?: string,
-      this.filter.existenceDate ? this.filter.existenceDate : undefined,
-      this.filter.creationDate ? this.filter.creationDate : undefined,
+      this.filter.experiment,
+      this.filter.types,
+      this.filter.name,
+      undefined,
+      this.filter.germplasm,
+      this.filter.factorLevels,
+      undefined,
+      this.filter.existenceDate,
+      this.filter.creationDate,
       options.orderBy,
-      options.currentPage, // page?: number,
-      options.pageSize // pageSize?: number
+      options.currentPage,
+      options.pageSize
     );
   }
 
@@ -315,7 +326,7 @@ export default class ScientificObjectList extends Vue {
     }
   }
 
-  exportCSV() {
+  exportCSV(exportAll: boolean) {
     let path = "/core/scientific_objects/export";
     let today = new Date();
     let filename =
@@ -324,19 +335,37 @@ export default class ScientificObjectList extends Vue {
       String(today.getMonth() + 1).padStart(2, "0") +
       String(today.getDate()).padStart(2, "0");
 
-    let objectURIs = [];
-    for (let select of this.tableRef.getSelected()) {
-      objectURIs.push(select.uri);
-    } 
-    
+    // export all OS corresponding to filter
+    let exportDto  = {
+      experiment: this.filter.experiment,
+      rdf_types: this.filter.types,
+      name: this.filter.name,
+      facility: this.filter.facility,
+      germplasm: this.filter.germplasm,
+      factor_levels: this.filter.factorLevels,
+      existence_date: this.filter.existenceDate,
+      creation_date: this.filter.creationDate,
+      excluded_uris: undefined,
+      order_by: this.tableRef.getOrderBy()
+    };
+
+    // export only selected URIS (+matching with filter)
+    if(! exportAll){
+      let objectURIs = [];
+      for (let select of this.tableRef.getSelected()) {
+        objectURIs.push(select.uri);
+      }
+      Object.assign(exportDto, {
+        uris: objectURIs
+      });
+    }
+
     this.$opensilex.downloadFilefromPostService(
-      path,
-      filename,
-      "csv",
-      {        
-        uris: objectURIs,
-      },
-      this.lang
+        path,
+        filename,
+        "csv",
+        exportDto,
+        this.lang
     );
   }
 
@@ -407,6 +436,7 @@ en:
     destructionDate: Destruction date
     existenceDate: Object exists
     visualize: Visualize
+    export-all: Export all
 fr:
   ScientificObjectList:
     name-placeholder: Saisir un nom
@@ -446,4 +476,5 @@ fr:
     destructionDate: Date de destruction
     existenceDate: Date d'existence
     visualize: Visualiser
+    export-all: Tout exporter
 </i18n>

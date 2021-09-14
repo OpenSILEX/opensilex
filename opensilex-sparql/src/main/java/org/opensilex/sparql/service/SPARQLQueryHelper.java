@@ -28,6 +28,7 @@ import org.opensilex.sparql.deserializer.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -254,17 +255,22 @@ public class SPARQLQueryHelper {
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      */
     public static void addWhereUriValues(WhereClause<?> where, String varName, Collection<URI> values) {
+        addWhereUriValues(where,varName,values.stream(),values.size());
+    }
 
-        if (values.isEmpty()) {
+    public static void addWhereUriValues(WhereClause<?> where, String varName, Stream<URI> values, int size) {
+
+        if (size == 0){
             return;
         }
 
         // convert list to JENA node array and return the new SelectBuilder
-        Object[] nodes = new Node[values.size()];
-        int i = 0;
-        for (URI uri : values) {
-            nodes[i++] = NodeFactory.createURI(uri.toString());
-        }
+        Object[] nodes = new Node[size];
+        AtomicInteger i = new AtomicInteger();
+        values.forEach(uri -> {
+            nodes[i.getAndIncrement()] = SPARQLDeserializers.nodeURI(uri);
+        });
+
         where.addWhereValueVar(varName, nodes);
     }
 

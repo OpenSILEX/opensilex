@@ -44,7 +44,7 @@ import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
  *
  * @author vincent
  */
-final class SPARQLClassAnalyzer {
+public final class SPARQLClassAnalyzer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassAnalyzer.class);
 

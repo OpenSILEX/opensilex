@@ -7,6 +7,7 @@ package org.opensilex.sparql.deserializer;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
@@ -27,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author vincent
  */
 public class SPARQLDeserializers {
@@ -175,8 +176,8 @@ public class SPARQLDeserializers {
             return null;
         }
     }
-    
-        public static Node nodeURI(String uri) {
+
+    public static Node nodeURI(String uri) {
         try {
             return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri);
         } catch (Exception ex) {
@@ -220,13 +221,14 @@ public class SPARQLDeserializers {
         }
     }
 
-    public static Collection<Node> nodeListURI(Collection<URI> uris) throws Exception {
+    public static Node[] nodeListURIAsArray(Collection<URI> uris) throws Exception {
         SPARQLDeserializer<URI> uriParser = SPARQLDeserializers.getForClass(URI.class);
-        List<Node> uriNodes = new ArrayList<>(uris.size());
-        for (URI uri : uris) {
-            uriNodes.add(uriParser.getNodeFromString(uri.toString()));
-        }
 
+        Node[] uriNodes = new Node[uris.size()];
+        int i=0;
+        for (URI uri : uris) {
+            uriNodes[i++] = uriParser.getNodeFromString(uri.toString());
+        }
         return uriNodes;
     }
 

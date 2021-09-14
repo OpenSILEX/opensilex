@@ -27,10 +27,7 @@ import org.opensilex.utils.ClassUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -42,69 +39,89 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  *
  * @param <T> the SPARQL model class
  */
-public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
+public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
-    private final SPARQLService service;
+    private final SPARQLService sparql;
     private final SPARQLClassObjectMapper<T> mapper;
+    private final Node graph;
+    private final Map<String, Boolean> fieldsToFetch;
+
     private final SelectBuilder initialSelect;
     private final List<T> results;
-    private final Node graph;
-    private final Map<String, Boolean> dataListFieldsToFetch;
+
+    private final Map<String,SPARQLClassObjectMapper<?>> objectMappers;
 
     private final LinkedHashMap<Field, String> concatVarNameByFields;
-    private final List<Method> dataListSetters;
-    private final List<SPARQLDeserializer<?>> deserializers;
+    private final List<Method> listSetters;
+    private final Map<String,SPARQLDeserializer<?>> deserializersByConcatFields;
 
-    private final static String GROUP_CONCAT_SEPARATOR = ",";
+    private static final String GROUP_CONCAT_SEPARATOR = ",";
+    private static final String CONCAT_VAR_SUFFIX = "__concat";
 
     /**
-     * @param service               {@link SPARQLService} used to run additional SPARQL query
+     * @param sparql               {@link SPARQLService} used to run additional SPARQL query
      * @param objectClass           the SPARQL model class
      * @param graph                 graph
-     * @param dataListFieldsToFetch The multi-valued fields to fetch
+     * @param fieldsToFetch The multi-valued fields to fetch
      *                              <pre>
      *                              For each field, indicate if the <b> ?uri,:multi_valued_property,?value> </b> triple must be added or not to the query.
      *                              </pre>
      * @param initialSelect         the initial builder
      * @param initialResults        the List of {@link SPARQLResourceModel}, each item from list will be updated by adding values for multi-valued properties
      */
-    public SPARQLDataListFetcher(SPARQLService service,
-                                 Class<T> objectClass,
-                                 Node graph,
-                                 Map<String, Boolean> dataListFieldsToFetch,
-                                 SelectBuilder initialSelect,
-                                 List<T> initialResults) throws SPARQLDeserializerNotFoundException, SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+    public SPARQLListFetcher(SPARQLService sparql,
+                             Class<T> objectClass,
+                             Node graph,
+                             Map<String, Boolean> fieldsToFetch,
+                             SelectBuilder initialSelect,
+                             List<T> initialResults) throws SPARQLDeserializerNotFoundException, SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
-        this.service = service;
-        this.mapper = service.getMapperIndex().getForClass(objectClass);
+        this.sparql = sparql;
+        this.mapper = sparql.getMapperIndex().getForClass(objectClass);
         this.graph = graph;
         this.initialSelect = initialSelect;
         this.results = initialResults;
 
-        if (dataListFieldsToFetch == null || dataListFieldsToFetch.isEmpty()) {
-            throw new IllegalArgumentException("Null or empty dataListFieldsToFetch");
+        if (fieldsToFetch == null || fieldsToFetch.isEmpty()) {
+            throw new IllegalArgumentException("Null or empty fieldsToFetch");
         }
 
-        this.dataListFieldsToFetch = dataListFieldsToFetch;
+        this.fieldsToFetch = fieldsToFetch;
         concatVarNameByFields = new LinkedHashMap<>();
 
-        for (String fieldName : dataListFieldsToFetch.keySet()) {
+        for (String fieldName : fieldsToFetch.keySet()) {
             Field field = mapper.classAnalizer.getFieldFromName(fieldName);
             if (field == null) {
                 throw new IllegalArgumentException("Unknown custom field" + fieldName + "from SPARQL model : " + mapper.getObjectClass().getName());
             }
-            concatVarNameByFields.put(field, field.getName() + "__concat");
+            if(mapper.classAnalizer.getDataListPropertyByField(field) == null && mapper.classAnalizer.getObjectListPropertyByField(field) == null){
+                throw new IllegalArgumentException("Custom field" + fieldName + " is not a multi-valued data/object property from SPARQL model : " + mapper.getObjectClass().getName());
+            }
+            concatVarNameByFields.put(field, field.getName() + CONCAT_VAR_SUFFIX);
         }
 
         // build list Deserializer and setter method in order to update each model
-        dataListSetters = new ArrayList<>(concatVarNameByFields.size());
-        deserializers = new ArrayList<>(concatVarNameByFields.size());
+        listSetters = new ArrayList<>(concatVarNameByFields.size());
+        deserializersByConcatFields = new HashMap<>();
+        objectMappers = new HashMap<>();
 
-        for (Field field : concatVarNameByFields.keySet()) {
-            dataListSetters.add(mapper.classAnalizer.getSetterFromField(field));
+        for (Map.Entry<Field,String> entry : concatVarNameByFields.entrySet()) {
+            Field field = entry.getKey();
+            String concatFieldName = entry.getValue();
 
+            listSetters.add(mapper.classAnalizer.getSetterFromField(field));
             Class<?> listGenericType = ClassUtils.getGenericTypeFromField(field);
-            deserializers.add(SPARQLDeserializers.getForClass(listGenericType));
+
+            try {
+                // check if the type is a SPARQL model type known by the service
+                // if so, use the URI deserializer and a specific object mapper for new instance creation
+                sparql.getMapperIndex().getForClass(listGenericType);
+                objectMappers.put(concatFieldName,sparql.getMapperIndex().getForClass(listGenericType));
+
+                // else just use the type deserializer
+            }catch (SPARQLMapperNotFoundException e){
+                deserializersByConcatFields.put(concatFieldName,SPARQLDeserializers.getForClass(listGenericType));
+            }
         }
     }
 
@@ -117,14 +134,13 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
         // get a new SELECT with multivalued property fetching according to the given settings
         SelectBuilder selectWithMultivalued = getSelect();
 
-        String uriField = mapper.getURIFieldName();
         AtomicInteger readResultNb = new AtomicInteger(0);
 
-        // execute the query and update model with all datalist property
-        service.executeSelectQueryAsStream(selectWithMultivalued).forEach(result -> {
+        // execute the query and update model with all data/object list property
+        sparql.executeSelectQueryAsStream(selectWithMultivalued).forEach(result -> {
             try {
 
-                if(readResultNb.get() >= results.size()){
+                if(readResultNb.get() > results.size()){
                     throw new IllegalArgumentException("Too large SPARQL results size");
                 }
 
@@ -150,19 +166,27 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
         innerSelect.addVar(uriVar);
 
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-        ElementGroup innerGraphElemGroup = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(innerSelect.getWhereHandler().getClause(), graph);
+        ElementGroup innerGraphElemGroup;
+        if(graph != null){
+            innerGraphElemGroup = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(innerSelect.getWhereHandler().getClause(), graph);
+        }else{
+            innerGraphElemGroup = innerSelect.getWhereHandler().getClause();
+        }
 
         // append var and BGP for each multivalued field
         concatVarNameByFields.keySet().forEach(field -> {
 
             Property property = mapper.classAnalizer.getDataListPropertyByField(field);
-            Var fieldVar = makeVar(field.getName());
+            if(property == null){
+                property = mapper.classAnalizer.getObjectListPropertyByField(field);
+            }
 
+            Var fieldVar = makeVar(field.getName());
             try {
                 // Add projection to the multivalued field variable with the GROUP_CONCAT aggregator
                 // build the expression ( GROUP_CONCAT(?multivalued_field ; separator=',') AS ?multivalued_field__concat)
                 AggGroupConcat groupConcat = new AggGroupConcat(exprFactory.asExpr(fieldVar), GROUP_CONCAT_SEPARATOR);
-                Var fieldConcatVar = makeVar(field.getName() + "__concat");
+                Var fieldConcatVar = makeVar(concatVarNameByFields.get(field));
 
                 outerSelect.addVar(groupConcat.toString(), fieldConcatVar);
                 innerSelect.addVar(fieldVar);
@@ -170,7 +194,7 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
                 throw new IllegalArgumentException(e);
             }
 
-            Boolean appendTriple = dataListFieldsToFetch.get(field.getName());
+            boolean appendTriple = fieldsToFetch.get(field.getName());
             if (appendTriple) {
                 // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
                 Triple triple = new Triple(uriVar, property.asNode(), fieldVar);
@@ -185,8 +209,13 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
             }
         });
 
-        return outerSelect.addSubQuery(innerSelect)
-                .addGroupBy(uriVar); // append the GROUP BY in order to support the GROUP_CONCAT aggregator
+        SelectBuilder select = outerSelect
+                .addSubQuery(innerSelect)
+                .addGroupBy(uriVar);     // append the GROUP BY in order to support the GROUP_CONCAT aggregator
+
+        // add VALUES manually, else VALUES clause are not copied from clone()
+        select.getValuesHandler().addAll(innerSelect.getValuesHandler());
+        return select;
 
     }
 
@@ -194,7 +223,7 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
 
         int fieldIndex = 0;
 
-        for (String concatFieldName : concatVarNameByFields.values()) {
+        for(String concatFieldName : concatVarNameByFields.values()) {
 
             // parse multivalued property grouped by a separator
             String parsedValue = result.getStringValue(concatFieldName);
@@ -206,17 +235,24 @@ public class SPARQLDataListFetcher<T extends SPARQLResourceModel> {
                 continue;
             }
 
-            // deserialize values
-            SPARQLDeserializer<?> deserializer = deserializers.get(fieldIndex);
-            List<Object> dataListPropValues = new ArrayList<>(stringValues.length);
+            SPARQLClassObjectMapper<?> objectMapper = objectMappers.get(concatFieldName);
+
+            List<Object> listPropertyValues = new ArrayList<>(stringValues.length);
+
             for (String strValue : stringValues) {
-                dataListPropValues.add(deserializer.fromString(strValue));
+                // if value correspond to some object URI, then create new object
+                if (objectMapper != null) {
+                    SPARQLResourceModel object = objectMapper.createInstance(new URI(SPARQLDeserializers.formatURI(strValue)));
+                    listPropertyValues.add(object);
+                } else {
+                    // else just deserialize value
+                    listPropertyValues.add(deserializersByConcatFields.get(concatFieldName).fromString(strValue));
+                }
             }
 
             // update model
-            Method dataListSetter = dataListSetters.get(fieldIndex);
-            dataListSetter.invoke(initialModel, dataListPropValues);
-
+            Method setter = listSetters.get(fieldIndex);
+            setter.invoke(initialModel, listPropertyValues);
             fieldIndex++;
         }
     }

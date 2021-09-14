@@ -6,6 +6,8 @@
 package org.opensilex.sparql.service;
 
 import java.util.Map;
+
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 /**
@@ -14,17 +16,29 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
  */
 public class SPARQLPrefixMapping extends PrefixMappingImpl {
 
+    private Map<String, String> cachedPrefixMap;
+
     public SPARQLPrefixMapping() {
         super();
     }
-    
+
+    @Override
+    public PrefixMapping setNsPrefixes(Map<String, String> other) {
+         super.setNsPrefixes(other);
+         cachedPrefixMap = getNsPrefixMap();
+         return this;
+    }
+
     @Override
     public String shortForm(String uri) {
         String candidateKey = null;
         String candidateValue = null;
-        Map<String, String> map = getNsPrefixMap();
+
+        // use the cached prefix map, else getNsPrefixMap() create a new copy of the map at each call
+        Map<String, String> map = cachedPrefixMap;
         for (String key : map.keySet()) {
             String value = map.get(key);
+
             if (uri.startsWith(value)) {
                 if (candidateKey == null) {
                     candidateKey = key;

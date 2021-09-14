@@ -55,13 +55,12 @@
           <span v-if="!field.isSelect" :key="index">{{$t(data.label)}}</span>
 
           <label v-else :key="index">
-            <input
-              v-if="!maximumSelectedRows"
-              type="checkbox"
-              :value = true
-              v-model="selectAll"
-              @change="onSelectAll()"
-            />
+              <input
+                  v-if="!maximumSelectedRows"
+                  type="checkbox"
+                  v-model="selectAll"
+                  @change="onSelectAll()"
+              />
             <span v-if="!maximumSelectedRows">&nbsp;</span>
           </label>
         </template>
@@ -92,6 +91,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {OrderBy} from "opensilex-core/model/orderBy";
 
 @Component
 export default class TableAsyncView extends Vue {
@@ -165,7 +165,7 @@ export default class TableAsyncView extends Vue {
   selectAll = false;
 
   @Prop({
-    default: 1000
+    default: 10000
   })
   selectAllLimit; 
 
@@ -299,7 +299,7 @@ export default class TableAsyncView extends Vue {
     return this.selectedItems;
   }
 
-  loadData() {
+  public getOrderBy() : Array<OrderBy> {
     let orderBy = [];
     if (this.sortBy) {
       let orderByText = this.sortBy + "=";
@@ -308,7 +308,12 @@ export default class TableAsyncView extends Vue {
       } else {
         orderBy.push(orderByText + "asc");
       }
+      return orderBy;
     }
+  }
+
+  loadData() {
+    let orderBy = this.getOrderBy();
 
     if (this.useQueryParams) {
       this.$opensilex.updateURLParameter(
@@ -356,12 +361,15 @@ export default class TableAsyncView extends Vue {
     return (this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
   }
 
-  onSelectAll() {  
+  onSelectAll() {
     if (this.selectAll) {
 
       if(this.totalRow > this.selectAllLimit) {
         alert(this.$t('TableAsyncView.alertSelectAllLimitSize') + this.selectAllLimit);
-        this.selectAll=false;
+        this.$nextTick(() => {
+            // disable checkbox selection if the select limit size is reached
+            this.selectAll=false;
+        });
       }
       else {
         this.selectedItems = [];
@@ -396,6 +404,11 @@ export default class TableAsyncView extends Vue {
       this.tableRef.clearSelected();
     }
   }
+
+  getSelectAllLimit(){
+    return this.selectAllLimit;
+  }
+
 }
 </script>
 

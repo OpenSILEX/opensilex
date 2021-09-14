@@ -6,9 +6,7 @@
 package org.opensilex.sparql.response;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -17,7 +15,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  *
  * @author vince
  */
-public class ResourceTreeDTO extends NamedResourceDTO {
+public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
 
     private URI parent;
 
@@ -26,6 +24,7 @@ public class ResourceTreeDTO extends NamedResourceDTO {
     private boolean disabled;
 
     private List<ResourceTreeDTO> children;
+
 
     public URI getParent() {
         return parent;
@@ -59,31 +58,40 @@ public class ResourceTreeDTO extends NamedResourceDTO {
         this.disabled = disabled;
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T>... trees) {
-        return fromResourceTree(null, trees);
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(List<SPARQLTreeListModel<?>>trees) {
+        List<ResourceTreeDTO> dtoList = new LinkedList<>();
+        trees.forEach(tree ->  ResourceTreeDTO.addTreeToList(dtoList,tree,false,null));
+        return dtoList;
+
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(BiConsumer<T, ResourceTreeDTO> handler, SPARQLTreeListModel<T>... trees) {
-        return fromResourceTree(false, handler, trees);
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(SPARQLTreeListModel<T>tree) {
+        return fromResourceTree(false,null, Collections.singletonList(tree));
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, SPARQLTreeListModel<T>... trees) {
-        return fromResourceTree(enableSelection, null, trees);
+
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, SPARQLTreeListModel<T> tree) {
+        return fromResourceTree(enableSelection,null, Collections.singletonList(tree));
     }
 
-    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler, SPARQLTreeListModel<T>... trees) {
+    public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler, Collection<SPARQLTreeListModel<T>> trees) {
         List<ResourceTreeDTO> list = new ArrayList<>();
 
         for (SPARQLTreeListModel<T> tree : trees) {
-
-            tree.listRoots(root -> {
-                ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection, handler);
-                list.add(rootDto);
-            });
+            addTreeToList(list,tree,enableSelection,handler);
         }
 
         return list;
     }
+
+    public static <T extends SPARQLTreeModel<T>> void addTreeToList(List<ResourceTreeDTO> list, SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
+        tree.listRoots(root -> {
+            ResourceTreeDTO rootDto = fromResourceTreeRecursive(root, tree, enableSelection, handler);
+            list.add(rootDto);
+        });
+    }
+
+
 
     private static <T extends SPARQLTreeModel<T>> ResourceTreeDTO fromResourceTreeRecursive(T model, SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
         ResourceTreeDTO dto = new ResourceTreeDTO();

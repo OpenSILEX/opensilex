@@ -6,14 +6,18 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.*;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
@@ -57,11 +61,9 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     )
     protected ClassModel parent;
 
-    protected Map<URI, DatatypePropertyModel> datatypeProperties;
-
-    protected Map<URI, ObjectPropertyModel> objectProperties;
-
-    protected Map<URI, OwlRestrictionModel> restrictions;
+    protected Map<URI, DatatypePropertyModel> datatypeProperties = new HashMap<>();
+    protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
+    protected Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
 
     @Override
     public String getName() {
@@ -93,12 +95,24 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         return datatypeProperties;
     }
 
+    public List<DatatypePropertyModel> getDatatypePropertiesWithDomain(){
+        List<DatatypePropertyModel> properties = new ArrayList<>();
+        this.visit(model -> properties.addAll(model.getDatatypeProperties().values()));
+        return properties;
+    }
+
     public void setDatatypeProperties(Map<URI, DatatypePropertyModel> datatypeProperties) {
         this.datatypeProperties = datatypeProperties;
     }
 
     public Map<URI, ObjectPropertyModel> getObjectProperties() {
         return objectProperties;
+    }
+
+    public List<ObjectPropertyModel> getObjectPropertiesWithDomain(){
+        List<ObjectPropertyModel> properties = new ArrayList<>();
+        this.visit(model -> properties.addAll(model.getObjectProperties().values()));
+        return properties;
     }
 
     public void setObjectProperties(Map<URI, ObjectPropertyModel> objectProperties) {
@@ -136,4 +150,5 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
     }
+
 }

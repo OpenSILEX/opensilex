@@ -20,6 +20,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,17 +36,12 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.expr.aggregate.AggGroupConcat;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.OpenSilex;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.cache.OntologyCache;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -81,17 +78,26 @@ import org.slf4j.LoggerFactory;
 public final class OntologyDAO {
 
     private final SPARQLService sparql;
+    private final URI objectPropertiesParent;
+    private final URI dataPropertiesParent;
+
 
     public OntologyDAO(SPARQLService sparql) {
         this.sparql = sparql;
+        try {
+            objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
+            dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final static Logger LOGGER = LoggerFactory.getLogger(OntologyDAO.class);
 
-    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, UserModel user, boolean excludeRoot, Consumer<T> handler) throws Exception {
+    public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, String lang, boolean excludeRoot, Consumer<T> handler) throws Exception {
         SPARQLTreeListModel<T> classTree = sparql.searchResourceTree(
                 clazz,
-                user.getLanguage(),
+                lang,
                 parent,
                 excludeRoot,
                 (SelectBuilder select) -> {
@@ -181,6 +187,10 @@ public final class OntologyDAO {
                 datatypePropertiesURI.keySet(), lang);
 
         MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, (pModel) -> {
+            // don't set parent if parent is TopObjectProperty
+            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(dataPropertiesParent, pModel.getParent().getUri())) {
+                pModel.setParent(null);
+            }
             pModel.setTypeRestriction(datatypePropertiesURI.get(pModel.getUri()));
             return pModel.getUri();
         });
@@ -191,6 +201,11 @@ public final class OntologyDAO {
 
         MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, (pModel) -> {
             pModel.setTypeRestriction(objectPropertiesURI.get(pModel.getUri()));
+
+            // don't set parent if parent is TopObjectProperty
+            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(objectPropertiesParent, pModel.getParent().getUri())) {
+                pModel.setParent(null);
+            }
             return pModel.getUri();
         });
         model.setObjectProperties(objectPropertiesMap);
@@ -235,9 +250,7 @@ public final class OntologyDAO {
         List<ClassModel> results = sparql.search(
                 ClassModel.class,
                 lang,
-                (select) -> {
-                    select.addWhere(SPARQLDeserializers.nodeURI(modelUri), RDF.type, makeVar(ClassModel.URI_FIELD));
-                }
+                (select) -> select.addWhere(SPARQLDeserializers.nodeURI(modelUri), RDF.type, makeVar(ClassModel.URI_FIELD))
         );
 
         if (results.isEmpty()) {
@@ -363,7 +376,7 @@ public final class OntologyDAO {
             Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
             URIGenerator<String> uriGenerator
     ) throws Exception {
-        SPARQLNamedResourceModel object = new SPARQLNamedResourceModel();
+        SPARQLNamedResourceModel<?> object = new SPARQLNamedResourceModel<>();
         String name = null;
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
@@ -558,9 +571,7 @@ public final class OntologyDAO {
 
     public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, UserModel user) throws Exception {
 
-        URI dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
-
-        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.searchResourceTree(
@@ -574,7 +585,7 @@ public final class OntologyDAO {
         );
     }
 
-    protected void appendDomainBoundExpr(SelectBuilder select){
+    protected void appendDomainBoundExpr(SelectBuilder select) {
 
         ExprFactory exprFactory = select.getExprFactory();
 
@@ -585,9 +596,7 @@ public final class OntologyDAO {
 
     public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, UserModel user) throws Exception {
 
-        URI objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
-
-        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.searchResourceTree(
@@ -601,50 +610,50 @@ public final class OntologyDAO {
         );
     }
 
-    private void addDomainSubClassOfExistExpr(Map<String,WhereHandler> customHandlerByFields, URI domain) {
+    private void addDomainSubClassOfExistExpr(Map<String, WhereHandler> customHandlerByFields, URI domain) {
 
         if (domain != null) {
             WhereHandler handler = new WhereHandler();
-            handler.addWhere(new TriplePath(makeVar(DatatypePropertyModel.DOMAIN_FIELD),Ontology.subClassAny,SPARQLDeserializers.nodeURI(domain)));
-            customHandlerByFields.put(DatatypePropertyModel.DOMAIN_FIELD,handler);
+            handler.addWhere(new TriplePath(makeVar(DatatypePropertyModel.DOMAIN_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain)));
+            customHandlerByFields.put(DatatypePropertyModel.DOMAIN_FIELD, handler);
         }
     }
 
     public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.create(graph, dataProperty);
-        OntologyCache.getInstance(sparql).invalidateProperties();
+        CaffeineOntologyCache.getInstance(sparql).createDataProperty(dataProperty);
     }
 
     public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.create(graph, objectProperty);
-        OntologyCache.getInstance(sparql).invalidateProperties();
+        CaffeineOntologyCache.getInstance(sparql).createObjectProperty(objectProperty);
     }
 
-    public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
+    public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, String lang) throws Exception {
 
-        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.loadByURI(
                 sparql.getDefaultGraph(DatatypePropertyModel.class),
                 DatatypePropertyModel.class,
                 propertyURI,
-                user.getLanguage(),
+                lang,
                 null,
                 customHandlerByFields
         );
     }
 
-    public ObjectPropertyModel getObjectProperty(URI propertyURI, URI domain, UserModel user) throws Exception {
+    public ObjectPropertyModel getObjectProperty(URI propertyURI, URI domain, String lang) throws Exception {
 
-        Map<String,WhereHandler> customHandlerByFields = new HashMap<>();
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.loadByURI(
                 sparql.getDefaultGraph(ObjectPropertyModel.class),
                 ObjectPropertyModel.class,
                 propertyURI,
-                user.getLanguage(),
+                lang,
                 null,
                 customHandlerByFields
         );
@@ -653,22 +662,30 @@ public final class OntologyDAO {
 
     public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.update(graph, dataProperty);
-        OntologyCache.getInstance(sparql).invalidateProperties();
+        CaffeineOntologyCache.getInstance(sparql).updateDataProperty(dataProperty);
     }
 
     public void updateObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.update(graph, objectProperty);
-        OntologyCache.getInstance(sparql).invalidateProperties();
+        CaffeineOntologyCache.getInstance(sparql).updateObjectProperty(objectProperty);
     }
 
     public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {
+        ClassModel domain = getDataProperty(propertyURI, null, null).getDomain();
+        if (domain != null) {
+            CaffeineOntologyCache.getInstance(sparql).deleteDataProperty(propertyURI, domain.getUri());
+        }
+
         sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
-        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public void deleteObjectProperty(Node propertyGraph, URI propertyURI) throws Exception {
+        ClassModel domain = getObjectProperty(propertyURI, null, null).getDomain();
+        if (domain != null) {
+            CaffeineOntologyCache.getInstance(sparql).deleteObjectProperty(propertyURI, domain.getUri());
+        }
+
         sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
-        OntologyCache.getInstance(sparql).invalidateProperties();
     }
 
     public boolean addClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
@@ -678,10 +695,12 @@ public final class OntologyDAO {
             sparql.create(graph, restriction, false, true, (create, node) -> {
                 create.addInsert(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
+            CaffeineOntologyCache.getInstance(sparql).addRestriction(restriction);
             return true;
         } else {
             return false;
         }
+
     }
 
     public List<OwlRestrictionModel> getClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
@@ -713,6 +732,8 @@ public final class OntologyDAO {
             delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
             delete.addWhere("?s", "?p", "?o");
             sparql.executeDeleteQuery(delete);
+
+            CaffeineOntologyCache.getInstance(sparql).deleteRestriction(propertyURI, classURI);
         }
     }
 
@@ -721,7 +742,11 @@ public final class OntologyDAO {
             sparql.startTransaction();
             deleteClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), language);
             addClassPropertyRestriction(graph, classURI, restriction, language);
+
+            CaffeineOntologyCache.getInstance(sparql).updateRestriction(restriction);
+
             sparql.commitTransaction();
+
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
             throw ex;
@@ -747,7 +772,7 @@ public final class OntologyDAO {
 
         return name;
     }
-    
+
     public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
         SelectBuilder select = new SelectBuilder();
         select.setDistinct(true);
@@ -756,9 +781,9 @@ public final class OntologyDAO {
         String namesField = "names";
         Var nameVar = makeVar(nameField);
         ExprFactory exprFactory = select.getExprFactory();
-        Aggregator groupConcat = AggregatorFactory.createGroupConcat(true, exprFactory.asExpr(nameVar), " | ", null); 
-        Var fieldConcatVar = makeVar(namesField); 
-        select.addVar(groupConcat.toString(),fieldConcatVar);        
+        Aggregator groupConcat = AggregatorFactory.createGroupConcat(true, exprFactory.asExpr(nameVar), " | ", null);
+        Var fieldConcatVar = makeVar(namesField);
+        select.addVar(groupConcat.toString(), fieldConcatVar);
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         select.addVar(uriVar);
@@ -766,12 +791,12 @@ public final class OntologyDAO {
         select.addVar(typeVar);
         Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
         select.addVar(typeNameVar);
-        
+
         if (context != null) {
             select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
         } else {
             select.addWhere(uriVar, RDFS.label, nameVar);
-        }   
+        }
         select.addWhere(uriVar, RDF.type, typeVar);
         select.addWhere(typeVar, RDFS.label, typeNameVar);
         select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
@@ -779,7 +804,7 @@ public final class OntologyDAO {
         select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
         select.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
-        
+
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
@@ -793,73 +818,116 @@ public final class OntologyDAO {
             typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
             model.setTypeLabel(typeLabel);
             resultList.add(model);
-        };
+        }
 
         return resultList;
     }
 
-    private static final String CSV_URI_KEY = "uri";
-    private static final String CSV_TYPE_KEY = "type";
-    private static final String CSV_NAME_KEY = "name";
+    public static final String CSV_URI_KEY = "uri";
+    public static final String CSV_TYPE_KEY = "type";
+    public static final String CSV_NAME_KEY = "name";
 
-    public <T extends SPARQLNamedResourceModel> String exportCSV(List<T> objects, URI parentClass, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns, Comparator<String> columnSorter) throws Exception {
-        List<String> columnsID = new ArrayList<>();
+    private Map<String,String> getColumnNames(Collection<String> columnUris, String lang) throws SPARQLException, URISyntaxException {
+
+        Map<String, String> columnsNames = new HashMap<>();
+
+        // filter columns which are not parsable as a URI
+        List<URI> columnWithAbsoluteUris = new ArrayList<>();
+        columnWithAbsoluteUris.add(new URI(RDFS.label.toString()));
+
+        columnUris.forEach((columnId) -> {
+            try {
+                URI columnURI = new URI(columnId);
+                if (columnURI.isAbsolute()) {
+                    columnWithAbsoluteUris.add(columnURI);
+                }
+            } catch (Exception ex) {
+                // Ignore invalid column IDs
+            }
+        });
+
+        SelectBuilder propertyNamesRequest = new SelectBuilder();
+        Var uriVar = makeVar("uri");
+        Var nameVar = makeVar("name");
+        propertyNamesRequest.addVar(uriVar);
+        propertyNamesRequest.addVar(nameVar);
+        propertyNamesRequest.addWhere(uriVar, RDFS.label, nameVar);
+        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilter(nameVar.getVarName(), lang));
+        SPARQLQueryHelper.inURI(propertyNamesRequest, uriVar.getVarName(), columnWithAbsoluteUris);
+
+        sparql.executeSelectQuery(propertyNamesRequest, (result) -> {
+            String uri = SPARQLDeserializers.formatURI(result.getStringValue(uriVar.getVarName()));
+            columnsNames.put(uri, result.getStringValue(nameVar.getVarName()));
+        });
+
+        return columnsNames;
+    }
+
+
+    public <T extends SPARQLNamedResourceModel> String exportCSV(
+            List<T> objects,
+            URI parentClass,
+            String lang,
+            BiFunction<String, T, String> customValueGenerator,
+            List<String> customColumns,
+            Set<String> strictlyAllowedColumns,
+            Comparator<String> columnSorter
+            ) throws Exception {
+
+        boolean sortColumns = columnSorter != null;
+        boolean restrictionOnColumn = strictlyAllowedColumns != null;
+
+        Map<String, Integer> columnsIndexes = new HashMap<String, Integer>() {{
+            put(CSV_URI_KEY,0);
+            put(CSV_TYPE_KEY,1);
+            put(CSV_NAME_KEY,2);
+        }};
+        customColumns.stream()
+                .filter(column -> ! restrictionOnColumn || strictlyAllowedColumns.contains(column))
+                .map(SPARQLDeserializers::formatURI)
+                .forEach(columnId -> columnsIndexes.put(columnId,columnsIndexes.size()));
 
         List<Map<Integer, String>> rows = new ArrayList<>();
-        Map<String, List<Integer>> propertiesIndexes = new HashMap<>();
 
-        List<String> loadedTypes = new ArrayList<>();
+        int initialOffset = 3;
 
+        // read each object, and update row map and column index
         for (T object : objects) {
             Map<Integer, String> row = new HashMap<>();
 
+            // fill URI, type and name columns
             String typeURI = URIDeserializer.formatURI(object.getType()).toString();
             row.put(0, URIDeserializer.formatURI(object.getUri()).toString());
             row.put(1, typeURI);
             row.put(2, object.getName());
 
-            int initialOffset = row.size();
-
+            // fill row with custom columns values
             for (int i = 0; i < customColumns.size(); i++) {
-                String value = customValueGenerator.apply(customColumns.get(i), object);
-                row.put(initialOffset + i, value);
+                String customColumn = customColumns.get(i);
+                if(! restrictionOnColumn || strictlyAllowedColumns.contains(customColumn)){
+
+                    String value = customValueGenerator.apply(customColumn, object);
+                    if (!StringUtils.isEmpty(value)) {
+                        row.put(initialOffset + i, value);
+                    }
+                }
             }
 
-            int rowOffset = row.size();
-
+            // fill column with objets relations
             for (SPARQLModelRelation relation : object.getRelations()) {
                 Property property = relation.getProperty();
                 String propertyURIString = property.getURI();
 
-                int propertyIndex = columnsID.indexOf(propertyURIString);
-                if (propertyIndex < 0) {
-                    propertyIndex = columnsID.size();
-                    columnsID.add(propertyURIString);
+                if(restrictionOnColumn && ! strictlyAllowedColumns.contains(propertyURIString)){
+                    continue;
                 }
 
-                propertyIndex += rowOffset;
+                Integer propertyIndex = columnsIndexes.get(propertyURIString);
 
-                if (!propertiesIndexes.containsKey(propertyURIString)) {
-                    List<Integer> indexes = new ArrayList<>();
-                    indexes.add(propertyIndex);
-                    propertiesIndexes.put(propertyURIString, indexes);
-                }
-
-                List<Integer> indexes = propertiesIndexes.get(propertyURIString);
-
-                Integer currentIndex = -1;
-                for (int i = 0; i < indexes.size(); i++) {
-                    if (!row.containsKey(indexes.get(i))) {
-                        currentIndex = indexes.get(i);
-                        break;
-                    }
-                }
-
-                if (currentIndex < 0) {
-                    propertyIndex = columnsID.size() + rowOffset;
-                    columnsID.add(propertyURIString);
-                    indexes.add(propertyIndex);
-                    currentIndex = propertyIndex;
+                // new property
+                if(propertyIndex == null){
+                    propertyIndex = columnsIndexes.size();
+                    columnsIndexes.put(SPARQLDeserializers.formatURI(propertyURIString),propertyIndex);
                 }
 
                 String strValue = relation.getValue();
@@ -869,75 +937,49 @@ public final class OntologyDAO {
                         strValue = relation.getValue();
                     }
                 }
-                row.put(currentIndex, strValue);
-            }
+                if (!StringUtils.isEmpty(strValue)) {
 
-            // for each type relation
-            if (!loadedTypes.contains(typeURI)) {
-                ClassModel model = getClassModel(object.getType(), parentClass, lang);
-                model.getRestrictions().keySet().forEach(property -> {
-                    String propertyURI = SPARQLDeserializers.getExpandedURI(property);
-                    if (!columnsID.contains(propertyURI)
-                            && !customColumns.contains(propertyURI)
-                            && !SPARQLDeserializers.compareURIs(RDFS.label.getURI(), property)) {
-                        columnsID.add(propertyURI);
-                        List<Integer> indexes = new ArrayList<>();
-                        indexes.add(columnsID.size() + rowOffset - 1);
-                        propertiesIndexes.put(propertyURI, indexes);
-
+                    String existingValue = row.get(propertyIndex);
+                    if(existingValue == null){
+                        row.put(propertyIndex, strValue);
+                    }else{
+                        // multiple value for a property => put all in same column
+                        row.put(propertyIndex, existingValue +" "+strValue);
                     }
-                });
-
-                loadedTypes.add(typeURI);
+                }
             }
 
             rows.add(row);
         }
 
-        int colOffset = 3;
+        LinkedHashSet<String> sortedColumns = new LinkedHashSet<>();
+        sortedColumns.add(CSV_URI_KEY);
+        sortedColumns.add(CSV_TYPE_KEY);
+        sortedColumns.add(CSV_NAME_KEY);
 
-        for (int i = 0; i < customColumns.size(); i++) {
-            String customColumn = customColumns.get(i);
-            List<Integer> customColumnIndex = new ArrayList<>();
-            customColumnIndex.add(i + colOffset);
-            propertiesIndexes.put(customColumn, customColumnIndex);
-            columnsID.add(customColumn);
+        // append each column into
+        Stream<String> columnStream = columnsIndexes.keySet()
+                .stream()
+                .filter(column -> ! sortedColumns.contains(column));
+
+        if(sortColumns){
+            columnStream = columnStream.sorted();
+        }
+        columnStream.forEach(sortedColumns::add);
+
+        int[] sortedPropertyIndexes = new int[columnsIndexes.size()];
+
+        // build index between old and new property index
+        if(sortColumns){
+            int newIdx = 0;
+            for(String sortedColumn : sortedColumns){
+                int oldIdx = columnsIndexes.get(sortedColumn);
+                sortedPropertyIndexes[oldIdx] = newIdx++;
+            }
         }
 
-        columnsID.sort((id1, id2) -> {
-            if (columnSorter != null) {
-                return columnSorter.compare(id1, id2);
-            }
-            return id1.compareTo(id2);
-        });
 
-        List<URI> columnURIs = new ArrayList<>();
-        columnURIs.add(new URI(RDFS.label.getURI()));
-        columnsID.forEach((columID) -> {
-            try {
-                URI columnURI = new URI(columID);
-                if (columnURI.isAbsolute()) {
-                    columnURIs.add(columnURI);
-                }
-            } catch (Exception ex) {
-                // Ignore invalid column IDs
-            }
-        });
-
-        Map<String, String> columnsNames = new HashMap<>();
-
-        SelectBuilder propertyNamesRequest = new SelectBuilder();
-        Var uriVar = makeVar("uri");
-        Var nameVar = makeVar("name");
-        propertyNamesRequest.addVar(uriVar);
-        propertyNamesRequest.addVar(nameVar);
-        propertyNamesRequest.addWhere(uriVar, RDFS.label, nameVar);
-        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilter(nameVar.getVarName(), lang));
-        SPARQLQueryHelper.inURI(propertyNamesRequest, uriVar.getVarName(), columnURIs);
-        sparql.executeSelectQuery(propertyNamesRequest, (result) -> {
-            String uri = SPARQLDeserializers.getExpandedURI(result.getStringValue(uriVar.getVarName()));
-            columnsNames.put(uri, result.getStringValue(nameVar.getVarName()));
-        });
+        Map<String,String> columnsNames = getColumnNames(sortedColumns,lang);
 
         StringWriter strWriter = new StringWriter();
         CSVWriter writer = new CSVWriter(strWriter,
@@ -945,61 +987,55 @@ public final class OntologyDAO {
                 CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                 CSVWriter.DEFAULT_LINE_END);
 
-        String[] headerArray = new String[colOffset + columnsID.size()];
-        String[] headerNameArray = new String[colOffset + columnsID.size()];
+        // write property id+name headers
+        String[] headerArray = new String[initialOffset + columnsIndexes.size()];
+        String[] headerNameArray = new String[initialOffset + columnsIndexes.size()];
         headerArray[0] = CSV_URI_KEY;
         headerNameArray[0] = "URI";
         headerArray[1] = CSV_TYPE_KEY;
         headerNameArray[1] = "Type";
         headerArray[2] = CSV_NAME_KEY;
-        headerNameArray[2] = columnsNames.get(SPARQLDeserializers.getExpandedURI(RDFS.label.getURI()));
+        headerNameArray[2] = columnsNames.get(SPARQLDeserializers.formatURI(RDFS.label.getURI()));
 
-        for (int i = 0; i < columnsID.size(); i++) {
-            headerArray[i + colOffset] = SPARQLDeserializers.formatURI(columnsID.get(i));
-            String colName = columnsID.get(i);
-            if (columnsNames.containsKey(colName)) {
-                colName = columnsNames.get(colName);
+        int i = 0;
+        for (String columnId : sortedColumns) {
+
+            // don't write uri,type,name twice
+            if(i >= initialOffset){
+                String formattedColumnId = SPARQLDeserializers.formatURI(columnId);
+                headerArray[i] = formattedColumnId;
+
+                String colName = columnsNames.get(columnId);
+                if (colName != null) {
+                    headerNameArray[i] = colName.substring(0, 1).toUpperCase() + colName.substring(1);
+                } else {
+                    headerNameArray[i] = formattedColumnId;
+                }
             }
-            if (!colName.isEmpty()) {
-                headerNameArray[i + colOffset] = colName.substring(0, 1).toUpperCase() + colName.substring(1);
-                ;
-            }
+            i++;
         }
-
         writer.writeNext(headerArray);
-
         writer.writeNext(headerNameArray);
 
+        // write rows
         for (Map<Integer, String> row : rows) {
-            String[] rowArray = new String[columnsID.size() + colOffset];
+            String[] rowArray = new String[columnsIndexes.size() + initialOffset];
             rowArray[0] = row.get(0);
             rowArray[1] = row.get(1);
             rowArray[2] = row.get(2);
 
-            int arrayIndex = colOffset;
-            String lastColumnId = "";
-            List<Integer> indexes = null;
-            int currentColumnIndex = 0;
-            for (String columnID : columnsID) {
-                if (!lastColumnId.equals(columnID)) {
-                    indexes = propertiesIndexes.get(columnID);
-                    currentColumnIndex = 0;
-                } else {
-                    currentColumnIndex++;
+            row.forEach((colIdx,colValue) -> {
+                if(sortColumns){
+                    int sortedIdx = sortedPropertyIndexes[colIdx];
+                    rowArray[sortedIdx] = colValue;
+                }else{
+                    rowArray[colIdx] = colValue;
                 }
-                Integer rowIndex = indexes.get(currentColumnIndex);
-                if (row.containsKey(rowIndex)) {
-                    rowArray[arrayIndex] = row.get(rowIndex);
-                }
-                lastColumnId = columnID;
-                arrayIndex++;
-            }
+            });
 
             writer.writeNext(rowArray);
-
         }
         writer.close();
-
         strWriter.close();
 
         return strWriter.toString();
@@ -1043,7 +1079,7 @@ public final class OntologyDAO {
 //
 //    }
 
-    public List<URITypesModel> checkURIsTypes(List<URI> uris, List<URI> rdfTypes) throws SPARQLException, URISyntaxException, Exception {
+    public List<URITypesModel> checkURIsTypes(List<URI> uris, List<URI> rdfTypes) throws Exception {
         List<URITypesModel> urisTypes = new ArrayList<>();
 
         String uriField = "_uri";
@@ -1073,11 +1109,11 @@ public final class OntologyDAO {
 
         for (SPARQLResult res : results) {
             URI uri = new URI(res.getStringValue(uriField));
-            List<URI> types = new ArrayList();
+            List<URI> types = new ArrayList<>();
             for (int i = 0; i < rdfTypes.size(); i++) {
                 String index = String.valueOf(i);
-                if (res.getStringValue(typeField + String.valueOf(index)) != null) {
-                    URI type = new URI(res.getStringValue(typeField + String.valueOf(index)));
+                if (res.getStringValue(typeField + index) != null) {
+                    URI type = new URI(res.getStringValue(typeField + index));
                     types.add(type);
                 }
             }
@@ -1087,31 +1123,31 @@ public final class OntologyDAO {
         }
         return urisTypes;
     }
-    
+
     public List<URI> getSubclassRdfTypes(URI rdfType, UserModel user) throws Exception {
-        
+
         SPARQLTreeListModel treeList = searchSubClasses(
                 rdfType,
                 ClassModel.class,
                 null,
-                user,
+                user.getLanguage(),
                 false,
                 null
         );
-        
-        List<URI> rdfTypes = new ArrayList<>();        
-        List<ResourceTreeDTO> trees = ResourceTreeDTO.fromResourceTree(treeList);        
-        
+
+        List<URI> rdfTypes = new ArrayList<>();
+        List<ResourceTreeDTO> trees = ResourceTreeDTO.fromResourceTree(treeList);
+
         while (!trees.isEmpty()) {
-            for (ResourceTreeDTO tree:trees) {
+            for (ResourceTreeDTO tree : trees) {
                 rdfTypes.add(tree.getUri());
                 trees = tree.getChildren();
-                
+
             }
         }
-        
+
         return rdfTypes;
-    }  
+    }
 
     public List<SPARQLNamedResourceModel> getByName(String targetNameOrUri) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
         SelectBuilder select = new SelectBuilder();
@@ -1119,8 +1155,8 @@ public final class OntologyDAO {
         String uriField = "uri";
         Var uriVar = makeVar(uriField);
         select.addVar(uriVar);
-        select.addWhere(uriVar, RDFS.label, targetNameOrUri);  
-          
+        select.addWhere(uriVar, RDFS.label, targetNameOrUri);
+
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
@@ -1129,7 +1165,8 @@ public final class OntologyDAO {
             model.setName(targetNameOrUri);
             model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
             resultList.add(model);
-        };
+        }
+        ;
 
         return resultList;
     }

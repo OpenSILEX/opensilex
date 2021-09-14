@@ -42,6 +42,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -199,7 +200,7 @@ public class GeospatialDAO {
         HashMap<String, Geometry> mapGeo = new HashMap<>();
 
         for (GeospatialModel geospatialModel : modelList) {
-            mapGeo.put(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri()), geospatialModel.getGeometry());
+            mapGeo.put(URIDeserializer.formatURIAsStr(geospatialModel.getUri().toString()), geospatialModel.getGeometry());
         }
 
         return mapGeo;
@@ -229,7 +230,7 @@ public class GeospatialDAO {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
             SPARQLTreeListModel<ClassModel> tree = ontologyDAO.searchSubClasses(new URI(Oeso.Area.getURI()), ClassModel.class, null,
-                    currentUser,
+                    currentUser.getLanguage(),
                     true,
                     null);
             List<ResourceTreeDTO> resourceTreeDTOS = ResourceTreeDTO.fromResourceTree(tree);

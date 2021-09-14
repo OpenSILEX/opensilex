@@ -119,9 +119,9 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 URI propertyUri = new URI(property);
 
                 // searching for a data-type or object-type property
-                PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventUri,this.user);
+                PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventUri,this.user.getLanguage());
                 if(propertyModel == null){
-                    propertyModel = ontologyDAO.getObjectProperty(propertyUri,eventUri,this.user);
+                    propertyModel = ontologyDAO.getObjectProperty(propertyUri,eventUri,this.user.getLanguage());
                     if(propertyModel == null){
                         CSVCell csvCell = new CSVCell(0, i, null, property);
                         validation.addInvalidURIError(csvCell);

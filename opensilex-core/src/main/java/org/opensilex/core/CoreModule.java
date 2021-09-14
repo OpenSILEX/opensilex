@@ -5,36 +5,37 @@
 //******************************************************************************
 package org.opensilex.core;
 
-import com.auth0.jwt.JWTCreator;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import java.net.URI;
 import org.opensilex.OpenSilexModule;
 
+import java.net.URISyntaxException;
 import java.util.List;
-import javax.inject.Inject;
+
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.ontology.dal.cache.AbstractOntologyCache;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.nosql.NoSQLModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
+    private static OntologyCache ontologyCache;
 
     @Override
     public Class<?> getConfigClass() {
@@ -104,11 +106,21 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
-    
+
     @Override
     public void install(boolean reset) throws Exception {
         insertDefaultProvenance();
+
+        invalidateCache();
+        populateOntologyCache();
     }
+
+
+    @Override
+    public void startup() throws Exception {
+        populateOntologyCache();
+    }
+
 
     private void insertDefaultProvenance() throws Exception {
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
@@ -126,6 +138,41 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         } catch (Exception e) {
            LOGGER.warn("Couldn't create default provenance : " + e.getMessage());
         }
+    }
+
+    public OntologyCache getOntologyCacheInstance() throws URISyntaxException, SPARQLException {
+        if(ontologyCache != null){
+            SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+            SPARQLService sparql = factory.provide();
+
+            /* #TODO : sparql should not be null , but when building module with maven, the sparql is null while it's not when launching StartServer
+            this quick (and dirty :/ ) fix should be improved and reviewed */
+
+            if(sparql != null){
+                ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+            }
+        }
+        return ontologyCache;
+    }
+
+    protected void invalidateCache() throws URISyntaxException, SPARQLException {
+        OntologyCache ontologyCache = getOntologyCacheInstance();
+        if(ontologyCache != null){
+            LOGGER.info("Invalidate ontology cache");
+            ontologyCache.invalidate();
+            LOGGER.info("Ontology cache invalidated with success");
+        }
+    }
+
+    protected void populateOntologyCache() throws SPARQLException, URISyntaxException {
+
+        OntologyCache ontologyCache = getOntologyCacheInstance();
+        if(ontologyCache != null){
+            LOGGER.info("Populating ontology cache");
+            ontologyCache.populate(AbstractOntologyCache.getRootModelsToLoad());
+            LOGGER.info("Ontology cache loaded with success");
+        }
+
     }
 
 }

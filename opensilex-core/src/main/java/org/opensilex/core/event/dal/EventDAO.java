@@ -34,7 +34,7 @@ import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
-import org.opensilex.sparql.mapping.SPARQLDataListFetcher;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
@@ -45,13 +45,13 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingFunction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -70,7 +70,9 @@ public class EventDAO<T extends EventModel> {
     protected static final Var uriVar;
     protected static final Var descriptionVar;
     protected static final Var isInstantVar;
+    public static final Var startInstantVar;
     public static final Var startInstantTimeStampVar;
+    public static final Var endInstantVar;
     public static final Var endInstantTimeStampVar;
     protected static final Var fromVar;
     protected static final Var toVar;
@@ -99,14 +101,14 @@ public class EventDAO<T extends EventModel> {
         descriptionTriple = new Triple(uriVar, RDFS.comment.asNode(), descriptionVar);
         targetTriple = new Triple(uriVar, Oeev.concerns.asNode(), targetVar);
 
-        Var beginInstantVar = SPARQLQueryHelper.makeVar(EventModel.START_FIELD);
-        Var endInstantVar = SPARQLQueryHelper.makeVar(EventModel.END_FIELD);
+        startInstantVar = SPARQLQueryHelper.makeVar(EventModel.START_FIELD);
+        endInstantVar = SPARQLQueryHelper.makeVar(EventModel.END_FIELD);
         startInstantTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(EventModel.START_FIELD));
         endInstantTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(EventModel.END_FIELD));
 
         isInstantTriple = new Triple(uriVar, Oeev.isInstant.asNode(), isInstantVar);
-        beginTriple = new Triple(uriVar, Time.hasBeginning.asNode(), beginInstantVar);
-        beginInstantTimeStampTriple = new Triple(beginInstantVar, Time.inXSDDateTimeStamp.asNode(), startInstantTimeStampVar);
+        beginTriple = new Triple(uriVar, Time.hasBeginning.asNode(), startInstantVar);
+        beginInstantTimeStampTriple = new Triple(startInstantVar, Time.inXSDDateTimeStamp.asNode(), startInstantTimeStampVar);
         endTriple = new Triple(uriVar, Time.hasEnd.asNode(), endInstantVar);
         endInstantTimeStampTriple = new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), endInstantTimeStampVar);
     }
@@ -254,14 +256,15 @@ public class EventDAO<T extends EventModel> {
         return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
     }
 
-    protected void appendInTargetsValues(SelectBuilder select, List<URI> targets) {
+    protected void appendInTargetsValues(SelectBuilder select, Stream<URI> targets, int size) {
 
         ElementGroup rootElementGroup = select.getWhereHandler().getClause();
         ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
         eventGraphGroupElem.addTriplePattern(targetTriple);
 
-        SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets);
+        SPARQLQueryHelper.addWhereUriValues(select, EventModel.TARGETS_FIELD, targets,size);
     }
+
 
     protected void appendTargetEqFilter(ElementGroup eventGraphGroupElem, URI target, List<OrderBy> orderByList) throws Exception {
 
@@ -434,7 +437,7 @@ public class EventDAO<T extends EventModel> {
 
         fieldsToFetch.put(EventModel.TARGETS_FIELD, addTargetTriple);
 
-        SPARQLDataListFetcher<EventModel> dataListFetcher = new SPARQLDataListFetcher<>(
+        SPARQLListFetcher<EventModel> dataListFetcher = new SPARQLListFetcher<>(
                 sparql,
                 EventModel.class,
                 eventGraph,
@@ -454,7 +457,7 @@ public class EventDAO<T extends EventModel> {
                 EventModel.class,
                 null,
                 select -> {
-                    appendInTargetsValues(select, targets);
+                    appendInTargetsValues(select, targets.stream(),targets.size());
                 },
                 null
         );

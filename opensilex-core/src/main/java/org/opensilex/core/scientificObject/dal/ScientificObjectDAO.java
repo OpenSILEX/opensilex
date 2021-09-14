@@ -10,13 +10,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -30,6 +30,7 @@ import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -39,6 +40,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
@@ -51,9 +53,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -63,6 +64,7 @@ import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
+import org.opensilex.utils.ThrowingFunction;
 
 /**
  *
@@ -80,19 +82,46 @@ public class ScientificObjectDAO {
     }
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
-        Node experimentGraph = SPARQLDeserializers.nodeURI(contextURI);
+        return searchByURIs(contextURI,objectsURI,currentUser,false);
+    }
 
-        List<URI> uniqueObjectsUri = objectsURI.stream()
-                .distinct()
-                .collect(Collectors.toList());
-        return sparql.getListByURIs(experimentGraph, ScientificObjectModel.class, uniqueObjectsUri, currentUser.getLanguage());
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser, boolean loadChildren) throws Exception {
+
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(ScientificObjectModel.FACTOR_LEVEL_FIELD,true);
+
+        if(loadChildren){
+            fieldsToFetch.put(SPARQLTreeModel.CHILDREN_FIELD,true);
+        }
+
+        return sparql.loadListByURIs(
+                SPARQLDeserializers.nodeURI(contextURI),
+                ScientificObjectModel.class,
+                objectsURI,
+                currentUser.getLanguage(),
+                fromResult(currentUser.getLanguage()),
+
+                // if object children must be retrieved later, then don't use listFetcher since it doesn't handle children properties (eg : name)
+                loadChildren ? null : fieldsToFetch
+        );
     }
 
     public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(URI contextURI, URI parentURI, URI facility, List<OrderBy> orderByList, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
-        ListWithPagination<ScientificObjectNodeDTO> results = search(contextURI, null, null, parentURI, true, null, null, facility, null, null, page, pageSize, orderByList, currentUser);
+
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(contextURI)
+                .setParentURI(parentURI)
+                .setFacility(facility);
+
+        searchFilter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
 
         List<URI> resultsUri = new ArrayList<>();
-        results.getList().forEach((result) -> {
+        results.getList().forEach(result -> {
             resultsUri.add(result.getUri());
         });
 
@@ -186,30 +215,29 @@ public class ScientificObjectDAO {
         return resultMap;
     }
 
-    public ListWithPagination<ScientificObjectNodeDTO> search(URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, boolean onlyDirectChildren, URI germplasm, List<URI> factorLevels, URI facility, LocalDate existenceDate, LocalDate creationDate, Integer page, Integer pageSize, List<OrderBy> orderByList, UserModel currentUser) throws Exception {
-        List<ScientificObjectNodeDTO> resultList = new ArrayList<>();
+
+    private int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
 
         SelectBuilder count = new SelectBuilder();
-        addSearchfilter(count, true, contextURI, pattern, rdfTypes, parentURI, onlyDirectChildren, germplasm, factorLevels, facility, existenceDate, creationDate, currentUser.getLanguage());
+        addSearchfilter(count, true, searchFilter,false);
 
         List<SPARQLResult> countResult = sparql.executeSelectQuery(count);
         if (countResult.size() != 1) {
             throw new SPARQLException("Invalid count query");
         }
 
-        int total = Integer.parseInt(countResult.get(0).getStringValue(countField));
+        return Integer.parseInt(countResult.get(0).getStringValue(countField));
+    }
 
-        if (total == 0) {
-            return new ListWithPagination<>(new ArrayList<>());
-        }
+    private SelectBuilder getSelect(ScientificObjectSearchFilter searchFilter) throws Exception {
 
         SelectBuilder select = new SelectBuilder();
 
-        addSearchfilter(select, false, contextURI, pattern, rdfTypes, parentURI, onlyDirectChildren, germplasm, factorLevels, facility, existenceDate, creationDate, currentUser.getLanguage());
+        addSearchfilter(select, false, searchFilter,false);
 
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = sparql.getMapperIndex().getForClass(ScientificObjectModel.class);
-        if (orderByList != null) {
-            orderByList.forEach((OrderBy orderBy) -> {
+        if (searchFilter.getOrderByList() != null) {
+            searchFilter.getOrderByList() .forEach((OrderBy orderBy) -> {
                 Expr fieldOrderExpr = mapper.getFieldOrderExpr(orderBy.getFieldName());
                 if (fieldOrderExpr != null) {
                     select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
@@ -217,48 +245,166 @@ public class ScientificObjectDAO {
             });
         }
 
-        if (page == null || page < 0) {
-            page = 0;
+        if (searchFilter.getPage() == null || searchFilter.getPage()  < 0) {
+            searchFilter.setPage(0);
         }
-        if (pageSize != null && pageSize > 0) {
-            select.setOffset(page * pageSize);
-            select.setLimit(pageSize);
+        if (searchFilter.getPageSize() != null && searchFilter.getPageSize() > 0) {
+            select.setOffset(searchFilter.getPage() * searchFilter.getPageSize());
+            select.setLimit(searchFilter.getPageSize());
         }
+
+       return select;
+    }
+
+    private static <RT> List<RT> streamToList(Stream<SPARQLResult> resultStream, ThrowingFunction<SPARQLResult, RT, Exception> resultHandler) {
+
+        return resultStream.map(
+                result -> {
+                    try {
+                        return resultHandler.apply(result);
+                    } catch (Exception e) {
+                        throw new RuntimeException(new SPARQLException(e));
+                    }
+                }
+        ).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
+
+    public ListWithPagination<ScientificObjectModel> search(ScientificObjectSearchFilter searchFilter, Collection<String> fieldsToFetch) throws Exception {
+
+        int total = getCount(searchFilter);
+        if (total == 0) {
+            return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        SelectBuilder select = getSelect(searchFilter);
+        Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
+
+        if(resultStream == null){
+            return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        List<ScientificObjectModel> results = streamToList(resultStream,fromResult(searchFilter.getLang()));
+
+        if(! CollectionUtils.isEmpty(fieldsToFetch)){
+
+            Map<String,Boolean> fieldToFetchMap = fieldsToFetch.stream().collect(Collectors.toMap(Function.identity(),uri -> true));
+
+            // if object children must be retrieved later, then don't use listFetcher since it doesn't handle children properties (eg : name)
+            SPARQLListFetcher<ScientificObjectModel> listFetcher = new SPARQLListFetcher<>(
+                    sparql,
+                    ScientificObjectModel.class,
+                    SPARQLDeserializers.nodeURI(searchFilter.getExperiment()),
+                    fieldToFetchMap,
+                    select,
+                    results
+            );
+            listFetcher.updateModels();
+        }
+
+        SPARQLRelationFetcher<ScientificObjectModel> relationFetcher = new SPARQLRelationFetcher<>(
+                sparql,
+                ScientificObjectModel.class,
+                SPARQLDeserializers.nodeURI(searchFilter.getExperiment()),
+                select,
+                results
+        );
+
+        relationFetcher.updateModels();
+
+        // handle object property fetching + uri list selection
+        return new ListWithPagination<>(results,searchFilter.getPage(),searchFilter.getPageSize(),total);
+    }
+
+
+    public ListWithPagination<ScientificObjectNodeDTO> searchAsDto(
+            ScientificObjectSearchFilter searchFilter) throws Exception {
+
+        int total = getCount(searchFilter);
+        if (total == 0) {
+            return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        SelectBuilder select = getSelect(searchFilter);
+        Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
+        if(resultStream == null){
+            return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        List<ScientificObjectNodeDTO> results = streamToList(resultStream,dtoFromResult());
+
+        return new ListWithPagination<>(results,searchFilter.getPage(),searchFilter.getPageSize(),total);
+    }
+
+    private ThrowingFunction<SPARQLResult,ScientificObjectModel,Exception> fromResult(String lang) throws Exception{
 
         SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        for (SPARQLResult result : sparql.executeSelectQuery(select)) {
-            ScientificObjectNodeDTO soDTO = new ScientificObjectNodeDTO();
 
-            soDTO.setUri(uriDeserializer.fromString(result.getStringValue(ScientificObjectModel.URI_FIELD)));
-            soDTO.setType(uriDeserializer.fromString(result.getStringValue(ScientificObjectModel.TYPE_FIELD)));
-            soDTO.setTypeLabel(result.getStringValue(rdfTypeNameField));
-            soDTO.setName(result.getStringValue(ScientificObjectModel.NAME_FIELD));
-            soDTO.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
-            soDTO.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+        return (result) -> {
+            ScientificObjectModel model = new ScientificObjectModel();
 
-            resultList.add(soDTO);
+            model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+            model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
+            SPARQLLabel typeLabel = new SPARQLLabel();
+            typeLabel.setDefaultLang(StringUtils.isEmpty(lang) ? OpenSilex.DEFAULT_LANGUAGE : lang);
+            typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+            model.setTypeLabel(typeLabel);
+
+            model.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+            model.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
+            model.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+
+            String parentUri = result.getStringValue(SPARQLTreeModel.PARENT_FIELD);
+            if(parentUri != null){
+                model.setParent(new ScientificObjectModel());
+                model.getParent().setUri(new URI(parentUri));
+            }
+            return model;
         };
 
-        return new ListWithPagination(resultList, page, pageSize, total);
-    }
+    };
 
-    private static String rdfTypeNameField = "__rdf_type_name";
+    private ThrowingFunction<SPARQLResult,ScientificObjectNodeDTO,Exception> dtoFromResult() throws Exception{
+
+        SPARQLDeserializer<LocalDate> dateDeserializer = SPARQLDeserializers.getForClass(LocalDate.class);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        return (result) -> {
+            ScientificObjectNodeDTO dto = new ScientificObjectNodeDTO();
+
+            dto.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+            dto.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+
+            dto.setTypeLabel(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+
+            dto.setName(result.getStringValue(SPARQLNamedResourceModel.NAME_FIELD));
+            dto.setCreationDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.CREATION_DATE_FIELD)));
+            dto.setDestructionDate(dateDeserializer.fromString(result.getStringValue(ScientificObjectModel.DESTRUCTION_DATE_FIELD)));
+
+            return dto;
+        };
+
+    };
+
     private static String countField = "count";
 
-    private void addSearchfilter(SelectBuilder builder, boolean isCount, URI contextURI, String pattern, List<URI> rdfTypes, URI parentURI, boolean onlyDirectChildren, URI germplasm, List<URI> factorLevels, URI facility, LocalDate existenceDate, LocalDate creationDate, String lang) throws Exception {
+    private void addSearchfilter(SelectBuilder builder, boolean isCount, ScientificObjectSearchFilter searchFilter, boolean onlyDirectChildren) throws Exception {
 
         final Node contextNode;
-        if (contextURI != null) {
-            contextNode = SPARQLDeserializers.nodeURI(contextURI);
+        if (searchFilter.getExperiment() != null) {
+            contextNode = SPARQLDeserializers.nodeURI(searchFilter.getExperiment());
         } else {
             contextNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
         }
 
-        Var uriVar = makeVar(ScientificObjectModel.URI_FIELD);
-        Var nameVar = makeVar(ScientificObjectModel.NAME_FIELD);
-        Var typeVar = makeVar(ScientificObjectModel.TYPE_FIELD);
-        Var typeNameVar = makeVar(rdfTypeNameField);
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
+        Var parentVar = makeVar(SPARQLTreeModel.PARENT_FIELD);
         Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
         Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
 
@@ -268,10 +414,11 @@ public class ScientificObjectDAO {
             builder.addVar(nameVar);
             builder.addVar(typeVar);
             builder.addVar(typeNameVar);
+            builder.addVar(parentVar);
             builder.addVar(creationDateVar);
             builder.addVar(destructionDateVar);
         } else {
-            builder.addVar("(COUNT(DISTINCT ?" + ScientificObjectModel.URI_FIELD + "))", makeVar(countField));
+            builder.addVar("(COUNT(DISTINCT ?" + SPARQLResourceModel.URI_FIELD + "))", makeVar(countField));
         }
 
         // Add label and type in where clause
@@ -284,30 +431,43 @@ public class ScientificObjectDAO {
         WhereHandler optionalTypeLabelHandler = new WhereHandler();
         optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeVar, RDFS.label, typeNameVar));
         // Add rdf type label lang filter
-        Locale locale = Locale.forLanguageTag(lang);
-        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilter(rdfTypeNameField, locale.getLanguage()));
+        Locale locale = Locale.forLanguageTag(searchFilter.getLang());
+        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         builder.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         // Add creation and destruction date as optional fields
+        graphHandler.addOptional(uriVar, Oeso.isPartOf, parentVar);
         graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
         graphHandler.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+
+        // add VALUES clause with included uris
+        if(!CollectionUtils.isEmpty(searchFilter.getUris())){
+            Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getUris());
+            builder.addValueVar(SPARQLResourceModel.URI_FIELD, uriNodes);
+        }
+        // add NOT IN filter with excluded uris
+        if(!CollectionUtils.isEmpty(searchFilter.getExcludedUris())){
+            Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(searchFilter.getExcludedUris());
+            Expr notInFilter = SPARQLQueryHelper.getExprFactory().notin(SPARQLResourceModel.URI_FIELD,uriNodes);
+            graphHandler.addFilter(notInFilter);
+        }
 
         builder.addGraph(contextNode, graphHandler);
 
         // Add pattern filter
-        if (pattern != null && !pattern.trim().isEmpty()) {
-            builder.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, pattern));
+        if (searchFilter.getPattern() != null && !searchFilter.getPattern().trim().isEmpty()) {
+            builder.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, searchFilter.getPattern()));
         }
 
         // Add rdf type filter
-        if (rdfTypes != null && rdfTypes.size() > 0) {
-            builder.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.TYPE_FIELD, rdfTypes));
+        if (searchFilter.getRdfTypes() != null && searchFilter.getRdfTypes().size() > 0) {
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(ScientificObjectModel.TYPE_FIELD, searchFilter.getRdfTypes()));
         }
 
         // Add parent filter
         if (onlyDirectChildren) {
-            if (parentURI != null) {
-                builder.addGraph(contextNode, uriVar, Oeso.isPartOf, SPARQLDeserializers.nodeURI(parentURI));
+            if (searchFilter.getParentURI() != null) {
+                builder.addGraph(contextNode, uriVar, Oeso.isPartOf, SPARQLDeserializers.nodeURI(searchFilter.getParentURI()));
             } else {
                 WhereBuilder whereFilter = new WhereBuilder().addGraph(
                         contextNode,
@@ -317,26 +477,26 @@ public class ScientificObjectDAO {
                 );
                 builder.addFilter(SPARQLQueryHelper.getExprFactory().notexists(whereFilter));
             }
-        } else if (parentURI != null) {
+        } else if (searchFilter.getParentURI() != null) {
             Path deepPartOf = new P_OneOrMore1(new P_Link(Oeso.isPartOf.asNode()));
-            builder.addGraph(contextNode, uriVar, deepPartOf, SPARQLDeserializers.nodeURI(parentURI));
+            builder.addGraph(contextNode, uriVar, deepPartOf, SPARQLDeserializers.nodeURI(searchFilter.getParentURI()));
         }
 
         // Add factor level filter
-        if (factorLevels != null && factorLevels.size() > 0) {
+        if (! CollectionUtils.isEmpty(searchFilter.getFactorLevels())) {
             Var factorLevelVar = makeVar("__factorLevel");
-            if (contextURI != null) {
+            if (searchFilter.getExperiment() != null) {
                 builder.addGraph(contextNode, uriVar, Oeso.hasFactorLevel, factorLevelVar);
             } else {
                 builder.addWhere(uriVar, Oeso.hasFactorLevel, factorLevelVar);
             }
 
-            builder.addFilter(SPARQLQueryHelper.inURIFilter(factorLevelVar, factorLevels));
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(factorLevelVar, searchFilter.getFactorLevels()));
         }
 
         // Add germplasm filter
-        if (germplasm != null) {
-            Node germplasmNode = SPARQLDeserializers.nodeURI(germplasm);
+        if (searchFilter.getGermplasm() != null) {
+            Node germplasmNode = SPARQLDeserializers.nodeURI(searchFilter.getGermplasm());
             builder.addWhere(
                     new WhereBuilder()
                             .addWhere(uriVar, Oeso.hasGermplasm, germplasmNode)
@@ -353,13 +513,13 @@ public class ScientificObjectDAO {
         }
 
         // Add facility filter
-        if (facility != null) {
-            Node facilityNode = SPARQLDeserializers.nodeURI(facility);
+        if (searchFilter.getFacility() != null) {
+            Node facilityNode = SPARQLDeserializers.nodeURI(searchFilter.getFacility());
             Var directFacility = makeVar("__directFacility");
             Var parentLinkURI = makeVar("__parentLinkURI");
             Var parentFacility = makeVar("__parentFacility");
             Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
-            if (contextURI != null) {
+            if (searchFilter.getExperiment() != null) {
                 WhereBuilder graphQuery = new WhereBuilder();
                 graphQuery.addGraph(contextNode, uriVar, Oeso.hasFacility, directFacility);
                 graphQuery.addGraph(contextNode, uriVar, subPartOf, parentLinkURI);
@@ -382,24 +542,24 @@ public class ScientificObjectDAO {
         // Add filter to check if object exists at given date
         DateDeserializer dateDeserializer = new DateDeserializer();
         ExprFactory exprFactory = new ExprFactory();
-        if (existenceDate != null) {
+        if (searchFilter.getExistenceDate() != null) {
 
             WhereBuilder optionalDestructionDate = new WhereBuilder();
             optionalDestructionDate.addWhere(uriVar, Oeso.hasDestructionDate, destructionDateVar);
             builder.addFilter(
                     exprFactory.and(
-                            exprFactory.le(creationDateVar, dateDeserializer.getNode(existenceDate)),
+                            exprFactory.le(creationDateVar, dateDeserializer.getNode(searchFilter.getExistenceDate())),
                             exprFactory.or(
                                     exprFactory.not(exprFactory.exists(optionalDestructionDate)),
-                                    exprFactory.ge(destructionDateVar, dateDeserializer.getNode(existenceDate))
+                                    exprFactory.ge(destructionDateVar, dateDeserializer.getNode(searchFilter.getExistenceDate()))
                             )
                     )
             );
         }
 
         // Add filter for creation date
-        if (creationDate != null) {
-            builder.addFilter(exprFactory.eq(creationDateVar, dateDeserializer.getNode(creationDate)));
+        if (searchFilter.getCreationDate() != null) {
+            builder.addFilter(exprFactory.eq(creationDateVar, dateDeserializer.getNode(searchFilter.getCreationDate())));
         }
     }
 
@@ -584,8 +744,8 @@ public class ScientificObjectDAO {
         return object;
     }
 
-    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI, UserModel currentUser) throws Exception {
-        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURI, currentUser.getLanguage());
+    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI, String lang) throws Exception {
+        return sparql.getByURI(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURI, lang);
     }
 
     public List<URI> getObjectContexts(URI objectURI) throws Exception {
@@ -674,15 +834,15 @@ public class ScientificObjectDAO {
         select.addFilter(SPARQLQueryHelper.eq(ScientificObjectModel.NAME_FIELD, name));
     }
 
-    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
-        List<URI> objectURIs = new ArrayList<>();
-
-        objectURIs.add(objectURI);
-        List<ScientificObjectModel> listByURIs = sparql.getListByURIs(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURIs, null);
-        if (listByURIs == null || listByURIs.isEmpty()) {
-            return null;
-        } else {
-            return listByURIs.get(0);
-        }
-    }
+//    public ScientificObjectModel getObjectByURI(URI objectURI, URI contextURI) throws Exception {
+//        List<URI> objectURIs = new ArrayList<>();
+//
+//        objectURIs.add(objectURI);
+//        List<ScientificObjectModel> listByURIs = sparql.getListByURIs(SPARQLDeserializers.nodeURI(contextURI), ScientificObjectModel.class, objectURIs, null);
+//        if (listByURIs == null || listByURIs.isEmpty()) {
+//            return null;
+//        } else {
+//            return listByURIs.get(0);
+//        }
+//    }
 }

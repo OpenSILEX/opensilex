@@ -443,6 +443,16 @@ OESO</rdfs:label>
     
 
 
+    <!-- http://www.w3.org/2000/01/rdf-schema#member -->
+
+    <owl:ObjectProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#member">
+        <rdfs:comment xml:lang="en">refer to rdf:Bad and all the container membership</rdfs:comment>
+        <rdfs:label xml:lang="en">member</rdfs:label>
+        <rdfs:label xml:lang="fr">membre</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.w3.org/ns/prov#generated -->
 
     <owl:ObjectProperty rdf:about="http://www.w3.org/ns/prov#generated">
@@ -1567,6 +1577,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#VariablesGroup -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariablesGroup">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag"/>
+        <rdfs:comment xml:lang="fr">Groupe de variable</rdfs:comment>
+        <rdfs:label xml:lang="en">Groupe of variables</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
@@ -1593,6 +1613,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#StructuralArea"/>
         <rdfs:label xml:lang="en">Windy area</rdfs:label>
         <rdfs:label xml:lang="fr">Zone venteuse</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag -->
+
+    <owl:Class rdf:about="http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag">
+        <rdfs:comment xml:lang="en">represent a group of somthing</rdfs:comment>
+        <rdfs:label xml:lang="en">Bag</rdfs:label>
+        <rdfs:label xml:lang="fr">Bag</rdfs:label>
     </owl:Class>
     
 
@@ -2103,11 +2133,11 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/source">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#source-006"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
+        <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
@@ -2134,8 +2164,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-        <rdfs:label xml:lang="en">experiment</rdfs:label>
         <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
+        <rdfs:label xml:lang="en">experiment</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
         <rdfs:label xml:lang="en">experimental context</rdfs:label>

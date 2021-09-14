@@ -1,8 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          FormUpdateDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2021
+// Contact: maximilian.hart@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.mobile.api;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -16,7 +17,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 
 /**
  *
- * @author hart
+ * @author Maximilian Hart
  */
 public class FormUpdateDTO extends FormCreationDTO{
     
@@ -24,7 +25,6 @@ public class FormUpdateDTO extends FormCreationDTO{
     
     @NotNull
     @ValidURI
-    //@Override
     @ApiModelProperty(value = "URI of the form being updated", required = true) 
     public URI getUri() {
         return uri;
@@ -36,19 +36,7 @@ public class FormUpdateDTO extends FormCreationDTO{
         model.setUri(uri);
         return model;
     }
-    /*
-    @Override
-    public void fromModel(FormModel model) {
-        super.fromModel(model);
-        setUri(model.getUri());
-    }
     
-    public static FormUpdateDTO getDtoFromModel(FormModel model){
-        FormUpdateDTO dto = new FormUpdateDTO();
-        dto.fromModel(model);
-        return dto;
-    }
-    */
     public void setUri(URI uri) {
         this.uri = uri;
     }

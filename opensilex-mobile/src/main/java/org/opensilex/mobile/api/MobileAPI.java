@@ -46,8 +46,16 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 /**
- *  
- * @author Alice Boizet
+ * <pre>
+ * Mobile API which provides:
+ *
+ * - Create form
+ * - Delete form
+ * - Get all forms, or get forms corresponding to a list of uri's
+ * - Update form
+ * </pre>
+ *
+ * @author Maximilian Hart
  */
 @Api(MobileAPI.CREDENTIAL_MOBILE_GROUP_ID)
 @Path("/mobile")
@@ -60,19 +68,15 @@ public class MobileAPI {
     /**
      * Create a Area
      *
-     * @param dto the Area to create
+     * @param dto the Form to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
-     * the created Area {@link URI}
+     * the created Form {@link URI}
      * @throws java.lang.Exception if creation failed
      */
     @POST
     @Path("forms")
     @ApiOperation("Add a form")
     @ApiProtected
-//    @ApiCredential(
-//            credentialId = CREDENTIAL_AREA_MODIFICATION_ID,
-//            credentialLabelKey = CREDENTIAL_AREA_MODIFICATION_LABEL_KEY
-//    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -89,6 +93,16 @@ public class MobileAPI {
         return new ObjectUriResponse(Response.Status.CREATED, createdForm.getUri()).getResponse();
 
     }
+    /**
+     * Get forms
+     *
+     * @param uris List of form uris to get, leave null to get all
+     * @param orderByList How to order the returned forms
+     * @param page Which page to get (see pagination system)
+     * @param pageSize How many forms per page
+     * @return a {@link Response} with a paginated list if successful
+     * @throws java.lang.Exception if fail
+     */
     @GET
     @ApiOperation("Search forms")
     @ApiProtected
@@ -118,11 +132,17 @@ public class MobileAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     
+    /**
+     * Delete form
+     *
+     * @param uri , uri of the form to delete
+     * @return a {@link Response} 
+     * @throws java.lang.Exception if fail
+     */
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete form")
     @ApiProtected
-    //@ApiCredential(credentialId = CREDENTIAL_DATA_DELETE_ID, credentialLabelKey = CREDENTIAL_DATA_DELETE_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -141,10 +161,16 @@ public class MobileAPI {
         }
     }
     
+    /**
+     * Update form
+     *
+     * @param dto , form containing modifications to update
+     * @return a {@link Response} 
+     * @throws java.lang.Exception if fail
+     */
     @PUT
     @ApiProtected
     @ApiOperation("Update form")
-    //@ApiCredential(credentialId = CREDENTIAL_DATA_MODIFICATION_ID, credentialLabelKey = CREDENTIAL_DATA_MODIFICATION_LABEL_KEY)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -154,14 +180,12 @@ public class MobileAPI {
 
     public Response update(
             @ApiParam("Form description") @Valid FormUpdateDTO dto
-            //@ApiParam(value = "Form URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         FormDAO dao = new FormDAO(nosql);
 
         try {
             FormModel model = dto.newModel();
-            //validData(Collections.singletonList(model));
             dao.update(model);
             return new SingleObjectResponse<>(FormGetDTO.fromModel(model)).getResponse();
         } catch (NoSQLInvalidURIException e) {

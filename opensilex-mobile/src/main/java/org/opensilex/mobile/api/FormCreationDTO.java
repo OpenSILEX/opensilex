@@ -1,31 +1,26 @@
 //******************************************************************************
-//                          ObservationDTO.java
+//                          FormCreationDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// Copyright © INRA 2021
+// Contact: maximilian.hart@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.mobile.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.time.Instant;
 import java.util.Map;
-import javax.validation.constraints.NotNull;
 import org.bson.Document;
-import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.mobile.dal.FormModel;
-import org.opensilex.server.rest.validation.Date;
-import org.opensilex.server.rest.validation.DateFormat;
-import org.opensilex.server.rest.validation.Required;
-import org.opensilex.server.rest.validation.ValidURI;
 
 /**
+ *
+ * @author Maximilian Hart
  */
 public class FormCreationDTO {
  
@@ -35,9 +30,6 @@ public class FormCreationDTO {
 
     private URI type;
     
-    //@ValidURI
-    //@ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
-    //protected URI uri;
 
     private Map formData;
 
@@ -47,10 +39,6 @@ public class FormCreationDTO {
     public Map getFormData() {
         return formData;
     }
-    /*
-    public URI getUri(){
-        return uri;
-    }*/
 
     public void setFormData(Map formData) {
         this.formData = formData;
@@ -83,7 +71,6 @@ public class FormCreationDTO {
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = new FormModel();
         
-        //model.setUri(uri);
         
         model.setType(type);
         model.setFormData(new Document(formData));
@@ -99,19 +86,5 @@ public class FormCreationDTO {
         return model;
 
     }
-    /*
-    public void fromModel(FormModel model) {
-        this.setCreationDate(model.getCreationDate().toString());
-        this.setFormData(model.getFormData());
-        this.setTimezone(model.getOffset());
-        this.setType(model.getType());
-        //this.uri = model.getUri();
-    }
-    ///This will call from model
-    public static FormCreationDTO getDtoFromModel(FormModel model){
-        FormCreationDTO dto = new FormCreationDTO();
-        dto.fromModel(model);
-        return dto;
-    }
-*/
+    
 }

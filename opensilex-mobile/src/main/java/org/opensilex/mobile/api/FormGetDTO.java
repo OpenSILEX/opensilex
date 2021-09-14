@@ -1,15 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//******************************************************************************
+//                          FormGetDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2021
+// Contact: maximilian.hart@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
 package org.opensilex.mobile.api;
 
 import org.opensilex.mobile.dal.FormModel;
 
 /**
  *
- * @author hart
+ * @author Maximilian Hart
  */
 public class FormGetDTO extends FormUpdateDTO{
     
@@ -22,11 +23,6 @@ public class FormGetDTO extends FormUpdateDTO{
         formGetDTO.setUri( model.getUri());
         return formGetDTO;
     }
-    ///This will call from model
-//    public static FormCreationDTO getDtoFromModel(FormModel model){
-//        FormGetDTO dto = new FormGetDTO();
-//        dto.fromModel(model);
-//        return dto;
-//    }
+   
     
 }

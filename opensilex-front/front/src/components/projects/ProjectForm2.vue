@@ -77,8 +77,8 @@ export default class ProjectForm2 extends Vue {
 
 en:
   ProjectForm:
-    scientificContacts: Scientists involved in the project. Only persons existing in the system. If unavailable in the predefined list, persons can be added from the Users menu, prior to the new project creation. 
-    administrativeContacts: Administrative personnel linked to the project (e.g. human ressources people). Only persons existing in the system.
+    scientificContacts: Scientists involved in the project. They must already be declared in the system. If unavailable in the predefined list, people can be added from the Users menu, before the new project creation.
+    administrativeContacts: Administrative personnel linked to the project (e.g. human ressources people). They must already be declared in the system.
     coordinators: Project coordinators
 fr:
   ProjectForm:

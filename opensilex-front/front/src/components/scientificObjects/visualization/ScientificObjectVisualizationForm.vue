@@ -9,13 +9,13 @@
         :showAdvancedSearch="true"
       >
         <template v-slot:filters>
-          <!-- Type -->
+          <!-- Type  -->
           <opensilex-FilterField :halfWidth="true">
             <opensilex-UsedVariableSelector
               label="ScientificObjectVisualizationForm.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
-              :object="scientificObject"
+              :objects="[scientificObject]"
               :required="true"
               :clearable="true"
             ></opensilex-UsedVariableSelector>

@@ -646,7 +646,7 @@ public class DataDAO {
     }
 
     public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances) throws Exception {             
-        Document filter = searchFilter(user, experiments, objects, provenances, null, null, null, null, null, null, null);
+        Document filter = searchFilter(user, experiments, objects, null, provenances, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs));
     }

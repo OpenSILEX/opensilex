@@ -5,16 +5,16 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-ExperimentVariableSelector
+             <opensilex-UsedVariableSelector
               label="ExperimentDataVisuForm.search.variable.label"
               :variables.sync="filter.variable"
               :multiple="false"
               :experiment="selectedExperiment"
-              :scientificObjects="scientificObjects"
+              :objects="scientificObjects"
               :clearable="true"
-              :defaultSelectedValue="true"
+              :required="true"
               @select="onSearch"
-            ></opensilex-ExperimentVariableSelector>
+            ></opensilex-UsedVariableSelector>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
             <div class="row">

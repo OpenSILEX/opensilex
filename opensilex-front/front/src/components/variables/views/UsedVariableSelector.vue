@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync} from "vue-property-decorator";
+import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { NamedResourceDTO } from "opensilex-core/index";
 
@@ -48,7 +48,7 @@ export default class UsedVariableSelector extends Vue {
   experiment;
 
   @Prop()
-  object;
+  objects;
 
   @Prop()
   device;
@@ -60,27 +60,41 @@ export default class UsedVariableSelector extends Vue {
   }
 
   loadVariables() {
-    let experiments = null;    
+    let experiments = null;
     if (this.experiment != null) {
-      experiments = [this.experiment]
+      experiments = [this.experiment];
     }
 
     let objects = null;
-    if (this.object != null) {
-      objects = [this.object]
+    if (this.objects != null) {
+      objects = this.objects;
     }
 
     let devices = null;
     if (this.device != null) {
-      devices = [this.device]
+      
+      return this.$opensilex
+        .getService("opensilex.DataService")
+        .getUsedProvenances(null, null,null, [this.device])
+        .then(http => {
+          let prov = http.response.result.map(item => {
+            return item.uri;
+          });
+          return this.$opensilex
+            .getService("opensilex.DataService")
+            .getUsedVariables(null, null, prov)
+            .then(http => {
+              return http.response.result;
+            });
+        });
+    } else {
+      return this.$opensilex
+        .getService("opensilex.DataService")
+        .getUsedVariables(experiments, objects, null)
+        .then(http => {
+          return http.response.result;
+        });
     }
-
-    return this.$opensilex
-      .getService("opensilex.DataService")
-      .getUsedVariables(experiments, objects, null, devices)
-      .then(http => {
-        return http.response.result;
-      });
   }
 
   variableToSelectNode(dto: NamedResourceDTO) {
@@ -97,7 +111,6 @@ export default class UsedVariableSelector extends Vue {
   deselect(value) {
     this.$emit("deselect", value);
   }
-
 }
 </script>
 

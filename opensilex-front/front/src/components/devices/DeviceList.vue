@@ -513,7 +513,6 @@ en:
     alertBadDeviceType: The selected type doesn't match with add variable
 
     filter:
-      search-button: Visualize
       namePattern: Name
       namePattern-placeholder: Enter name
       rdfTypes: Type
@@ -549,7 +548,6 @@ fr:
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
 
     filter:
-      search-button: Visualiser
       namePattern: Nom
       namePattern-placeholder: Entrer un nom
       rdfTypes: Type

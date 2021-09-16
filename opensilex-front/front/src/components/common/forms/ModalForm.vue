@@ -1,7 +1,6 @@
 <template>
   <b-modal
     ref="modalRef"
-    style="z-index: 1060"
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
     @hide="$emit('hide')"

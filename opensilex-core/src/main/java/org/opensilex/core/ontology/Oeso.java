@@ -69,7 +69,6 @@ public class Oeso {
     
     // ---- VARIABLES GROUP ----
     public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
-    public static final Property hasVariable = Ontology.property(NS, "hasVariable");
     
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");

@@ -8,7 +8,7 @@ Un groupe de variables est un regroupement de plusieurs variables différentes.
 Il possède un nom et peut avoir une description.
 Son but est d'améliorer l'ergonomie de l'interface et l'expérience utilisateur.
  
-### <span style="color:blue">**Son utilité**</span>
+## Son utilité
 
 Les groupes de variables permettent de regrouper des variables afin de les classer par les catégories de notre choix.
 Prenons le cas des expérimentations. Lorsque nous naviguons dans leurs détails et que nous allons sur l'onglet "Données", nous pouvons normalement visualiser la liste des variables associées à ces expérimentations. Nous pouvons filtrer l'affichage en sélectionnant uniquement les variables qui nous intéressent.

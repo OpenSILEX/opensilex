@@ -8,6 +8,7 @@ package org.opensilex.core.variablesGroup.dal;
 import java.util.List;
 
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDFS;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -34,8 +35,8 @@ public class VariablesGroupModel extends SPARQLNamedResourceModel<VariablesGroup
     public static final String DESCRIPTION_FIELD = "description";
     
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasVariable"
+            ontology = RDFS.class,
+            property = "member"
     )
     private List<VariableModel> variablesList;
     public static final String VARIABLES_LIST_FIELD = "variablesList";

@@ -14,8 +14,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.expr.Expr;
 
-import org.opensilex.core.ontology.Oeso;
-
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -57,7 +56,7 @@ public class VariablesGroupDAO {
     }
     
     private static void addVariableFilter(SelectBuilder select, URI variableUri) throws Exception{       
-        Triple triple = new Triple(makeVar(VariablesGroupModel.URI_FIELD),Oeso.hasVariable.asNode(),makeVar(VariablesGroupModel.VARIABLES_LIST_FIELD));
+        Triple triple = new Triple(makeVar(VariablesGroupModel.URI_FIELD),RDFS.member.asNode(),makeVar(VariablesGroupModel.VARIABLES_LIST_FIELD));
         select.addWhere(triple);
         Expr filterVariableUri = SPARQLQueryHelper.eq(VariablesGroupModel.VARIABLES_LIST_FIELD, variableUri);
         select.addFilter(filterVariableUri);

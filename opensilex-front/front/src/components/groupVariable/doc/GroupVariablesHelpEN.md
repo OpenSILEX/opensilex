@@ -8,7 +8,7 @@ A group of variables is a regroupement of different variables.
 It has a name and can have a description.
 Its purpose is to improve the ergonomics of the interface and the user experience.
 
-### <span style="color:blue">**Its use**</span>
+## It's use
 
 The group of variables allow us to regroup variables in order to classify them by the categories of our choice.
 Let us take the case of experiments. When we browse through their details and go to the "Data" tab, we can normally visualise the list of variables associated to the experiment. We can filter the display by selecting only the variables that interest us.

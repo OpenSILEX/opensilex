@@ -23,6 +23,8 @@ import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.extensions.APIExtension;
@@ -113,6 +115,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         invalidateCache();
         populateOntologyCache();
+        
+        insertDefaultVariablesGroup();
     }
 
 
@@ -174,5 +178,24 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         }
 
     }
-
+    
+    private void insertDefaultVariablesGroup() throws Exception {
+        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        
+        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);   
+        VariablesGroupModel variablesGroup = new VariablesGroupModel();
+        String name = "Environmental variables";
+        
+        variablesGroup.setName(name);
+        variablesGroup.setDescription("This group is about environmental variables");
+        
+        LOGGER.info("Insert default variables group: " + variablesGroup.getUri());
+        try {
+           dao.create(variablesGroup); 
+        } catch (Exception e) {
+           LOGGER.warn("Couldn't create default variables group : " + e.getMessage());
+        }
+    }
 }

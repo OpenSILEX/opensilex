@@ -7,8 +7,8 @@
         ></opensilex-PageHeader>
 
         <div>
-            <div class="row">
-                <div class="col-lg-5">
+            <opensilex-PageActions>
+                <div>
                     <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
                         <b-tab :title="$t('component.menu.variables')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.entity')" @click="refreshSelected"></b-tab>
@@ -35,8 +35,7 @@
                         :label="buttonTitle"
                     ></opensilex-CreateButton>
                 </div>
-            </div>
-
+            </opensilex-PageActions>
             <opensilex-PageContent
                 v-if="loadVariableList()" >
                 <template v-slot>

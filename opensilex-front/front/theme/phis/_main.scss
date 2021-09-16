@@ -79,7 +79,6 @@ p {
     background-color: $white;
     border-color: $empty;
     margin: 0;
-    width: 170px;
     @include border-radius(6px);
     @include box-shadow(0 2px 30px rgba(0,0,0,.08));
 	.dropdown-item {

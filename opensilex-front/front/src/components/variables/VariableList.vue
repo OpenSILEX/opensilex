@@ -20,6 +20,7 @@
 
                     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
                       <b-dropdown
+                        v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                         dropright
                         class="mb-2 mr-2"
                         :small="true"
@@ -203,8 +204,13 @@ export default class VariableList extends Vue {
         let variablesGroup = http.response.result;
         form = JSON.parse(JSON.stringify(variablesGroup));
         let listUri = [];
+        for(let v = 0; v < variableGroup[vg].variables.length; v++){
+          listUri.push(variableGroup[vg].variables[v].uri);
+        }        
         for (let i = 0; i < selected.length; i++){
-          listUri.push(selected[i].uri); 
+          if(!listUri.includes(selected[i].uri)){
+            listUri.push(selected[i].uri);
+          }           
         }
         form.variables = listUri;
         this.updateVariableGroup(form);

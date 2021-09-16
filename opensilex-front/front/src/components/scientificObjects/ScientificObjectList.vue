@@ -423,6 +423,7 @@ en:
       factors: All Factors
       dates: All Dates
     filter:
+      search-button: Visualize
       label: Search for Scientific Objects
       experiments: Filter by Experiments
       germplasm: Filter by Germplasm
@@ -463,6 +464,7 @@ fr:
       factors: Tous les Facteurs
       dates: Toutes les Dates
     filter:
+      search-button: Visualiser
       label: Rechercher des Objets Scientifiques
       experiments: Filtrer par Expérimentation(s)
       germplasm: Filtrer par Matériel Génétiques

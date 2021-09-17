@@ -30,6 +30,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.opensilex.utils.OrderBy;
@@ -39,6 +41,8 @@ import org.opensilex.utils.OrderBy;
  */
 public class SPARQLQueryHelper {
 
+   
+   
     private SPARQLQueryHelper() {
     }
 
@@ -415,8 +419,7 @@ public class SPARQLQueryHelper {
     public static Expr dateTimeRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws Exception {
         return dateRange(startDateVarName,startDate,endDateVarName,endDate,SPARQLDeserializers.getForClass(OffsetDateTime.class));
     }
-    
-    
+        
     /**
      * <pre>
      * INTERSECTION of interval( delimited by startDate / EndDate) AND the entity lifetime is not null
@@ -441,7 +444,7 @@ public class SPARQLQueryHelper {
         if (startDate == null || endDate == null) {
             return null;
         }
-
+        
         DateDeserializer dateDeserializer = new DateDeserializer();
         Node startVar = NodeFactory.createVariable(startDateVarName);
         Node endVar = NodeFactory.createVariable(endDateVarName);
@@ -455,6 +458,77 @@ public class SPARQLQueryHelper {
         Expr thirdExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)), noEndDateExpr);
 
         return exprFactory.or(endDateExpr, thirdExpr);
+            
+        }
+       
+       
+    
+    
+       
+    /**
+     * <pre>
+     * INTERSECTION of interval( delimited by startDate / EndDate) AND the EVENT lifetime is not null
+     * 2 cases :
+     *  . Instant Event -> NO Event begin attribute
+     *  . Event begin exist
+     *
+     * </pre>
+     *
+     * @param startDateVarName the name of the startDate variable corresponds to the begin Event attribute
+     * @param startDate the start  date filter
+     * @param endDateVarName the name of the endDate variable corresponds to the end Event attribute
+     * @param endDate the end date filter
+     * @return an Expr according the two given LocalDate and variable names null if startDate and endDate are both null 
+     * Ex:
+     *  FILTER ( ( ( ! bound(?_start__timestamp) ) && ( ?_end__timestamp >= "2021-01-22T23:00:00Z"^^xsd:dateTime ) ) || ( bound(?_start__timestamp) && ( ?_end__timestamp >= "2021-01-22T23:00:00Z"^^xsd:dateTime ) ) )
+     *
+     */
+    public static Expr eventsIntervalDateRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws SPARQLDeserializerNotFoundException, Exception {
+        if (startDate == null && endDate == null) {
+              return null;
+          }
+            
+        SPARQLDeserializer<?> dateDeserializer = SPARQLDeserializers.getForClass(OffsetDateTime.class);
+        Node startVar = NodeFactory.createVariable(startDateVarName);
+        Node endVar = NodeFactory.createVariable(endDateVarName);
+        // NO event begin (instant Event) AND (endVar < endDate )    OR   Event begin AND ( startVar < endDate )
+        if(startDate == null){
+            Expr instantDateExpr = exprFactory.not(exprFactory.bound(startVar));
+            Expr instantRangeExpr = exprFactory.le(endVar, dateDeserializer.getNode(endDate));
+            Expr completeInstantExpr = exprFactory.and(instantDateExpr, instantRangeExpr);
+
+            Expr noInstantDateExpr = exprFactory.bound(startVar);
+            Expr noInstantRangeExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
+            Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
+             
+           return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
+        // No Event begin (instant Event) AND (endVar > startDate )    OR   Event begin AND ( startDate <endVar )    
+        } else if(endDate == null){
+            Expr instantDateExpr = exprFactory.not(exprFactory.bound(startVar));
+            Expr instantRangeExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
+            Expr completeInstantExpr = exprFactory.and(instantDateExpr, instantRangeExpr);
+
+            Expr noInstantDateExpr = exprFactory.bound(startVar);
+            Expr noInstantRangeExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
+            Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
+
+            return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
+        // No Event begin (instant Event) AND ( startDate < endVar < endDate )    OR  Event begin AND ( endDate > startVar AND startDate < endVar   )    
+        } else {
+            
+            Expr instantDateExpr = exprFactory.not(exprFactory.bound(startVar));
+            Expr instantRangeExpr = exprFactory.and(exprFactory.le(endVar, dateDeserializer.getNode(endDate)), exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
+            Expr completeInstantExpr = exprFactory.and(instantDateExpr, instantRangeExpr);
+
+            Expr noInstantDateExpr = exprFactory.bound(startVar);
+            Expr noInstantRangeExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)), exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
+            
+            Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
+
+            return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
+
+        }
+       
     }
 
     public static Var makeVar(Object o) {

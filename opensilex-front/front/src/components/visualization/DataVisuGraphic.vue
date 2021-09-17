@@ -160,7 +160,7 @@ export default class DataVisuGraphic extends Vue {
   @Ref("helpModal") readonly helpModal!: any;
   @Ref("contextMenu") readonly contextMenu!: any;
   contextMenuShow = false;
-  // intervalContextMenuShow = false;
+  //  intervalContextMenuShow = false;
   detailDataShow = false;
   detailDataLoad = false;
   detailEventShow = false;

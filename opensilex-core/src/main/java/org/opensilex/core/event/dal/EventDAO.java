@@ -333,7 +333,7 @@ public class EventDAO<T extends EventModel> {
             return;
         }
 
-        Expr durationEventDateRange = SPARQLQueryHelper.dateTimeRange(startInstantTimeStampVar.getVarName(), start, endInstantTimeStampVar.getVarName(), end);
+        Expr durationEventDateRange = SPARQLQueryHelper.eventsIntervalDateRange(startInstantTimeStampVar.getVarName(), start, endInstantTimeStampVar.getVarName(), end);
         eventGraphGroupElem.addElementFilter(new ElementFilter(durationEventDateRange));
     }
 

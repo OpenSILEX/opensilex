@@ -40,8 +40,8 @@
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
             <b-form-checkbox v-model="filter.showEvents" @input="onUpdate" switch>
-              <b-spinner v-if="false" small   label="Busy" ></b-spinner>
-              <b-badge  v-if="false" variant="light">{{eventsCount}}</b-badge>
+              <b-spinner v-if="countIsLoading" small   label="Busy" ></b-spinner>
+              <b-badge  v-else variant="light">{{$i18n.n(eventsCount)}}</b-badge>
               </b-form-checkbox>
           </opensilex-FilterField>
         </template>
@@ -133,7 +133,7 @@ export default class ExperimentDataVisuForm extends Vue {
   }
 
   created() {
-  //  this.getTotalEventsCount();
+    this.getTotalEventsCount();
   }
 
   onDateChange(){

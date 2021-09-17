@@ -61,7 +61,7 @@
         </div>
       </div>
 
-      <div v-click-outside="closeMenu" @click="closeContextMenu" class="card-body p-0" >
+      <div v-click-outside="closeMenu" @click="closeContextMenu" class="card-body p-0">
         <highcharts
           v-for="(options, index) in chartOptions"
           :options="options"
@@ -225,6 +225,24 @@ export default class DataVisuGraphic extends Vue {
     });
   }
 
+
+  private langUnwatcher;
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.langOptionChanges(lang);
+      }
+    );
+
+    let lang = this.$store.getters.language;
+    this.langOptionChanges(lang);
+  }
+
+ beforeDestroy() {
+    this.langUnwatcher();
+  }
+
   getEventDetail(uri) {
     return this.$opensilex
       .getService("opensilex.EventsService")
@@ -257,6 +275,7 @@ export default class DataVisuGraphic extends Vue {
         }
       );
   }
+
   showAnnotations(dataUri) {
     this.getAnnotations(dataUri)
       .then(annotations => {
@@ -302,7 +321,7 @@ export default class DataVisuGraphic extends Vue {
         {
           chart: {
             zoomType: "x",
-            marginBottom: that.series.length > 8  ? 130 : 100,
+            marginBottom: that.series.length > 8 ? 130 : 100,
             marginLeft: 80,
             height: that.series.length > 8 ? 500 : 400, //ok until 20 or 30 series depends on the name (uri) lenght....
             type: that.lineType ? "line" : "scatter",
@@ -359,19 +378,18 @@ export default class DataVisuGraphic extends Vue {
           legend: {
             enabled: true,
             floating: true,
-            verticalAlign: 'bottom',
-            align:'center'     
-
+            verticalAlign: "bottom",
+            align: "center"
           },
           xAxis: {
             type: "datetime",
             title: { text: "time" },
-            // tickInterval: 24 *3600 * 1000,
-            // labels: {
-            //   formatter: function() {
-            //     return Highcharts.dateFormat("%d/%m", this.value);
-            //   }
-            // },
+            // tickInterval: 24 *3600 * 1000, labels: {
+            labels: {
+              formatter: function() {
+                return Highcharts.dateFormat("%e %b %Y", this.value);
+              }
+            },
             ordinal: false,
             crosshair: true,
             showLastLabel: true,
@@ -661,6 +679,98 @@ export default class DataVisuGraphic extends Vue {
           this.selectedPointsCount +
           " Must be < 1500 points"
       );
+    }
+  }
+
+  langOptionChanges(lang) {
+    if (lang === "fr") {
+      Highcharts.setOptions({
+        lang: {
+          months: [
+            "Janvier",
+            "Février",
+            "Mars",
+            "Avril",
+            "Mai",
+            "Juin",
+            "Juillet",
+            "Août",
+            "Septembre",
+            "Octobre",
+            "Novembre",
+            "Décembre"
+          ],
+          weekdays: [
+            "Dimanche",
+            "Lundi",
+            "Mardi",
+            "Mercredi",
+            "Jeudi",
+            "Vendredi",
+            "Samedi"
+          ],
+          shortMonths: [
+            "jan",
+            "fév",
+            "mar",
+            "avr",
+            "mai",
+            "juin",
+            "juil",
+            "aoû",
+            "sep",
+            "oct",
+            "nov",
+            "déc"
+          ],
+          resetZoom: "Réinitialiser le zoom",
+          decimalPoint: "."
+        }
+      });
+    } else {
+      Highcharts.setOptions({
+        lang: {
+          months: [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+          ],
+          weekdays: [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          shortMonths: [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+          ],
+          resetZoom: "Reset zoom",
+          decimalPoint: "."
+        }
+      });
     }
   }
 }

@@ -74,7 +74,6 @@
                 <opensilex-DateTimeForm
                     :value.sync="form.end"
                     label="Event.end"
-                    :minDate="form.start"
                     :required="endRequired"
                     @update:value="updateRequiredProps"
                     helpMessage="Event.end-help"

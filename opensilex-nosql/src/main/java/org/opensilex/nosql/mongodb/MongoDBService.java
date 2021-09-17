@@ -175,7 +175,7 @@ public class MongoDBService extends BaseService {
      * @throws NoSQLInvalidURIException
      */
     public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
-        LOGGER.debug("MONGO FIND BY URI - Collection : " + collectionName);
+        LOGGER.debug("MONGO FIND BY URI - Collection : " + collectionName + " - uri : "  + uri);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         return this.findByURI(collection,uri,"uri");
     }
@@ -199,7 +199,7 @@ public class MongoDBService extends BaseService {
     }
 
     public <T> List<T> findByURIs(Class<T> instanceClass, String collectionName, List<URI> uris) {
-        LOGGER.debug("MONGO FIND BY URIS - Collection : " + collectionName);
+        LOGGER.debug("MONGO FIND BY URIS - Collection : " + collectionName + " - uris : "  + uris.toString());
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         Document listFilter = new Document();
         listFilter.append("$in", uris);
@@ -222,7 +222,7 @@ public class MongoDBService extends BaseService {
      * @return if an instance with the given uri exists
      */
     public <T> boolean uriExists(Class<T> instanceClass, String collectionName, URI uri) {
-        LOGGER.debug("MONGO URI EXISTS - Collection : " + collectionName);
+        LOGGER.debug("MONGO URI EXISTS - Collection : " + collectionName + " - uri : "  + uri );
         try {
             T instance = findByURI(instanceClass, collectionName, uri);
             return true;
@@ -360,7 +360,7 @@ public class MongoDBService extends BaseService {
     }
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
-        LOGGER.debug("MONGO DELETE - Collection : " + collectionName);
+        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : "  + uri);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         this.delete(collection,uri,"uri");
     }
@@ -388,7 +388,7 @@ public class MongoDBService extends BaseService {
     }
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        LOGGER.debug("MONGO DELETE - Collection : " + collectionName);
+        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uris : "  + uris);
         Set<URI> notFoundedURIs = checkUriListExists(instanceClass, collectionName, (Set<URI>) uris);
 
         if (notFoundedURIs.isEmpty()) {

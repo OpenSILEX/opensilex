@@ -4,7 +4,7 @@
       ref="tableRef"
       :searchMethod="searchDataList"
       :fields="fields"
-      defaultSortBy="name"
+      defaultSortBy="date"
     >
 
       <template v-slot:export>

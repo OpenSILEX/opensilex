@@ -21,7 +21,7 @@
       <div v-if="showCount">
           <div v-if="totalRow > 0">
           <strong>
-            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.totalRow})}}
+            <span class="ml-1"> {{$t('component.common.list.pagination.nbEntries', { limit : getCurrentItemLimit() ,offset : getCurrentItemOffset(), totalRow : this.$i18n.n(  this.totalRow  )})}}
               </span>
           </strong>
         </div>
@@ -91,13 +91,16 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import {OrderBy} from "opensilex-core/model/orderBy";
+import {OrderBy} from "opensilex-core/index";
 
 @Component
 export default class TableAsyncView extends Vue {
   $opensilex: any;
   $route: any;
   $store: any;
+  $i18n: any;
+  $t : any;
+
   @Ref("tableRef") readonly tableRef!: any;
 
   @Prop()
@@ -354,11 +357,11 @@ export default class TableAsyncView extends Vue {
   }
 
   getCurrentItemLimit() : number {
-    return (this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
+    return this.$i18n.n(this.pageSize * (this.currentPage -1) < 0 ? 0  :  this.pageSize * (this.currentPage -1) )
   }
 
   getCurrentItemOffset() : number {
-    return (this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+    return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
   }
 
   onSelectAll() {

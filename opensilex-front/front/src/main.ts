@@ -226,6 +226,18 @@ let i18nOptions = {
         day: '2-digit', month: '2-digit', year: 'numeric'
       }
     }
+  },
+  numberFormats: {
+    "en": {
+      decimal: {
+        style: 'decimal',  
+      },
+    },
+    "fr": {
+      decimal: {
+        style: 'decimal' 
+      },
+    }
   }
 }
 const i18n = new VueI18n(i18nOptions);

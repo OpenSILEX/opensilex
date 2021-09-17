@@ -95,14 +95,18 @@ public class DataDAO {
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "target", "date"));
+        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending("variable"),Indexes.descending("date"))));
+        dataCollection.createIndex(Indexes.ascending("date"));
+        dataCollection.createIndex(Indexes.descending("date"));
 
         MongoCollection fileCollection = nosql.getDatabase()
                 .getCollection(FILE_COLLECTION_NAME, DataModel.class);
         fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
         fileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("target", "date"));
-
+        fileCollection.createIndex(Indexes.ascending("target", "date"));
+        fileCollection.createIndex(Indexes.descending("date"));
+        fileCollection.createIndex(Indexes.ascending("date"));
     }
 
     public DataModel create(DataModel instance) throws Exception, MongoWriteException {

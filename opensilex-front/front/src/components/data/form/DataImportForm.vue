@@ -554,7 +554,7 @@ en:
     import-file : Import data CSV
     
 fr:
-  DataForm:
+  DataImportForm:
     use-default-provenance: Utiliser la provenance standard
     use-default-provenance-title: Décocher pour choisir une autre provenance
     use-default-provenance-help: Les données seront liées à la provenance standard. Décocher pour sélectionner une autre provenance.

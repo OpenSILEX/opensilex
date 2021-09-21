@@ -266,7 +266,7 @@ en:
     file: Document
     file-help: Document to upload limit to 100MB
     identifier: Identifier
-    identifier-help: Recommended practice is to identify the resource by means of a string conforming to an identification system. Examples include International Standard Book Number (ISBN), Digital Object Identifier (DOI), and Uniform Resource title (URN). Persistent identifiers should be provided as HTTP URIs.
+    identifier-help: Recommended practice is to identify the resource by means of a string conforming to an identification system. Examples include International Standard Book Number (ISBN), Digital Object Identifier (DOI), and Uniform Resource Name (URN). Persistent identifiers should be provided as HTTP URIs.
     placeholder-identifier: doi:10.1340/309registries
     browse: Browse
     error:

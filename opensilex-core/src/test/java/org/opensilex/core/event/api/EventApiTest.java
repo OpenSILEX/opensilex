@@ -25,6 +25,7 @@ import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -35,11 +36,9 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.*;
@@ -113,6 +112,22 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         dto.setType(new URI("http://www.opensilex.org/vocabulary/oeev#Trouble"));
         dto.setTargets(Arrays.asList(so1.getUri(), so2.getUri()));
         return dto;
+    }
+
+    private void checkEquals(EventCreationDTO expected, EventGetDTO actual){
+
+        assertTrue(SPARQLDeserializers.compareURIs(expected.getUri(),actual.getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(expected.getType(),actual.getType()));
+
+        assertEquals(expected.getIsInstant(),actual.getIsInstant());
+        assertEquals(expected.getStart(),actual.getStart());
+        assertEquals(expected.getEnd(),actual.getEnd());
+        assertEquals(expected.getDescription(),actual.getDescription());
+
+        Set<URI> expectedUris = expected.getTargets().stream().map(SPARQLDeserializers::formatURI).collect(Collectors.toSet());
+        Set<URI> actualUris = expected.getTargets().stream().map(SPARQLDeserializers::formatURI).collect(Collectors.toSet());
+        assertEquals(expectedUris,actualUris);
+
     }
 
     @Test
@@ -359,14 +374,15 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
     @Test
     public void testSearchByDescription() throws Exception {
 
-        EventCreationDTO dto = getCreationDto();
-        dto.setDescription("Pest attack");
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
-        URI uri = extractUriListFromPaginatedListResponse(postResult).get(0);
+        EventCreationDTO postDto1 = getCreationDto();
+        postDto1.setDescription("Pest attack");
+        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto1));
+        postDto1.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
-        dto.setDescription("Grasshopper attack");
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
-        URI uri2 = extractUriListFromPaginatedListResponse(postResult).get(0);
+        EventCreationDTO postDto2 = getCreationDto();
+        postDto2.setDescription("Grasshopper attack");
+        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto2));
+        postDto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
         // search given a description witch match both events
         Map<String, Object> params = new HashMap<String, Object>() {{
@@ -375,8 +391,11 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         List<EventGetDTO> results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(2, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri)));
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri2)));
+        EventGetDTO getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto1.getUri())).findAny().get();
+        checkEquals(postDto1,getDto1);
+
+        EventGetDTO getDto2 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto2);
 
         // search given a description witch match no events
         params.put(DESCRIPTION_QUERY_PARAM, "Unknown");
@@ -389,14 +408,16 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri)));
+        getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto1.getUri())).findAny().get();
+        checkEquals(postDto1,getDto1);
 
         // search given a description witch match only the second event
         params.put(DESCRIPTION_QUERY_PARAM, "Grasshopper");
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri2)));
+        getDto2 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto2);
     }
 
 
@@ -481,25 +502,30 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
 
 
     @Test
-    public void testSearchByConcernedItem() throws Exception {
-        EventCreationDTO dto = getCreationDto();
-//        dto.setConcernedItems(Arrays.asList(new URI("dev:so1"), new URI("test:scientificObject2")));
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
-        URI uri = extractUriListFromPaginatedListResponse(postResult).get(0);
+    public void testSearchByTarget() throws Exception {
 
-        dto.setTargets(Arrays.asList(so2.getUri(),so3.getUri()));
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
-        URI uri2 = extractUriListFromPaginatedListResponse(postResult).get(0);
+        EventCreationDTO postDto1 = getCreationDto();
+        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto1));
+        postDto1.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
+
+        EventCreationDTO postDto2 = getCreationDto();
+        postDto2.setTargets(Arrays.asList(so2.getUri(),so3.getUri()));
+        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto2));
+        postDto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
         // search given a concernedItem witch match both events
         Map<String, Object> params = new HashMap<String, Object>() {{
             put(TARGET_QUERY_PARAM, so2.getUri());
         }};
-        List<EventGetDTO> results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
-        });
+        List<EventGetDTO> results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {});
         assertEquals(2, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri)));
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri2)));
+
+        EventGetDTO getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto1.getUri())).findAny().get();
+        checkEquals(postDto1,getDto1);
+
+        EventGetDTO getDto2 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto2);
+
 
         // search given a concernedItem witch match no events
         params.put(TARGET_QUERY_PARAM, "test:scientificObject4");
@@ -512,29 +538,31 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri)));
+        getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto1.getUri())).findAny().get();
+        checkEquals(postDto1,getDto1);
 
         // search given a concernedItem witch match only the second event
         params.put(TARGET_QUERY_PARAM, so3.getUri());
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), uri2)));
+        getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto1);
     }
 
 
     @Test
     public void testSearchByType() throws Exception {
 
-        EventCreationDTO dto = getCreationDto();
-        dto.setType(new URI("oeev:Move"));
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto));
-        dto.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
+        EventCreationDTO postDto1 = getCreationDto();
+        postDto1.setType(new URI("oeev:Move"));
+        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto1));
+        postDto1.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
-        EventCreationDTO dto2 = getCreationDto();
-        dto2.setType(new URI("oeev:PestAttack"));
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(dto2));
-        dto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
+        EventCreationDTO postDto2 = getCreationDto();
+        postDto2.setType(new URI("oeev:PestAttack"));
+        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(postDto2));
+        postDto2.setUri(extractUriListFromPaginatedListResponse(postResult).get(0));
 
         // search given a description witch match no events
         Map<String, Object> params = new HashMap<String, Object>() {{
@@ -545,18 +573,21 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(0, results.size());
 
         // search given a description witch match only the first event
-        params.put(EVENT_TYPE_QUERY_PARAM, dto.getType());
+        params.put(EVENT_TYPE_QUERY_PARAM, postDto1.getType());
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), dto.getUri())));
+
+        EventGetDTO getDto1 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto1.getUri())).findAny().get();
+        checkEquals(postDto1,getDto1);
 
         // search given a description witch match only the second event
-        params.put(EVENT_TYPE_QUERY_PARAM, dto2.getType());
+        params.put(EVENT_TYPE_QUERY_PARAM, postDto2.getType());
         results = getResults(searchPath, params, new TypeReference<PaginatedListResponse<EventGetDTO>>() {
         });
         assertEquals(1, results.size());
-        assertTrue(results.stream().anyMatch(event -> SPARQLDeserializers.compareURIs(event.getUri(), dto2.getUri())));
+        EventGetDTO getDto2 = results.stream().filter(event -> SPARQLDeserializers.compareURIs(event.getUri(), postDto2.getUri())).findAny().get();
+        checkEquals(postDto2,getDto2);
     }
 
     @Override

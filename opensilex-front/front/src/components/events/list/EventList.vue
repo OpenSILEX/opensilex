@@ -43,7 +43,7 @@
                     <opensilex-StringFilter
                         id="target"
                         :filter.sync="filter.target"
-                        placeholder="component.common.uri-filter-placeholder"
+                        placeholder="EventList.target-filter-placeholder"
                     ></opensilex-StringFilter>
                 </opensilex-FilterField>
 
@@ -79,15 +79,10 @@
             </template>
 
         </opensilex-SearchFilterField>
-
-        <opensilex-PageContent v-if="renderComponent">
-            <template v-slot>
-                <div class="card-body">
-                    <opensilex-TableAsyncView
+        <opensilex-TableAsyncView
                         ref="tableRef"
                         :searchMethod="search"
                         :fields="fields"
-                        :isSelectable="true"
                         defaultSortBy=""
                         labelNumberOfSelectedRow="EventList.selected"
                         iconNumberOfSelectedRow="ik#ik-layers"
@@ -100,11 +95,12 @@
                             :small="true"
                             :disabled="numberOfSelectedRows == 0"
                             text=actions>
-                                <b-dropdown-item-button    
+                                <b-dropdown-item-button
                                 @click="createDocument()"
                                 >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
                             </b-dropdown>
                         </template>
+
                         <template v-slot:cell(rdf_type_name)="{data}">
                             <opensilex-UriLink
                                 v-if="data.item.rdf_type_name"
@@ -112,9 +108,7 @@
                                 :value="data.item.rdf_type_name"
                                 @click="showEventView(data.item)"
                             ></opensilex-UriLink>
-                            <opensilex-TextView v-else
-                                                :value="data.item.rdf_type">
-                            </opensilex-TextView>
+
                         </template>
 
                         <template v-slot:cell(start)="{data}">
@@ -131,7 +125,7 @@
                         <template v-slot:cell(targets)="{data}">
                             <span :key="index" v-for="(uri, index) in data.item.targets">
                                  <opensilex-TextView :value="uri"></opensilex-TextView>
-                                <span v-if="data.item.targets.length > 1 && index < 2"> , </span>
+                                <span v-if="data.item.targets.length > 1 && index < 2"> </span>
                                 <span v-if="index >= 2"> ... </span>
                             </span>
                         </template>
@@ -157,9 +151,6 @@
                             </b-button-group>
                         </template>
                     </opensilex-TableAsyncView>
-                </div>
-            </template>
-        </opensilex-PageContent>
 
         <opensilex-EventModalView
             modalSize="lg"
@@ -194,7 +185,6 @@
         ></opensilex-ModalForm>
 
     </div>
-
 </template>
 
 <script lang="ts">
@@ -360,7 +350,7 @@ export default class EventList extends Vue {
                 this.filter.type,
                 this.filter.start,
                 this.filter.end,
-                this.target,
+                this.filter.target,
                 this.filter.description,
                 options.orderBy,
                 options.currentPage,
@@ -480,9 +470,11 @@ export default class EventList extends Vue {
 en:
     EventList:
         selected: Selected events
+        target-filter-placeholder: Enter part or all of an URI
 fr:
     EventList:
         selected: Évènements selectionnés
+        target-filter-placeholder: Saisir une partie ou la totalité d'un URI
 
 </i18n>
 

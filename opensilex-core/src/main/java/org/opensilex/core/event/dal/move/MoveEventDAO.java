@@ -210,7 +210,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
 
                     appendTimeAfterFilter(eventGraphGroupElem, dateTime);
-                    appendTargetEqFilter(eventGraphGroupElem, target, null);
+                    appendTargetEqFilter(eventGraphGroupElem, target.toString(), null);
                     select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);
                 }),
                 null,
@@ -270,8 +270,8 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     // description is an optional field, so the filtering must be done outside of the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
 
-                    appendTargetEqFilter(eventGraphGroupElem, target, orderByList);
-                    appendTimeFilter(select, eventGraphGroupElem, start, end);
+                    appendTargetEqFilter(eventGraphGroupElem, target.toString(), orderByList);
+                    appendTimeFilter(select,eventGraphGroupElem, start, end);
 
                     if (CollectionUtils.isEmpty(orderByList)) {
                         select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);

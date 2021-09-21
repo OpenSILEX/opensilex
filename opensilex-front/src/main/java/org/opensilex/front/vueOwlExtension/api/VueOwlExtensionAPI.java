@@ -29,6 +29,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
+import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -186,6 +188,7 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @NotNull @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
+        OntologyCache ontologyCache = CaffeineOntologyCache.getInstance(sparql);
 
         ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 
@@ -193,16 +196,17 @@ public class VueOwlExtensionAPI {
         VueClassExtensionModel classExtension = sparql.getByURI(VueClassExtensionModel.class, classDescription.getUri(), currentUser.getLanguage());
         VueRDFTypeDTO.fromModel(classProperties, classDescription, classExtension);
 
-        URI classParent = classDescription.getParent().getUri();
-        ClassModel parentModel;
+        ClassModel parentModel = null;
 
-        if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classParent)) {
-            parentModel = dao.getClassModel(classParent,parentType,currentUser.getLanguage());
-        }else{
-            parentModel = dao.getClassModel(classParent,null,currentUser.getLanguage());
+        if(classDescription.getParent() != null){
+            URI classParent = classDescription.getParent().getUri();
+            if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classParent)) {
+                parentModel = ontologyCache.getClassModel(classParent,parentType,currentUser.getLanguage());
+            }else{
+                parentModel = ontologyCache.getClassModel(classParent,null,currentUser.getLanguage());
+            }
+            dao.buildProperties(parentModel, currentUser.getLanguage());
         }
-
-        dao.buildProperties(parentModel, currentUser.getLanguage());
 
         List<VueRDFTypePropertyDTO> dataProperties = new ArrayList<>(classDescription.getDatatypeProperties().size());
         for (DatatypePropertyModel dt : classDescription.getDatatypeProperties().values()) {
@@ -213,9 +217,12 @@ public class VueOwlExtensionAPI {
             if (dt.getComment() != null) {
                 pDTO.setComment(dt.getComment().getDefaultValue());
             }
+
             OwlRestrictionModel restriction = classDescription.getRestrictions().get(dt.getUri());
             pDTO.setIsList(restriction.isList());
             pDTO.setIsRequired(restriction.isRequired());
+            pDTO.setInherited(parentModel != null && parentModel.isDatatypePropertyRestriction(dt.getUri()));
+
             VueOntologyType vueType = VueOwlExtensionDAO.getVueType(dt.getTypeRestriction());
             if (vueType != null) {
                 pDTO.setTargetProperty(dt.getTypeRestriction());
@@ -223,11 +230,7 @@ public class VueOwlExtensionAPI {
                 pDTO.setViewComponent(vueType.getViewComponent());
                 pDTO.setIsCustom(true);
             }
-            if (parentModel.isDatatypePropertyRestriction(dt.getUri())) {
-                pDTO.setInherited(true);
-            } else {
-                pDTO.setInherited(false);
-            }
+
             dataProperties.add(pDTO);
         }
         classProperties.setDataProperties(dataProperties);
@@ -244,6 +247,8 @@ public class VueOwlExtensionAPI {
             OwlRestrictionModel restriction = classDescription.getRestrictions().get(obj.getUri());
             pDTO.setIsList(restriction.isList());
             pDTO.setIsRequired(restriction.isRequired());
+            pDTO.setInherited(parentModel != null && parentModel.isObjectPropertyRestriction(obj.getUri()));
+
             VueOntologyObjectType vueType = (VueOntologyObjectType) VueOwlExtensionDAO.getVueType(obj.getTypeRestriction());
             if (vueType != null) {
                 pDTO.setTargetProperty(obj.getTypeRestriction());
@@ -252,19 +257,12 @@ public class VueOwlExtensionAPI {
                 pDTO.setViewComponent(vueType.getViewComponent());
                 pDTO.setIsCustom(true);
             }
-            if (parentModel.isObjectPropertyRestriction(obj.getUri())) {
-                pDTO.setInherited(true);
-            } else {
-                pDTO.setInherited(false);
-            }
             objectProperties.add(pDTO);
         }
         classProperties.setObjectProperties(objectProperties);
 
         VueOwlExtensionDAO daoExt = new VueOwlExtensionDAO(sparql);
-
         classProperties.setPropertiesOrder(daoExt.getPropertiesOrder(rdfType, currentUser.getLanguage()));
-
         return new SingleObjectResponse<>(classProperties).getResponse();
     }
 

@@ -242,17 +242,17 @@ en:
       update-button: Update factor
       update: Update factor
       name: Name
-      name-help: Usual name which describe a factor in an experiment
+      name-help: Usual name which describes a factor in an experiment
       name-placeholder: Irrigation, Shading, Planting year, etc.
       category: Category
       category-help: General category used to classify factors
       category-placeholder: Environnement-Irrigation, Field management, etc ...
       description: description
-      description-help: Description associated to this factors (protocol, amount of component)
-      description-error: Must contains at least 10 characters
+      description-help: Description associated with this factor (protocol, amount of component)
+      description-error: Must contain at least 10 characters
       description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
       errors:
-        user-already-exists: Factor already exists with this URI.
+        user-already-exists: A factor already exists with this URI.
       select:
         other: Other
         fieldManagement: Field management
@@ -264,7 +264,7 @@ en:
         nutrient: Nutrient
         atmospheric: Atmospheric
         temperature: Temperature
-      isAssociatedTo : This factor is associated with one or several experiments and can not be removed
+      isAssociatedTo : This factor is associated with one or more experiments and can not be removed
 
 fr:
   component:

@@ -33,7 +33,6 @@
         service: VariablesService;
         $i18n: any;
 
-
         @Prop()
         editMode;
 
@@ -105,7 +104,6 @@
             if(! variable){
                 return undefined;
             }
-
             let formattedVariable = JSON.parse(JSON.stringify(variable));
 
             if(formattedVariable.datatype && formattedVariable.datatype.uri){
@@ -122,6 +120,9 @@
             }
             if(formattedVariable.unit && formattedVariable.unit.uri){
                 formattedVariable.unit = formattedVariable.unit.uri;
+            }
+            if(formattedVariable.species && formattedVariable.species.uri){
+                formattedVariable.species = formattedVariable.species.uri;
             }
 
             return formattedVariable;

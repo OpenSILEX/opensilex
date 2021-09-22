@@ -347,15 +347,15 @@ test:alice:deploy:
     - alice:build
 
 ###################################
-##  EQUIPEMENT-TEST-SNAPSHOT-DEPLOYMENT
+##  SAMMY-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-equipements:build:
+sammy:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "equipements"
+    - if: $CI_COMMIT_BRANCH == "sammy"
 
-test:equipements:deploy:
+test:sammy:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -368,10 +368,10 @@ test:equipements:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/sammy"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "equipements"
+    - if: $CI_COMMIT_BRANCH == "sammy"
       when: on_success
   needs:
-    - equipements:build
+    - sammy:build
 
 ###################################
 ##  ARNAUD-TEST-BUILD-DEPLOYMENT

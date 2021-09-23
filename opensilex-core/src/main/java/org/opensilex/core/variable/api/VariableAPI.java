@@ -192,7 +192,7 @@ public class VariableAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
@@ -229,7 +229,7 @@ public class VariableAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariablesDetails(
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "_entity_name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

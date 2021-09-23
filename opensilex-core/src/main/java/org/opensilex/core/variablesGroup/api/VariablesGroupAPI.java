@@ -119,7 +119,7 @@ public class VariablesGroupAPI {
     public Response searchVariablesGroups(
             @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name ,
             @ApiParam(value = "Variable URI") @QueryParam("variableUri") URI variableUri ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

@@ -270,7 +270,7 @@ public class FactorAPI {
             @ApiParam(value = "Regex pattern for filtering on description", example = "20ml of water") @QueryParam("description") String comment,
             @ApiParam(value = "Filter by category of a factor", example = "http://aims.fao.org/aos/agrovoc/c_32668") @QueryParam("category") URI category,
             @ApiParam(value = "Filter by experiment", example = "demo-exp:experiment1") @QueryParam("experiment") URI experiment,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
             throws Exception {
@@ -322,7 +322,7 @@ public class FactorAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)})
     public Response searchFactorLevels(
             @ApiParam(value = "Regex pattern for filtering on name", example = "WW") @QueryParam("name") String name,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize)
             throws Exception {
@@ -496,7 +496,7 @@ public class FactorAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchCategories(
             @ApiParam(value = "Category name regex pattern", example = "describing") @QueryParam("name") String namePattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
         FactorDAO dao = new FactorDAO(sparql);

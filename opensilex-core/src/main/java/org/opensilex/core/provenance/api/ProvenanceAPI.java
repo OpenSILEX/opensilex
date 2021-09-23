@@ -201,7 +201,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Search by activity type") @QueryParam("activity_type") URI activityType,
             @ApiParam(value = "Search by agent URI") @QueryParam("agent") URI agentURI,
             @ApiParam(value = "Search by agent type") @QueryParam("agent_type") URI agentType,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

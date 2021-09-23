@@ -5,7 +5,7 @@
         ref="tableRef"
         :searchMethod="searchScientificObject"
         :fields="fields"
-        defaultSortBy="label"
+        defaultSortBy="name"
         :isSelectable="true"
         labelNumberOfSelectedRow="ScientificObjectList.selected"
         iconNumberOfSelectedRow="ik#ik-target"

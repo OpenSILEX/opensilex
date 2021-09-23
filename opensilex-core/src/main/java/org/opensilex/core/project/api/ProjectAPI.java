@@ -196,7 +196,7 @@ public class ProjectAPI {
             @ApiParam(value = "Search by year", example = "2017") @QueryParam("year") Integer year,
             @ApiParam(value = "Regex pattern for filtering on description or objective", example = "climate") @QueryParam("keyword") String term,
             @ApiParam(value = "Regex pattern for filtering by financial funding", example = "ANR") @QueryParam("financial_funding") String financial,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {

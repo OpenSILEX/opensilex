@@ -404,7 +404,7 @@ public class EventAPI {
             @ApiParam(value = "End date : match event before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
             @ApiParam(value = "Target partial/exact URI", example = "http://www.opensilex.org/demo/2018/o18000076(exact match) or o18000076(partial match)") @QueryParam("target") String target,
             @ApiParam(value = "Description regex pattern", example = "The pest attack") @QueryParam("description") String descriptionPattern,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "end=asc") @DefaultValue("end=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {

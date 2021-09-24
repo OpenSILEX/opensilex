@@ -548,7 +548,7 @@ export default class MapView extends Vue {
   $t: any;
   $store: any;
   $i18n: any;
-  bvModal: any;
+  $bvModal: any;
   el: "map";
   service: any;
   featuresOS: any[] = [];
@@ -1876,19 +1876,12 @@ export default class MapView extends Vue {
 
       this.featuresArea = [];
       this.temporalAreas = [];
-
-      let minDate = undefined;
-      if(this.range.from != this.minDate){
-        minDate = this.$opensilex.prepareGetParameter(this.range.from);
-      }
+ 
+      let minDate = this.$opensilex.prepareGetParameter(this.range.from); 
       console.debug("minDate",minDate,this.minDate,this.range.from  );
-      
-      let maxDate = undefined;
-      if(this.range.to != this.maxDate){
-        maxDate = this.$opensilex.prepareGetParameter(this.range.to);
-      }
-      console.debug("maxDate",maxDate,this.maxDate,this.range.to );
-      
+       
+      let maxDate = this.$opensilex.prepareGetParameter(this.range.to); 
+      console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
 
       if(minDate != undefined){
         minDate = minDate.toISOString();

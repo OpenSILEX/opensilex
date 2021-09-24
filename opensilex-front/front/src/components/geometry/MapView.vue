@@ -547,6 +547,8 @@ export default class MapView extends Vue {
   $opensilex: any;
   $t: any;
   $store: any;
+  $i18n: any;
+  bvModal: any;
   el: "map";
   service: any;
   featuresOS: any[] = [];
@@ -578,6 +580,7 @@ export default class MapView extends Vue {
   minDate: Date = null;
   maxDate: Date = null;
   range: { from: Date, to: Date } = { from: null, to: null };
+  filter: any = {};
 
   private editingMode: boolean = false;
   private displayDateRange: boolean = false;
@@ -1039,10 +1042,17 @@ export default class MapView extends Vue {
   onChangeDateRange(event) {
     this.$opensilex.showLoader();
     this.range = { from: event.args.from, to: event.args.to }
+    
 
     let startDate: string = this.formatDate(this.range.from);
     let endDate: string = this.formatDate(this.range.to);
+
+    this.filter.from =  startDate;
+    this.filter.to =  endDate;
+    this.$opensilex.updateURLParameters(this.filter);
+
     this.recoveryScientificObjects(startDate, endDate);
+    this.areaRecovery()
   }
 
   formatDate(date): string {
@@ -1212,7 +1222,7 @@ export default class MapView extends Vue {
 
   created() {
     this.$opensilex.showLoader();
-
+    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     this.experiment = decodeURIComponent(this.$route.params.uri);
 
     this.retrievesNameOfType();
@@ -1234,7 +1244,24 @@ export default class MapView extends Vue {
           this.maxDate = new Date();
         }
         this.maxDate.setHours(0,0,0,0);
-        this.range = { from: this.minDate, to: this.maxDate };
+
+        // checkfilter
+        let from ;
+        if(!this.filter.from  ){
+          from = this.minDate;
+        }else{
+          from = this.filter.from
+        }
+        let to;
+        console.log(this.filter,!this.filter.to)
+        if(!this.filter.to  ){
+          to = this.maxDate;
+        }else{
+          to = this.filter.to
+        }
+
+
+        this.range = { from: from, to: to};
         resolve("");
       })
       .catch(this.$opensilex.errorHandler);
@@ -1506,10 +1533,20 @@ export default class MapView extends Vue {
     this.$bvModal.hide('modal-save-map');
   }
 
-  appendTemporalArea(obj) {
+  appendTemporalArea(obj) { 
+    let minDate = this.$opensilex.prepareGetParameter(this.minDate);
+    let maxDate = this.$opensilex.prepareGetParameter(this.maxDate);
+
+    if(minDate != undefined){
+      minDate = minDate.toISOString();
+    }
+    if(maxDate != undefined){
+      maxDate = maxDate.toISOString();
+    }
+
     this.$opensilex
       .getService(this.eventsService)
-      .searchEvents(undefined, undefined, undefined, obj.uri)
+      .searchEvents(undefined, minDate, maxDate, obj.uri)
       .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
         const res = http.response.result[0] as any;
         res.targets = [obj.uri];
@@ -1592,7 +1629,10 @@ export default class MapView extends Vue {
               this.selectedFeatures.push(res.geometry);
             }
           })
-          .catch(this.$opensilex.errorHandler);
+          .catch(this.$opensilex.errorHandler)
+          .finally(() =>{ 
+            this.$opensilex.hideLoader();
+          });
     }
   }
 
@@ -1754,7 +1794,10 @@ export default class MapView extends Vue {
           })
           .catch(this.$opensilex.errorHandler);
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch(this.$opensilex.errorHandler)
+      .finally(() =>{ 
+        this.$opensilex.hideLoader();
+      });
   }
 
   private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: string; name: string }[]) {
@@ -1833,9 +1876,30 @@ export default class MapView extends Vue {
 
       this.featuresArea = [];
       this.temporalAreas = [];
+
+      let minDate = undefined;
+      if(this.range.from != this.minDate){
+        minDate = this.$opensilex.prepareGetParameter(this.range.from);
+      }
+      console.debug("minDate",minDate,this.minDate,this.range.from  );
+      
+      let maxDate = undefined;
+      if(this.range.to != this.maxDate){
+        maxDate = this.$opensilex.prepareGetParameter(this.range.to);
+      }
+      console.debug("maxDate",maxDate,this.maxDate,this.range.to );
+      
+
+      if(minDate != undefined){
+        minDate = minDate.toISOString();
+      }
+      if(maxDate != undefined){
+        maxDate = maxDate.toISOString();
+      }
+
       this.$opensilex
           .getService(this.areaService)
-          .searchIntersects(JSON.parse(JSON.stringify(geometry)))
+          .searchIntersects(JSON.parse(JSON.stringify(geometry)), minDate, maxDate)
           .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
             const res = http.response.result as any;
             res.forEach(element => {
@@ -1861,9 +1925,12 @@ export default class MapView extends Vue {
                 }
               }
             });
-            this.endReceipt = true;
           })
-          .catch(this.$opensilex.errorHandler);
+          .catch(this.$opensilex.errorHandler)
+          .finally(() =>{
+            this.endReceipt = true;
+            this.$opensilex.hideLoader();
+          });
     }
   }
 

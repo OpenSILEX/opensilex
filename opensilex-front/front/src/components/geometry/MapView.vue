@@ -1876,10 +1876,10 @@ export default class MapView extends Vue {
 
       this.featuresArea = [];
       this.temporalAreas = [];
- 
+
       let minDate = this.$opensilex.prepareGetParameter(this.range.from); 
       console.debug("minDate",minDate,this.minDate,this.range.from  );
-       
+      
       let maxDate = this.$opensilex.prepareGetParameter(this.range.to); 
       console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
 

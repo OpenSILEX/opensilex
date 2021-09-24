@@ -580,7 +580,7 @@ export default class MapView extends Vue {
   minDate: Date = null;
   maxDate: Date = null;
   range: { from: Date, to: Date } = { from: null, to: null };
-  filter: any = {};
+  // filter: any = {};
 
   private editingMode: boolean = false;
   private displayDateRange: boolean = false;
@@ -1047,9 +1047,9 @@ export default class MapView extends Vue {
     let startDate: string = this.formatDate(this.range.from);
     let endDate: string = this.formatDate(this.range.to);
 
-    this.filter.from =  startDate;
-    this.filter.to =  endDate;
-    this.$opensilex.updateURLParameters(this.filter);
+    // this.filter.from =  startDate;
+    // this.filter.to =  endDate;
+    // this.$opensilex.updateURLParameters(this.filter);
 
     this.recoveryScientificObjects(startDate, endDate);
     this.areaRecovery()
@@ -1222,7 +1222,7 @@ export default class MapView extends Vue {
 
   created() {
     this.$opensilex.showLoader();
-    this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
+    // this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     this.experiment = decodeURIComponent(this.$route.params.uri);
 
     this.retrievesNameOfType();
@@ -1244,24 +1244,24 @@ export default class MapView extends Vue {
           this.maxDate = new Date();
         }
         this.maxDate.setHours(0,0,0,0);
-
+        
         // checkfilter
-        let from ;
-        if(!this.filter.from  ){
-          from = this.minDate;
-        }else{
-          from = this.filter.from
-        }
-        let to;
-        console.log(this.filter,!this.filter.to)
-        if(!this.filter.to  ){
-          to = this.maxDate;
-        }else{
-          to = this.filter.to
-        }
+        // let from ;
+        // if(!this.filter.from  ){
+        //   from = this.minDate;
+        // }else{
+        //   from = this.filter.from
+        // }
+        // let to;
+        // console.log(this.filter,!this.filter.to)
+        // if(!this.filter.to  ){
+        //   to = this.maxDate;
+        // }else{
+        //   to = this.filter.to
+        // }
 
 
-        this.range = { from: from, to: to};
+        // this.range = { from: from, to: to};
         resolve("");
       })
       .catch(this.$opensilex.errorHandler);

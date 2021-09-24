@@ -486,6 +486,70 @@ public class EventDAO<T extends EventModel> {
         return results;
     }
 
+    public ListWithPagination<EventModel> search(List<URI> targets,
+                                                 String descriptionPattern,
+                                                 URI type,
+                                                 OffsetDateTime start, OffsetDateTime end,
+                                                 String lang,
+                                                 List<OrderBy> orderByList,
+                                                 Integer page, Integer pageSize) throws Exception {
+
+
+        this.updateOrderByList(orderByList);
+
+        // set the custom filter on type
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+        appendTypeFilter(customHandlerByFields, type);
+
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+
+        ListWithPagination<EventModel> results = sparql.searchWithPagination(
+                eventGraph,
+                EventModel.class,
+                lang,
+                (select -> {
+                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+                    ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+
+                    // for each optional field, the filtering must be applied outside of the OPTIONAL
+                    appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
+                    appendInTargetsValues(select, targets.stream(),targets.size());
+                    appendTimeFilter(select, eventGraphGroupElem, start, end);
+                    initialSelect.set(select);
+                }),
+                customHandlerByFields,
+
+                // custom result handler, direct convert SPARQLResult to EventModel
+                (result -> fromResult(result, lang, new EventModel())),
+
+                orderByList,
+                page,
+                pageSize
+        );
+
+        // manually fetch targets
+
+        Map<String, Boolean> fieldsToFetch = new HashMap<>();
+
+        // Check if the <?uri,oeev:concerns,?target> triple is already into select (due to filtering and/or ordering)
+        // If so then no need to add it one more time
+        boolean addTargetTriple = targets == null && orderByList.stream().noneMatch(order -> order.getFieldName().equalsIgnoreCase(EventModel.TARGETS_FIELD));
+
+        fieldsToFetch.put(EventModel.TARGETS_FIELD, addTargetTriple);
+
+        SPARQLListFetcher<EventModel> dataListFetcher = new SPARQLListFetcher<>(
+                sparql,
+                EventModel.class,
+                eventGraph,
+                fieldsToFetch,
+                initialSelect.get(),
+                results.getList()
+        );
+        dataListFetcher.updateModels();
+
+        return results;
+    }
+
     public int count(List<URI> targets) throws Exception {
 
         return sparql.count(

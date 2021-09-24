@@ -144,7 +144,8 @@ public class Oeso {
 
     // ---- AREA ----
     public static final Resource Area = Ontology.resource(NS, "Area");
-
+    public static final Resource TemporalArea = Ontology.resource(NS, "TemporalArea");
+    
     // ---- PROVENANCES ----
     public static final Property ImageAnalysis = Ontology.property(NS, "ImageAnalysis");
     public static final Property Image = Ontology.property(NS, "Image");

@@ -36,10 +36,24 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.event.dal.EventModel;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  * Area API
@@ -53,6 +67,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
         groupLabelKey = AreaAPI.CREDENTIAL_AREA_GROUP_LABEL_KEY
 )
 public class AreaAPI {
+
     public static final String CREDENTIAL_AREA_GROUP_ID = "Area";
     public static final String CREDENTIAL_AREA_GROUP_LABEL_KEY = "credential-groups.area";
 
@@ -90,10 +105,10 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Add an area", response = ObjectUriResponse.class),
-            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-            @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+        @ApiResponse(code = 201, message = "Add an area", response = ObjectUriResponse.class),
+        @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+        @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
+        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
 
     public Response createArea(
@@ -145,9 +160,9 @@ public class AreaAPI {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return area", response = AreaGetDTO.class),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Return area", response = AreaGetDTO.class),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
     })
     public Response getByURI(
             @ApiParam(value = "area URI", required = true) @PathParam("uri") @NotNull URI uri
@@ -188,7 +203,7 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update an area", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Update an area", response = ObjectUriResponse.class)
     })
     public Response updateArea(
             @ApiParam(value = "Area description", required = true) @NotNull @Valid AreaUpdateDTO areaDTO
@@ -244,8 +259,8 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Delete an area", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "The URI for the area was not found.", response = ErrorResponse.class)
+        @ApiResponse(code = 200, message = "Delete an area", response = ObjectUriResponse.class),
+        @ApiResponse(code = 404, message = "The URI for the area was not found.", response = ErrorResponse.class)
     })
     public Response deleteArea(
             @ApiParam(value = "Area URI", required = true) @PathParam("uri") @NotNull @ValidURI URI areaURI
@@ -272,7 +287,10 @@ public class AreaAPI {
 
     /**
      * @param geometry geometry of the area
-     * @return Return list of area whose geometry corresponds to the Intersections
+     * @param start Start date : temporal area event after the given start date
+     * @param end End date : temporal area match event before the given end date
+     * @return Return list of area whose geometry corresponds to the
+     * Intersections
      * @throws Exception the data is non-compliant or the uri already existing
      */
     @POST
@@ -282,24 +300,93 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Get area whose geometry corresponds to the Intersections", response = AreaGetDTO.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-            @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
+        @ApiResponse(code = 200, message = "Get area whose geometry corresponds to the Intersections", response = AreaGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Area not found", response = ErrorDTO.class)
     })
     public Response searchIntersects(
-            @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry
+            @ApiParam(value = "geometry GeoJSON", required = true) @NotNull GeoJsonObject geometry,
+            @ApiParam(value = "Start date : match temporal area after the given start date", example = "2019-09-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
+            @ApiParam(value = "End date : match temporal area before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end
     ) throws Exception {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        FindIterable<GeospatialModel> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry), currentUser, sparql);
-
         List<AreaGetDTO> dtoList = new ArrayList<>();
 
-        try {
+        // Get Area URI List
+        FindIterable<GeospatialModel> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry), currentUser, sparql);
+
+        List<GeospatialModel> mapGeoTmp = new ArrayList<>();
+        // search with date
+        if (start != null || end != null) {
+            // Extract URI List
+            List<URI> temporalAreasUris = new ArrayList<>();
+            List<URI> otherAreasUris = new ArrayList<>();
+            
             for (GeospatialModel geospatialModel : mapGeo) {
-                AreaGetDTO dtoFromModel = AreaGetDTO.fromModel(geospatialModel);
-                dtoList.add(dtoFromModel);
+                URI uri = geospatialModel.getUri();
+                if (SPARQLDeserializers.getExpandedURI(geospatialModel.getRdfType().toString())
+                        .equals(SPARQLDeserializers.getExpandedURI(Oeso.TemporalArea.toString()))) {
+                    temporalAreasUris.add(new URI(SPARQLDeserializers.getExpandedURI(uri.toString())));
+                } else {
+                    otherAreasUris.add(new URI(SPARQLDeserializers.getExpandedURI(uri.toString())));
+                }
             }
+
+            // Search Event by URI values  List
+            EventDAO eventDAO = new EventDAO(sparql, nosql);
+            ListWithPagination<EventModel> search = eventDAO.search(temporalAreasUris,
+                    null,
+                    null,
+                    start != null ? OffsetDateTime.parse(start) : null,
+                    end != null ? OffsetDateTime.parse(end) : null,
+                    null,
+                    null,
+                    null,
+                    null);
+            List<URI> foundedTemporalAreaUris = new ArrayList<>();
+            // list targets
+            for (EventModel eventModel : search.getList()) {
+                foundedTemporalAreaUris.addAll(eventModel.getTargets());
+            }
+
+            // List unique targets
+            List<URI> uniqueAreaUris;
+
+            uniqueAreaUris = foundedTemporalAreaUris.stream().distinct()
+                    .map(uri -> {
+                        try {
+                            return new URI(SPARQLDeserializers.getExpandedURI(uri.toString()));
+                        } catch (URISyntaxException ex) {
+                            return uri;
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            for (GeospatialModel geospatialModel : mapGeo) {
+                if (otherAreasUris.contains(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri().toString())))) {
+                    mapGeoTmp.add(geospatialModel);
+                } else {
+                    if (uniqueAreaUris.contains(new URI(SPARQLDeserializers.getExpandedURI(geospatialModel.getUri().toString())))) {
+                        mapGeoTmp.add(geospatialModel);
+                    }
+                }
+            }
+        }
+
+        try {
+            if (start != null || end != null) {
+                for (GeospatialModel geospatialModel : mapGeoTmp) {
+                    AreaGetDTO dtoFromModel = AreaGetDTO.fromModel(geospatialModel);
+                    dtoList.add(dtoFromModel);
+                }
+            } else {
+                for (GeospatialModel geospatialModel : mapGeo) {
+                    AreaGetDTO dtoFromModel = AreaGetDTO.fromModel(geospatialModel);
+                    dtoList.add(dtoFromModel);
+                }
+            }
+
         } catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }

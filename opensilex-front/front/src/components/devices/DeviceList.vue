@@ -3,6 +3,7 @@
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
+      searchButtonLabel="component.common.search.visualize-button"
       withButton="false"
       :showAdvancedSearch="true"
     >

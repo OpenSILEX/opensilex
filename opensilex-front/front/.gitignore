@@ -2,6 +2,8 @@
 node_modules
 /dist
 
+./src/opensilex.dev.ts
+
 # local env files
 .env.local
 .env.*.local

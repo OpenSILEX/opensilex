@@ -72,7 +72,7 @@
             </slot>
             <slot name="search">
               <opensilex-Button
-                label="component.common.search.search-button"
+                :label="searchButtonLabel"
                 @click="validateAndSearch($event)"
                 icon="ik#ik-search"
                 variant="primary"
@@ -103,6 +103,9 @@ export default class SearchFilterField extends Vue {
 
   @Prop({ default: "SearchFilter.searchlabel" })
   label: string;
+
+  @Prop({ default: "component.common.search.search-button" })
+  searchButtonLabel: string;
 
   @Prop({ default: "SearchFilter.advancedSearchLabel" })
   advancedSearchLabel: string;

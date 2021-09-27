@@ -120,6 +120,7 @@
             },
             "search": {
                 "search-button": "Search",
+                "visualize-button": "Visualize",
                 "clear-button": "Reset"
             },
             "filter-search-no-result": "Sorry, no results match your search.",

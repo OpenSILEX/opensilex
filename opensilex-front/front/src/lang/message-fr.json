@@ -119,6 +119,7 @@
             },
             "search": {
                 "search-button": "Rechercher",
+                "visualize-button": "Visualiser",
                 "clear-button": "Réinitialiser"
             },
             "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",

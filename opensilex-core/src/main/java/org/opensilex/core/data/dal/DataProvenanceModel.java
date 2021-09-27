@@ -20,7 +20,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
  * Provenance model used in DataModel
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "prov_used","settings"})
+@JsonPropertyOrder({"uri", "prov_used", "prov_was_associated_with", "settings"})
 public class DataProvenanceModel {
     @NotNull
     @ApiModelProperty(value = "provenance uri", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI)
@@ -32,6 +32,10 @@ public class DataProvenanceModel {
     @JsonProperty("prov_used")
     @ApiModelProperty(value = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
+    
+    @JsonProperty("prov_was_associated_with")
+    @ApiModelProperty(value = "allow an activity to be linked to an agent")
+    List<ProvEntityModel> provWasAssociatedWith;
     
     @ApiModelProperty(value = "a key-value system to store specific information")
     Document settings; 
@@ -58,6 +62,14 @@ public class DataProvenanceModel {
 
     public void setProvUsed(List<ProvEntityModel> provUsed) {
         this.provUsed = provUsed;
+    }
+    
+    public List<ProvEntityModel> getProvWasAssociatedWith() {
+        return provWasAssociatedWith;
+    }
+
+    public void setProvWasAssociatedWith(List<ProvEntityModel> provWasAssociatedWith) {
+        this.provWasAssociatedWith = provWasAssociatedWith;
     }
 
     public Document getSettings() {

@@ -106,17 +106,9 @@ public class ScientificObjectDAO {
         );
     }
 
-    public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(URI contextURI, URI parentURI, URI facility, List<OrderBy> orderByList, Integer page, Integer pageSize, UserModel currentUser) throws Exception {
+    public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(ScientificObjectSearchFilter searchFilter) throws Exception {
 
-        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
-                .setExperiment(contextURI)
-                .setParentURI(parentURI)
-                .setFacility(facility);
-
-        searchFilter.setPage(page)
-                .setPageSize(pageSize)
-                .setOrderByList(orderByList)
-                .setLang(currentUser.getLanguage());
+        searchFilter.setOnlyFetchOsWithNoParent(true);
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
 
@@ -125,13 +117,7 @@ public class ScientificObjectDAO {
             resultsUri.add(result.getUri());
         });
 
-        final Node contextNode;
-        if (contextURI != null) {
-            contextNode = SPARQLDeserializers.nodeURI(contextURI);
-        } else {
-            contextNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
-        }
-
+        final Node contextNode = SPARQLDeserializers.nodeURI(searchFilter.getExperiment());
         SelectBuilder childCountByUri = new SelectBuilder();
 
         Var uriVar = makeVar("uri");
@@ -219,7 +205,7 @@ public class ScientificObjectDAO {
     private int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
 
         SelectBuilder count = new SelectBuilder();
-        addSearchfilter(count, true, searchFilter,false);
+        addSearchfilter(count, true, searchFilter);
 
         List<SPARQLResult> countResult = sparql.executeSelectQuery(count);
         if (countResult.size() != 1) {
@@ -233,7 +219,7 @@ public class ScientificObjectDAO {
 
         SelectBuilder select = new SelectBuilder();
 
-        addSearchfilter(select, false, searchFilter,false);
+        addSearchfilter(select, false, searchFilter);
 
         SPARQLClassObjectMapper<SPARQLResourceModel> mapper = sparql.getMapperIndex().getForClass(ScientificObjectModel.class);
         if (searchFilter.getOrderByList() != null) {
@@ -391,7 +377,7 @@ public class ScientificObjectDAO {
 
     private static String countField = "count";
 
-    private void addSearchfilter(SelectBuilder builder, boolean isCount, ScientificObjectSearchFilter searchFilter, boolean onlyDirectChildren) throws Exception {
+    private void addSearchfilter(SelectBuilder builder, boolean isCount, ScientificObjectSearchFilter searchFilter) throws Exception {
 
         final Node contextNode;
         if (searchFilter.getExperiment() != null) {
@@ -465,10 +451,13 @@ public class ScientificObjectDAO {
         }
 
         // Add parent filter
-        if (onlyDirectChildren) {
+        // Only retrieve OS with no parent if getOnlyFetchOsWithNoParent() is true
+
+        if (searchFilter.getOnlyFetchOsWithNoParent() != null && searchFilter.getOnlyFetchOsWithNoParent()) {
             if (searchFilter.getParentURI() != null) {
                 builder.addGraph(contextNode, uriVar, Oeso.isPartOf, SPARQLDeserializers.nodeURI(searchFilter.getParentURI()));
             } else {
+                // filter OS which have a parent
                 WhereBuilder whereFilter = new WhereBuilder().addGraph(
                         contextNode,
                         uriVar,

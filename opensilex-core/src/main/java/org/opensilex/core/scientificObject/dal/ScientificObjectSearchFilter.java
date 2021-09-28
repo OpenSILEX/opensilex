@@ -20,6 +20,11 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
 
     protected URI parentURI;
 
+    /**
+     * Flag which indicate if only OS with no parent must be retrieved
+     */
+    protected Boolean onlyFetchOsWithNoParent;
+
     protected URI germplasm;
 
     protected List<URI> factorLevels;
@@ -126,6 +131,15 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
 
     public ScientificObjectSearchFilter setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+        return this;
+    }
+
+    public Boolean getOnlyFetchOsWithNoParent() {
+        return onlyFetchOsWithNoParent;
+    }
+
+    public ScientificObjectSearchFilter setOnlyFetchOsWithNoParent(Boolean onlyFetchOsWithNoParent) {
+        this.onlyFetchOsWithNoParent = onlyFetchOsWithNoParent;
         return this;
     }
 }

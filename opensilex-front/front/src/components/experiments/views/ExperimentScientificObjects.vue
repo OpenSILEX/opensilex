@@ -147,6 +147,7 @@
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
+            :searchMethodRootChildren="searchMethodRootChildren"
             :enableSelection="true"
             :selection.sync="selectedObjects"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
@@ -199,8 +200,8 @@
             "
             ref="soForm"
             :context="{ experimentURI: this.uri }"
-            @onUpdate="refresh"
-            @onCreate="refresh"
+            @onUpdate="refreshAfterCreateOrUpdate"
+            @onCreate="refreshAfterCreateOrUpdate"
           ></opensilex-ScientificObjectForm>
         </b-card>
       </div>
@@ -252,6 +253,7 @@ import Vue from "vue";
 import { ScientificObjectsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
+import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
@@ -265,7 +267,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   
   @Ref("soForm") readonly soForm!: any;
-  @Ref("soTree") readonly soTree!: any;
+  @Ref("soTree") readonly soTree!: TreeViewAsync;
   @Ref("importForm") readonly importForm!: any;
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
@@ -410,6 +412,15 @@ export default class ExperimentScientificObjects extends Vue {
     // Only if search and reset button are use in list
   }
 
+  refreshAfterCreateOrUpdate(result){
+      this.refresh();
+
+      if(! result || ! result.response.result) {
+        return;
+      }
+      this.displayScientificObjectDetailsIfNew(result.response.result);
+  }
+
   refresh() {
     if (this.soTree) {
       this.soTree.refresh();
@@ -419,70 +430,34 @@ export default class ExperimentScientificObjects extends Vue {
     }
   }
 
-  loadAllChildren(node) {
-    let nodeURI = node.data.uri;
+  searchMethodRootChildren(nodeURI,page,pageSize) {
 
-    let root = this.nodes[node.path[0]];
-    for (let i = 1; i < node.path.length; i++) {
-      root = root.children[node.path[i]];
-    }
-
-    this.soService
-      .getScientificObjectsChildren(nodeURI, this.uri)
-      .then(http => {
-        let childrenNodes = [];
-        for (let i in http.response.result) {
-          let soDTO = http.response.result[i];
-
-          let soNode = {
-            title: soDTO.name,
-            data: soDTO,
-            isLeaf: [],
-            children: [],
-            isExpanded: true,
-            isSelected: false,
-            isDraggable: false,
-            isSelectable: true
-          };
-          childrenNodes.push(soNode);
-        }
-
-        root.children = childrenNodes;
-      });
+    return this.soService.getScientificObjectsChildren(
+        nodeURI,
+        this.uri,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        page,
+        pageSize
+    );
   }
 
   searchMethod(nodeURI, page, pageSize) {
     let orderBy = ["name=asc"];
-    if (
-      this.filters.name == "" &&
-      this.filters.types.length == 0 &&
-      this.filters.parent == undefined &&
-      this.filters.factorLevels.length == 0
-    ) {
-      return this.soService.getScientificObjectsChildren(
-        nodeURI,
+    return this.soService.getScientificObjectsChildren(
+        this.filters.parent ? this.filters.parent : nodeURI,
         this.uri,
+        this.filters.types,
+        this.filters.name,
+        this.filters.factorLevels,
         undefined,
         orderBy,
         page,
         pageSize
-      );
-    } else {
-      return this.soService.searchScientificObjects(
-        this.uri,
-        this.filters.types,
-        this.filters.name,
-        this.filters.parent,
-        undefined,
-        this.filters.factorLevels,
-        undefined,
-        undefined,
-        undefined,
-        [],
-        page,
-        pageSize
-      );
-    }
+    );
   }
 
   searchParents(query, page, pageSize) {
@@ -718,7 +693,6 @@ en:
     delete-scientific-object: Delete scientific object
     add-scientific-object-child: Add scientific object child
     parent-label: Parent
-    load-more: Load more...
     export-csv: Export CSV
     geometry-label: Geometry
     geometry-comment: Geospatial coordinates
@@ -737,7 +711,6 @@ fr:
     delete-scientific-object: Supprimer l'objet scientifique
     add-scientific-object-child: Ajouter un objet scientifique enfant
     parent-label: Parent
-    load-more: Charger plus...
     export-csv: Exporter en CSV
     geometry-label: Géometrie
     geometry-comment: Coordonnées géospatialisées

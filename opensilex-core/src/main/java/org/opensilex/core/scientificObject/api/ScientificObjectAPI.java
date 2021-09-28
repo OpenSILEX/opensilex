@@ -37,6 +37,7 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.checkerframework.checker.units.qual.s;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
@@ -133,10 +134,12 @@ public class ScientificObjectAPI {
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID = "scientific-objects-delete";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_LABEL_KEY = "credential.scientific-objects.delete";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScientificObjectAPI.class);
+
     public static final String GEOMETRY_COLUMN_ID = "geometry";
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ScientificObjectDAO.class);
+    public static final String SCIENTIFIC_OBJECT_EXAMPLE_URI = "http://opensilex.org/id/Plot 12";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE = "vocabulary:Plot";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_TYPE_NAME = "Plot";
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_NAME = "Plot 12";
@@ -160,7 +163,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return list of scientific objects corresponding to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsListByUris(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") URI contextURI,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
             @ApiParam(value = "Scientific object uris") List<URI> objectsURI
     ) throws Exception {
         if (objectsURI == null) {
@@ -193,7 +196,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return scientific object types list", response = ListItemDTO.class, responseContainer = "List")
     })
     public Response getUsedTypes(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") @ValidURI URI experimentURI
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI
     ) throws Exception {
 
         validateContextAccess(experimentURI);
@@ -245,7 +248,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return list of scientific objects whose geometry corresponds to the given experiment URI", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjectsWithGeometryListByUris(
-            @ApiParam(value = "Context URI", example = "http://example.com/", required = true) @QueryParam("experiment") @NotNull URI contextURI
+            @ApiParam(value = "Context URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @QueryParam("experiment") @NotNull URI contextURI
     ) throws Exception {
 
         validateContextAccess(contextURI);
@@ -279,8 +282,11 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return list of scientific objects children corresponding to the parent URI", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectsChildren(
-            @ApiParam(value = "Parent object URI", example = "http://example.com/") @QueryParam("parent") URI parentURI,
-            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") @ValidURI URI experimentURI,
+            @ApiParam(value = "Parent object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") URI parentURI,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") @ValidURI URI experimentURI,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -293,7 +299,21 @@ public class ScientificObjectAPI {
         if (experimentURI == null) {
             experimentURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
-        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = dao.searchChildren(experimentURI, parentURI, facility, orderByList, page, pageSize, currentUser);
+
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(experimentURI)
+                .setPattern(pattern)
+                .setRdfTypes(rdfTypes)
+                .setParentURI(parentURI)
+                .setFactorLevels(factorLevels)
+                .setFacility(facility);
+
+        searchFilter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = dao.searchChildren(searchFilter);
 
         return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
     }
@@ -307,10 +327,10 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return scientific objects corresponding to the given search parameters", response = ScientificObjectNodeDTO.class, responseContainer = "List")
     })
     public Response searchScientificObjects(
-            @ApiParam(value = "Experiment URI", example = "http://example.com/") @QueryParam("experiment") final URI contextURI,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") final URI contextURI,
             @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "Parent URI", example = "http://example.com/") @QueryParam("parent") @ValidURI URI parentURI,
+            @ApiParam(value = "Parent URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") @ValidURI URI parentURI,
             @ApiParam(value = "Germplasm URI", example = "http://aims.fao.org/aos/agrovoc/c_1066") @QueryParam("germplasm") @ValidURI URI germplasm,
             @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
@@ -363,7 +383,7 @@ public class ScientificObjectAPI {
     public Response getScientificObjectDetail(
             @ApiParam(value = "scientific object URI", example = "http://opensilex.org/set/scientific-objects/so-1357dz_pg_34zm4384wwveg_323_37arch2017-03-30", required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = "Experiment URI", example = "http://opensilex.org/set/experiments/21ik1_cims-on")
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = "http://opensilex.org/set/experiments/21ik1_cims-on")
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
 
@@ -398,7 +418,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return scientific object details corresponding to the given experiment and object URI", response = ScientificObjectDetailByExperimentsDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDetailByExperiments(
-            @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
+            @ApiParam(value = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI
     ) throws Exception {
 
@@ -469,7 +489,6 @@ public class ScientificObjectAPI {
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-        nosql.startTransaction();
         sparql.startTransaction();
         try {
             URI soURI = dao.create(contextURI, generationPrefixURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
@@ -485,6 +504,7 @@ public class ScientificObjectAPI {
             }
 
             if (descriptionDto.getGeometry() != null) {
+                nosql.startTransaction();
                 GeospatialModel geospatialModel = new GeospatialModel();
                 geospatialModel.setUri(soURI);
                 geospatialModel.setName(descriptionDto.getName());
@@ -596,9 +616,9 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })
     public Response deleteScientificObject(
-            @ApiParam(value = "scientific object URI", example = "http://example.com/", required = true)
+            @ApiParam(value = "scientific object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true)
             @PathParam("uri") @ValidURI @NotNull URI objectURI,
-            @ApiParam(value = "Experiment URI", example = "http://example.com/")
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI)
             @QueryParam("experiment") @ValidURI URI contextURI
     ) throws Exception {
 
@@ -1169,7 +1189,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectVariables(
-            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
@@ -1197,7 +1217,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDataProvenances(
-            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
@@ -1224,7 +1244,7 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getScientificObjectDataFilesProvenances(
-            @ApiParam(value = "Scientific Object URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Scientific Object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);

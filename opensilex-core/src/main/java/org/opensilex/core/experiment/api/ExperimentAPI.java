@@ -145,6 +145,8 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
 
     public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    public static final String EXPERIMENT_API_VALUE = "Experiment URI";
+
 
     public static final int CSV_NB_ERRORS_MAX = 100;
 
@@ -247,7 +249,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response getExperiment(
-            @ApiParam(value = "Experiment URI", example = "http://opensilex.dev/set/experiments/ZA17", required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql);
         ExperimentModel model = dao.get(xpUri, currentUser);
@@ -335,7 +337,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response deleteExperiment(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql);
         dao.delete(xpUri, currentUser);
@@ -353,7 +355,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response getFacilities(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         List<InfrastructureFacilityModel> facilities = xpDao.getFacilities(xpUri, currentUser);
@@ -375,7 +377,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response getAvailableFacilities(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql);
         List<InfrastructureFacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
@@ -396,7 +398,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return Species list", response = SpeciesDTO.class, responseContainer = "List")
     })
     public Response getAvailableSpecies(
-            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
@@ -418,7 +420,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return factors list", response = FactorDetailsGetDTO.class, responseContainer = "List")
     })
     public Response getAvailableFactors(
-            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         xpDAO.validateExperimentAccess(xpUri, currentUser);
@@ -449,7 +451,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getUsedVariables(
-            @ApiParam(value = "Experiment URI", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
             @ApiParam(value = "Search by objects uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("scientific_objects") List<URI> objects
     ) throws Exception {
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
@@ -496,7 +498,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchExperimentDataList(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -608,7 +610,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportExperimentDataList(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @ValidURI @NotNull URI xpUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
@@ -734,7 +736,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
@@ -818,7 +820,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull @ValidURI URI xpUri,
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
             @ApiParam(value = "Data file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
@@ -1244,7 +1246,7 @@ public class ExperimentAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchExperimentProvenances(
-            @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
             @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
             @ApiParam(value = "Search by description") @QueryParam("description") String description,
             @ApiParam(value = "Search by activity URI") @QueryParam("activity") URI activityUri,

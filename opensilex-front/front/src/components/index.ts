@@ -709,6 +709,8 @@ import PositionsView from './positions/view/PositionsView.vue';
 components["opensilex-PositionsView"] = PositionsView;
 import PositionList from './positions/list/PositionList.vue';
 components["opensilex-PositionList"] = PositionList;
+import AssociatedPosition from './positions/list/AssociatedPositionList.vue';
+components["opensilex-AssociatedPositionList"] = AssociatedPosition;
 
 // Tools
 import PackagesView from './tools/PackagesView.vue';

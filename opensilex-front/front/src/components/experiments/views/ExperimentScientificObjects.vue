@@ -147,7 +147,7 @@
           <opensilex-TreeViewAsync
             ref="soTree"
             :searchMethod="searchMethod"
-            :searchMethodRootChildren="searchMethodRootChildren"
+            :searchMethodRootChildren="loadAllChildren"
             :enableSelection="true"
             :selection.sync="selectedObjects"
             @select="displayScientificObjectDetailsIfNew($event.data.uri)"
@@ -430,8 +430,7 @@ export default class ExperimentScientificObjects extends Vue {
     }
   }
 
-  searchMethodRootChildren(nodeURI,page,pageSize) {
-
+  loadAllChildren(nodeURI,page,pageSize) {
     return this.soService.getScientificObjectsChildren(
         nodeURI,
         this.uri,
@@ -443,6 +442,27 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
     );
+    // )
+    //     .then(http => {
+    //       let childrenNodes = [];
+    //       for (let i in http.response.result) {
+    //         let soDTO = http.response.result[i];
+    //
+    //         let soNode = {
+    //           title: soDTO.name,
+    //           data: soDTO,
+    //           isLeaf: [],
+    //           children: [],
+    //           isExpanded: true,
+    //           isSelected: false,
+    //           isDraggable: false,
+    //           isSelectable: true
+    //         };
+    //         childrenNodes.push(soNode);
+    //       }
+    //
+    //       root.children = childrenNodes;
+    //     });
   }
 
   searchMethod(nodeURI, page, pageSize) {
@@ -458,6 +478,7 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
     );
+
   }
 
   searchParents(query, page, pageSize) {

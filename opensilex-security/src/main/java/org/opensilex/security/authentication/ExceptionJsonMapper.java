@@ -56,8 +56,10 @@ public class ExceptionJsonMapper implements ExceptionMapper<Throwable> {
                     Response.Status.NOT_FOUND, "URIs not found",
                     exception.getMessage()
             ).getResponse();
+        }else if(exception instanceof IllegalArgumentException){
+            response = new ErrorResponse(Status.BAD_REQUEST, Status.BAD_REQUEST.getReasonPhrase(), exception.getMessage())
+                    .getResponse();
         }
-
         else if (exception instanceof WebApplicationException) {
             WebApplicationException webAppException = (WebApplicationException) exception;
             Response exceptionResponse = webAppException.getResponse();

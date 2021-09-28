@@ -15,21 +15,21 @@ file-system:
 #            defaultFS:
 #                implementation: org.opensilex.fs.local.LocalFileSystemConnection
 #            connections:
-#                irods:                    
+#                irods:
 #                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
 #                    config:
-#                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS                
+#                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS
 #            customPath:
 #                datafile/: irods
 
-big-data:   
+big-data:
     mongodb:
         config:
             host: localhost
             port: 8668
             database: opensilex
-#            timezone: Europe/Paris
-    
+    #            timezone: Europe/Paris
+
 phisws:
     infrastructure: opensilex
 # Configuration for module: SecurityModule (SecurityConfig)

@@ -34,9 +34,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.ext.com.google.common.cache.Cache;
 import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.bson.codecs.configuration.CodecConfigurationException;
-import org.checkerframework.checker.units.qual.s;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.exception.DuplicateNameException;
+import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
@@ -486,7 +487,6 @@ public class ScientificObjectAPI {
         URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         sparql.startTransaction();
@@ -528,8 +528,11 @@ public class ScientificObjectAPI {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
             }
             throw mongoException;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
+        } catch (DuplicateNameException e){
+            throw new IllegalArgumentException(e.getMessage());
+        }
+        catch (Exception ex) {
+            sparql.rollbackTransaction();
             nosql.rollbackTransaction();
             throw ex;
         }
@@ -550,7 +553,7 @@ public class ScientificObjectAPI {
     public Response updateScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
             @NotNull
-            @Valid ScientificObjectCreationDTO descriptionDto
+            @Valid ScientificObjectUpdateDTO descriptionDto
     ) throws Exception {
 
         URI contextURI = descriptionDto.getExperiment();
@@ -561,7 +564,6 @@ public class ScientificObjectAPI {
         URI soType = descriptionDto.getType();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         nosql.startTransaction();
@@ -594,7 +596,10 @@ public class ScientificObjectAPI {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
             }
             throw mongoException;
-        } catch (Exception ex) {
+        }catch (DuplicateNameException e){
+            throw new IllegalArgumentException(e.getMessage());
+        }
+        catch (Exception ex) {
             sparql.rollbackTransaction();
             nosql.rollbackTransaction();
             throw ex;
@@ -634,7 +639,7 @@ public class ScientificObjectAPI {
             if (contextURI == null) {
                 sparql.deleteByURI(sparql.getDefaultGraph(ScientificObjectModel.class), objectURI);
             } else {
-                dao.delete(contextURI, objectURI, currentUser);
+                dao.delete(contextURI, objectURI);
             }
             geoDAO.delete(objectURI, contextURI);
 
@@ -674,7 +679,9 @@ public class ScientificObjectAPI {
     ) throws Exception {
         URI contextURI = descriptionDto.getExperiment();
         boolean globalCopy = false;
-        if (contextURI != null) {
+        boolean insertIntoSomeXp = contextURI != null;
+
+        if (insertIntoSomeXp) {
             globalCopy = true;
         }
         String validationToken = descriptionDto.getValidationToken();
@@ -697,7 +704,7 @@ public class ScientificObjectAPI {
         csvValidation.setErrors(errors);
 
         final URI graphURI;
-        if (contextURI != null) {
+        if (insertIntoSomeXp) {
             graphURI = contextURI;
         } else {
             graphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
@@ -709,9 +716,9 @@ public class ScientificObjectAPI {
 
                 nosql.startTransaction();
                 sparql.startTransaction();
-                try {
-                    List<SPARQLNamedResourceModel> objects = errors.getObjects();
+                List<SPARQLNamedResourceModel> objects = errors.getObjects();
 
+                try {
                     sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
                     MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
@@ -761,9 +768,9 @@ public class ScientificObjectAPI {
                     sparql.commitTransaction();
                     nosql.commitTransaction();
 
-                } catch (Exception ex) {
+                }catch (Exception e) {
                     nosql.rollbackTransaction();
-                    sparql.rollbackTransaction(ex);
+                    sparql.rollbackTransaction(e);
                 }
             } else {
 
@@ -795,10 +802,29 @@ public class ScientificObjectAPI {
             csvValidation.setValidationToken("done");
         }
 
-        return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
+        return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
-    private final static Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
+    private void addDuplicateNameErrors(List<SPARQLNamedResourceModel> objects, CSVValidationModel validationModel, Map<String,URI> existingUriByName){
+
+        int i=0;
+
+        // iterate object, check if a conflict was found (by name), if so, append an error into validation
+        for(SPARQLNamedResourceModel object : objects){
+            String name = object.getName();
+
+            if(existingUriByName.containsKey(name)) {
+                URI existingObjectWithSameName = existingUriByName.get(name);
+                String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name,existingObjectWithSameName.toString());
+
+                CSVCell cell = new CSVCell(OntologyDAO.CSV_HEADER_ROWS_NB +i,OntologyDAO.CSV_NAME_INDEX,object.getName(),errorMsg);
+                validationModel.addInvalidValueError(cell);
+            }
+            i++;
+        }
+    }
+
+    private static final Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
             OntologyDAO.CSV_URI_KEY,
             OntologyDAO.CSV_TYPE_KEY,
             OntologyDAO.CSV_NAME_KEY,
@@ -963,6 +989,7 @@ public class ScientificObjectAPI {
 
         CSVValidationModel csvValidationModel = getCSVValidationModel(contextURI, file, currentUser);
 
+
         CSVValidationDTO csvValidation = new CSVValidationDTO();
         csvValidation.setErrors(csvValidationModel);
 
@@ -1119,6 +1146,13 @@ public class ScientificObjectAPI {
             });
 
             validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
+        }
+
+        try{
+            // check that names are unique into the experiment, throw a DuplicateNameListException if any conflict is found
+            new ScientificObjectDAO(sparql,nosql).checkUniqueNameByGraph(validationResult.getObjects(),contextURI);
+        }catch (DuplicateNameListException e){
+            addDuplicateNameErrors(validationResult.getObjects(), validationResult, e.getExistingUriByName());
         }
 
         return validationResult;

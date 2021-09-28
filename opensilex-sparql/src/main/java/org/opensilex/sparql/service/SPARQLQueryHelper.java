@@ -605,4 +605,19 @@ public class SPARQLQueryHelper {
         }
     }
 
+    /**
+     * Append a VALUES clause into builder, between the var and objects from valueStream
+     * @param builder the builder to update with VALUES clause
+     * @param sparqlVar SPARQL variable on which apply VALUES clause
+     * @param valuesStream Stream of values of apply to sparqlVar
+     *
+     * @apiNote This implementation allow to create the {@code Collection} of {@code Node} to pass to the builder {@link org.apache.jena.arq.querybuilder.handlers.ValuesHandler#addValueVar(Var, Collection)}
+     * without creating an intermediate collection/array of object.
+     * Unlike the default implementation {@link AbstractQueryBuilder#addValueVar(Object, Object...)} which need an array.
+     */
+    public static void appendValueStream(AbstractQueryBuilder<?> builder, Var sparqlVar, Stream<?> valuesStream){
+        Collection<Node> valueNodes = builder.makeValueNodes(valuesStream.iterator());
+        builder.getValuesHandler().addValueVar(sparqlVar,valueNodes);
+    }
+
 }

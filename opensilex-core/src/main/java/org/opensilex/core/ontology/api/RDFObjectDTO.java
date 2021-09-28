@@ -15,11 +15,13 @@ import java.util.List;
  */
 public class RDFObjectDTO {
 
+    @JsonProperty("uri")
     protected URI uri;
 
     @JsonProperty("rdf_type")
     protected URI type;
 
+    @JsonProperty("relations")
     protected List<RDFObjectRelationDTO> relations;
 
     public URI getUri() {

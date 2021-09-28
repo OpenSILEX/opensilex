@@ -6,16 +6,25 @@
 //******************************************************************************
 package org.opensilex.core.exception;
 
+import java.net.URI;
+
 /**
  *
  * @author Alice Boizet
  */
 public class DuplicateNameException extends Exception {
-    String name; 
+
+    String name;
 
     public DuplicateNameException(String name) {
         super("Duplicate name "+ name);
         this.name = name;
     }
-    
+
+    public DuplicateNameException(String msg, String name){
+        super(msg);
+        this.name = name;
+    }
+
+
 }

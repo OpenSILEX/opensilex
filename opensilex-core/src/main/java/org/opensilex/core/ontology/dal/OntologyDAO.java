@@ -20,7 +20,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.MapUtils;
@@ -827,6 +826,13 @@ public final class OntologyDAO {
     public static final String CSV_TYPE_KEY = "type";
     public static final String CSV_NAME_KEY = "name";
 
+    public static final int CSV_URI_INDEX = 0;
+    public static final int CSV_TYPE_INDEX = 1;
+    public static final int CSV_NAME_INDEX = 2;
+
+    public static final int CSV_HEADER_COL_OFFSET = 3;
+    public static final int CSV_HEADER_ROWS_NB = 2;
+
     private Map<String,String> getColumnNames(Collection<String> columnUris, String lang) throws SPARQLException, URISyntaxException {
 
         Map<String, String> columnsNames = new HashMap<>();
@@ -877,11 +883,11 @@ public final class OntologyDAO {
         boolean sortColumns = columnSorter != null;
         boolean restrictionOnColumn = strictlyAllowedColumns != null;
 
-        Map<String, Integer> columnsIndexes = new HashMap<String, Integer>() {{
-            put(CSV_URI_KEY,0);
-            put(CSV_TYPE_KEY,1);
-            put(CSV_NAME_KEY,2);
-        }};
+        Map<String, Integer> columnsIndexes = new HashMap<>();
+        columnsIndexes.put(CSV_URI_KEY,CSV_URI_INDEX);
+        columnsIndexes.put(CSV_TYPE_KEY,CSV_TYPE_INDEX);
+        columnsIndexes.put(CSV_NAME_KEY,CSV_NAME_INDEX);
+
         customColumns.stream()
                 .filter(column -> ! restrictionOnColumn || strictlyAllowedColumns.contains(column))
                 .map(SPARQLDeserializers::formatURI)
@@ -889,7 +895,7 @@ public final class OntologyDAO {
 
         List<Map<Integer, String>> rows = new ArrayList<>();
 
-        int initialOffset = 3;
+        int initialOffset = CSV_HEADER_COL_OFFSET;
 
         // read each object, and update row map and column index
         for (T object : objects) {

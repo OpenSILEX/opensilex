@@ -12,19 +12,28 @@ import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -60,12 +69,32 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     @After
     public void afterTest() throws Exception {
+
+        // delete xp
         final Response delResult = getDeleteByUriResponse(target(ExperimentAPITest.deletePath), experiment.toString());
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+
+        // delete xp graph if some os has been inserted into experiment
+        SPARQLService sparql = getSparqlService();
+        Node experimentNode = NodeFactory.createURI(experiment.toString());
+        if (sparql.count(experimentNode, ScientificObjectModel.class) > 0) {
+            sparql.clearGraph(experiment);
+        }
+
         experiment = null;
     }
 
-    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
+    @Override
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        return Collections.singletonList(ScientificObjectModel.class);
+    }
+
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+    }
+
+    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs) throws Exception {
         ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
 
         if (withGeometry) {
@@ -82,9 +111,14 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         dto.setName("SO " + soCount++);
         dto.setType(new URI("http://www.opensilex.org/vocabulary/oeso#ScientificObject"));
-        dto.setExperiment(experiment);
-
+        if(! globalOs){
+            dto.setExperiment(experiment);
+        }
         return dto;
+    }
+
+    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
+        return getCreationDTO(withGeometry,false);
     }
 
     public void testCreate(boolean withGeometry) throws Exception {
@@ -107,11 +141,93 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         testCreate(false);
     }
 
+    @Test
+    public void testUpdateOsWithSameNameOk() throws Exception {
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false);
+        final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        creationDTO.setUri(extractUriFromResponse(postResult));
+
+        final Response putWithSameNameResult = getJsonPutResponse(target(updatePath),creationDTO);
+        assertEquals(Status.OK.getStatusCode(), putWithSameNameResult.getStatus());
+    }
+
+
+    @Test
+    public void testCreateWithDuplicateNameFail() throws Exception {
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false);
+        final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        final Response postDuplicateResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), postDuplicateResult.getStatus());
+    }
+
+    @Test
+    public void testUpdateWithDuplicateNameFail() throws Exception {
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false);
+        final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        ScientificObjectCreationDTO creationDTO2 = getCreationDTO(false);
+        creationDTO2.setName(creationDTO.getName()+"_diff");
+        final Response postResult2 = getJsonPostResponse(target(createPath),creationDTO2);
+        assertEquals(Status.CREATED.getStatusCode(), postResult2.getStatus());
+
+        creationDTO2.setName(creationDTO.getName());
+        final Response duplicatePutResult = getJsonPostResponse(target(updatePath),creationDTO);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), duplicatePutResult.getStatus());
+    }
+
+    @Test
+    public void testCreateGlobalOSWithDuplicateNameOk() throws Exception {
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false,true);
+        final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        final Response postDuplicateResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postDuplicateResult.getStatus());
+    }
+
+    @Test
+    public void testUpdateGlobalOSWithDuplicateNameOk() throws Exception {
+
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false,true);
+        final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        creationDTO.setUri(extractUriFromResponse(postResult));
+
+        ScientificObjectCreationDTO creationDTO2 = getCreationDTO(false,true);
+        creationDTO2.setName(creationDTO.getName()+"_diff");
+        final Response postResult2 = getJsonPostResponse(target(createPath),creationDTO2);
+        assertEquals(Status.CREATED.getStatusCode(), postResult2.getStatus());
+        creationDTO2.setUri(extractUriFromResponse(postResult2));
+
+        creationDTO2.setName(creationDTO.getName());
+        final Response duplicatePutResult = getJsonPutResponse(target(updatePath),creationDTO2);
+        assertEquals(Status.OK.getStatusCode(), duplicatePutResult.getStatus());
+    }
+
     private Response getResponse(URI createdUri) throws Exception {
         WebTarget target = target(uriPath).resolveTemplate("uri", createdUri.toString());
         target = target.queryParam("experiment", experiment.toString());
 
         return appendToken(target).get();
+    }
+
+    @Test
+    public void testUpdateWithNoUriFail() throws Exception {
+
+        // create the so
+        ScientificObjectCreationDTO soDTO = getCreationDTO(false);
+        final Response postResult = getJsonPostResponse(target(createPath), soDTO);
+
+        final Response updateResult = getJsonPutResponse(target(updatePath), soDTO);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResult.getStatus());
     }
 
     public void testUpdate(boolean withGeometry) throws Exception {

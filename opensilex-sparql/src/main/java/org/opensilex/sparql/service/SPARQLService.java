@@ -498,10 +498,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return existsByUniquePropertyValue(graph, objectClass, property, propertyValue, null);
     }
 
-    public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Class<T> objectClass, Property property, Object propertyValue, String lang) throws Exception {
-        return existsByUniquePropertyValue(getDefaultGraph(objectClass), objectClass, property, propertyValue, lang);
-    }
-
     public <T extends SPARQLResourceModel> boolean existsByUniquePropertyValue(Node graph, Class<T> objectClass, Property property, Object propertyValue, String lang) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         if (propertyValue == null) {
@@ -819,6 +815,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> int count(Class<T> objectClass) throws Exception {
         return count(getDefaultGraph(objectClass), objectClass,null, null,null);
+    }
+
+    public <T extends SPARQLResourceModel> int count(Node graph, Class<T> objectClass) throws Exception {
+        return count(graph, objectClass,null, null,null);
+
     }
 
     public <T extends SPARQLResourceModel> int count(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Map<String,WhereHandler> customHandlerByFields) throws Exception {

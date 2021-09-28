@@ -140,6 +140,7 @@ export default class ScientificObjectForm extends Vue {
         relations: definedRelations,
       })
       .catch((error) => {
+        this.$opensilex.errorHandler(error,error.response.result.message);
         throw error;
       });
   }
@@ -172,6 +173,7 @@ export default class ScientificObjectForm extends Vue {
         relations: definedRelations,
       })
       .catch((error) => {
+        this.$opensilex.errorHandler(error,error.response.result.message);
         throw error;
       });
   }

@@ -66,10 +66,11 @@ public class GeospatialDAO {
 
     private final MongoCollection<GeospatialModel> geometryCollection;
 
+    public static final String GEOSPATIAL_COLLECTION_NAME = "geospatial";
+
     public GeospatialDAO(MongoDBService nosql) {
         MongoDatabase db = nosql.getDatabase();
-        String nameCollection = "geospatial";
-        geometryCollection = db.getCollection(nameCollection, GeospatialModel.class);
+        geometryCollection = db.getCollection(GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
     }
 
     public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {

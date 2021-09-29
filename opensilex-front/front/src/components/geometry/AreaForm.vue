@@ -70,6 +70,7 @@
               <opensilex-DateTimeForm
                   :value.sync="form.start"
                   label="Event.start"
+                  :minDate="form.minDate"
                   :maxDate="form.end"
                   :required="startRequired"
                   @update:value="updateRequiredProps"
@@ -82,6 +83,7 @@
                   :value.sync="form.end"
                   label="Event.end"
                   :minDate="form.start"
+                  :maxDate="form.maxDate"
                   :required="endRequired"
                   @update:value="updateRequiredProps"
                   helpMessage="Event.end-help"
@@ -153,9 +155,6 @@ export default class AreaForm extends Vue {
   title: string;
   @Prop({
     default: () => {
-      let names = {};
-      let defaultLang = "en";
-      names[defaultLang] = "";
       return {
         uri: null,
         name: null,
@@ -177,7 +176,9 @@ export default class AreaForm extends Vue {
             z: undefined,
             text: undefined,
           }
-        }]
+        }],
+        minDate:null,
+        maxDate:null
       };
     },
   })
@@ -237,29 +238,7 @@ export default class AreaForm extends Vue {
     this.endRequired = true;
     this.uriGenerated = true;
     this.typeModel = null;
-    this.form = {
-      uri: null,
-      name: null,
-      relations: [],
-      targets: [],
-      areaType: "perennial-zone",
-      rdf_type: null,
-      start: null,
-      end: null,
-      is_instant: false,
-      description: "",
-      geometry: [],
-      targets_positions: [{
-        target: undefined,
-        position: {
-          point: undefined,
-          x: undefined,
-          y: undefined,
-          z: undefined,
-          text: undefined,
-        }
-      }]
-    };
+    this.form = this.getEmptyForm();
   }
 
   resetRdfType(value) {
@@ -325,12 +304,7 @@ export default class AreaForm extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getEmptyForm() {
-    let names = {};
-    let lang = this.languageCode;
-    let defaultLang = "en";
-    names[lang] = "";
-    names[defaultLang] = "";
+  getEmptyForm() { 
     return {
       uri: null,
       name: null,
@@ -352,7 +326,9 @@ export default class AreaForm extends Vue {
             z: undefined,
             text: undefined,
           }
-        }]
+        }],
+      minDate:null,
+      maxDate:null
     };
   }
 

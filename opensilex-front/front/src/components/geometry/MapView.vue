@@ -60,6 +60,7 @@
         modalSize="lg"
         @onCreate="showAreaDetails"
         @onUpdate="callAreaUpdate"
+        :initForm="initAreaForm"
     ></opensilex-ModalForm>
     <opensilex-ScientificObjectForm
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
@@ -702,6 +703,12 @@ export default class MapView extends Vue {
       }
     );
     this.initDateRange();
+  }
+
+  initAreaForm(form) {
+    form.minDate = this.minDate; 
+    form.maxDate = this.maxDate; 
+    return form;
   }
 
   beforeDestroy() {
@@ -1549,11 +1556,13 @@ export default class MapView extends Vue {
       .searchEvents(undefined, minDate, maxDate, obj.uri)
       .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
         const res = http.response.result[0] as any;
-        res.targets = [obj.uri];
-        this.temporalAreas.push(res);
-        this.temporalAreas.sort((a: any, b: any) => {
-          return new Date(b.end).getTime() - new Date(a.end).getTime();
-        })
+        if(res != undefined) { 
+          res.targets = [obj.uri];
+          this.temporalAreas.push(res);
+          this.temporalAreas.sort((a: any, b: any) => {
+            return new Date(b.end).getTime() - new Date(a.end).getTime();
+          });
+        }
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -1877,10 +1886,19 @@ export default class MapView extends Vue {
       this.featuresArea = [];
       this.temporalAreas = [];
 
-      let minDate = this.$opensilex.prepareGetParameter(this.range.from); 
+      let minDate = this.range.from;
+      if(minDate== null){
+        minDate = this.minDate;
+      }
+
+      let maxDate = this.range.to;
+      if(maxDate== null){
+        maxDate = this.maxDate;
+      }
+      minDate = this.$opensilex.prepareGetParameter(minDate); 
       console.debug("minDate",minDate,this.minDate,this.range.from  );
       
-      let maxDate = this.$opensilex.prepareGetParameter(this.range.to); 
+       maxDate = this.$opensilex.prepareGetParameter(maxDate); 
       console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
 
       if(minDate != undefined){

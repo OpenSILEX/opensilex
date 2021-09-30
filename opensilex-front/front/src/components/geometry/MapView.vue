@@ -1541,14 +1541,16 @@ export default class MapView extends Vue {
   }
 
   appendTemporalArea(obj) { 
-    let minDate = this.$opensilex.prepareGetParameter(this.minDate);
-    let maxDate = this.$opensilex.prepareGetParameter(this.maxDate);
-
-    if(minDate != undefined){
-      minDate = minDate.toISOString();
+    let minDateTemp = this.$opensilex.prepareGetParameter(this.minDate);
+    let maxDateTemp = this.$opensilex.prepareGetParameter(this.maxDate);
+    let minDate :string = undefined;
+    let maxDate :string = undefined;
+    
+    if(minDateTemp != undefined){
+      minDate = minDateTemp.toISOString();
     }
-    if(maxDate != undefined){
-      maxDate = maxDate.toISOString();
+    if(maxDateTemp != undefined){
+      maxDate = maxDateTemp.toISOString();
     }
 
     this.$opensilex

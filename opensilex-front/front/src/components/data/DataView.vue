@@ -75,6 +75,7 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
+                  @select="refreshComponent"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
@@ -100,17 +101,19 @@
 
               <!-- Provenance -->
               <opensilex-FilterField halfWidth="true">
-                <opensilex-UsedProvenanceSelector
+                <opensilex-DataProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
                   label="ExperimentData.provenance"
                   @select="loadProvenance"
+                  :targets="filter.scientificObjects"
+                  :experiments="filter.experiments"
                   :multiple="false"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
                   :key="refreshKey"
-                ></opensilex-UsedProvenanceSelector>
+                ></opensilex-DataProvenanceSelector>
 
                 <b-collapse
                   v-if="selectedProvenance"
@@ -159,7 +162,7 @@ export default class DataView extends Vue {
   visibleDetails: boolean = false;
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
-  refreshKey = null;
+  refreshKey = 0;
 
   get user() {
     return this.$store.state.user;
@@ -198,7 +201,13 @@ export default class DataView extends Vue {
     };
 
   refreshSoSelector() {
+
+    this.refreshComponent();
     this.soSelector.refreshModalSearch();
+  }
+
+  refreshComponent(){
+    this.refreshKey += 1
   }
 
   resetFilter() {
@@ -215,6 +224,8 @@ export default class DataView extends Vue {
   }
 
   updateSOFilter() {
+
+    this.refreshComponent();
     this.soFilter.experiment = this.filter.experiments[0];
     this.soSelector.refreshModalSearch();
   }
@@ -269,7 +280,7 @@ export default class DataView extends Vue {
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
-        this.refreshKey = res.form.provenance.uri;
+        this.refreshKey += 1;
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
       });
@@ -279,7 +290,7 @@ export default class DataView extends Vue {
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
-      this.refreshKey = results.form.provenance.uri;
+      this.refreshKey += 1;
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
     }

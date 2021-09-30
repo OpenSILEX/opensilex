@@ -25,16 +25,17 @@
 </template>
 
 <script lang="ts">
+
 import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+//  @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 // @ts-ignore
 import { ProvenanceGetDTO } from "opensilex-core/index";
 
 
 @Component
-export default class DatafileProvenanceSelector extends Vue {
+export default class DataProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
@@ -64,6 +65,9 @@ export default class DatafileProvenanceSelector extends Vue {
 
   @Prop()
   devices
+
+  @Prop()
+  variables
 
   @Prop({
     default: false,
@@ -100,12 +104,12 @@ export default class DatafileProvenanceSelector extends Vue {
   deselect(value) {
     this.$emit("deselect", value);
   }
-  
+
   loadProvenances() {
-   
+
     return this.$opensilex
       .getService("opensilex.DataService")
-      .getDatafilesProvenances(this.experiments, this.targets, this.devices)
+      .getUsedProvenances(this.experiments, this.targets, this.variables, this.devices)
       .then(http => {
         return http.response.result;
       });

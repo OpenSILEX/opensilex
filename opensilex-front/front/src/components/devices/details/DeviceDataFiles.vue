@@ -47,6 +47,7 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
+                  @select="refreshProvComponent"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
@@ -76,10 +77,13 @@
                   label="ExperimentData.provenance"
                   @select="loadProvenance"
                   :multiple="false"
-                  :device="uri"
+                  :devices="[uri]"
+                  :targets="filter.scientificObjects"
+                  :experiments="filter.experiments"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :showURI="false"
+                  :key="refreshKey"
                 ></opensilex-DatafileProvenanceSelector>
                 <b-collapse
                   v-if="selectedProvenance"
@@ -133,7 +137,8 @@ import Oeso from "../../../ontologies/Oeso";
 export default class DeviceDataFiles extends Vue {
   $opensilex: any;
   $t: any;
-  $route: any;  
+  $route: any; 
+  refreshKey = 0; 
   
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
@@ -198,6 +203,11 @@ export default class DeviceDataFiles extends Vue {
     this.langUnwatcher();
   }  
 
+
+  refreshProvComponent(){
+    this.refreshKey += 1
+  }
+
   resetFilters() {
     this.filter = {
       start_date: null,
@@ -211,10 +221,12 @@ export default class DeviceDataFiles extends Vue {
   }
 
   refreshSoSelector() {
+    this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }
 
   updateSOFilter() {
+    this.refreshProvComponent();
     this.soFilter.experiment = this.filter.experiments[0];
     this.soSelector.refreshModalSearch();
   }

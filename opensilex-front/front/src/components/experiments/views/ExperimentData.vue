@@ -44,6 +44,7 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
+                  @select="refreshProvComponent"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
@@ -69,17 +70,20 @@
 
               <!-- Provenance -->
               <opensilex-FilterField halfWidth="true">
-                <opensilex-UsedProvenanceSelector
-                  ref="provSelector"
-                  :provenances.sync="filter.provenance"
-                  label="ExperimentData.provenance"
-                  @select="loadProvenance"
-                  :multiple="false"
-                  :viewHandler="showProvenanceDetails"
-                  :viewHandlerDetailsVisible="visibleDetails"
-                  :showURI="false"
-                  :key="refreshKey"
-                ></opensilex-UsedProvenanceSelector>
+
+                 <opensilex-DataProvenanceSelector
+                   ref="provSelector"
+                   :provenances.sync="filter.provenance"
+                   label="ExperimentData.provenance"
+                   @select="loadProvenance"
+                   :experiments="[uri]"
+                   :targets="filter.scientificObjects"
+                   :multiple="false"
+                   :viewHandler="showProvenanceDetails"
+                   :viewHandlerDetailsVisible="visibleDetails"
+                   :showURI="false"
+                   :key="refreshKey"
+                 ></opensilex-DataProvenanceSelector>
 
                 <b-collapse
                   v-if="selectedProvenance"
@@ -137,7 +141,7 @@ export default class ExperimentData extends Vue {
   searchVisible: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
-  refreshKey = null;
+  refreshKey = 0;
 
   filter = {
     start_date: null,
@@ -172,6 +176,10 @@ export default class ExperimentData extends Vue {
   get user() {
     return this.$store.state.user;
   }
+  
+  refreshProvComponent(){
+    this.refreshKey += 1;
+  }
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -201,6 +209,7 @@ export default class ExperimentData extends Vue {
   }
 
   refreshSoSelector() {
+    
     this.soFilter = {
       name: "",
       experiment: this.uri,
@@ -210,6 +219,7 @@ export default class ExperimentData extends Vue {
       existenceDate: undefined,
       creationDate: undefined,
     };
+    this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }
 
@@ -237,7 +247,7 @@ export default class ExperimentData extends Vue {
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
         this.refreshVariables();
-        this.refreshKey = res.form.provenance.uri;
+        this.refreshKey += 1;
         this.loadProvenance({id:res.form.provenance.uri})
       });
     }else{ 
@@ -249,7 +259,7 @@ export default class ExperimentData extends Vue {
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
       this.refreshVariables();
-      this.refreshKey = results.form.provenance.uri;
+      this.refreshKey  += 1;
       this.loadProvenance({id:results.form.provenance.uri}) 
     }
     

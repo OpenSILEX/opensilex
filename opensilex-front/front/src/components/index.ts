@@ -526,6 +526,8 @@ import UsedProvenanceSelector from './data/UsedProvenanceSelector.vue';
 components["opensilex-UsedProvenanceSelector"] = UsedProvenanceSelector;
 import DatafileProvenanceSelector from './data/DatafileProvenanceSelector.vue';
 components["opensilex-DatafileProvenanceSelector"] = DatafileProvenanceSelector;
+import DataProvenanceSelector from './data/DataProvenanceSelector.vue';
+components["opensilex-DataProvenanceSelector"] = DataProvenanceSelector;
 import ResultModalView from './data/ResultModalView.vue';
 components["opensilex-ResultModalView"] = ResultModalView;
 import ProvenanceDetails from './data/ProvenanceDetails.vue';

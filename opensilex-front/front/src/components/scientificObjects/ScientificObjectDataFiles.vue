@@ -27,8 +27,8 @@
               label="DataView.filter.experiments"
               :experiments.sync="filter.experiments"
               :multiple="true"
-              @select="updateSOFilter"
-              @clear="updateSOFilter"
+              @select="refreshComponents"
+              @clear="refreshComponents"
             ></opensilex-ExperimentSelector>
           </opensilex-FilterField>
 
@@ -59,11 +59,13 @@
               :provenances.sync="filter.provenance"
               label="ExperimentData.provenance"
               @select="loadProvenance"
-              :scientificObject="uri"
+              :targets="[uri]"
+              :experiments="filter.experiments"
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
               :showURI="false"
+              :key="refreshKey"
             ></opensilex-DatafileProvenanceSelector>
 
             <b-collapse
@@ -136,6 +138,8 @@ export default class ScientificObjectDataFiles extends Vue {
     scientificObjects: []
   };
 
+  refreshKey = 0;
+
   @Prop()
   uri;
 
@@ -150,7 +154,6 @@ export default class ScientificObjectDataFiles extends Vue {
   @Ref("datafilesList") readonly datafilesList!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
-  @Ref("soSelector") readonly soSelector!: any;
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -176,7 +179,7 @@ export default class ScientificObjectDataFiles extends Vue {
       }
     );
   }
-
+  
   beforeDestroy() {
     this.langUnwatcher();
   }    
@@ -192,23 +195,8 @@ export default class ScientificObjectDataFiles extends Vue {
     };    
   }
 
-  soFilter = {
-    name: undefined,
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  };
-
-  refreshSoSelector() {
-    this.soSelector.refreshModalSearch();
-  }
-
-  updateSOFilter() {
-    this.soFilter.experiment = this.filter.experiments[0];
-    this.soSelector.refreshModalSearch();
+  refreshComponents(){
+    this.refreshKey += 1;
   }
 
   get getSelectedProv() {
@@ -284,23 +272,7 @@ export default class ScientificObjectDataFiles extends Vue {
     .catch(this.$opensilex.errorHandler);
   }
 
-  soGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name
-      };
-    }
-    return null;
-  }
 
-  loadSO(scientificObjectsURIs) {
-    return this.$opensilex.getService("opensilex.ScientificObjectsService")
-      .getScientificObjectsListByUris(undefined,scientificObjectsURIs)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-          return (http && http.response) ? http.response.result : undefined
-    }).catch(this.$opensilex.errorHandler);
-  }
 }
 </script>
 

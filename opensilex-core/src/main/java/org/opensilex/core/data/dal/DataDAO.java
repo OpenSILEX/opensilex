@@ -1142,7 +1142,7 @@ public class DataDAO {
 
     public Set<URI> getUsedProvenances(String collectionName, UserModel user, List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, variables, null, devices, null, null, null, null, null);
-        Set<URI> provenanceURIs = nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
+        Set<URI> provenanceURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
         return provenanceURIs;
     }
     
@@ -1150,8 +1150,8 @@ public class DataDAO {
         return getUsedProvenances(DATA_COLLECTION_NAME, user, experiments, objects, variables, devices);
     }
     
-    public Set<URI> getDatafileProvenances(UserModel user, List<URI> experiments, List<URI> objects, List<URI> variables, List<URI> devices) throws Exception {
-        return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, variables, devices);
+    public Set<URI> getDatafileProvenances(UserModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
+        return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, null, devices);
     }
 
 }

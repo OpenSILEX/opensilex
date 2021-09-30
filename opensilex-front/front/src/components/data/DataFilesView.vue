@@ -51,6 +51,7 @@
                 :isModalSearch="true"
                 :clearable="true"
                 :multiple="true"
+                @select="refreshProvComponent"
                 @clear="refreshSoSelector"
               ></opensilex-SelectForm>
             </opensilex-FilterField>
@@ -78,17 +79,21 @@
 
             <!-- Provenance -->
             <opensilex-FilterField halfWidth="true">
-              <opensilex-ProvenanceSelector
+               
+              <opensilex-DatafileProvenanceSelector
                 ref="provSelector"
                 :provenances.sync="filter.provenance"
                 label="ExperimentData.provenance"
                 @select="loadProvenance"
-                :experiment="uri"
+                :targets="filter.scientificObjects"
+                :experiments="filter.experiments"
                 :multiple="false"
                 :viewHandler="showProvenanceDetails"
                 :viewHandlerDetailsVisible="visibleDetails"
                 :showURI="false"
-              ></opensilex-ProvenanceSelector>
+                :key="refreshKey"
+            ></opensilex-DatafileProvenanceSelector>
+            
 
               <b-collapse
                 v-if="selectedProvenance"
@@ -130,6 +135,7 @@ export default class DataFilesView extends Vue {
   service: any;
   disabled = false;
 
+  refreshKey = 0;
   visibleDetails: boolean = false;
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
@@ -180,11 +186,19 @@ export default class DataFilesView extends Vue {
     };
 
   refreshSoSelector() {
+    this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }
 
+
+  refreshProvComponent(){
+    this.refreshKey += 1
+  }
+
+
   updateSOFilter() {
     this.soFilter.experiment = this.filter.experiments[0];
+    this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }
 

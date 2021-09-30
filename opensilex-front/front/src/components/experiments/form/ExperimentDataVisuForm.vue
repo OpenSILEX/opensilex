@@ -48,19 +48,19 @@
 
         <template v-slot:advancedSearch>
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-ProvenanceSelector
+            <opensilex-DataProvenanceSelector
               ref="provSelector"
               :provenances.sync="filter.provenance"
-              :filterLabel="filterProvenanceLabel"
               label="Provenance"
               @select="loadProvenance"
               @clear="clearProvenance"
-              :experiment="selectedExperiment"
+              :experiments="[selectedExperiment]"
+              :targets="scientificObjects"
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
               :showURI="false"
-            ></opensilex-ProvenanceSelector>
+            ></opensilex-DataProvenanceSelector>
           </opensilex-FilterField>
 
 

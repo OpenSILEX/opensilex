@@ -72,25 +72,37 @@ export default class OntologyObjectForm extends Vue {
   }
 
   getInputComponent(property, vp) {
-    if (property.input_components_by_property && property.input_components_by_property[property.property]) {
+    if (
+      property.input_components_by_property &&
+      property.input_components_by_property[property.property]
+    ) {
       return property.input_components_by_property[property.property];
     }
     return property.input_component;
   }
 
   updateRelation(value, property) {
-    for (let i in this.form.relations) {
-      let relation = this.form.relations[i];
-      if (relation.property == property) {
-        relation.value = value;
-        return;
+
+  // this.form.relations.filter(function(a){return a.property !== property;});
+    for(var i = this.form.relations.length -1; i >= 0 ; i--){
+      if(this.form.relations[i].property === property){
+          this.form.relations.splice(i, 1);
       }
     }
-
-    this.form.relations.push({
-      property: property,
-      value: value,
-    });
+    
+    if (value && Array.isArray(value)) {
+      value.forEach(element => {
+        this.form.relations.push({
+          property: property,
+          value: element
+        });
+      });
+    } else {
+      this.form.relations.push({
+        property: property,
+        value: value
+      });
+    }
   }
 
   getEmptyForm() {
@@ -98,7 +110,7 @@ export default class OntologyObjectForm extends Vue {
       uri: null,
       rdf_type: null,
       name: "",
-      relations: [],
+      relations: []
     };
   }
 
@@ -119,7 +131,7 @@ export default class OntologyObjectForm extends Vue {
     this.initHandler = handler;
   }
 
-  propertyFilter = (property) => property;
+  propertyFilter = property => property;
   setTypePropertyFilterHandler(handler) {
     this.propertyFilter = handler;
   }
@@ -144,7 +156,7 @@ export default class OntologyObjectForm extends Vue {
           }
           internalTypeProperties.push({
             definition: dataProperty,
-            property: propValue,
+            property: propValue
           });
         }
       }
@@ -161,7 +173,7 @@ export default class OntologyObjectForm extends Vue {
         }
         internalTypeProperties.push({
           definition: objectProperty,
-          property: propValue,
+          property: propValue
         });
       }
     }
@@ -202,7 +214,10 @@ export default class OntologyObjectForm extends Vue {
       }
     });
 
-    internalTypeProperties = this.propertyFilter.call(null, internalTypeProperties);
+    internalTypeProperties = this.propertyFilter.call(
+      null,
+      internalTypeProperties
+    );
 
     return internalTypeProperties;
   }
@@ -217,7 +232,7 @@ export default class OntologyObjectForm extends Vue {
         !Array.isArray(valueByProperties[relation.property])
       ) {
         valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
+          valueByProperties[relation.property]
         ];
       }
 
@@ -236,7 +251,7 @@ export default class OntologyObjectForm extends Vue {
       return this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")
         .getRDFTypeProperties(this.form.rdf_type, this.baseType)
-        .then((http) => {
+        .then(http => {
           this.typeModel = http.response.result;
           if (!this.editMode) {
             let relations = [];
@@ -245,12 +260,12 @@ export default class OntologyObjectForm extends Vue {
               if (dataProperty.is_list) {
                 relations.push({
                   value: [],
-                  property: dataProperty.property,
+                  property: dataProperty.property
                 });
               } else {
                 relations.push({
                   value: null,
-                  property: dataProperty.property,
+                  property: dataProperty.property
                 });
               }
             }
@@ -260,12 +275,12 @@ export default class OntologyObjectForm extends Vue {
               if (objectProperty.is_list) {
                 relations.push({
                   value: [],
-                  property: objectProperty.property,
+                  property: objectProperty.property
                 });
               } else {
                 relations.push({
                   value: null,
-                  property: objectProperty.property,
+                  property: objectProperty.property
                 });
               }
             }
@@ -290,18 +305,18 @@ export default class OntologyObjectForm extends Vue {
         ) {
           this.typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]],
+            property: [valueByProperties[property.property]]
           });
         } else {
           this.typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property],
+            property: valueByProperties[property.property]
           });
         }
       } else if (property.is_list) {
         this.typeProperties.push({
           definition: property,
-          property: [],
+          property: []
         });
       }
     }

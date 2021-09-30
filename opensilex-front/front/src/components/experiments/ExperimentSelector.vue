@@ -123,7 +123,7 @@ en:
         form:
           selector:
             placeholder : Select one experiment
-            placeholder-multiple : Select one or several experiments
+            placeholder-multiple : Select one or more Experiments
             filter-search-no-result : No experiment found
     
             

@@ -107,7 +107,7 @@ export default class VariableSelector extends Vue {
 en:
   VariableSelector:    
     placeholder : Select one variable
-    placeholder-multiple : Select one ou several variables
+    placeholder-multiple : Select one or more variables
     filter-search-no-result : No variable found    
             
 fr:

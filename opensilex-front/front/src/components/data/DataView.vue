@@ -354,8 +354,8 @@ en:
       label: Search data
       experiments:  Experiment(s)
       variables: Variable(s)
-      scientificObjects: scientific object(s)
-      scientificObjects-placeholder: Click to select scientific objects
+      scientificObjects: Scientific object(s)
+      scientificObjects-placeholder: Select scientific objects
       provenance: Provenance
 
 fr:
@@ -368,15 +368,15 @@ fr:
       date: Date
       variable: Variable
       value: Valeur
-      object: Target
+      object: Objet cible
       provenance: provenance
       details: Voir les détails de la donnée
     filter:
       label: Rechercher des données
       experiments:  Expérimentation(s)
       variables: Variable(s)
-      scientificObject: Objet(s) scientifique(s)
-      scientificObjects-placeholder: cliquer pour sélectionner des objets scientifiques
+      scientificObjects: Objet(s) scientifique(s)
+      scientificObjects-placeholder: Sélectionner des objets scientifiques
       provenance: Provenance      
   
 </i18n>

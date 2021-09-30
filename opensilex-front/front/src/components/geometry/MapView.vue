@@ -1541,16 +1541,14 @@ export default class MapView extends Vue {
   }
 
   appendTemporalArea(obj) { 
-    let minDateTemp = this.$opensilex.prepareGetParameter(this.minDate);
-    let maxDateTemp = this.$opensilex.prepareGetParameter(this.maxDate);
-    let minDate :string = undefined;
-    let maxDate :string = undefined;
-    
-    if(minDateTemp != undefined){
-      minDate = minDateTemp.toISOString();
+    let minDate = this.$opensilex.prepareGetParameter(this.minDate);
+    let maxDate = this.$opensilex.prepareGetParameter(this.maxDate);
+
+    if(minDate != undefined){
+      minDate = minDate.toISOString();
     }
-    if(maxDateTemp != undefined){
-      maxDate = maxDateTemp.toISOString();
+    if(maxDate != undefined){
+      maxDate = maxDate.toISOString();
     }
 
     this.$opensilex
@@ -1903,16 +1901,20 @@ export default class MapView extends Vue {
        maxDate = this.$opensilex.prepareGetParameter(maxDate); 
       console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
 
+      let minDateString :string = undefined;
+      let maxDateString :string = undefined;
+ 
       if(minDate != undefined){
-        minDate = minDate.toISOString();
+        minDateString = minDate.toISOString();
       }
+      
       if(maxDate != undefined){
-        maxDate = maxDate.toISOString();
+        maxDateString = maxDate.toISOString();
       }
 
       this.$opensilex
           .getService(this.areaService)
-          .searchIntersects(JSON.parse(JSON.stringify(geometry)), minDate, maxDate)
+          .searchIntersects(JSON.parse(JSON.stringify(geometry)), minDateString, maxDateString)
           .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
             const res = http.response.result as any;
             res.forEach(element => {

@@ -8,19 +8,22 @@ package org.opensilex.core;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import java.net.URI;
+
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 
-import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.ontology.dal.cache.AbstractOntologyCache;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
-import org.opensilex.core.ontology.dal.cache.OntologyCache;
+import org.opensilex.core.ontology.dal.cache.*;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
@@ -33,7 +36,6 @@ import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
@@ -46,7 +48,12 @@ import org.slf4j.LoggerFactory;
  */
 public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
+    private static final String ONTOLOGIES_DIRECTORY = "ontologies";
+
+    /**
+     * {@link OntologyCache} instance to use inside the module.
+     */
     private static OntologyCache ontologyCache;
 
     @Override
@@ -75,27 +82,33 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 "http://aims.fao.org/aos/agrovoc/factors",
-                "ontologies/agrovoc-factors.rdf",
+                ONTOLOGIES_DIRECTORY+"/agrovoc-factors.rdf",
                 Lang.RDFXML,
                 "agrovoc"
         ));
         list.add(new OntologyFileDefinition(
                 OA.NS,
-                "ontologies/oa.rdf",
+                ONTOLOGIES_DIRECTORY+"/oa.rdf",
                 Lang.RDFXML,
                 "oa"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
-                "ontologies/oeso-core.owl",
+                ONTOLOGIES_DIRECTORY+"/oeso-core.owl",
                 Lang.RDFXML,
                 "vocabulary"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeev#",
-                "ontologies/oeev.owl",
+                ONTOLOGIES_DIRECTORY+"/oeev.owl",
                 Lang.RDFXML,
                 "oeev"
+        ));
+        list.add(new OntologyFileDefinition(
+                OWL.NAMESPACE,
+                ONTOLOGIES_DIRECTORY+"/owl2.ttl",
+                Lang.TURTLE,
+                OWL.PREFIX
         ));
         return list;
     }
@@ -122,20 +135,24 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     @Override
     public void startup() throws Exception {
+        invalidateCache();
         populateOntologyCache();
     }
 
 
     private void insertDefaultProvenance() throws Exception {
+
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
+
         ProvenanceModel provenance = new ProvenanceModel();
         String name = "standard_provenance";
         provenance.setUri(new URI(sparqlConfig.baseURI() + ProvenanceDAO.PROVENANCE_PREFIX + "/" + name));
         provenance.setName(name);
         provenance.setDescription("This provenance is used when there is no need to describe a specific provenance");
+
         LOGGER.info("Insert default provenance: " + provenance.getUri());
         try {
            db.getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class).insertOne(provenance); 
@@ -144,43 +161,66 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         }
     }
 
-    public OntologyCache getOntologyCacheInstance() throws URISyntaxException, SPARQLException {
-        if(ontologyCache != null){
-            SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-            SPARQLService sparql = factory.provide();
+    /**
+     * Init the {@link #ontologyCache} by reading the {@link CoreConfig} associated with the given {@link OpenSilex} instance
+     * @param opensilex the {@link OpenSilex} instance, used to read {@link CoreConfig}
+     */
+    private static void initOntologyCache(OpenSilex opensilex) throws OntologyCacheException {
 
-            /* #TODO : sparql should not be null , but when building module with maven, the sparql is null while it's not when launching StartServer
-            this quick (and dirty :/ ) fix should be improved and reviewed */
-
-            if(sparql != null){
-                ontologyCache = CaffeineOntologyCache.getInstance(sparql);
-            }
+        if (ontologyCache != null) {
+            return;
         }
+
+        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        CoreConfig coreConfig;
+        try {
+            coreConfig = opensilex.getModuleConfig(CoreModule.class, CoreConfig.class);
+        } catch (OpenSilexModuleNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        /* #TODO : sparql should not be null , but when building module with maven, the sparql is null while it's not when launching StartServer  */
+
+        if (sparql != null) {
+            ontologyCache = coreConfig.enableOntologyCaching() ?
+                    CaffeineOntologyCache.getInstance(sparql) :
+                    NoOntologyCacheImpl.getInstance(sparql);
+        }
+    }
+
+    public static OntologyCache getOntologyCacheInstance() {
         return ontologyCache;
     }
 
-    protected void invalidateCache() throws URISyntaxException, SPARQLException {
-        OntologyCache ontologyCache = getOntologyCacheInstance();
-        if(ontologyCache != null){
+    protected void invalidateCache() throws OntologyCacheException {
+        CoreModule.initOntologyCache(getOpenSilex());
+
+        if (ontologyCache != null) {
             LOGGER.info("Invalidate ontology cache");
             ontologyCache.invalidate();
             LOGGER.info("Ontology cache invalidated with success");
         }
     }
 
-    protected void populateOntologyCache() throws SPARQLException, URISyntaxException {
+    private static final String ONTOLOGY_CACHE_SUCCESS_MSG = "Ontology cache loaded with success. Duration: %d ms";
 
-        OntologyCache ontologyCache = getOntologyCacheInstance();
-        if(ontologyCache != null){
+    protected void populateOntologyCache() throws OntologyCacheException {
+        CoreModule.initOntologyCache(getOpenSilex());
+
+        if (ontologyCache != null) {
             LOGGER.info("Populating ontology cache");
+            Instant begin = Instant.now();
             ontologyCache.populate(AbstractOntologyCache.getRootModelsToLoad());
-            LOGGER.info("Ontology cache loaded with success");
-        }
 
+            String successMsg = String.format(ONTOLOGY_CACHE_SUCCESS_MSG, Duration.between(begin, Instant.now()).toMillis());
+            LOGGER.info(successMsg);
+        }
     }
     
     private void insertDefaultVariablesGroup() throws Exception {
-        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         
@@ -196,6 +236,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
            dao.create(variablesGroup); 
         } catch (Exception e) {
            LOGGER.warn("Couldn't create default variables group : " + e.getMessage());
+           throw e;
         }
     }
 }

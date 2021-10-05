@@ -56,6 +56,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
@@ -1329,7 +1330,7 @@ public class DataAPI {
 
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
-        SPARQLTreeListModel<ClassModel> treeList = CaffeineOntologyCache.getInstance(sparql).getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(),true);
+        SPARQLTreeListModel<ClassModel> treeList = CoreModule.getOntologyCacheInstance().getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(),true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
         
         Map<URI, URI> map = new HashMap<>();

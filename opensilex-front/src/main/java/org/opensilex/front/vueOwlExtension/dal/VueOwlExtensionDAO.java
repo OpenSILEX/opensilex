@@ -14,6 +14,7 @@ import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
@@ -44,6 +45,10 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             sparql.create(instance);
             sparql.create(instanceExtension);
+
+            ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
+            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
+
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -55,6 +60,10 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             sparql.update(instance);
             sparql.update(instanceExtension);
+
+            ClassModel updatedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
+            CoreModule.getOntologyCacheInstance().updateClass(updatedInstance);
+
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -66,6 +75,7 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             sparql.delete(ClassModel.class, classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
+            CoreModule.getOntologyCacheInstance().removeClass(classURI);
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

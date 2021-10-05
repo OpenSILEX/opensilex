@@ -275,7 +275,6 @@ OESO</rdfs:label>
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:label xml:lang="fr">Installation technique</rdfs:label>

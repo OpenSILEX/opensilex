@@ -4,9 +4,9 @@
     icon="ik#ik-settings"
     typeTitle="DeviceTypes.typeTitle"
     typeURI="/device-types"
-    propertiesTitle="DevicesTypes.propertiesTitle"
+    propertiesTitle="DeviceTypes.propertiesTitle"
     propertiesURI="/device-types/properties"
-    :withProperties="false"
+    :withProperties="true"
   ></opensilex-OntologyTypesView>
 </template>
 
@@ -31,8 +31,8 @@ en:
 
 fr:
   DeviceTypes:
-    typeTitle: Types de capteurs
-    propertiesTitle: Propriétés des objets capteurs
+    typeTitle: Types d'équipement
+    propertiesTitle: Propriétés des équipements
 </i18n>
 
 

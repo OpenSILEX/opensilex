@@ -6,18 +6,15 @@
 package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
@@ -61,6 +58,53 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     )
     protected ClassModel parent;
 
+    public ClassModel(){
+
+    }
+
+    /**
+     * Copy constructor
+     * @param classModel class to copy
+     * @param readChildren flag which indicate if this constructor must iterate over classModel children
+     */
+    public ClassModel(ClassModel classModel, boolean readChildren){
+
+        uri = classModel.getUri();
+        if(classModel.getLabel() != null){
+            label = new SPARQLLabel(classModel.getLabel());
+        }
+        if(classModel.getComment() != null){
+            comment = new SPARQLLabel(classModel.getComment());
+        }
+        rdfType = classModel.getType();
+        if(classModel.getTypeLabel() != null){
+            rdfTypeName = new SPARQLLabel(classModel.getTypeLabel());
+        }
+
+        if(readChildren && classModel.getChildren() != null){
+            children = classModel.getChildren().stream()
+                    .map(child -> new ClassModel(child,true))
+                    .collect(Collectors.toList());
+
+            children.forEach(child -> setParent(this));
+
+            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
+            setChildren(children);
+        }
+
+        if(classModel.getParent() != null){
+            this.parent = new ClassModel(classModel.getParent(),false);
+        }
+
+        // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
+        setParent(parent);
+
+        datatypeProperties = classModel.getDatatypeProperties();
+        objectProperties = classModel.getObjectProperties();
+        restrictions = classModel.getRestrictions();
+    }
+
+
     protected Map<URI, DatatypePropertyModel> datatypeProperties = new HashMap<>();
     protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
     protected Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
@@ -95,24 +139,12 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         return datatypeProperties;
     }
 
-    public List<DatatypePropertyModel> getDatatypePropertiesWithDomain(){
-        List<DatatypePropertyModel> properties = new ArrayList<>();
-        this.visit(model -> properties.addAll(model.getDatatypeProperties().values()));
-        return properties;
-    }
-
     public void setDatatypeProperties(Map<URI, DatatypePropertyModel> datatypeProperties) {
         this.datatypeProperties = datatypeProperties;
     }
 
     public Map<URI, ObjectPropertyModel> getObjectProperties() {
         return objectProperties;
-    }
-
-    public List<ObjectPropertyModel> getObjectPropertiesWithDomain(){
-        List<ObjectPropertyModel> properties = new ArrayList<>();
-        this.visit(model -> properties.addAll(model.getObjectProperties().values()));
-        return properties;
     }
 
     public void setObjectProperties(Map<URI, ObjectPropertyModel> objectProperties) {

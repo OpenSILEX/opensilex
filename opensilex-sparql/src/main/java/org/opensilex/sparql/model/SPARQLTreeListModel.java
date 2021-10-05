@@ -8,21 +8,22 @@ package org.opensilex.sparql.model;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
- *
  * @author vince
+ * Class used for representing a Tree of any {@link SPARQLTreeModel} with a bidirectionnal-indexing between model and model parent.
  */
 public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
-    private final HashMap<URI, List<T>> map = new HashMap<>();
+    private final HashMap<URI, Set<T>> modelsByParent = new HashMap<>();
+    private final HashMap<URI, T> parentByModel = new HashMap<>();
 
     private final List<URI> selectionList;
     private final URI root;
     private final boolean excludeRoot;
-
-    private final HashMap<String, T> itemParents = new HashMap<>();
 
     public SPARQLTreeListModel() {
         this(new ArrayList<>(), null, false);
@@ -31,23 +32,25 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot, boolean addSelectionToTree) {
         this.selectionList = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
-            this.selectionList.add(instance.getUri());
-            this.itemParents.put(SPARQLDeserializers.getExpandedURI(instance.getUri()), instance.getParent());
+            URI formattedUri = SPARQLDeserializers.formatURI(instance.getUri());
+            this.selectionList.add(formattedUri);
+            this.parentByModel.put(formattedUri, instance.getParent());
         }
-        this.root = root;
+        this.root = root != null ? SPARQLDeserializers.formatURI(root) : null;
         this.excludeRoot = excludeRoot;
 
-        if(addSelectionToTree){
+        if (addSelectionToTree) {
             selectionList.forEach(this::addTree);
         }
+
     }
 
     public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot) {
-        this(selectionList,root,excludeRoot,false);
+        this(selectionList, root, excludeRoot, false);
     }
 
     public SPARQLTreeListModel(T rootModel, boolean excludeRoot, boolean addSelectionToTree) {
-        this(rootModel.getNodes(),rootModel.getUri(),excludeRoot,addSelectionToTree);
+        this(rootModel.getNodes(), rootModel.getUri(), excludeRoot, addSelectionToTree);
     }
 
     public void listRoots(Consumer<T> handler) {
@@ -58,99 +61,166 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         return this.getChildCount(null);
     }
 
-    public int getChildCount(T parent) {
+    private Set<T> getChildren(T parent) {
         URI parentURI = null;
         if (parent != null) {
-            parentURI = parent.getUri();
+            parentURI = SPARQLDeserializers.formatURI(parent.getUri());
         }
-        if (this.map.containsKey(parentURI)) {
-            return this.map.get(parentURI).size();
-        } else {
-            return 0;
-        }
+        return this.modelsByParent.get(parentURI);
+    }
+
+    public int getChildCount(T parent) {
+        Set<T> children = getChildren(parent);
+        return children == null ? 0 : children.size();
     }
 
     public void listChildren(T parent, Consumer<T> handler) {
-        URI parentURI = null;
-        if (parent != null) {
-            parentURI = parent.getUri();
+        Set<T> children = getChildren(parent);
+        if (children != null) {
+            children.forEach(handler);
         }
-        if (this.map.containsKey(parentURI)) {
-            if (this.map.containsKey(parentURI)) {
-                this.map.get(parentURI).forEach(handler);
+    }
+
+    public T getParent(T instance) {
+        return parentByModel.get(SPARQLDeserializers.formatURI(instance.getUri()));
+    }
+
+    public void addTree(T instance) {
+        T parent = getParent(instance);
+        addTreeWithParent(instance, parent);
+    }
+
+    public void addTreeWithParent(T instance, T parent) {
+
+        URI formattedUri = SPARQLDeserializers.formatURI(instance.getUri());
+
+        if (modelsByParent.containsKey(formattedUri)) {
+            return;
+        }
+
+        if (parent == null || formattedUri.equals(root)) {
+            if (parent == null || !excludeRoot) {
+                modelsByParent.computeIfAbsent(null, key -> new HashSet<>());
+                addInMapIfExists(null, instance);
             }
-        }
-    }
-
-    public T getParent(T candidate) {
-        return itemParents.get(SPARQLDeserializers.getExpandedURI(candidate.getUri()));
-    }
-
-    public void addTree(T candidate) {
-        T parent = getParent(candidate);
-        addTreeWithParent(candidate, parent);
-    }
-
-    public void addTreeWithParent(T candidate, T parent) {
-        if (!map.containsKey(candidate.getUri())) {
-
-            if (parent == null) {
-                if (!map.containsKey(null)) {
-                    map.put(null, new ArrayList<>());
-                }
-                addInMapIfExists(null, candidate);
-            } else if (candidate.getUri().equals(root)) {
-                if (!excludeRoot) {
-                    if (!map.containsKey(null)) {
-                        map.put(null, new ArrayList<>());
-                    }
-                    addInMapIfExists(null, candidate);
-                }
-            } else {
-                URI parentURI = parent.getUri();
-                if (parentURI.equals(root) && excludeRoot) {
-                    parentURI = null;
-                }
-                if (!map.containsKey(parentURI)) {
-                    if (parentURI != null) {
-                        addTree(parent);
-                    }
-                    map.put(parentURI, new ArrayList<>());
-                }
-
-                addInMapIfExists(parentURI, candidate);
+        } else {
+            URI parentURI = SPARQLDeserializers.formatURI(parent.getUri());
+            if (parentURI.equals(root) && excludeRoot) {
+                parentURI = null;
             }
-
+            if (!modelsByParent.containsKey(parentURI)) {
+                if (parentURI != null) {
+                    addTree(parent);
+                }
+                modelsByParent.put(parentURI, new HashSet<>());
+            }
+            addInMapIfExists(parentURI, instance);
         }
+
     }
 
-    private void addInMapIfExists(URI parentURI, T candidate) {
+    private void addInMapIfExists(URI parentURI, T instance) {
         boolean exists = false;
-        for (T item : map.get(parentURI)) {
-            if (SPARQLDeserializers.compareURIs(candidate.getUri(), item.getUri())) {
+        for (T item : modelsByParent.get(parentURI)) {
+            if (SPARQLDeserializers.compareURIs(instance.getUri(), item.getUri())) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            map.get(parentURI).add(candidate);
+            modelsByParent.get(parentURI).add(instance);
+            parentByModel.put(SPARQLDeserializers.formatURI(instance.getUri()), instance.getParent());
         }
     }
 
-    public boolean isSelected(T candidate) {
-        return this.selectionList.contains(candidate.getUri());
+    public boolean isSelected(T instance) {
+        return this.selectionList.contains(instance.getUri());
     }
 
     public void traverse(Consumer<T> handler) {
-        listRoots((instance) ->
+        listRoots(instance ->
                 traverseNode(instance, handler)
         );
     }
 
     private void traverseNode(T instance, Consumer<T> handler) {
         handler.accept(instance);
-        listChildren(instance, (child) ->
+        listChildren(instance, child ->
                 traverseNode(child, handler)
         );
+    }
+
+    private void removeLinkWithChildren(URI instanceUri) {
+
+        // update link between parent and old children
+        if (modelsByParent.containsKey(instanceUri)) {
+            Set<T> oldChildren = modelsByParent.get(instanceUri);
+
+            // all old children become orphans :'(
+            if (oldChildren != null) {
+
+                for (T oldChild : oldChildren) {
+                    // update the child node itself
+                    oldChild.setParent(null);
+
+                    // update itemParents index
+                    parentByModel.put(oldChild.getUri(), null);
+                }
+                // the set of orphans receive new node
+                modelsByParent.computeIfAbsent(null, key -> new HashSet<>()).addAll(oldChildren);
+            }
+        }
+    }
+
+    private void removeLinkWithParent(URI childUri) {
+
+        T parent = parentByModel.get(childUri);
+
+        URI parentUri;
+
+        // find the old parent : null if the old parent is the root, parent.getUri() else
+        if (parent == null) {
+            parentUri = null;
+        } else {
+            // if the parentUri is root, then use null
+            parentUri = SPARQLDeserializers.compareURIs(root, parent.getUri()) ? null : parent.getUri();
+        }
+
+        // the old parent loose a child :(
+        modelsByParent.get(parentUri).removeIf(
+                child -> SPARQLDeserializers.compareURIs(child.getUri().toString(), childUri)
+        );
+
+        // update the parent node itself
+        if (parent != null && !CollectionUtils.isEmpty(parent.getChildren())) {
+            parent.getChildren().removeIf(
+                    model -> SPARQLDeserializers.compareURIs(model.getUri().toString(), childUri)
+            );
+        }
+    }
+
+
+    /**
+     * Remove SPARQLTreeModel associated with the given modelUri if exists
+     *
+     * @param modelUri URI of a SPARQLTreeModel
+     */
+    public void remove(URI modelUri) {
+
+        URI formattedUri = SPARQLDeserializers.formatURI(modelUri);
+
+        // instance not found into tree
+        if (!parentByModel.containsKey(formattedUri)) {
+            return;
+        }
+
+        removeLinkWithChildren(formattedUri);
+        removeLinkWithParent(formattedUri);
+
+        // remove parent from the two indexes
+        parentByModel.remove(formattedUri);
+        modelsByParent.remove(formattedUri);
+
+        selectionList.removeIf(uri -> uri.equals(modelUri));
     }
 }

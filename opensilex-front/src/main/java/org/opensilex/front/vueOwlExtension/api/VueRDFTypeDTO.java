@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
@@ -35,14 +36,6 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
 
     @JsonProperty("properties_order")
     protected List<URI> propertiesOrder;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public boolean getIsAbstract() {
         return isAbstract;
@@ -98,27 +91,33 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     }
 
     public ClassModel getClassModel(String lang) throws URISyntaxException {
-        ClassModel model = new ClassModel();
 
+        ClassModel model = new ClassModel();
         model.setUri(getUri());
 
         SPARQLLabel sparqlLabel = new SPARQLLabel();
-        sparqlLabel.addAllTranslations(getLabelTranslations());
+        if(labelTranslations.containsKey(lang)){
+            sparqlLabel.setDefaultLang(lang);
+            sparqlLabel.setDefaultValue(labelTranslations.get(lang));
+        }
+        sparqlLabel.addAllTranslations(labelTranslations);
         model.setLabel(sparqlLabel);
 
         SPARQLLabel sparqlComment = new SPARQLLabel();
-        sparqlComment.addAllTranslations(getCommentTranslations());
+        if(commentTranslations.containsKey(lang)){
+            sparqlLabel.setDefaultLang(lang);
+            sparqlLabel.setDefaultValue(commentTranslations.get(lang));
+        }
+        sparqlComment.addAllTranslations(commentTranslations);
         model.setComment(sparqlComment);
 
+        ClassModel parentClass = new ClassModel();
         if (getParent() == null) {
-            ClassModel parentClass = new ClassModel();
             parentClass.setUri(new URI(OWL2.Class.getURI()));
-            model.setParent(parentClass);
         } else {
-            ClassModel parentClass = new ClassModel();
             parentClass.setUri(getParent());
-            model.setParent(parentClass);
         }
+        model.setParent(parentClass);
 
         return model;
     }

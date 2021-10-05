@@ -13,8 +13,10 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
+import org.opensilex.core.ontology.dal.cache.OntologyCacheException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -60,10 +62,10 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     private final Map<URI, List<String>> propertiesByTypeVarNames;
 
 
-    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException {
+    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException, OntologyCacheException {
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
-        OntologyCache ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+        OntologyCache ontologyCache = CoreModule.getOntologyCacheInstance();
 
         this.graph = graph;
         this.graphUri = graph != null ? new URI(graph.getURI()) : null;

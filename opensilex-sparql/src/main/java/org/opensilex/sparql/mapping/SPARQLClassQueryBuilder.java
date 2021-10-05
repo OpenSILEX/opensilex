@@ -673,13 +673,16 @@ class SPARQLClassQueryBuilder {
                             throw new Exception("Object URI value can't be null");
                         } else {
                             Property property = analyzer.getObjectListPropertyByField(field);
+                            Node propertyFieldNode = SPARQLDeserializers.nodeURI(propertyFieldURI);
 
                             if (analyzer.isReverseRelation(field)) {
-                                triple = new Triple(SPARQLDeserializers.nodeURI(propertyFieldURI), property.asNode(), uriNode);
-                                quad = new Quad(fieldMapper.getDefaultGraph(), triple);
+                                Node fieldGraph = fieldMapper.getDefaultGraph();
+                                if(fieldGraph == null && graph != null){
+                                    fieldGraph = graph;
+                                }
+                                quad = new Quad(fieldGraph, propertyFieldNode, property.asNode(), uriNode);
                             } else {
-                                triple = new Triple(uriNode, property.asNode(), SPARQLDeserializers.nodeURI(propertyFieldURI));
-                                quad = new Quad(graph, triple);
+                                quad = new Quad(graph, uriNode, property.asNode(), propertyFieldNode);
                             }
 
                             tripleHandler.accept(quad, field);

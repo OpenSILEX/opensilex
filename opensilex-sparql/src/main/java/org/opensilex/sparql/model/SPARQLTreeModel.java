@@ -42,24 +42,9 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
     }
 
     public List<T> getNodes() {
-
-        List<T> visited = new ArrayList<>();
-        visited.add((T) this);
-
-        Stack<T> toVisit = new Stack<>();
-        toVisit.add((T) this);
-
-        // models are visited in Depth-First Search order
-        // visited is filled in Breadth First Search  order
-
-        while(! toVisit.empty()){
-            T head = toVisit.pop();
-            if(head.getChildren() != null){
-                toVisit.addAll(head.getChildren());
-                visited.addAll(head.getChildren());
-            }
-        }
-        return visited;
+        List<T> visitedList = new ArrayList<>();
+        visit(visitedList::add);
+        return visitedList;
     }
 
     public void visit(Consumer<T> consumer){
@@ -70,4 +55,6 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
             );
         }
     }
+
+
 }

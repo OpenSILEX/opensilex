@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.opensilex.core.ontology.dal.ClassModel;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  *
  * @author vmigot
@@ -17,9 +19,11 @@ import org.opensilex.core.ontology.dal.ClassModel;
 public class RDFTypeTranslatedDTO extends RDFTypeDTO {
 
     @JsonProperty("name_translations")
+    @NotEmpty
     protected Map<String, String> labelTranslations;
 
     @JsonProperty("comment_translations")
+    @NotEmpty
     protected Map<String, String> commentTranslations;
 
     public Map<String, String> getLabelTranslations() {

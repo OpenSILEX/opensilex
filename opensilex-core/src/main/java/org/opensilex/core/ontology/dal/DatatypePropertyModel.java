@@ -7,6 +7,8 @@ package org.opensilex.core.ontology.dal;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
@@ -130,4 +132,34 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
         this.typeRestriction = typeRestriction;
     }
 
+    public DatatypePropertyModel() {
+    }
+
+    public DatatypePropertyModel(DatatypePropertyModel other) {
+        this(other, true);
+    }
+
+    public DatatypePropertyModel(DatatypePropertyModel other, boolean readChildren) {
+        fromModel(other);
+        range = other.getRange();
+
+        if (readChildren && other.getChildren() != null) {
+            children = other.getChildren().stream()
+                    .map(child -> new DatatypePropertyModel(child, true))
+                    .collect(Collectors.toList());
+
+            children.forEach(child -> setParent(this));
+
+            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
+            setChildren(children);
+        }
+
+        if (other.getParent() != null) {
+            this.parent = new DatatypePropertyModel(other.getParent(), false);
+
+            // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
+            setParent(parent);
+        }
+
+    }
 }

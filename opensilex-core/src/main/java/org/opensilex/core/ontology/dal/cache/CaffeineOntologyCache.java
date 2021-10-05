@@ -2,13 +2,11 @@ package org.opensilex.core.ontology.dal.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,12 +14,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class CaffeineOntologyCache extends AbstractOntologyCache {
 
-    private final static long EXPIRE_AFTER_WRITE_DURATION = 24;
-    private final static TimeUnit EXPIRE_AFTER_WRITE_TIME_UNIT = TimeUnit.HOURS;
+    private static final long EXPIRE_AFTER_WRITE_DURATION = 24;
+    private static final TimeUnit EXPIRE_AFTER_WRITE_TIME_UNIT = TimeUnit.HOURS;
 
-    private Cache<URI,ClassModel> classesCache;
 
-    protected CaffeineOntologyCache(SPARQLService sparql) throws URISyntaxException, SPARQLException {
+    private Cache<URI,ClassEntry> classesCache;
+
+    protected CaffeineOntologyCache(SPARQLService sparql) throws OntologyCacheException {
         super(sparql);
     }
 
@@ -38,7 +37,7 @@ public class CaffeineOntologyCache extends AbstractOntologyCache {
      * @param sparql the {@link SPARQLService} used to access {@link OntologyDAO} if no entry was found into cache
      * @return OntologyApiCache shared instance
      */
-    public synchronized static CaffeineOntologyCache getInstance(SPARQLService sparql) throws URISyntaxException, SPARQLException {
+    public static synchronized CaffeineOntologyCache getInstance(SPARQLService sparql) throws OntologyCacheException {
         if(INSTANCE == null){
             INSTANCE = new CaffeineOntologyCache(sparql);
         }
@@ -51,16 +50,16 @@ public class CaffeineOntologyCache extends AbstractOntologyCache {
         classesCache.invalidateAll();
     }
 
-
     @Override
-    protected void addClassToCache(URI key, ClassModel classModel) throws SPARQLException{
-        classesCache.put(key,classModel);
-    }
-
-    @Override
-    protected ClassModel getClassFromCache(URI classUri) {
+    protected ClassEntry getEntry(URI classUri) {
         return classesCache.getIfPresent(classUri);
     }
+
+    @Override
+    protected void addClassToCache(URI key, ClassEntry entry){
+        classesCache.put(key,entry);
+    }
+
 
     @Override
     protected void removeClassFromCache(URI classUri) {

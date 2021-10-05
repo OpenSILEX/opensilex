@@ -309,11 +309,12 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
+  <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty">
+        <rdfs:label xml:lang="en">device property</rdfs:label>
+        <rdfs:label xml:lang="fr">propriété d&apos;un équipement</rdfs:label>
+    </owl:DatatypeProperty>
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-    
-
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#focalLength -->
 

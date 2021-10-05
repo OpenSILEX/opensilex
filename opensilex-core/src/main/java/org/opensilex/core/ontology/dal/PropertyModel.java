@@ -12,17 +12,23 @@ import org.opensilex.sparql.model.SPARQLLabel;
  *
  * @author vince
  */
-public interface PropertyModel {
+public interface PropertyModel{
 
-    public URI getUri();
+    URI getUri();
 
-    public void setUri(URI uri);
+    void setUri(URI uri);
 
-    public URI getType();
+    URI getType();
 
-    public void setType(URI uri);
+    void setType(URI uri);
+
+     SPARQLLabel getTypeLabel();
+
+     void setTypeLabel(SPARQLLabel typeLabel);
 
     public String getName();
+
+    void setName(String name);
 
     public void setLabel(SPARQLLabel label);
 
@@ -39,5 +45,28 @@ public interface PropertyModel {
     public URI getTypeRestriction();
 
     public void setTypeRestriction(URI typeRestriction);
+
+    default void fromModel(PropertyModel copy) {
+
+        setUri(copy.getUri());
+        setName(copy.getName());
+
+        setType(copy.getType());
+        if (copy.getTypeLabel() != null) {
+            setTypeLabel(new SPARQLLabel(copy.getTypeLabel()));
+        }
+
+        if (copy.getLabel() != null) {
+            setLabel(new SPARQLLabel(copy.getLabel()));
+        }
+        if (copy.getComment() != null) {
+            setComment(new SPARQLLabel(copy.getComment()));
+        }
+
+        setTypeRestriction(copy.getTypeRestriction());
+        if(copy.getDomain() != null){
+            setDomain(new ClassModel(copy.getDomain(),false));
+        }
+    }
 
 }

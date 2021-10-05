@@ -27,6 +27,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
@@ -188,7 +190,7 @@ public class VueOwlExtensionAPI {
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @NotNull @ValidURI URI parentType
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
-        OntologyCache ontologyCache = CaffeineOntologyCache.getInstance(sparql);
+        OntologyCache ontologyCache = CoreModule.getOntologyCacheInstance();
 
         ClassModel classDescription = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
 

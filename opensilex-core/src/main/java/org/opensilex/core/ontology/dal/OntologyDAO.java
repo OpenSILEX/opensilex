@@ -40,6 +40,8 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
@@ -77,21 +79,29 @@ import org.slf4j.LoggerFactory;
 public final class OntologyDAO {
 
     private final SPARQLService sparql;
-    private final URI objectPropertiesParent;
-    private final URI dataPropertiesParent;
+    private final URI topDataPropertyUri;
+    private final URI topObjectPropertyUri;
 
 
     public OntologyDAO(SPARQLService sparql) {
         this.sparql = sparql;
         try {
-            objectPropertiesParent = new URI(OWL2.topObjectProperty.getURI());
-            dataPropertiesParent = new URI(OWL2.topDataProperty.getURI());
+            topDataPropertyUri = new URI(OWL2.topDataProperty.getURI());
+            topObjectPropertyUri = new URI(OWL2.topObjectProperty.getURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
     private final static Logger LOGGER = LoggerFactory.getLogger(OntologyDAO.class);
+
+    public URI getTopDataPropertyUri() {
+        return topDataPropertyUri;
+    }
+
+    public URI getTopObjectPropertyUri() {
+        return topObjectPropertyUri;
+    }
 
     public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, String lang, boolean excludeRoot, Consumer<T> handler) throws Exception {
         SPARQLTreeListModel<T> classTree = sparql.searchResourceTree(
@@ -187,7 +197,7 @@ public final class OntologyDAO {
 
         MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, (pModel) -> {
             // don't set parent if parent is TopObjectProperty
-            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(dataPropertiesParent, pModel.getParent().getUri())) {
+            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(topDataPropertyUri, pModel.getParent().getUri())) {
                 pModel.setParent(null);
             }
             pModel.setTypeRestriction(datatypePropertiesURI.get(pModel.getUri()));
@@ -202,7 +212,7 @@ public final class OntologyDAO {
             pModel.setTypeRestriction(objectPropertiesURI.get(pModel.getUri()));
 
             // don't set parent if parent is TopObjectProperty
-            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(objectPropertiesParent, pModel.getParent().getUri())) {
+            if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(topObjectPropertyUri, pModel.getParent().getUri())) {
                 pModel.setParent(null);
             }
             return pModel.getUri();
@@ -568,7 +578,7 @@ public final class OntologyDAO {
         return false;
     }
 
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, UserModel user) throws Exception {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws Exception {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
@@ -576,8 +586,8 @@ public final class OntologyDAO {
         return sparql.searchResourceTree(
                 sparql.getDefaultGraph(DatatypePropertyModel.class),
                 DatatypePropertyModel.class,
-                user.getLanguage(),
-                dataPropertiesParent,
+                lang,
+                topDataPropertyUri,
                 true,
                 this::appendDomainBoundExpr,
                 customHandlerByFields
@@ -593,7 +603,7 @@ public final class OntologyDAO {
         select.addFilter(exprFactory.bound(makeVar(ObjectPropertyModel.DOMAIN_FIELD)));
     }
 
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, UserModel user) throws Exception {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws Exception {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
@@ -601,8 +611,8 @@ public final class OntologyDAO {
         return sparql.searchResourceTree(
                 sparql.getDefaultGraph(ObjectPropertyModel.class),
                 ObjectPropertyModel.class,
-                user.getLanguage(),
-                objectPropertiesParent,
+                lang,
+                topObjectPropertyUri,
                 true,
                 this::appendDomainBoundExpr,
                 customHandlerByFields
@@ -618,14 +628,21 @@ public final class OntologyDAO {
         }
     }
 
+
     public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.create(graph, dataProperty);
-        CaffeineOntologyCache.getInstance(sparql).createDataProperty(dataProperty);
+
+        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
+        DatatypePropertyModel insertedProperty = getDataProperty(dataProperty.getUri(),null,null);
+        CoreModule.getOntologyCacheInstance().createDataProperty(insertedProperty);
     }
 
     public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.create(graph, objectProperty);
-        CaffeineOntologyCache.getInstance(sparql).createObjectProperty(objectProperty);
+
+        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
+        ObjectPropertyModel insertedProperty = getObjectProperty(objectProperty.getUri(),null,null);
+        CoreModule.getOntologyCacheInstance().createObjectProperty(insertedProperty);
     }
 
     public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, String lang) throws Exception {
@@ -661,18 +678,23 @@ public final class OntologyDAO {
 
     public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
         sparql.update(graph, dataProperty);
-        CaffeineOntologyCache.getInstance(sparql).updateDataProperty(dataProperty);
+        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
+        DatatypePropertyModel updatedProperty = getDataProperty(dataProperty.getUri(),null,null);
+        CoreModule.getOntologyCacheInstance().updateDataProperty(updatedProperty);
     }
 
     public void updateObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
         sparql.update(graph, objectProperty);
-        CaffeineOntologyCache.getInstance(sparql).updateObjectProperty(objectProperty);
+
+        // get the updated model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
+        ObjectPropertyModel updatedProperty = getObjectProperty(objectProperty.getUri(),null,null);
+        CoreModule.getOntologyCacheInstance().updateObjectProperty(updatedProperty);
     }
 
     public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {
         ClassModel domain = getDataProperty(propertyURI, null, null).getDomain();
         if (domain != null) {
-            CaffeineOntologyCache.getInstance(sparql).deleteDataProperty(propertyURI, domain.getUri());
+            CoreModule.getOntologyCacheInstance().deleteDataProperty(propertyURI, domain.getUri());
         }
 
         sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
@@ -681,7 +703,7 @@ public final class OntologyDAO {
     public void deleteObjectProperty(Node propertyGraph, URI propertyURI) throws Exception {
         ClassModel domain = getObjectProperty(propertyURI, null, null).getDomain();
         if (domain != null) {
-            CaffeineOntologyCache.getInstance(sparql).deleteObjectProperty(propertyURI, domain.getUri());
+            CoreModule.getOntologyCacheInstance().deleteObjectProperty(propertyURI, domain.getUri());
         }
 
         sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
@@ -694,7 +716,7 @@ public final class OntologyDAO {
             sparql.create(graph, restriction, false, true, (create, node) -> {
                 create.addInsert(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
-            CaffeineOntologyCache.getInstance(sparql).addRestriction(restriction);
+            CoreModule.getOntologyCacheInstance().addRestriction(restriction);
             return true;
         } else {
             return false;
@@ -732,7 +754,7 @@ public final class OntologyDAO {
             delete.addWhere("?s", "?p", "?o");
             sparql.executeDeleteQuery(delete);
 
-            CaffeineOntologyCache.getInstance(sparql).deleteRestriction(propertyURI, classURI);
+            CoreModule.getOntologyCacheInstance().deleteRestriction(propertyURI, classURI);
         }
     }
 
@@ -742,7 +764,7 @@ public final class OntologyDAO {
             deleteClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), language);
             addClassPropertyRestriction(graph, classURI, restriction, language);
 
-            CaffeineOntologyCache.getInstance(sparql).updateRestriction(restriction);
+            CoreModule.getOntologyCacheInstance().updateRestriction(restriction);
 
             sparql.commitTransaction();
 
@@ -1172,7 +1194,6 @@ public final class OntologyDAO {
             model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
             resultList.add(model);
         }
-        ;
 
         return resultList;
     }

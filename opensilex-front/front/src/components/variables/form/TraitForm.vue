@@ -2,7 +2,7 @@
     <ValidationObserver ref="validatorRef">
 
         <opensilex-InputForm
-            :value.sync="variable.traitUri"
+            :value.sync="variable.trait"
             label="VariableForm.trait-uri"
             type="text"
             helpMessage="VariableForm.trait-uri-help"
@@ -12,7 +12,7 @@
         ></opensilex-InputForm>
 
         <opensilex-InputForm
-            :value.sync="variable.traitName"
+            :value.sync="variable.trait_name"
             label="VariableForm.trait-name"
             type="text"
             helpMessage="VariableForm.trait-name-help"
@@ -46,12 +46,12 @@ export default class TraitForm extends Vue {
 
     updateTraitRequired() {
 
-        this.traitRequired = (this.variable.traitUri && this.variable.traitUri.length > 0) ||
-            (this.variable.traitName && this.variable.traitName.length > 0);
+        this.traitRequired = (this.variable.trait && this.variable.trait.length > 0) ||
+            (this.variable.trait_name && this.variable.trait_name.length > 0);
 
         if(! this.traitRequired){
-            this.variable.traitName = undefined;
-            this.variable.traitUri = undefined;
+            this.variable.trait_name = undefined;
+            this.variable.trait = undefined;
         }
     }
 

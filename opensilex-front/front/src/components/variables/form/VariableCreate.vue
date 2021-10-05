@@ -88,11 +88,15 @@
                 variable.uri =  http.response.result.toString();
                 this.$emit("onCreate",variable);
             }).catch((error) => {
-                if (error.status == 409) {
+              if (error.status == 409) {
                     this.$opensilex.errorHandler(error,"Variable "+variable.uri+" : "+this.$i18n.t("VariableForm.already-exist"));
                 } else {
-                    this.$opensilex.errorHandler(error,error.response.result.message);
-                }
+                  if (error.response.result) {
+                      this.$opensilex.errorHandler(error, error.response.result.message);
+                  }else {
+                      this.$opensilex.errorHandler(error);
+                  }
+              }
             });
         }
 
@@ -137,7 +141,11 @@
 
                 this.$emit("onUpdate", variable);
             }).catch((error) => {
-                this.$opensilex.errorHandler(error,error.response.result.message);
+                if (error.response.result) {
+                    this.$opensilex.errorHandler(error, error.response.result.message);
+                }else {
+                    this.$opensilex.errorHandler(error);
+                }
             });
         }
     }

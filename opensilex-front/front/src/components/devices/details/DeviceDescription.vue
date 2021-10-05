@@ -94,6 +94,13 @@
           </template>
 
         </opensilex-Card>
+        <opensilex-Card label="DeviceDescription.position" icon="ik#ik-clipboard" v-if="addInfo.length !== 0">
+            <template v-slot:body>
+              <opensilex-AssociatedPositionList
+                :target="uri"
+              ></opensilex-AssociatedPositionList>
+            </template>
+        </opensilex-Card>
         </b-col>
       </b-row>
     </opensilex-PageContent>

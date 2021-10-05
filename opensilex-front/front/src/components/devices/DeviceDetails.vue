@@ -24,16 +24,6 @@
         >{{ $t("ScientificObjectDataFiles.datafiles") }}</b-nav-item>
 
         <b-nav-item
-          :active="isAnnotationTab()"
-          :to="{ path: '/device/annotations/' + encodeURIComponent(uri) }"
-        >{{ $t("DeviceDetails.annotation") }}</b-nav-item>
-
-        <b-nav-item
-          :active="isDocumentTab()"
-          :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
-        >{{ $t('DeviceDetails.documents') }}</b-nav-item>
-
-        <b-nav-item
             :active="isEventTab()"
             :to="{ path: '/device/events/' + encodeURIComponent(uri) }"
         >{{ $t('Event.list-title') }}
@@ -44,6 +34,16 @@
             :to="{ path: '/device/positions/' + encodeURIComponent(uri) }"
         >{{ $t('Position.list-title') }}
         </b-nav-item>
+        
+        <b-nav-item
+          :active="isAnnotationTab()"
+          :to="{ path: '/device/annotations/' + encodeURIComponent(uri) }"
+        >{{ $t("DeviceDetails.annotation") }}</b-nav-item>
+
+        <b-nav-item
+          :active="isDocumentTab()"
+          :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
+        >{{ $t('DeviceDetails.documents') }}</b-nav-item>
 
         </template>
     </opensilex-PageActions>

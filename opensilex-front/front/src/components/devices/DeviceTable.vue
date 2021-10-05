@@ -352,14 +352,14 @@ export default class DeviceTable extends Vue {
   addColumn() {
     this.colModal.hide();
     if(this.colName != null && this.colName !=  ""){
+      let newCol = { title: this.colName, field: this.colName, editor: true, visible: true }
+      this.tableColumns.splice(13,0,newCol)
       this.tabulator.addColumn(
-        { title: this.colName, field: this.colName, editor: true },
+        newCol,
         false,
         "comment"
       );
       this.suppColumnsNames.push(this.colName);
-      this.jsonForTemplate[0][this.colName] = null;
-      this.$attrs.downloadCsv;
     }
 
     if(this.displayRemovalCol){
@@ -376,6 +376,16 @@ export default class DeviceTable extends Vue {
       this.tabulator.hideColumn("person_in_charge");
       this.displayPersonCol = false;
     }
+
+    this.jsonForTemplate = [];
+    let jsonHeader = {};
+    for (var i = 1; i < this.tableColumns.length; i++) {
+      if (this.tableColumns[i].visible == true) {
+        jsonHeader[this.tableColumns[i].field] = null;
+      }
+    }
+    this.jsonForTemplate.push(jsonHeader);
+    this.$attrs.downloadCsv;
     this.colName = null;
   }
 

@@ -23,6 +23,4 @@ public class FormGetDTO extends FormUpdateDTO{
         formGetDTO.setUri( model.getUri());
         return formGetDTO;
     }
-   
-    
 }

@@ -66,7 +66,7 @@ public class MobileAPI {
     private MongoDBService nosql;
 
     /**
-     * Create a Area
+     * Create a form
      *
      * @param dto the Form to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
@@ -82,17 +82,15 @@ public class MobileAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Add a form", response = ObjectUriResponse.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
-//            @ApiResponse(code = 409, message = "A form with the same URI already exists", response = ErrorResponse.class),
-     })
-
+    })
     public Response createForm(
             @ApiParam("Form to save") @NotNull @Valid FormCreationDTO dto
     ) throws Exception {
         FormDAO dao = new FormDAO(nosql);
         FormModel createdForm = dao.create(dto.newModel());
         return new ObjectUriResponse(Response.Status.CREATED, createdForm.getUri()).getResponse();
-
     }
+    
     /**
      * Get forms
      *
@@ -195,5 +193,4 @@ public class MobileAPI {
             return new DateMappingExceptionResponse().toResponse(e);
         }
     }
- 
 }

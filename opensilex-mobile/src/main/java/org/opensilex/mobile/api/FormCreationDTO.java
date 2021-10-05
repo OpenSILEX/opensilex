@@ -17,6 +17,8 @@ import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.mobile.dal.FormModel;
+import org.opensilex.server.rest.validation.Date;
+import org.opensilex.server.rest.validation.DateFormat;
 
 /**
  *
@@ -24,18 +26,16 @@ import org.opensilex.mobile.dal.FormModel;
  */
 public class FormCreationDTO {
  
-    @JsonProperty("creation_date")
-    @ApiModelProperty(value = "timestamp", example = "YYYY-MM-DDTHH:MM:SSZ", required = true)
+  
     private String creationDate;
 
     private URI type;
-    
 
     private Map formData;
 
-    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
     protected String timezone;
 
+    @JsonProperty("form_data")
     public Map getFormData() {
         return formData;
     }
@@ -43,7 +43,10 @@ public class FormCreationDTO {
     public void setFormData(Map formData) {
         this.formData = formData;
     }
-
+    
+    @JsonProperty("creation_date")
+    @ApiModelProperty(value = "timestamp", example = "YYYY-MM-DDTHH:MM:SSZ", required = true)
+    @Date(DateFormat.YMDTHMSZ)
     public String getCreationDate() {
         return creationDate;
     }
@@ -52,6 +55,7 @@ public class FormCreationDTO {
         this.creationDate = creationDate;
     }
 
+    @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
     public String getTimezone() {
         return timezone;
     }
@@ -71,7 +75,6 @@ public class FormCreationDTO {
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = new FormModel();
         
-        
         model.setType(type);
         model.setFormData(new Document(formData));
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getCreationDate(), getTimezone());
@@ -86,5 +89,4 @@ public class FormCreationDTO {
         return model;
 
     }
-    
 }

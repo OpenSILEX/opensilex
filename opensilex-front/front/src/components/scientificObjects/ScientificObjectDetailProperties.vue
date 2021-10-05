@@ -6,13 +6,21 @@
         <div class="card-header-right">
           <b-button-group>
             <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
+                )
+              "
               @click="soForm.editScientificObject(selected.uri)"
               label="ExperimentScientificObjects.edit-scientific-object"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
+                )
+              "
               label="ExperimentScientificObjects.delete-scientific-object"
               @click="deleteScientificObject(selected.uri)"
               :small="true"
@@ -201,34 +209,66 @@ export default class ScientificObjectDetailProperties extends Vue {
     this.valueByProperties = {};
     this.classModel = {};
     this.$opensilex.disableLoader();
-    
-    return Promise.all([
-      this.$opensilex
-        .getService("opensilex.VueJsOntologyExtensionService")
-        .getRDFTypeProperties(
-          this.selected.rdf_type,
-          this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
-        ),
-      this.$opensilex
-        .getService("opensilex.PositionsService")
-        .getPosition(this.selected.uri)
-        .catch(() => null),
-    ]).then((result) => {
-      this.$opensilex.enableLoader();
-   
-      this.classModel = result[0].response.result;
-      let lastMove = null;
-      if (result[1] != null) {
-        lastMove = result[1].response.result;
-      }
+    if (this.globalView) {
+      return Promise.all([
+        this.$opensilex
+          .getService("opensilex.VueJsOntologyExtensionService")
+          .getRDFTypeProperties(
+            this.selected.rdf_type,
+            this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+          ),
+        this.$opensilex
+          .getService("opensilex.ScientificObjectsService")
+          .getScientificObjectDetail(this.selected.uri, undefined),
+        this.$opensilex
+          .getService("opensilex.PositionsService")
+          .getPosition(this.selected.uri)
+          .catch(() => null),
+      ]).then((result) => {
+        this.$opensilex.enableLoader();
 
-      let valueByProperties = this.buildValueByProperties(
-        this.selected.relations,
-        lastMove
-      );
-      this.buildTypeProperties(this.typeProperties, valueByProperties);
-      this.valueByProperties = valueByProperties;
-    });
+        this.classModel = result[0].response.result;
+        let lastMove = null;
+        if (result[2] != null) {
+          lastMove = result[2].response.result;
+        }
+
+        let valueByProperties = this.buildValueByProperties(
+          result[1].response.result.relations,
+          lastMove
+        );
+        this.buildTypeProperties(this.typeProperties, valueByProperties);
+        this.valueByProperties = valueByProperties;
+      });
+    } else {
+      return Promise.all([
+        this.$opensilex
+          .getService("opensilex.VueJsOntologyExtensionService")
+          .getRDFTypeProperties(
+            this.selected.rdf_type,
+            this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+          ),
+        this.$opensilex
+          .getService("opensilex.PositionsService")
+          .getPosition(this.selected.uri)
+          .catch(() => null),
+      ]).then((result) => {
+        this.$opensilex.enableLoader();
+
+        this.classModel = result[0].response.result;
+        let lastMove = null;
+        if (result[1] != null) {
+          lastMove = result[1].response.result;
+        }
+
+        let valueByProperties = this.buildValueByProperties(
+          this.selected.relations,
+          lastMove
+        );
+        this.buildTypeProperties(this.typeProperties, valueByProperties);
+        this.valueByProperties = valueByProperties;
+      });
+    }
   }
 
   getCustomTypeProperties(customObjet) {
@@ -291,6 +331,7 @@ export default class ScientificObjectDetailProperties extends Vue {
       this.classModel.data_properties,
       valueByProperties
     );
+
     this.loadProperties(
       typeProperties,
       this.classModel.object_properties,

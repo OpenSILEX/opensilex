@@ -51,7 +51,7 @@ export default class ScientificObjectForm extends Vue {
     this.soForm
       .getFormRef()
       .setTypePropertyFilterHandler((properties) => properties);
-
+    
     this.soForm
       .getFormRef()
       .setContext(this.getContext())
@@ -70,6 +70,7 @@ export default class ScientificObjectForm extends Vue {
           }
         }
       }
+
     });
 
     this.soForm.showCreateForm();

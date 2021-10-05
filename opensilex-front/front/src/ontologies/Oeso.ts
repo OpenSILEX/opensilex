@@ -22,6 +22,8 @@ let ontologies = {
     ACCESSION_TYPE_URI: OESO_URI + "#Accession",
     PLANT_MATERIAL_LOT_TYPE_URI: OESO_URI + "#PlantMaterialLot",
     HAS_EXPERIMENT_MODALITIES: OESO_URI + "#hasExperimentModalities",
+    HAS_CREATION_DATE: OESO_URI + "#hasCreationDate",
+    HAS_DESTRUCTION_DATE: OESO_URI + "#hasDestructionDate",
     HAS_REPLICATION: OESO_URI + "#hasReplication",
     HAS_VARIETY: OESO_URI + "#hasVariety",
     HAS_SPECIES: OESO_URI + "#hasSpecies",

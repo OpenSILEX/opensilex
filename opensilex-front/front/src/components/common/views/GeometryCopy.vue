@@ -3,7 +3,7 @@
     <div class="static-field">
       <b-badge
           :title="$t('component.copyGeometryWKT')"
-          class="uri-copy mr-2 copy"
+          class="mr-2 copy"
           variant="secondary"
           v-on:click.prevent.stop="copyGeometry(wktValue(value), 'WKT')"
       >
@@ -12,7 +12,7 @@
       </b-badge>
       <b-badge
           :title="$t('component.copyGeometryGeoJSON')"
-          class="uri-copy copy"
+          class="copy"
           variant="secondary"
           v-on:click.prevent.stop="copyGeometry(JSON.stringify(value), 'GeoJSON')"
       >

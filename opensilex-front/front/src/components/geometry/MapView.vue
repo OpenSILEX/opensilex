@@ -23,14 +23,15 @@
           </template>
         </b-modal>
         <b-button
-        v-on:click="showTemporalAreas"
-        v-b-toggle.event-sidebar
-        :title="$t('MapView.time')"
-        >
+          v-on:click="showTemporalAreas"
+          v-b-toggle.event-sidebar
+          :title="$t('MapView.time')"
+          >
           <slot name="icon">
             <opensilex-Icon :icon="'ik#ik-activity'" />
           </slot>
-          </b-button>
+        </b-button>
+        <opensilex-Button icon="fa#stopwatch" label="MapView.dateRange" @click="handleDateRangeStatus"></opensilex-Button>
       </div>
       <span class="p-2">
         <label class="alert-warning">
@@ -59,6 +60,7 @@
         modalSize="lg"
         @onCreate="showAreaDetails"
         @onUpdate="callAreaUpdate"
+        :initForm="initAreaForm"
     ></opensilex-ModalForm>
     <opensilex-ScientificObjectForm
         v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
@@ -102,7 +104,7 @@
         <vl-overlay
             id="overlay"
             :position="overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]"
-            :stop-event="selectPointerMove.name && selectPointerMove.type">
+            :stop-event="selectPointerMove.name && selectPointerMove.type ? true : false">
           <template slot-scope="scope">
             <div
                 class="panel-content"
@@ -160,7 +162,7 @@
               v-for="layerSO in featuresOS"
               :key="layerSO.id"
           >
-            <vl-source-vector ref="vectorSource" :features="layerSO" @mounted="defineCenter"></vl-source-vector>
+            <vl-source-vector ref="vectorSource" :features="layerSO"></vl-source-vector>
           </vl-layer-vector>
           <vl-layer-vector
               v-for="layer in tabLayer"
@@ -389,12 +391,6 @@
         </b-tabs>
       </template>
     </b-sidebar>
-    {{ $t("MapView.Legend") }}:
-    <span id="OS">{{ $t("MapView.LegendSO") }}</span>
-    &nbsp;-&nbsp;
-    <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
-    &nbsp;-&nbsp;
-    <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
     <opensilex-ModalForm
       v-if="!errorGeometry"
         ref="filterForm"
@@ -405,6 +401,33 @@
         modalSize="m"
         @onCreate="showFiltersDetails"
     ></opensilex-ModalForm>
+    {{ $t("MapView.Legend") }}:
+    <span id="OS">{{ $t("MapView.LegendSO") }}</span>
+    &nbsp;-&nbsp;
+    <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
+    &nbsp;-&nbsp;
+    <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
+    <div class="timeline-slider" v-if="minDate != null && maxDate != null">
+      <JqxRangeSelector
+        v-show="displayDateRange"
+        ref="JqxRangeSelector"
+        class="mx-auto"
+        width="75%"
+        padding="35px"
+        height="15"
+        :min="minDate"
+        :max="maxDate"
+        :range="range"
+        :labelsOnTicks="false"
+        majorTicksInterval="day"
+        minorTicksInterval="hour"
+        labelsFormat="ddd"
+        theme="dark"
+        :markersFormatFunction=markersDateRangeFormat
+        @change="onChangeDateRange($event)"
+        >
+      </JqxRangeSelector>
+    </div>
     <div id="selectedTable" v-if="selectedFeatures.length !== 0" class="selected-features" >
       <opensilex-TableView
           v-if="selectedFeatures.length !== 0"
@@ -514,6 +537,7 @@ import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDe
 
 @Component
 export default class MapView extends Vue {
+  @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
@@ -524,6 +548,8 @@ export default class MapView extends Vue {
   $opensilex: any;
   $t: any;
   $store: any;
+  $i18n: any;
+  $bvModal: any;
   el: "map";
   service: any;
   featuresOS: any[] = [];
@@ -552,8 +578,13 @@ export default class MapView extends Vue {
   ];
   selectedFeatures: any[] = [];
   timelineSidebarVisibility: boolean = false;
+  minDate: Date = null;
+  maxDate: Date = null;
+  range: { from: Date, to: Date } = { from: null, to: null };
+  // filter: any = {};
 
   private editingMode: boolean = false;
+  private displayDateRange: boolean = false;
   private displayAreas: boolean = true;
   private displayPerennialAreas: boolean = false;
   private displayTemporalAreas: boolean = false;
@@ -606,6 +637,7 @@ export default class MapView extends Vue {
     "isSelectable": false,
     "isCheckable": true
   }];
+  private langUnwatcher;
 
   get user() {
     return this.$store.state.user;
@@ -660,7 +692,27 @@ export default class MapView extends Vue {
     return result;
   }
 
-  set filters(value) {
+  set filters(value) { }
+
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+      () => this.$store.getters.language,
+      lang => {
+        this.rangeSelector.refresh(); // Refresh date range
+        this.rangeSelector.setRange(this.range.from, this.range.to);
+      }
+    );
+    this.initDateRange();
+  }
+
+  initAreaForm(form) {
+    form.minDate = this.minDate; 
+    form.maxDate = this.maxDate; 
+    return form;
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
   }
 
   displayInfoInOverlay(): string {
@@ -878,6 +930,7 @@ export default class MapView extends Vue {
       }
       scientificObject.children.push(item[0]);
     });
+    this.scientificObjects = [];
     this.scientificObjects.push(scientificObject);
   }
 
@@ -972,6 +1025,100 @@ export default class MapView extends Vue {
       });
     } else {
       this.recoveryArea(areaUriResult);
+    }
+  }
+
+  markersDateRangeFormat(value: string, position: string) {
+    const date = new Date(value);
+    let res: string = "";
+    
+    if (position == 'left')
+      res += this.$i18n.t("MapView.marketFrom");
+    else
+      res += this.$i18n.t("MapView.marketTo");
+    res += ": ";
+    if (this.$store.getters.language == 'en') {
+      res += String(date.getMonth() + 1).padStart(2, '0') + "/" + String(date.getDate()).padStart(2, '0');
+    } else {
+      res += String(date.getDate()).padStart(2, '0') + "/" + String(date.getMonth() + 1).padStart(2, '0');
+    }
+    res += "/" + date.getFullYear();
+    return "<span>" + res + "<span>";
+  }
+
+  onChangeDateRange(event) {
+    this.$opensilex.showLoader();
+    this.range = { from: event.args.from, to: event.args.to }
+    
+
+    let startDate: string = this.formatDate(this.range.from);
+    let endDate: string = this.formatDate(this.range.to);
+
+    // this.filter.from =  startDate;
+    // this.filter.to =  endDate;
+    // this.$opensilex.updateURLParameters(this.filter);
+
+    this.recoveryScientificObjects(startDate, endDate);
+    this.areaRecovery()
+  }
+
+  formatDate(date): string {
+    let d = new Date(date),
+        month = String(d.getMonth() + 1).padStart(2, '0'),
+        day = String(d.getDate()).padStart(2, '0'),
+        year = d.getFullYear();
+
+    return [year, month, day].join('-');
+  }
+
+  calcDifferenceDateInDays(from: Date, to: Date): number {
+    let diffInTime = to.getTime() - from.getTime();
+    let diffInDays = diffInTime / (1000 * 3600 * 24);
+
+    return diffInDays;
+  }
+
+  majorTicksIntervalFct() {
+    const from = this.minDate;
+    const to = this.maxDate;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'month';
+    } else {
+      return 'day';
+    }
+  }
+
+  minorTicksIntervalFct() {
+    const from = this.minDate;
+    const to = this.maxDate;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'day';
+    } else {
+      return 'hour';
+    }
+  }
+
+  labelsFormatFct() {
+    const from = this.minDate;
+    const to = this.maxDate;
+
+    if (this.calcDifferenceDateInDays(from, to) > 40) {
+      return 'MMM';
+    } else {
+      return 'ddd';
+    }
+  }
+
+  handleDateRangeStatus() {
+    this.displayDateRange = !this.displayDateRange;
+    if (this.displayDateRange == false &&
+    (this.range.from != this.minDate || this.range.to != this.maxDate)) { // If all SO are already charged
+      this.recoveryScientificObjects();
+      this.minDate = this.range.from;
+      this.maxDate = this.range.to;
+      this.rangeSelector.refresh();
     }
   }
 
@@ -1082,10 +1229,73 @@ export default class MapView extends Vue {
 
   created() {
     this.$opensilex.showLoader();
-
+    // this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     this.experiment = decodeURIComponent(this.$route.params.uri);
+
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
+  }
+
+  getRangeDatesOfExperiment(): Promise<any> {
+    return new Promise ((resolve) => {
+      this.$opensilex
+      .getService("opensilex.ExperimentsService")
+      .getExperiment(this.experiment)
+      .then(http => {
+        let res = http.response.result;
+        this.minDate = new Date(res.start_date);
+        this.minDate.setHours(0,0,0,0);
+        if (res.end_date) {
+          this.maxDate = new Date(res.end_date);
+        } else {
+          this.maxDate = new Date();
+        }
+        this.maxDate.setHours(0,0,0,0);
+        
+        // checkfilter
+        // let from ;
+        // if(!this.filter.from  ){
+        //   from = this.minDate;
+        // }else{
+        //   from = this.filter.from
+        // }
+        // let to;
+        // console.log(this.filter,!this.filter.to)
+        // if(!this.filter.to  ){
+        //   to = this.maxDate;
+        // }else{
+        //   to = this.filter.to
+        // }
+
+
+        // this.range = { from: from, to: to};
+        resolve("");
+      })
+      .catch(this.$opensilex.errorHandler);
+    });
+  }
+
+  configDateRange() {
+    this.rangeSelector.min = this.minDate;
+    this.rangeSelector.max = this.maxDate;
+    this.rangeSelector.range = this.range;
+    this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
+    this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
+    this.rangeSelector.labelsFormat = this.labelsFormatFct();
+    this.rangeSelector.range = { from: this.range.from, to: this.range.to };
+    this.rangeSelector.refresh();
+  }
+
+  initDateRange() {
+    // Recover start and end of the experiment
+    if (!this.minDate || !this.maxDate || !this.range.from || !this.range.to) {
+      this.getRangeDatesOfExperiment()
+      .then(() => {
+        this.configDateRange();
+      });
+    } else {
+      this.configDateRange();
+    }
   }
 
   mapCreated(map) {
@@ -1129,15 +1339,46 @@ export default class MapView extends Vue {
     return this.$i18n.t("MapView.label");
   }
 
-  defineCenter() {
-    if (this.featuresOS.length > 0) {
-      let extent = olExtent.createEmpty();
-      this.vectorSource.forEach(vector => {
-        let extentTemporary = vector.$source.getExtent();
-        olExtent.extend(extent, extentTemporary);
-      });
-      this.mapView.$view.fit(extent);
+  private waitFor(conditionFunction) {
+
+    const poll = resolve => {
+      if (conditionFunction()) resolve();
+      else setTimeout(_ => {
+        this.$opensilex.showLoader();
+        poll(resolve);
+      },200);
     }
+
+    return new Promise(poll);
+  }
+
+  defineCenter(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (this.featuresOS.length > 0) {
+        try {
+          const isVectorSourceMounted = (vector) => vector && vector.$source && vector.$source.getExtent()
+          && vector.$source.getExtent()[0] && vector.$source.getExtent()[0] != Infinity; // Condition to be sure sources has been mounted
+          this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource.every(isVectorSourceMounted)) // Wait all vectors charged
+          .then(() => {
+            let extent = olExtent.createEmpty();
+            for (let vector of this.vectorSource) {
+              if (vector && vector.$source) {
+                let extentTemporary = vector.$source.getExtent();
+                olExtent.extend(extent, extentTemporary);
+              }
+            }
+            this.mapView.$view.fit(extent);
+            this.$opensilex.hideLoader();
+            resolve(true);
+          });
+        } catch (e) {
+          this.$opensilex.hideLoader();
+          reject(false);
+        }
+      } else {
+        resolve(false);
+      }
+    })
   }
 
   select(value) {
@@ -1299,17 +1540,29 @@ export default class MapView extends Vue {
     this.$bvModal.hide('modal-save-map');
   }
 
-  appendTemporalArea(obj) {
+  appendTemporalArea(obj) { 
+    let minDate = this.$opensilex.prepareGetParameter(this.minDate);
+    let maxDate = this.$opensilex.prepareGetParameter(this.maxDate);
+
+    if(minDate != undefined){
+      minDate = minDate.toISOString();
+    }
+    if(maxDate != undefined){
+      maxDate = maxDate.toISOString();
+    }
+
     this.$opensilex
       .getService(this.eventsService)
-      .searchEvents(undefined, undefined, undefined, obj.uri)
+      .searchEvents(undefined, minDate, maxDate, obj.uri)
       .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
         const res = http.response.result[0] as any;
-        res.targets = [obj.uri];
-        this.temporalAreas.push(res);
-        this.temporalAreas.sort((a: any, b: any) => {
-          return new Date(b.end).getTime() - new Date(a.end).getTime();
-        })
+        if(res != undefined) { 
+          res.targets = [obj.uri];
+          this.temporalAreas.push(res);
+          this.temporalAreas.sort((a: any, b: any) => {
+            return new Date(b.end).getTime() - new Date(a.end).getTime();
+          });
+        }
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -1385,17 +1638,20 @@ export default class MapView extends Vue {
               this.selectedFeatures.push(res.geometry);
             }
           })
-          .catch(this.$opensilex.errorHandler);
+          .catch(this.$opensilex.errorHandler)
+          .finally(() =>{ 
+            this.$opensilex.hideLoader();
+          });
     }
   }
 
-  private recoveryScientificObjects() {
+  private recoveryScientificObjects(startDate?, endDate?) {
     this.callSO = false;
     this.featuresOS = [];
 
     this.$opensilex
         .getService(this.scientificObjectsService)
-        .searchScientificObjectsWithGeometryListByUris(this.experiment)
+        .searchScientificObjectsWithGeometryListByUris(this.experiment, startDate, endDate)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach(element => {
@@ -1425,9 +1681,20 @@ export default class MapView extends Vue {
               }
             }
         )
-        .catch(this.$opensilex.errorHandler)
-        .finally(() => {
+        .catch((e) => {
+          this.$opensilex.errorHandler(e);
           this.$opensilex.hideLoader();
+        })
+        .finally(() => {
+          this.defineCenter()
+          .catch(() => { // In case of OpenLayer error, recall function in 300ms
+            setTimeout(() => {
+              this.defineCenter();
+            }, 300);
+          })
+          .finally(() => {
+            this.$opensilex.hideLoader();
+          });
           this.initScientificObjects();
         });
   }
@@ -1536,7 +1803,10 @@ export default class MapView extends Vue {
           })
           .catch(this.$opensilex.errorHandler);
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch(this.$opensilex.errorHandler)
+      .finally(() =>{ 
+        this.$opensilex.hideLoader();
+      });
   }
 
   private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: string; name: string }[]) {
@@ -1615,9 +1885,36 @@ export default class MapView extends Vue {
 
       this.featuresArea = [];
       this.temporalAreas = [];
+
+      let minDate = this.range.from;
+      if(minDate== null){
+        minDate = this.minDate;
+      }
+
+      let maxDate = this.range.to;
+      if(maxDate== null){
+        maxDate = this.maxDate;
+      }
+      minDate = this.$opensilex.prepareGetParameter(minDate); 
+      console.debug("minDate",minDate,this.minDate,this.range.from  );
+      
+       maxDate = this.$opensilex.prepareGetParameter(maxDate); 
+      console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
+
+      let minDateString :string = undefined;
+      let maxDateString :string = undefined;
+ 
+      if(minDate != undefined){
+        minDateString = minDate.toISOString();
+      }
+      
+      if(maxDate != undefined){
+        maxDateString = maxDate.toISOString();
+      }
+
       this.$opensilex
           .getService(this.areaService)
-          .searchIntersects(JSON.parse(JSON.stringify(geometry)))
+          .searchIntersects(JSON.parse(JSON.stringify(geometry)), minDateString, maxDateString)
           .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
             const res = http.response.result as any;
             res.forEach(element => {
@@ -1643,9 +1940,12 @@ export default class MapView extends Vue {
                 }
               }
             });
-            this.endReceipt = true;
           })
-          .catch(this.$opensilex.errorHandler);
+          .catch(this.$opensilex.errorHandler)
+          .finally(() =>{
+            this.endReceipt = true;
+            this.$opensilex.hideLoader();
+          });
     }
   }
 
@@ -1671,6 +1971,10 @@ export default class MapView extends Vue {
 </script>
 
 <style lang="scss" scoped>
+
+@import "~jqwidgets-scripts/jqwidgets/styles/jqx.base.css";
+@import "~jqwidgets-scripts/jqwidgets/styles/jqx.dark.css";
+
 p {
   font-size: 115%;
   margin-top: 1em;
@@ -1704,6 +2008,35 @@ p {
   padding: 0;
   background-color: transparent;
   box-shadow: none;
+}
+
+::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark, .jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark {
+  background-color: transparent !important;
+}
+
+::v-deep .jqx-rangeselector-slider {
+  background-color: #00a38d7e !important;
+}
+
+::v-deep .jqx-fill-state-normal-dark {
+    background: #00a38d;
+    border-color: #00a38d;
+}
+
+::v-deep .jqx-scrollbar-thumb-state-normal-dark, .jqx-scrollbar-thumb-state-normal-horizontal-dark {
+    background: transparent;
+    border-color: transparent;
+}
+
+::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark,
+.jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark{
+    background-color: #3e3e42a8 !important;
+    border: 1px solid #3e3e42a8;
+    border-left-color: #3e3e42a8;
+}
+
+::v-deep .jqx-rangeselector-inner-slider {
+  background: none;
 }
 
 .map {
@@ -1760,6 +2093,10 @@ p {
 .opensilex-sidebar-header {
   width: 99%;
   height: 60px;
+}
+
+.timeline-slider {
+  padding-top: 10px;
 }
 
 .selected-features {
@@ -1820,6 +2157,9 @@ en:
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image or PDF ?
     noTemporalAreas: No temporal areas are displayed on the map.
+    marketFrom: From
+    marketTo: To
+    dateRange: Handle scientific objects with date range
   Area:
     title: Area
     add: Description of the area
@@ -1871,6 +2211,9 @@ fr:
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
     noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
+    marketFrom: Du
+    marketTo: Jusqu'au
+    dateRange: Manipuler des objets scientifiques avec une plage de dates
   Area:
     title: Zone
     add: Description de la zone

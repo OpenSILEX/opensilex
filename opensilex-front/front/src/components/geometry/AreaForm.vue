@@ -69,7 +69,7 @@
           <div class="col" v-if="! form.is_instant">
               <opensilex-DateTimeForm
                   :value.sync="form.start"
-                  label="Event.start"
+                  label="Event.start" 
                   :maxDate="form.end"
                   :required="startRequired"
                   @update:value="updateRequiredProps"
@@ -140,7 +140,6 @@ export default class AreaForm extends Vue {
   $store: any;
   $i18n: any;
   uriGenerated = true;
-  optionsArea: { label: string; id: string }[] = [];
   baseType: string = "";
   ontologyService: OntologyService;
   vueOntologyService: VueJsOntologyExtensionService;
@@ -154,9 +153,6 @@ export default class AreaForm extends Vue {
   title: string;
   @Prop({
     default: () => {
-      let names = {};
-      let defaultLang = "en";
-      names[defaultLang] = "";
       return {
         uri: null,
         name: null,
@@ -178,7 +174,9 @@ export default class AreaForm extends Vue {
             z: undefined,
             text: undefined,
           }
-        }]
+        }],
+        minDate:null,
+        maxDate:null
       };
     },
   })
@@ -234,7 +232,11 @@ export default class AreaForm extends Vue {
   }
 
   reset() {
+    this.startRequired = true;
+    this.endRequired = true;
     this.uriGenerated = true;
+    this.typeModel = null;
+    this.form = this.getEmptyForm();
   }
 
   resetRdfType(value) {
@@ -252,7 +254,7 @@ export default class AreaForm extends Vue {
       return false;
     }
     return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
-      || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
+    || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
   }
 
   private getEventFromUri(uri) {
@@ -300,12 +302,7 @@ export default class AreaForm extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getEmptyForm() {
-    let names = {};
-    let lang = this.languageCode;
-    let defaultLang = "en";
-    names[lang] = "";
-    names[defaultLang] = "";
+  getEmptyForm() { 
     return {
       uri: null,
       name: null,
@@ -327,7 +324,9 @@ export default class AreaForm extends Vue {
             z: undefined,
             text: undefined,
           }
-        }]
+        }],
+      minDate:null,
+      maxDate:null
     };
   }
 
@@ -435,6 +434,9 @@ export default class AreaForm extends Vue {
   create(form) {
     form.geometry = this.$store.state.zone.geometry;
 
+    if (form.description.length == 0) {
+      form.description = null;
+    }
     if (form.areaType == 'perennial-zone') {
       return this.createArea(form);
     } else {

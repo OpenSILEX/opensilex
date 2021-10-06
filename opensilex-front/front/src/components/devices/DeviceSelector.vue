@@ -39,6 +39,10 @@ export default class DeviceSelector extends Vue {
   @PropSync("value")
   deviceURIs;
 
+
+  @Prop()
+  property;
+
   @Prop()
   deviceType;
 

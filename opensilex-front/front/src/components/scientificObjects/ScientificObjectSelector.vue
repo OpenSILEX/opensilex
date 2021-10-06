@@ -13,7 +13,6 @@
         :key="lang"
         :showCount="true"
     ></opensilex-SelectForm>
-
 </template>
 
 <script lang="ts">
@@ -95,7 +94,7 @@ export default class ScientificObjectSelector extends Vue {
             scientificObjects = [scientificObjects];
         }else if(scientificObjects.length == 0){
             return undefined;
-        }
+        }                                                                       
 
         let dtosToReturn = [];
 

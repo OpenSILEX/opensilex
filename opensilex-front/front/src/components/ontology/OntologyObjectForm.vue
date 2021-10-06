@@ -82,8 +82,10 @@ export default class OntologyObjectForm extends Vue {
       property.input_components_by_property &&
       property.input_components_by_property[property.property]
     ) {
+      console.log('i render ' + property.input_components_by_property[property.property])
       return property.input_components_by_property[property.property];
     }
+    console.log('i render ' + property.input_component)
     return property.input_component;
   }
 

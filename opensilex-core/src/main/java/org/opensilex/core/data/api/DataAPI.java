@@ -1278,7 +1278,7 @@ public class DataAPI {
                             provenanceModel.setExperiments(experiments);
                         }
                         if (!agents.isEmpty()) {
-                            provenanceModel.setProvUsed(agents);
+                            provenanceModel.setProvWasAssociatedWith(agents);
                         }
 
                         dataModel.setDate(parsedDateTimeMongo.getInstant());

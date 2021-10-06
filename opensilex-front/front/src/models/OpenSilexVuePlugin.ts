@@ -896,7 +896,7 @@ export default class OpenSilexVuePlugin {
                     let objectURL = URL.createObjectURL(result);
                     let link = document.createElement("a");
                     link.href = objectURL;
-                    link.setAttribute("download", name + "." + extension);
+                    link.setAttribute("download", name + (extension === undefined ?  "" : "." + extension));
                     document.body.appendChild(link);
                     link.click();
                     link.remove();

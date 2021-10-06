@@ -404,12 +404,12 @@ public class DataDAO {
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(devices);
 
-            Document directProvFilter = new Document("provenance.provUsed.uri", new Document("$in", devices));
+            Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", devices));
 
             Document globalProvUsed = new Document("provenance.uri", new Document("$in", deviceProvenances));
             globalProvUsed.put("$or", Arrays.asList(
-                new Document("provenance.provUsed", new Document("$exists", false)),
-                new Document("provenance.provUsed", new ArrayList())
+                new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
+                new Document("provenance.provWasAssociatedWith", new ArrayList())
                 )
             );
 
@@ -700,6 +700,19 @@ public class DataDAO {
                     } 
                     dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp));
                 }                
+            } else {
+                ExportDataIndex exportDataIndex = new ExportDataIndex(
+                                null,
+                                dataModel.getProvenance().getUri(), 
+                                dataModel.getTarget()
+                        );
+                    
+                DataExportDTO dataExportDto = DataExportDTO.fromModel(dataModel, null); 
+                if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
+                        dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
+                    } 
+                dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null));
+
             }
             
         }
@@ -780,7 +793,7 @@ public class DataDAO {
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
         ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+            List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
@@ -828,7 +841,7 @@ public class DataDAO {
 
                             // experiment
                             ExperimentModel experiment = null;
-                            if (!dataGetDTO.getProvenance().getExperiments().isEmpty()) {
+                            if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
                                 experiment = experiments.get(dataGetDTO.getExperiment());
                             } 
 
@@ -915,13 +928,13 @@ public class DataDAO {
             
             LocalDate date = LocalDate.now();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
-            String fileName = "export_data_wide_format" + dtf.format(date);
+            String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
             LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .header("Content-Disposition", "attachment; filename=" + fileName )
                     .build();
 
         } catch (Exception e) {
@@ -1125,13 +1138,13 @@ public class DataDAO {
             }
             LocalDate date = LocalDate.now();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
-            String fileName = "export_data_long_format" + dtf.format(date);
+            String fileName = "export_data_long_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
             LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
-                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .header("Content-Disposition", "attachment; filename=" + fileName)
                     .build();
 
         } catch (Exception e) {

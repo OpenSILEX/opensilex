@@ -795,6 +795,11 @@ public final class OntologyDAO {
     }
 
     public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+        List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
+        
+        if (uris.size() > 0) {
+            // Gracefully handle empty uris.
+            // SHOULD be backward compatible, since prvious behaviour in said situation was crash
         SelectBuilder select = new SelectBuilder();
         select.setDistinct(true);
 
@@ -824,11 +829,13 @@ public final class OntologyDAO {
         Locale locale = Locale.forLanguageTag(language);
         select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
         select.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
-        select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
+   
+
 
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
+        
         for (SPARQLResult result : results) {
             SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
             model.setName(result.getStringValue(namesField));
@@ -840,7 +847,7 @@ public final class OntologyDAO {
             model.setTypeLabel(typeLabel);
             resultList.add(model);
         }
-
+     }
         return resultList;
     }
 

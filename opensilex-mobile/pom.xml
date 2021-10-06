@@ -2,17 +2,11 @@
 <!--
 ******************************************************************************
  OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
- Copyright © INRA 2019
- Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ Copyright © INRA 2021
+ Contact: arnaud.charleroy@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  
- OpenSilex Core pom.xml
- This module includes all core concepts for scientific experiments represention:
- - Projects
- - Experiments
- - Infrastuctures
- - Variables
- - Scalar data and files
- - Measurement devices
+ OpenSilex Mobile pom.xml
+ This module includes all core concepts for mobile application represention:
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

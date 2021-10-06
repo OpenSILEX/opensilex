@@ -63,3 +63,7 @@ phisws:
 #  contactEmail: opensilex-help@groupes.renater.fr
 #  # Project homepage (String)
 #  projectHomepage: http://www.opensilex.org/
+
+system:
+    ignoredModules:
+        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar

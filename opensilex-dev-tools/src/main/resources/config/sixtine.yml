@@ -1,7 +1,8 @@
 system:
     ignoredModules:
         org.opensilex.phis.PhisWsModule: opensilex-phis.jar
-    
+        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+        
 ontologies:
     baseURI: http://opensilex.dev/
     baseURIAlias: dev

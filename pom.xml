@@ -42,6 +42,7 @@
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
+        
 
         <!-- PHIS legacy module-->
         <module>opensilex-phis</module>
@@ -63,9 +64,7 @@
         
         <!-- Documentation module -->
         <module>opensilex-doc</module>
-
-        
-
+        <module>opensilex-mobile</module>
     </modules>
     
     <dependencies>
@@ -130,6 +129,12 @@
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-mobile</artifactId>
             <version>${revision}</version>
         </dependency>
         

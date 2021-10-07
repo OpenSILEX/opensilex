@@ -37,7 +37,7 @@
       <opensilex-SearchFilterField
         @search="soList.refresh()"
         @clear="reset()"
-        searchButtonLabel="component.common.search.visualize-button"
+        searchButtonLabel="component.common.search.search-button"
         :showAdvancedSearch="true"
       >
       <template v-slot:filters>

@@ -229,6 +229,9 @@ public class ObservationUnitDTO {
         if (model.getUri() != null) {
             observationUnit.setObservationUnitDbId(model.getUri().toString());
         }
+        if(factorLevels == null){
+            return observationUnit;
+        }
         List<ObservationTreatment> treatments = new ArrayList();
         for (FactorLevelModel level:factorLevels) {
             ObservationTreatment treatment = new ObservationTreatment();

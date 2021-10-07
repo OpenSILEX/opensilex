@@ -61,6 +61,8 @@ import GroupList from './groups/GroupList.vue';
 components["opensilex-GroupList"] = GroupList;
 import GroupSelector from './groups/GroupSelector.vue';
 components["opensilex-GroupSelector"] = GroupSelector;
+import GroupSelectorForm from './groups/GroupSelectorForm.vue';
+components["opensilex-GroupSelectorForm"] = GroupSelectorForm;
 
 // Infrastructures
 import InfrastructureView from './infrastructures/InfrastructureView.vue';

@@ -8,8 +8,6 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 
-import javax.validation.constraints.NotNull;
-import java.net.URI;
 
 /**
  * DTO representing JSON for update organisation

@@ -62,12 +62,6 @@
             :detailVisible="data.detailsShowing"
             :small="true"
           ></opensilex-DetailButton>
-          <!-- opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)"
-            @click="groupForm.showEditForm(data.item)"
-            label="component.group.update"
-            :small="true"
-          ></opensilex-EditButton -->
           <opensilex-DeleteButton
             v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_DELETE_ID)"
             @click="deleteGroup(data.item.uri)"
@@ -99,7 +93,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
+import { InfrastructureGetDTO, InfrastructureUpdateDTO } from "opensilex-core/index";
 
 @Component
 export default class InfrastructureGroupsView extends Vue {
@@ -135,37 +129,35 @@ export default class InfrastructureGroupsView extends Vue {
   @Prop()
   private selected: InfrastructureGetDTO;
 
-  public deleteGroup(uri) {
-    this.$opensilex
-      .getService("opensilex.OrganisationsService")
-      .deleteInfrastructureTeam(uri)
-      .then(() => {
-        this.$emit("onDelete", uri);
-      });
+  deleteGroup(uri) {
+    let groupUris = this.selected.groups
+        .filter(group => group.uri !== uri)
+        .map(group => group.uri);
+    return this.updateInfrastructureGroups(groupUris);
   }
 
   updateGroups(form) {
-    console.log("updateGroups");
-    console.log(form);
-    this.selected.groups = form.groups;
-    console.log(this.selected);
+    return this.updateInfrastructureGroups(form.groups);
+  }
+
+  updateInfrastructureGroups(groupUris: Array<string>) {
+    let infrastructure: InfrastructureUpdateDTO = {
+      ...this.selected,
+      groupUris: groupUris
+    };
     return this.$opensilex
-      .getService("opensilex.OrganisationsService")
-      .updateInfrastructure(this.selected)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Team created", uri);
-      })
-      .catch(error => {
-        console.error("Error while updating the groups : ", error);
-        this.$opensilex.errorHandler(error);
-      });
+        .getService("opensilex.OrganisationsService")
+        .updateInfrastructure(infrastructure)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          console.debug("Infrastructure updated", http.response.result);
+          this.$emit('onUpdate');
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
   }
 
   setInfrastructure(form) {
-    console.log("initForm");
-    console.log(form);
-    console.log(this.selected.groups);
     form.groups = this.selected.groups.map((group) => group.uri);
   }
 }

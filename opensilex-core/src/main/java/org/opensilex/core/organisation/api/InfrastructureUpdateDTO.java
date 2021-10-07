@@ -8,7 +8,6 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 
-
 /**
  * DTO representing JSON for update organisation
  * @author vince

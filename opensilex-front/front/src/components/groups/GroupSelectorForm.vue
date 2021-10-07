@@ -1,7 +1,7 @@
 <template>
   <b-form>
     <opensilex-GroupSelector
-      label="component.infrastructure.groups"
+      :label="label"
       :groups.sync="form.groups"
       :multiple="true"
       @select="select"
@@ -34,6 +34,11 @@ export default class GroupSelectorForm extends Vue {
   })
   form: { groups: string };
 
+  @Prop({
+    default: "GroupSelectForm.label"
+  })
+  label;
+
   getEmptyForm() {
     return {
       groups: []
@@ -62,4 +67,15 @@ export default class GroupSelectorForm extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  GroupSelectForm:
+    label: "Select groups to associate with the organization"
+
+fr:
+  GroupSelectForm:
+    label: "Sélectionnez des groupes à associer à l'organisation"
+
+</i18n>
 

@@ -45,10 +45,10 @@ class InfrastructureCreationDTO extends InfrastructureDTO {
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        List<URI> groupUriList = getGroups();
-        if (groupUriList != null) {
-            List<GroupModel> groups = new ArrayList<>(groupUriList.size());
-            groupUriList.forEach(groupUri -> {
+        List<URI> groupUris = getGroups();
+        if (groups != null) {
+            List<GroupModel> groups = new ArrayList<>(groupUris.size());
+            groupUris.forEach(groupUri -> {
                 GroupModel groupModel = new GroupModel();
                 groupModel.setUri(groupUri);
                 groups.add(groupModel);

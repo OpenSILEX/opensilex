@@ -14,7 +14,6 @@ import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCacheException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -31,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,8 +61,10 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     private final Map<URI, List<URI>> propertiesByType;
     private final Map<URI, List<String>> propertiesByTypeVarNames;
 
+    private final Pattern specialCharsPattern;
 
     public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException, OntologyCacheException {
+
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
         OntologyCache ontologyCache = CoreModule.getOntologyCacheInstance();
@@ -85,6 +87,8 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         this.propertiesByType = new HashMap<>();
         this.propertiesByTypeVarNames = new HashMap<>();
 
+        specialCharsPattern = Pattern.compile("[^A-Za-z0-9]");
+
         for (URI type : types) {
 
             // get class from OntologyCache and compute stream of data/object property
@@ -103,12 +107,12 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
                 // use short uri (faster ?)
                 URI formattedPropertyUri = SPARQLDeserializers.formatURI(property.getUri());
 
-                // dont handle properties which are initially present into SPARQLModel (not managed by this class)
+                // don't handle properties which are initially present into SPARQLModel (not managed by this class)
                 if (!managedProperties.contains(formattedPropertyUri)) {
                     typesProperties.add(property);
                     propertiesUris.add(formattedPropertyUri);
 
-                    String propertyName = property.getName().replaceAll("\\s", "").toLowerCase();
+                    String propertyName = specialCharsPattern.matcher(property.getName()).replaceAll("_");
                     propertiesNames.add(propertyName);
                 }
             });
@@ -130,7 +134,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         typesProperties.forEach(property -> {
 
             // ensure that property var is syntactically correct in SPARQL
-            String propertyName = property.getName().replaceAll("\\s", "").toLowerCase();
+            String propertyName =  specialCharsPattern.matcher(property.getName()).replaceAll("_");
             propertiesVars.add(makeVar(propertyName));
         });
 

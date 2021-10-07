@@ -40,9 +40,7 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -132,6 +130,7 @@ public final class OntologyDAO {
 
         return classTree;
     }
+
 
     public List<OwlRestrictionModel> getOwlRestrictions(URI rdfClass, String lang) throws Exception {
         List<OrderBy> orderByList = new ArrayList<>();
@@ -676,19 +675,61 @@ public final class OntologyDAO {
 
     }
 
-    public void updateDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
-        sparql.update(graph, dataProperty);
+    private void updateRestrictionRangeOnProperty(URI propertyUri, URI newRange, boolean isDataProperty) throws SPARQLException {
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Node propertyNode = SPARQLDeserializers.nodeURI(propertyUri);
+        Var rangeVar = makeVar("range");
+        Node newRangeNode = SPARQLDeserializers.nodeURI(newRange);
+
+        Triple oldRangeTriple = isDataProperty ?
+                new Triple(uriVar,OWL2.onDataRange.asNode(),rangeVar) :
+                new Triple(uriVar,OWL2.onClass.asNode(),rangeVar);
+
+        Triple newRangeTriple = isDataProperty ?
+                new Triple(uriVar,OWL2.onDataRange.asNode(),newRangeNode) :
+                new Triple(uriVar,OWL2.onClass.asNode(),newRangeNode);
+
+        UpdateBuilder update = new UpdateBuilder()
+                .addDelete(oldRangeTriple)
+                .addInsert(newRangeTriple)
+                .addWhere(uriVar,OWL2.onProperty,propertyNode)
+                .addWhere(oldRangeTriple);
+
+        sparql.executeUpdateQuery(update);
+    }
+
+    public void updateDataProperty(Node graph, DatatypePropertyModel property) throws Exception {
+
+        try{
+            sparql.startTransaction();
+            sparql.update(graph, property);
+            updateRestrictionRangeOnProperty(property.getUri(),property.getRange(),true);
+            sparql.commitTransaction();
+        }catch (Exception e){
+            sparql.rollbackTransaction(e);
+        }
+
         // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        DatatypePropertyModel updatedProperty = getDataProperty(dataProperty.getUri(),null,null);
+        DatatypePropertyModel updatedProperty = getDataProperty(property.getUri(),null,null);
         CoreModule.getOntologyCacheInstance().updateDataProperty(updatedProperty);
     }
 
-    public void updateObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
-        sparql.update(graph, objectProperty);
+    public void updateObjectProperty(Node graph, ObjectPropertyModel property) throws Exception {
+
+        try{
+            sparql.startTransaction();
+            sparql.update(graph, property);
+            updateRestrictionRangeOnProperty(property.getUri(),property.getRange().getUri(),false);
+            sparql.commitTransaction();
+        }catch (Exception e){
+            sparql.rollbackTransaction(e);
+        }
 
         // get the updated model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        ObjectPropertyModel updatedProperty = getObjectProperty(objectProperty.getUri(),null,null);
+        ObjectPropertyModel updatedProperty = getObjectProperty(property.getUri(),null,null);
         CoreModule.getOntologyCacheInstance().updateObjectProperty(updatedProperty);
+
     }
 
     public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {

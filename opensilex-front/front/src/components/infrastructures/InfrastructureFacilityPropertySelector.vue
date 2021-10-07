@@ -2,7 +2,7 @@
   <div>
     <opensilex-SelectForm
       ref="selectForm"
-      label="InfrastructureFacilityPropertySelector.label"
+      :label="property.name"
       :selected.sync="internalValue"
       :multiple="property.is_list"
       :required="property.is_required"

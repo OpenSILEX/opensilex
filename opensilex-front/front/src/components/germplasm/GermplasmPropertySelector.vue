@@ -1,6 +1,7 @@
 <template>
   <div>
     <opensilex-GermplasmSelector
+      :label="property.name"
       :required="property.is_required"
       :multiple="property.is_list"
       :germplasm.sync="internalValue"

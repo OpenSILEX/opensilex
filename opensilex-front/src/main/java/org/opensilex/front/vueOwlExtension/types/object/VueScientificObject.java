@@ -18,7 +18,7 @@ public class VueScientificObject implements VueOntologyObjectType {
 
     @Override
     public String getInputComponent() {
-        return "opensilex-ScientificObjectSelector";
+        return "opensilex-ScientificObjectParentPropertySelector";
     }
 
     @Override

@@ -1,10 +1,10 @@
 <template>
   <div>
     <opensilex-SelectForm
-      label="ExperimentScientificObjects.parent-label"
+      :label="property.name"
       :selected.sync="internalValue"
-      :multiple="false"
-      :required="false"
+      :multiple="property.is_list"
+      :required="property.is_required"
       :searchMethod="searchParents"
       :itemLoadingMethod="getParentsByURI"
     ></opensilex-SelectForm>

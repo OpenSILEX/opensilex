@@ -29,7 +29,7 @@
 
                         <b-dropdown-item-button @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
-                        <b-dropdown-item-button >{{$t("VariableList.export-variables")}}</b-dropdown-item-button>
+                        <!-- <b-dropdown-item-button >{{$t("VariableList.export-variables")}}</b-dropdown-item-button> -->
 
                       </b-dropdown>
                     </template>

@@ -3,6 +3,7 @@
     <div class="card">
       <opensilex-SearchFilterField
         :withButton="true"
+        searchButtonLabel="component.common.search.visualize-button"
         :showTitle="true"
         @search="onSearch"
         @clear="clear"

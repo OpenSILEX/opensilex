@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc] - 2021-10-08
+
+### Added
+
+- Data management:
+  - Import, export in CSV format
+  - A standard provenance for usual provenances or methods
+  - Ability to put data on other entities such as sites, areas, factors, etc. except people.  So now, you have to use target instead of scientificObject in the API. This is also the case for importing data via the web interface. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md) when upgrading.
+  - Ability to mention raw data of a measure (i.e. for repetition)
+
+
+- Variable:
+  - Add a species attribute to link a variable to a specific species.
+  - Ability to create groups of variables. Add a default group for environmental variables.
+  - Prevent incorrect update of variables with data attached
+  - Ability to add a document to methods
+
+
+- Scientific Object:
+  - Unicity of a scientific object name in an experiment.
+
+
+- Map:
+  - Ability to specify a geospatial event on Map
+  - Ability to see objects over time on Map
+  - Export Map in PNG, PDF and Shapefile
+
+- Event:
+  - Add a document to an event (image, video, etc.)
+
+
+- Added system details in the administration menu : instance version, loaded modules, link to web API documentation, etc.
+
+
+###  Fixed or optimized
+
+- Geospatial filters on the Map
+- Optimized vocabulary menu
+- Optimized data sorting and pagination
+- Improved multiple selection, now you can select 10000 scientific objects
+- Improved export and import
+- Fixed brapi error
+- Various data bug fixes
+- Various translation mistakes
+
+### Changed
+- Data Model : "scientificObject": "target"
+- DataFile Model : "scientificObject": "target"
+
+Link to the upgrade scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md)
+
+
+### Major bugs identified
+
+- Problem with filters
+- Specific properties of Event are not manage in Map
+- Specific properties of Event are not apply on Forms.
+
+
+********************************************************************************
 ## [1.0.0-beta+2.1] - 2021-07-27
 
 ### Added
@@ -17,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Issue on device association
 - Miscellaneous data bugs fixed
+
+********************************************************************************
 
 ## [1.0.0-beta+2] - 2021-05-07
 
@@ -32,11 +94,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Data API : list to single scientific object association
 - Events improvement : specific properties for class management and optimisation.
 
+********************************************************************************
+
 ## [1.0.0-beta+1] - 2021-04-27
 
 ### Fixed
 
 - Vocabulary description and Bug correction
+
+********************************************************************************
 
 ## [1.0.0-beta] - 2021-04-20
 
@@ -58,6 +124,8 @@ Pre-release of OpenSILEX. New features and improvement. Device, Event, Move, Imp
 - Graphic Visualization of a Scientific Object or Device Data
 - Organisation (beta version)
 - Web Services have been homogenised: semantic, fields order, paths, etc.
+
+********************************************************************************
 
 ## [1.0.0-alpha] - 2020-11-30
 

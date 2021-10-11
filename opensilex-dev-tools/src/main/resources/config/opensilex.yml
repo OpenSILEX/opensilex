@@ -32,6 +32,10 @@ big-data:
 
 phisws:
     infrastructure: opensilex
+
+server:
+    publicURI: http://138.102.159.37:8094/
+    
 # Configuration for module: SecurityModule (SecurityConfig)
 # security:
 # #    Email service (EmailService)
@@ -63,7 +67,3 @@ phisws:
 #  contactEmail: opensilex-help@groupes.renater.fr
 #  # Project homepage (String)
 #  projectHomepage: http://www.opensilex.org/
-
-system:
-    ignoredModules:
-        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar

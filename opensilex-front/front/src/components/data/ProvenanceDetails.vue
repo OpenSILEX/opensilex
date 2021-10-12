@@ -123,7 +123,7 @@ en:
 fr:
   ProvenanceDetails:
     uri : Uri
-    label: Name
+    label: Nom
     description : Description
     no-provenance-found: Aucune provenance trouvée
     agent : Agent(s)

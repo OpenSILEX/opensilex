@@ -20,7 +20,7 @@
           ref="provenanceSelector"
           :provenances.sync="form.provenance.uri"
           :filterLabel="filterProvenanceLabel"
-          label="Select a provenance"
+          label="component.data.form.selector.placeholder"
           @select="loadProvenanceAndCheckUploadedData"
           @clear="reset()"
           :multiple="false"

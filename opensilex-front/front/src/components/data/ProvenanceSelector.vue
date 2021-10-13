@@ -145,7 +145,7 @@ en:
   component: 
     data: 
         form: 
-         selector:
+          selector:
             placeholder  : Select a provenance
             placeholder-multiple  : Select one or more provenance(s)
             filter-search-no-result : No provenance found

@@ -134,6 +134,9 @@ public class ScientificObjectDAO {
         searchFilter.setOnlyFetchOsWithNoParent(true);
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
+        if(results.getList().isEmpty()){
+            return new ListWithPagination<>(Collections.emptyList());
+        }
 
         List<URI> resultsUri = new ArrayList<>();
         results.getList().forEach(result ->

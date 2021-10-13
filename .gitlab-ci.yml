@@ -426,31 +426,31 @@ test:hamza:deploy:
     - hamza:build
 
 ###################################
-##  cheimae-TEST-BUILD-DEPLOYMENT
+##  VALENTIN-TEST-BUILD-DEPLOYMENT
 ###################################
 
-cheimae:build:
+valentin:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "cheimae"
+    - if: $CI_COMMIT_BRANCH == "valentin"
 
-test:cheimae:deploy:
+test:valentin:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/cheimae"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/valentin"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4096
     OPENSILEX_JAR_PORT: 8096
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/cheimae"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/valentin"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "cheimae"
+    - if: $CI_COMMIT_BRANCH == "valentin"
       when: on_success
   needs:
-    - cheimae:build
+    - valentin:build
 
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT

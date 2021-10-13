@@ -72,6 +72,12 @@ export default class OntologyObjectForm extends Vue {
   }
 
   getInputComponent(property, vp) {
+
+    console.debug("definition of "  + property.name);
+    console.debug(JSON.stringify(property));
+    console.debug(property);
+    console.debug("property");
+    console.debug(vp);
     if (
       property.input_components_by_property &&
       property.input_components_by_property[property.property]
@@ -82,7 +88,10 @@ export default class OntologyObjectForm extends Vue {
   }
 
   updateRelation(value, property) {
-
+    console.debug("event");
+    console.debug(value);
+    console.debug("definition.property");
+    console.debug(property);
   // this.form.relations.filter(function(a){return a.property !== property;});
     for(var i = this.form.relations.length -1; i >= 0 ; i--){
       if(this.form.relations[i].property === property){

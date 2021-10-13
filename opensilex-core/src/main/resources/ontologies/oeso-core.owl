@@ -23,7 +23,7 @@
 OESO</rdfs:label>
         <rdfs:seeAlso>http://www.phenome-fppn.fr/vocabulary/2018/oepo</rdfs:seeAlso>
         <owl:versionInfo>New version of 3.0.2 release  http://www.phenome-fppn.fr/vocabulary/2018/oepo</owl:versionInfo>
-        <owl:versionInfo>Version 3.1 (2021-07-14) created by INRA</owl:versionInfo>
+        <owl:versionInfo>Version 3.2 (2021-10-07) created by INRA</owl:versionInfo>
     </owl:Ontology>
     
 
@@ -1226,6 +1226,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#Population -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Population">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="en">Population</rdfs:label>
+        <rdfs:label xml:lang="fr">Population</rdfs:label>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Project -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Project">
@@ -1276,6 +1286,16 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificDocument"/>
         <rdfs:label xml:lang="fr">Rapport de stage</rdfs:label>
         <rdfs:label xml:lang="en">Report</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Sample -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Sample">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:label xml:lang="fr">Echantillon</rdfs:label>
+        <rdfs:label xml:lang="en">Sample</rdfs:label>
     </owl:Class>
     
 
@@ -2137,13 +2157,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
-        <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
+        <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:label xml:lang="en">Title</rdfs:label>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>

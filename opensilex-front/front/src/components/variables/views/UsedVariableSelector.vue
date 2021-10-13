@@ -70,22 +70,24 @@ export default class UsedVariableSelector extends Vue {
       objects = this.objects;
     }
 
-    let devices = null;
     if (this.device != null) {
-      
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getUsedProvenances(null, null,null, [this.device])
-        .then(http => {
-          let prov = http.response.result.map(item => {
-            return item.uri;
-          });
-          return this.$opensilex
-            .getService("opensilex.DataService")
-            .getUsedVariables(null, null, prov)
-            .then(http => {
-              return http.response.result;
+       return this.$opensilex.getService("opensilex.DevicesService").getDevice(this.device).then(http => {
+            let variables = [];
+            if(http.response.result && http.response.result.relations){
+              http.response.result.relations.forEach(relation => {
+                if(relation.property=="vocabulary:measures"){
+                  variables.push(relation.value);
+                }
             });
+            if(variables.length > 0){
+                return this.$opensilex.getService("opensilex.VariablesService").getVariablesByURIs(variables).then(http => {
+                    return http.response.result;
+                });
+            } else {
+              return variables;
+            }
+
+            }
         });
     } else {
       return this.$opensilex

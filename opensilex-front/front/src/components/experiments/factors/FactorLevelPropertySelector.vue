@@ -1,7 +1,7 @@
 <template>
     <opensilex-FactorLevelSelector
       v-if="context && context.experimentURI"
-      label="FactorLevelSelector.label"
+      :label="property.name"
       :factorLevels.sync="internalValue"
       :multiple="property.is_list"
       :required="property.is_required"

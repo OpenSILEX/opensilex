@@ -7,6 +7,7 @@
 package org.opensilex.core.experiment.api;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 
 import java.net.URI;
@@ -51,6 +52,14 @@ public class ExperimentCreationDTO extends ExperimentDTO {
             infrastructuresList.add(infrastructure);
         });
         model.setInfrastructures(infrastructuresList);
+
+        List<InfrastructureFacilityModel> facilityList = new ArrayList<>(facilities.size());
+        facilities.forEach((facilityUri) -> {
+            InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            facilityModel.setUri(facilityUri);
+            facilityList.add(facilityModel);
+        });
+        model.setFacilities(facilityList);
 
         List<ProjectModel> projectList = new ArrayList<>(projects.size());
         projects.forEach((URI u) -> {

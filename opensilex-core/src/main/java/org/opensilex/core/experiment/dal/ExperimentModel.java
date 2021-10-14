@@ -8,6 +8,7 @@ package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -116,6 +117,13 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<InfrastructureModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructure";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "usesFacility"
+    )
+    List<InfrastructureFacilityModel> facilities;
+    public static final String FACILITY_FIELD = "facilities";
  
     
     @SPARQLProperty(
@@ -227,6 +235,14 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     public void setInfrastructures(List<InfrastructureModel> infrastructures) {
         this.infrastructures = infrastructures;
+    }
+
+    public List<InfrastructureFacilityModel> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+        this.facilities = facilities;
     }
 
     public Boolean getIsPublic() {

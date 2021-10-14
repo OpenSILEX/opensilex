@@ -1056,6 +1056,16 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
+        <rdfs:label xml:lang="fr">Unité d'expérimentation</rdfs:label>
+        <rdfs:label xml:lang="en">Experimental unit</rdfs:label>
+    </owl:Class>
     
 
 
@@ -1288,6 +1298,16 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Actuator"/>
         <rdfs:label xml:lang="en">irrigation system</rdfs:label>
         <rdfs:label xml:lang="fr">système d&apos;irrigation</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Installation -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Installation">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
+        <rdfs:label xml:lang="fr">Installation</rdfs:label>
+        <rdfs:label xml:lang="en">Installation</rdfs:label>
     </owl:Class>
     
 
@@ -1582,6 +1602,16 @@
         <rdfs:comment>measure the PAR directly in the range 0.4 to 0.7 micrometers</rdfs:comment>
         <rdfs:label xml:lang="en">quantum sensor</rdfs:label>
         <rdfs:label xml:lang="fr">quantum sensor</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ResearchUnit -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ResearchUnit">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
+        <rdfs:label xml:lang="fr">Unité de recherche</rdfs:label>
+        <rdfs:label xml:lang="en">Research unit</rdfs:label>
     </owl:Class>
     
 

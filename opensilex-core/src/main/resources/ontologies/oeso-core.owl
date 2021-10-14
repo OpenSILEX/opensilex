@@ -286,7 +286,7 @@ OESO</rdfs:label>
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFacility">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Infrastructure"/>
-        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
     </owl:ObjectProperty>
@@ -479,6 +479,18 @@ OESO</rdfs:label>
     <owl:ObjectProperty rdf:about="http://www.w3.org/ns/prov#used">
         <rdfs:label xml:lang="en">used</rdfs:label>
         <rdfs:label xml:lang="fr">utilise</rdfs:label>
+    </owl:ObjectProperty>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#usesFacility -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#usesFacility">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/>
+        <rdfs:label xml:lang="en">Uses facility</rdfs:label>
+        <rdfs:label xml:lang="fr">Utilise l'installation technique</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -1064,12 +1076,6 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Experimental protocol</rdfs:label>
         <rdfs:label xml:lang="fr">Protocole expérimental</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Facility -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility"/>
     
 
 

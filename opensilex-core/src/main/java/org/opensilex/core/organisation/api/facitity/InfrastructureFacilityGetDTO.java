@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
-import org.apache.jena.vocabulary.RDFS;
+
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -25,14 +25,14 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organisation"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organisations"})
 public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
-    @JsonProperty("organisation")
-    protected URI infrastructure;
+    @JsonProperty("organisations")
+    protected List<URI> infrastructures;
 
     protected String name;
 
@@ -53,21 +53,25 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
     }
 
     @NotNull
-    public URI getInfrastructure() {
-        return infrastructure;
+    public List<URI> getInfrastructures() {
+        return infrastructures;
     }
 
-    public void setInfrastructure(URI infrastructure) {
-        this.infrastructure = infrastructure;
+    public void setInfrastructures(List<URI> infrastructure) {
+        this.infrastructures = infrastructures;
     }
 
     public void toModel(InfrastructureFacilityModel model) {
         model.setUri(getUri());
         model.setType(getType());
         model.setName(getName());
-        InfrastructureModel infra = new InfrastructureModel();
-        infra.setUri(getInfrastructure());
-        model.setInfrastructure(infra);
+        List<InfrastructureModel> infrastructureModels = new ArrayList<>();
+        getInfrastructures().forEach(uri -> {
+            InfrastructureModel infrastructureModel = new InfrastructureModel();
+            infrastructureModel.setUri(uri);
+            infrastructureModels.add(infrastructureModel);
+        });
+        model.setInfrastructures(infrastructureModels);
     }
 
     public void fromModel(InfrastructureFacilityModel model) {
@@ -75,8 +79,8 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
-        if (model != null && model.getInfrastructure() != null) {
-            setInfrastructure(model.getInfrastructure().getUri());
+        if (model != null && model.getInfrastructures() != null) {
+            setInfrastructures(model.getInfrastructureUris());
         }
     }
 

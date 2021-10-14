@@ -49,7 +49,9 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         InfrastructureFacilityUpdateDTO facility = new InfrastructureFacilityUpdateDTO();
         facility.setName("facility"+count);
         facility.setUri(new URI("test:facility"+count));
-        facility.setInfrastructure(infra.getUri());
+        List<URI> infraUris = new ArrayList<>();
+        infraUris.add(infra.getUri());
+        facility.setInfrastructures(infraUris);
         return facility;
     }
 

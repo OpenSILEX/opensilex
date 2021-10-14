@@ -22,7 +22,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -200,8 +199,8 @@ public class InfrastructureDAO {
         if (user != null) {
             lang = user.getLanguage();
         }
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), lang);
-        instance.setInfrastructure(infra);
+        List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), lang);
+        instance.setInfrastructures(infrastructureModels);
         sparql.create(instance);
         return instance;
     }
@@ -270,8 +269,8 @@ public class InfrastructureDAO {
 
     public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(instance.getUri(), user);
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), user.getLanguage());
-        instance.setInfrastructure(infra);
+        List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), user.getLanguage());
+        instance.setInfrastructures(infrastructureModels);
         sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
         sparql.create(instance);
         return instance;

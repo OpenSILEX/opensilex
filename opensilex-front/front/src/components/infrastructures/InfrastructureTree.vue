@@ -263,10 +263,8 @@ export default class InfrastructureTree extends Vue {
         let detailDTO: InfrastructureGetDTO = http.response.result;
         this.parentURI = detailDTO.parent;
 
-
         let editDTO: InfrastructureUpdateDTO = {
           ...detailDTO,
-          uri: detailDTO.uri,
           groups: detailDTO.groups.map(group => group.uri)
         };
         this.infrastructureForm.showEditForm(editDTO);

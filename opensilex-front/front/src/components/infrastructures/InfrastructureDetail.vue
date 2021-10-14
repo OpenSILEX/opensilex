@@ -127,7 +127,6 @@ export default class InfrastructureDetail extends Vue {
         let getDto = http.response.result;
         let editDto = {
           ...getDto,
-          uri: getDto.uri,
           groups: getDto.groups.map(group => group.uri)
         };
         this.infrastructureForm.showEditForm(editDto);

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -154,4 +155,5 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
     }
+
 }

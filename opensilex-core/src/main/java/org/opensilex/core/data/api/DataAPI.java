@@ -79,6 +79,7 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.exception.DuplicateNameException;
+import org.opensilex.core.exception.NoDeclaredVariableOnDeviceException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
@@ -116,6 +117,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -568,6 +570,53 @@ public class DataAPI {
             }
         }
     }
+    
+    private void checkVariablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data) throws Exception{
+        
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+
+        if (!checkOnProvWasAssociatedWithDataProvenance(data, deviceDAO)) {
+            checkOnAgentsProvenance(deviceDAO, provDAO, data);
+        }
+    }
+    
+    private void checkOnAgentsProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception{
+        
+        ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
+
+        if (!provenance.getAgents().isEmpty()) {
+            for (AgentModel agent : provenance.getAgents()) {
+                if (deviceDAO.getDeviceByURI(agent.getUri(), user) != null) {
+                    if (SPARQLDeserializers.compareURIs(agent.getUri().toString(), data.getVariable().toString())) {
+                        return;
+                    } else {
+                        throw new NoDeclaredVariableOnDeviceException(agent.getUri(), data.getVariable());
+                    }
+                }
+            }
+        }
+    }
+    
+     private boolean checkOnProvWasAssociatedWithDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
+
+       if(!data.getProvenance().getProvWasAssociatedWith().isEmpty()){
+             for (ProvEntityModel entity : data.getProvenance().getProvWasAssociatedWith()) {
+                 DeviceModel device = deviceDAO.getDeviceByURI(entity.getUri(), user);
+                 if (device != null) {
+                     List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+                     if (!variables.isEmpty()) {
+                         if (variables.stream().anyMatch(variable -> (SPARQLDeserializers.compareURIs(variable.getValue(), data.getVariable().toString())))) {
+                             return true;
+                         }
+                         throw new NoDeclaredVariableOnDeviceException(device.getUri(), data.getVariable());
+                     }
+                 }
+             }
+         }
+         return false;
+    }
+    
 
     private void validData(List<DataModel> dataList) throws Exception {
 
@@ -582,6 +631,7 @@ public class DataAPI {
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
         Set<URI> expURIs = new HashSet<>();
         Set<URI> notFoundedExpURIs = new HashSet<>();
+
 
         int dataIndex = 0;
         for (DataModel data : dataList) {
@@ -610,13 +660,16 @@ public class DataAPI {
                 }
             }
 
-            //check provenance uri
+            //check provenance uri and variables device association
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
+                } else {
+                    checkVariablesDeviceAssociation(provDAO, data);
                 }
+
             }
 
             // check experiments uri
@@ -630,6 +683,8 @@ public class DataAPI {
                     }
                 }
             }
+            
+            // check on device data entry if variable is associated
 
         }
 

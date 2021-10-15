@@ -44,9 +44,9 @@ public class FormCreationDTO {
         this.formData = formData;
     }
     
-    @JsonProperty("creation_date")
+    @JsonProperty("modified_date")
     @ApiModelProperty(value = "timestamp", example = "YYYY-MM-DDTHH:MM:SSZ", required = true)
-    @Date(DateFormat.YMDTHMSZ)
+    @Date(DateFormat.YMDTHMSX)
     public String getCreationDate() {
         return creationDate;
     }

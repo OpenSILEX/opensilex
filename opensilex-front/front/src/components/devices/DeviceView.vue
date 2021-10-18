@@ -34,7 +34,7 @@ import Vue from "vue";
 import HttpResponse, {
   OpenSilexResponse
 } from "../../lib/HttpResponse";
-// @ts-ignore
+
 import { DevicesService, DeviceCreationDTO } from "opensilex-core/index";
 import VueRouter from "vue-router";
 

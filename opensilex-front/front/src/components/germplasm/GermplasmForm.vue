@@ -135,7 +135,7 @@
 <script lang="ts">
 import { Component, Prop, Ref  } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { GermplasmService } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 

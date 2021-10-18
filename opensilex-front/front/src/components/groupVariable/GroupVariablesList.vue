@@ -30,7 +30,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { VariablesService } from "opensilex-core/index";
 
 @Component

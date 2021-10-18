@@ -6,9 +6,9 @@ import { FrontConfigDTO } from '../lib';
 import { Menu } from './Menu';
 import { OpenSilexRouter } from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-// @ts-ignore
+
 import { AuthenticationService } from 'opensilex-security/index';
-// @ts-ignore
+
 import { SystemService, VersionInfoDTO } from 'opensilex-core/index';
 
 Vue.use(Vuex)

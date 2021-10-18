@@ -58,9 +58,9 @@ import VueConstructor from "vue";
 import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
 import moment from "moment";
-// @ts-ignore
+
 import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 export class ExperimentState {

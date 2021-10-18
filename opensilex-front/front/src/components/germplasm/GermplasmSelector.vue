@@ -19,11 +19,11 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { SecurityService } from "opensilex-security/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
+
 import { GermplasmGetSingleDTO } from "opensilex-core/index";
 
 @Component

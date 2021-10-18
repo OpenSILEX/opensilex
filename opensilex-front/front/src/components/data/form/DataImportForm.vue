@@ -133,11 +133,11 @@ import Vue from "vue";
 import Oeso from "../../../ontologies/Oeso";
 import moment from "moment";
 
-// @ts-ignore
+
 import { AgentModel, ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-// @ts-ignore
+
 import { ExperimentGetDTO } from "opensilex-core/index";
 
 @Component

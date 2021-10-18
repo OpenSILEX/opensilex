@@ -20,13 +20,13 @@ import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-// @ts-ignore
+
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-// @ts-ignore
+
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
-// @ts-ignore
+
 import {AnnotationUpdateDTO} from "opensilex-core/model/annotationUpdateDTO";
-// @ts-ignore
+
 import {AnnotationCreationDTO} from "opensilex-core/model/annotationCreationDTO";
 
 @Component

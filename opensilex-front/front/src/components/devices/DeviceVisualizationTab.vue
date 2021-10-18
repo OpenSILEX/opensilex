@@ -34,14 +34,14 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
-// @ts-ignore
+
 import {
   DevicesService,
   DataGetDTO,
   EventsService,
   EventGetDTO
 } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class DeviceVisualizationTab extends Vue {

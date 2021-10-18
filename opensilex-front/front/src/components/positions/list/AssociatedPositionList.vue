@@ -57,14 +57,14 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {stringify} from "wkt";
 
-// @ts-ignore
+
 import {PositionsService} from "opensilex-core/api/positions.service";
 
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-// @ts-ignore
+
 import {EventsService} from "opensilex-core/api/events.service";
-// @ts-ignore
+
 import {MoveDetailsDTO} from "opensilex-core/model/moveDetailsDTO";
 import MoveForm from "../../events/form/MoveForm.vue";
 import EventModalView from "../../events/view/EventModalView.vue";

@@ -99,9 +99,9 @@
 <script lang="ts">
 import { Component, Ref, Prop, Watch } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { DocumentGetDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class DocumentTabList extends Vue {

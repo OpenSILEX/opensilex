@@ -99,7 +99,7 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import UnitCreate from "./UnitCreate.vue";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
-// @ts-ignore
+
 import { UnitCreationDTO } from "opensilex-core/index";
 
 @Component

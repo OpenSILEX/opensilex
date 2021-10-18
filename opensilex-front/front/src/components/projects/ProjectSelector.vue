@@ -18,9 +18,9 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { ProjectGetDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

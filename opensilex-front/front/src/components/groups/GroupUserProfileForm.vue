@@ -62,7 +62,7 @@
 <script lang="ts">
 import { Component, Prop, Emit, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { SecurityService, ProfileGetDTO, GroupUserProfileDTO } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 

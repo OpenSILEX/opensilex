@@ -21,7 +21,7 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse"
 

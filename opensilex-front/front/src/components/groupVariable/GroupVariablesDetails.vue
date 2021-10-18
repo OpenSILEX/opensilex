@@ -80,10 +80,10 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import {VariablesService, VariablesGroupGetDTO} from "opensilex-core/index";
 import GroupVariablesForm from './GroupVariablesForm.vue'
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component

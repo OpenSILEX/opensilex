@@ -115,18 +115,18 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import { User } from "../../models/User";
-// @ts-ignore
+
 import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import { FrontConfigDTO } from "../../lib";
-// @ts-ignore
-import { SystemService, versionInfoDTO } from "opensilex-core/index";
+
+import { SystemService, VersionInfoDTO } from "opensilex-core/index";
 
 @Component
 export default class DefaultLoginComponent extends Vue { 
   service: SystemService;
-  versionInfo: versionInfoDTO = {};
+  versionInfo: VersionInfoDTO = {};
   $store: any;
   $router: any;
   $t: any;

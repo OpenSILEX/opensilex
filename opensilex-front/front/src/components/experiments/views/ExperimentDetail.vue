@@ -150,12 +150,12 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { ExperimentGetDTO, ExperimentsService, ProjectsService, OrganisationsService, SpeciesDTO, SpeciesService, FactorsService, FactorGetDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import { SecurityService, GroupDTO, UserGetDTO } from "opensilex-security/index";
 import moment from "moment";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 @Component
 export default class ExperimentDetail extends Vue {

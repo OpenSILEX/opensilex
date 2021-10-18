@@ -40,7 +40,7 @@
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
+
 import { ResourceTreeDTO } from "opensilex-core/index";
 
 @Component

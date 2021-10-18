@@ -27,7 +27,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import OWL from "../../ontologies/OWL";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

@@ -51,7 +51,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
+
 import { GermplasmService, GermplasmCreationDTO, GermplasmUpdateDTO, GermplasmGetSingleDTO } from "opensilex-core/index"
 import VueRouter from "vue-router";
 

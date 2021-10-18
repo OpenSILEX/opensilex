@@ -39,7 +39,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { OrganisationsService, InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component

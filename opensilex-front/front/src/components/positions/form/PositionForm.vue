@@ -63,7 +63,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
+    
     import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
 
     @Component

@@ -70,7 +70,7 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 
 @Component

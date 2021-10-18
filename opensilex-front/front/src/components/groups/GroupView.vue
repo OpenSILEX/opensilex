@@ -38,7 +38,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { SecurityService } from "opensilex-security/index";
 
 @Component

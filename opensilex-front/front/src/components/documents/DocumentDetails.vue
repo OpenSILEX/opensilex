@@ -118,7 +118,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { DocumentGetDTO, DocumentsService } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";

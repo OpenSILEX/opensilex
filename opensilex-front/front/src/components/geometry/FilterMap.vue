@@ -51,13 +51,13 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-// @ts-ignore
+
 import {GermplasmGetSingleDTO} from "opensilex-core/model/germplasmGetSingleDTO";
-// @ts-ignore
+
 import {FactorDetailsGetDTO} from "opensilex-core/model/factorDetailsGetDTO";
-// @ts-ignore
+
 import {ScientificObjectNodeDTO} from "opensilex-core/index";
 
 @Component

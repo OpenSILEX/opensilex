@@ -232,7 +232,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
-// @ts-ignore
+
 import {
   CharacteristicCreationDTO,
   EntityCreationDTO,
@@ -242,9 +242,9 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-// @ts-ignore
+
 import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
-// @ts-ignore
+
 import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";

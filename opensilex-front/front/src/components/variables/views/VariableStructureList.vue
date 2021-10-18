@@ -43,7 +43,7 @@ import {Component, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VariablesView from "../VariablesView.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-// @ts-ignore
+
 import { VariablesService, NamedResourceDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 

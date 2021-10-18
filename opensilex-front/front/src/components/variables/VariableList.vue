@@ -101,7 +101,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { VariablesService, VariablesGroupGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import VariablesView from "./VariablesView.vue"

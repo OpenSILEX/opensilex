@@ -79,7 +79,7 @@
 <script lang="ts">
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { FactorsService } from "opensilex-core/index";
 import { extend } from "vee-validate";
 import HttpResponse from "../../../lib/HttpResponse";

@@ -80,7 +80,7 @@
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import MethodCreate from "./MethodCreate.vue";
-    // @ts-ignore
+    
     import { MethodCreationDTO } from "opensilex-core/index";
 
     @Component

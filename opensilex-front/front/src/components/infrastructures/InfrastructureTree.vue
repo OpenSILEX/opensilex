@@ -101,7 +101,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
+
 import { OrganisationsService, ResourceTreeDTO, InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component

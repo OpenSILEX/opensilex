@@ -129,7 +129,7 @@
 import moment from "moment";
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { ProjectsService } from "opensilex-core/index";
 
 @Component

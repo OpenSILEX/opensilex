@@ -49,14 +49,14 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
+    
     import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
-    // @ts-ignore
+    
     import {AnnotationsService} from "opensilex-core/api/annotations.service";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    // @ts-ignore
+    
     import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-    // @ts-ignore
+    
     import {AnnotationCreationDTO} from "opensilex-core/model/annotationCreationDTO";
 
     @Component

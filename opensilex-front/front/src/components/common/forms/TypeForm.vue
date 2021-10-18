@@ -31,9 +31,9 @@ import {
   Ref
 } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

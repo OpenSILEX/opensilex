@@ -76,7 +76,7 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { VersionInfoDTO } from "opensilex-core/index"; 
 
 @Component

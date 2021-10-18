@@ -1,0 +1,1 @@
+import en from './message-en.json'

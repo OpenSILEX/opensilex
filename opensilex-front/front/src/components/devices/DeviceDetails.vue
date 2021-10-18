@@ -108,7 +108,7 @@
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-    // @ts-ignore
+    
     import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 

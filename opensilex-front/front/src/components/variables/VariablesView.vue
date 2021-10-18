@@ -164,7 +164,7 @@ import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
-// @ts-ignore
+
 import { VariablesService, DataService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -181,8 +181,6 @@ export default class VariablesView extends Vue {
     service: VariablesService;
     dataService: DataService;
 
-    elementIndex: number = 0;
-    elementType: string = VariablesView.VARIABLE_TYPE;
 
     static VARIABLE_TYPE: string = "Variable";
     static ENTITY_TYPE: string = "Entity";
@@ -200,6 +198,9 @@ export default class VariablesView extends Vue {
         VariablesView.GROUP_VARIABLE_TYPE
     ]
 
+    elementIndex: number = 0;
+    elementType: string = VariablesView.VARIABLE_TYPE;
+    
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
     @Ref("entityForm") readonly entityForm!: EntityCreate;
     @Ref("characteristicForm") readonly characteristicForm!: any;

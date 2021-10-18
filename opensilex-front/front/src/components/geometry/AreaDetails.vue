@@ -148,13 +148,13 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-// @ts-ignore
+
 import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
-// @ts-ignore
+
 import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-// @ts-ignore
+
 import {UserGetDTO} from "opensilex-security/model/userGetDTO";
-// @ts-ignore
+
 import { EventGetDTO } from 'opensilex-core/model/eventGetDTO';
 
 @Component

@@ -21,7 +21,7 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { DocumentsService } from "opensilex-core/index";
 
 @Component

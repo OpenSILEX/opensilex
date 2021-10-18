@@ -20,7 +20,7 @@
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
+    
     import { VariablesService, CharacteristicGetDTO, CharacteristicCreationDTO, ObjectUriResponse } from "opensilex-core/index";
     import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 

@@ -125,9 +125,9 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { ProvenanceGetDTO } from "opensilex-core/index";
-// @ts-ignore
+
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 

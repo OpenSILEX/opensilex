@@ -107,12 +107,12 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-// @ts-ignore
+
 import { GermplasmCreationDTO, GermplasmService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";
 Vue.component("downloadCsv", JsonCSV);
-// @ts-ignore
+
 import Tabulator from 'tabulator-tables';
 import Oeso from "../../ontologies/Oeso";
 

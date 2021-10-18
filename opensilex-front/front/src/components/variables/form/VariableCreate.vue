@@ -19,7 +19,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
+    
     import { VariablesService, VariableGetDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
     import ModalForm from "../../common/forms/ModalForm.vue";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";

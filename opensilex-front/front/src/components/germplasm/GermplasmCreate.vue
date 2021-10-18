@@ -54,7 +54,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Ref } from "vue-property-decorator";
-// @ts-ignore
+
 import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
 import Oeso from "../../ontologies/Oeso";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";

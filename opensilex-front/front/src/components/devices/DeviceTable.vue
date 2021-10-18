@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Ref } from "vue-property-decorator";
-// @ts-ignore
+
 import { DeviceCreationDTO, DevicesService, EventsService, MoveCreationDTO,  OntologyService, ResourceTreeDTO, RDFTypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import JsonCSV from "vue-json-csv";

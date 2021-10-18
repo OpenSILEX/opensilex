@@ -39,7 +39,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-// @ts-ignore
+
 import { GroupUpdateDTO, SecurityService } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import GroupUserProfileForm from "./GroupUserProfileForm.vue";

@@ -136,7 +136,7 @@
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
-// @ts-ignore
+
 import { ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import Oeso from "../../ontologies/Oeso";

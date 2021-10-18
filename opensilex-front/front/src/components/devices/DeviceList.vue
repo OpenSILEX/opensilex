@@ -167,7 +167,7 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
+
 import { DevicesService, DeviceGetDetailsDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";

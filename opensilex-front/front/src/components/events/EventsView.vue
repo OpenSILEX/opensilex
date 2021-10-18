@@ -26,7 +26,7 @@
     import { Component, Ref } from "vue-property-decorator";
     import Vue from "vue";
     import EventList from "./list/EventList.vue";
-    // @ts-ignore
+    
     import {EventsService} from "opensilex-core/api/events.service";
 
     @Component

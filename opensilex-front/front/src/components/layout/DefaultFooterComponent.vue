@@ -11,15 +11,15 @@
 <script lang="ts">
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { versionInfoDTO } from "opensilex-core/index";
+
+import { VersionInfoDTO } from "opensilex-core/index";
 
 @Component
 export default class DefaultFooterComponent extends Vue {
   $opensilex: any;
   $store: any;
 
-  versionInfo: versionInfoDTO;
+  versionInfo: VersionInfoDTO;
 
   created() {
     this.versionInfo = this.$opensilex.versionInfo;

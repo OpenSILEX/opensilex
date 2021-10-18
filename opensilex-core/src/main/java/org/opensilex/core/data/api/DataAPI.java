@@ -580,26 +580,38 @@ public class DataAPI {
         }
     }
     
-    private void checkOnAgentsProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception{
-        
+    private void checkOnAgentsProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
+
         ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
 
-        if (!provenance.getAgents().isEmpty()) {
+        if (provenance.getAgents() != null && !provenance.getAgents().isEmpty()) {
+
+            Set<URI> devices = new HashSet<>();
             for (AgentModel agent : provenance.getAgents()) {
-                if (deviceDAO.getDeviceByURI(agent.getUri(), user) != null) {
-                    if (SPARQLDeserializers.compareURIs(agent.getUri().toString(), data.getVariable().toString())) {
-                        return;
-                    } else {
-                        throw new NoDeclaredVariableOnDeviceException(agent.getUri(), data.getVariable());
+                DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                if (device != null) {
+                    devices.add(device.getUri());
+                    List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+                    if (!variables.isEmpty()) {
+                        if (variables.stream().anyMatch(variable -> (SPARQLDeserializers.compareURIs(variable.getValue(), data.getVariable().toString())))) {
+                            return;
+                        }
+
                     }
+
                 }
             }
+            if (!devices.isEmpty()) {
+                throw new NoDeclaredVariableOnDeviceException(devices.stream().findFirst().get(), data.getVariable());
+            }
+
         }
     }
     
      private boolean checkOnProvWasAssociatedWithDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
 
-       if(!data.getProvenance().getProvWasAssociatedWith().isEmpty()){
+       if(data.getProvenance().getProvWasAssociatedWith()!= null && !data.getProvenance().getProvWasAssociatedWith().isEmpty()){
              for (ProvEntityModel entity : data.getProvenance().getProvWasAssociatedWith()) {
                  DeviceModel device = deviceDAO.getDeviceByURI(entity.getUri(), user);
                  if (device != null) {

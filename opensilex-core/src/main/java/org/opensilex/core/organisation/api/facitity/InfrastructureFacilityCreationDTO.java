@@ -13,6 +13,6 @@ import io.swagger.annotations.ApiModel;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name","organisation"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name","organisations"})
 class InfrastructureFacilityCreationDTO extends InfrastructureFacilityGetDTO {
 }

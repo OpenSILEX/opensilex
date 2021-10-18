@@ -187,8 +187,8 @@ public class FacilityAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
         ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, orderByList, page, pageSize);
 
-        List<InfrastructureFacilityNamedDTO> dtoList = facilities.getList().stream()
-                .map(InfrastructureFacilityNamedDTO::new)
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.getList().stream()
+                .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, false))
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();

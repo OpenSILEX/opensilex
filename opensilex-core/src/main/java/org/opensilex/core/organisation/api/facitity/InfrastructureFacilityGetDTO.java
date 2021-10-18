@@ -57,7 +57,7 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<URI> infrastructure) {
+    public void setInfrastructures(List<URI> infrastructures) {
         this.infrastructures = infrastructures;
     }
 

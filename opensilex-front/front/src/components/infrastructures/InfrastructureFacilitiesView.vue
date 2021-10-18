@@ -1,5 +1,5 @@
 <template>
-  <b-card v-if="selected">
+  <b-card>
     <template v-slot:header>
       <h3>
         {{ $t("InfrastructureFacilitiesView.facilities") }}
@@ -33,9 +33,9 @@
       sort-by="rdf_type_name"
       :selectable="isSelectable"
       selectMode="single"
-      :items="selected.facilities"
+      :items="facilities"
       :fields="fields"
-      @row-selected="$emit('rowSelected', $event)"
+      @row-selected="onFacilitySelected"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(rdf_type_name)="data">{{
@@ -96,7 +96,6 @@
       "
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
-      :infrastructure="selected.uri"
     ></opensilex-InfrastructureFacilityForm>
   </b-card>
 </template>
@@ -106,11 +105,16 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
+import {OrganisationsService} from "opensilex-core/api/organisations.service";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {InfrastructureFacilityNamedDTO} from "opensilex-core/model/infrastructureFacilityNamedDTO";
+import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
+  service: OrganisationsService;
 
   @Ref("facilityForm") readonly facilityForm!: any;
 
@@ -121,9 +125,6 @@ export default class InfrastructureFacilitiesView extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-
-  @Prop()
-  private selected: InfrastructureGetDTO;
 
   @Prop({
     default: false,
@@ -147,6 +148,9 @@ export default class InfrastructureFacilitiesView extends Vue {
     },
   ];
 
+  facilities: Array<InfrastructureFacilityGetDTO> = [];
+  selectedFacility: InfrastructureFacilityGetDTO = undefined;
+
   public deleteFacility(uri) {
     this.$opensilex
       .getService("opensilex.OrganisationsService")
@@ -154,6 +158,28 @@ export default class InfrastructureFacilitiesView extends Vue {
       .then(() => {
         this.$emit("onDelete", uri);
       });
+  }
+
+  onFacilitySelected(selected: Array<InfrastructureFacilityGetDTO>) {
+    this.selectedFacility = selected[0];
+    this.$emit('facilitySelected', this.selectedFacility);
+  }
+
+  created() {
+    this.service = this.$opensilex.getService(
+        "opensilex-core.OrganisationsService"
+    );
+
+    this.refresh();
+  }
+
+  refresh() {
+    this.service
+        .searchInfrastructureFacilities()
+        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
+          console.log("Refresh facilities", http.response);
+          this.facilities = http.response.result
+        });
   }
 
   editFacility(facility) {

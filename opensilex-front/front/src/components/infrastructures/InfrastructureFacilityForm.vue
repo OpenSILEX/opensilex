@@ -21,9 +21,6 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 export default class InfrastructureFacilityForm extends Vue {
   $opensilex: any;
 
-  @Prop()
-  infrastructure;
-
   @Ref("facilityForm") readonly facilityForm!: any;
 
   showEditForm(form) {

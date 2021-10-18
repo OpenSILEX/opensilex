@@ -91,6 +91,9 @@ import InfrastructureUriView from './infrastructures/InfrastructureUriView.vue';
 components["opensilex-InfrastructureUriView"] = InfrastructureUriView;
 import InfrastructureFacilityView from './infrastructures/InfrastructureFacilityView.vue';
 components["opensilex-InfrastructureFacilityView"] = InfrastructureFacilityView;
+import OrganizationFacilityDetail from './infrastructures/OrganizationFacilityDetail.vue';
+components["opensilex-OrganizationFacilityDetail"] = OrganizationFacilityDetail;
+
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';

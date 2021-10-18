@@ -12,6 +12,7 @@ import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -49,8 +50,8 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         InfrastructureFacilityUpdateDTO facility = new InfrastructureFacilityUpdateDTO();
         facility.setName("facility"+count);
         facility.setUri(new URI("test:facility"+count));
-        List<URI> infraUris = new ArrayList<>();
-        infraUris.add(infra.getUri());
+        List<NamedResourceDTO<InfrastructureModel>> infraUris = new ArrayList<>();
+        infraUris.add(NamedResourceDTO.getDTOFromModel(infra));
         facility.setInfrastructures(infraUris);
         return facility;
     }

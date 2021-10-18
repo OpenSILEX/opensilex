@@ -43,7 +43,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
             inverse = true
     )
     private List<InfrastructureModel> infrastructures;
-    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
+    public static final String INFRASTRUCTURE_FIELD = "infrastructures";
 
     public List<InfrastructureModel> getInfrastructures() {
         return infrastructures;

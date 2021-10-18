@@ -60,7 +60,6 @@ export default class InfrastructureFacilityForm extends Vue {
       }
     }
 
-    form.organisation = this.infrastructure;
     form.relations = definedRelations;
 
     return this.$opensilex
@@ -103,7 +102,6 @@ export default class InfrastructureFacilityForm extends Vue {
       }
     }
 
-    form.organisation = this.infrastructure;
     form.relations = definedRelations;
     return this.$opensilex
       .getService("opensilex.OrganisationsService")

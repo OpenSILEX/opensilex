@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModel;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.ontology.api.RDFObjectDTO;
@@ -18,6 +19,7 @@ import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * DTO representing JSON for getting facility
@@ -25,14 +27,14 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organisations"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations"})
 public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
-    @JsonProperty("organisations")
-    protected List<URI> infrastructures;
+    @JsonProperty("organizations")
+    protected List<NamedResourceDTO<InfrastructureModel>> infrastructures;
 
     protected String name;
 
@@ -53,11 +55,11 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
     }
 
     @NotNull
-    public List<URI> getInfrastructures() {
+    public List<NamedResourceDTO<InfrastructureModel>> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<URI> infrastructures) {
+    public void setInfrastructures(List<NamedResourceDTO<InfrastructureModel>> infrastructures) {
         this.infrastructures = infrastructures;
     }
 
@@ -66,9 +68,9 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
         model.setType(getType());
         model.setName(getName());
         List<InfrastructureModel> infrastructureModels = new ArrayList<>();
-        getInfrastructures().forEach(uri -> {
+        getInfrastructures().forEach(infrastructure -> {
             InfrastructureModel infrastructureModel = new InfrastructureModel();
-            infrastructureModel.setUri(uri);
+            infrastructureModel.setUri(infrastructure.getUri());
             infrastructureModels.add(infrastructureModel);
         });
         model.setInfrastructures(infrastructureModels);
@@ -79,8 +81,12 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
-        if (model != null && model.getInfrastructures() != null) {
-            setInfrastructures(model.getInfrastructureUris());
+        if (model.getInfrastructures() != null) {
+            setInfrastructures(model.getInfrastructures()
+                    .stream()
+                    .map(infrastructureModel ->
+                            (NamedResourceDTO<InfrastructureModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
+                    .collect(Collectors.toList()));
         }
     }
 

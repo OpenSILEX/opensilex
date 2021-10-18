@@ -202,7 +202,7 @@ if (lang && lang.length > 2) {
 
 console.debug("Detected language", lang);
 store.commit("lang", lang);
-let i18nOptions = {
+let i18nOptions: VueI18n.I18nOptions = {
   fallbackLocale: 'en',
   locale: lang,
   silentTranslationWarn: !isDebug,

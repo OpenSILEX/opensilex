@@ -28,7 +28,7 @@
 
 import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-//  @ts-ignore
+
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 
 import { ProvenanceGetDTO } from "opensilex-core/index";

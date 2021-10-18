@@ -50,7 +50,7 @@ export default class ImageGrid extends Vue {
 
   formatedDate(date) {
     const newDate = new Date(date);
-    const options = {
+    const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -61,7 +61,7 @@ export default class ImageGrid extends Vue {
   }
 }
 </script>
-
+  
 <style scoped >
 div >>> .carousel-control-prev-icon, div >>> .carousel-control-next-icon {
     width: 80px;

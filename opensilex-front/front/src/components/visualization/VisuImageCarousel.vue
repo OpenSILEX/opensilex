@@ -50,7 +50,7 @@ export default class VisuImageCarousel extends Vue {
 
   formatedDate(date) {
     const newDate = new Date(date);
-    const options = {
+    const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "short",
       day: "numeric",

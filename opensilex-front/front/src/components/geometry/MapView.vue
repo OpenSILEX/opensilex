@@ -1342,7 +1342,7 @@ export default class MapView extends Vue {
   private waitFor(conditionFunction) {
 
     const poll = resolve => {
-      if (conditionFunction()) resolve();
+      if (conditionFunction()) resolve(undefined);
       else setTimeout(_ => {
         this.$opensilex.showLoader();
         poll(resolve);

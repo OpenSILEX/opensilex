@@ -570,7 +570,7 @@ export default class GermplasmTable extends Vue {
       this.okNumber = this.okNumber + 1;
       this.progressValue = this.progressValue + 1;
       
-      resolve();
+      resolve(undefined);
       
     }).catch(error => {
         let errorMessage: string;
@@ -606,7 +606,7 @@ export default class GermplasmTable extends Vue {
         row.reformat();
         this.errorNumber = this.errorNumber + 1;
         this.progressValue = this.progressValue + 1;
-        resolve();
+        resolve(undefined);
       });
     });
   }

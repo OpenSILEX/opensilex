@@ -690,7 +690,7 @@ export default class DeviceTable extends Vue {
                   let row = this.tabulator.getRow(index);
                   row.reformat();
                   this.errorNumber = this.errorNumber + 1;
-                  resolve();
+                  resolve(undefined);
                 });
               }
             }
@@ -700,7 +700,7 @@ export default class DeviceTable extends Vue {
             this.okNumber = this.okNumber + 1;
             this.progressValue = this.progressValue + 1;
 
-            resolve();
+            resolve(undefined);
 
           })
           .catch(error => {
@@ -738,7 +738,7 @@ export default class DeviceTable extends Vue {
             this.progressValue = this.progressValue + 1;
             this.disableInsert = false;
             this.disableCheck = false;
-            resolve();
+            resolve(undefined);
           });
     });
   }

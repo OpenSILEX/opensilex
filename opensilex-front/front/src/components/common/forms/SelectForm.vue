@@ -296,7 +296,7 @@ export default class SelectForm extends Vue {
           if (this.multiple) {
             resolve([]);
           } else {
-            resolve();
+            resolve(undefined);
           }
         } else if (this.currentValue) {
           resolve(this.currentValue);
@@ -345,7 +345,7 @@ export default class SelectForm extends Vue {
             let item = this.findInTree(currentOptions, this.selection);
             resolve(item);
           } else {
-            resolve();
+            resolve(undefined);
           }
         }
       }

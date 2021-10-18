@@ -189,17 +189,18 @@ export default class VariablesView extends Vue {
     static UNIT_TYPE:  string = "Unit";
     static GROUP_VARIABLE_TYPE: string = "VariableGroup";
 
-    static elementTypes = [
-        VariablesView.VARIABLE_TYPE,
-        VariablesView.ENTITY_TYPE,
-        VariablesView.CHARACTERISTIC_TYPE,
-        VariablesView.METHOD_TYPE,
-        VariablesView.UNIT_TYPE,
-        VariablesView.GROUP_VARIABLE_TYPE
-    ]
 
     elementIndex: number = 0;
-    elementType: string = VariablesView.VARIABLE_TYPE;
+    elementType: string = '';
+
+    static elementTypes = [
+        // VariablesView.VARIABLE_TYPE,
+        // VariablesView.ENTITY_TYPE,
+        // VariablesView.CHARACTERISTIC_TYPE,
+        // VariablesView.METHOD_TYPE,
+        // VariablesView.UNIT_TYPE,
+        // VariablesView.GROUP_VARIABLE_TYPE
+    ]
     
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
     @Ref("entityForm") readonly entityForm!: EntityCreate;
@@ -217,6 +218,18 @@ export default class VariablesView extends Vue {
 
     buttonTitle;
 
+constructor() {
+    super()
+    this.elementType = VariablesView.VARIABLE_TYPE
+    VariablesView.elementTypes = [
+        VariablesView.VARIABLE_TYPE,
+        VariablesView.ENTITY_TYPE,
+        VariablesView.CHARACTERISTIC_TYPE,
+        VariablesView.METHOD_TYPE,
+        VariablesView.UNIT_TYPE,
+        VariablesView.GROUP_VARIABLE_TYPE
+    ]
+}
     relationsFields: any[] = [
       {
         key: "uri",

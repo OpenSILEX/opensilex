@@ -15,7 +15,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
 export default class InfrastructureFacilityForm extends Vue {

@@ -142,7 +142,7 @@ export default class InfrastructureDetail extends Vue {
         uri: facility.uri,
         value: facility.name,
         to: {
-          path: "/infrastructure/facility" + encodeURIComponent(facility.uri)
+          path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri)
         }
       };
     });

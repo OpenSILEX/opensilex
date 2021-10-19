@@ -35,7 +35,14 @@
 
     <template v-slot:body>
       <!-- URI -->
-      <opensilex-UriView :uri="selectedFacilityOrDefault.uri"></opensilex-UriView>
+      <opensilex-UriView
+          :uri="selectedFacilityOrDefault.uri"
+          :value="selectedFacilityOrDefault.uri"
+          :to="{
+            path: '/infrastructure/facility/details/' + encodeURIComponent(selectedFacilityOrDefault.uri),
+          }"
+      >
+      </opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView
           :value="selectedFacilityOrDefault.name"

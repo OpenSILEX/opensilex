@@ -106,7 +106,7 @@ import Vue from "vue";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
 import {OrganisationsService} from "opensilex-core/api/organisations.service";
-import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityNamedDTO} from "opensilex-core/model/infrastructureFacilityNamedDTO";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 

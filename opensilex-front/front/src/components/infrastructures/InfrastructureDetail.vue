@@ -71,7 +71,16 @@
           label="InfrastructureDetail.groups.label"
           :list="groupUriList"
           :inline="false"
+          v-if="hasGroups"
       >
+      </opensilex-UriListView>
+
+      <opensilex-UriListView
+          label="InfrastructureDetail.facilities.label"
+          :list="facilityUriList"
+          :inline="false"
+          v-if="hasFacilities"
+        >
       </opensilex-UriListView>
     </div>
   </b-card>
@@ -107,6 +116,14 @@ export default class InfrastructureDetail extends Vue {
     return this.$store.state.credentials;
   }
 
+  get hasGroups() {
+    return this.selected.groups.length > 0;
+  }
+
+  get hasFacilities() {
+    return this.selected.facilities.length > 0;
+  }
+
   get groupUriList() {
     return this.selected.groups.map(group => {
       return {
@@ -116,6 +133,18 @@ export default class InfrastructureDetail extends Vue {
           path: "/groups#" + encodeURIComponent(group.uri),
         },
       }
+    });
+  }
+
+  get facilityUriList() {
+    return this.selected.facilities.map(facility => {
+      return {
+        uri: facility.uri,
+        value: facility.name,
+        to: {
+          path: "/infrastructure/facility" + encodeURIComponent(facility.uri)
+        }
+      };
     });
   }
 
@@ -159,10 +188,14 @@ en:
     groups:
       label: "Groups"
       edit: "Edit"
+    facilities:
+      label: "Facilities"
 fr:
   InfrastructureDetail:
     parent-orga: Organisation parente
     groups:
       label: "Groupes"
       edit: "Modifier"
+    facilities:
+      label: "Installations techniques"
 </i18n>

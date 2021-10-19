@@ -105,6 +105,7 @@
                 :required="relation.property.is_required"
                 :multiple="relation.property.is_list"
                 :value.sync="relation.value"
+                :context="context"
                 @update:value="updateRelation($event,relation.property)"
             ></component>
         </div>
@@ -142,6 +143,8 @@ export default class EventForm extends Vue {
 
     @Prop({default: () => MoveForm.getEmptyForm()})
     form: MoveCreationDTO;
+
+    context: any;
 
     baseType: string = "";
     typeModel = null;
@@ -181,6 +184,10 @@ export default class EventForm extends Vue {
 
     setBaseType(baseType) {
         this.baseType = baseType;
+    }
+
+    setContext(context){
+      this.context = context;
     }
 
     updateRequiredProps() {

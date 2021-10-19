@@ -27,7 +27,7 @@
     import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
     // @ts-ignore
     import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
-    import EventForm from "./EventForm.vue";
+
     import PositionsView from "../../positions/view/PositionsView.vue";
     // @ts-ignore
     import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
@@ -35,8 +35,6 @@
     import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
     import MoveForm from "./MoveForm.vue";
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
-    import Oeev from "../../../ontologies/Oeev";
-    import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
     import moment from "moment-timezone";
 
     @Component
@@ -60,6 +58,9 @@
         @Prop()
         eventCreatedTime: any;
 
+        @Prop()
+        context: any;
+
         get user() {
             return this.$store.state.user;
         }
@@ -76,7 +77,10 @@
         }
 
         showCreateForm() {
-            this.modalForm.getFormRef().resetTypeModel();
+            let eventForm = this.modalForm.getFormRef();
+            eventForm.resetTypeModel();
+            eventForm.setContext(this.context);
+
             this.modalForm.showCreateForm();
         }
 
@@ -101,7 +105,9 @@
 
         showEditForm(uri, type) {
 
-            this.modalForm.getFormRef().setBaseType(this.$opensilex.Oeev.EVENT_TYPE_URI);
+            let eventForm = this.modalForm.getFormRef();
+            eventForm.setBaseType(this.$opensilex.Oeev.EVENT_TYPE_URI);
+            eventForm.setContext(this.context);
 
             let isMove = this.isMove(type, this.$opensilex.Oeev);
 

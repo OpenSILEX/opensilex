@@ -28,7 +28,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations"})
-public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
+public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
@@ -63,10 +63,10 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
         this.infrastructures = infrastructures;
     }
 
+    @Override
     public void toModel(InfrastructureFacilityModel model) {
-        model.setUri(getUri());
-        model.setType(getType());
-        model.setName(getName());
+        super.toModel(model);
+
         List<InfrastructureModel> infrastructureModels = new ArrayList<>();
         getInfrastructures().forEach(infrastructure -> {
             InfrastructureModel infrastructureModel = new InfrastructureModel();
@@ -77,10 +77,8 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
     }
 
     public void fromModel(InfrastructureFacilityModel model) {
-        setUri(model.getUri());
-        setType(model.getType());
-        setTypeLabel(model.getTypeLabel().getDefaultValue());
-        setName(model.getName());
+        super.fromModel(model);
+
         if (model.getInfrastructures() != null) {
             setInfrastructures(model.getInfrastructures()
                     .stream()
@@ -88,29 +86,5 @@ public class InfrastructureFacilityGetDTO extends RDFObjectDTO {
                             (NamedResourceDTO<InfrastructureModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
                     .collect(Collectors.toList()));
         }
-    }
-
-    public InfrastructureFacilityModel newModel() {
-        InfrastructureFacilityModel instance = new InfrastructureFacilityModel();
-        toModel(instance);
-        
-        return instance;
-    }
-
-    public static InfrastructureFacilityGetDTO getDTOFromModel(InfrastructureFacilityModel model, boolean withDetails) {
-        InfrastructureFacilityGetDTO dto = new InfrastructureFacilityGetDTO();
-        dto.fromModel(model);
-
-        if (withDetails) {
-            List<RDFObjectRelationDTO> relationsDTO = new ArrayList<>();
-
-            for (SPARQLModelRelation relation : model.getRelations()) {
-                relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
-            }
-
-            dto.setRelations(relationsDTO);
-        }
-
-        return dto;
     }
 }

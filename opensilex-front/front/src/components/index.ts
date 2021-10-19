@@ -71,8 +71,8 @@ import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 components["opensilex-InfrastructureTree"] = InfrastructureTree;
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
 components["opensilex-InfrastructureForm"] = InfrastructureForm;
-import InfrastructureFacilityForm from './infrastructures/facility/InfrastructureFacilityForm.vue';
-components["opensilex-InfrastructureFacilityForm"] = InfrastructureFacilityForm;
+import OrganizationFacilityModalForm from './infrastructures/facility/OrganizationFacilityModalForm.vue';
+components["opensilex-OrganizationFacilityModalForm"] = OrganizationFacilityModalForm;
 import InfrastructureFacilitiesView from './infrastructures/facility/InfrastructureFacilitiesView.vue';
 components["opensilex-InfrastructureFacilitiesView"] = InfrastructureFacilitiesView;
 import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
@@ -93,6 +93,8 @@ import InfrastructureFacilityView from './infrastructures/facility/Infrastructur
 components["opensilex-InfrastructureFacilityView"] = InfrastructureFacilityView;
 import OrganizationFacilityDetail from './infrastructures/facility/OrganizationFacilityDetail.vue';
 components["opensilex-OrganizationFacilityDetail"] = OrganizationFacilityDetail;
+import OrganizationFacilityForm from './infrastructures/facility/OrganizationFacilityForm.vue';
+components["opensilex-OrganizationFacilityForm"] = OrganizationFacilityForm;
 
 
 // Factors

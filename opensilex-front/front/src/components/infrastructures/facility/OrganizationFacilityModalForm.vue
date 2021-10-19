@@ -1,7 +1,7 @@
 <template>
   <opensilex-ModalForm
     ref="facilityForm"
-    component="opensilex-OntologyObjectForm"
+    component="opensilex-OrganizationFacilityForm"
     createTitle="InfrastructureFacilitiesView.add"
     editTitle="InfrastructureFacilitiesView.update"
     icon="ik#ik-map"
@@ -18,7 +18,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
-export default class InfrastructureFacilityForm extends Vue {
+export default class OrganizationFacilityModalForm extends Vue {
   $opensilex: any;
 
   @Ref("facilityForm") readonly facilityForm!: any;
@@ -31,7 +31,11 @@ export default class InfrastructureFacilityForm extends Vue {
         this.facilityForm
           .getFormRef()
           .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
-        this.facilityForm.showEditForm(http.response.result);
+        let editDto = {
+          ...http.response.result,
+          organizations: http.response.result.organizations.map(org => org.uri)
+        };
+        this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }
 

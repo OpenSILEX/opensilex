@@ -11,6 +11,7 @@
       <div class="col-md-12">
         <opensilex-OrganizationFacilityDetail
           :selected="selected"
+          @onUpdate="refresh"
         >
         </opensilex-OrganizationFacilityDetail>
       </div>

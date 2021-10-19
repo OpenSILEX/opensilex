@@ -87,7 +87,7 @@
       </template>
     </b-table>
 
-    <opensilex-InfrastructureFacilityForm
+    <opensilex-OrganizationFacilityModalForm
       ref="facilityForm"
       v-if="
         user.hasCredential(
@@ -96,7 +96,7 @@
       "
       @onCreate="$emit('onCreate', $event)"
       @onUpdate="$emit('onUpdate', $event)"
-    ></opensilex-InfrastructureFacilityForm>
+    ></opensilex-OrganizationFacilityModalForm>
   </b-card>
 </template>
 
@@ -109,6 +109,7 @@ import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityNamedDTO} from "opensilex-core/model/infrastructureFacilityNamedDTO";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {InfrastructureFacilityUpdateDTO} from "opensilex-core/model/infrastructureFacilityUpdateDTO";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
@@ -189,9 +190,8 @@ export default class InfrastructureFacilitiesView extends Vue {
         });
   }
 
-  editFacility(facility) {
-    let copy = JSON.parse(JSON.stringify(facility));
-    this.facilityForm.showEditForm(copy);
+  editFacility(facility: InfrastructureFacilityGetDTO) {
+    this.facilityForm.showEditForm(facility);
   }
 }
 </script>

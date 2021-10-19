@@ -26,11 +26,15 @@
             :small="true"
         ></opensilex-DeleteButton>
       </b-button-group>
-      <opensilex-InfrastructureFacilityForm
+      <opensilex-OrganizationFacilityModalForm
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            )
+          "
           ref="infrastructureFacilityForm"
-          :infrastructure="selectedFacilityOrDefault.organizations"
           @onUpdate="refresh"
-      ></opensilex-InfrastructureFacilityForm>
+      ></opensilex-OrganizationFacilityModalForm>
     </template>
 
     <template v-slot:body>
@@ -119,7 +123,7 @@ export default class OrganizationFacilityDetail extends Vue {
   }
 
   refresh() {
-
+    this.$emit("onUpdate");
   }
 
   get user() {
@@ -153,7 +157,11 @@ export default class OrganizationFacilityDetail extends Vue {
   }
 
   editInfrastructureFacility() {
-    this.infrastructureFacilityForm.showEditForm(this.selected);
+    let editDto = {
+      ...this.selected,
+      organizations: this.selected.organizations.map(org => org.uri)
+    };
+    this.infrastructureFacilityForm.showEditForm(editDto);
   }
 
   //@todo tester
@@ -174,6 +182,10 @@ export default class OrganizationFacilityDetail extends Vue {
     this.typeProperties = [];
     this.valueByProperties = {};
     this.classModel = {};
+
+    if (!this.selected) {
+      return;
+    }
 
     this.$opensilex
         .getService("opensilex.VueJsOntologyExtensionService")

@@ -126,8 +126,12 @@ export default class InfrastructureView extends Vue {
   }
 
   refresh() {
-    this.infrastructureTree.refresh(this.selectedOrganization.uri);
-    this.facilitiesView.refresh();
+    if (this.infrastructureTree) {
+      this.infrastructureTree.refresh(this.selectedOrganization.uri);
+    }
+    if (this.facilitiesView) {
+      this.facilitiesView.refresh();
+    }
   }
 }
 </script>

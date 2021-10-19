@@ -185,7 +185,6 @@ export default class InfrastructureFacilitiesView extends Vue {
     this.service
         .searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
-          console.log("Refresh facilities", http.response);
           this.facilities = http.response.result
         });
   }

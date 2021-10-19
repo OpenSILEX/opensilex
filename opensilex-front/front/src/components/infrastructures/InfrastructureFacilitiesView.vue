@@ -118,6 +118,9 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   @Ref("facilityForm") readonly facilityForm!: any;
 
+  @Prop()
+  selected: InfrastructureGetDTO;
+
   get user() {
     return this.$store.state.user;
   }
@@ -174,6 +177,11 @@ export default class InfrastructureFacilitiesView extends Vue {
   }
 
   refresh() {
+    if (this.selected) {
+      this.facilities = this.selected.facilities;
+      return;
+    }
+
     this.service
         .searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {

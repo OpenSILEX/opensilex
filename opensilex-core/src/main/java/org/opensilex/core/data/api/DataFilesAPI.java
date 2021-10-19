@@ -131,8 +131,7 @@ public class DataFilesAPI {
     @ApiOperation(value = "Add a data file",
     notes = "{\"rdf_type\":\"" +  DATAFILE_EXAMPLE_TYPE + "\", "
             + "\"date\":\"" +  DataAPI.DATA_EXAMPLE_MINIMAL_DATE + "\", "
-            + "\"timezone\":\"" +  DataAPI.DATA_EXAMPLE_TIMEZONE + "\", "
-            + "\"targets\":\"http://plot01\", "
+            + "\"target\":\"http://plot01\", "
             + "\"provenance\": { \"uri\":\"" +  DataAPI.DATA_EXAMPLE_PROVENANCEURI + "\" }, "
             + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}"
     )

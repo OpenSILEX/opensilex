@@ -34,8 +34,8 @@
           createTitle="InfrastructureTree.add"
           editTitle="InfrastructureTree.update"
           icon="ik#ik-globe"
-          @onCreate="$emit('refresh', $event)"
-          @onUpdate="$emit('refresh', $event)"
+          @onCreate="$emit('onCreate', $event)"
+          @onUpdate="$emit('onUpdate', $event)"
           :initForm="setParent"
         ></opensilex-ModalForm>
       </div>
@@ -44,6 +44,7 @@
       <!-- URI -->
       <opensilex-UriView
         :uri="selected.uri"
+        :value="selected.uri"
         :to="{
           path: '/infrastructure/details/' + encodeURIComponent(selected.uri),
         }"
@@ -65,6 +66,13 @@
         title="InfrastructureDetail.parent-orga"
       >
       </opensilex-InfrastructureUriView>
+
+      <opensilex-UriListView
+          label="InfrastructureDetail.groups.label"
+          :list="groupUriList"
+          :inline="false"
+      >
+      </opensilex-UriListView>
     </div>
   </b-card>
 </template>
@@ -75,13 +83,14 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
+import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
 
 @Component
 export default class InfrastructureDetail extends Vue {
   $opensilex: any;
 
   @Prop()
-  selected;
+  selected: InfrastructureGetDTO;
 
   @Prop({
     default: false,
@@ -98,12 +107,30 @@ export default class InfrastructureDetail extends Vue {
     return this.$store.state.credentials;
   }
 
+  get groupUriList() {
+    return this.selected.groups.map(group => {
+      return {
+        uri: group.uri,
+        value: group.name,
+        to: {
+          path: "/groups#" + encodeURIComponent(group.uri),
+        },
+      }
+    });
+  }
+
   editInfrastructure() {
     this.$opensilex
       .getService("opensilex-core.OrganisationsService")
       .getInfrastructure(this.selected.uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        this.infrastructureForm.showEditForm(http.response.result);
+        let getDto = http.response.result;
+        let editDto = {
+          ...getDto,
+          uri: getDto.uri,
+          groups: getDto.groups.map(group => group.uri)
+        };
+        this.infrastructureForm.showEditForm(editDto);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -115,6 +142,10 @@ export default class InfrastructureDetail extends Vue {
   setParent(form) {
     form.parent = this.selected.parent;
   }
+
+  setInfrastructure(form) {
+    form.groups = this.selected.groups.map((group) => group.uri);
+  }
 }
 </script>
 
@@ -125,7 +156,13 @@ export default class InfrastructureDetail extends Vue {
 en:
   InfrastructureDetail:
     parent-orga: Parent organization
+    groups:
+      label: "Groups"
+      edit: "Edit"
 fr:
   InfrastructureDetail:
     parent-orga: Organisation parente
+    groups:
+      label: "Groupes"
+      edit: "Modifier"
 </i18n>

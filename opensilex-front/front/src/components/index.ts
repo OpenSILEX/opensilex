@@ -75,8 +75,6 @@ import InfrastructureFacilityForm from './infrastructures/InfrastructureFacility
 components["opensilex-InfrastructureFacilityForm"] = InfrastructureFacilityForm;
 import InfrastructureFacilitiesView from './infrastructures/InfrastructureFacilitiesView.vue';
 components["opensilex-InfrastructureFacilitiesView"] = InfrastructureFacilitiesView;
-import InfrastructureGroupsView from './infrastructures/InfrastructureGroupsView.vue';
-components["opensilex-InfrastructureGroupsView"] = InfrastructureGroupsView;
 import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
 components["opensilex-InfrastructureDetail"] = InfrastructureDetail;
 import InfrastructureSelector from './infrastructures/InfrastructureSelector.vue';

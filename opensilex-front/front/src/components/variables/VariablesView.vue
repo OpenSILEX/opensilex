@@ -201,6 +201,8 @@ export default class VariablesView extends Vue {
         // VariablesView.UNIT_TYPE,
         // VariablesView.GROUP_VARIABLE_TYPE
     ]
+
+    
     
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
     @Ref("entityForm") readonly entityForm!: EntityCreate;

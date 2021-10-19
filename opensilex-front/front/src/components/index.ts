@@ -534,6 +534,8 @@ import GenerateDataTemplateFrom from './data/form/GenerateDataTemplateFrom.vue';
 components["opensilex-GenerateDataTemplateFrom"] = GenerateDataTemplateFrom;
 import ProvenanceForm from './data/form/ProvenanceForm.vue';
 components["opensilex-ProvenanceForm"] = ProvenanceForm;
+import ProvenanceAgentForm from './data/form/ProvenanceAgentForm.vue';
+components["opensilex-ProvenanceAgentForm"] = ProvenanceAgentForm;
 import DataValidationReport from './data/form/DataValidationReport.vue';
 components["opensilex-DataValidationReport"] = DataValidationReport;
 import DataHelpTableView from './data/form/DataHelpTableView.vue';
@@ -672,6 +674,8 @@ import  DeviceTypes from './devices/DeviceTypes.vue';
 components["opensilex-DeviceTypes"] = DeviceTypes;
 import  DeviceSelector from './devices/DeviceSelector.vue';
 components["opensilex-DeviceSelector"] = DeviceSelector;
+import  DevicePropertySelector from './devices/DevicePropertySelector.vue';
+components["opensilex-DevicePropertySelector"] = DevicePropertySelector;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';

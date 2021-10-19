@@ -257,7 +257,6 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     }
 
     protected Collection<ClassEntry> getEntriesFromDao(URI classUri) throws OntologyCacheException {
-
         try {
             return classFetcher.getClassEntries(Collections.singletonList(classUri));
         } catch (Exception e) {

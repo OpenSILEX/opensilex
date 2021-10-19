@@ -187,6 +187,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             ontologyCache = coreConfig.enableOntologyCaching() ?
                     CaffeineOntologyCache.getInstance(sparql) :
                     NoOntologyCacheImpl.getInstance(sparql);
+            LOGGER.info("OntologyCache implementation :"+ontologyCache.getClass().getName());
         }
     }
 

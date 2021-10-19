@@ -5,12 +5,9 @@
  */
 package org.opensilex.sparql.model;
 
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Consumer;
 
 /**
@@ -22,7 +19,7 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
     protected T parent;
     public static final String PARENT_FIELD = "parent";
 
-    protected List<T> children;
+    protected List<T> children = new LinkedList<>() ;
     public static final String CHILDREN_FIELD = "children";
 
     public T getParent() {

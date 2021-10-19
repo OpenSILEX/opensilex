@@ -46,22 +46,17 @@ public class NoOntologyCacheImpl implements OntologyCache {
     }
 
     @Override
-    public ClassModel getClassModel(URI classUri, String lang) throws OntologyCacheException {
-        return this.getClassModel(classUri,null,lang);
+    public ClassModel getOrCreateClassModel(URI classUri, String lang) throws OntologyCacheException {
+        return this.getOrCreateClassModel(classUri,null,lang);
     }
 
     @Override
-    public ClassModel getClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
+    public ClassModel getOrCreateClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
         try{
             return ontologyDAO.getClassModel(classUri,parentClassUri,lang);
         }catch (Exception e){
             throw new OntologyCacheException(e);
         }
-    }
-
-    @Override
-    public void addClass(ClassModel classModel) throws OntologyCacheException {
-        // no-cache impl
     }
 
     @Override

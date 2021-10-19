@@ -6,7 +6,6 @@
 package org.opensilex.core.ontology.api;
 
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -143,7 +142,7 @@ public class OntologyAPI {
     ) throws Exception {
 
         ClassModel classDescription = CoreModule.getOntologyCacheInstance()
-                .getClassModel(rdfType, parentType, currentUser.getLanguage());
+                .getOrCreateClassModel(rdfType, parentType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription)).getResponse();
     }

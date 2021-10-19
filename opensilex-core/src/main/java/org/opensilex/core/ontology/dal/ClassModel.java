@@ -59,7 +59,7 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     protected ClassModel parent;
 
     public ClassModel(){
-
+        super();
     }
 
     /**

@@ -47,7 +47,7 @@ public class VueOwlExtensionDAO {
             sparql.create(instanceExtension);
 
             ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
+            CoreModule.getOntologyCacheInstance().getOrCreateClassModel(instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
 
             sparql.commitTransaction();
         } catch (Exception ex) {

@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SPARQLService;
@@ -203,9 +202,9 @@ public class VueOwlExtensionAPI {
         if(classDescription.getParent() != null){
             URI classParent = classDescription.getParent().getUri();
             if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classParent)) {
-                parentModel = ontologyCache.getClassModel(classParent,parentType,currentUser.getLanguage());
+                parentModel = ontologyCache.getOrCreateClassModel(classParent,parentType,currentUser.getLanguage());
             }else{
-                parentModel = ontologyCache.getClassModel(classParent,null,currentUser.getLanguage());
+                parentModel = ontologyCache.getOrCreateClassModel(classParent,null,currentUser.getLanguage());
             }
             dao.buildProperties(parentModel, currentUser.getLanguage());
         }

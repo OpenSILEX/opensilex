@@ -17,9 +17,8 @@ import java.util.List;
 public interface OntologyCache {
 
     SPARQLTreeListModel<ClassModel> getSubClassesOf(URI classUri, String stringPattern, String lang, boolean ignoreRootClasses) throws OntologyCacheException;
-    ClassModel getClassModel(URI classUri, String lang) throws OntologyCacheException;
-    ClassModel getClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException;
-    void addClass(ClassModel classModel) throws OntologyCacheException;
+    ClassModel getOrCreateClassModel(URI classUri, String lang) throws OntologyCacheException;
+    ClassModel getOrCreateClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException;
     void updateClass(ClassModel classModel) throws OntologyCacheException;
     void removeClass(URI classUris);
 

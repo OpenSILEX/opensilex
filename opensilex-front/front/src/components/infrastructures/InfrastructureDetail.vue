@@ -157,7 +157,8 @@ export default class InfrastructureDetail extends Vue {
         let editDto = {
           ...getDto,
           uri: getDto.uri,
-          groups: getDto.groups.map(group => group.uri)
+          groups: getDto.groups.map(group => group.uri),
+          facilities: getDto.facilities.map(facility => facility.uri)
         };
         this.infrastructureForm.showEditForm(editDto);
       })

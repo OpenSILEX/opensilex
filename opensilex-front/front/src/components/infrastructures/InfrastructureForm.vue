@@ -40,6 +40,14 @@
         :groups.sync="form.groups"
         :multiple="true"
     ></opensilex-GroupSelector>
+
+    <!-- Facilities -->
+    <opensilex-InfrastructureFacilitySelector
+        label="InfrastructureForm.form-facilities-label"
+        :facilities.sync="form.facilities"
+        :multiple="true"
+    >
+    </opensilex-InfrastructureFacilitySelector>
   </b-form>
 </template>
 
@@ -66,7 +74,8 @@ export default class InfrastructureForm extends Vue {
         rdf_type: null,
         name: "",
         parent: null,
-        groups: []
+        groups: [],
+        facilities: []
       };
     },
   })
@@ -93,7 +102,8 @@ export default class InfrastructureForm extends Vue {
       rdf_type: null,
       name: "",
       parent: null,
-      groups: []
+      groups: [],
+      facilities: []
     };
   }
 
@@ -175,6 +185,7 @@ en:
     form-parent-placeholder: Select parent organization
     infrastructure-already-exists: Organization already exists with this URI
     form-group-label: Groups
+    form-facilities-label: Facilities
 fr:
   InfrastructureForm:
     infrastructure-uri: URI de l'organisation
@@ -183,4 +194,5 @@ fr:
     form-parent-placeholder: Sélectionner l'organisation parente
     infrastructure-already-exists: Une organisation existe déjà avec cette URI
     form-group-label: Groupes
+    form-facilities-labe: Installations techniques
 </i18n>

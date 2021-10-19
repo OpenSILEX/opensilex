@@ -2,7 +2,6 @@
   <opensilex-Card
       icon="ik#ik-clipboard"
       :label="$t('component.common.description')"
-      :v-if="selected"
   >
     <template v-slot:rightHeader>
       <b-button-group>
@@ -29,23 +28,23 @@
       </b-button-group>
       <opensilex-InfrastructureFacilityForm
           ref="infrastructureFacilityForm"
-          :infrastructure="selected.organisation"
+          :infrastructure="selectedFacilityOrDefault.organizations"
           @onUpdate="refresh"
       ></opensilex-InfrastructureFacilityForm>
     </template>
 
     <template v-slot:body>
       <!-- URI -->
-      <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
+      <opensilex-UriView :uri="selectedFacilityOrDefault.uri"></opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView
-          :value="selected.name"
+          :value="selectedFacilityOrDefault.name"
           label="component.common.name"
       ></opensilex-StringView>
       <!-- Type -->
       <opensilex-TypeView
-          :type="selected.rdf_type"
-          :typeLabel="selected.rdf_type_name"
+          :type="selectedFacilityOrDefault.rdf_type"
+          :typeLabel="selectedFacilityOrDefault.rdf_type_name"
       ></opensilex-TypeView>
       <!-- Organisations -->
       <opensilex-UriListView
@@ -109,7 +108,7 @@ export default class OrganizationFacilityDetail extends Vue {
   @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
 
   created() {
-    console.log("Created !", this.selected);
+
   }
 
   refresh() {
@@ -124,7 +123,17 @@ export default class OrganizationFacilityDetail extends Vue {
     return this.$store.state.credentials;
   }
 
+  get selectedFacilityOrDefault() {
+    if (this.selected) {
+      return this.selected;
+    }
+    return {};
+  }
+
   get organizationUriList() {
+    if (!this.selected) {
+      return [];
+    }
     return this.selected.organizations.map(org => {
       return {
         uri: org.uri,

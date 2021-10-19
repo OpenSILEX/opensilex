@@ -32,7 +32,7 @@
     </div>
     <div class="row" v-if="facilityTab">
       <div class="col-md-6">
-        <!-- Infrastructure facilities -->
+        <!-- Facilities -->
         <opensilex-InfrastructureFacilitiesView
             :selected="selectedFacility"
             @onUpdate="refresh"
@@ -44,7 +44,11 @@
         ></opensilex-InfrastructureFacilitiesView>
       </div>
       <div class="col-md-6">
-
+        <!-- Facility detail -->
+        <opensilex-OrganizationFacilityDetail
+            :selected="selectedFacility"
+        >
+        </opensilex-OrganizationFacilityDetail>
       </div>
     </div>
   </div>
@@ -98,12 +102,19 @@ export default class InfrastructureView extends Vue {
 
   updateType(tabIndex) {
     if (tabIndex < 0 || tabIndex >= InfrastructureView.ELEMENT_TYPES.length) {
-      console.error(`Cannot switch to tab ${tabIndex} : index out of bounds`);
       return;
     }
-    console.log("Changement de tab", tabIndex);
-    this.elementIndex = tabIndex;
-    this.elementType = InfrastructureView.ELEMENT_TYPES[this.elementIndex];
+    if (tabIndex !== this.elementIndex) {
+      this.onTabChange(this.elementIndex, tabIndex);
+      this.elementIndex = tabIndex;
+      this.elementType = InfrastructureView.ELEMENT_TYPES[this.elementIndex];
+    }
+  }
+
+  onTabChange(oldIndex, newIndex) {
+    if (InfrastructureView.ELEMENT_TYPES[oldIndex] === InfrastructureView.FACILITY_TYPE) {
+      this.selectedFacility = undefined;
+    }
   }
 
   updateSelectedOrganization(newSelection) {

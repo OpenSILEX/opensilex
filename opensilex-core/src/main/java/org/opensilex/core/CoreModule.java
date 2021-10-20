@@ -187,7 +187,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             ontologyCache = coreConfig.enableOntologyCaching() ?
                     CaffeineOntologyCache.getInstance(sparql) :
                     NoOntologyCacheImpl.getInstance(sparql);
-            LOGGER.info("OntologyCache implementation :"+ontologyCache.getClass().getName());
+            LOGGER.info("OntologyCache implementation : "+ontologyCache.getClass().getName());
         }
     }
 
@@ -205,18 +205,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         }
     }
 
-    private static final String ONTOLOGY_CACHE_SUCCESS_MSG = "Ontology cache loaded with success. Duration: %d ms";
 
     protected void populateOntologyCache() throws OntologyCacheException {
         CoreModule.initOntologyCache(getOpenSilex());
 
         if (ontologyCache != null) {
-            LOGGER.info("Populating ontology cache");
-            Instant begin = Instant.now();
             ontologyCache.populate(AbstractOntologyCache.getRootModelsToLoad());
-
-            String successMsg = String.format(ONTOLOGY_CACHE_SUCCESS_MSG, Duration.between(begin, Instant.now()).toMillis());
-            LOGGER.info(successMsg);
         }
     }
     

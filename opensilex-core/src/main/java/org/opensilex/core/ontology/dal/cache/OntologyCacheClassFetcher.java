@@ -15,6 +15,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.dal.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -36,7 +37,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class OntologyCacheClassFetcher {
 
     protected final SPARQLService sparql;
-    protected static  final ExprFactory exprFactory  = SPARQLQueryHelper.getExprFactory();
+    protected static final ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
     protected static final String COMMENT_VAR_PREFIX = "comment";
     protected final Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
@@ -49,23 +50,22 @@ public class OntologyCacheClassFetcher {
     protected final List<Var> commentVars;
     protected final List<Var> nameVars;
 
-    protected final Node[] topPropertiesNodes = {
-            NodeFactory.createURI(OWL2.topDataProperty.toString()),
-            NodeFactory.createURI(OWL2.topObjectProperty.toString())
-    };
-    private final static SPARQLLabel defaultClassLabel = new SPARQLLabel(OWL2.Class.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
-    private final static SPARQLLabel defaultDataPropertyLabel = new SPARQLLabel(OWL2.DatatypeProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
-    private final static SPARQLLabel defaultObjectPropertyLabel = new SPARQLLabel(OWL2.ObjectProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
+    protected final URI owlDatatypeProperty =  URIDeserializer.formatURI(OWL2.DatatypeProperty.toString());
+    protected final URI owlObjectProperty =  URIDeserializer.formatURI(OWL2.ObjectProperty.toString());
+
+    private static final SPARQLLabel defaultClassLabel = new SPARQLLabel(OWL2.Class.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
+    private static final SPARQLLabel defaultDataPropertyLabel = new SPARQLLabel(OWL2.DatatypeProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
+    private static final SPARQLLabel defaultObjectPropertyLabel = new SPARQLLabel(OWL2.ObjectProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE);
 
     public OntologyCacheClassFetcher(SPARQLService sparql, List<String> languages) {
         this.sparql = sparql;
 
         this.languages = languages;
-        commentVars = languages.stream().map(lang -> makeVar(COMMENT_VAR_PREFIX+"_"+ lang)).collect(Collectors.toList());
-        nameVars = languages.stream().map(lang -> makeVar(SPARQLNamedResourceModel.NAME_FIELD+"_" + lang)).collect(Collectors.toList());
+        commentVars = languages.stream().map(lang -> makeVar(COMMENT_VAR_PREFIX + "_" + lang)).collect(Collectors.toList());
+        nameVars = languages.stream().map(lang -> makeVar(SPARQLNamedResourceModel.NAME_FIELD + "_" + lang)).collect(Collectors.toList());
     }
 
-    private void appendNamesAndComments(SelectBuilder select){
+    private void appendNamesAndComments(SelectBuilder select) {
 
         nameVars.forEach(select::addVar);
         commentVars.forEach(select::addVar);
@@ -86,7 +86,7 @@ public class OntologyCacheClassFetcher {
         }
     }
 
-    private SelectBuilder getClassesQuery(Collection<URI> rootClasses){
+    private SelectBuilder getClassesQuery(Collection<URI> rootClasses) {
 
         SelectBuilder select = new SelectBuilder()
                 .addVar(uriVar)
@@ -94,7 +94,7 @@ public class OntologyCacheClassFetcher {
                 .addFilter(exprFactory.not(exprFactory.exists(
                         new WhereBuilder()
                                 .addWhere(uriVar, RDFS.subClassOf, parentVar)
-                                .addFilter(SPARQLQueryHelper.inURIFilter(parentVar,rootClasses))
+                                .addFilter(SPARQLQueryHelper.inURIFilter(parentVar, rootClasses))
                 )));
 
         appendNamesAndComments(select);
@@ -105,7 +105,7 @@ public class OntologyCacheClassFetcher {
         return select;
     }
 
-    private SelectBuilder getSearchSubClassesQuery(Stream<URI> rootClasses){
+    private SelectBuilder getSearchSubClassesQuery(Stream<URI> rootClasses) {
 
         SelectBuilder select = new SelectBuilder()
                 .addVar(uriVar)
@@ -122,7 +122,7 @@ public class OntologyCacheClassFetcher {
         return select;
     }
 
-    private SelectBuilder getSearchPropertiesQuery(Stream<URI> rootClasses){
+    private SelectBuilder getSearchPropertiesQuery(Stream<URI> rootClasses) {
 
         SelectBuilder select = new SelectBuilder()
                 .addVar(uriVar)
@@ -134,12 +134,12 @@ public class OntologyCacheClassFetcher {
                 .addWhere(uriVar, RDF.type.asNode(), typeVar)
                 .addWhere(uriVar, RDFS.domain.asNode(), domainVar)
                 .addWhere(domainVar, Ontology.subClassAny, rootClassType)
-                .addWhere(uriVar,RDFS.range,rangeVar)
-                .addOptional(uriVar,RDFS.subPropertyOf,parentVar);
+                .addWhere(uriVar, RDFS.range, rangeVar)
+                .addOptional(uriVar, RDFS.subPropertyOf, parentVar)
+                .addFilter(exprFactory.not(exprFactory.isBlank(domainVar)));
 
         appendNamesAndComments(select);
-
-        SPARQLQueryHelper.appendValueStream(select,typeVar, Arrays.stream(topPropertiesNodes));
+        select.addFilter(SPARQLQueryHelper.inURIFilter(typeVar, Arrays.asList(owlDatatypeProperty, owlObjectProperty)));
 
         Stream<Node> rootTypesNodes = rootClasses.map(SPARQLDeserializers::nodeURI);
         SPARQLQueryHelper.appendValueStream(select, rootClassType, rootTypesNodes);
@@ -168,15 +168,15 @@ public class OntologyCacheClassFetcher {
         SPARQLLabel label = new SPARQLLabel();
 
         for (int i = 0; i < languages.size(); i++) {
-            String var = translatedVars.get(i).getVarName();
-            String value = result.getStringValue(var);
-            if(!StringUtils.isEmpty(value)){
+            String varName = translatedVars.get(i).getVarName();
+            String value = result.getStringValue(varName);
+            if (!StringUtils.isEmpty(value)) {
                 label.addTranslation(value, languages.get(i));
             }
         }
 
-        Map<String,String> labelTranslations = label.getTranslations();
-        if(labelTranslations.containsKey(OpenSilex.DEFAULT_LANGUAGE)){
+        Map<String, String> labelTranslations = label.getTranslations();
+        if (labelTranslations.containsKey(OpenSilex.DEFAULT_LANGUAGE)) {
             label.setDefaultValue(labelTranslations.get(OpenSilex.DEFAULT_LANGUAGE));
             label.setDefaultLang(OpenSilex.DEFAULT_LANGUAGE);
         }
@@ -185,19 +185,14 @@ public class OntologyCacheClassFetcher {
     }
 
     protected void setClass(ClassModel model, SPARQLResult result) {
-        try{
-            model.setUri(new URI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
-            model.setType(new URI(OWL2.Class.getURI()));
-            model.setTypeLabel(defaultClassLabel);
-            model.setLabel(getLabel(result,nameVars));
-            model.setComment(getLabel(result,commentVars));
-
-        }catch (URISyntaxException e){
-            throw new RuntimeException(e);
-        }
+        model.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+        model.setType(OntologyDAO.topClassUri);
+        model.setTypeLabel(defaultClassLabel);
+        model.setLabel(getLabel(result, nameVars));
+        model.setComment(getLabel(result, commentVars));
     }
 
-    private Map<String,ClassEntry> getClassEntries(List<ClassEntry> rootEntries) throws SPARQLException {
+    private Map<String, ClassEntry> getClassEntries(List<ClassEntry> rootEntries) throws SPARQLException {
 
         Map<String, ClassEntry> classEntryByUri = new PatriciaTrie<>();
 
@@ -221,13 +216,15 @@ public class OntologyCacheClassFetcher {
             }
             setClass(entry.classModel, result);
 
-            String parentUri = SPARQLDeserializers.formatURI(result.getStringValue(parentVar.getVarName()));
+
+            String parentUri = URIDeserializer.formatURIAsStr(result.getStringValue(parentVar.getVarName()));
             ClassEntry parentEntry = classEntryByUri.get(parentUri);
 
             // if parent has not been created yet, then just register it (parent will be filled later)
             if (parentEntry == null) {
                 parentEntry = new ClassEntry();
                 parentEntry.classModel = new ClassModel();
+                parentEntry.classModel.setUri(URIDeserializer.formatURI(parentUri));
                 classEntryByUri.put(parentUri, parentEntry);
             }
             parentEntry.classModel.getChildren().add(entry.classModel);
@@ -238,14 +235,14 @@ public class OntologyCacheClassFetcher {
     }
 
 
-    private void setProperty(PropertyModel property,
-                             SPARQLResult result,
-                             Map<String,ClassEntry> classEntryByUri) throws URISyntaxException {
+    private void propertyFromResult(PropertyModel property,
+                                    SPARQLResult result,
+                                    Map<String, ClassEntry> classEntryByUri) throws URISyntaxException {
 
         property.setLabel(getLabel(result, nameVars));
         property.setComment(getLabel(result, commentVars));
 
-        String domain = result.getStringValue(domainVar.getVarName());
+        String domain = SPARQLDeserializers.formatURI(result.getStringValue(domainVar.getVarName()));
         ClassEntry domainClassEntry = classEntryByUri.get(domain);
         ClassModel domainClass = domainClassEntry.classModel;
         property.setDomain(domainClassEntry.classModel);
@@ -254,7 +251,7 @@ public class OntologyCacheClassFetcher {
 
         if (property instanceof DatatypePropertyModel) {
             DatatypePropertyModel dataProperty = (DatatypePropertyModel) property;
-            dataProperty.setType(OntologyDAO.topDataPropertyUri);
+            dataProperty.setType(owlDatatypeProperty);
             dataProperty.setTypeLabel(defaultDataPropertyLabel);
             dataProperty.setRange(new URI(range));
             dataProperty.setTypeRestriction(dataProperty.getRange());
@@ -266,23 +263,32 @@ public class OntologyCacheClassFetcher {
             domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
 
             // update domain parent list of sub-properties
-            if(domainClass.getParent() != null){
+            if (domainClass.getParent() != null) {
                 ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
-                if(domainParentEntry != null){
+                if (domainParentEntry != null) {
                     domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
                 }
             }
 
-        } else if(property instanceof ObjectPropertyModel) {
+        } else if (property instanceof ObjectPropertyModel) {
 
             ObjectPropertyModel objectProperty = (ObjectPropertyModel) property;
 
-            objectProperty.setType(OntologyDAO.topObjectPropertyUri);
+            objectProperty.setType(owlObjectProperty);
             objectProperty.setTypeLabel(defaultObjectPropertyLabel);
 
             ClassEntry rangeClassEntry = classEntryByUri.get(range);
-            objectProperty.setRange(rangeClassEntry.classModel);
-            objectProperty.setTypeRestriction(rangeClassEntry.classModel.getUri());
+            if(rangeClassEntry  == null){
+                ClassModel rangeClass = new ClassModel();
+                rangeClass.setUri(URIDeserializer.formatURI(range));
+                rangeClass.setType(OntologyDAO.topClassUri);
+                rangeClass.setTypeLabel(defaultClassLabel);
+
+                objectProperty.setRange(rangeClass);
+                objectProperty.setTypeRestriction(rangeClass.getUri());
+            }else{
+                objectProperty.setRange(rangeClassEntry.classModel);
+            }
 
             // update property list for current domain
             domainClassEntry.classModel.getObjectProperties().put(objectProperty.getUri(), objectProperty);
@@ -291,9 +297,9 @@ public class OntologyCacheClassFetcher {
             domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
 
             // update domain parent list of sub-properties
-            if(domainClass.getParent() != null){
+            if (domainClass.getParent() != null) {
                 ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
-                if(domainParentEntry != null){
+                if (domainParentEntry != null) {
                     domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
                 }
             }
@@ -301,51 +307,57 @@ public class OntologyCacheClassFetcher {
 
     }
 
-    private void fillProperties(List<ClassEntry> rootEntries, Map<String,ClassEntry> classEntryByUri) throws SPARQLException {
+    private void linkPropertyWithParent(Map<String, PropertyModel> propertyByUri, String parentUri, PropertyModel property) throws URISyntaxException {
+
+        if (!StringUtils.isEmpty(parentUri)) {
+
+            String formattedParentUri = SPARQLDeserializers.formatURI(parentUri);
+
+            PropertyModel parentProperty = propertyByUri.get(formattedParentUri);
+
+            boolean isDataProperty = property instanceof DatatypePropertyModel;
+
+            // if parent has not been created yet, then just register it (parent will be filled later)
+            if (parentProperty == null) {
+                parentProperty = isDataProperty ? new DatatypePropertyModel() : new ObjectPropertyModel();
+                parentProperty.setUri(new URI(formattedParentUri));
+                propertyByUri.put(formattedParentUri, parentProperty);
+            }
+
+            if (isDataProperty) {
+                ((DatatypePropertyModel) parentProperty).getChildren().add((DatatypePropertyModel) property);
+                ((DatatypePropertyModel) property).setParent((DatatypePropertyModel) parentProperty);
+            } else {
+                ((ObjectPropertyModel) parentProperty).getChildren().add((ObjectPropertyModel) property);
+                ((ObjectPropertyModel) property).setParent((ObjectPropertyModel) parentProperty);
+            }
+        }
+    }
+
+    private void fillProperties(List<ClassEntry> rootEntries, Map<String, ClassEntry> classEntryByUri) throws SPARQLException {
 
         Stream<URI> entriesUris = rootEntries.stream().map(entry -> entry.classModel.getUri());
-        Map<String,PropertyModel> propertyByUri = new PatriciaTrie<>();
+        Map<String, PropertyModel> propertyByUri = new PatriciaTrie<>();
 
         SelectBuilder select = getSearchPropertiesQuery(entriesUris);
         sparql.executeSelectQueryAsStream(select).forEach(result -> {
 
             try {
-                String modelUri = SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
-                PropertyModel property = propertyByUri.get(modelUri);
-                Boolean isDataProperty = null;
-                
+                String propertyUri = SPARQLDeserializers.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+                PropertyModel property = propertyByUri.get(propertyUri);
+
                 if (property == null) {
                     String type = result.getStringValue(SPARQLResourceModel.TYPE_FIELD);
-                    isDataProperty = SPARQLDeserializers.compareURIs(type, OntologyDAO.topDataPropertyUri);
+                    boolean isDataProperty = SPARQLDeserializers.compareURIs(type, OntologyDAO.topDataPropertyUri);
                     property = isDataProperty ? new DatatypePropertyModel() : new ObjectPropertyModel();
 
-                    propertyByUri.put(modelUri, property);
-                    property.setUri(new URI(modelUri));
-                }
-                if(isDataProperty == null){
-                    isDataProperty = property instanceof DatatypePropertyModel;
+                    propertyByUri.put(propertyUri, property);
+                    property.setUri(new URI(propertyUri));
                 }
 
-                String parentUri = SPARQLDeserializers.formatURI(result.getStringValue(parentVar.getVarName()));
-                if (!StringUtils.isEmpty(parentUri)) {
-                    PropertyModel parentProperty = propertyByUri.get(parentUri);
-
-                    // if parent has not been created yet, then just register it (parent will be filled later)
-                    if (parentProperty == null) {
-                        parentProperty = isDataProperty ? new DatatypePropertyModel() : new ObjectPropertyModel();
-                        propertyByUri.put(parentUri, parentProperty);
-                    }
-                    if(parentProperty instanceof DatatypePropertyModel){
-                        ((DatatypePropertyModel) parentProperty).getChildren().add((DatatypePropertyModel) property);
-                        ((DatatypePropertyModel) property).setParent((DatatypePropertyModel) parentProperty);
-
-                    }else if(parentProperty instanceof ObjectPropertyModel){
-                        ((ObjectPropertyModel) parentProperty).getChildren().add((ObjectPropertyModel) property);
-                        ((ObjectPropertyModel) property).setParent((ObjectPropertyModel) parentProperty);
-                    }
-                }
-
-                setProperty(property, result, classEntryByUri);
+                String parentUri = result.getStringValue(parentVar.getVarName());
+                linkPropertyWithParent(propertyByUri, parentUri, property);
+                propertyFromResult(property, result, classEntryByUri);
 
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
@@ -357,20 +369,20 @@ public class OntologyCacheClassFetcher {
 
     public Collection<ClassEntry> getClassEntries(Collection<URI> classUris) throws SPARQLException {
 
-        if(CollectionUtils.isEmpty(classUris)){
-            throw new IllegalArgumentException("Null or empty uris : "+classUris);
+        if (CollectionUtils.isEmpty(classUris)) {
+            throw new IllegalArgumentException("Null or empty uris : " + classUris);
         }
-        if(classUris.stream().anyMatch(Objects::isNull)){
+        if (classUris.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException("Some element from uris is null. Please provide only valid URI");
         }
 
         List<ClassEntry> rootEntries = getUniqueRoots(classUris);
-        if(rootEntries.isEmpty()){
+        if (rootEntries.isEmpty()) {
             return rootEntries;
         }
 
-        Map<String,ClassEntry> classEntryByUri = getClassEntries(rootEntries);
-        fillProperties(rootEntries,classEntryByUri);
+        Map<String, ClassEntry> classEntryByUri = getClassEntries(rootEntries);
+        fillProperties(rootEntries, classEntryByUri);
 
         return classEntryByUri.values();
     }

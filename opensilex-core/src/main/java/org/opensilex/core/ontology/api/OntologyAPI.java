@@ -142,7 +142,7 @@ public class OntologyAPI {
     ) throws Exception {
 
         ClassModel classDescription = CoreModule.getOntologyCacheInstance()
-                .getOrCreateClassModel(rdfType, parentType, currentUser.getLanguage());
+                .getOrCreateClass(rdfType, parentType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription)).getResponse();
     }

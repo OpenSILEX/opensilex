@@ -16,7 +16,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
@@ -47,7 +46,7 @@ public class VueOwlExtensionDAO {
             sparql.create(instanceExtension);
 
             ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().getOrCreateClassModel(instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
+            CoreModule.getOntologyCacheInstance().getOrCreateClass(instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
 
             sparql.commitTransaction();
         } catch (Exception ex) {

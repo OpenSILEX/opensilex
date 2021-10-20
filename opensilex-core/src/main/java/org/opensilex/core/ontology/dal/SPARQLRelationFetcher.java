@@ -92,7 +92,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         for (URI type : types) {
 
             // get class from OntologyCache and compute stream of data/object property
-            ClassModel classModel = ontologyCache.getOrCreateClassModel(type, OpenSilex.DEFAULT_LANGUAGE);
+            ClassModel classModel = ontologyCache.getOrCreateClass(type, OpenSilex.DEFAULT_LANGUAGE);
             Stream<PropertyModel> propertyStream = Stream.concat(
                     classModel.getDatatypeProperties().values().stream(),
                     classModel.getObjectProperties().values().stream()

@@ -17,7 +17,6 @@ public class CaffeineOntologyCache extends AbstractOntologyCache {
     private static final long EXPIRE_AFTER_WRITE_DURATION = 24;
     private static final TimeUnit EXPIRE_AFTER_WRITE_TIME_UNIT = TimeUnit.HOURS;
 
-
     private Cache<URI,ClassEntry> classesCache;
 
     protected CaffeineOntologyCache(SPARQLService sparql) throws OntologyCacheException {
@@ -66,4 +65,8 @@ public class CaffeineOntologyCache extends AbstractOntologyCache {
         classesCache.invalidate(classUri);
     }
 
+    @Override
+    public long length() {
+        return classesCache.estimatedSize();
+    }
 }

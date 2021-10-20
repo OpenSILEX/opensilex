@@ -7,6 +7,7 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author rcolin
@@ -46,12 +47,12 @@ public class NoOntologyCacheImpl implements OntologyCache {
     }
 
     @Override
-    public ClassModel getOrCreateClassModel(URI classUri, String lang) throws OntologyCacheException {
-        return this.getOrCreateClassModel(classUri,null,lang);
+    public ClassModel getOrCreateClass(URI classUri, String lang) throws OntologyCacheException {
+        return this.getOrCreateClass(classUri,null,lang);
     }
 
     @Override
-    public ClassModel getOrCreateClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
+    public ClassModel getOrCreateClass(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
         try{
             return ontologyDAO.getClassModel(classUri,parentClassUri,lang);
         }catch (Exception e){
@@ -76,7 +77,7 @@ public class NoOntologyCacheImpl implements OntologyCache {
     }
 
     @Override
-    public void populate(List<URI> classUris) throws OntologyCacheException {
+    public void populate(Set<URI> classUris) throws OntologyCacheException {
         // no-cache impl
     }
 
@@ -159,6 +160,10 @@ public class NoOntologyCacheImpl implements OntologyCache {
         }catch (Exception e){
             throw new OntologyCacheException(e);
         }
+    }
 
+    @Override
+    public long length() {
+        return 0;
     }
 }

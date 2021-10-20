@@ -1,24 +1,33 @@
 package org.opensilex.core.ontology.dal.cache;
 
+import com.google.common.collect.Sets;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.*;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class which handle caching logic for class {@link ClassModel}, properties {@link PropertyModel} and restrictions ({@link OwlRestrictionModel}. <br>
@@ -28,26 +37,19 @@ import java.util.function.UnaryOperator;
  */
 public abstract class AbstractOntologyCache implements OntologyCache {
 
-    static {
-        try {
-            rootModelsToLoad = Arrays.asList(
-                    new URI(Oeso.ScientificObject.toString())
-//                    new URI(Oeso.Document.toString()),
-//                    new URI(Oeev.Event.toString()),
-//                    new URI(Oeso.InfrastructureFacility.toString()),
-//                    new URI(Oeso.Device.toString())
-            );
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOntologyCache.class);
     protected final SPARQLService sparql;
     protected final OntologyCacheClassFetcher classFetcher;
     protected final OntologyDAO ontologyDAO;
 
     // define default classes to cache during cache initialisation
-    protected static List<URI> rootModelsToLoad;
+    protected static Set<URI> rootModelsToLoad = Sets.newHashSet(
+            URIDeserializer.formatURI(Oeso.ScientificObject.toString()),
+            URIDeserializer.formatURI(Oeso.Document.toString()),
+            URIDeserializer.formatURI(Oeev.Event.toString()),
+            URIDeserializer.formatURI(Oeso.InfrastructureFacility.toString()),
+            URIDeserializer.formatURI(Oeso.Device.toString())
+    );
 
     private static final String TOP_PROPERTY_NOT_LOADED_ERROR_MSG = "The %s property could not be loaded. " +
             "Please make sure that the OWL2 ontology (" + OWL2.getURI() + ") has been loaded into your RDF repository";
@@ -56,8 +58,8 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     protected final ObjectPropertyModel topObjectProperty;
 
 
-    public static List<URI> getRootModelsToLoad() {
-        return new ArrayList<>(rootModelsToLoad);
+    public static Set<URI> getRootModelsToLoad() {
+        return rootModelsToLoad;
     }
 
     protected AbstractOntologyCache(SPARQLService sparql) throws OntologyCacheException {
@@ -86,14 +88,17 @@ public abstract class AbstractOntologyCache implements OntologyCache {
 
     protected abstract void buildCache();
 
+    private static final String ONTOLOGY_CACHE_SUCCESS_MSG = "Populate [OK] {duration: %dms ,length: %d classes}";
 
     @Override
-    public void populate(List<URI> classUris) throws OntologyCacheException {
+    public void populate(Set<URI> classUris) throws OntologyCacheException {
         Objects.requireNonNull(classUris);
 
-        for (URI classUri : classUris) {
-            getOrCreateClassModel(classUri,OpenSilex.DEFAULT_LANGUAGE);
-        }
+        Instant begin = Instant.now();
+        getOrCreateClasses(classUris,OpenSilex.DEFAULT_LANGUAGE);
+
+        String successMsg = String.format(ONTOLOGY_CACHE_SUCCESS_MSG, Duration.between(begin, Instant.now()).toMillis(),length());
+        LOGGER.info(successMsg);
     }
 
     /**
@@ -107,7 +112,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (entry != null) {
             return entry;
         }
-        ClassModel classModel = getOrCreateClassModel(classUri, OpenSilex.DEFAULT_LANGUAGE);
+        ClassModel classModel = getOrCreateClass(classUri, OpenSilex.DEFAULT_LANGUAGE);
         return classModel == null ? null : getEntry(classUri);
     }
 
@@ -120,7 +125,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
                 return ontologyDAO.searchSubClasses(classUri, ClassModel.class, stringPattern, lang, false, null);
             }
 
-            ClassModel classModel = getOrCreateClassModel(classUri, lang);
+            ClassModel classModel = getOrCreateClass(classUri, lang);
             if (classModel == null) {
                 return null;
             }
@@ -142,7 +147,6 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         }
 
         removeClass(entry.classModel);
-//        addClass(formattedUri, classModel, true);
     }
 
     @Override
@@ -153,42 +157,56 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         }
     }
 
+    protected List<ClassModel> getOrCreateClasses(Set<URI> classesUris, String lang) throws OntologyCacheException {
+
+        List<ClassModel> classModels = new ArrayList<>();
+        List<URI> classesToFetchFromDao = new LinkedList<>();
+
+        // compute list of existing ClassModel and list of ClassModel to retrieve from the DAO
+        for(URI classUri : classesUris){
+            URI formattedUri = SPARQLDeserializers.formatURI(classUri);
+            ClassEntry classEntry = getEntry(formattedUri);
+            if (classEntry == null) {
+                classesToFetchFromDao.add(formattedUri);
+            }else{
+                classModels.add(classEntry.classModel);
+            }
+        }
+
+        // retrieve entries from dao
+       if(! classesToFetchFromDao.isEmpty()){
+
+           Collection<ClassEntry> entries = getEntriesFromDao(classesToFetchFromDao);
+           for(ClassEntry entry : entries){
+
+               // getEntriesFromDao() return the requested classes + theirs children, only add requested class to classModels list
+               if(classesUris.contains(entry.classModel.getUri())){
+                   classModels.add(entry.classModel);
+               }
+               addClassToCache(entry.classModel.getUri(),entry);
+           }
+       }
+
+       // apply translation recursively on each classModel
+       classModels.forEach(classModel -> classModel.visit(child -> {
+           applyTranslation(child.getLabel(), lang);
+           applyTranslation(child.getComment(), lang);
+       }));
+
+       return classModels;
+    }
+
     @Override
-    public ClassModel getOrCreateClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
+    public ClassModel getOrCreateClass(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException {
 
-        URI formattedUri = SPARQLDeserializers.formatURI(classUri);
-
-        ClassEntry rootClassEntry = getEntry(formattedUri);
-        if (rootClassEntry == null) {
-            Collection<ClassEntry> entries = getEntriesFromDao(formattedUri);
-            if (entries == null) {
-                return null;
-            }
-            for(ClassEntry entry : entries){
-                if(entry.classModel.getUri().equals(formattedUri)){
-                    rootClassEntry = entry;
-                }
-                addOrReplaceEntry(entry);
-            }
-        }
-
-        if(rootClassEntry == null){
-            return null;
-        }
-        ClassModel classModel = rootClassEntry.classModel;
-
-        // apply translation on model and on each model descendent
-        classModel.visit(model -> {
-            applyTranslation(model.getLabel(), lang);
-            applyTranslation(model.getComment(), lang);
-        });
-        return classModel;
+        List<ClassModel> classes = getOrCreateClasses(Collections.singleton(classUri),lang);
+        return classes.isEmpty() ? null : classes.get(0);
     }
 
 
     @Override
-    public ClassModel getOrCreateClassModel(URI classUri, String lang) throws OntologyCacheException {
-        return getOrCreateClassModel(classUri, null, lang);
+    public ClassModel getOrCreateClass(URI classUri, String lang) throws OntologyCacheException {
+        return getOrCreateClass(classUri, null, lang);
     }
 
 
@@ -223,28 +241,12 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         return label == null ? null : new SPARQLLabel(label);
     }
 
-    private void loadAllTranslations(Collection<? extends PropertyModel> properties) {
-        if (properties == null) {
-            return;
-        }
-        properties.forEach(this::loadAllTranslations);
-    }
 
     private void loadAllTranslations(PropertyModel propertyModel) {
         propertyModel.setLabel(getLabelWithAllTranslation(propertyModel.getLabel()));
         propertyModel.setComment(getLabelWithAllTranslation(propertyModel.getComment()));
     }
 
-    private void loadAllTranslations(ClassModel classModel) {
-
-        // load class translation for label and comment
-        classModel.setLabel(getLabelWithAllTranslation(classModel.getLabel()));
-        classModel.setComment(getLabelWithAllTranslation(classModel.getComment()));
-
-        // load data/object properties translations for label and comment
-        loadAllTranslations(classModel.getDatatypeProperties().values());
-        loadAllTranslations(classModel.getObjectProperties().values());
-    }
 
     private void applyTranslation(SPARQLLabel label, String lang) {
         if (label != null && !StringUtils.isEmpty(lang)) {
@@ -256,9 +258,9 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         }
     }
 
-    protected Collection<ClassEntry> getEntriesFromDao(URI classUri) throws OntologyCacheException {
+    protected Collection<ClassEntry> getEntriesFromDao(List<URI> classesUri) throws OntologyCacheException {
         try {
-            return classFetcher.getClassEntries(Collections.singletonList(classUri));
+            return classFetcher.getClassEntries(classesUri);
         } catch (Exception e) {
             throw new OntologyCacheException(e);
         }
@@ -313,94 +315,6 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         return entry.objectPropertiesWithDomain;
     }
 
-    protected void addDataPropertiesToCache(URI domain, SPARQLTreeListModel<DatatypePropertyModel> properties) {
-        ClassEntry entry = getEntry(domain);
-        if (entry == null) {
-            return;
-        }
-        entry.dataPropertiesWithDomain = properties;
-    }
-
-    protected void addObjectPropertiesToCache(URI domain, SPARQLTreeListModel<ObjectPropertyModel> properties) {
-        ClassEntry entry = getEntry(domain);
-        if (entry == null) {
-            return;
-        }
-        entry.objectPropertiesWithDomain = properties;
-    }
-
-    protected <PropertyType extends SPARQLTreeModel<PropertyType> & PropertyModel> void addProperties(URI rootDomainUri, URI topPropertyUri,
-                                                                                                      ThrowingFunction<URI, SPARQLTreeListModel<PropertyType>, Exception> searchPropertiesFunction,
-                                                                                                      BiConsumer<URI, SPARQLTreeListModel<PropertyType>> addPropertiesToCacheFunction) throws OntologyCacheException {
-        // search properties from dao, return all properties which have a domain which is a subClassOf* of <domain>
-        SPARQLTreeListModel<PropertyType> properties;
-        try {
-            properties = searchPropertiesFunction.apply(rootDomainUri);
-            if (properties == null) {
-                return;
-            }
-
-        } catch (Exception e) {
-            throw new OntologyCacheException(e);
-        }
-
-        // register properties for the current class
-        addPropertiesToCacheFunction.accept(rootDomainUri, properties);
-
-        Map<URI, Set<PropertyType>> propertiesByClasses = new HashMap<>();
-
-        // traverse each property and aggregate these properties by domain (here, domain is the classModel or one of its child)
-        properties.traverse(property -> {
-
-            ClassModel domainClass = property.getDomain();
-            if (domainClass != null) {
-                URI formattedDomainUri = SPARQLDeserializers.formatURI(domainClass.getUri());
-
-                // don't re-put properties for the root class
-                if (!formattedDomainUri.equals(rootDomainUri)) {
-
-                    // get or create set of properties for this domain and update it
-                    Set<PropertyType> domainProperties = propertiesByClasses.computeIfAbsent(formattedDomainUri, uri -> new HashSet<>());
-                    domainProperties.add(property);
-                }
-            }
-            // load each property translations
-            loadAllTranslations(property);
-        });
-
-        // register domain <-> properties into cache
-        propertiesByClasses.forEach((domainUri, domainProperties) -> {
-            // build the Tree representation of properties
-            SPARQLTreeListModel<PropertyType> subTree = new SPARQLTreeListModel<>(
-                    domainProperties,
-                    topPropertyUri,
-                    true,
-                    true
-            );
-
-            // register properties for the current class
-            addPropertiesToCacheFunction.accept(domainUri, subTree);
-        });
-    }
-
-    protected void addDataProperties(URI rootDomainUri) throws Exception {
-        addProperties(
-                rootDomainUri,
-                topDataTypeProperty.getUri(),
-                domain -> ontologyDAO.searchDataProperties(domain, OpenSilex.DEFAULT_LANGUAGE),
-                this::addDataPropertiesToCache
-        );
-
-    }
-
-    protected void addObjectProperties(URI rootDomainUri) throws OntologyCacheException {
-        addProperties(
-                rootDomainUri,
-                topObjectProperty.getUri(),
-                domain -> ontologyDAO.searchObjectProperties(domain, OpenSilex.DEFAULT_LANGUAGE),
-                this::addObjectPropertiesToCache
-        );
-    }
 
     protected <PT extends SPARQLTreeModel<PT> & PropertyModel> SPARQLTreeListModel<PT> getPropertiesOnDomain(URI domain, String lang,
                                                                                                              ThrowingFunction<URI, SPARQLTreeListModel<PT>, OntologyCacheException> getPropsFunction) throws OntologyCacheException {
@@ -527,7 +441,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (restriction.getDomain() == null) {
             return;
         }
-        ClassModel classModel = getOrCreateClassModel(restriction.getDomain(), null);
+        ClassModel classModel = getOrCreateClass(restriction.getDomain(), null);
         if (classModel == null) {
             return;
         }
@@ -539,7 +453,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (restriction.getDomain() == null) {
             return;
         }
-        ClassModel classModel = getOrCreateClassModel(restriction.getDomain(), null);
+        ClassModel classModel = getOrCreateClass(restriction.getDomain(), null);
         if (classModel == null) {
             return;
         }
@@ -549,7 +463,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     @Override
     public void deleteRestriction(URI restrictionUri, URI domain) throws OntologyCacheException {
 
-        ClassModel classModel = getOrCreateClassModel(domain, null);
+        ClassModel classModel = getOrCreateClass(domain, null);
         if (classModel == null) {
             return;
         }

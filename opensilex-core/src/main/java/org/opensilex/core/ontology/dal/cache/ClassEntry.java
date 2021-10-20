@@ -10,6 +10,11 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
  */
 final class ClassEntry {
 
+    public ClassEntry(){
+        dataPropertiesWithDomain = new SPARQLTreeListModel<>();
+        objectPropertiesWithDomain = new SPARQLTreeListModel<>();
+    }
+
     /**
      * ClassModel with filled data/object properties, restrictions and label/comments
      */
@@ -24,4 +29,9 @@ final class ClassEntry {
      * Tree of object-properties with a domain which is a subClassOf* of classModel
      */
     SPARQLTreeListModel<ObjectPropertyModel> objectPropertiesWithDomain;
+
+    @Override
+    public String toString() {
+        return classModel != null ? classModel.getUri().toString() : "";
+    }
 }

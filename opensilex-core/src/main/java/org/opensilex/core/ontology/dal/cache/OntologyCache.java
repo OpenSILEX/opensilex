@@ -8,6 +8,7 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author rcolin
@@ -17,13 +18,13 @@ import java.util.List;
 public interface OntologyCache {
 
     SPARQLTreeListModel<ClassModel> getSubClassesOf(URI classUri, String stringPattern, String lang, boolean ignoreRootClasses) throws OntologyCacheException;
-    ClassModel getOrCreateClassModel(URI classUri, String lang) throws OntologyCacheException;
-    ClassModel getOrCreateClassModel(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException;
+    ClassModel getOrCreateClass(URI classUri, String lang) throws OntologyCacheException;
+    ClassModel getOrCreateClass(URI classUri, URI parentClassUri, String lang) throws OntologyCacheException;
     void updateClass(ClassModel classModel) throws OntologyCacheException;
     void removeClass(URI classUris);
 
     void invalidate() throws OntologyCacheException;
-    void populate(List<URI> classUris) throws OntologyCacheException;
+    void populate(Set<URI> classUris) throws OntologyCacheException;
 
     DatatypePropertyModel getTopDatatypePropertyModel() throws OntologyCacheException;
     SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws OntologyCacheException;
@@ -40,5 +41,7 @@ public interface OntologyCache {
     void addRestriction(OwlRestrictionModel restriction) throws OntologyCacheException;
     void updateRestriction(OwlRestrictionModel restriction) throws OntologyCacheException;
     void deleteRestriction(URI restrictionUri, URI domain) throws OntologyCacheException;
+
+    long length();
 
 }

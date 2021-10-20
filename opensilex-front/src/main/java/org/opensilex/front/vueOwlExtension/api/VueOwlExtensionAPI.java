@@ -202,9 +202,9 @@ public class VueOwlExtensionAPI {
         if(classDescription.getParent() != null){
             URI classParent = classDescription.getParent().getUri();
             if (parentType != null && !SPARQLDeserializers.compareURIs(parentType, classParent)) {
-                parentModel = ontologyCache.getOrCreateClassModel(classParent,parentType,currentUser.getLanguage());
+                parentModel = ontologyCache.getOrCreateClass(classParent,parentType,currentUser.getLanguage());
             }else{
-                parentModel = ontologyCache.getOrCreateClassModel(classParent,null,currentUser.getLanguage());
+                parentModel = ontologyCache.getOrCreateClass(classParent,null,currentUser.getLanguage());
             }
             dao.buildProperties(parentModel, currentUser.getLanguage());
         }

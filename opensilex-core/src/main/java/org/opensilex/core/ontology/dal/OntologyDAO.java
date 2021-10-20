@@ -77,11 +77,13 @@ import org.slf4j.LoggerFactory;
 public final class OntologyDAO {
 
     private final SPARQLService sparql;
+    public static final URI topClassUri;
     public static final URI topDataPropertyUri;
     public static final URI topObjectPropertyUri;
 
     static {
         try {
+            topClassUri = new URI(OWL2.Class.getURI());
             topDataPropertyUri = new URI(OWL2.topDataProperty.getURI());
             topObjectPropertyUri = new URI(OWL2.topObjectProperty.getURI());
         } catch (URISyntaxException e) {

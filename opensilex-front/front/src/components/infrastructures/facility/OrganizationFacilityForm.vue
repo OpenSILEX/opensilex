@@ -36,26 +36,28 @@
         @update:type="typeSwitch"
     ></opensilex-TypeForm>
 
-<!--    <div v-for="(v, index) in typeProperties" v-bind:key="index">-->
-<!--      <component-->
-<!--          :is="getInputComponent(v.definition, v.property)"-->
-<!--          :property="v.definition"-->
-<!--          :value.sync="v.property"-->
-<!--          @update:value="updateRelation($event, v.definition.property)"-->
-<!--          :context="context"-->
-<!--      ></component>-->
-<!--    </div>-->
+    <!-- Dynamic fields -->
+    <div v-for="(relation, index) in typeRelations" v-bind:key="index">
+      <component
+          :is="getInputComponent(relation.property)"
+          :property="relation.property"
+          :label="relation.property.name"
+          :required="relation.property.is_required"
+          :multiple="relation.property.is_list"
+          :value.sync="relation.value"
+          @update:value="updateRelation($event,relation.property)"
+      ></component>
+    </div>
     <slot v-if="form.rdf_type" v-bind:form="form"></slot>
   </b-form>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../../lib";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 
 @Component
 export default class OrganizationFacilityForm extends Vue {
@@ -75,6 +77,8 @@ export default class OrganizationFacilityForm extends Vue {
   form: InfrastructureFacilityCreationDTO;
 
   baseType: string;
+  typeModel = null;
+  propertyComponents = [];
 
   getEmptyForm() {
     return OrganizationFacilityForm.getEmptyForm();
@@ -96,8 +100,55 @@ export default class OrganizationFacilityForm extends Vue {
     this.baseType = this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI;
   }
 
+  // Manage dynamic fields depending on the type
+  // For now, there is no concrete difference between types
+  // But might be useful in the future
+  // taken from EventFrom.vue
+
+  getInputComponent(property) {
+    if (property.input_components_by_property && property.input_components_by_property[property.property]) {
+      return property.input_components_by_property[property.property];
+    }
+    return property.input_component;
+  }
+
+  resetTypeModel(){
+    this.typeModel = undefined;
+  }
+
   setBaseType(baseType: string) {
     this.baseType = baseType;
+  }
+
+  get typeRelations() {
+    let internalTypeProperties = [];
+
+    if (this.typeModel) {
+      for (let i in this.typeModel.data_properties) {
+        let dataProperty = this.typeModel.data_properties[i];
+        if (dataProperty.property != "rdfs:label") {
+
+          let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
+
+          internalTypeProperties.push({
+            property: dataProperty,
+            value: relation.value
+          });
+        }
+      }
+
+      for (let i in this.typeModel.object_properties) {
+
+        let objectProperty = this.typeModel.object_properties[i];
+        let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
+
+        internalTypeProperties.push({
+          property: objectProperty,
+          value: relation.value
+        });
+      }
+    }
+    return internalTypeProperties;
   }
 
   typeSwitch(type) {
@@ -105,7 +156,53 @@ export default class OrganizationFacilityForm extends Vue {
       return;
     }
 
-    console.log("Switch type ", type);
+    return this.vueOntologyService
+        .getRDFTypeProperties(this.form.rdf_type, this.baseType)
+        .then(http => {
+          this.typeModel = http.response.result;
+          if (!this.editMode) {
+            let relations = [];
+            for (let i in this.typeModel.data_properties) {
+              let dataProperty = this.typeModel.data_properties[i];
+              if (dataProperty.is_list) {
+                relations.push({
+                  value: [],
+                  property: dataProperty.property
+                });
+              } else {
+                relations.push({
+                  value: undefined,
+                  property: dataProperty.property
+                });
+              }
+            }
+
+            for (let i in this.typeModel.object_properties) {
+              let objectProperty = this.typeModel.object_properties[i];
+              if (objectProperty.is_list) {
+                relations.push({
+                  value: [],
+                  property: objectProperty.property
+                });
+              } else {
+                relations.push({
+                  value: undefined,
+                  property: objectProperty.property
+                });
+              }
+            }
+
+            this.form.relations = relations;
+          }
+        });
+  }
+
+  updateRelation(newValue,property){
+    let relation = this.form.relations.find(relation =>
+        relation.property == property.property
+    );
+
+    relation.value = newValue;
   }
 }
 </script>

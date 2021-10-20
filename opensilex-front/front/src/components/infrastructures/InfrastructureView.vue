@@ -34,7 +34,6 @@
       <div class="col-md-6">
         <!-- Facilities -->
         <opensilex-InfrastructureFacilitiesView
-            :selected="selectedFacility"
             :withActions="true"
             @onUpdate="refresh"
             @onCreate="refresh"

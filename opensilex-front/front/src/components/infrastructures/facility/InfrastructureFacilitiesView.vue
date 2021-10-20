@@ -96,8 +96,8 @@
           credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
         )
       "
-      @onCreate="$emit('onCreate', $event)"
-      @onUpdate="$emit('onUpdate', $event)"
+      @onCreate="onCreate"
+      @onUpdate="onUpdate"
     ></opensilex-OrganizationFacilityModalForm>
   </b-card>
 </template>
@@ -186,28 +186,38 @@ export default class InfrastructureFacilitiesView extends Vue {
         "opensilex-core.OrganisationsService"
     );
 
-    this.refresh().then(() => {
-      if (!this.selected && this.isSelectable && this.facilities.length > 0) {
-        this.facilityTable.selectRow(0);
-      }
-    });
+    this.refresh();
   }
 
-  refresh(): Promise<void> {
+  refresh() {
     if (this.selected) {
       this.facilities = this.selected.facilities;
-      return Promise.resolve();
+      return;
     }
 
     return this.service
         .searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
-          this.facilities = http.response.result
+          this.facilities = http.response.result;
+        }).then(() => {
+
+          // Select the first element
+          if (this.isSelectable && this.facilities.length > 0) {
+            this.facilityTable.selectRow(0);
+          }
         });
   }
 
   editFacility(facility: InfrastructureFacilityGetDTO) {
     this.facilityForm.showEditForm(facility);
+  }
+
+  onUpdate() {
+    this.$emit("onUpdate");
+  }
+
+  onCreate() {
+    this.$emit("onCreate");
   }
 }
 </script>

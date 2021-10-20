@@ -1,11 +1,9 @@
 package org.opensilex.core.ontology.dal.cache;
 
 import com.google.common.collect.Sets;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.dal.*;
@@ -27,7 +25,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class which handle caching logic for class {@link ClassModel}, properties {@link PropertyModel} and restrictions ({@link OwlRestrictionModel}. <br>
@@ -133,7 +130,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             return new SPARQLTreeListModel<>(classModel, ignoreRootClasses, true);
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new OntologyCacheException(e);
         }
     }
 
@@ -209,45 +206,6 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         return getOrCreateClass(classUri, null, lang);
     }
 
-
-    private void addOrReplaceEntry(ClassEntry entry) throws OntologyCacheException {
-
-        ClassEntry oldEntry = getEntry(entry.classModel.getUri());
-        if(oldEntry != null){
-            removeClassFromCache(entry.classModel.getUri());
-        }
-        addClassToCache(entry.classModel.getUri(),entry);
-    }
-
-    private void linkClassWithExistingParent(ClassModel classModel) {
-
-        // link new class with existing parent into cache
-        if (classModel.getParent() != null) {
-            URI formattedParentUri = SPARQLDeserializers.formatURI(classModel.getParent().getUri());
-            ClassEntry parentEntry = getEntry(formattedParentUri);
-
-            if (parentEntry != null) {
-                ClassModel parentFromCache = parentEntry.classModel;
-                classModel.setParent(parentFromCache);
-
-                if (!parentFromCache.getChildren().contains(classModel)) {
-                    parentFromCache.getChildren().add(classModel);
-                }
-            }
-        }
-    }
-
-    private SPARQLLabel getLabelWithAllTranslation(SPARQLLabel label) {
-        return label == null ? null : new SPARQLLabel(label);
-    }
-
-
-    private void loadAllTranslations(PropertyModel propertyModel) {
-        propertyModel.setLabel(getLabelWithAllTranslation(propertyModel.getLabel()));
-        propertyModel.setComment(getLabelWithAllTranslation(propertyModel.getComment()));
-    }
-
-
     private void applyTranslation(SPARQLLabel label, String lang) {
         if (label != null && !StringUtils.isEmpty(lang)) {
             Map<String, String> translations = label.getTranslations();
@@ -316,12 +274,11 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     }
 
 
-    protected <PT extends SPARQLTreeModel<PT> & PropertyModel> SPARQLTreeListModel<PT> getPropertiesOnDomain(URI domain, String lang,
-                                                                                                             ThrowingFunction<URI, SPARQLTreeListModel<PT>, OntologyCacheException> getPropsFunction) throws OntologyCacheException {
-
+    protected <PropertyType extends SPARQLTreeModel<PropertyType> & PropertyModel> SPARQLTreeListModel<PropertyType> getPropertiesOnDomain(URI domain, String lang,
+                                                                                                                                           ThrowingFunction<URI, SPARQLTreeListModel<PropertyType>, OntologyCacheException> getPropsFunction) throws OntologyCacheException {
         URI formattedDomain = SPARQLDeserializers.formatURI(domain);
 
-        SPARQLTreeListModel<PT> properties = getPropsFunction.apply(formattedDomain);
+        SPARQLTreeListModel<PropertyType> properties = getPropsFunction.apply(formattedDomain);
         if (properties == null) {
             return new SPARQLTreeListModel<>();
         }
@@ -344,9 +301,9 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         return getPropertiesOnDomain(domain, lang, this::getObjectPropertiesOnDomain);
     }
 
-    protected <PT extends SPARQLTreeModel<PT> & PropertyModel> void createOrUpdateProperty(PT property,
-                                                                                           BiConsumer<ClassEntry, PT> entryPropertyBiConsumer,
-                                                                                           UnaryOperator<PT> copyPropertyFunction) {
+    protected <PropertyType extends SPARQLTreeModel<PropertyType> & PropertyModel> void createOrUpdateProperty(PropertyType property,
+                                                                                                               BiConsumer<ClassEntry, PropertyType> entryPropertyBiConsumer,
+                                                                                                               UnaryOperator<PropertyType> copyPropertyFunction) {
         if (property.getDomain() == null) {
             return;
         }
@@ -356,7 +313,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             return;
         }
 
-        PT copy = copyPropertyFunction.apply(property);
+        PropertyType copy = copyPropertyFunction.apply(property);
         copy.setDomain(entry.classModel);
         entryPropertyBiConsumer.accept(entry, copy);
     }

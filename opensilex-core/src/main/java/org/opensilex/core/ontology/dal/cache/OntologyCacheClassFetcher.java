@@ -7,7 +7,6 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
@@ -259,16 +258,16 @@ public class OntologyCacheClassFetcher {
             // update property list for current domain
             domainClass.getDatatypeProperties().put(dataProperty.getUri(), dataProperty);
 
-            // update domain list of sub-properties
-            domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
+//            // update domain list of sub-properties
+//            domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
 
-            // update domain parent list of sub-properties
-            if (domainClass.getParent() != null) {
-                ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
-                if (domainParentEntry != null) {
-                    domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
-                }
-            }
+//            // update domain parent list of sub-properties
+//            if (domainClass.getParent() != null) {
+//                ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
+//                if (domainParentEntry != null) {
+//                    domainClassEntry.dataPropertiesWithDomain.addTree(dataProperty);
+//                }
+//            }
 
         } else if (property instanceof ObjectPropertyModel) {
 
@@ -293,16 +292,16 @@ public class OntologyCacheClassFetcher {
             // update property list for current domain
             domainClassEntry.classModel.getObjectProperties().put(objectProperty.getUri(), objectProperty);
 
-            // update domain-based indexes
-            domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
-
-            // update domain parent list of sub-properties
-            if (domainClass.getParent() != null) {
-                ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
-                if (domainParentEntry != null) {
-                    domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
-                }
-            }
+//            // update domain-based indexes
+//            domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
+//
+//            // update domain parent list of sub-properties
+//            if (domainClass.getParent() != null) {
+//                ClassEntry domainParentEntry = classEntryByUri.get(domainClass.getParent().getUri().toString());
+//                if (domainParentEntry != null) {
+//                    domainClassEntry.objectPropertiesWithDomain.addTree(objectProperty);
+//                }
+//            }
         }
 
     }
@@ -362,8 +361,34 @@ public class OntologyCacheClassFetcher {
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
-
         });
+    }
+
+    public Stream<? extends PropertyModel> fillPropertiesDomain(ClassEntry classEntry, Map<String, ClassEntry> classEntryByUri){
+
+        ClassModel classModel = classEntry.classModel;
+
+        Stream<? extends PropertyModel> currentEntryPropsStream = Stream.concat(
+                classModel.getDatatypeProperties().values().stream(),
+                classModel.getDatatypeProperties().values().stream()
+        );
+
+        for(ClassModel classChild : classModel.getChildren()){
+            ClassEntry childEntry = classEntryByUri.get(classChild.getUri().toString());
+
+            Stream<? extends PropertyModel> childPropStream = fillPropertiesDomain(childEntry,classEntryByUri);
+            currentEntryPropsStream = Stream.concat(currentEntryPropsStream,childPropStream);
+        }
+
+        currentEntryPropsStream.forEach(property -> {
+            if(property instanceof DatatypePropertyModel){
+                classEntry.dataPropertiesWithDomain.addTree((DatatypePropertyModel) property);
+            }else if(property instanceof ObjectPropertyModel){
+                classEntry.objectPropertiesWithDomain.addTree((ObjectPropertyModel) property);
+            }
+        });
+
+        return currentEntryPropsStream;
     }
 
 
@@ -383,6 +408,7 @@ public class OntologyCacheClassFetcher {
 
         Map<String, ClassEntry> classEntryByUri = getClassEntries(rootEntries);
         fillProperties(rootEntries, classEntryByUri);
+        rootEntries.forEach(classEntry -> fillPropertiesDomain(classEntry,classEntryByUri));
 
         return classEntryByUri.values();
     }

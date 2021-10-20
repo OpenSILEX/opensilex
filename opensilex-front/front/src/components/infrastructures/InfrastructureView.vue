@@ -8,7 +8,7 @@
     ></opensilex-PageHeader>
     <opensilex-PageActions>
       <div>
-        <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
+        <b-tabs content-class="mt-3" :value=currentTabIndex @input="updateType">
           <b-tab :title="$t('InfrastructureView.organizations')"></b-tab>
           <b-tab :title="$t('InfrastructureView.facilities')"></b-tab>
         </b-tabs>
@@ -65,24 +65,40 @@ import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureF
 export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
+  $route: any;
   service: OrganisationsService;
 
   // Gestion des tabs : inspiré de VariablesView.vue
-  static ORGANIZATION_TYPE = "Organization";
-  static FACILITY_TYPE = "Facility";
-  static ELEMENT_TYPES = [
-      InfrastructureView.ORGANIZATION_TYPE,
-      InfrastructureView.FACILITY_TYPE
+  static ORGANIZATION_TAB = "Organization";
+  static FACILITY_TAB = "Facility";
+  static TABS = [
+      InfrastructureView.ORGANIZATION_TAB,
+      InfrastructureView.FACILITY_TAB
   ];
 
-  elementIndex = 0;
-  elementType = InfrastructureView.ELEMENT_TYPES[this.elementIndex];
+  currentTabIndex = 0;
+  currentTabName = InfrastructureView.TABS[this.currentTabIndex];
 
   @Ref("infrastructureTree") readonly infrastructureTree!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
   selectedOrganization: InfrastructureGetDTO = null;
   selectedFacility: InfrastructureFacilityGetDTO = null;
+
+  created() {
+    let query = this.$route.query;
+    if (query && query.tab) {
+      let requestedTab = decodeURIComponent(query.tab).toLowerCase();
+      let index = InfrastructureView.TABS.findIndex(tab => tab.toLowerCase() === requestedTab);
+      if (index >= 0) {
+        this.updateType(index);
+      } else {
+        this.updateType(0);
+      }
+    } else {
+      this.updateType(0);
+    }
+  }
 
   get user() {
     return this.$store.state.user;
@@ -93,26 +109,27 @@ export default class InfrastructureView extends Vue {
   }
 
   get organizationTab() {
-    return this.elementType == InfrastructureView.ORGANIZATION_TYPE;
+    return this.currentTabName == InfrastructureView.ORGANIZATION_TAB;
   }
 
   get facilityTab() {
-    return this.elementType == InfrastructureView.FACILITY_TYPE;
+    return this.currentTabName == InfrastructureView.FACILITY_TAB;
   }
 
   updateType(tabIndex) {
-    if (tabIndex < 0 || tabIndex >= InfrastructureView.ELEMENT_TYPES.length) {
+    if (tabIndex < 0 || tabIndex >= InfrastructureView.TABS.length) {
       return;
     }
-    if (tabIndex !== this.elementIndex) {
-      this.onTabChange(this.elementIndex, tabIndex);
-      this.elementIndex = tabIndex;
-      this.elementType = InfrastructureView.ELEMENT_TYPES[this.elementIndex];
+    if (tabIndex !== this.currentTabIndex) {
+      this.onTabChange(this.currentTabIndex, tabIndex);
+      this.currentTabIndex = tabIndex;
+      this.currentTabName = InfrastructureView.TABS[this.currentTabIndex];
     }
+    this.$opensilex.updateURLParameter("tab",this.currentTabName);
   }
 
   onTabChange(oldIndex, newIndex) {
-    if (InfrastructureView.ELEMENT_TYPES[oldIndex] === InfrastructureView.FACILITY_TYPE) {
+    if (InfrastructureView.TABS[oldIndex] === InfrastructureView.FACILITY_TAB) {
       this.selectedFacility = undefined;
     }
   }

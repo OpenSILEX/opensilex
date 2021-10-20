@@ -36,6 +36,7 @@
       :items="facilities"
       :fields="fields"
       @row-selected="onFacilitySelected"
+      ref="facilityTable"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(rdf_type_name)="data">{{
@@ -104,13 +105,11 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
 import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {InfrastructureFacilityNamedDTO} from "opensilex-core/model/infrastructureFacilityNamedDTO";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
-import {InfrastructureFacilityUpdateDTO} from "opensilex-core/model/infrastructureFacilityUpdateDTO";
+import {BTable} from "bootstrap-vue";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
@@ -119,6 +118,7 @@ export default class InfrastructureFacilitiesView extends Vue {
   service: OrganisationsService;
 
   @Ref("facilityForm") readonly facilityForm!: any;
+  @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
   selected: InfrastructureGetDTO;
@@ -186,16 +186,20 @@ export default class InfrastructureFacilitiesView extends Vue {
         "opensilex-core.OrganisationsService"
     );
 
-    this.refresh();
+    this.refresh().then(() => {
+      if (!this.selected && this.isSelectable && this.facilities.length > 0) {
+        this.facilityTable.selectRow(0);
+      }
+    });
   }
 
-  refresh() {
+  refresh(): Promise<void> {
     if (this.selected) {
       this.facilities = this.selected.facilities;
-      return;
+      return Promise.resolve();
     }
 
-    this.service
+    return this.service
         .searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
           this.facilities = http.response.result

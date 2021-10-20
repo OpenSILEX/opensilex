@@ -11,7 +11,7 @@
           "
         />
       </h3>
-      <div class="card-header-right">
+      <div class="card-header-right" v-if="withActions">
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
@@ -41,7 +41,7 @@
       <template v-slot:head(rdf_type_name)="data">{{
         $t(data.label)
       }}</template>
-      <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(actions)="data" v-if="withActions">{{ $t(data.label) }}</template>
 
       <template v-slot:cell(name)="data">
         <opensilex-UriLink
@@ -61,7 +61,7 @@
         }}</span>
       </template>
 
-      <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="data" v-if="withActions">
         <b-button-group size="sm">
           <opensilex-EditButton
             v-if="
@@ -90,6 +90,7 @@
     <opensilex-OrganizationFacilityModalForm
       ref="facilityForm"
       v-if="
+        withActions &&
         user.hasCredential(
           credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
         )
@@ -135,22 +136,33 @@ export default class InfrastructureFacilitiesView extends Vue {
   })
   isSelectable;
 
-  fields = [
-    {
-      key: "name",
-      label: "component.common.name",
-      sortable: true,
-    },
-    {
-      key: "rdf_type_name",
-      label: "component.common.type",
-      sortable: true,
-    },
-    {
-      label: "component.common.actions",
-      key: "actions",
-    },
-  ];
+  @Prop({
+    default: false
+  })
+  withActions: boolean;
+
+  get fields() {
+    let fields = [
+      {
+        key: "name",
+        label: "component.common.name",
+        sortable: true,
+      },
+      {
+        key: "rdf_type_name",
+        label: "component.common.type",
+        sortable: true,
+      }
+    ];
+    if (this.withActions) {
+      fields.push({
+        label: "component.common.actions",
+        key: "actions",
+        sortable: false
+      });
+    }
+    return fields;
+  }
 
   facilities: Array<InfrastructureFacilityGetDTO> = [];
   selectedFacility: InfrastructureFacilityGetDTO = undefined;

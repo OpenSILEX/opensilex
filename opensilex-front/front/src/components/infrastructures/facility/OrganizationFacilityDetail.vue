@@ -3,7 +3,7 @@
       icon="ik#ik-clipboard"
       :label="$t('component.common.description')"
   >
-    <template v-slot:rightHeader>
+    <template v-slot:rightHeader v-if="withActions">
       <b-button-group>
         <opensilex-EditButton
             v-if="
@@ -111,6 +111,11 @@ export default class OrganizationFacilityDetail extends Vue {
 
   @Prop()
   selected: InfrastructureFacilityGetDTO;
+
+  @Prop({
+    default: false
+  })
+  withActions: boolean;
 
   typeProperties = [];
   valueByProperties: any = {};

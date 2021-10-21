@@ -14,7 +14,7 @@
           :selected="selected"
           :withActions="true"
           @onDelete="deleteInfrastructure"
-          @refresh="refresh"
+          @onUpdate="refresh"
         ></opensilex-InfrastructureDetail>
       </div>
       <div class="col-md-6">
@@ -25,13 +25,6 @@
           @onCreate="refresh"
           @onDelete="refresh"
         ></opensilex-InfrastructureFacilitiesView>
-        <!-- Infrastructure groups -->
-        <opensilex-InfrastructureGroupsView
-          :selected="selected"
-          @onUpdate="refresh"
-          @onCreate="refresh"
-          @onDelete="refresh"
-        ></opensilex-InfrastructureGroupsView>
       </div>
     </div>
   </div>

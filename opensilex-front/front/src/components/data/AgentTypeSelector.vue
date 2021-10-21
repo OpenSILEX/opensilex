@@ -2,7 +2,7 @@
   <opensilex-SelectForm
     label="ProvenanceView.agent_type"
     :selected.sync="agentTypeURI"
-    :options="agentTypes"
+    :options="internalOptions"
     :multiple="multiple"
     :required="required"
     placeholder="ProvenanceView.agent_type-placeholder"
@@ -13,19 +13,16 @@
 </template>
 
 <script lang="ts">
-import { Prop, PropSync, Component, Ref } from "vue-property-decorator";
+import { Prop, PropSync, Component } from "vue-property-decorator";
 import Vue from "vue";
-import { RDFTypeDTO } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
+import ProvenanceAgentForm from "./form/ProvenanceAgentForm.vue";
 
 @Component
 export default class AgentTypeSelector extends Vue {
-  $opensilex: any;
-  $store: any;
-  service: any;
 
-  @PropSync("agentType")
+  $opensilex: any;
+
+  @PropSync("selected")
   agentTypeURI;
 
   @Prop({default: false})
@@ -34,46 +31,24 @@ export default class AgentTypeSelector extends Vue {
   @Prop({default: false})
   required;
 
-  @Prop({default: (() => [])})
-  typesToRemove;
+  internalOptions: Array<any> = [];
 
-  agentTypes: any[] = [];
+  @Prop()
+  exclusions: Set<string>;
 
-  mounted() {
-    this.loadAgentTypes();
+  @Prop()
+  options: Array<any>;
+
+  mounted(){
+    if(! this.options){
+      this.internalOptions = ProvenanceAgentForm.getAgentTypes(this.$opensilex);
+      return;
+    }
+    this.internalOptions = this.options.filter(option =>
+        option.id == this.agentTypeURI || ! this.exclusions.has(option.id)
+    );
   }
 
-  loadAgentTypes() {
-
-    this.$opensilex.getService("opensilex.OntologyService")
-    .getRDFType([Oeso.OPERATOR_TYPE_URI], undefined)
-    .then((http: HttpResponse<OpenSilexResponse<RDFTypeDTO>>) => { 
-        if (!this.typesToRemove.includes(http.response.result.uri)) {
-          this.agentTypes.push({
-            id: http.response.result.uri,
-            label: http.response.result.name,
-          });
-        } 
-        
-      
-    })
-    .catch(this.$opensilex.errorHandler);
-
-    this.$opensilex.getService("opensilex.OntologyService")
-    .getSubClassesOf(Oeso.DEVICE_TYPE_URI, true)
-    .then((http: HttpResponse<OpenSilexResponse<Array<RDFTypeDTO>>>) => {
-      for (let i = 0; i < http.response.result.length; i++) { 
-        if (!this.typesToRemove.includes(http.response.result[i].uri)) {  
-          this.agentTypes.push({
-            id: http.response.result[i].uri,
-            label: http.response.result[i].name,
-          });
-        }
-      }
-    })
-    .catch(this.$opensilex.errorHandler);   
-
-  }
 
 }
 </script>

@@ -7,13 +7,13 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import org.opensilex.core.organisation.api.team.InfrastructureTeamDTO;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 
 /**
@@ -25,16 +25,16 @@ import org.opensilex.core.organisation.dal.InfrastructureTeamModel;
 public class InfrastructureGetDTO extends InfrastructureDTO {
 
     
-    protected List<InfrastructureTeamDTO> groups;
+    protected List<NamedResourceDTO<GroupModel>> groups;
 
     
     protected List<InfrastructureFacilityGetDTO> facilities;
 
-    public List<InfrastructureTeamDTO> getGroups() {
+    public List<NamedResourceDTO<GroupModel>> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<InfrastructureTeamDTO> groups) {
+    public void setGroups(List<NamedResourceDTO<GroupModel>> groups) {
         this.groups = groups;
     }
 
@@ -55,11 +55,11 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
     public void fromModel(InfrastructureModel model) {
         super.fromModel(model);
 
-        List<InfrastructureTeamDTO> groups;
+        List<NamedResourceDTO<GroupModel>> groups;
         if (model.getGroups() != null) {
             groups = new ArrayList<>(model.getGroups().size());
             model.getGroups().forEach(group -> {
-                groups.add(InfrastructureTeamDTO.getDTOFromModel(group));
+                groups.add(NamedResourceDTO.getDTOFromModel(group));
             });
         } else {
             groups = new ArrayList<>();
@@ -82,7 +82,7 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        List<InfrastructureTeamModel> groups;
+        List<GroupModel> groups;
         if (getGroups() != null) {
             groups = new ArrayList<>(getGroups().size());
             getGroups().forEach(group -> {

@@ -34,6 +34,7 @@
             :agentType.sync="filter.agent_type"
             @clear="filter.agent = undefined"
             @select="filter.agent = undefined"
+            :key="lang"
           >
           </opensilex-AgentTypeSelector>
         </opensilex-FilterField>
@@ -150,6 +151,9 @@ export default class ProvenanceList extends Vue {
   disabled = false;
   Prov = Prov;
 
+  get lang() {
+    return this.$store.getters.language;
+  }
 
   @Prop({
     default: false
@@ -244,7 +248,7 @@ export default class ProvenanceList extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.DataService");
     this.loadActivityTypes();
-    this.$opensilex.updateFiltersFromURL(this.$route.query);
+    this.$opensilex.updateFiltersFromURL(this.$route.query,this.filter);
   }
 
   get getSelectedProv() {

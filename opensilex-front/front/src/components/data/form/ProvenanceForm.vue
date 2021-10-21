@@ -29,13 +29,14 @@
 
     <!--activity -->
     <b-card :title="$t('ProvenanceForm.activity')" bg-variant="light">
+
       <!-- type -->
       <opensilex-TypeForm
-        :type.sync="form.activity_type"
-        :baseType="Prov.ACTIVITY_TYPE_URI"
-        :required="!disableValidation"
-        helpMessage="ProvenanceForm.type-help"
-        placeholder="ProvenanceForm.type-placeholder"
+          :type.sync="form.activity_type"
+          :baseType="Prov.ACTIVITY_TYPE_URI"
+          :required="!disableValidation"
+          helpMessage="ProvenanceForm.type-help"
+          placeholder="ProvenanceForm.type-placeholder"
       ></opensilex-TypeForm>
 
       <!-- start_date  & end_date-->
@@ -68,45 +69,13 @@
     ></opensilex-InputForm>
     </b-card>
 
-    <!-- agents -->
-    <b-card :title="$t('ProvenanceForm.agents')" bg-variant="light">
+    <!-- agent -->
+    <opensilex-ProvenanceAgentForm
+      :values.sync="form.agents"
+      :key="lang"
+    ></opensilex-ProvenanceAgentForm>
 
-      <b-button variant="primary" @click="addAgent">{{ $t('ProvenanceForm.add-agent') }}</b-button>
 
-      <div class="row" v-for="agent in form.agents" v-bind:key="agent.rdf_type">
-
-        <div class="col">
-          <!-- agent type -->
-          <opensilex-AgentTypeSelector
-            :agentType.sync="agent.rdf_type"
-            :multiple="false"
-            :typesToRemove="typesToRemove"
-            @clear="updateTypesToRemove"
-            @update:agentType="agent.uris=[]"
-          ></opensilex-AgentTypeSelector>
-        </div>
-        <div class="col">
-
-          <!-- agent -->
-          <opensilex-UserSelector 
-            v-if="agent.rdf_type == 'vocabulary:Operator'"
-            :users.sync="agent.uris"
-            label="ProvenanceForm.agent"
-            helpMessage="ProvenanceForm.agent-help"
-            :multiple="true"
-          ></opensilex-UserSelector>
-
-          <opensilex-DeviceSelector
-            v-else-if="agent.rdf_type != undefined && agent.rdf_type != null"
-            label="ProvenanceForm.agent"
-            :value.sync="agent.uris"
-            :multiple="true"
-            :deviceType.sync="agent.rdf_type"
-            helpMessage="ProvenanceForm.agent-help"
-          ></opensilex-DeviceSelector>
-        </div>      
-      </div>
-    </b-card>
   </b-form>
 </template>
 
@@ -124,6 +93,10 @@ export default class ProvenanceForm extends Vue {
   $i18n: any;
   $t: any;
   Prov = Prov;
+
+  get lang() {
+    return this.$store.getters.language;
+  }
 
   @Ref("validatorRef") readonly validatorRef!: any;
   
@@ -157,6 +130,8 @@ export default class ProvenanceForm extends Vue {
     default: false
   })
   disableValidation: boolean;
+
+
 
   typesToRemove = [];
 
@@ -275,24 +250,6 @@ export default class ProvenanceForm extends Vue {
       });
   }
 
-  addAgent() {
-    let i = this.form.agents.length;
-    //remove selected agent types from the agent list to avoid having selecting twice the same agent type
-    if (i>0) {
-      this.typesToRemove.push(this.form.agents[i-1].rdf_type)
-    }    
-    this.form.agents.push({uris: [], rdf_type: null});   
-  }
-
-  updateTypesToRemove() {
-    //when clearing agent_type, the selected type is back in agent_type list
-    this.typesToRemove = [];
-    for (let i = 0; i < this.form.agents.length; i++) {
-      if (this.form.agents[i].rdf_type != undefined) {
-        this.typesToRemove.push(this.form.agents[i].rdf_type)
-      }      
-    }
-  }
 
 }
 </script>

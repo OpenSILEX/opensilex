@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.dal;
 import java.util.List;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -52,14 +53,14 @@ public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
             cascadeDelete = true,
             ignoreUpdateIfNull = true
     )
-    private List<InfrastructureTeamModel> groups;
+    private List<GroupModel> groups;
     public static final String GROUP_FIELD = "groups";
 
-    public List<InfrastructureTeamModel> getGroups() {
+    public List<GroupModel> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<InfrastructureTeamModel> group) {
+    public void setGroups(List<GroupModel> group) {
         this.groups = group;
     }
 

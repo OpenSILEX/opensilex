@@ -25,6 +25,7 @@
       @onCreate="provList.refresh()"
       @onUpdate="provList.refresh()"
       :successMessage="successMessage"
+      :key="lang"
     ></opensilex-ModalForm>
 
     <opensilex-PageContent>
@@ -63,6 +64,10 @@ export default class ProvenanceView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get lang() {
+    return this.$store.getters.language;
   }
 
   @Ref("provList") readonly provList!: any;

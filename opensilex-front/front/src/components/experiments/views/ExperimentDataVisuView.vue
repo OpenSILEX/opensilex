@@ -28,13 +28,13 @@
      @onCreate="onAnnotationCreated"
      >
      </opensilex-AnnotationModalForm>
-
-
+    
     <opensilex-EventModalForm
       ref="eventsModalForm"
       :target="target"
       :eventCreatedTime="eventCreatedTime"
       @onCreate="onEventCreated"
+      :context="{experimentURI: selectedExperiment}"
     ></opensilex-EventModalForm>
 
   </div>

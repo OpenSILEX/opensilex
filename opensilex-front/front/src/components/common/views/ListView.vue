@@ -6,7 +6,7 @@
         <span>
           <slot v-bind:value="value">{{ value }}</slot>
         </span>
-        <span v-if="index + 1 < values.length">,</span>
+        <span v-if="index + 1 < values.length">, </span>
       </span>
     </span>
     <div v-if="!inline">

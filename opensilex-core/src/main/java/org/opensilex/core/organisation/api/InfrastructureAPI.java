@@ -31,6 +31,7 @@ import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -148,18 +149,16 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return organisations tree", response = ResourceTreeDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return organisations", response = ResourceTreeDTO.class, responseContainer = "List")
     })
-    public Response searchInfrastructuresTree(
+    public Response searchInfrastructures(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> infraURIs
     ) throws Exception {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
-        SPARQLTreeListModel<InfrastructureModel> tree = dao.searchTree(pattern, infraURIs, currentUser);
-
-        boolean enableSelection = (pattern != null && !pattern.isEmpty());
-        return new ResourceTreeResponse(ResourceTreeDTO.fromResourceTree(enableSelection, tree)).getResponse();
+        List<InfrastructureModel> organizations = dao.search(pattern, infraURIs, currentUser);
+        return new PaginatedListResponse<>(InfrastructureGetDTO.getDTOListFromModel(organizations)).getResponse();
     }
 
     @PUT
@@ -186,6 +185,4 @@ public class InfrastructureAPI {
 
         return response;
     }
-
-
 }

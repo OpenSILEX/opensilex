@@ -10,10 +10,14 @@ import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
+
+import javax.naming.Name;
 
 
 /**
@@ -21,14 +25,14 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "children","groups", "facilities"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities"})
 public class InfrastructureGetDTO extends InfrastructureDTO {
 
     
     protected List<NamedResourceDTO<GroupModel>> groups;
 
     
-    protected List<InfrastructureFacilityGetDTO> facilities;
+    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
 
     public List<NamedResourceDTO<GroupModel>> getGroups() {
         return groups;
@@ -38,11 +42,11 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         this.groups = groups;
     }
 
-    public List<InfrastructureFacilityGetDTO> getFacilities() {
+    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<InfrastructureFacilityGetDTO> facilities) {
+    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
         this.facilities = facilities;
     }
 
@@ -66,11 +70,11 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         }
         setGroups(groups);
 
-        List<InfrastructureFacilityGetDTO> facilities;
+        List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
         if (model.getFacilities() != null) {
             facilities = new ArrayList<>(model.getFacilities().size());
             model.getFacilities().forEach(facility -> {
-                facilities.add(InfrastructureFacilityGetDTO.getDTOFromModel(facility, false));
+                facilities.add(NamedResourceDTO.getDTOFromModel(facility));
             });
         } else {
             facilities = new ArrayList<>();
@@ -110,5 +114,11 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         dto.fromModel(model);
 
         return dto;
+    }
+
+    public static List<InfrastructureGetDTO> getDTOListFromModel(List<InfrastructureModel> modelList) {
+        return modelList
+                .stream().map(InfrastructureGetDTO::getDTOFromModel)
+                .collect(Collectors.toList());
     }
 }

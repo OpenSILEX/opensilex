@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -44,7 +45,11 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         infraCount++;
         InfrastructureCreationDTO dto = new InfrastructureCreationDTO();
         dto.setName("Infra " + infraCount);
-        dto.setParent(parent);
+        if (parent != null) {
+            List<URI> parents = new ArrayList<>();
+            parents.add(parent);
+            dto.setParents(parents);
+        }
         return dto;
     }
 
@@ -76,20 +81,20 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        ResourceTreeResponse response = mapper.convertValue(node, new TypeReference<ResourceTreeResponse>() {
+        PaginatedListResponse<InfrastructureGetDTO> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureGetDTO>>() {
         });
 
-        List<ResourceTreeDTO> list = response.getResult();
+        List<InfrastructureGetDTO> list = response.getResult();
         assertFalse(list.isEmpty());
-        Optional<ResourceTreeDTO> searchedRoot1 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root1)).findFirst();
-        Optional<ResourceTreeDTO> searchedRoot2 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root2)).findFirst();
+        Optional<InfrastructureGetDTO> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
+        Optional<InfrastructureGetDTO> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
         assertTrue(searchedRoot1.isPresent());
         assertTrue(searchedRoot2.isPresent());
 
-        List<ResourceTreeDTO> root1Children = searchedRoot1.get().getChildren();
+        List<URI> root1Children = searchedRoot1.get().getChildren();
         assertEquals(1, root1Children.size());
         assertEquals(0, searchedRoot2.get().getChildren().size());
-        assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0).getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0)));
     }
 
     @Override

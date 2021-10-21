@@ -11,6 +11,7 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLDagModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
@@ -23,14 +24,15 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
         graph = "set/infrastructures",
         prefix = "infra"
 )
-public class InfrastructureModel extends SPARQLTreeModel<InfrastructureModel> {
+public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasPart",
-            inverse = true
+            inverse = true,
+            ignoreUpdateIfNull = true
     )
-    protected InfrastructureModel parent;
+    protected List<InfrastructureModel> parents;
 
     @SPARQLProperty(
             ontology = Oeso.class,

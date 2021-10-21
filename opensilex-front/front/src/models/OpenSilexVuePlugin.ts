@@ -15,6 +15,7 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
+import {NamedResourceDTO} from "opensilex-security/model/namedResourceDTO";
 
 declare var $cookies: VueCookies;
 
@@ -593,6 +594,46 @@ export default class OpenSilexVuePlugin {
         }
 
         return option;
+    }
+
+    public buildTreeFromDag(dagList: Array<any>, buildOptions: any) {
+        let dagMap = new Map();
+        for (let dag of dagList) {
+            dagMap.set(dag.uri, dag);
+        }
+
+        let rootNodes = [];
+
+        dagList.forEach(dagNode => {
+            if (!dagNode.parents || dagNode.parents.length === 0) {
+                rootNodes.push(this.buildTreeFromDagNode(dagNode.uri, dagMap, buildOptions))
+            }
+        });
+
+        return rootNodes;
+    }
+
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any) {
+        let dagNode = dagMap.get(nodeUri);
+
+        let treeNode = {
+            id: dagNode.uri,
+            label: dagNode.name,
+            isDefaultExpanded: buildOptions.expanded,
+            isDisabled: false,
+            children: []
+        };
+
+        dagNode.children.forEach(childUri => {
+            let subTreeNode = this.buildTreeFromDagNode(childUri, dagMap, buildOptions);
+            treeNode.children.push(subTreeNode)
+        });
+
+        if (treeNode.children.length === 0) {
+            delete treeNode.children;
+        }
+
+        return treeNode;
     }
 
     private flatOntologies = {};

@@ -31,12 +31,16 @@ export default class InfrastructureSelector extends Vue {
   @Prop()
   multiple;
 
+  @Prop()
+  excludeInfrastructureURI: string;
+
   infrastructuresOptions = [];
   mounted() {
     this.$opensilex
       .getService("opensilex-core.OrganisationsService")
-      .searchInfrastructuresTree()
+      .searchInfrastructures()
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        //@todo dag
         this.infrastructuresOptions = this.$opensilex.buildTreeListOptions(
           http.response.result
         );

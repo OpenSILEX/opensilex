@@ -19,11 +19,13 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.api.InfrastructureGetDTO;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLDagModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -45,36 +47,34 @@ public class InfrastructureDAO {
         this.sparql = sparql;
     }
 
-    public SPARQLTreeListModel<InfrastructureModel> searchTree(String pattern, List<URI> infraRestriction, UserModel user) throws Exception {
-        Set<URI> infras = getUserInfrastructures(user);
-        if (infras != null && infras.isEmpty()) {
-            return new SPARQLTreeListModel<>();
+    public List<InfrastructureModel> search(String pattern, List<URI> organizationsRestriction, UserModel user) throws Exception {
+        Set<URI> organizations = getUserInfrastructures(user);
+
+        if (organizations != null && organizations.isEmpty()) {
+            return new ArrayList<>();
         }
 
-        if (infraRestriction != null && !infraRestriction.isEmpty()) {
-            if (infras == null) {
-                infras = new HashSet<>();
+        if (organizations == null) {
+            organizations = new HashSet<>();
+        }
+
+        if (organizationsRestriction != null && !organizationsRestriction.isEmpty()) {
+            organizationsRestriction.retainAll(organizations);
+            organizations.clear();
+            organizations.addAll(organizationsRestriction);
+        }
+
+        final Set<URI> finalOrganizations = organizations;
+
+        return sparql.search(InfrastructureModel.class, user.getLanguage(), (SelectBuilder select) -> {
+            if (pattern != null && !pattern.isEmpty()) {
+                select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureModel.NAME_FIELD, pattern));
             }
-            infraRestriction.retainAll(infras);
-            infras.clear();
-            infras.addAll(infraRestriction);
-        }
 
-        final Set<URI> finalInfras = infras;
-
-        return sparql.searchResourceTree(
-                InfrastructureModel.class,
-                user.getLanguage(),
-                (SelectBuilder select) -> {
-                    if (pattern != null && !pattern.isEmpty()) {
-                        select.addFilter(SPARQLQueryHelper.regexFilter(InfrastructureModel.NAME_FIELD, pattern));
-                    }
-
-                    if (finalInfras != null) {
-                        SPARQLQueryHelper.inURI(select, InfrastructureModel.URI_FIELD, finalInfras);
-                    }
-                }
-        );
+            if (finalOrganizations != null) {
+                SPARQLQueryHelper.inURI(select, InfrastructureModel.URI_FIELD, finalOrganizations);
+            }
+        });
     }
 
     public void validateInfrastructureAccess(URI infrastructureURI, UserModel user) throws Exception {

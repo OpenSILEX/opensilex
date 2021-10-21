@@ -9,7 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -25,16 +28,16 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
     
-    protected URI parent;
+    protected List<URI> parents;
 
     protected List<URI> children;
 
-    public URI getParent() {
-        return parent;
+    public List<URI> getParents() {
+        return parents;
     }
 
-    public void setParent(URI parent) {
-        this.parent = parent;
+    public void setParents(List<URI> parents) {
+        this.parents = parents;
     }
 
     public List<URI> getChildren() {
@@ -54,39 +57,40 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
     public void fromModel(InfrastructureModel model) {
         super.fromModel(model);
 
-        if (model.getParent() != null) {
-            setParent(model.getParent().getUri());
+        List<InfrastructureModel> parents = model.getParents();
+        if (parents != null) {
+            setParents(parents
+                    .stream().map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList()));
         }
 
-        List<InfrastructureModel> mc = model.getChildren();
-        List<URI> children = new ArrayList<>(mc.size());
-        mc.forEach(child -> {
-            children.add(child.getUri());
-        });
-
+        List<InfrastructureModel> children = model.getChildren();
+        if (children != null) {
+            setChildren(children
+                    .stream().map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList()));
+        }
     }
 
     @Override
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        if (getParent() != null) {
-            InfrastructureModel parentModel = new InfrastructureModel();
-            parentModel.setUri(getParent());
-            model.setParent(parentModel);
+        if (getParents() != null) {
+            model.setParents(getParents().stream().map(parentUri -> {
+                InfrastructureModel parentModel = new InfrastructureModel();
+                parentModel.setUri(parentUri);
+                return parentModel;
+            }).collect(Collectors.toList()));
         }
 
-        List<URI> mc = getChildren();
-        if (mc != null) {
-            List<InfrastructureModel> children = new ArrayList<>(mc.size());
-            mc.forEach(child -> {
+        if (getChildren() != null) {
+            model.setChildren(getChildren().stream().map(childUri -> {
                 InfrastructureModel childModel = new InfrastructureModel();
-                childModel.setUri(child);
-                children.add(childModel);
-            });
-            model.setChildren(children);
+                childModel.setUri(childUri);
+                return childModel;
+            }).collect(Collectors.toList()));
         }
-
     }
 
     public static InfrastructureDTO getDTOFromModel(InfrastructureModel model) {

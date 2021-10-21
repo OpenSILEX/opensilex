@@ -86,8 +86,9 @@ export default class InfrastructureForm extends Vue {
     if (this.parentInfrastructures == null) {
       this.$opensilex
         .getService("opensilex-core.OrganisationsService")
-        .searchInfrastructuresTree()
+        .searchInfrastructures()
         .then(
+            //@todo dag
           (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
             this.setParentInfrastructures(http.response.result);
           }
@@ -116,8 +117,9 @@ export default class InfrastructureForm extends Vue {
     if (this.parentInfrastructures == null) {
       this.$opensilex
         .getService("opensilex-core.OrganisationsService")
-        .searchInfrastructuresTree()
+        .searchInfrastructures()
         .then(
+            //@todo dag
           (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
             this.setParentInfrastructures(http.response.result);
           }

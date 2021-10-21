@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name", "parent", "children", "groups", "facilities"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities"})
 class InfrastructureCreationDTO extends InfrastructureDTO {
     public List<URI> groups;
     public List<URI> facilities;

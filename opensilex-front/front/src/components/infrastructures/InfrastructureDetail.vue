@@ -170,7 +170,8 @@ export default class InfrastructureDetail extends Vue {
   }
 
   setParent(form) {
-    form.parent = this.selected.parent;
+    //@todo dag
+    form.parent = this.selected.parents[0];
   }
 
   setInfrastructure(form) {

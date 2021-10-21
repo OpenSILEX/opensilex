@@ -588,22 +588,26 @@ public class DataAPI {
 
             Set<URI> devices = new HashSet<>();
             for (AgentModel agent : provenance.getAgents()) {
-                DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                if (device != null) {
-                    devices.add(device.getUri());
-                    List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                    if (device != null) {
+                        devices.add(device.getUri());
+                        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
 
-                    if (!variables.isEmpty()) {
-                        if (variables.stream().anyMatch(variable -> (SPARQLDeserializers.compareURIs(variable.getValue(), data.getVariable().toString())))) {
-                            return;
+                        if (!variables.isEmpty()) {
+                            if (variables.stream().anyMatch(variable -> (SPARQLDeserializers.compareURIs(variable.getValue(), data.getVariable().toString())))) {
+                                return;
+                            }
+
                         }
 
                     }
 
                 }
+
             }
-            if (!devices.isEmpty()) {
-                throw new NoDeclaredVariableOnDeviceException(devices.stream().findFirst().get(), data.getVariable());
+            if (!devices.isEmpty()) { // variable isn t linked to any device
+                throw new NoDeclaredVariableOnDeviceException( data.getVariable());
             }
 
         }
@@ -651,12 +655,12 @@ public class DataAPI {
             if (data.getVariable() != null) {
                 if (!variableURIs.contains(data.getVariable())) {
                     variableURIs.add(data.getVariable());
-                    VariableModel variable = variableDAO.get(data.getVariable());
+                    VariableModel variable = variableDAO.get(data.getVariable());  // here the variable
 
                     if (variable == null) {
                         notFoundedVariableURIs.add(data.getVariable());
                     } else {
-                        checkVariableDatumTypes(variableDAO, variableTypes, data, dataIndex);
+                        checkVariableDatumTypes(variableDAO, variableTypes, data, dataIndex); // why not use the variable ? 2 calls
                         dataIndex++;
                     }
                 }
@@ -667,7 +671,7 @@ public class DataAPI {
                 if (!objectURIs.contains(data.getTarget())) {
                     objectURIs.add(data.getTarget());
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        notFoundedObjectURIs.add(data.getTarget());
+                        notFoundedObjectURIs.add(data.getTarget()); // object ? or target ? confusing point
                     }
                 }
             }
@@ -676,7 +680,7 @@ public class DataAPI {
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
+                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  // Why not a Get ? we need the provenance after that .
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } else {
                     checkVariablesDeviceAssociation(provDAO, data);
@@ -701,16 +705,16 @@ public class DataAPI {
         }
 
         if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
+            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));// NOSQL Exception ? come from sparql request
         }
         if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs));
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs)); // NOSQL Exception ? come from sparql request
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs)); 
         }
         if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs)); // NOSQL Exception ? come from sparql request
         }
 
     }
@@ -1017,7 +1021,7 @@ public class DataAPI {
         Boolean hasDevice = false;
         if (agents !=  null) {
             for (AgentModel agent:agents) {
-                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) { 
                     hasDevice = true;
                     break;
                 }
@@ -1193,7 +1197,7 @@ public class DataAPI {
                         if (duplicatedExperiments.contains(expNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addDuplicateExperimentError(cell);
-                            duplicatedExperiments.add(expNameOrUri);
+                            duplicatedExperiments.add(expNameOrUri); // ? 
                             break;
                         }
                         

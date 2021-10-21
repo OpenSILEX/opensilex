@@ -14,20 +14,22 @@ import java.net.URI;
  */
 public class NoDeclaredVariableOnDeviceException extends Exception {
     private final URI variable;
-    private final URI device;
 
     public NoDeclaredVariableOnDeviceException(URI device, URI variable) {
         super("The variable "+ variable.toString() + " is not linked to the device "+ device.toString());
-        this.device = device;
         this.variable = variable;               
     }
+    
+    
+    public NoDeclaredVariableOnDeviceException( URI variable) {
+        super("The variable "+ variable.toString() + " is not linked to any device ");
+        this.variable = variable;               
+    }
+    
 
     public URI getVariable() {
         return variable;
     }
     
-    public URI getDevice() {
-        return device;
-    }
 
 }

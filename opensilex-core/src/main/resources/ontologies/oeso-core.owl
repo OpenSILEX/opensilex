@@ -1989,6 +1989,15 @@ Examples include lists, tables, and databases. A dataset may be useful for direc
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#standard_method -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#standard_method">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Method"/>
+        <rdfs:label>Standard Method</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>
@@ -2023,8 +2032,8 @@ Examples include lists, tables, and databases. A dataset may be useful for direc
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
         <terms:description xml:lang="en">Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</terms:description>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:comment xml:lang="en">An account of the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:label xml:lang="en">Description</rdfs:label>
@@ -2033,16 +2042,16 @@ Examples include lists, tables, and databases. A dataset may be useful for direc
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/source">
         <terms:hasVersion rdf:resource="http://dublincore.org/usage/terms/history/#source-006"/>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
-        <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
+        <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
+        <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
-        <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
+        <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:label xml:lang="en">Title</rdfs:label>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2092,8 +2101,8 @@ Examples include lists, tables, and databases. A dataset may be useful for direc
         <rdfs:label xml:lang="en">germplasm descriptor information</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Infrastructure">
-        <rdfs:label xml:lang="en">Organization</rdfs:label>
         <rdfs:label xml:lang="fr">Organisation</rdfs:label>
+        <rdfs:label xml:lang="en">Organization</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility">
         <rdfs:label xml:lang="en">Facilities</rdfs:label>

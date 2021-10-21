@@ -13,7 +13,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Characteristic",
-        graph = "set/variables"
+        graph = VariableModel.GRAPH
 )
 public class CharacteristicModel extends BaseVariableModel<CharacteristicModel> {
 

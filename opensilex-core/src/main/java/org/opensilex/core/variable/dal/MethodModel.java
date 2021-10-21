@@ -13,7 +13,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Method",
-        graph = "set/variables"
+        graph = VariableModel.GRAPH
 )
 public class MethodModel extends BaseVariableModel<MethodModel> {
 

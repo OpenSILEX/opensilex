@@ -11,12 +11,14 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "ScientificObject",
-        graph = "set/scientific-objects",
+        graph = ScientificObjectModel.GRAPH,
         prefix = "so"
 )
 
 public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
-    
+
+    public final static String GRAPH = "set/scientific-object";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf",

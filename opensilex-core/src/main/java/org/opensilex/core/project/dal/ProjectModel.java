@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -23,10 +24,13 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Project",
-        graph = "set/projects",
+        graph = ProfileModel.GRAPH,
         prefix = "prj"
 )
 public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> implements ClassURIGenerator<ProjectModel> {
+
+    public final static String GRAPH = "set/project";
+
 
     @SPARQLProperty(
             ontology = Oeso.class,

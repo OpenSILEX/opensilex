@@ -18,10 +18,12 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Variable",
-        graph = "set/variables",
+        graph = VariableModel.GRAPH,
         ignoreValidation = true
 )
 public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
+
+    public static final String GRAPH = "set/variable";
 
     @SPARQLProperty(
             ontology = SKOS.class,

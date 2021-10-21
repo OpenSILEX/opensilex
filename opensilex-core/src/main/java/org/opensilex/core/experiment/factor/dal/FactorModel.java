@@ -9,9 +9,6 @@
  */
 package org.opensilex.core.experiment.factor.dal;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -20,6 +17,9 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Arnaud Charleroy
@@ -27,10 +27,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Factor",
-        graph = "set/factors",
+        graph = FactorModel.GRAPH,
         prefix = "factor"
 )
 public class FactorModel extends SKOSReferencesModel implements ClassURIGenerator<FactorModel> {
+
+    public static final String GRAPH = "set/factor";
 
     @SPARQLProperty(
             ontology = RDFS.class,

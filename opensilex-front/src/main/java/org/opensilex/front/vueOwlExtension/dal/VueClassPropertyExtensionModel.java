@@ -19,7 +19,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = VueOwlExtension.class,
         resource = "ClassPropertyExtension",
-        graph = "opensilex-owl-extension",
+        graph = VueClassExtensionModel.GRAPH,
         prefix = "oowl-ext"
 )
 public class VueClassPropertyExtensionModel extends SPARQLResourceModel implements ClassURIGenerator<VueClassPropertyExtensionModel> {

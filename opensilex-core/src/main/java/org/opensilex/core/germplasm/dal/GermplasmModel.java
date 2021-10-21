@@ -28,10 +28,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Germplasm",
-        graph = "set/germplasms",
+        graph = GermplasmModel.GRAPH,
         prefix = "germplasm"
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel> {
+
+    public final static String GRAPH = "set/germplasm";
 
     @SPARQLIgnore
     protected String name;

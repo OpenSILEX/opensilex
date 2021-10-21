@@ -22,6 +22,8 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.opensilex.core.area.dal.AreaModel.GRAPH;
+
 /**
  * Area Model
  *
@@ -30,10 +32,12 @@ import java.net.URISyntaxException;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Area",
-        graph = "set/area",
+        graph = GRAPH,
         prefix = "area"
 )
 public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<AreaModel> {
+
+    public final static String GRAPH = "set/area";
 
     @SPARQLProperty(
             ontology = RDFS.class,

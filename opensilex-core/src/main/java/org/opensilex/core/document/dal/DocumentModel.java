@@ -32,10 +32,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Document",
-        graph = "set/documents",
+        graph = DocumentModel.GRAPH,
         prefix = "doc"
 )
 public class DocumentModel extends SPARQLResourceModel implements ClassURIGenerator<DocumentModel> {
+
+    public final static String GRAPH = "set/document";
 
     @SPARQLProperty(
             ontology = OA.class,

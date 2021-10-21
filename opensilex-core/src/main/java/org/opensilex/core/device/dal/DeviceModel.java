@@ -22,10 +22,13 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Device",
-        graph = "set/devices",
+        graph = DeviceModel.GRAPH,
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
+
+    public final static String GRAPH = "set/device";
+
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"

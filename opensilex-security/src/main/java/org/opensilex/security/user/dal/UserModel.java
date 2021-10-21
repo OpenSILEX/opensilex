@@ -27,10 +27,13 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = FOAF.class,
         resource = "Agent",
-        graph = "users",
+        graph = UserModel.GRAPH,
         prefix = "usr"
 )
 public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
+
+    public final static String GRAPH = "set/user";
+
 
     public static UserModel getAnonymous() {
         UserModel anonymous = new UserModel();

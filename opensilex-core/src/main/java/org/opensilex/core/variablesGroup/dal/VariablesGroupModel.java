@@ -23,10 +23,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "VariablesGroup",
-        graph = "set/variablesGroup"
+        graph = VariablesGroupModel.GRAPH
 )
 public class VariablesGroupModel extends SPARQLNamedResourceModel<VariablesGroupModel> {
-    
+
+    public final static String GRAPH = "set/variablesGroup";
+
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "description"

@@ -31,10 +31,20 @@ import org.opensilex.security.user.dal.UserModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Experiment",
-        graph = "set/experiments",
+        graph = ExperimentModel.GRAPH,
         prefix = "expe"
 )
-public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> implements ClassURIGenerator<ExperimentModel> {
+public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
+
+    public final static String GRAPH = "set/experiment";
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label",
+            required = true
+    )
+    String name;
+    public static final String LABEL_FIELD = "name";
 
     @SPARQLProperty(
             ontology = Oeso.class,

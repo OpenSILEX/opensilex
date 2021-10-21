@@ -24,7 +24,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "FactorLevel",
-        graph = "set/factors",
+        graph = FactorModel.GRAPH,
         prefix = "factor"
 )
 public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel> implements ClassURIGenerator<FactorLevelModel> {

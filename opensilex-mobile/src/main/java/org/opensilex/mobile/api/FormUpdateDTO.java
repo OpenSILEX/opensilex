@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.mobile.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import javax.validation.constraints.NotNull;
@@ -22,6 +23,8 @@ import org.opensilex.server.rest.validation.ValidURI;
 public class FormUpdateDTO extends FormCreationDTO{
     
     protected URI uri;
+
+    protected String commitAddress;
     
     @NotNull
     @ValidURI
@@ -29,16 +32,28 @@ public class FormUpdateDTO extends FormCreationDTO{
     public URI getUri() {
         return uri;
     }
+
+    @JsonProperty("commit_address")
+    @NotNull
+    @ApiModelProperty(value = "address of the commit", required = true)
+    public String getCommitAddress(){
+        return commitAddress;
+    }
     
     @Override
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = super.newModel();
         model.setUri(uri);
+        model.setCommitAddress(commitAddress);
         return model;
     }
     
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+    
+    public void setCommitAddress(String s){
+        this.commitAddress = s;
     }
     
 }

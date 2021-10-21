@@ -16,6 +16,8 @@ import org.opensilex.nosql.mongodb.MongoModel;
  */
 public class FormModel  extends MongoModel {  
     
+    private String commitAddress;
+
     private Instant creationDate; 
     
     private Instant lastUpdateDate;
@@ -52,6 +54,14 @@ public class FormModel  extends MongoModel {
 
     public Instant getLastUpdateDate() {
         return lastUpdateDate;
+    }
+
+    public void setCommitAddress(String commitAddress) {
+        this.commitAddress = commitAddress;
+    }
+
+    public String getCommitAddress() {
+        return commitAddress;
     }
 
     public void setLastUpdateDate(Instant lastUpdateDate) {

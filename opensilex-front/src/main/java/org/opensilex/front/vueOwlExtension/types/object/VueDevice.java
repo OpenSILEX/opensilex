@@ -15,7 +15,7 @@ public class VueDevice implements VueOntologyObjectType {
 
     @Override
     public String getInputComponent() {
-        return "opensilex-DeviceSelector";
+        return "opensilex-DevicePropertySelector";
     }
 
     @Override

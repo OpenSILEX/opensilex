@@ -23,14 +23,10 @@
       </div>
       <div class="col-md-6">
         <!-- Infrastructure detail -->
-        <opensilex-InfrastructureDetail :selected="selected"></opensilex-InfrastructureDetail>
-        <!-- Infrastructure groups -->
-        <opensilex-InfrastructureGroupsView
-          :selected="selected"
-          @onUpdate="refresh"
-          @onCreate="refresh"
-          @onDelete="refresh"
-        ></opensilex-InfrastructureGroupsView>
+        <opensilex-InfrastructureDetail
+            :selected="selected"
+            @onUpdate="refresh"
+        ></opensilex-InfrastructureDetail>
       </div>
     </div>
   </div>

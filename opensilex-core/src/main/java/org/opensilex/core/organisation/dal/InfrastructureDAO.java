@@ -22,6 +22,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -91,24 +92,6 @@ public class InfrastructureDAO {
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureURI);
-        }
-    }
-
-    public void validateInfrastructureTeamAccess(URI infrastructureTeamURI, UserModel user) throws Exception {
-
-        if (!sparql.uriExists(InfrastructureTeamModel.class, infrastructureTeamURI)) {
-            throw new NotFoundURIException(infrastructureTeamURI);
-        }
-
-        if (user.isAdmin()) {
-            return;
-        }
-
-        AskBuilder ask = sparql.getUriExistsQuery(InfrastructureTeamModel.class, infrastructureTeamURI);
-        addAskInfrastructureAccess(ask, makeVar(InfrastructureTeamModel.INFRASTRUCTURE_FIELD), user);
-
-        if (!sparql.executeAskQuery(ask)) {
-            throw new ForbiddenURIAccessException(infrastructureTeamURI);
         }
     }
 
@@ -291,31 +274,6 @@ public class InfrastructureDAO {
         instance.setInfrastructure(infra);
         sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
         sparql.create(instance);
-        return instance;
-    }
-
-    public InfrastructureTeamModel getTeam(URI uri, UserModel user) throws Exception {
-        validateInfrastructureTeamAccess(uri, user);
-        return sparql.getByURI(InfrastructureTeamModel.class, uri, user.getLanguage());
-    }
-
-    public void deleteTeam(URI uri, UserModel user) throws Exception {
-        validateInfrastructureTeamAccess(uri, user);
-        sparql.delete(InfrastructureTeamModel.class, uri);
-    }
-
-    public InfrastructureTeamModel createTeam(InfrastructureTeamModel instance, UserModel user) throws Exception {
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
-        instance.setInfrastructure(infra);
-        sparql.create(instance);
-        return instance;
-    }
-
-    public InfrastructureTeamModel updateTeam(InfrastructureTeamModel instance, UserModel user) throws Exception {
-        validateInfrastructureTeamAccess(instance.getUri(), user);
-        InfrastructureModel infra = sparql.getByURI(InfrastructureModel.class, instance.getInfrastructure().getUri(), null);
-        instance.setInfrastructure(infra);
-        sparql.update(instance);
         return instance;
     }
 }

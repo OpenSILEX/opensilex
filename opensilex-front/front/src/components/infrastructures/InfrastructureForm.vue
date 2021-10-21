@@ -33,6 +33,13 @@
       label="component.common.parent"
       placeholder="InfrastructureForm.form-parent-placeholder"
     ></opensilex-SelectForm>
+
+    <!-- Groupes -->
+    <opensilex-GroupSelector
+        label="InfrastructureForm.form-group-label"
+        :groups.sync="form.groups"
+        :multiple="true"
+    ></opensilex-GroupSelector>
   </b-form>
 </template>
 
@@ -59,6 +66,7 @@ export default class InfrastructureForm extends Vue {
         rdf_type: null,
         name: "",
         parent: null,
+        groups: []
       };
     },
   })
@@ -85,6 +93,7 @@ export default class InfrastructureForm extends Vue {
       rdf_type: null,
       name: "",
       parent: null,
+      groups: []
     };
   }
 
@@ -165,6 +174,7 @@ en:
     form-type-placeholder: Select organization type
     form-parent-placeholder: Select parent organization
     infrastructure-already-exists: Organization already exists with this URI
+    form-group-label: Groups
 fr:
   InfrastructureForm:
     infrastructure-uri: URI de l'organisation
@@ -172,4 +182,5 @@ fr:
     form-type-placeholder: Sélectionner le type d'organisation
     form-parent-placeholder: Sélectionner l'organisation parente
     infrastructure-already-exists: Une organisation existe déjà avec cette URI
+    form-group-label: Groupes
 </i18n>

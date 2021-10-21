@@ -14,6 +14,9 @@ import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.provenance.dal.ActivityModel;
+import org.opensilex.server.rest.validation.Required;
+
+import java.net.URI;
 
 /**
  * Activity ActivityCreationDTO
@@ -30,6 +33,12 @@ public class ActivityCreationDTO extends ActivityGetDTO {
 
     public void setTimezone(String timezone) {
         this.timezone = timezone;
+    }
+
+    @Override
+    @Required
+    public URI getRdfType() {
+        return rdfType;
     }
 
     public ActivityModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {

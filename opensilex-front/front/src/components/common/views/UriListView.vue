@@ -1,8 +1,9 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{ $t(label) }}</span>
+    <span class="field-view-title" :class="{'whole-line': !inline}">{{ $t(label) }}</span>
 
-    <span class="static-field-line">
+    <!-- Inline list separated by commas -->
+    <span class="static-field-line" v-if="inline">
       <span :key="index" v-for="(value, index) in list">
         <opensilex-UriLink
           :uri="value.uri"
@@ -13,6 +14,18 @@
         <span v-if="index + 1 < list.length">, </span>
       </span>
     </span>
+
+    <!-- Bullet points list -->
+    <ul v-if="!inline">
+      <li :key="index" v-for="(value, index) in list">
+        <opensilex-UriLink
+            :uri="value.uri"
+            :value="value.value"
+            :url="value.url"
+            :to="value.to"
+        ></opensilex-UriLink>
+      </li>
+    </ul>
   </div>
 </template>
 <script lang="ts">
@@ -29,12 +42,20 @@ export default class UriListView extends Vue {
   @Prop()
   list: Array<any>;
 
+  @Prop({
+    default: true
+  })
+  inline: boolean;
+
 }
 </script>
 
 <style scoped lang="scss">
 .static-field-line {
   margin-right: 3px;
+}
+.whole-line {
+  width: 100%;
 }
 </style>
 

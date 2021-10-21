@@ -90,8 +90,8 @@
       createTitle="InfrastructureTree.add"
       editTitle="InfrastructureTree.update"
       icon="ik#ik-globe"
-      @onCreate="refresh($event.uri)"
-      @onUpdate="refresh($event.uri)"
+      @onCreate="refresh($event ? $event.uri : undefined)"
+      @onUpdate="refresh($event ? $event.uri : undefined)"
       :initForm="setParent"
     ></opensilex-ModalForm>
   </b-card>
@@ -103,6 +103,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { OrganisationsService, ResourceTreeDTO, InfrastructureGetDTO } from "opensilex-core/index";
+import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
 
 @Component
 export default class InfrastructureTree extends Vue {
@@ -249,6 +250,7 @@ export default class InfrastructureTree extends Vue {
   }
 
   parentURI;
+
   createInfrastructure(parentURI?) {
     this.parentURI = parentURI;
     this.infrastructureForm.showCreateForm();
@@ -260,7 +262,14 @@ export default class InfrastructureTree extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
         this.parentURI = detailDTO.parent;
-        this.infrastructureForm.showEditForm(detailDTO);
+
+
+        let editDTO: InfrastructureUpdateDTO = {
+          ...detailDTO,
+          uri: detailDTO.uri,
+          groups: detailDTO.groups.map(group => group.uri)
+        };
+        this.infrastructureForm.showEditForm(editDTO);
       });
   }
 

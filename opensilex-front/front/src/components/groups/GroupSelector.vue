@@ -6,7 +6,8 @@
     :itemLoadingMethod="loadGroups"
     :searchMethod="searchGroups"
     :conversionMethod="groupToSelectNode"
-    placeholder="component.group.filter-placeholder"
+    :placeholder="placeholder"
+    :noResultsText="noResultsText"
     @select="select"
     @deselect="deselect"
   ></opensilex-SelectForm>
@@ -30,6 +31,14 @@ export default class GroupSelector extends Vue {
 
   @Prop()
   label;
+
+  @Prop({
+        default: "component.group.filter-placeholder"
+  })
+  placeholder;
+
+  @Prop()
+  noResultsText;
 
   @Prop()
   multiple;

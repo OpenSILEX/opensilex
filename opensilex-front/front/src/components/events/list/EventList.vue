@@ -165,6 +165,7 @@
             :target="target"
             @onCreate="displayAfterCreation"
             @onUpdate="refresh"
+            :context="context"
         ></opensilex-EventModalForm>
 
         <opensilex-EventCsvForm
@@ -252,6 +253,9 @@ export default class EventList extends Vue {
 
     @Prop()
     target;
+
+    @Prop()
+    context;
 
     baseType: string;
 

@@ -251,6 +251,7 @@ en:
     personInCharge: Person in charge
     localisation: Localisation
     variables: Variables
+    position: Position
     update: Update device
     delete: Delete device
     additionalInfo: Additional information
@@ -274,6 +275,7 @@ fr:
     personInCharge: Personne responsable
     localisation: Localisation
     variables: Variables
+    position: Position
     update: Modifier le dispositif
     delete: Supprimer ce dispositif
     additionalInfo: Informations supplémentaires

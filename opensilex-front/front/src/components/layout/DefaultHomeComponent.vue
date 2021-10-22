@@ -13,6 +13,7 @@
 <script lang="ts">
 import { Component, Ref } from 'vue-property-decorator';
 import Vue from 'vue';
+import axios from 'axios'
 
 @Component
 export default class DefaultHomeComponent extends Vue {
@@ -20,4 +21,9 @@ export default class DefaultHomeComponent extends Vue {
 </script>
 
 <style scoped lang="scss">
+.jumbotron{   
+    padding-top: 0px;
+    padding-bottom:0px;
+    height:560px;
+  }
 </style>

@@ -53,7 +53,7 @@
       <!-- <b-col sm="5">
         <opensilex-Card label="DeviceDescription.events" icon="ik#ik-clipboard">
             <template v-slot:body>
-
+ 
             </template>
         </opensilex-Card>
       </b-col> -->

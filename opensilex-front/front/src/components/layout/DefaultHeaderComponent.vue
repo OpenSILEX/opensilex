@@ -78,7 +78,6 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import { User } from "../../models/User";
-import axios from 'axios'
 
 @Component
 export default class DefaultHeaderComponent extends Vue {

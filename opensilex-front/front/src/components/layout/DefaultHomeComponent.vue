@@ -13,7 +13,6 @@
 <script lang="ts">
 import { Component, Ref } from 'vue-property-decorator';
 import Vue from 'vue';
-import axios from 'axios'
 
 @Component
 export default class DefaultHomeComponent extends Vue {

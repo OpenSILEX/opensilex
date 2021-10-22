@@ -9,7 +9,7 @@
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               label="DeviceDescription.update"
-              @click="updateDevice"
+              @click="editDeviceForm"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
@@ -223,8 +223,8 @@ export default class DeviceDescription extends Vue {
 
   @Ref("deviceForm") readonly deviceForm!: any;
 
-  updateDevice() {
-    this.deviceForm.getFormRef().getAttributes(this.device);
+  editDeviceForm() {
+    this.deviceForm.getFormRef().setRelationsAndAttributes(this.device);
     let devicetoSend = JSON.parse(JSON.stringify(this.device));
     this.deviceForm.showEditForm(devicetoSend);
   }

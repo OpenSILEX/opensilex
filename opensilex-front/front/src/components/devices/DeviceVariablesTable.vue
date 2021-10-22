@@ -1,30 +1,30 @@
 <template>
   <b-row>
     <b-col>
-      <br/>
+      <br />
       <h6 class="mb-3">
-        <strong>{{$t('DeviceVariablesTable.title')}}</strong>
+        <strong>{{ $t("DeviceVariablesTable.title") }}</strong>
       </h6>
       <b-row>
-       <b-col md="4">
+        <b-col md="4">
           <opensilex-AddChildButton
             class="mr-2"
             @click="addEmptyRow"
             variant="outline-primary"
             label="DeviceVariablesTable.add"
           ></opensilex-AddChildButton>
-          <span>{{$t('DeviceVariablesTable.add')}}</span>
+          <span>{{ $t("DeviceVariablesTable.add") }}</span>
         </b-col>
       </b-row>
       <b-row>
         <b-col cols="10">
-            <VueTabulator
-              ref="tabulatorRef"
-              class="table-light table-bordered"
-              v-model="variablesArray"
-              :options="options"
-              @cell-click="removeRow"
-            />
+          <VueTabulator
+            ref="tabulatorRef"
+            class="table-light table-bordered"
+            v-model="variablesArray"
+            :options="options"
+            @cell-click="removeRow"
+          />
         </b-col>
       </b-row>
     </b-col>
@@ -33,7 +33,7 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { DevicesService } from "opensilex-core/index";
@@ -43,47 +43,39 @@ export default class DeviceVariablesTable extends Vue {
   $opensilex: any;
   $store: any;
   $i18n: any;
-  $papa: any;
   service: DevicesService;
   langs: any = {
     fr: {
       columns: {
-        attribute: 'Property',
+        attribute: "Property",
         value: "URI",
         actions: "Supprimer",
-      }    
+      },
     },
     en: {
       columns: {
-        attribute: 'Propriété',
+        attribute: "Propriété",
         value: "URI",
         actions: "Delete",
-      }
+      },
     },
   };
-  
+
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
 
   @Prop()
-  editMode: boolean;
-
-  @PropSync("relations", {
-    default: () => {
-      return [];
-    },
-  })
   variablesArray: any[];
 
   get tableColumns(): any[] {
     return [
       {
-        title: 'Property',
+        title: "Property",
         field: "property",
         formater: "string",
         editor: "input",
         validator: ["required", "unique"],
         widthGrow: 0.5,
-        visible: false
+        visible: false,
       },
       {
         title: "URI",
@@ -115,7 +107,7 @@ export default class DeviceVariablesTable extends Vue {
     columns: this.tableColumns,
     maxHeight: "100%",
     index: 0,
-    langs: this.langs
+    langs: this.langs,
   };
 
   private langUnwatcher;
@@ -137,37 +129,40 @@ export default class DeviceVariablesTable extends Vue {
     tabulatorInstance.setLocale(lang);
   }
 
+  resetTable() {
+    this.variablesArray = [];
+  }
+
+  addEmptyRow() {
+    let tabulatorInstance = this.tabulatorRef.getInstance();
+    tabulatorInstance.addRow({
+      property: "vocabulary:measures",
+      value: null,
+    });
+  }
+
   removeRow(evt, clickedCell) {
     let columnName = clickedCell.getField();
 
     if (columnName == "actions") {
       let row = clickedCell.getRow();
-      
-      var index = 0
-      let val = ""
-      while (index < this.variablesArray.length && val != row.value){
-        val = this.tableColumns[index].value
-        index++
-      }
-      
-      console.log(index);
-
-      Vue.delete(this.variablesArray, index);
       row.delete();
     }
   }
-  
-  addEmptyRow() {
-      Vue.set(this.variablesArray, this.variablesArray.length, {
-        property: "vocabulary:measures",
-        value: null,
-      });
-  }
 
-  addRow(row) {
-    if (row.value != undefined && row.value != null && row.value != "") {
-      Vue.set(this.variablesArray, this.variablesArray.length, row);
+  getVariables() {
+    let variables = [];
+
+    let data = this.tabulatorRef.getInstance().getData();
+    for (let item of data) {
+      if (item.value !== null) {
+        variables.push({
+          property: "vocabulary:measures",
+          value: item.value,
+        });
+      }
     }
+    return variables;
   }
 }
 </script>

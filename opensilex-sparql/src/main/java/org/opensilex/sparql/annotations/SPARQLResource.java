@@ -6,16 +6,20 @@
 package org.opensilex.sparql.annotations;
 
 import java.lang.annotation.Documented;
+
 import static java.lang.annotation.ElementType.TYPE;
+
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
+
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Target;
+
 import org.opensilex.sparql.utils.DefaultURIGenerator;
 import org.opensilex.sparql.utils.URIGenerator;
 
 /**
- *
  * @author vincent
  */
 @Target(TYPE)
@@ -24,17 +28,18 @@ import org.opensilex.sparql.utils.URIGenerator;
 @Inherited
 public @interface SPARQLResource {
 
-    public Class<?> ontology();
 
-    public String resource();
+    Class<?> ontology();
 
-    public Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
+    String resource();
 
-    public String graph() default "";
+    Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
 
-    public String prefix() default "";
+    String graph() default "";
 
-    public boolean ignoreValidation() default false;
+    String prefix() default "";
 
-    public boolean allowBlankNode() default false;
+    boolean ignoreValidation() default false;
+
+    boolean allowBlankNode() default false;
 }

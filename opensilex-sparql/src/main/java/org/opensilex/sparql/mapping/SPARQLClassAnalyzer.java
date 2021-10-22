@@ -57,7 +57,7 @@ public final class SPARQLClassAnalyzer {
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
     private final Resource resource;
-    private final String graphSuffix;
+    private final String graph;
     private final String graphPrefix;
 
     private Field fieldURI;
@@ -139,9 +139,9 @@ public final class SPARQLClassAnalyzer {
             allowBlankNode = resourceAnnotation.allowBlankNode();
             LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
-                graphSuffix = resourceAnnotation.graph();
+                graph = resourceAnnotation.graph();
             } else {
-                graphSuffix = null;
+                graph = null;
             }
 
             if (!resourceAnnotation.prefix().isEmpty()) {
@@ -608,8 +608,8 @@ public final class SPARQLClassAnalyzer {
         return resource;
     }
 
-    public String getGraphSuffix() {
-        return graphSuffix;
+    public String getGraph() {
+        return graph;
     }
 
     public Field getFieldFromName(String fieldName) {

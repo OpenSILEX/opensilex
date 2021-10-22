@@ -13,7 +13,6 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.expr.E_Str;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -268,16 +267,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public URI getDefaultGraphURI() {
-        if (classAnalizer.getGraphSuffix() != null) {
+        if (classAnalizer.getGraph() != null) {
             try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
+                URI graphSuffixUri = new URI(classAnalizer.getGraph());
                 if (graphSuffixUri.isAbsolute()) {
                     return graphSuffixUri;
                 }
-                String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraphSuffix()).toString();
+                String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraph()).toString();
                 return new URI(classGraphURI);
             } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
+                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraph(), ex);
             }
         }
 
@@ -294,16 +293,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public URI getDefaultGenerationURI() {
-        if (classAnalizer.getGraphSuffix() != null) {
+        if (classAnalizer.getGraph() != null) {
             try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
+                URI graphSuffixUri = new URI(classAnalizer.getGraph());
                 if (graphSuffixUri.isAbsolute()) {
                     return graphSuffixUri;
                 }
-                String classGraphURI = generationPrefixURI.resolve(classAnalizer.getGraphSuffix()).toString();
+                String classGraphURI = generationPrefixURI.resolve(classAnalizer.getGraph()).toString();
                 return new URI(classGraphURI);
             } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
+                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraph(), ex);
             }
         }
 

@@ -7,6 +7,7 @@ package org.opensilex.core.organisation.dal;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -14,20 +15,22 @@ import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.api.InfrastructureGetDTO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLDagModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -131,6 +134,37 @@ public class InfrastructureDAO {
         }
     }
 
+    /**
+     * MUST BE CALLED BEFORE AN UPDATE
+     *
+     * Validate the organization hierarchy, i.e. fails if modifying the parents of the organization results in a
+     * cycle in the hierarchy graph (for example, adding a child organization as a parent creates a cycle).
+     *
+     * @param model the organization to update
+     * @throws SPARQLInvalidModelException if a cycle is found
+     *
+     * @todo Faire des tests !
+     */
+    public void validateOrganizationHierarchy(InfrastructureModel model) throws Exception {
+        AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, model.getUri());
+
+        Node nodeUri = SPARQLDeserializers.nodeURI(model.getUri());
+        Var childrenVar = makeVar(InfrastructureModel.CHILDREN_FIELD);
+
+        ask.addWhere(nodeUri, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), childrenVar);
+
+        // We must check if any of the parents of the organization is a child of itself
+        // In that case this would create a cycle, thus we forbid it
+        List<URI> childrenUriList = model.getParents()
+                .stream().map(InfrastructureModel::getUri)
+                .collect(Collectors.toList());
+        SPARQLQueryHelper.addWhereUriValues(ask, childrenVar.getVarName(), childrenUriList);
+
+        if (sparql.executeAskQuery(ask)) {
+            throw new SPARQLInvalidModelException("Invalid organization model : parents cannot be children of the organization");
+        }
+    }
+
     public void addAskInfrastructureAccess(WhereClause<?> ask, Object infraURIVar, UserModel user) {
         Var userProfileVar = makeVar("_userProfile");
         Var groupVar = makeVar(InfrastructureModel.GROUP_FIELD);
@@ -190,6 +224,7 @@ public class InfrastructureDAO {
 
     public InfrastructureModel update(InfrastructureModel instance, UserModel user) throws Exception {
         validateInfrastructureAccess(instance.getUri(), user);
+        validateOrganizationHierarchy(instance);
         sparql.update(instance);
         return instance;
     }

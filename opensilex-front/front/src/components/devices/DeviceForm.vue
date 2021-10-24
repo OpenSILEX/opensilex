@@ -91,8 +91,7 @@
 
     <opensilex-DeviceVariablesTable
       ref="deviceVariablesTable"
-      :editMode="editMode"
-      :relations.sync="form.relations"
+      :variablesArray="variablesArray"
     ></opensilex-DeviceVariablesTable>
 
 
@@ -179,7 +178,10 @@ export default class DeviceForm extends Vue {
   }
 
   update(form) {
-    form.metadata = this.attTable.pushAttributes();   
+    form.metadata = this.attTable.getAttributes();   
+
+    form.relations = this.varTable.getVariables();    // relations are variables..
+
     return this.$opensilex
       .getService("opensilex.DevicesService")
       .updateDevice(form)
@@ -191,8 +193,10 @@ export default class DeviceForm extends Vue {
   }
 
   attributesArray = [];
-  getAttributes(form) {
+  variablesArray = [];
+  setRelationsAndAttributes(form) {
     this.attributesArray = [];
+    this.variablesArray = [];
     if (form.metadata != null) {   
       for (const property in form.metadata) {
         let att = {
@@ -201,6 +205,14 @@ export default class DeviceForm extends Vue {
         }
         this.attributesArray.push(att);
       } 
+    }
+    if (form.relations != null) {  
+      form.relations.forEach(relation => {
+        if(relation.property == "vocabulary:measures"){
+          this.variablesArray.unshift(relation);
+        }
+      })
+       
     }
   }
 

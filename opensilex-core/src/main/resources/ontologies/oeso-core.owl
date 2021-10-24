@@ -2117,18 +2117,9 @@ Used in OpenSILEX for group things</rdfs:comment>
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#areaEOI">
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
         <rdfs:label xml:lang="en">area</rdfs:label>
         <rdfs:label xml:lang="fr">zone</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
-        <rdfs:label xml:lang="en">germplasm</rdfs:label>
-        <rdfs:label xml:lang="fr">germplasm</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -2136,16 +2127,6 @@ Used in OpenSILEX for group things</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#greenhouse -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#greenhouse"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#growthchamberEOI -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#growthchamberEOI">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
-        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
-        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
-    </owl:NamedIndividual>
     
 
 
@@ -2164,26 +2145,6 @@ Used in OpenSILEX for group things</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#isPartOf -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#plantEOI -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plantEOI">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
-        <rdfs:label xml:lang="en">plant</rdfs:label>
-        <rdfs:label xml:lang="en">plante</rdfs:label>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#plotEOI -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plotEOI">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
-        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
-        <rdfs:label xml:lang="en">plot</rdfs:label>
-    </owl:NamedIndividual>
     
 
 
@@ -2254,13 +2215,13 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:comment xml:lang="en">A related resource from which the described resource is derived.</rdfs:comment>
         <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/elements/1.1/"/>
         <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
-        <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
+        <terms:description xml:lang="en">The described resource may be derived from the related resource in whole or in part. Recommended best practice is to identify the related resource by means of a string conforming to a formal identification system.</terms:description>
         <rdfs:label xml:lang="en">Source</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/title">
-        <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <rdfs:comment xml:lang="en">A name given to the resource.</rdfs:comment>
+        <terms:modified rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</terms:modified>
         <skos:note xml:lang="en">A second property with the same name as this property has been declared in the dcterms: namespace (http://purl.org/dc/terms/).  See the Introduction to the document &quot;DCMI Metadata Terms&quot; (http://dublincore.org/documents/dcmi-terms/) for an explanation.</skos:note>
         <rdfs:label xml:lang="en">Title</rdfs:label>
         <terms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">1999-07-02</terms:issued>
@@ -2282,8 +2243,8 @@ Used in OpenSILEX for group things</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment">
         <rdfs:label xml:lang="fr">expérimentation</rdfs:label>
-        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
         <rdfs:label xml:lang="en">experiment</rdfs:label>
+        <rdfs:comment xml:lang="en">An EXPERIMENT is a planned activity carried out by a given set of persons on a given set of observation unit, like plants or microplots (see §2.1), involving a protocol, methods and a resulting dataset.</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition">
         <rdfs:label xml:lang="en">experimental context</rdfs:label>
@@ -2303,8 +2264,8 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:seeAlso rdf:resource="http://www.opensilex.org/vocabulary/oeso#Factor"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#FloodArea">
-        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
         <rdfs:label xml:lang="en">Flood area</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone inondable</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm">
         <rdfs:label xml:lang="fr">Matériel Génétique</rdfs:label>

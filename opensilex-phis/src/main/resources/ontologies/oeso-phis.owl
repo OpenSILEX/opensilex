@@ -1008,6 +1008,14 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#EntityOfInterest -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
@@ -2009,6 +2017,12 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
@@ -2109,6 +2123,26 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">germplasm</rdfs:label>
+        <rdfs:label xml:lang="fr">germplasm</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#growthchamberEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#growthchamberEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
@@ -2124,6 +2158,26 @@
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
         <rdfs:label xml:lang="en">International</rdfs:label>
         <rdfs:label xml:lang="fr">International</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plantEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plantEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">plant</rdfs:label>
+        <rdfs:label xml:lang="fr">plante</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plotEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plotEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">plot</rdfs:label>
     </owl:NamedIndividual>
     
 

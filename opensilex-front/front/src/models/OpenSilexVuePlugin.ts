@@ -21,6 +21,21 @@ declare var $cookies: VueCookies;
 
 declare var window: any;
 
+interface TreeOption {
+    id: string,
+    label: string,
+    isDefaultExpanded: boolean,
+    isDisabled: boolean,
+    children: Array<TreeOption>,
+    title?: string,
+    data?: any,
+    isLeaf?: boolean,
+    isSelected?: boolean,
+    isExpanded?: boolean,
+    isDraggable?: boolean
+    isSelectable?: boolean
+}
+
 export default class OpenSilexVuePlugin {
 
     private DEFAULT_ICON = "folder";
@@ -537,7 +552,7 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
-    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?) {
+    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?): Array<TreeOption> {
         let options = [];
 
         buildOptions = buildOptions || {
@@ -561,7 +576,7 @@ export default class OpenSilexVuePlugin {
         return options;
     }
 
-    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean) {
+    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean): TreeOption {
 
         let option = {
             id: resourceTree.uri,
@@ -596,37 +611,49 @@ export default class OpenSilexVuePlugin {
         return option;
     }
 
-    public buildTreeFromDag(dagList: Array<any>, buildOptions: any) {
-        let dagMap = new Map();
+    public buildTreeFromDag(dagList: Array<any>, buildOptions?: any): Array<TreeOption> {
+        if (!dagList) {
+            return [];
+        }
+
+        let dagMap = new Map<string, any>();
         for (let dag of dagList) {
             dagMap.set(dag.uri, dag);
         }
 
-        let rootNodes = [];
+        let rootNodes: Array<TreeOption> = [];
 
         dagList.forEach(dagNode => {
             if (!dagNode.parents || dagNode.parents.length === 0) {
-                rootNodes.push(this.buildTreeFromDagNode(dagNode.uri, dagMap, buildOptions))
+                rootNodes.push(this.buildTreeFromDagNode(dagNode.uri, dagMap, buildOptions || {}))
             }
         });
 
         return rootNodes;
     }
 
-    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any) {
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any): TreeOption {
         let dagNode = dagMap.get(nodeUri);
 
-        let treeNode = {
+        let treeNode: TreeOption = {
             id: dagNode.uri,
             label: dagNode.name,
-            isDefaultExpanded: buildOptions.expanded,
+            isDefaultExpanded: buildOptions.expanded || true,
             isDisabled: false,
-            children: []
+            children: [],
+            title: dagNode.name,
+            data: dagNode,
+            isDraggable: buildOptions.draggable || false,
+            isExpanded: buildOptions.expanded || true,
+            isLeaf: true,
+            isSelectable: buildOptions.selectable || true,
+            isSelected: buildOptions.selected || false,
         };
 
         dagNode.children.forEach(childUri => {
             let subTreeNode = this.buildTreeFromDagNode(childUri, dagMap, buildOptions);
             treeNode.children.push(subTreeNode)
+            treeNode.isLeaf = false;
         });
 
         if (treeNode.children.length === 0) {

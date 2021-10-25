@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.ResourceDagDTO;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
+public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
 
     
     @JsonProperty("rdf_type")
@@ -27,26 +27,6 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
     
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
-    
-    protected List<URI> parents;
-
-    protected List<URI> children;
-
-    public List<URI> getParents() {
-        return parents;
-    }
-
-    public void setParents(List<URI> parents) {
-        this.parents = parents;
-    }
-
-    public List<URI> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<URI> children) {
-        this.children = children;
-    }
 
     @Override
     public InfrastructureModel newModelInstance() {

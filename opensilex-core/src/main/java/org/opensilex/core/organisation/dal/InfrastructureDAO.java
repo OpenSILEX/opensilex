@@ -256,19 +256,26 @@ public class InfrastructureDAO {
 
         // Filter by organizations
         if (organizations != null && !organizations.isEmpty()) {
-            infras.retainAll(organizations);
+            if (infras != null) {
+                infras.retainAll(organizations);
+            } else {
+                infras = new HashSet<>(organizations);
+            }
         }
 
         if (infras != null && infras.size() == 0) {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
+        final Set<URI> finalOrganizations = infras;
+
         return sparql.searchWithPagination(
                 InfrastructureFacilityModel.class,
                 user.getLanguage(),
                 (select -> {
-                    if (infras != null) {
-                        SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras);
+                    if (finalOrganizations != null) {
+                        select.addWhere(makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), Oeso.hasFacility, makeVar(InfrastructureFacilityModel.URI_FIELD));
+                        SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, finalOrganizations);
                     }
 
                     // append REGEX filter on name and uri

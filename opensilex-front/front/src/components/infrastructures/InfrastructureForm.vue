@@ -57,6 +57,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { ResourceTreeDTO } from "opensilex-core/index";
+import {InfrastructureGetDTO} from "opensilex-core/model/infrastructureGetDTO";
 
 @Component
 export default class InfrastructureForm extends Vue {
@@ -89,7 +90,7 @@ export default class InfrastructureForm extends Vue {
         .searchInfrastructures()
         .then(
             //@todo dag
-          (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+          (http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
             this.setParentInfrastructures(http.response.result);
           }
         )
@@ -130,11 +131,11 @@ export default class InfrastructureForm extends Vue {
 
   get parentOptions() {
     if (this.editMode) {
-      return this.$opensilex.buildTreeListOptions(this.parentInfrastructures, {
+      return this.$opensilex.buildTreeFromDag(this.parentInfrastructures, {
         disableSubTree: this.form.uri,
       });
     } else {
-      return this.$opensilex.buildTreeListOptions(this.parentInfrastructures);
+      return this.$opensilex.buildTreeFromDag(this.parentInfrastructures);
     }
   }
 

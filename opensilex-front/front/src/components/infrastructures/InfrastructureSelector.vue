@@ -41,7 +41,7 @@ export default class InfrastructureSelector extends Vue {
       .searchInfrastructures()
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
         //@todo dag
-        this.infrastructuresOptions = this.$opensilex.buildTreeListOptions(
+        this.infrastructuresOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );
       })

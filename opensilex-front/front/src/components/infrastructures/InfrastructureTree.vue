@@ -112,6 +112,16 @@ export default class InfrastructureTree extends Vue {
   $route: any;
   service: OrganisationsService;
 
+  public nodes = [];
+
+  parentURI;
+
+  private langUnwatcher;
+
+  private selected: InfrastructureGetDTO;
+
+  @Ref("infrastructureForm") readonly infrastructureForm!: any;
+
   get user() {
     return this.$store.state.user;
   }
@@ -140,7 +150,6 @@ export default class InfrastructureTree extends Vue {
     this.refresh();
   }
 
-  private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
@@ -159,7 +168,7 @@ export default class InfrastructureTree extends Vue {
   refresh(uri?) {
     this.service
       .searchInfrastructures(this.filter)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
         //@todo dag
         if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
           if (this.filter == "") {
@@ -170,61 +179,13 @@ export default class InfrastructureTree extends Vue {
             this.infrastructureForm.getFormRef().init();
           }
         }
-        let treeNode = [];
-        let first = true;
-        for (let i in http.response.result) {
-          let resourceTree: ResourceTreeDTO = http.response.result[i];
-          let node = this.dtoToNode(resourceTree, first, uri);
-          treeNode.push(node);
 
-          if (first && uri == null) {
-            this.displayNodeDetail(node.data.uri, true);
-            first = false;
-          }
-        }
-
-        if (uri != null) {
-          this.displayNodeDetail(uri, true);
-        }
-
-        if (http.response.result.length == 0) {
-          this.selected = null;
-        }
-
-        this.nodes = treeNode;
+        let nodes = this.$opensilex.buildTreeFromDag(http.response.result, {});
+        nodes[0].isSelected = true;
+        this.nodes = nodes;
       })
       .catch(this.$opensilex.errorHandler);
   }
-
-  private dtoToNode(dto: ResourceTreeDTO, first: boolean, uri: string) {
-    let isLeaf = dto.children.length == 0;
-
-    let childrenDTOs = [];
-    if (!isLeaf) {
-      for (let i in dto.children) {
-        childrenDTOs.push(this.dtoToNode(dto.children[i], false, uri));
-      }
-    }
-
-    let isSeleted = first && uri == null;
-    if (uri != null) {
-      isSeleted = uri == dto.uri;
-    }
-    return {
-      title: dto.name,
-      data: dto,
-      isLeaf: isLeaf,
-      children: childrenDTOs,
-      isExpanded: true,
-      isSelected: isSeleted,
-      isDraggable: false,
-      isSelectable: true,
-    };
-  }
-
-  public nodes = [];
-
-  private selected: InfrastructureGetDTO;
 
   public displayNodesDetail(node: any) {
     this.displayNodeDetail(node.data.uri);
@@ -242,15 +203,11 @@ export default class InfrastructureTree extends Vue {
     }
   }
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: any;
-
   showDetail(uri) {
     this.$router.push({
       path: "/infrastructure/details/" + encodeURIComponent(uri),
     });
   }
-
-  parentURI;
 
   createInfrastructure(parentURI?) {
     this.parentURI = parentURI;

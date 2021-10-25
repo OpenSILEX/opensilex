@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import org.opensilex.core.experiment.factor.dal.FactorCategorySKOSModel;
+import org.opensilex.core.experiment.factor.dal.FactorCategoryModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.server.rest.validation.Required;
@@ -101,7 +101,7 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         model.setUri(getUri());
         model.setName(getName());
         if(getCategory() != null){
-            FactorCategorySKOSModel factorCategoryModel = new FactorCategorySKOSModel();
+            FactorCategoryModel factorCategoryModel = new FactorCategoryModel();
             factorCategoryModel.setUri(getCategory());
             model.setCategory(factorCategoryModel);
         }

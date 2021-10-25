@@ -3,7 +3,7 @@ package org.opensilex.core.experiment.factor.api;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.net.URI;
-import org.opensilex.core.experiment.factor.dal.FactorCategorySKOSModel;
+import org.opensilex.core.experiment.factor.dal.FactorCategoryModel;
 
 public class FactorCategoryGetDTO {
 
@@ -13,7 +13,7 @@ public class FactorCategoryGetDTO {
     public FactorCategoryGetDTO() {
     }
 
-    public FactorCategoryGetDTO(FactorCategorySKOSModel model){
+    public FactorCategoryGetDTO(FactorCategoryModel model){
         uri = model.getUri();
         name = model.getName();
     }

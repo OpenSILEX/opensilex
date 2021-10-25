@@ -41,7 +41,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.factor.dal.FactorCategorySKOSModel;
+import org.opensilex.core.experiment.factor.dal.FactorCategoryModel;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
@@ -505,12 +505,12 @@ public class FactorAPI {
 
         FactorDAO dao = new FactorDAO(sparql);
 
-        List<FactorCategorySKOSModel> resultList = dao.searchCategories(
+        List<FactorCategoryModel> resultList = dao.searchCategories(
                 namePattern,
                 currentUser.getLanguage(),
                 orderByList
         );
-        ListWithPagination<FactorCategorySKOSModel> categoryFactors = new ListWithPagination(resultList);
+        ListWithPagination<FactorCategoryModel> categoryFactors = new ListWithPagination(resultList);
 
         ListWithPagination<FactorCategoryGetDTO> resultDTOList = categoryFactors.convert(
                 FactorCategoryGetDTO.class,

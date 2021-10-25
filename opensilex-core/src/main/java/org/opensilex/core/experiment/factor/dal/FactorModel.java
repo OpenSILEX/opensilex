@@ -45,7 +45,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             ontology = Oeso.class,
             property = "hasCategory"
     )
-    FactorCategorySKOSModel category;
+    FactorCategoryModel category;
     public static final String CATEGORY_FIELD = "category";
     
     @SPARQLProperty(
@@ -90,11 +90,11 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
         this.name = name;
     }
 
-    public FactorCategorySKOSModel getCategory(){
+    public FactorCategoryModel getCategory(){
         return category;
     }
 
-    public void setCategory(FactorCategorySKOSModel category) {
+    public void setCategory(FactorCategoryModel category) {
         this.category = category;
     }
 

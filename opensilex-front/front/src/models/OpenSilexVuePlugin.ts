@@ -32,7 +32,7 @@ interface TreeOption {
     isLeaf?: boolean,
     isSelected?: boolean,
     isExpanded?: boolean,
-    isDraggable?: boolean
+    isDraggable?: boolean,
     isSelectable?: boolean
 }
 
@@ -647,7 +647,7 @@ export default class OpenSilexVuePlugin {
             isExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,
             isLeaf: true,
             isSelectable: buildOptions.selectable != undefined ? buildOptions.selectable : true,
-            isSelected: buildOptions.selected != undefined ? buildOptions.selected : false,
+            isSelected: buildOptions.selected != undefined ? buildOptions.selected : false
         };
 
         let disableChildren = disabled;

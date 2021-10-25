@@ -17,6 +17,13 @@
         <slot name="node" v-bind:node="node">></slot>
       </span>
 
+      <span class="tree-multiple-icon">
+        <opensilex-Icon
+            v-if="node.data.parents.length > 1"
+            icon="fa#project-diagram"
+            v-b-tooltip.hover.top="multipleElementsTooltip" />
+      </span>
+
       <b-button-group v-if="!noButtons" class="tree-button-group" size="sm">
         <slot name="buttons" v-bind:node="node"></slot>
       </b-button-group>
@@ -37,6 +44,9 @@ export default class TreeView extends Vue {
   @Prop()
   noButtons: boolean;
 
+  @Prop()
+  multipleElementsTooltip: string;
+
   copy = copy;
 
   selectItem(nodes: any[]) {
@@ -53,5 +63,9 @@ export default class TreeView extends Vue {
   padding-left: 5px;
   padding-right: 5px;
 }
-</style>
 
+.tree-multiple-icon {
+  padding-left: 8px;
+  color: #3cc6ff;
+}
+</style>

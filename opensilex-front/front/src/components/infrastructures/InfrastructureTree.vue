@@ -31,7 +31,11 @@
       placeholder="InfrastructureTree.filter-placeholder"
     ></opensilex-StringFilter>
 
-    <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
+    <opensilex-TreeView
+        :nodes.sync="nodes"
+        @select="displayNodesDetail"
+        :multipleElementsTooltip="$t('InfrastructureTree.multiple-parents-tooltip')"
+    >
       <template v-slot:node="{ node }">
         <span class="item-icon">
           <opensilex-Icon
@@ -290,6 +294,7 @@ en:
     infrastructure-component: Organizations
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
+    multiple-parents-tooltip: "This organization has several parent organizations"
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des organisations...
@@ -301,4 +306,5 @@ fr:
     infrastructure-component: Organisations
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
+    multiple-parents-tooltip: "Cette organisation a plusieurs organizations parentes"
 </i18n>

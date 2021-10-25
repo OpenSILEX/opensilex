@@ -24,9 +24,12 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = OWL2.class,
         resource = "Class",
-        ignoreValidation = true
+        ignoreValidation = true,
+        graph = ClassModel.GRAPH
 )
 public class ClassModel extends SPARQLTreeModel<ClassModel> {
+
+    public static final String GRAPH = "properties";
 
     @SPARQLIgnore()
     protected String name;

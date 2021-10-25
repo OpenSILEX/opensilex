@@ -36,7 +36,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.jena.graph.Node;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
@@ -55,7 +54,6 @@ import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -78,17 +76,12 @@ public class OntologyAPI {
     @Inject
     private SPARQLModule sparqlModule;
 
+
     public static final String PROPERTY_ALREADY_EXISTS_MSG = "A property with the same URI already exists";
     public static final String PROPERTY_NOT_FOUND_MSG = "Property not found";
     public static final String PROPERTY_CREATE_MSG = "Create a RDF property";
     public static final String PROPERTY_UPDATE_MSG = "Update a RDF property";
     public static final String PARENT_URI_NOT_FOUND_MSG = "Parent URI not found";
-
-    public static final String PROPERTIES_GRAPH = "set/properties";
-
-    private Node getPropertyGraph() {
-        return SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI(PROPERTIES_GRAPH));
-    }
 
 
     @GET
@@ -230,16 +223,16 @@ public class OntologyAPI {
     ) throws Exception {
         try {
             OntologyDAO dao = new OntologyDAO(sparql);
-            Node propertyGraph = getPropertyGraph();
+            
 
             boolean isDataProperty = dto.isDataProperty();
             if (isDataProperty) {
                 DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
-                dao.createDataProperty(propertyGraph, model);
+                dao.createDataProperty(model);
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } else {
                 ObjectPropertyModel model = getObjectPropertyModel(dao, dto);
-                dao.createObjectProperty(propertyGraph, model);
+                dao.createObjectProperty(model);
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             }
 
@@ -265,16 +258,16 @@ public class OntologyAPI {
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        Node propertyGraph = getPropertyGraph();
+        
 
         boolean isDataProperty = dto.isDataProperty();
         if (isDataProperty) {
             DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
-            dao.updateDataProperty(propertyGraph, model);
+            dao.updateDataProperty(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
         } else {
             ObjectPropertyModel objModel = getObjectPropertyModel(dao, dto);
-            dao.updateObjectProperty(propertyGraph, objModel);
+            dao.updateObjectProperty(objModel);
             return new ObjectUriResponse(Response.Status.OK, objModel.getUri()).getResponse();
         }
 
@@ -336,12 +329,12 @@ public class OntologyAPI {
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
-        Node propertyGraph = getPropertyGraph();
+        
 
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
-            dao.deleteDataProperty(propertyGraph, propertyURI);
+            dao.deleteDataProperty(propertyURI);
         } else {
-            dao.deleteObjectProperty(propertyGraph, propertyURI);
+            dao.deleteObjectProperty(propertyURI);
         }
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
@@ -428,9 +421,8 @@ public class OntologyAPI {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
-        Node propertyGraph = getPropertyGraph();
 
-        if (!dao.addClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage())) {
+        if (!dao.addClassPropertyRestriction(dto.getClassURI(), restriction, currentUser.getLanguage())) {
             return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
 
@@ -450,10 +442,9 @@ public class OntologyAPI {
             @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
             @ApiParam(value = "Property URI") @QueryParam("propertyURI") @ValidURI @NotNull URI propertyURI
     ) throws Exception {
-        Node propertyGraph = getPropertyGraph();
 
         OntologyDAO dao = new OntologyDAO(sparql);
-        dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
+        dao.deleteClassPropertyRestriction(classURI, propertyURI, currentUser.getLanguage());
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
@@ -473,7 +464,7 @@ public class OntologyAPI {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
-        dao.updateClassPropertyRestriction(getPropertyGraph(), dto.getClassURI(), restriction, currentUser.getLanguage());
+        dao.updateClassPropertyRestriction(dto.getClassURI(), restriction, currentUser.getLanguage());
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }

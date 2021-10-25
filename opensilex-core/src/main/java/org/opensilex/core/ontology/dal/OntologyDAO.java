@@ -33,6 +33,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
@@ -79,14 +80,21 @@ public final class OntologyDAO {
     private final SPARQLService sparql;
     private final URI topDataPropertyUri;
     private final URI topObjectPropertyUri;
-
+    private final Node classGraph;
+    private final Node propertyGraph;
+    private final Node restrictionGraph;
 
     public OntologyDAO(SPARQLService sparql) {
         this.sparql = sparql;
         try {
             topDataPropertyUri = new URI(OWL2.topDataProperty.getURI());
             topObjectPropertyUri = new URI(OWL2.topObjectProperty.getURI());
-        } catch (URISyntaxException e) {
+
+            // use the same graph for classes, property and restriction. Allow possibility to easily separate storage by defining several Node
+            classGraph = sparql.getDefaultGraph(ClassModel.class);
+            propertyGraph = classGraph;
+            restrictionGraph = classGraph;
+        } catch (URISyntaxException | SPARQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -628,16 +636,16 @@ public final class OntologyDAO {
     }
 
 
-    public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
-        sparql.create(graph, dataProperty);
+    public void createDataProperty(DatatypePropertyModel dataProperty) throws Exception {
+        sparql.create(propertyGraph, dataProperty);
 
         // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
         DatatypePropertyModel insertedProperty = getDataProperty(dataProperty.getUri(),null,null);
         CoreModule.getOntologyCacheInstance().createDataProperty(insertedProperty);
     }
 
-    public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
-        sparql.create(graph, objectProperty);
+    public void createObjectProperty( ObjectPropertyModel objectProperty) throws Exception {
+        sparql.create(propertyGraph, objectProperty);
 
         // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
         ObjectPropertyModel insertedProperty = getObjectProperty(objectProperty.getUri(),null,null);
@@ -699,11 +707,11 @@ public final class OntologyDAO {
         sparql.executeUpdateQuery(update);
     }
 
-    public void updateDataProperty(Node graph, DatatypePropertyModel property) throws Exception {
+    public void updateDataProperty( DatatypePropertyModel property) throws Exception {
 
         try{
             sparql.startTransaction();
-            sparql.update(graph, property);
+            sparql.update(propertyGraph, property);
             updateRestrictionRangeOnProperty(property.getUri(),property.getRange(),true);
             sparql.commitTransaction();
         }catch (Exception e){
@@ -715,11 +723,11 @@ public final class OntologyDAO {
         CoreModule.getOntologyCacheInstance().updateDataProperty(updatedProperty);
     }
 
-    public void updateObjectProperty(Node graph, ObjectPropertyModel property) throws Exception {
+    public void updateObjectProperty( ObjectPropertyModel property) throws Exception {
 
         try{
             sparql.startTransaction();
-            sparql.update(graph, property);
+            sparql.update(propertyGraph, property);
             updateRestrictionRangeOnProperty(property.getUri(),property.getRange().getUri(),false);
             sparql.commitTransaction();
         }catch (Exception e){
@@ -732,7 +740,7 @@ public final class OntologyDAO {
 
     }
 
-    public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {
+    public void deleteDataProperty(URI propertyURI) throws Exception {
         ClassModel domain = getDataProperty(propertyURI, null, null).getDomain();
         if (domain != null) {
             CoreModule.getOntologyCacheInstance().deleteDataProperty(propertyURI, domain.getUri());
@@ -741,7 +749,7 @@ public final class OntologyDAO {
         sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
     }
 
-    public void deleteObjectProperty(Node propertyGraph, URI propertyURI) throws Exception {
+    public void deleteObjectProperty(URI propertyURI) throws Exception {
         ClassModel domain = getObjectProperty(propertyURI, null, null).getDomain();
         if (domain != null) {
             CoreModule.getOntologyCacheInstance().deleteObjectProperty(propertyURI, domain.getUri());
@@ -750,12 +758,12 @@ public final class OntologyDAO {
         sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
     }
 
-    public boolean addClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
-        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), lang);
+    public boolean addClassPropertyRestriction( URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(classURI, restriction.getOnProperty(), lang);
 
         if (results.size() == 0) {
-            sparql.create(graph, restriction, false, true, (create, node) -> {
-                create.addInsert(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
+            sparql.create(restrictionGraph, restriction, false, true, (create, node) -> {
+                create.addInsert(restrictionGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
             CoreModule.getOntologyCacheInstance().addRestriction(restriction);
             return true;
@@ -765,9 +773,9 @@ public final class OntologyDAO {
 
     }
 
-    public List<OwlRestrictionModel> getClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
+    public List<OwlRestrictionModel> getClassPropertyRestriction( URI classURI, URI propertyURI, String lang) throws Exception {
 
-        return sparql.search(graph, OwlRestrictionModel.class, lang, (select) -> {
+        return sparql.search(restrictionGraph, OwlRestrictionModel.class, lang, (select) -> {
                     Var uriVar = makeVar(OwlRestrictionModel.URI_FIELD);
                     select.addWhere(SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, uriVar);
                     select.addWhere(uriVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
@@ -780,8 +788,8 @@ public final class OntologyDAO {
         );
     }
 
-    public void deleteClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
-        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, propertyURI, lang);
+    public void deleteClassPropertyRestriction(URI classURI, URI propertyURI, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(classURI, propertyURI, lang);
 
         if (results.size() == 0) {
             throw new NotFoundException("Class property restriction not found for : " + classURI.toString() + " - " + propertyURI.toString());
@@ -789,21 +797,22 @@ public final class OntologyDAO {
             throw new NotFoundException("Multiple class property restrictions found (should never happend) for : " + classURI.toString() + " - " + propertyURI.toString());
         } else {
             UpdateBuilder delete = new UpdateBuilder();
-            delete.addDelete(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, "?s");
-            delete.addDelete(graph, "?s", "?p", "?o");
-            delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
-            delete.addWhere("?s", "?p", "?o");
+            Var restrictionVar = makeVar("restriction");
+            delete.addDelete(restrictionGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, restrictionVar);
+            delete.addDelete(restrictionGraph, restrictionVar, "?p", "?o");
+            delete.addWhere(restrictionVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
+            delete.addWhere(restrictionVar, "?p", "?o");
             sparql.executeDeleteQuery(delete);
 
             CoreModule.getOntologyCacheInstance().deleteRestriction(propertyURI, classURI);
         }
     }
 
-    public void updateClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String language) throws Exception {
+    public void updateClassPropertyRestriction(URI classURI, OwlRestrictionModel restriction, String language) throws Exception {
         try {
             sparql.startTransaction();
-            deleteClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), language);
-            addClassPropertyRestriction(graph, classURI, restriction, language);
+            deleteClassPropertyRestriction(classURI, restriction.getOnProperty(), language);
+            addClassPropertyRestriction(classURI, restriction, language);
 
             CoreModule.getOntologyCacheInstance().updateRestriction(restriction);
 

@@ -53,18 +53,17 @@ public class InfrastructureDAO {
     public List<InfrastructureModel> search(String pattern, List<URI> organizationsRestriction, UserModel user) throws Exception {
         Set<URI> organizations = getUserInfrastructures(user);
 
+        // Filter by organizations
+        if (organizationsRestriction != null && !organizationsRestriction.isEmpty()) {
+            if (organizations != null) {
+                organizations.retainAll(organizationsRestriction);
+            } else {
+                organizations = new HashSet<>(organizationsRestriction);
+            }
+        }
+
         if (organizations != null && organizations.isEmpty()) {
             return new ArrayList<>();
-        }
-
-        if (organizations == null) {
-            organizations = new HashSet<>();
-        }
-
-        if (organizationsRestriction != null && !organizationsRestriction.isEmpty()) {
-            organizationsRestriction.retainAll(organizations);
-            organizations.clear();
-            organizations.addAll(organizationsRestriction);
         }
 
         final Set<URI> finalOrganizations = organizations;

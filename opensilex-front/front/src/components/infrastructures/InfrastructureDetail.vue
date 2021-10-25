@@ -36,7 +36,7 @@
           icon="ik#ik-globe"
           @onCreate="$emit('onCreate', $event)"
           @onUpdate="$emit('onUpdate', $event)"
-          :initForm="setParent"
+          :initForm="setParents"
         ></opensilex-ModalForm>
       </div>
     </template>
@@ -59,13 +59,15 @@
         :type="selected.rdf_type"
         :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
-      <!-- Parent -->
-      <opensilex-InfrastructureUriView
-        v-if="selected.parent"
-        :uri="selected.parent"
-        title="InfrastructureDetail.parent-orga"
+
+      <!-- Parents -->
+      <opensilex-UriListView
+        v-if="hasParents"
+        :list="parentUriList"
+        label="InfrastructureDetail.parent-orga"
+        :inline="false"
       >
-      </opensilex-InfrastructureUriView>
+      </opensilex-UriListView>
 
       <opensilex-UriListView
           label="InfrastructureDetail.groups.label"
@@ -87,16 +89,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import {OrganisationsService} from "opensilex-core/api/organisations.service";
 
 @Component
 export default class InfrastructureDetail extends Vue {
   $opensilex: any;
+  organizationService: OrganisationsService;
 
   @Prop()
   selected: InfrastructureGetDTO;
@@ -108,12 +112,24 @@ export default class InfrastructureDetail extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
+  parentUriList: Array<any> = [];
+
+  created() {
+    this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
+
+    this.refresh();
+  }
+
   get user() {
     return this.$store.state.user;
   }
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get hasParents() {
+    return this.selected.parents.length > 0;
   }
 
   get hasGroups() {
@@ -148,9 +164,30 @@ export default class InfrastructureDetail extends Vue {
     });
   }
 
+  @Watch("selected")
+  refresh() {
+    if (!this.selected) {
+      return;
+    }
+
+    this.organizationService
+      .searchInfrastructures(".*", this.selected.parents)
+      .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+        // Update the list of parent organizations
+        this.parentUriList = http.response.result.map(organization => {
+          return {
+            uri: organization.uri,
+            value: organization.name,
+            to: {
+              path: "/infrastructure/details/" + encodeURIComponent(organization.uri)
+            }
+          };
+        });
+      });
+  }
+
   editInfrastructure() {
-    this.$opensilex
-      .getService("opensilex-core.OrganisationsService")
+    this.organizationService
       .getInfrastructure(this.selected.uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let getDto = http.response.result;
@@ -169,9 +206,8 @@ export default class InfrastructureDetail extends Vue {
     this.$emit("onDelete");
   }
 
-  setParent(form) {
-    //@todo dag
-    form.parent = this.selected.parents[0];
+  setParents(form) {
+    form.parents = this.selected.parents;
   }
 
   setInfrastructure(form) {
@@ -186,7 +222,7 @@ export default class InfrastructureDetail extends Vue {
 <i18n>
 en:
   InfrastructureDetail:
-    parent-orga: Parent organization
+    parent-orga: Parent organizations
     groups:
       label: "Groups"
       edit: "Edit"
@@ -194,7 +230,7 @@ en:
       label: "Facilities"
 fr:
   InfrastructureDetail:
-    parent-orga: Organisation parente
+    parent-orga: Organisations parentes
     groups:
       label: "Groupes"
       edit: "Modifier"

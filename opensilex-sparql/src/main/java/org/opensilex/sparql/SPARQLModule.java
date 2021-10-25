@@ -26,11 +26,11 @@ import org.slf4j.LoggerFactory;
  */
 public class SPARQLModule extends OpenSilexModule {
 
-    private final static String DEFAULT_BASE_URI = "http://default.opensilex.org/";
+    private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
-    public final static String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
+    public static final String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
 
     @Override
     public Class<?> getConfigClass() {
@@ -46,15 +46,13 @@ public class SPARQLModule extends OpenSilexModule {
 
     private String baseURIAlias;
 
-    private URI generationPrefixURI;
+    private URI generationUri;
     
-    private SPARQLConfig sparqlConfig;
-
-    private Map<String, URI> customPrefixes = new HashMap<>();
+    private final Map<String, URI> customPrefixes = new HashMap<>();
 
     @Override
     public void setup() throws Exception {
-        sparqlConfig = this.getConfig(SPARQLConfig.class);
+        SPARQLConfig sparqlConfig = this.getConfig(SPARQLConfig.class);
         if (sparqlConfig != null) {
             baseURIAlias = sparqlConfig.baseURIAlias() + "-";
             baseURI = new URI(sparqlConfig.baseURI());
@@ -76,13 +74,23 @@ public class SPARQLModule extends OpenSilexModule {
 
         LOGGER.debug("Set platform URI: " + baseURI.toString());
         LOGGER.debug("Set platform URI alias: " + baseURIAlias);
-        if (sparqlConfig != null && !StringUtils.isBlank(sparqlConfig.generationBaseURI())) {
-            generationPrefixURI = new URI(sparqlConfig.generationBaseURI());
-            LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI.toString());
-        } else {
-            generationPrefixURI = baseURI;
-        }
 
+        if(sparqlConfig != null){
+            // if some generation URI is provided then use it
+            if(! StringUtils.isEmpty(sparqlConfig.generationBaseURI())){
+                generationUri = new URI(sparqlConfig.generationBaseURI());
+            }
+            // else generate URI with the provided uri generation keyword
+            else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
+                generationUri = generationUri.resolve(sparqlConfig.generationBaseURIAlias()).resolve("/");
+            }else {
+                generationUri = baseURI;
+            }
+        }
+        else {
+            generationUri = baseURI;
+        }
+        LOGGER.debug("Set platform base URI for auto-generated URI: " + generationUri);
     }
 
     public String getBaseURIAlias() {
@@ -93,8 +101,8 @@ public class SPARQLModule extends OpenSilexModule {
         return baseURI;
     }
 
-    public URI getGenerationPrefixURI() {
-        return generationPrefixURI;
+    public URI getGenerationUri() {
+        return generationUri;
     }
 
     public URI getSuffixedURI(String suffix) {
@@ -107,14 +115,10 @@ public class SPARQLModule extends OpenSilexModule {
 
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
         // #TODO clean cache
-        try {
-            sparql.disableSHACL();
-            // Allow any module implementing SPARQLExtension to add custom ontologies
-            for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-                module.installOntologies(sparql, reset);
-            }
-        } catch (Exception ex) {
-            throw ex;
+        sparql.disableSHACL();
+        // Allow any module implementing SPARQLExtension to add custom ontologies
+        for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
+            module.installOntologies(sparql, reset);
         }
     }
 
@@ -134,17 +138,16 @@ public class SPARQLModule extends OpenSilexModule {
             installOntologies(sparqlService, reset);
 
             if (cfg.enableSHACL()) {
-                try {
-                    sparqlService.enableSHACL();
-                } catch (SPARQLValidationException ex) {
-                    LOGGER.warn("Error while enable SHACL validation:");
-                    LOGGER.warn(ex.getMessage());
-                }
+                sparqlService.enableSHACL();
             } else {
                 sparqlService.disableSHACL();
             }
-        } catch (Exception ex) {
-
+        }
+        catch (SPARQLValidationException ex){
+            LOGGER.warn("Error while enable SHACL validation:");
+            LOGGER.warn(ex.getMessage());
+        }
+        catch (Exception ex) {
             LOGGER.error("Error while initializing SHACL", ex);
         } finally {
             sparql.dispose(sparqlService);

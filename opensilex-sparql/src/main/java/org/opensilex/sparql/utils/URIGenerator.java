@@ -21,9 +21,9 @@ public interface URIGenerator<T> {
 
     public default URI generateURI(String prefix, T instance, int retryCount) throws Exception {
         if (retryCount > 0) {
-            return new URI(prefix + "#" + getInstanceURI(instance) + "/" + retryCount);
+            return new URI(prefix + "/" + getInstanceURI(instance) + "/" + retryCount);
         } else {
-            return new URI(prefix + "#" + getInstanceURI(instance));
+            return new URI(prefix + "/" + getInstanceURI(instance));
         }
     }
     

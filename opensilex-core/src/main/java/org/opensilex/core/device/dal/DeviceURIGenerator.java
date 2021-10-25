@@ -5,7 +5,10 @@
  */
 package org.opensilex.core.device.dal;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.opensilex.sparql.utils.URIGenerator;
 
 /**
@@ -21,8 +24,8 @@ public class DeviceURIGenerator implements URIGenerator<String> {
     }
 
     @Override
-    public URI generateURI(String prefix, String name, int retryCount) throws Exception {
-        String baseURI = null;
+    public URI generateURI(String prefix, String name, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+        String baseURI;
         if (name != null) {
             baseURI = rootURI + '/' + URIGenerator.normalize(prefix)+'-' + URIGenerator.normalize(name);
         } else {

@@ -18,7 +18,6 @@ import org.opensilex.service.ServiceFactory;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
@@ -71,7 +70,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
     public void setup() throws Exception {
         sparqlModule = getOpenSilex().getModuleByClass(SPARQLModule.class);
         baseURI = sparqlModule.getBaseURI();
-        generationPrefixURI = sparqlModule.getGenerationUri();
+        generationPrefixURI = sparqlModule.getGenerationPrefixURI();
     }
 
     @Override
@@ -99,7 +98,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
             SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI());
 
             if (!StringUtils.isBlank(sparqlConfig.generationBaseURI())
-                    && !sparqlModule.getGenerationUri().equals(sparqlModule.getBaseURI())
+                    && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI())
                     && !sparqlConfig.baseURIAlias().equals(sparqlConfig.generationBaseURIAlias())) {
 
                 SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());

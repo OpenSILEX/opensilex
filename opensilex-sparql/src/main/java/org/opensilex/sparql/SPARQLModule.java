@@ -46,7 +46,7 @@ public class SPARQLModule extends OpenSilexModule {
 
     private String baseURIAlias;
 
-    private URI generationUri;
+    private URI generationPrefixURI;
     
     private final Map<String, URI> customPrefixes = new HashMap<>();
 
@@ -78,19 +78,19 @@ public class SPARQLModule extends OpenSilexModule {
         if(sparqlConfig != null){
             // if some generation URI is provided then use it
             if(! StringUtils.isEmpty(sparqlConfig.generationBaseURI())){
-                generationUri = new URI(sparqlConfig.generationBaseURI());
+                generationPrefixURI = new URI(sparqlConfig.generationBaseURI());
             }
             // else generate URI with the provided uri generation alias
             else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
-                generationUri = generationUri.resolve(sparqlConfig.generationBaseURIAlias()).resolve("/");
+                generationPrefixURI = generationPrefixURI.resolve(sparqlConfig.generationBaseURIAlias()).resolve("/");
             }else {
-                generationUri = baseURI;
+                generationPrefixURI = baseURI;
             }
         }
         else {
-            generationUri = baseURI;
+            generationPrefixURI = baseURI;
         }
-        LOGGER.debug("Set platform base URI for auto-generated URI: " + generationUri);
+        LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI);
     }
 
     public String getBaseURIAlias() {
@@ -101,8 +101,8 @@ public class SPARQLModule extends OpenSilexModule {
         return baseURI;
     }
 
-    public URI getGenerationUri() {
-        return generationUri;
+    public URI getGenerationPrefixURI() {
+        return generationPrefixURI;
     }
 
     public URI getSuffixedURI(String suffix) {

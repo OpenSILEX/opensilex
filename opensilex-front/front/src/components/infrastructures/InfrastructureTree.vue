@@ -96,7 +96,7 @@
       icon="ik#ik-globe"
       @onCreate="refresh($event ? $event.uri : undefined)"
       @onUpdate="refresh($event ? $event.uri : undefined)"
-      :initForm="setParent"
+      :initForm="setParents"
     ></opensilex-ModalForm>
   </b-card>
 </template>
@@ -257,8 +257,8 @@ export default class InfrastructureTree extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  setParent(form) {
-    form.parent = this.parentURI;
+  setParents(form) {
+    form.parents = [this.parentURI];
   }
 }
 </script>

@@ -612,7 +612,7 @@ export default class OpenSilexVuePlugin {
     }
 
     public buildTreeFromDag(dagList: Array<any>, buildOptions?: any): Array<TreeOption> {
-        if (!dagList) {
+        if (!dagList || dagList.length === 0) {
             return [];
         }
 

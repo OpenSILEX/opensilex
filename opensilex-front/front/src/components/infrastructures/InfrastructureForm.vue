@@ -28,8 +28,9 @@
 
     <!-- Parent -->
     <opensilex-SelectForm
-      :selected.sync="form.parent"
+      :selected.sync="form.parents"
       :options="parentOptions"
+      :multiple="true"
       label="component.common.parent"
       placeholder="InfrastructureForm.form-parent-placeholder"
     ></opensilex-SelectForm>
@@ -74,7 +75,7 @@ export default class InfrastructureForm extends Vue {
         uri: null,
         rdf_type: null,
         name: "",
-        parent: null,
+        parents: [],
         groups: [],
         facilities: []
       };
@@ -103,7 +104,7 @@ export default class InfrastructureForm extends Vue {
       uri: null,
       rdf_type: null,
       name: "",
-      parent: null,
+      parents: null,
       groups: [],
       facilities: []
     };

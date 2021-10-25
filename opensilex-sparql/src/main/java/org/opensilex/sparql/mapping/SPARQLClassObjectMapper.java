@@ -99,8 +99,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     generationPrefixURI = classGraph;
                     baseGraphURI = classGraph;
                 }else{
-                    generationPrefixURI = generationPrefixURI.resolve(classGraph);
-                    baseGraphURI = baseGraphURI.resolve(DEFAULT_GRAPH_KEYWORD).resolve("/").resolve(classGraph);
+                    generationPrefixURI = new URI(generationPrefixURI+"/"+classGraph);
+                    baseGraphURI = new URI(baseGraphURI+DEFAULT_GRAPH_KEYWORD+"/"+ classGraph);
                 }
             }
 

@@ -75,6 +75,8 @@ public class SPARQLModule extends OpenSilexModule {
         LOGGER.debug("Set platform URI: " + baseURI.toString());
         LOGGER.debug("Set platform URI alias: " + baseURIAlias);
 
+        generationPrefixURI = baseURI;
+
         if(sparqlConfig != null){
             // if some generation URI is provided then use it
             if(! StringUtils.isEmpty(sparqlConfig.generationBaseURI())){
@@ -82,14 +84,10 @@ public class SPARQLModule extends OpenSilexModule {
             }
             // else generate URI with the provided uri generation alias
             else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
-                generationPrefixURI = generationPrefixURI.resolve(sparqlConfig.generationBaseURIAlias()).resolve("/");
-            }else {
-                generationPrefixURI = baseURI;
+                generationPrefixURI = new URI(baseURI+"/"+sparqlConfig.generationBaseURIAlias());
             }
         }
-        else {
-            generationPrefixURI = baseURI;
-        }
+
         LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI);
     }
 

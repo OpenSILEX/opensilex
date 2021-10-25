@@ -1671,7 +1671,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public URI getDefaultGenerationURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
-        return getMapperIndex().getForClass(modelClass).getDefaultGenerationURI();
+        return getMapperIndex().getForClass(modelClass).getGenerationPrefixURI();
     }
 
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {

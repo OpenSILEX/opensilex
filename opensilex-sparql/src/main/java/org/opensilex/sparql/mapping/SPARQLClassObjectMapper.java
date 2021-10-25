@@ -52,19 +52,23 @@ import org.opensilex.utils.ThrowingBiConsumer;
  */
 public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
 
     private final Class<T> objectClass;
 
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
-    private final URI baseGraphURI;
-
-    private final URI generationPrefixURI;
+    private URI baseGraphURI;
+    private URI generationPrefixURI;
 
     private Constructor<T> constructor;
     protected SPARQLClassQueryBuilder classQueryBuilder;
     protected SPARQLClassAnalyzer classAnalizer;
+
+    /**
+     * Default keyword used for each {@link org.opensilex.sparql.model.SPARQLResourceModel} associated graph
+     */
+    public static final String DEFAULT_GRAPH_KEYWORD = "set";
 
     protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, URI generationPrefixURI, SPARQLClassObjectMapperIndex mapperIndex) {
         LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
@@ -88,10 +92,22 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
             LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
+
+            if (classAnalizer.getGraph() != null) {
+                URI classGraph = new URI(classAnalizer.getGraph());
+                if (classGraph.isAbsolute()) {
+                    generationPrefixURI = classGraph;
+                    baseGraphURI = classGraph;
+                }else{
+                    generationPrefixURI = generationPrefixURI.resolve(classGraph);
+                    baseGraphURI = baseGraphURI.resolve(DEFAULT_GRAPH_KEYWORD).resolve("/").resolve(classGraph);
+                }
+            }
+
         } catch (SPARQLInvalidClassDefinitionException ex) {
             throw ex;
-        } catch (Throwable t) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t);
+        } catch (Exception ex) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", ex);
         }
 
     }
@@ -267,20 +283,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public URI getDefaultGraphURI() {
-        if (classAnalizer.getGraph() != null) {
-            try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraph());
-                if (graphSuffixUri.isAbsolute()) {
-                    return graphSuffixUri;
-                }
-                String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraph()).toString();
-                return new URI(classGraphURI);
-            } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraph(), ex);
-            }
-        }
-
-        return null;
+        return baseGraphURI;
     }
 
     public Node getDefaultGraph() {
@@ -292,21 +295,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public URI getDefaultGenerationURI() {
-        if (classAnalizer.getGraph() != null) {
-            try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraph());
-                if (graphSuffixUri.isAbsolute()) {
-                    return graphSuffixUri;
-                }
-                String classGraphURI = generationPrefixURI.resolve(classAnalizer.getGraph()).toString();
-                return new URI(classGraphURI);
-            } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraph(), ex);
-            }
-        }
-
-        return null;
+    public URI getGenerationPrefixURI() {
+        return generationPrefixURI;
     }
 
     public AskBuilder getAskBuilder(Node graph, String lang) throws Exception {
@@ -574,7 +564,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
                             if (propertyFieldURI != null) {
                                 if (!existingMap.containsKey(mapper)) {
-                                    existingMap.put(mapper, new HashSet());
+                                    existingMap.put(mapper, new HashSet<>());
                                 }
                                 existingMap.get(mapper).add(propertyFieldURI);
                             }
@@ -596,7 +586,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
                                 if (propertyFieldURI != null) {
                                     if (!existingMap.containsKey(mapper)) {
-                                        existingMap.put(mapper, new HashSet());
+                                        existingMap.put(mapper, new HashSet<>());
                                     }
                                     existingMap.get(mapper).add(propertyFieldURI);
                                 }

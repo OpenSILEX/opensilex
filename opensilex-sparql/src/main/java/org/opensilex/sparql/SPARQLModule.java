@@ -80,7 +80,7 @@ public class SPARQLModule extends OpenSilexModule {
             if(! StringUtils.isEmpty(sparqlConfig.generationBaseURI())){
                 generationUri = new URI(sparqlConfig.generationBaseURI());
             }
-            // else generate URI with the provided uri generation keyword
+            // else generate URI with the provided uri generation alias
             else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
                 generationUri = generationUri.resolve(sparqlConfig.generationBaseURIAlias()).resolve("/");
             }else {

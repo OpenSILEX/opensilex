@@ -133,7 +133,7 @@ export default class InfrastructureForm extends Vue {
   get parentOptions() {
     if (this.editMode) {
       return this.$opensilex.buildTreeFromDag(this.parentInfrastructures, {
-        disableSubTree: this.form.uri,
+        disableSubTree: this.form.uri
       });
     } else {
       return this.$opensilex.buildTreeFromDag(this.parentInfrastructures);

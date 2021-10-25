@@ -632,26 +632,34 @@ export default class OpenSilexVuePlugin {
         return rootNodes;
     }
 
-    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any): TreeOption {
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any, disabled: boolean = false): TreeOption {
         let dagNode = dagMap.get(nodeUri);
 
         let treeNode: TreeOption = {
             id: dagNode.uri,
             label: dagNode.name,
-            isDefaultExpanded: buildOptions.expanded || true,
-            isDisabled: false,
+            isDefaultExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,
+            isDisabled: disabled,
             children: [],
             title: dagNode.name,
             data: dagNode,
-            isDraggable: buildOptions.draggable || false,
-            isExpanded: buildOptions.expanded || true,
+            isDraggable: buildOptions.draggable != undefined ? buildOptions.draggable : false,
+            isExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,
             isLeaf: true,
-            isSelectable: buildOptions.selectable || true,
-            isSelected: buildOptions.selected || false,
+            isSelectable: buildOptions.selectable != undefined ? buildOptions.selectable : true,
+            isSelected: buildOptions.selected != undefined ? buildOptions.selected : false,
         };
 
+        let disableChildren = disabled;
+        if (buildOptions.disableSubTree === nodeUri) {
+            disableChildren = true;
+            treeNode.isDisabled = true;
+            treeNode.isExpanded = false;
+            treeNode.isDefaultExpanded = false;
+        }
+
         dagNode.children.forEach(childUri => {
-            let subTreeNode = this.buildTreeFromDagNode(childUri, dagMap, buildOptions);
+            let subTreeNode = this.buildTreeFromDagNode(childUri, dagMap, buildOptions, disableChildren);
             treeNode.children.push(subTreeNode)
             treeNode.isLeaf = false;
         });

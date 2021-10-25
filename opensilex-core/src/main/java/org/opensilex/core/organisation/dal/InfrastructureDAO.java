@@ -250,9 +250,14 @@ public class InfrastructureDAO {
         return sparql.getListByURIs(InfrastructureFacilityModel.class,uris,user.getLanguage());
     }
 
-    public ListWithPagination<InfrastructureFacilityModel> searchFacilities(UserModel user, String pattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+    public ListWithPagination<InfrastructureFacilityModel> searchFacilities(UserModel user, String pattern, List<URI> organizations, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
         Set<URI> infras = getUserInfrastructures(user);
+
+        // Filter by organizations
+        if (organizations != null && !organizations.isEmpty()) {
+            infras.retainAll(organizations);
+        }
 
         if (infras != null && infras.size() == 0) {
             return new ListWithPagination<>(Collections.emptyList());

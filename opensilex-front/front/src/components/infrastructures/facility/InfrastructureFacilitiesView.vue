@@ -190,13 +190,11 @@ export default class InfrastructureFacilitiesView extends Vue {
   }
 
   refresh() {
-    if (this.selected) {
-      this.facilities = this.selected.facilities;
-      return;
-    }
+    let searchPromise = this.selected
+      ? this.service.searchInfrastructureFacilities(undefined, [this.selected.uri])
+      : this.service.searchInfrastructureFacilities();
 
-    return this.service
-        .searchInfrastructureFacilities()
+    return searchPromise
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
           this.facilities = http.response.result;
         }).then(() => {

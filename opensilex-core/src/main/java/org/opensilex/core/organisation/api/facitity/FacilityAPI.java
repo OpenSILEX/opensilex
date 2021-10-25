@@ -179,13 +179,14 @@ public class FacilityAPI {
     })
     public Response searchInfrastructureFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, orderByList, page, pageSize);
+        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, organizations, orderByList, page, pageSize);
 
         List<InfrastructureFacilityGetDTO> dtoList = facilities.getList().stream()
                 .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, false))

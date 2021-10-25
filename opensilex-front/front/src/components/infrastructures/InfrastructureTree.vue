@@ -181,7 +181,19 @@ export default class InfrastructureTree extends Vue {
         }
 
         let nodes = this.$opensilex.buildTreeFromDag(http.response.result, {});
-        nodes[0].isSelected = true;
+
+        if (nodes.length > 0) {
+          nodes[0].isSelected = true;
+
+          if (!uri) {
+            this.displayNodeDetail(nodes[0].data.uri, true);
+          }
+        }
+
+        if (uri) {
+          this.displayNodeDetail(uri, true);
+        }
+
         this.nodes = nodes;
       })
       .catch(this.$opensilex.errorHandler);

@@ -37,7 +37,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class DocumentModel extends SPARQLResourceModel implements ClassURIGenerator<DocumentModel> {
 
-    public final static String GRAPH = "set/document";
+    public static final String GRAPH = "document";
 
     @SPARQLProperty(
             ontology = OA.class,

@@ -32,7 +32,7 @@ import java.util.UUID;
 )
 public class EventModel extends SPARQLResourceModel implements ClassURIGenerator<EventModel> {
 
-    public static final String GRAPH = "set/event";
+    public static final String GRAPH = "event";
 
     @SPARQLProperty(
             ontology = Oeev.class,

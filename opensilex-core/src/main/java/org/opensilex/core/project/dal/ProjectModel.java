@@ -29,8 +29,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> implements ClassURIGenerator<ProjectModel> {
 
-    public final static String GRAPH = "set/project";
-
+    public static final String GRAPH = "project";
 
     @SPARQLProperty(
             ontology = Oeso.class,

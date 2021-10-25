@@ -37,7 +37,7 @@ import static org.opensilex.core.area.dal.AreaModel.GRAPH;
 )
 public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<AreaModel> {
 
-    public final static String GRAPH = "set/area";
+    public static final String GRAPH = "area";
 
     @SPARQLProperty(
             ontology = RDFS.class,

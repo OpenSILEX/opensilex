@@ -23,7 +23,7 @@ import java.net.URI;
 )
 public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
 
-    public static final String GRAPH = "set/variable";
+    public static final String GRAPH = "variable";
 
     @SPARQLProperty(
             ontology = SKOS.class,

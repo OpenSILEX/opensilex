@@ -24,7 +24,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 )
 public class ProfileModel extends SPARQLNamedResourceModel<ProfileModel> {
 
-    public final static String GRAPH = "set/profile";
+    public static final String GRAPH = "profile";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,

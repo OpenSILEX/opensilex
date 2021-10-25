@@ -32,7 +32,7 @@ import java.util.List;
 )
 public class FactorModel extends SKOSReferencesModel implements ClassURIGenerator<FactorModel> {
 
-    public static final String GRAPH = "set/factor";
+    public static final String GRAPH = "factor";
 
     @SPARQLProperty(
             ontology = RDFS.class,

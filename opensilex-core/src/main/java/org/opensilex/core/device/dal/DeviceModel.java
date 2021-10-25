@@ -27,7 +27,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
-    public final static String GRAPH = "set/device";
+    public static final String GRAPH = "device";
 
      @SPARQLProperty(
             ontology = Oeso.class,

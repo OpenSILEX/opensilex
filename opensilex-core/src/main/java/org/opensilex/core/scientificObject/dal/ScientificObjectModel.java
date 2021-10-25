@@ -17,7 +17,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 
 public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
 
-    public final static String GRAPH = "set/scientific-object";
+    public static final String GRAPH = "scientific-object";
 
     @SPARQLProperty(
             ontology = Oeso.class,

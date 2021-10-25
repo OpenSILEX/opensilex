@@ -24,7 +24,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 )
 public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
 
-    public final static String GRAPH = "set/group";
+    public static final String GRAPH = "group";
 
     @SPARQLProperty(
             ontology = DCTerms.class,

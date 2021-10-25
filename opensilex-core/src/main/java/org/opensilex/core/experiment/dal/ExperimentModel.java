@@ -36,7 +36,7 @@ import org.opensilex.security.user.dal.UserModel;
 )
 public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
 
-    public final static String GRAPH = "set/experiment";
+    public static final String GRAPH = "experiment";
 
     @SPARQLProperty(
             ontology = RDFS.class,

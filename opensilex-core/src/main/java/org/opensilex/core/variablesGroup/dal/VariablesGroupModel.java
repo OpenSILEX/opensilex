@@ -27,7 +27,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 )
 public class VariablesGroupModel extends SPARQLNamedResourceModel<VariablesGroupModel> {
 
-    public final static String GRAPH = "set/variablesGroup";
+    public static final String GRAPH = "variablesGroup";
 
     @SPARQLProperty(
             ontology = DCTerms.class,

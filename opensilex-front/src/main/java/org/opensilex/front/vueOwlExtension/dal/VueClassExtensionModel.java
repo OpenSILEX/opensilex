@@ -23,7 +23,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 )
 public class VueClassExtensionModel extends SPARQLResourceModel {
 
-    public final static String GRAPH = "set/opensilex-owl-extension";
+    public static final String GRAPH = "opensilex-owl-extension";
 
     @SPARQLProperty(
             ontology = VueOwlExtension.class,

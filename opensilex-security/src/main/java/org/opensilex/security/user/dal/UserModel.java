@@ -32,8 +32,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
 
-    public final static String GRAPH = "set/user";
-
+    public static final  String GRAPH = "user";
 
     public static UserModel getAnonymous() {
         UserModel anonymous = new UserModel();

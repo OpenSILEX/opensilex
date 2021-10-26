@@ -135,12 +135,6 @@ export default class ProvenanceView extends Vue {
     return form;
   }
 
-  errorMsg: String = "";
-
-  handleErrorMessage(errorMsg: string) {
-        this.errorMsg = errorMsg;
-  }
-
   deleteProvenance(uri: string) {
     console.log("deleteProvenance " + uri);
 

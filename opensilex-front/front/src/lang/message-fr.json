@@ -152,7 +152,9 @@
             "user": {
                 "admin": "Admin",
                 "logout": "Déconnexion"
-            }
+            },
+            "user-guide":"Guide d'utilisation",
+            "download-user-guide": "Télécharger Guide d'utilisation"
         },
         "menu": {
             "dashboard": "Tableau de bord",

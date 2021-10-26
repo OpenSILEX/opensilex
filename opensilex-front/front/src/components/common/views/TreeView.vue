@@ -19,7 +19,7 @@
 
       <span class="tree-multiple-icon">
         <opensilex-Icon
-            v-if="node.data.parents.length > 1"
+            v-if="Array.isArray(node.data.parents) && node.data.parents.length > 1"
             icon="fa#project-diagram"
             v-b-tooltip.hover.top="multipleElementsTooltip" />
       </span>

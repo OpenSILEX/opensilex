@@ -621,6 +621,12 @@ export default class OpenSilexVuePlugin {
             dagMap.set(dag.uri, dag);
         }
 
+        //Filter out the parents/children that does not exist (e.g. if use doesn't have the rights to see them)
+        dagList.forEach(dagNode => {
+           dagNode.parents = dagNode.parents.filter(parentUri => dagMap.has(parentUri));
+           dagNode.children = dagNode.children.filter(childUri => dagMap.has(childUri));
+        });
+
         let rootNodes: Array<TreeOption> = [];
 
         dagList.forEach(dagNode => {

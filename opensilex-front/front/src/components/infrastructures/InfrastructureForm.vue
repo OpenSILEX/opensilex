@@ -26,7 +26,7 @@
       placeholder="InfrastructureForm.form-type-placeholder"
     ></opensilex-TypeForm>
 
-    <!-- Parent -->
+    <!-- Parents -->
     <opensilex-SelectForm
       :selected.sync="form.parents"
       :options="parentOptions"
@@ -103,7 +103,7 @@ export default class InfrastructureForm extends Vue {
       uri: null,
       rdf_type: null,
       name: "",
-      parents: null,
+      parents: [],
       groups: [],
       facilities: []
     };
@@ -138,7 +138,13 @@ export default class InfrastructureForm extends Vue {
     }
   }
 
+  cleanFormBeforeSend(form) {
+    // I don't know why but sometimes this array contains null values so we filter them out
+    form.parents = form.parents.filter(parent => parent);
+  }
+
   create(form) {
+    this.cleanFormBeforeSend(form);
     return this.$opensilex
       .getService("opensilex.OrganisationsService")
       .createInfrastructure(form)
@@ -162,6 +168,7 @@ export default class InfrastructureForm extends Vue {
   }
 
   update(form) {
+    this.cleanFormBeforeSend(form);
     delete form.rdf_type_name;
     return this.$opensilex
       .getService("opensilex.OrganisationsService")

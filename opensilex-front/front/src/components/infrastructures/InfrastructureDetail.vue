@@ -129,7 +129,7 @@ export default class InfrastructureDetail extends Vue {
   }
 
   get hasParents() {
-    return this.selected.parents.length > 0;
+    return this.parentUriList && this.parentUriList.length > 0;
   }
 
   get hasGroups() {

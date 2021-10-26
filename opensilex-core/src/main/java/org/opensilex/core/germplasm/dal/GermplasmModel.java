@@ -127,12 +127,18 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
         this.label = label;
     }
 
+    @Override
     public String getName() {
         return getLabel().getDefaultValue();
     }
 
+    @Override
     public void setName(String name) {
         super.setName(name);
+        if(label == null){
+            label = new SPARQLLabel();
+        }
+        label.setDefaultValue(name);
     }
 
     public GermplasmModel getSpecies() {

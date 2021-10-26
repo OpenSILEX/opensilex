@@ -3,17 +3,19 @@ package org.opensilex.core.species.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.utils.ClassURIGenerator;
 
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
         graph = GermplasmModel.GRAPH
 )
-public class SpeciesModel extends SPARQLResourceModel  {
+public class SpeciesModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -31,4 +33,9 @@ public class SpeciesModel extends SPARQLResourceModel  {
     public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
+
+    public String getName() {
+        return getLabel().getDefaultValue();
+    }
+
 }

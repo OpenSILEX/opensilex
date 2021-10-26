@@ -53,11 +53,12 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
         this.infrastructures = infrastructures;
     }
 
-    public List<URI> getInfrastructureUris() {
-        return this.infrastructures
-                .stream()
-                .map(InfrastructureModel::getUri)
-                .collect(Collectors.toList());
+    @Override
+    public String[] getUriSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
+        return new String[]{
+                "facilities",
+                instance.getName()
+        };
     }
 
 }

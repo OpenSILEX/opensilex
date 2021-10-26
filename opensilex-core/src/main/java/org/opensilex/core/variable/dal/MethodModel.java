@@ -28,7 +28,6 @@ public class MethodModel extends BaseVariableModel<MethodModel> {
     @Override
     public String[] getUriSegments(MethodModel instance) {
         return new String[]{
-            "variable",
             "method",
             instance.getName()
         };

@@ -184,12 +184,5 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-    @Override
-    public String[] getUriSegments(VariableModel instance) {
-        return new String[]{
-            "variable",
-            instance.getName()
-        };
-    }
 }
 

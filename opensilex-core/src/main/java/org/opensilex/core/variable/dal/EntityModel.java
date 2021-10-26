@@ -30,7 +30,6 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
     @Override
     public String[] getUriSegments(EntityModel instance) {
         return new String[]{
-                "variable",
                 "entity",
                 instance.getName()
         };

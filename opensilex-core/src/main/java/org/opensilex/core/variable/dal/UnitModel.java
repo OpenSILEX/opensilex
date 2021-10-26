@@ -41,7 +41,6 @@ public class UnitModel extends BaseVariableModel<UnitModel> {
     @Override
     public String[] getUriSegments(UnitModel instance) {
         return new String[]{
-            "variable",
             "unit",
             instance.getName()
         };

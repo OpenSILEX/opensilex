@@ -20,6 +20,8 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
+
 /**
  *
  * @author vince
@@ -84,7 +86,8 @@ public class SPARQLModule extends OpenSilexModule {
             }
             // else generate URI with the provided uri generation alias
             else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
-                generationPrefixURI = new URI(baseURI+"/"+sparqlConfig.generationBaseURIAlias());
+                // use UriBuilder in order to properly create URI
+                generationPrefixURI = UriBuilder.fromUri(baseURI).path(sparqlConfig.generationBaseURIAlias()).build();
             }
         }
 

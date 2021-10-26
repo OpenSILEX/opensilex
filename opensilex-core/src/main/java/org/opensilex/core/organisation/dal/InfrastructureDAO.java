@@ -17,10 +17,15 @@ import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -168,12 +173,24 @@ public class InfrastructureDAO {
         }
     }
 
-    public void addAskInfrastructureAccess(WhereClause<?> ask, Object infraURIVar, UserModel user) {
+    public void addAskInfrastructureAccess(WhereClause<?> ask, Object infraURIVar, UserModel user) throws Exception {
         Var userProfileVar = makeVar("_userProfile");
-        Var groupVar = makeVar(InfrastructureModel.GROUP_FIELD);
-        ask.addWhere(infraURIVar, SecurityOntology.hasGroup, groupVar);
-        ask.addWhere(groupVar, SecurityOntology.hasUserProfile, userProfileVar);
-        ask.addWhere(userProfileVar, SecurityOntology.hasUser, SPARQLDeserializers.nodeURI(user.getUri()));
+        Var userVar = makeVar("_userURI");
+
+        WhereHandler userProfileGroup = new WhereHandler();
+        userProfileGroup.addWhere(new TriplePath(new Triple((Node)infraURIVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD))));
+        userProfileGroup.addWhere(new TriplePath(new Triple(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar)));
+        userProfileGroup.addWhere(new TriplePath(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar)));
+        ask.getWhereHandler().addOptional(userProfileGroup);
+        Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
+
+        ElementTriplesBlock noGroupBlock = new ElementTriplesBlock();
+        noGroupBlock.addTriple(Triple.create((Node)infraURIVar, SecurityOntology.hasGroup.asNode(), makeVar("_group")));
+        ElementGroup noGroupGroup = new ElementGroup();
+        noGroupGroup.addElement(noGroupBlock);
+        Expr noGroup = new E_NotExists(noGroupGroup);
+
+        ask.addFilter(SPARQLQueryHelper.or(isInGroup, noGroup));
     }
 
     public Set<URI> getUserInfrastructures(UserModel user) throws Exception {
@@ -201,7 +218,13 @@ public class InfrastructureDAO {
             select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
             Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
 
-            select.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
+            ElementTriplesBlock noGroupBlock = new ElementTriplesBlock();
+            noGroupBlock.addTriple(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), makeVar("_group")));
+            ElementGroup noGroupGroup = new ElementGroup();
+            noGroupGroup.addElement(noGroupBlock);
+            Expr noGroup = new E_NotExists(noGroupGroup);
+
+            select.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator, noGroup));
         });
 
         userInfras.addAll(infras);

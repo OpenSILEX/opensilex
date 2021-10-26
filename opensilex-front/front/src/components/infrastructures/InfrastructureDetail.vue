@@ -166,7 +166,7 @@ export default class InfrastructureDetail extends Vue {
 
   @Watch("selected")
   refresh() {
-    if (!this.selected) {
+    if (!this.selected || !this.selected.parents || this.selected.parents.length === 0) {
       return;
     }
 

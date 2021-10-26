@@ -157,6 +157,12 @@ public class InfrastructureDAO {
         List<URI> childrenUriList = model.getParents()
                 .stream().map(InfrastructureModel::getUri)
                 .collect(Collectors.toList());
+
+        if (childrenUriList.isEmpty()) {
+            // No parents to check, so no need to do a query
+            return;
+        }
+
         SPARQLQueryHelper.addWhereUriValues(ask, childrenVar.getVarName(), childrenUriList);
 
         if (sparql.executeAskQuery(ask)) {

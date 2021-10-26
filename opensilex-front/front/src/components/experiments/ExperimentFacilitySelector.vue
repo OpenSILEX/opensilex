@@ -94,7 +94,6 @@ export default class ExperimentFacilitySelector extends Vue {
         this.infraService
           .searchInfrastructures(undefined, infrastructuresURI)
           .then(http => {
-            //@todo dag
             infrastructures = http.response.result;
           })
       ]).then(() => {

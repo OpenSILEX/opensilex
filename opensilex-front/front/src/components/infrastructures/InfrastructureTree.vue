@@ -173,7 +173,6 @@ export default class InfrastructureTree extends Vue {
     this.service
       .searchInfrastructures(this.filter)
       .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
-        //@todo dag
         if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
           if (this.filter == "") {
             this.infrastructureForm
@@ -235,7 +234,6 @@ export default class InfrastructureTree extends Vue {
       .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
-        //@todo dag
         this.parentURI = detailDTO.parents[0];
 
         let editDTO: InfrastructureUpdateDTO = {

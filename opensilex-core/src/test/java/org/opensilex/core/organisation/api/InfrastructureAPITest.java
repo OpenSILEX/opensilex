@@ -53,9 +53,17 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         return dto;
     }
 
-//    @Test
-    public void testCreate() throws Exception {
+    protected InfrastructureUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents) {
+        InfrastructureUpdateDTO dto = new InfrastructureUpdateDTO();
+        dto.setUri(organizationUri);
+        if (updatedParents != null) {
+            dto.setParents(updatedParents);
+        }
+        return dto;
+    }
 
+    @Test
+    public void testCreate() throws Exception {
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -63,6 +71,57 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         URI createdUri = extractUriFromResponse(postResult);
         final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+    }
+
+    /**
+     * Updating an organization to change its parent
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParents() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root2 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
+
+        assertEquals(Status.OK.getStatusCode(), updateResponse.getStatus());
+    }
+
+    /**
+     * Updating an organization to create a cycle should fail
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParentsCycle() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(root1));
+        URI root2 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
+
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResponse.getStatus());
+    }
+
+    /**
+     * Updating an organization to have itself as a parent should fail
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParentsSelf() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root1); }}));
+
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResponse.getStatus());
     }
 
     @Test

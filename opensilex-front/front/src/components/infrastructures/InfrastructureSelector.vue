@@ -40,7 +40,6 @@ export default class InfrastructureSelector extends Vue {
       .getService("opensilex-core.OrganisationsService")
       .searchInfrastructures()
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-        //@todo dag
         this.infrastructuresOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );

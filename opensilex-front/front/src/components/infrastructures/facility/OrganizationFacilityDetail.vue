@@ -169,7 +169,6 @@ export default class OrganizationFacilityDetail extends Vue {
     this.infrastructureFacilityForm.showEditForm(editDto);
   }
 
-  //@todo tester
   deleteInfrastructureFacility() {
     this.$opensilex
         .getService("opensilex.OrganisationsService")

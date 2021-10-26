@@ -141,8 +141,6 @@ public class InfrastructureDAO {
      *
      * @param model the organization to update
      * @throws SPARQLInvalidModelException if a cycle is found
-     *
-     * @todo Faire des tests !
      */
     public void validateOrganizationHierarchy(InfrastructureModel model) throws Exception {
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, model.getUri());

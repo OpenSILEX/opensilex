@@ -111,25 +111,27 @@ public final class OntologyDAO {
 
     public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, String lang, boolean excludeRoot, Consumer<T> handler) throws Exception {
         SPARQLTreeListModel<T> classTree = sparql.searchResourceTree(
+                null, // don't specify a graph, since multiple graph can contain a class definition
                 clazz,
                 lang,
                 parent,
                 excludeRoot,
                 (SelectBuilder select) -> {
                     if (parent != null) {
-                        Var parentVar = makeVar(ClassModel.PARENT_FIELD);
+                        Var parentVar = makeVar(SPARQLTreeModel.PARENT_FIELD);
                         select.addWhere(parentVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(parent));
-                        select.addWhere(makeVar(ClassModel.URI_FIELD), RDFS.subClassOf, parentVar);
+                        select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), RDFS.subClassOf, parentVar);
                     }
                     if (!StringUtils.isEmpty(stringPattern)) {
-                        Var parentNameField = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(ClassModel.PARENT_FIELD));
+                        Var parentNameField = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(SPARQLTreeModel.PARENT_FIELD));
 
                         select.addFilter(SPARQLQueryHelper.or(
                                 SPARQLQueryHelper.regexFilter(ClassModel.NAME_FIELD, stringPattern),
                                 SPARQLQueryHelper.regexFilter(parentNameField.getVarName(), stringPattern)
                         ));
                     }
-                }
+                },
+                Collections.emptyMap()
         );
 
         if (handler != null) {
@@ -141,15 +143,18 @@ public final class OntologyDAO {
 
 
     public List<OwlRestrictionModel> getOwlRestrictions(URI rdfClass, String lang) throws Exception {
-        List<OrderBy> orderByList = new ArrayList<>();
-        orderByList.add(new OrderBy(OwlRestrictionModel.URI_FIELD + "=ASC"));
-        return sparql.search(OwlRestrictionModel.class,
-                lang, (SelectBuilder select) -> {
+
+        return sparql.search(
+                null, // don't specify a graph, since multiple graph can contain a restriction definition
+                OwlRestrictionModel.class,
+                lang,
+                (SelectBuilder select) -> {
                     Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
                     Var classUriVar = makeVar("classURI");
                     select.addWhere(classUriVar, RDFS.subClassOf, uriVar);
                     select.addWhere(SPARQLDeserializers.nodeURI(rdfClass), Ontology.subClassAny, classUriVar);
-                }, orderByList);
+                }
+        );
 
     }
 
@@ -233,17 +238,16 @@ public final class OntologyDAO {
         if (parentClass != null) {
             // Add a WHERE with a subClassOf* path on PARENT field, instead to add it on the end of query
             parentHandler = new WhereHandler();
-            parentHandler.addWhere(new TriplePath(makeVar(ClassModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass)));
+            parentHandler.addWhere(new TriplePath(makeVar(SPARQLTreeModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass)));
         }
 
-
         ClassModel model = sparql.loadByURI(
-                sparql.getDefaultGraph(ClassModel.class),
+                null, // don't specify a graph, since multiple graph can contain a class definition
                 ClassModel.class,
                 rdfClass,
                 lang,
                 null,
-                parentClass != null ? Collections.singletonMap(ClassModel.PARENT_FIELD, parentHandler) : null
+                parentClass != null ? Collections.singletonMap(SPARQLTreeModel.PARENT_FIELD, parentHandler) : null
         );
 
         if (model == null) {
@@ -264,9 +268,10 @@ public final class OntologyDAO {
     public ClassModel getClassModelOf(URI modelUri, URI parentClass, String lang) throws Exception {
 
         List<ClassModel> results = sparql.search(
+                null, // don't specify a graph, since multiple graph can contain a class definition
                 ClassModel.class,
                 lang,
-                (select) -> select.addWhere(SPARQLDeserializers.nodeURI(modelUri), RDF.type, makeVar(ClassModel.URI_FIELD))
+                select -> select.addWhere(SPARQLDeserializers.nodeURI(modelUri), RDF.type, makeVar(SPARQLResourceModel.URI_FIELD))
         );
 
         if (results.isEmpty()) {
@@ -591,7 +596,7 @@ public final class OntologyDAO {
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.searchResourceTree(
-                sparql.getDefaultGraph(DatatypePropertyModel.class),
+               null, // don't specify a graph, since multiple graph can contain a property definition
                 DatatypePropertyModel.class,
                 lang,
                 topDataPropertyUri,
@@ -616,7 +621,7 @@ public final class OntologyDAO {
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.searchResourceTree(
-                sparql.getDefaultGraph(ObjectPropertyModel.class),
+                null, // don't specify a graph, since multiple graph can contain a property definition
                 ObjectPropertyModel.class,
                 lang,
                 topObjectPropertyUri,
@@ -658,7 +663,7 @@ public final class OntologyDAO {
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.loadByURI(
-                sparql.getDefaultGraph(DatatypePropertyModel.class),
+                null, // don't specify a graph, since multiple graph can contain a property definition
                 DatatypePropertyModel.class,
                 propertyURI,
                 lang,
@@ -673,7 +678,7 @@ public final class OntologyDAO {
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.loadByURI(
-                sparql.getDefaultGraph(ObjectPropertyModel.class),
+                null, // don't specify a graph, since multiple graph can contain a property definition
                 ObjectPropertyModel.class,
                 propertyURI,
                 lang,
@@ -775,8 +780,12 @@ public final class OntologyDAO {
 
     public List<OwlRestrictionModel> getClassPropertyRestriction( URI classURI, URI propertyURI, String lang) throws Exception {
 
-        return sparql.search(restrictionGraph, OwlRestrictionModel.class, lang, (select) -> {
-                    Var uriVar = makeVar(OwlRestrictionModel.URI_FIELD);
+        return sparql.search(
+                null, // don't specify a graph, since multiple graph can contain a restriction definition
+                OwlRestrictionModel.class,
+                lang,
+                select -> {
+                    Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
                     select.addWhere(SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, uriVar);
                     select.addWhere(uriVar, OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
                 },
@@ -844,7 +853,7 @@ public final class OntologyDAO {
         return name;
     }
 
-    public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+    public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws Exception {
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
         
         if (uris.size() > 0) {
@@ -1234,7 +1243,7 @@ public final class OntologyDAO {
         return rdfTypes;
     }
 
-    public List<SPARQLNamedResourceModel> getByName(String targetNameOrUri) throws SPARQLException, SPARQLDeserializerNotFoundException, Exception {
+    public List<SPARQLNamedResourceModel> getByName(String targetNameOrUri) throws Exception {
         SelectBuilder select = new SelectBuilder();
         select.setDistinct(true);
         String uriField = "uri";

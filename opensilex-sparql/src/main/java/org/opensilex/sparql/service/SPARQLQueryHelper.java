@@ -620,4 +620,7 @@ public class SPARQLQueryHelper {
         builder.getValuesHandler().addValueVar(sparqlVar,valueNodes);
     }
 
+    public static Expr notExistFilter(WhereClause<?> whereClause) {
+        return exprFactory.notexists(whereClause);
+    }
 }

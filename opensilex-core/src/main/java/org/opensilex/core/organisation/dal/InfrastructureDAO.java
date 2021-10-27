@@ -13,19 +13,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
-import org.apache.jena.sparql.syntax.Element;
-import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -147,7 +141,7 @@ public class InfrastructureDAO {
      * @param model the organization to update
      * @throws SPARQLInvalidModelException if a cycle is found
      */
-    public void validateOrganizationHierarchy(InfrastructureModel model) throws Exception {
+    protected void validateOrganizationHierarchy(InfrastructureModel model) throws Exception {
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, model.getUri());
 
         Node nodeUri = SPARQLDeserializers.nodeURI(model.getUri());
@@ -173,61 +167,72 @@ public class InfrastructureDAO {
         }
     }
 
-    public void addAskInfrastructureAccess(WhereClause<?> ask, Object infraURIVar, UserModel user) throws Exception {
+    /**
+     * Add an organization access clause to the given query. An organization is considered accessible to a user if ONE
+     * of the following statements is true :
+     *
+     * <ul>
+     *     <li>The user is admin (thus they have access to all the organizations)</li>
+     *     <li>The organization has no security group</li>
+     *     <li>The user belongs to one of the groups of the organizations</li>
+     *     <li>The user is the creator of the organization</li>
+     * </ul>
+     *
+     * @param where
+     * @param uriVar
+     * @param user
+     * @throws Exception
+     */
+    protected void addAskInfrastructureAccess(WhereClause<?> where, Object uriVar, UserModel user) throws Exception {
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_userURI");
 
-        WhereHandler userProfileGroup = new WhereHandler();
-        userProfileGroup.addWhere(new TriplePath(new Triple((Node)infraURIVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD))));
-        userProfileGroup.addWhere(new TriplePath(new Triple(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar)));
-        userProfileGroup.addWhere(new TriplePath(new Triple(userProfileVar, SecurityOntology.hasUser.asNode(), userVar)));
-        ask.getWhereHandler().addOptional(userProfileGroup);
+        WhereBuilder userProfileGroup = new WhereBuilder();
+        userProfileGroup.addWhere(uriVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
+        userProfileGroup.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar);
+        userProfileGroup.addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar);
+        where.addOptional(userProfileGroup);
         Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
 
-        ElementTriplesBlock noGroupBlock = new ElementTriplesBlock();
-        noGroupBlock.addTriple(Triple.create((Node)infraURIVar, SecurityOntology.hasGroup.asNode(), makeVar("_group")));
-        ElementGroup noGroupGroup = new ElementGroup();
-        noGroupGroup.addElement(noGroupBlock);
-        Expr noGroup = new E_NotExists(noGroupGroup);
+        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
+        where.addOptional(uriVar, DCTerms.creator.asNode(), creatorVar);
+        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
 
-        ask.addFilter(SPARQLQueryHelper.or(isInGroup, noGroup));
+        WhereBuilder noGroupWhere = new WhereBuilder();
+        noGroupWhere.addWhere(uriVar, SecurityOntology.hasGroup.asNode(), makeVar("_group"));
+        Expr noGroup = SPARQLQueryHelper.notExistFilter(noGroupWhere);
+
+        where.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator, noGroup));
     }
 
-    public Set<URI> getUserInfrastructures(UserModel user) throws Exception {
+    /**
+     * Get all organizations accessible by a giver user. An organization is considered accessible to a user if ONE of
+     *
+     * <ul>
+     *     <li>The user is admin (thus they have access to all the organizations)</li>
+     *     <li>The organization has no security group</li>
+     *     <li>The user belongs to one of the groups of the organizations</li>
+     *     <li>The user is the creator of the organization</li>
+     * </ul>
+     *
+     * @param user
+     * @return
+     * @throws Exception
+     */
+    protected Set<URI> getUserInfrastructures(UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return null;
         }
 
         String lang = user.getLanguage();
-        Set<URI> userInfras = new HashSet<>();
 
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
-            Var userProfileVar = makeVar("_userProfile");
-            Var userVar = makeVar("_userURI");
             Var uriVar = makeVar(InfrastructureModel.URI_FIELD);
 
-            WhereHandler userProfileGroup = new WhereHandler();
-            userProfileGroup.addWhere(select.makeTriplePath(uriVar, SecurityOntology.hasGroup, makeVar(InfrastructureModel.GROUP_FIELD)));
-            userProfileGroup.addWhere(select.makeTriplePath(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile, userProfileVar));
-            userProfileGroup.addWhere(select.makeTriplePath(userProfileVar, SecurityOntology.hasUser, userVar));
-            select.getWhereHandler().addOptional(userProfileGroup);
-
-            Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
-
-            Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-            select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
-            Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
-
-            ElementTriplesBlock noGroupBlock = new ElementTriplesBlock();
-            noGroupBlock.addTriple(Triple.create(uriVar, SecurityOntology.hasGroup.asNode(), makeVar("_group")));
-            ElementGroup noGroupGroup = new ElementGroup();
-            noGroupGroup.addElement(noGroupBlock);
-            Expr noGroup = new E_NotExists(noGroupGroup);
-
-            select.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator, noGroup));
+            addAskInfrastructureAccess(select, uriVar, user);
         });
 
-        userInfras.addAll(infras);
+        Set<URI> userInfras = new HashSet<>(infras);
 
         return userInfras;
     }

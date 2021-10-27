@@ -239,6 +239,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     @Override
+    public void executeUpdateQuery(String update) throws SPARQLException {
+        connection.executeUpdateQuery(update);
+    }
+
+    @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
 //        if (LOGGER.isDebugEnabled()) {

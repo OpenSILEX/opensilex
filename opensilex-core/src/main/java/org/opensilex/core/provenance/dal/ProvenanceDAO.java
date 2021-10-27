@@ -30,7 +30,7 @@ import org.opensilex.utils.OrderBy;
 public class ProvenanceDAO {
     
     public static final String PROVENANCE_COLLECTION_NAME = "provenance";
-    public static final String PROVENANCE_PREFIX = "id/provenance";
+    public static final String PROVENANCE_PREFIX = "provenance";
     protected final MongoDBService nosql; 
     protected final SPARQLService sparql;
     

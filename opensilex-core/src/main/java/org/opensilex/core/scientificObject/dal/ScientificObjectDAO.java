@@ -92,7 +92,6 @@ public class ScientificObjectDAO {
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
 
     private final URI defaultGraph;
-    private final URI defaultGenerationURI;
 
     public ScientificObjectDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
@@ -100,7 +99,6 @@ public class ScientificObjectDAO {
 
         try{
             defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-            defaultGenerationURI = sparql.getDefaultGenerationURI(ScientificObjectModel.class);
         }catch (SPARQLException e){
             throw new RuntimeException(e);
         }

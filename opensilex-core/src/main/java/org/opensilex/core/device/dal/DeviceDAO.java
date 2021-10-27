@@ -59,7 +59,7 @@ public class DeviceDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
 
-    public static final String ATTRIBUTES_COLLECTION_NAME = "devicesAttributes";
+    public static final String ATTRIBUTES_COLLECTION_NAME = "deviceAttribute";
 
     public void initDevice(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);

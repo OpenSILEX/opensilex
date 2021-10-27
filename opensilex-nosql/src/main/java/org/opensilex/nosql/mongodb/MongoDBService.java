@@ -127,10 +127,10 @@ public class MongoDBService extends BaseService {
 
     }
 
-    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {
+    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String uriGenerationPrefix) throws Exception {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+            generateUniqueUriIfNullOrValidateCurrent(instance, uriGenerationPrefix, collectionName);
         }
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {

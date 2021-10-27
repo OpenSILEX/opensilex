@@ -69,7 +69,11 @@ public class DataDAO {
     protected final URI RDFTYPE_VARIABLE;
     private final URI RDFTYPE_SCIENTIFICOBJECT;
     public static final String DATA_COLLECTION_NAME = "data";
+    public static final String DATA_PREFIX = "data";
+
     public static final String FILE_COLLECTION_NAME = "file";
+    public static final String FILE_PREFIX = "file";
+
     public final static String FS_FILE_PREFIX = "datafile";
 
     protected final MongoDBService nosql;
@@ -111,25 +115,25 @@ public class DataDAO {
 
     public DataModel create(DataModel instance) throws Exception, MongoWriteException {
         createIndexes();
-        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
+        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         return instance;
     }
 
     public DataFileModel createFile(DataFileModel instance) throws Exception, MongoBulkWriteException {
         createIndexes();
-        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, "id/file");
+        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
         return instance;
     }
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
         createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, "id/data");
+        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         return instances;
     } 
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, "id/file");
+        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
         return instances;
     }
 
@@ -570,12 +574,12 @@ public class DataDAO {
     public List<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String collectionName) throws Exception {
         Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null);
         Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
+        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
     }
 
     public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws URISyntaxException, Exception {
         //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, "id/file", FILE_COLLECTION_NAME);
+        nosql.generateUniqueUriIfNullOrValidateCurrent(model, FILE_PREFIX, FILE_COLLECTION_NAME);
 
         final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
         Path filePath = Paths.get(FS_FILE_PREFIX, filename);

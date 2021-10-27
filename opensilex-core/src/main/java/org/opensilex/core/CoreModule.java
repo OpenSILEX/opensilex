@@ -96,13 +96,13 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 "oa"
         ));
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeso#",
+                "http://opensilex.org/vocabulary/oeso#",
                 ONTOLOGIES_DIRECTORY+"/oeso-core.owl",
                 Lang.RDFXML,
                 "vocabulary"
         ));
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeev#",
+                "http://opensilex.org/vocabulary/oeev#",
                 ONTOLOGIES_DIRECTORY+"/oeev.owl",
                 Lang.RDFXML,
                 "oeev"

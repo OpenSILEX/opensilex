@@ -47,8 +47,8 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeso-phis#",
-                "ontologies/oeso-phis.owl",
+                "http://opensilex.org/vocabulary/oeso-ext#",
+                "ontologies/oeso-ext.owl",
                 Lang.RDFXML,
                 "oeso"
         ));

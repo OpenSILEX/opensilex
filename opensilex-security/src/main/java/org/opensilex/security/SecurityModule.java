@@ -148,7 +148,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/security#",
+                "http://opensilex.org/security#",
                 "ontologies/os-sec.owl",
                 Lang.RDFXML,
                 "os-sec"

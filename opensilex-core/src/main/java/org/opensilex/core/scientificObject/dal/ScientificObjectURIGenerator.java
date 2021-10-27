@@ -8,47 +8,44 @@ package org.opensilex.core.scientificObject.dal;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
-import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.sparql.utils.AbstractURIGenerator;
+
+import javax.ws.rs.core.UriBuilder;
 
 /**
  *
  * @author vmigot
  */
-public class ScientificObjectURIGenerator implements URIGenerator<String> {
+public class ScientificObjectURIGenerator extends AbstractURIGenerator<ScientificObjectModel> {
 
-    private final String rootURI;
+    private final String soPrefix;
+    private static final String SCIENTIFIC_OBJECT_PREFIX = "so-";
 
-    public ScientificObjectURIGenerator(URI rootURI) {
-        this.rootURI = rootURI.toString();
+    public ScientificObjectURIGenerator(URI prefix, ExperimentModel xp) {
+        Objects.requireNonNull(prefix);
+        if(xp == null){
+            this.soPrefix = prefix.toString();
+        }else{
+            this.soPrefix = UriBuilder.fromUri(prefix).path(xp.getName()).build().toString();
+        }
+    }
+
+    public URI generateURI(ScientificObjectModel instance, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+        return super.generateURI(soPrefix, instance, retryCount);
     }
 
     @Override
-    public URI generateURI(String prefix, String name, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
-        String baseURI;
-        if (name != null) {
-            baseURI = rootURI + "/so-" + URIGenerator.normalize(name);
-        } else {
-            baseURI = rootURI + "/so-" + randomAlphaNumeric(7);
-        }
-
-        if (retryCount > 0) {
-            baseURI += "-" + retryCount;
-        }
-
-        return new URI(baseURI);
+    public URI generateURI(String prefix, ScientificObjectModel instance, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+        return generateURI(instance,retryCount);
     }
 
-    private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    private static String randomAlphaNumeric(int count) {
-        StringBuilder builder = new StringBuilder();
-        while (count-- != 0) {
-            int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
-            builder.append(ALPHA_NUMERIC_STRING.charAt(character));
-        }
-
-        return builder.toString().toLowerCase();
+    @Override
+    public String getInstanceURI(ScientificObjectModel instance) throws UnsupportedEncodingException {
+        return SCIENTIFIC_OBJECT_PREFIX+instance.getName();
     }
+
 
 }

@@ -1,5 +1,6 @@
 package org.opensilex.core;
 
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -15,6 +16,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.*;
@@ -39,27 +41,6 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
     private String getOpensilexBaseURI()throws OpenSilexModuleNotFoundException {
         return getOpensilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class).baseURI();
-    }
-
-    @Test
-    public void testUriBuilding(){
-
-        String baseUri = "http://opensilex.org";
-        String baseUriWithSlash = baseUri+"/";
-
-        String expectedUri =  "http://opensilex.org/id/param";
-
-        URI uri = UriBuilder.fromUri(baseUri).path("id").path("param").build();
-        Assert.assertEquals(uri.toString(),expectedUri);
-
-        URI uri2 = UriBuilder.fromUri(baseUri).path("id/").path("param").build();
-        Assert.assertEquals(uri2.toString(),expectedUri);
-
-        URI uri3 = UriBuilder.fromUri(baseUriWithSlash).path("id").path("param").build();
-        Assert.assertEquals(uri3.toString(),expectedUri);
-
-        URI uri4 = UriBuilder.fromUri(baseUriWithSlash).path("id/").path("param").build();
-        Assert.assertEquals(uri4.toString(),expectedUri);
     }
 
     @Test
@@ -290,7 +271,28 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     @Test
     public void testScientificObject() throws Exception {
 
+        ExperimentModel xp = new ExperimentModel();
+        xp.setName("xp_name");
+        xp.setStartDate(LocalDate.now());
+        xp.setObjective("objective");
 
+        getSparqlService().create(xp);
+
+        ScientificObjectModel osInXp = new ScientificObjectModel();
+        osInXp.setName("os_name");
+        osInXp.setExperiment(xp);
+
+        getSparqlService().create(NodeFactory.createURI(xp.getUri().toString()),osInXp);
+
+        String expectedUriInXp = getOpensilexBaseURI()+"id/scientific-object/xp_name/so-os_name";
+        Assert.assertEquals(osInXp.getUri().toString(),expectedUriInXp);
+
+        ScientificObjectModel osOutOfXp = new ScientificObjectModel();
+        osOutOfXp.setName("os_name_out_of_xp");
+        getSparqlService().create(osOutOfXp);
+
+        String expectedUriOutOfXp = getOpensilexBaseURI()+"id/scientific-object/so-os_name_out_of_xp";
+        Assert.assertEquals(expectedUriOutOfXp,osOutOfXp.getUri().toString());
     }
 
     @Test

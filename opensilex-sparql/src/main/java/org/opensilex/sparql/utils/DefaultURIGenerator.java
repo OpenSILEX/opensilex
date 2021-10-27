@@ -9,6 +9,6 @@ package org.opensilex.sparql.utils;
  *
  * @author vidalmor
  */
-public class DefaultURIGenerator implements URIGenerator<Object> {
+public class DefaultURIGenerator<T> implements URIGenerator<T> {
 
 }

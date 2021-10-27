@@ -59,6 +59,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.DefaultURIGenerator;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.TokenGenerator;
 
@@ -508,16 +509,19 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         URI contextURI = descriptionDto.getExperiment();
+        ExperimentModel experiment = null;
         validateContextAccess(contextURI);
 
         URI globalScientificObjectGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         boolean globalCopy = false;
-        URI generationPrefixURI = contextURI;
         if (contextURI == null) {
             contextURI = globalScientificObjectGraph;
-            generationPrefixURI = sparql.getDefaultGenerationURI(ScientificObjectModel.class);
         } else {
             globalCopy = true;
+            experiment = new ExperimentDAO(sparql).get(contextURI,currentUser);
+            if(experiment == null){
+                throw new NotFoundURIException("Unknown experiment",contextURI);
+            }
         }
 
         URI soType = descriptionDto.getType();
@@ -527,7 +531,7 @@ public class ScientificObjectAPI {
 
         sparql.startTransaction();
         try {
-            URI soURI = dao.create(contextURI, generationPrefixURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
@@ -1036,15 +1040,13 @@ public class ScientificObjectAPI {
     private CSVValidationModel getCSVValidationModel(URI contextURI, InputStream file, UserModel currentUser) throws Exception {
         HashMap<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
 
-        URI uriGenerationPrefix = contextURI;
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-            uriGenerationPrefix = sparql.getDefaultGenerationURI(ScientificObjectModel.class);
         } else if (!sparql.uriExists(ExperimentModel.class, contextURI)) {
             throw new NotFoundURIException("Experiment URI not found:", contextURI);
         }
 
-        ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(uriGenerationPrefix);
+//        ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(uriGenerationPrefix);
 
         Map<String, List<CSVCell>> parentNamesToReplace = new HashMap<>();
         customValidators.put(Oeso.isPartOf.toString(), (cell, csvErrors) -> {
@@ -1151,7 +1153,7 @@ public class ScientificObjectAPI {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         int firstRow = 3;
-        CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, uriGenerator);
+        CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, new DefaultURIGenerator<>());
 
         if (!validationResult.hasErrors()) {
             URI partOfURI = new URI(Oeso.isPartOf.toString());

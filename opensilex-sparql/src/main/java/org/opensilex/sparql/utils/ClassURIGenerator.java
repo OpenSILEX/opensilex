@@ -14,9 +14,9 @@ import java.io.UnsupportedEncodingException;
 public interface ClassURIGenerator<T> extends URIGenerator<T> {
 
     @Override
-    public default String getInstanceURI(T instance) throws UnsupportedEncodingException  {
+    default String getInstanceURI(T instance) throws UnsupportedEncodingException  {
         return URIGenerator.normalize(getUriSegments(instance));
     }
 
-    public String[] getUriSegments(T instance);
+    String[] getUriSegments(T instance);
 }

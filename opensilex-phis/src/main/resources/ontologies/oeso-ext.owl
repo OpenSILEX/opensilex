@@ -9,7 +9,7 @@
      xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:time="http://www.w3.org/2006/time#">
-    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso-ext">
         <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2021

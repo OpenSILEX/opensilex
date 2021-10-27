@@ -84,7 +84,7 @@ public class FacilityAPI {
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
-                ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+                ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
                     if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
@@ -240,7 +240,7 @@ public class FacilityAPI {
 
         if (dto.getRelations() != null) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
-            ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+            ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
             URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
                 if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {

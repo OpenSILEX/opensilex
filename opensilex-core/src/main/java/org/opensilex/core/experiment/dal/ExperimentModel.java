@@ -113,7 +113,7 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasInfrastructure"
+            property = "usesOrganization"
     )
     List<InfrastructureModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructure";

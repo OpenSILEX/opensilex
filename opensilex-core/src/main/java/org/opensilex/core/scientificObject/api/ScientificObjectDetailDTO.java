@@ -187,7 +187,7 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
         }
         if (facilityURI != null) {
             for (RDFObjectRelationDTO relation : this.getRelations()) {
-                if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.hasFacility.getURI())) {
+                if (SPARQLDeserializers.compareURIs(relation.getProperty(), Oeso.isHosted.getURI())) {
                     hasFacility = true;
                     relation.setValue(facilityURI.toString());
                     break;
@@ -196,7 +196,7 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
 
             if (!hasFacility) {
                 SPARQLModelRelation relation = new SPARQLModelRelation();
-                relation.setProperty(Oeso.hasFacility);
+                relation.setProperty(Oeso.isHosted);
                 relation.setValue(facilityURI.toString());
                 this.getRelations().add(RDFObjectRelationDTO.getDTOFromModel(relation));
             }

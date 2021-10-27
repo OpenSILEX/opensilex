@@ -20,7 +20,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
  */
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "Infrastructure",
+        resource = "Organization",
         graph = "set/infrastructures",
         prefix = "infra"
 )
@@ -43,7 +43,7 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasFacility",
+            property = "isHosted",
             ignoreUpdateIfNull = true
     )
     private List<InfrastructureFacilityModel> facilities;

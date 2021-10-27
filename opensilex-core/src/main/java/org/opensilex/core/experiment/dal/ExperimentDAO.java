@@ -438,7 +438,7 @@ public class ExperimentDAO {
 
         Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
 
-        List<URI> facilitiesURIs = sparql.searchPrimitives(xpGraph, xpUri, Oeso.hasFacility, URI.class);
+        List<URI> facilitiesURIs = sparql.searchPrimitives(xpGraph, xpUri, Oeso.isHosted, URI.class);
 
         if (facilitiesURIs.size() > 0) {
             return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {

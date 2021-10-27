@@ -305,7 +305,7 @@ public class InfrastructureDAO {
                 user.getLanguage(),
                 (select -> {
                     if (finalOrganizations != null) {
-                        select.addWhere(makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), Oeso.hasFacility, makeVar(InfrastructureFacilityModel.URI_FIELD));
+                        select.addWhere(makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), Oeso.isHosted, makeVar(InfrastructureFacilityModel.URI_FIELD));
                         SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, finalOrganizations);
                     }
 

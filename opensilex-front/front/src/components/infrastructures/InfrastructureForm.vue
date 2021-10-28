@@ -21,7 +21,7 @@
     <!-- Type -->
     <opensilex-TypeForm
       :type.sync="form.rdf_type"
-      :baseType="$opensilex.Oeso.INFRASTRUCTURE_TYPE_URI"
+      :baseType="$opensilex.Oeso.ORGANIZATION_TYPE_URI"
       :required="true"
       placeholder="InfrastructureForm.form-type-placeholder"
     ></opensilex-TypeForm>

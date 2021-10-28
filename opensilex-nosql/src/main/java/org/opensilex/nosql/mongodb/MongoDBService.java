@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
 
+    public final static String DEFAULT_SERVICE = "mongodb";
+
     private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
     private final String URI_FIELD = "uri";
 

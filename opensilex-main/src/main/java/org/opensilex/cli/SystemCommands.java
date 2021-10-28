@@ -45,9 +45,18 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
     public void runUpdate(
             @Parameters(description = "Update class to execute") String updateClassName
     ) throws Exception {
+
         Class<?> updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
         OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
+        updateInstance.setOpensilex(getOpenSilex());
+
+        LOGGER.debug("Running update : {class: {}, description: {}, date: {}",
+                updateClass.getName(),
+                updateInstance.getDescription(),
+                updateInstance.getDate()
+        );
         updateInstance.execute();
+        LOGGER.debug("Update run OK");
     }
 
     /**

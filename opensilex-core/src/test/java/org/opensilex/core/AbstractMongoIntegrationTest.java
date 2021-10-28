@@ -23,14 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.awaitility.Awaitility.await;
 import org.bson.Document;
-import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
 
@@ -127,6 +123,10 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
             e.printStackTrace();
         }
 
+    }
+
+    protected MongoDBService getMongoDBService(){
+        return getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
     }
 
 

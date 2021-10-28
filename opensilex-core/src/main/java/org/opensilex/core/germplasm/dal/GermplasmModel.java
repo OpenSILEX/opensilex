@@ -33,7 +33,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 )
 public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> implements ClassURIGenerator<GermplasmModel> {
 
-    public final static String GRAPH = "germplasm";
+    public static final String GRAPH = "germplasm";
 
     @SPARQLIgnore
     protected String name;

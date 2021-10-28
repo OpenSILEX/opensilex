@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
+
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -71,12 +73,8 @@ import org.opensilex.nosql.mongodb.MongoModel;
     
      @Override
     public String[] getUriSegments(MongoModel instance) {
-        Instant instant = datetime.atZone(ZoneOffset.UTC).toInstant();
-
          return new String[]{
-            Timestamp.from(instant).toString(),
-            userUri.toString(),
-            remoteAdress
+                 UUID.randomUUID().toString()
         };
     }
 

@@ -178,6 +178,9 @@ public class InfrastructureDAO {
      *     <li>The user is the creator of the organization</li>
      * </ul>
      *
+     * Please note that the groups are inherited by the descendant organizations. E.g. if a parent organization has a group,
+     * this group is taken in account for all descendant organizations in the hierarchy.
+     *
      * @param where
      * @param uriVar
      * @param user
@@ -186,34 +189,37 @@ public class InfrastructureDAO {
     protected void addAskInfrastructureAccess(WhereClause<?> where, Object uriVar, UserModel user) throws Exception {
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_userURI");
+        Var parentVar = makeVar("_parent");
 
+        // This first where clause is used to retrieve all users in the associated groups of the organizations, or the
+        // associated groups of the ascendant organizations in the hierarchy.
         WhereBuilder userProfileGroup = new WhereBuilder();
-        userProfileGroup.addWhere(uriVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
+        userProfileGroup.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar);
+        userProfileGroup.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
         userProfileGroup.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar);
         userProfileGroup.addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar);
         where.addOptional(userProfileGroup);
         Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
 
+        // Retrieve the creator of the organizations
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
         where.addOptional(uriVar, DCTerms.creator.asNode(), creatorVar);
         Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
 
+        // Creates a NOT EXISTS clause on the groups. For this clause to be active, the organization and all of its
+        // ascendants MUST have ZERO associated groups (i.e. the organization must have zero associated or inherited group).
         WhereBuilder noGroupWhere = new WhereBuilder();
-        noGroupWhere.addWhere(uriVar, SecurityOntology.hasGroup.asNode(), makeVar("_group"));
+        noGroupWhere.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar);
+        noGroupWhere.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
         Expr noGroup = SPARQLQueryHelper.notExistFilter(noGroupWhere);
 
+        // The filter represents the OR condition
         where.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator, noGroup));
     }
 
     /**
-     * Get all organizations accessible by a giver user. An organization is considered accessible to a user if ONE of
-     *
-     * <ul>
-     *     <li>The user is admin (thus they have access to all the organizations)</li>
-     *     <li>The organization has no security group</li>
-     *     <li>The user belongs to one of the groups of the organizations</li>
-     *     <li>The user is the creator of the organization</li>
-     * </ul>
+     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Object, UserModel)}
+     * for further information on the conditions for an organization to be considered accessible.
      *
      * @param user
      * @return
@@ -232,9 +238,7 @@ public class InfrastructureDAO {
             addAskInfrastructureAccess(select, uriVar, user);
         });
 
-        Set<URI> userInfras = new HashSet<>(infras);
-
-        return userInfras;
+        return new HashSet<>(infras);
     }
 
     public InfrastructureModel create(InfrastructureModel instance) throws Exception {

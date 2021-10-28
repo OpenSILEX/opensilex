@@ -400,7 +400,7 @@
             start-help: Begin of event, only if the event is not instantaneous
             start-example: "2019-09-08T13:00:00+01:00"
             targets: Targets
-            targets-help: Object(s) targeted by the event (Must exist)
+            targets-help: Object(s) concerned by this function are “Device” and “Scientific Objects” 
             target: Target
             target-help: Object targeted by the event (Must exist)
             targets-example: "os-so:plant1"
@@ -428,7 +428,7 @@
             type-example: "oeev:Trouble"
             description: Description
             targets: Concerne
-            targets-help: Objet(s) concerné(s) par l'événement
+            targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
             targets-example: "os-so:plant1"
             start: Début
             start-help: Début de l'événement, uniquement si celui-ci n'est pas instantané

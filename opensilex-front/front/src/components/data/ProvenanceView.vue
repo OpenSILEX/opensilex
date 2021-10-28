@@ -137,19 +137,31 @@ export default class ProvenanceView extends Vue {
 
   deleteProvenance(uri: string) {
     console.debug("deleteProvenance " + uri);
+
     this.service
-      .deleteProvenance(uri)
-      .then(() => {
-        this.provList.refresh();
-        let message =
-          this.$i18n.t("ProvenanceView.title") +
-          " " +
-          uri +
-          " " +
-          this.$i18n.t("component.common.success.delete-success-message");
-        this.$opensilex.showSuccessToast(message);
-      })
-      .catch(this.$opensilex.errorHandler);
+      .getUsedProvenances(null, null, null, null)
+      .then(http => {
+        if (http.response.result.length > 0) {
+          for (let i in http.response.result) {
+            let provURI = http.response.result[i].uri;
+            if (provURI != null && provURI == uri) {
+              this.$opensilex.showErrorToast(this.$i18n.t("ProvenanceView.associated-data-error"));
+            }else{
+              this.service.deleteProvenance(uri)
+              .then(() => {
+                this.provList.refresh();
+                let message =
+                  this.$i18n.t("ProvenanceView.title") +
+                  " " +
+                  uri +
+                  " " +
+                  this.$i18n.t("component.common.success.delete-success-message");
+                this.$opensilex.showSuccessToast(message);
+              })
+              .catch(this.$opensilex.errorHandler);
+              }
+        }}
+      }); 
   }
 
   successMessage(form) {
@@ -180,6 +192,7 @@ en:
     activity_type-placeholder: Select a type of activity
     agent_type-placeholder: Select a type of agent
     success-message: Provenance
+    associated-data-error: Provenance already associated with data
 
 fr:
   ProvenanceView:
@@ -196,5 +209,6 @@ fr:
     activity_type-placeholder: Selectionner un type d'activité
     agent_type-placeholder: Selectionner un type d'agent
     success-message: La provenance
+    associated-data-error: Provenance déjà associée à des données
   
 </i18n>

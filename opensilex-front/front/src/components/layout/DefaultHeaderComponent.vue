@@ -20,7 +20,7 @@
         <div class="top-menu d-flex align-items-center">
 
           <opensilex-HelpButton
-            @click="getGuideFile"
+            @click="$opensilex.getGuideFile()"
             label="component.header.user-guide"
           ></opensilex-HelpButton>
 
@@ -146,20 +146,6 @@ export default class DefaultHeaderComponent extends Vue {
       this.width = document.body.clientWidth;
       this.$store.commit("showMenu");
     }
-  }
-
-  getGuideFile() {
-    let path = this.$opensilex.getResourceURI('documents/GuideOpenSilex_V1-1Oct21.pdf');
-    fetch(path)
-      .then((response) => response.blob())
-      .then(function(blob){
-        var fileURL = URL.createObjectURL(blob);
-        var fileLink = document.createElement('a');
-        fileLink.href = fileURL;
-        fileLink.setAttribute('download', 'GuideOpenSilex_V1-1Oct21.pdf');
-        document.body.appendChild(fileLink);
-        fileLink.click();
-      }) 
   }
 
 }

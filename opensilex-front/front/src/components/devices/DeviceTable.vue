@@ -884,7 +884,7 @@ en:
     infoMessageErrors: errors
     infoMessageEmptyLines: empty lines
     infoMessageDevInserted: device inserted
-    infoVariable: Only SensingDevice, SoftSensors and Actuator can have variable. To add variable use <Add variable column> button
+    infoVariable: Only SensingDevice or Device with property vocabulary:measures can have variable. To add variable use <Add variable column> button
     infoAttributes: To add informations, you can add personnal column
     checkingStatusMessage: ready
     insertionStatusMessage: created
@@ -924,7 +924,7 @@ fr:
     close : Fermer
     addColumn: Ajouter colonne
     addVarColumn: Ajouter colonne variable
-    infoVariable: Seul les types Capteurs, Capteurs logiciel et les Actionneurs peuvent être associé a une ou plusieurs variable. Pour ajouter une variable supplémentaire utilisez le bouton <Ajouter colonne variable>
+    infoVariable: Seul les types Capteurs ou les Dispositifs avec la propriété vocabulary:measures peuvent être associé a une ou plusieurs variable. Pour ajouter une variable supplémentaire utilisez le bouton <Ajouter colonne variable>
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
     infoMessageDevReady: device prêts à être insérer

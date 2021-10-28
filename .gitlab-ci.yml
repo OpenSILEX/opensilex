@@ -191,7 +191,7 @@ trigger:sixtine:build:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:
@@ -202,7 +202,7 @@ trigger:phis:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA"  https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:

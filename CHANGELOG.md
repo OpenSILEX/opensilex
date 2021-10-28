@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+1] - 2021-10-28
+
+### Added
+
+- User documentation : 
+  - Add a user PDF documentation at homepage 
+
+- Refine organiszation groups:
+  - Groups can only be created in the Administration/Groups menu, and they can then be associated with one or more organisations in   the Scientific Organisation/Organisation menu. At the organisation level, it is possible to choose the list of groups associated with the organisation when creating or updating it.
+
+###  Fixed or optimized
+ 
+- Provenance : fix no device selector render when selecting agent which is a type of oeso:SensingDevice. 
+- Ergonomic bugs fixes
+
+
 ## [1.0.0-rc] - 2021-10-08
 
 ### Added

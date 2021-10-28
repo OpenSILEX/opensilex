@@ -22,6 +22,8 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 )
 public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureFacilityModel> {
 
+    private static final String FACILITY = "facility";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
@@ -56,7 +58,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
     @Override
     public String[] getUriSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
         return new String[]{
-                "facilities",
+                FACILITY,
                 instance.getName()
         };
     }

@@ -105,7 +105,9 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         }
 
         sb.append(GENERATION_PREFIX);
-        sb.append(URIGenerator.normalize(instance.getName()));
+        if(instance.getName() != null){
+            sb.append(URIGenerator.normalize(instance.getName()));
+        }
         return sb.toString();
     }
 }

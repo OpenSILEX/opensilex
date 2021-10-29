@@ -84,6 +84,15 @@
           v-if="hasFacilities"
         >
       </opensilex-UriListView>
+
+      <!-- Expe -->
+      <opensilex-UriListView
+          label="InfrastructureDetail.experiments.label"
+          :list="experimentUriList"
+          :inline="false"
+          v-if="hasExperiments"
+        >
+      </opensilex-UriListView>
     </div>
   </b-card>
 </template>
@@ -140,6 +149,10 @@ export default class InfrastructureDetail extends Vue {
     return this.selected.facilities.length > 0;
   }
 
+  get hasExperiments() {
+    return this.selected.experiments.length > 0;
+  }
+
   get groupUriList() {
     return this.selected.groups.map(group => {
       return {
@@ -159,6 +172,18 @@ export default class InfrastructureDetail extends Vue {
         value: facility.name,
         to: {
           path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri)
+        }
+      };
+    });
+  }
+
+  get experimentUriList() {
+    return this.selected.experiments.map(experiment => {
+      return {
+        uri: experiment.uri,
+        value: experiment.name,
+        to: {
+          path: "/experiment/details/" + encodeURIComponent(experiment.uri)
         }
       };
     });
@@ -229,6 +254,8 @@ en:
       edit: "Edit"
     facilities:
       label: "Facilities"
+    experiments:
+      label: "Experiments"
 fr:
   InfrastructureDetail:
     parent-orga: Organisations parentes
@@ -237,4 +264,6 @@ fr:
       edit: "Modifier"
     facilities:
       label: "Installations techniques"
+    experiments:
+      label: "Expérimentations"
 </i18n>

@@ -21,6 +21,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -33,6 +34,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -88,7 +90,7 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
-        addAskInfrastructureAccess(ask, SPARQLDeserializers.nodeURI(infrastructureURI), user);
+        addAskInfrastructureAccess(ask, null, SPARQLDeserializers.nodeURI(infrastructureURI), user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureURI);
@@ -102,7 +104,7 @@ public class InfrastructureDAO {
         }
 
         SelectBuilder askFacilityAccess = sparql.getUriListExistQuery(InfrastructureFacilityModel.class, facilityUris);
-        addAskInfrastructureAccess(askFacilityAccess, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+        addAskInfrastructureAccess(askFacilityAccess, null, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
 
         for (SPARQLResult result : sparql.executeSelectQuery(askFacilityAccess)) {
             boolean value = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
@@ -125,7 +127,7 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureFacilityModel.class, infrastructureFacilityURI);
-        addAskInfrastructureAccess(ask, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+        addAskInfrastructureAccess(ask, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), null, user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureFacilityURI);
@@ -186,39 +188,109 @@ public class InfrastructureDAO {
      * @param user
      * @throws Exception
      */
-    protected void addAskInfrastructureAccess(WhereClause<?> where, Object uriVar, UserModel user) throws Exception {
+    protected void addAskInfrastructureAccess(WhereClause<?> where, Var uriVar, Object orgUri, UserModel user) throws Exception {
         Var userProfileVar = makeVar("_userProfile");
         Var userVar = makeVar("_userURI");
         Var parentVar = makeVar("_parent");
 
+        /*
+        We'll build a quite complicated request. It will look like this :
+
+        {
+            optional {
+                ?_parent (vocabulary:hasPart)* ?uri ;
+                         os-sec:hasGroup ?groups.
+                ?groups os-sec:hasUserProfile ?_userProfile.
+                ?_userProfile os-sec:hasUser ?_userURI
+            }
+            optional {
+                ?uri dc:creator ?uri
+            }
+            filter ((bound(?_userURI) && (?_userURI = <the uri of the user to check>)
+                  || bound(?creator) && (?creator = <the uri of the user to check>))
+        } union {
+            select distinct ?uri {
+                ?rdfType (rdfs:subClassOf)* foaf:Organization
+                graph <the organizations graph> {
+                    ?uri a ?rdfType
+                }
+                optional {
+                    ?_parent (vocabulary:hasPart)* ?uri;
+                             os-sec:hasGroup ?groups
+                }
+            }
+            group by ?uri
+            having (count(?groups) = 0)
+        }
+
+        While this could be written way more efficiently, this is the only way I found to make to work for both rdf4j and
+        GraphDB (which was causing a lot of trouble with the `filter` and `or` statements). Feel free to rewrite it if you
+        manage to find a better way.
+         */
+
+        WhereBuilder userInGroupOrCreator = new WhereBuilder();
+
         // This first where clause is used to retrieve all users in the associated groups of the organizations, or the
         // associated groups of the ascendant organizations in the hierarchy.
         WhereBuilder userProfileGroup = new WhereBuilder();
-        userProfileGroup.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar);
+        userProfileGroup.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar != null ? uriVar : orgUri);
         userProfileGroup.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
         userProfileGroup.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar);
         userProfileGroup.addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar);
-        where.addOptional(userProfileGroup);
-        Expr isInGroup = SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri()));
+        userInGroupOrCreator.addOptional(userProfileGroup);
+        Expr isInGroup = SPARQLQueryHelper.and(
+                SPARQLQueryHelper.bound(userVar),
+                SPARQLQueryHelper.eq(userVar, SPARQLDeserializers.nodeURI(user.getUri())));
 
         // Retrieve the creator of the organizations
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-        where.addOptional(uriVar, DCTerms.creator.asNode(), creatorVar);
-        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, user.getUri());
-
-        // Creates a NOT EXISTS clause on the groups. For this clause to be active, the organization and all of its
-        // ascendants MUST have ZERO associated groups (i.e. the organization must have zero associated or inherited group).
-        WhereBuilder noGroupWhere = new WhereBuilder();
-        noGroupWhere.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar);
-        noGroupWhere.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
-        Expr noGroup = SPARQLQueryHelper.notExistFilter(noGroupWhere);
+        userInGroupOrCreator.addOptional(uriVar != null ? uriVar : orgUri, DCTerms.creator.asNode(), creatorVar);
+        Expr isCreator = SPARQLQueryHelper.and(
+                SPARQLQueryHelper.bound(creatorVar),
+                SPARQLQueryHelper.eq(creatorVar, user.getUri()));
 
         // The filter represents the OR condition
-        where.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator, noGroup));
+        userInGroupOrCreator.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
+
+        // Here we create the nested select clause
+        Var nestedParentVar = makeVar("_parent");
+        Var nestedGroupVar = makeVar("_group");
+        Var nestedTypeFieldVar = makeVar("_rdfType");
+        Var nestedUriVar = uriVar != null
+                ? uriVar
+                : makeVar(InfrastructureModel.URI_FIELD);
+        SelectBuilder noGroupSelect2 = new SelectBuilder();
+        noGroupSelect2.setDistinct(true);
+        noGroupSelect2.addVar(nestedUriVar);
+
+        // The type clause for Organizations
+        noGroupSelect2.addWhere(nestedTypeFieldVar, Ontology.subClassAny, Oeso.Organization);
+        noGroupSelect2.addGraph(sparql.getDefaultGraph(InfrastructureModel.class),
+                nestedUriVar, RDF.type, nestedTypeFieldVar);
+
+        // The where clause to retrieve the groups of the organization
+        WhereBuilder noGroupWhere = new WhereBuilder();
+        noGroupWhere.addWhere(nestedParentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), nestedUriVar);
+        noGroupWhere.addWhere(nestedParentVar, SecurityOntology.hasGroup.asNode(), nestedGroupVar);
+        noGroupSelect2.addOptional(noGroupWhere);
+
+        if (orgUri != null) {
+            noGroupSelect2.addWhereValueVar(nestedUriVar);
+            noGroupSelect2.addWhereValueRow(orgUri);
+        }
+        // At the end of the nested select, we only keep those who don't have any group
+        noGroupSelect2.addGroupBy(nestedUriVar);
+        noGroupSelect2.addHaving("COUNT(" + nestedGroupVar + ") = 0");
+
+
+        // Create the union
+        userInGroupOrCreator.addUnion(noGroupSelect2);
+
+        where.addWhere(userInGroupOrCreator);
     }
 
     /**
-     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Object, UserModel)}
+     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Var, Object, UserModel)}
      * for further information on the conditions for an organization to be considered accessible.
      *
      * @param user
@@ -235,7 +307,7 @@ public class InfrastructureDAO {
         List<URI> infras = sparql.searchURIs(InfrastructureModel.class, lang, (SelectBuilder select) -> {
             Var uriVar = makeVar(InfrastructureModel.URI_FIELD);
 
-            addAskInfrastructureAccess(select, uriVar, user);
+            addAskInfrastructureAccess(select, uriVar, null, user);
         });
 
         return new HashSet<>(infras);

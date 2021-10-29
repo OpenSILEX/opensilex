@@ -623,4 +623,8 @@ public class SPARQLQueryHelper {
     public static Expr notExistFilter(WhereClause<?> whereClause) {
         return exprFactory.notexists(whereClause);
     }
+
+    public static Expr bound(Var var) {
+        return exprFactory.bound(var);
+    }
 }

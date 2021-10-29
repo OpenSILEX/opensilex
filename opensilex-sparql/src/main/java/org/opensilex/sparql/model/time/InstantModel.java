@@ -11,6 +11,9 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -36,6 +39,12 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
     public OffsetDateTime getDateTimeStamp() { return dateTimeStamp; }
 
     public void setDateTimeStamp(OffsetDateTime dateTimeStamp) { this.dateTimeStamp = dateTimeStamp; }
+
+    @Override
+    public URI generateURI(String prefix, InstantModel instance, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+        String instantPrefix = prefix.replace("event","instant");
+        return ClassURIGenerator.super.generateURI(instantPrefix, instance, retryCount);
+    }
 
     @Override
     public String[] getUriSegments(InstantModel instance) {

@@ -218,7 +218,7 @@ public class ExperimentDAO {
 
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, name));
+            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
         }
     }
 
@@ -484,7 +484,7 @@ public class ExperimentDAO {
             ExperimentModel.class,
             null,
             (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.LABEL_FIELD, name));
+                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.NAME_FIELD, name));
             },
             null,
             0,

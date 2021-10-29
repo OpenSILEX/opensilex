@@ -12,7 +12,7 @@ import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
 import java.net.URI;
@@ -34,15 +34,7 @@ import org.opensilex.security.user.dal.UserModel;
         graph = "set/experiments",
         prefix = "expe"
 )
-public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    String name;
-    public static final String LABEL_FIELD = "name";
+public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> implements ClassURIGenerator<ExperimentModel> {
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -148,14 +140,6 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     List<FactorModel> factors;
     public static final String FACTORS_FIELD = "factors";
     public static final String FACTORS_CATEGORIES_FIELD = "factorsCategories";
-   
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public List<ProjectModel> getProjects() {
         return projects;
@@ -267,12 +251,5 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     public void setFactors(List<FactorModel> factors) {
         this.factors = factors;
-    }
-
-    @Override
-    public String[] getUriSegments(ExperimentModel instance) {
-        return new String[]{
-            instance.getName()
-        };
     }
 }

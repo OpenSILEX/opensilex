@@ -6,13 +6,14 @@
 package org.opensilex.core.organisation.dal;
 
 import java.util.List;
+
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLDagModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 /**
  *
@@ -58,6 +59,15 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
     private List<GroupModel> groups;
     public static final String GROUP_FIELD = "groups";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "usesOrganization",
+            inverse = true,
+            ignoreUpdateIfNull = true
+    )
+    private List<ExperimentModel> experiments;
+    public static final String EXPERIMENT_FIELD = "experiments";
+
     public List<GroupModel> getGroups() {
         return groups;
     }
@@ -74,4 +84,11 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
         this.facilities = facilities;
     }
 
+    public List<ExperimentModel> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<ExperimentModel> experiments) {
+        this.experiments = experiments;
+    }
 }

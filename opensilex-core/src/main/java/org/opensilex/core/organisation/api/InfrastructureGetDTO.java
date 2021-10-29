@@ -7,7 +7,7 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +25,7 @@ import javax.naming.Name;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "experiments"})
 public class InfrastructureGetDTO extends InfrastructureDTO {
 
     
@@ -33,6 +33,8 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
 
     
     protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
+
+    protected List<NamedResourceDTO<ExperimentModel>> experiments;
 
     public List<NamedResourceDTO<GroupModel>> getGroups() {
         return groups;
@@ -48,6 +50,14 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
 
     public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
         this.facilities = facilities;
+    }
+
+    public List<NamedResourceDTO<ExperimentModel>> getExperiments() {
+        return experiments;
+    }
+
+    public void setExperiments(List<NamedResourceDTO<ExperimentModel>> experiments) {
+        this.experiments = experiments;
     }
 
     @Override
@@ -80,6 +90,18 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
             facilities = new ArrayList<>();
         }
         setFacilities(facilities);
+
+        List<NamedResourceDTO<ExperimentModel>> experiments;
+        if (model.getExperiments() != null) {
+            experiments = new ArrayList<>(model.getExperiments().size());
+            Object[] xp = model.getExperiments().toArray();
+            model.getExperiments().forEach(experiment -> {
+                experiments.add(NamedResourceDTO.getDTOFromModel(experiment));
+            });
+        } else {
+            experiments = new ArrayList<>();
+        }
+        setExperiments(experiments);
     }
 
     @Override
@@ -92,10 +114,9 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
             getGroups().forEach(group -> {
                 groups.add(group.newModel());
             });
-        } else {
-            groups = new ArrayList<>();
+
+            model.setGroups(groups);
         }
-        model.setGroups(groups);
 
         List<InfrastructureFacilityModel> facilities;
         if (getFacilities() != null) {
@@ -103,10 +124,15 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
             getFacilities().forEach(facility -> {
                 facilities.add(facility.newModel());
             });
-        } else {
-            facilities = new ArrayList<>();
+
+            model.setFacilities(facilities);
         }
-        model.setFacilities(facilities);
+
+        if (getExperiments() != null) {
+            model.setExperiments(getExperiments().stream()
+                    .map(NamedResourceDTO::newModel)
+                    .collect(Collectors.toList()));
+        }
     }
 
     public static InfrastructureGetDTO getDTOFromModel(InfrastructureModel model) {

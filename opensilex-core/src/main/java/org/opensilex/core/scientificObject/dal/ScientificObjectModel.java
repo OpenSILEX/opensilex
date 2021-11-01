@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
@@ -23,7 +24,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
 
     public static final String GRAPH = "scientific-object";
     public static final String PREFIX = "so";
-    public static final String GENERATION_PREFIX = PREFIX+"-";
+    public static final String GENERATION_PREFIX = "so-";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -107,6 +108,8 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         sb.append(GENERATION_PREFIX);
         if(instance.getName() != null){
             sb.append(URIGenerator.normalize(instance.getName()));
+        }else{
+            sb.append(RandomStringUtils.randomAlphabetic(8));
         }
         return sb.toString();
     }

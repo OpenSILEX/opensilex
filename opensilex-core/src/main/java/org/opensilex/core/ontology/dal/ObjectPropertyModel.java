@@ -25,8 +25,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = OWL2.class,
         resource = "ObjectProperty",
-        ignoreValidation = true,
-        graph = ClassModel.GRAPH
+        ignoreValidation = true
 )
 public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> implements PropertyModel {
 

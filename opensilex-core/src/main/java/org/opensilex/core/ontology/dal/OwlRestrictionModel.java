@@ -20,8 +20,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
         ontology = OWL2.class,
         resource = "Restriction",
         ignoreValidation = true,
-        allowBlankNode = true,
-        graph = ClassModel.GRAPH
+        allowBlankNode = true
 )
 public class OwlRestrictionModel extends SPARQLResourceModel {
 

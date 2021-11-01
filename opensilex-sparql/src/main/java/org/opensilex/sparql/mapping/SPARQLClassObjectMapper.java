@@ -102,6 +102,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     generationPrefixURI = new URI(generationPrefixURI+"/"+classGraph);
                     baseGraphURI = new URI(baseGraphURI+DEFAULT_GRAPH_KEYWORD+"/"+ classGraph);
                 }
+            }else{
+                baseGraphURI = null;
             }
 
         } catch (SPARQLInvalidClassDefinitionException ex) {

@@ -6,15 +6,21 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.utils.URIGenerator;
 
 /**
  * @author sammy
@@ -156,5 +162,21 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public String getInstanceURI(SPARQLTreeModel<DeviceModel> instance) throws UnsupportedEncodingException {
+
+        StringBuilder sb = new StringBuilder();
+        if(rdfTypeName != null){
+            sb.append(rdfTypeName.getDefaultValue()).append("-");
+        }
+
+        if(instance.getName() != null){
+            sb.append(URIGenerator.normalize(instance.getName()));
+        }else{
+            sb.append(RandomStringUtils.randomAlphabetic(8));
+        }
+        return sb.toString();
     }
 }

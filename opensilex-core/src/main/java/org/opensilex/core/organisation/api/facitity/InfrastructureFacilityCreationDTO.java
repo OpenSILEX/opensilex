@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations"})
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "address"})
 class InfrastructureFacilityCreationDTO extends InfrastructureFacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;

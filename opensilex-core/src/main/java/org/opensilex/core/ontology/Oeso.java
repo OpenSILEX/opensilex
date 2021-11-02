@@ -165,4 +165,6 @@ public class Oeso {
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
 
+    // ---- ADDRESS ----
+    public static final Resource Address = Ontology.resource(NS, "Address");
 }

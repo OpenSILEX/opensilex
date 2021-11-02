@@ -421,13 +421,27 @@ public class InfrastructureDAO {
 
     public void deleteFacility(URI uri, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(uri, user);
+
+        InfrastructureFacilityModel model = sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
+        // Must delete the associated address if there is one
+        if (model.getAddress() != null) {
+            sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
+        }
+
         sparql.delete(InfrastructureFacilityModel.class, uri);
     }
 
     public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(instance.getUri(), user);
+
         List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), user.getLanguage());
         instance.setInfrastructures(infrastructureModels);
+
+        InfrastructureFacilityModel existingModel = sparql.getByURI(InfrastructureFacilityModel.class, instance.getUri(), user.getLanguage());
+        if (existingModel.getAddress() != null) {
+            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+        }
+
         sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
         sparql.create(instance);
         return instance;

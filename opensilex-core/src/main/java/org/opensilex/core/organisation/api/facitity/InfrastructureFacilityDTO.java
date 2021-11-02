@@ -8,6 +8,10 @@ package org.opensilex.core.organisation.api.facitity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -22,13 +26,15 @@ import java.util.List;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name"})
+@JsonPropertyOrder({"uri", "rdf_type", "name", "address"})
 public class InfrastructureFacilityDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
 
     protected String name;
+
+    protected FacilityAddressDTO address;
 
     public String getName() {
         return name;
@@ -46,10 +52,21 @@ public class InfrastructureFacilityDTO extends RDFObjectDTO {
         this.typeLabel = typeLabel;
     }
 
+    public FacilityAddressDTO getAddress() {
+        return address;
+    }
+
+    public void setAddress(FacilityAddressDTO address) {
+        this.address = address;
+    }
+
     public void toModel(InfrastructureFacilityModel model) {
         model.setUri(getUri());
         model.setType(getType());
         model.setName(getName());
+        if (getAddress() != null) {
+            model.setAddress(getAddress().newModel());
+        }
     }
 
     public void fromModel(InfrastructureFacilityModel model) {
@@ -57,6 +74,11 @@ public class InfrastructureFacilityDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
+        if (model.getAddress() != null) {
+            FacilityAddressDTO address = new FacilityAddressDTO();
+            address.fromModel(model.getAddress());
+            setAddress(address);
+        }
     }
 
     public InfrastructureFacilityModel newModel() {

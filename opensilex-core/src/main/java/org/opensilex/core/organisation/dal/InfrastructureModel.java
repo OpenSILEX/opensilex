@@ -7,6 +7,7 @@ package org.opensilex.core.organisation.dal;
 
 import java.util.List;
 
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -20,7 +21,7 @@ import org.opensilex.sparql.model.SPARQLDagModel;
  * @author vince
  */
 @SPARQLResource(
-        ontology = Oeso.class,
+        ontology = FOAF.class,
         resource = "Organization",
         graph = "set/infrastructures",
         prefix = "infra"

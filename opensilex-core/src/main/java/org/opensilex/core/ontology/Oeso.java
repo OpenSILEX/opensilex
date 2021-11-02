@@ -23,8 +23,6 @@ public class Oeso {
      */
     public static final String NS = DOMAIN + "#";
 
-    public static final String FOAF = "http://xmlns.com/foaf/0.1/";
-
     /**
      * The namespace of the vocabulary as a string
      *
@@ -105,7 +103,6 @@ public class Oeso {
     public static final Property participatesIn = Ontology.property(NS, "participatesIn");
 
     // ---- ORGANIZATIONS AND INSTALLATION
-    public static final Resource Organization = Ontology.resource(FOAF, "Organization");
     public static final Resource Facility = Ontology.resource(NS, "Facility");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
     public static final Property isHosted = Ontology.property(NS, "isHosted");

@@ -20,6 +20,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
@@ -264,7 +265,7 @@ public class InfrastructureDAO {
         noGroupSelect2.addVar(nestedUriVar);
 
         // The type clause for Organizations
-        noGroupSelect2.addWhere(nestedTypeFieldVar, Ontology.subClassAny, Oeso.Organization);
+        noGroupSelect2.addWhere(nestedTypeFieldVar, Ontology.subClassAny, FOAF.Organization);
         noGroupSelect2.addGraph(sparql.getDefaultGraph(InfrastructureModel.class),
                 nestedUriVar, RDF.type, nestedTypeFieldVar);
 

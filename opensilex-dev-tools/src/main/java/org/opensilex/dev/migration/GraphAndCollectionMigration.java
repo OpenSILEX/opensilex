@@ -137,7 +137,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         // build the Map of old -> new collection names (germplasm/device attributes), log and form
         Map<String, String> oldToNewCollectionNames = new HashMap<>();
         oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
-        oldToNewCollectionNames.put("deviceAttributes", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
+        oldToNewCollectionNames.put("devicesAttributes", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
         oldToNewCollectionNames.put("forms", FormDAO.FORM_COLLECTION_NAME);
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
         oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);

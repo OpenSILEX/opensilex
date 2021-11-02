@@ -647,6 +647,16 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasReplication -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasReplication">
+        <rdfs:comment xml:lang="en">In statistics, replication is the repetition of the conditions of an experiment, so that the variability associated with the phenomenon can be estimated.</rdfs:comment>
+        <rdfs:label xml:lang="en">replication</rdfs:label>
+        <rdfs:label xml:lang="fr">réplication</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#hasSerialNumber -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
@@ -1663,6 +1673,12 @@
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasReplication"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -2151,8 +2167,8 @@
         <rdfs:label xml:lang="fr">ouverture (fnumber)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter">
-        <rdfs:label xml:lang="en">attenuator filter</rdfs:label>
         <rdfs:label xml:lang="fr">filtre atténuateur</rdfs:label>
+        <rdfs:label xml:lang="en">attenuator filter</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP1">
         <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>

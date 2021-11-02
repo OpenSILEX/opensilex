@@ -46,7 +46,14 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
             @Parameters(description = "Update class to execute") String updateClassName
     ) throws Exception {
 
-        Class<?> updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
+        Class<?> updateClass;
+        try{
+           updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
+        }catch (ClassNotFoundException e){
+            LOGGER.error("OpenSilexModuleUpdate class not found : {}. {} ",updateClassName,e.getMessage());
+            throw e;
+        }
+
         OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
         updateInstance.setOpensilex(getOpenSilex());
 

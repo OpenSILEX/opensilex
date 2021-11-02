@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.mobile.dal.FormDAO;
@@ -120,7 +121,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
     private void executeSparqlMigration(SPARQLService sparql, SPARQLConfig sparqlConfig) throws IOException, SPARQLException {
 
         String templatedMoveQuery = getTemplatedMoveQuery(sparqlConfig);
-        LOGGER.debug(" Executing SPARQL UPDATE query : {}{}", System.getProperty("line.separator"), templatedMoveQuery);
+        LOGGER.debug("Executing SPARQL UPDATE query : {}{}", System.getProperty("line.separator"), templatedMoveQuery);
 
         sparql.executeUpdateQuery(templatedMoveQuery);
         LOGGER.debug("SPARQL graph migration [OK]");
@@ -135,10 +136,11 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
         // build the Map of old -> new collection names (germplasm/device attributes), log and form
         Map<String, String> oldToNewCollectionNames = new HashMap<>();
-        oldToNewCollectionNames.put(GermplasmDAO.ATTRIBUTES_COLLECTION_NAME + "s", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
-        oldToNewCollectionNames.put(DeviceDAO.ATTRIBUTES_COLLECTION_NAME + "s", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
-        oldToNewCollectionNames.put(FormDAO.FORM_COLLECTION_NAME + "s", FormDAO.FORM_COLLECTION_NAME);
-        oldToNewCollectionNames.put(LogsDAO.LOGS_COLLECTION_NAME + "s", LogsDAO.LOGS_COLLECTION_NAME);
+        oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
+        oldToNewCollectionNames.put("deviceAttributes", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
+        oldToNewCollectionNames.put("forms", FormDAO.FORM_COLLECTION_NAME);
+        oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
+        oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);
 
         /* iterate over mongodb collections in order to ensure to rename only old collection which already exists.
          Unfortunately there isn't a better way to do it efficiently since 3.0 MongoDB Driver

@@ -6,11 +6,13 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
 
@@ -22,6 +24,9 @@ public class DataCSVValidationModel extends CSVValidationModel{
 
     @JsonIgnore()
     private HashMap<DataModel, Integer> data = new HashMap<>();
+    
+    @JsonIgnore()
+    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDateErrors = new HashMap<>();
@@ -100,10 +105,29 @@ public class DataCSVValidationModel extends CSVValidationModel{
         this.data = data;
     }
     
-    
-    
     public void addData(DataModel data, Integer rowNumber){
         this.data.put(data, rowNumber);
+    }
+    
+    public Map<DeviceModel, List<URI>> getVariablesToDevices() {
+        return variablesToDevices;
+    }
+
+    public void setVariablesToDevices(Map<DeviceModel,  List<URI>> variablesToDevices) {
+        this.variablesToDevices = variablesToDevices;
+    }
+    
+    public void addVariableToDevice(DeviceModel device, URI variable) {
+        
+        if (!variablesToDevices.containsKey(device)) {
+            List<URI> list = new ArrayList<>();
+            list.add(variable);
+            variablesToDevices.put(device, list);
+        } else {
+            if (!variablesToDevices.get(device).contains(variable)) {
+                variablesToDevices.get(device).add(variable);
+            }
+        }
     }
 
     public void addDuplicatedDataError(CSVCell cell) {

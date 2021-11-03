@@ -322,7 +322,6 @@ export default class DataImportForm extends Vue {
                 file: this.form.dataFile
               },
               {
-                experiments: this.experiments,
                 provenance: this.form.provenance.uri
               }
             )
@@ -334,7 +333,6 @@ export default class DataImportForm extends Vue {
                 file: this.form.dataFile
               },
               {
-                experiments: this.experiments,
                 provenance: this.form.provenance.uri
               }
             )

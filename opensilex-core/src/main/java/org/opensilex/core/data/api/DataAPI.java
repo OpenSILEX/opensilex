@@ -592,13 +592,9 @@ public class DataAPI {
                     DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
                     if (device != null) {
                         devices.add(device.getUri());
-                        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
-
-                        if (!variables.isEmpty()) {
-                            if (variables.stream().anyMatch(variable -> (SPARQLDeserializers.compareURIs(variable.getValue(), data.getVariable().toString())))) {
-                                return;
-                            }
-
+                       
+                        if(variableIsAssociatedToDevice(device, data.getVariable())){
+                            return ;
                         }
 
                     }
@@ -611,6 +607,18 @@ public class DataAPI {
             }
 
         }
+    }
+    private boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
+        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+        if (!variables.isEmpty()) {
+            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
+                return true;
+            }
+
+        }
+        return false;
+        
     }
     
      private boolean checkOnProvWasAssociatedWithDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
@@ -680,7 +688,7 @@ public class DataAPI {
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  // Why not a Get ? we need the provenance after that .
+                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } else {
                     checkVariablesDeviceAssociation(provDAO, data);
@@ -700,7 +708,6 @@ public class DataAPI {
                 }
             }
             
-            // check on device data entry if variable is associated
 
         }
 
@@ -1182,8 +1189,8 @@ public class DataAPI {
         int targetColIndex = 0;
         int deviceColIndex = 0;
         
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {            
-                        
+        DeviceModel device = null;  
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {  
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
                 ExperimentModel exp = null;
@@ -1284,7 +1291,6 @@ public class DataAPI {
             
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(deviceHeader)){
                 // check device column
-                DeviceModel device = null;
                 String deviceNameOrUri = values[colIndex];
                 deviceColIndex = colIndex;
                 
@@ -1345,6 +1351,69 @@ public class DataAPI {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])){
 
+                       
+                        URI varURI = URI.create(headerByIndex.get(colIndex));
+                       
+                        
+                        //Check variable to device association: if not add it after data create 
+                        if (device != null) {
+                            if (!variableIsAssociatedToDevice(device, varURI)) {
+                                
+                                csvValidation.addVariableToDevice(device, varURI);
+                                // add device in provenance if not exist?
+                            }
+
+                        } else if(hasDevice){
+                            
+                            List<DeviceModel> devices = new ArrayList<>();
+                            List<DeviceModel> linkedDevice = new ArrayList<>();
+                            for (AgentModel agent : provenance.getAgents()) {
+                                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                    device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                    if (device != null) {
+
+                                        if (variableIsAssociatedToDevice(device, varURI)) {
+                                            linkedDevice.add(device) ;
+                                        }
+                                        devices.add(device);
+                                    }
+                                }
+                            }
+                            switch (linkedDevice.size()) {
+                                case 0:
+                                    if (devices.size() > 1) {
+                                        //wich device to choose ?
+                                        CSVCell cell = new CSVCell(rowIndex, colIndex, "-", "DEVICE_ASSOCIATION_ID");  // add specific exception
+                                        csvValidation.addInvalidDeviceError(cell);
+                                        validRow = false;
+                                    } else {
+                                        device = devices.get(0);
+                                        csvValidation.addVariableToDevice(device, varURI);
+                                        ProvEntityModel agent = new ProvEntityModel();
+                                        agent.setUri(device.getUri());
+                                        agent.setType(device.getType());
+                                        agents.add(agent);
+                                    }
+                                    break;
+                                case 1:
+                                    if(devices.size() > 1){
+                                        device = linkedDevice.get(0);
+                                        ProvEntityModel agent = new ProvEntityModel();
+                                        agent.setUri(device.getUri());
+                                        agent.setType(device.getType());
+                                        agents.add(agent);
+                                    }
+                                    break;
+                                default :
+                                    //witch device to choose ?
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, "-", "DEVICE_ASSOCIATION_ID"); // add specific exception
+                                    csvValidation.addInvalidDeviceError(cell);
+                                    validRow = false;
+                                    break;
+                                    
+                            }
+                            
+                        }
                         DataModel dataModel = new DataModel();
                         DataProvenanceModel provenanceModel = new DataProvenanceModel();
                         provenanceModel.setUri(provenance.getUri());
@@ -1363,7 +1432,6 @@ public class DataAPI {
                             dataModel.setTarget(object.getUri());
                         }                        
                         dataModel.setProvenance(provenanceModel);
-                        URI varURI = URI.create(headerByIndex.get(colIndex));
                         dataModel.setVariable(varURI);
                         dataModel.setValue(ExperimentAPI.returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
                         if (colIndex+1<values.length) {
@@ -1372,7 +1440,6 @@ public class DataAPI {
                             }
                         }
                         
-                        csvValidation.addData(dataModel,rowIndex);
                         // check for duplicate data
                         URI objectUri = null;
                         if (object != null) {
@@ -1385,10 +1452,15 @@ public class DataAPI {
                             String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
                             CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
                             csvValidation.addDuplicatedDataError(duplicateCell);
-                        }    
+                        }   
+                        
+                        csvValidation.addData(dataModel,rowIndex);
+                        
                     }
                 }
-            } 
+            }
+            
+            
         }
         
         if (missingTargetOrDevice) {

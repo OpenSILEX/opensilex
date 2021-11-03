@@ -97,7 +97,7 @@ export default class OrganizationFacilityForm extends Vue {
   created() {
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
-    this.baseType = this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI;
+    this.baseType = this.$opensilex.Oeso.FACILITY_TYPE_URI;
   }
 
   // Manage dynamic fields depending on the type

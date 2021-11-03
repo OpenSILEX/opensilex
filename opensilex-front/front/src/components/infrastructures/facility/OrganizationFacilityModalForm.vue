@@ -30,7 +30,7 @@ export default class OrganizationFacilityModalForm extends Vue {
       .then((http) => {
         this.facilityForm
           .getFormRef()
-          .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
+          .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
         let editDto = {
           ...http.response.result,
           organizations: http.response.result.organizations.map(org => org.uri)
@@ -42,7 +42,7 @@ export default class OrganizationFacilityModalForm extends Vue {
   showCreateForm() {
     this.facilityForm
       .getFormRef()
-      .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
+      .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
     this.facilityForm.showCreateForm();
   }
 

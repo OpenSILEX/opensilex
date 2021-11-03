@@ -30,7 +30,7 @@ variables:
   RSYNC_INSTANCES_LOGS_ARCHIVED: "~/opensilex-instances/logs/old"
   ###### OPENSILEX ######
   #APP BUILD CONFIG
-  OPENSILEX_APP_REVISION: "INSTANCE-SNAPSHOT"
+  OPENSILEX_APP_REVISION: "1.0.0.rc1-SNAPSHOT"
   OPENSILEX_BUILD_PATH: "opensilex-release/target"
   #APP DEPLOY CONFIG
   DEV_TOOLS_REPO_CONF_FILES_PATH: "instances-configuration"

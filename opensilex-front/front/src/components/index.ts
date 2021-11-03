@@ -162,6 +162,8 @@ import DateForm from './common/forms/DateForm.vue'
 components["opensilex-DateForm"] = DateForm;
 import GeometryForm from './common/forms/GeometryForm.vue'
 components["opensilex-GeometryForm"] = GeometryForm;
+import AddressForm from './common/forms/AddressForm.vue'
+components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;

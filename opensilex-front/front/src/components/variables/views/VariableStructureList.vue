@@ -13,10 +13,10 @@
                 <span class="item-icon">
                     <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)"/>
                 </span>&nbsp;
-                <strong v-if="node.data.selected">{{ node.title }}</strong>
-                <!-- <strong v-if="node.data.selected" >{{ node.title + ' (' + node.data.variables.length + " variable(s))" }}</strong> -->
-                <span v-if="!node.data.selected">{{ node.title }}</span>
-                <!-- <span v-if="!node.data.selected">{{ node.title + ' (' + node.data.variables.length + " variable(s))" }}</span> -->
+                <!-- <strong v-if="node.data.selected">{{ node.title }}</strong> -->
+                <strong v-if="node.data.selected">{{ node.data.variables ? node.title + ' ' + $tc('VariableStructureList.variable', node.data.variables.length, { count: node.data.variables.length }) : node.title }}</strong>
+                <!-- <span v-if="!node.data.selected">{{ node.title }}</span> -->
+                <span v-if="!node.data.selected">{{ node.data.variables ? node.title + ' ' + $tc('VariableStructureList.variable', node.data.variables.length, { count: node.data.variables.length }) : node.title }}</span>
             </template>
 
             <template v-slot:buttons="{ node }">
@@ -54,7 +54,7 @@ export default class VariableStructureList extends Vue {
     $route: any;
     service: VariablesService;
     $i18n: any;
-
+    
     @PropSync("_type")
     type: string;
 
@@ -303,10 +303,14 @@ export default class VariableStructureList extends Vue {
 
 <i18n>
 en:
+    VariableStructureList:
+        variable: "(0 variables) | (1 variable) | ({count} variables)"
     EntityList:
         filter-placeholder: Search objects by name
 
 fr:
+    VariableStructureList:
+        variable: "(0 variables) | (1 variable) | ({count} variables)"
     EntityList:
         filter-placeholder: Rechercher des élements par nom
 </i18n>

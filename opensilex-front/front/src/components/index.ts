@@ -476,9 +476,6 @@ import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue
 components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
 import GroupVariablesListWithVariables from './groupVariable/GroupVariablesListWithVariables.vue';
 components["opensilex-GroupVariablesListWithVariables"] = GroupVariablesListWithVariables;
-components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
-import GroupVariablesTable from './groupVariable/GroupVariablesTable.vue';
-components["opensilex-GroupVariablesTable"] = GroupVariablesTable;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';

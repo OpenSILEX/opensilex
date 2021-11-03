@@ -65,6 +65,13 @@
       >
       </opensilex-UriListView>
 
+      <!-- Address -->
+      <opensilex-StringView
+          v-if="addressString"
+          :value="addressString"
+          label="OrganizationFacilityDetail.address"
+      ></opensilex-StringView>
+
       <div>
         <div v-for="(v, index) in typeProperties" v-bind:key="index">
           <div v-if="!Array.isArray(v.property)" class="static-field">
@@ -159,6 +166,21 @@ export default class OrganizationFacilityDetail extends Vue {
         },
       };
     });
+  }
+
+  get addressString() {
+    if (!this.selected || !this.selected.address) {
+      return undefined;
+    }
+    let s = [
+        this.selected.address.streetAddress,
+        this.selected.address.postalCode,
+        this.selected.address.locality,
+        this.selected.address.region,
+        this.selected.address.countryName
+    ].filter(s => !!s).join(", ");
+    console.log("Address string", s, this.selected);
+    return s;
   }
 
   editInfrastructureFacility() {
@@ -312,7 +334,9 @@ export default class OrganizationFacilityDetail extends Vue {
 en:
   OrganizationFacilityDetail:
     organizations: Organizations
+    address: "Address"
 fr:
   OrganizationFacilityDetail:
     organizations: Organisations
+    address: "Adresse"
 </i18n>

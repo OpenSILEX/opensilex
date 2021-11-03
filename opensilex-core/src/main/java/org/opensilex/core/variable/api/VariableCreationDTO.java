@@ -14,21 +14,18 @@ import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.CharacteristicModel;
-import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 /**
  * @author vidalmor
  */
 @JsonPropertyOrder({
     "uri", "name", "alternative_name", "description",
-    "entity","characteristic", "trait", "trait_name", "method", "unit",
+    "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
     "species","datatype","time_interval", "sampling_interval",
     "exact_match","close_match","broader","narrower"
 })
@@ -49,6 +46,9 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @JsonProperty("entity")
     private URI entity;
+    
+    @JsonProperty("entity_of_interest")
+    private URI entityOfInterest;
 
     @JsonProperty("characteristic")
     private URI characteristic;
@@ -128,6 +128,16 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @ValidURI
+    @ApiModelProperty(example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
+    public URI getEntityOfInterest() {
+        return entityOfInterest;
+    }
+
+    public void setEntityOfInterest(URI entityOfInterest) {
+        this.entityOfInterest = entityOfInterest;
+    }
+    
+    @ValidURI
     @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height", required = true)
     public URI getCharacteristic() {
@@ -137,7 +147,9 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public void setCharacteristic(URI characteristic) {
         this.characteristic = characteristic;
     }
-
+    
+    @ValidURI
+    @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/Estimation")
     public URI getMethod() {
         return method;
@@ -218,10 +230,15 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         model.setDataType(dataType);
 
         model.setEntity(new EntityModel(entity));
-        model.setCharacteristic(new CharacteristicModel(characteristic));
-        if(method != null){
-            model.setMethod(new MethodModel(method));
+        
+        if(entityOfInterest != null){
+            InterestEntityModel entityOfInterest2 = new InterestEntityModel();
+            entityOfInterest2.setUri(entityOfInterest);
+            model.setEntityOfInterest(entityOfInterest2);            
         }
+        
+        model.setCharacteristic(new CharacteristicModel(characteristic));       
+        model.setMethod(new MethodModel(method));
         model.setUnit(new UnitModel(unit));
 
         if(species != null){

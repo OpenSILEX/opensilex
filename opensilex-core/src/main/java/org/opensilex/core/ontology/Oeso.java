@@ -48,6 +48,7 @@ public class Oeso {
     // ---- VARIABLES ----
     public static final Resource Variable = Ontology.resource(NS, "Variable");
     public static final Resource Entity = Ontology.resource(NS, "Entity");
+    public static final Resource EntityOfInterest = Ontology.resource(NS, "EntityOfInterest");
     public static final Resource Characteristic = Ontology.resource(NS, "Characteristic");
     public static final Resource Method = Ontology.resource(NS, "Method");
     public static final Resource Unit = Ontology.resource(NS, "Unit");
@@ -60,6 +61,7 @@ public class Oeso {
     public static final Property hasMethod = Ontology.property(NS, "hasMethod");
     public static final Property hasUnit = Ontology.property(NS, "hasUnit");
     public static final Property hasDataType = Ontology.property(NS, "hasDataType");
+    public static final Property hasEntityOfInterest = Ontology.property(NS, "hasEntityOfInterest");
 
     // ---- VARIABLES Unit ----
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");

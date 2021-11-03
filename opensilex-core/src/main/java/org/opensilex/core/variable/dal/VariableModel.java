@@ -6,7 +6,6 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.SKOS;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -38,7 +37,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private EntityModel entity;
     public static final String ENTITY_FIELD_NAME = "entity";
-
+    
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasEntityOfInterest"
+    )
+    private InterestEntityModel entityOfInterest;
+    public static final String ENTITY_OF_INTEREST_FIELD_NAME = "entityOfInterest";
+            
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCharacteristic",
@@ -61,7 +67,8 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasMethod"
+            property = "hasMethod",
+            required = true
     )
     private MethodModel method;
     public static final String METHOD_FIELD_NAME = "method";
@@ -110,7 +117,15 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public void setEntity(EntityModel entity) {
         this.entity = entity;
     }
-
+    
+    public InterestEntityModel getEntityOfInterest(){
+        return entityOfInterest;
+    }
+    
+    public void setEntityOfInterest(InterestEntityModel entityOfInterest){
+        this.entityOfInterest = entityOfInterest;
+    }
+    
     public CharacteristicModel getCharacteristic() {
         return characteristic;
     }

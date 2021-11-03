@@ -107,6 +107,9 @@ export default class VariableStructureList extends Vue {
             case VariablesView.ENTITY_TYPE: {
                 return this.service.searchEntities(nameFilter,orderBy);
             }
+            case VariablesView.INTEREST_ENTITY_TYPE: {
+                return this.service.searchInterestEntity(nameFilter,orderBy);
+            }
             case VariablesView.CHARACTERISTIC_TYPE: {
                 return this.service.searchCharacteristics(nameFilter,orderBy);
             }
@@ -208,6 +211,9 @@ export default class VariableStructureList extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return this.service.getEntity(uri);
             }
+            case VariablesView.INTEREST_ENTITY_TYPE : {
+                return this.service.getInterestEntity(uri);
+            }            
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return this.service.getCharacteristic(uri);
             }

@@ -13,6 +13,7 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -155,7 +156,7 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     public void setAccession(GermplasmModel accession) {
         this.accession = accession;
     }
-
+    
     public String getComment() {
         return comment;
     }

@@ -29,7 +29,8 @@
 
                         <b-dropdown-item-button @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
-                        <!-- <b-dropdown-item-button >{{$t("VariableList.export-variables")}}</b-dropdown-item-button> -->
+                        <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
 
                       </b-dropdown>
                     </template>
@@ -42,13 +43,29 @@
                             :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
                         ></opensilex-UriLink>
                     </template>
+                    <template v-slot:row-details="{data}">
+                      <div v-if="variableGroupsList[data.item.uri] && variableGroupsList[data.item.uri].length > 0">
+                        <div>{{ $t("VariableList.variablesGroup") }}:</div>
+                        <ul>
+                          <li v-for="(vg, index) in variableGroupsList[data.item.uri]" :key="index">{{vg.name}}</li>
+                        </ul>
+                      </div>
+                      <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
+                    </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
+                    <template v-slot:cell(_interest_entity_name)="{data}">{{ data.item.entity_of_interest ? data.item.entity_of_interest.name : ""  }}</template>
                     <template v-slot:cell(_characteristic_name)="{data}">{{ data.item.characteristic.name }}</template>
-                    <template v-slot:cell(_method_name)="{data}">{{ data.item.method ? data.item.method.name : ""  }}</template>
+                    <template v-slot:cell(_method_name)="{data}">{{ data.item.method.name }}</template>
                     <template v-slot:cell(_unit_name)="{data}">{{data.item.unit.name }}</template>
 
                     <template v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
+                            <opensilex-DetailButton
+                              @click="loadVariablesGroupFromVariable(data)"
+                              label="component.common.details-label"
+                              :detailVisible="data.detailsShowing"
+                              :small="true"
+                            ></opensilex-DetailButton>
                             <opensilex-EditButton
                                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                                 @click="$emit('onEdit', data.item.uri)"
@@ -142,6 +159,10 @@ export default class VariableList extends Vue {
   @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
   @Ref("tableRef") readonly tableRef!: any;
 
+  get lang() {
+    return this.$store.state.lang;
+  }
+
   initForm() {
     let variableURIs = [];
     for (let select of this.tableRef.getSelected()) {
@@ -191,8 +212,58 @@ export default class VariableList extends Vue {
     );
   }
 
+  classicExportVariables() {
+    let path = "/core/variables/export_classic_by_uris";
+    let today = new Date();
+    let filename = "export_classic_variables_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, "0") + String(today.getDate()).padStart(2, "0");
+    let variablesURIs = [];
+
+    for (let select of this.tableRef.getSelected()) {
+      variablesURIs.push(select.uri);
+    }
+
+    this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: variablesURIs}, this.lang);
+  }
+
+  detailsExportVariables() {
+    let path = "/core/variables/export_details_by_uris";
+    let today = new Date();
+    let filename = "export_detailed_variables_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, "0") + String(today.getDate()).padStart(2, "0");
+    let variablesURIs = [];
+
+    for (let select of this.tableRef.getSelected()) {
+      variablesURIs.push(select.uri);
+    }
+
+    this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: variablesURIs}, this.lang);
+  }
+
   addVariablesToGroups() {
     this.groupVariableSelection.show();
+  }
+
+  private variableGroupsList = {};
+
+  loadVariablesGroupFromVariable(data) {
+    if (!data.detailsShowing) {
+      this.$opensilex.disableLoader();
+      this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"], undefined, undefined)
+        .then((http: any) => {
+          let listVariableGroups = [];
+          for (let variableGroup of http.response.result) {
+            listVariableGroups.push({
+              uri: variableGroup.uri,
+              name: variableGroup.name,
+            });
+          }
+          this.variableGroupsList[data.item.uri] = listVariableGroups;
+          data.toggleDetails();
+          this.$opensilex.enableLoader();
+        })
+        .catch(this.$opensilex.errorHandler);
+    } else {
+      data.toggleDetails();
+    }
   }
 
   editGroupVariable(variableGroup) {
@@ -251,6 +322,11 @@ export default class VariableList extends Vue {
         sortable: true
       },
       {
+        key: "_interest_entity_name",
+        label: "VariableView.entityOfInterest",
+        sortable: true
+      },      
+      {
         key: "_characteristic_name",
         label: "VariableView.characteristic",
         sortable: true
@@ -295,6 +371,9 @@ en:
         add-groupVariable: Add to an existing group of variables
         add-newGroupVariable: Add to a new group of variables
         export-variables: Export variable list
+        export-variables-details: Export detailed variable list
+        variablesGroup: Variable used in one or many groups of variables
+        not-used-in-variablesGroup: Variable not used in any group of variables
 fr:
     VariableList:
         label-filter: Chercher une variable
@@ -304,5 +383,8 @@ fr:
         add-groupVariable: Ajouter à un groupe de variables existant
         add-newGroupVariable: Ajouter à un nouveau groupe de variables
         export-variables: Exporter la liste de variables
+        export-variables-details: Exporter la liste détaillée de variables
+        variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
+        not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
 
 </i18n>

@@ -116,6 +116,9 @@
             if(formattedVariable.entity && formattedVariable.entity.uri){
                 formattedVariable.entity = formattedVariable.entity.uri;
             }
+            if(formattedVariable.entity_of_interest && formattedVariable.entity_of_interest.uri){
+                formattedVariable.entity_of_interest = formattedVariable.entity_of_interest.uri;
+            }
             if(formattedVariable.characteristic && formattedVariable.characteristic.uri){
                 formattedVariable.characteristic = formattedVariable.characteristic.uri;
             }

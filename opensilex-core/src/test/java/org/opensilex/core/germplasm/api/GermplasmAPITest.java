@@ -37,15 +37,15 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
  */
 public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
-    protected String path = "/core/germplasm";
+    public static final String path = "/core/germplasm";
 
-    protected String uriPath = path + "/{uri}";
-    protected String searchPath = path;
-    protected String createPath = path;
-    protected String updatePath = path;
-    protected String deletePath = path + "/{uri}";
+    public static final String uriPath = path + "/{uri}";
+    public static final String searchPath = path;
+    public static final String createPath = path;
+    public static final String updatePath = path;
+    public static final String deletePath = path + "/{uri}";
 
-    protected GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
+    public static GermplasmCreationDTO getCreationSpeciesDTO() throws URISyntaxException {
         GermplasmCreationDTO germplasmDTO = new GermplasmCreationDTO();
         germplasmDTO.setName("testSpecies");
         germplasmDTO.setRdfType(new URI(Oeso.Species.toString()));

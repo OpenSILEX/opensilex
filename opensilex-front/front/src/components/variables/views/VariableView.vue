@@ -73,6 +73,7 @@
                 alternative_name: undefined,
                 name: undefined,
                 entity: undefined,
+                entity_of_interest: undefined,
                 characteristic: undefined,
                 description: undefined,
                 time_interval: undefined,

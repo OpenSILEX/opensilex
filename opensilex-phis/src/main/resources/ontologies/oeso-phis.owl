@@ -15,7 +15,7 @@
             Copyright © - INRA - 2014 - 2021
             Oeso extention ontology for PHIS is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
         <rdfs:label xml:lang="en">OpenSILEX - Phenome</rdfs:label>
-        <owl:versionInfo>Version 3.2 (2021-10-07) created by INRA</owl:versionInfo>
+        <owl:versionInfo>Version 3.2.1 (2021-10-20) created by INRAE</owl:versionInfo>
     </owl:Ontology>
     
 
@@ -1014,6 +1014,14 @@
         <rdfs:comment>For small temperature changes, the increase in resistance of pure metals is proportional to the change in temperature. Often made in Platinum.</rdfs:comment>
         <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
         <rdfs:label xml:lang="fr">electrical resistance thermometer</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#EntityOfInterest -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
 
@@ -2025,6 +2033,12 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
@@ -2125,6 +2139,26 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">germplasm</rdfs:label>
+        <rdfs:label xml:lang="fr">germplasm</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#growthchamberEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#growthchamberEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
@@ -2140,6 +2174,26 @@
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
         <rdfs:label xml:lang="en">International</rdfs:label>
         <rdfs:label xml:lang="fr">International</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plantEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plantEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">plant</rdfs:label>
+        <rdfs:label xml:lang="fr">plante</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plotEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plotEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">plot</rdfs:label>
     </owl:NamedIndividual>
     
 

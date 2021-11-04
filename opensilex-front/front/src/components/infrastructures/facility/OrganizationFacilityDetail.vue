@@ -67,8 +67,8 @@
 
       <!-- Address -->
       <opensilex-StringView
-          v-if="addressString"
-          :value="addressString"
+          v-if="selectedFacilityOrDefault.address"
+          :value="selectedFacilityOrDefault.address.readableAddress"
           label="OrganizationFacilityDetail.address"
       ></opensilex-StringView>
 
@@ -166,21 +166,6 @@ export default class OrganizationFacilityDetail extends Vue {
         },
       };
     });
-  }
-
-  get addressString() {
-    if (!this.selected || !this.selected.address) {
-      return undefined;
-    }
-    let s = [
-        this.selected.address.streetAddress,
-        this.selected.address.postalCode,
-        this.selected.address.locality,
-        this.selected.address.region,
-        this.selected.address.countryName
-    ].filter(s => !!s).join(", ");
-    console.log("Address string", s, this.selected);
-    return s;
   }
 
   editInfrastructureFacility() {

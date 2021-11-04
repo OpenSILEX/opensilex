@@ -21,6 +21,7 @@ import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -54,9 +55,11 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class ExperimentDAO {
 
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
 
-    public ExperimentDAO(SPARQLService sparql) {
+    public ExperimentDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
+        this.nosql = nosql;
     }
 
     public ExperimentModel create(ExperimentModel instance) throws Exception {
@@ -441,7 +444,7 @@ public class ExperimentDAO {
         List<InfrastructureModel> infrastructures = xp.getInfrastructures();
 
         if (xp.getInfrastructures().size() == 0) {
-            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql);
+            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql, nosql);
             List<InfrastructureFacilityModel> infrastructuresFacilities = infraDAO.getAllFacilities(user);
             return infrastructuresFacilities;
         } else {

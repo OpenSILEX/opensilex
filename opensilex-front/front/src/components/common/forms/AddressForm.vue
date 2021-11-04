@@ -70,34 +70,34 @@ en:
   AddressForm:
     streetAddress:
       label: "Address"
-      placeholder: "55 Faubourg Saint-Honoré St."
+      placeholder: "Number and street name"
     locality:
       label: "City"
-      placeholder: "Paris"
+      placeholder: "City"
     region:
       label: "Region"
-      placeholder: "Île-de-France"
+      placeholder: "State or region"
     postalCode:
       label: "Postal code"
-      placeholder: "75008"
+      placeholder: "Zip code"
     countryName:
       label: "Country"
-      placeholder: "France"
+      placeholder: "Country name"
 fr:
   AddressForm:
     streetAddress:
       label: "Adresse"
-      placeholder: "55 rue du Faubourg Saint-Honoré"
+      placeholder: "Numéro et nom de rue"
     locality:
       label: "Ville"
-      placeholder: "Paris"
+      placeholder: "Ville"
     region:
       label: "Region"
-      placeholder: "Île-de-France"
+      placeholder: "Région ou état"
     postalCode:
       label: "Code postal"
-      placeholder: "75008"
+      placeholder: "Code postal"
     countryName:
       label: "Pays"
-      placeholder: "France"
+      placeholder: "Nom du pays"
 </i18n>

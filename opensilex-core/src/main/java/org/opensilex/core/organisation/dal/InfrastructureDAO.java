@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -23,6 +24,11 @@ import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.opensilex.core.address.services.AddressService;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.organisation.api.facitity.FacilityAddressDTO;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -47,9 +53,17 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class InfrastructureDAO {
 
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
+    protected final AddressService addressService;
 
-    public InfrastructureDAO(SPARQLService sparql) {
+    protected final GeospatialDAO geospatialDAO;
+
+    public InfrastructureDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
+        this.nosql = nosql;
+
+        this.geospatialDAO = new GeospatialDAO(nosql);
+        this.addressService = new AddressService();
     }
 
     public List<InfrastructureModel> search(String pattern, List<URI> organizationsRestriction, UserModel user) throws Exception {
@@ -347,6 +361,9 @@ public class InfrastructureDAO {
         List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), lang);
         instance.setInfrastructures(infrastructureModels);
         sparql.create(instance);
+
+        createFacilityGeospatialModel(instance, sparql.getDefaultGraphURI(InfrastructureModel.class));
+
         return instance;
     }
 
@@ -423,8 +440,14 @@ public class InfrastructureDAO {
         validateInfrastructureFacilityAccess(uri, user);
 
         InfrastructureFacilityModel model = sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
+        URI graphUri = sparql.getDefaultGraphURI(InfrastructureModel.class);
+
         // Must delete the associated address if there is one
         if (model.getAddress() != null) {
+            if (this.geospatialDAO.getGeometryByURI(uri, graphUri) != null) {
+                this.geospatialDAO.delete(uri, graphUri);
+            }
+
             sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
         }
 
@@ -437,13 +460,46 @@ public class InfrastructureDAO {
         List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), user.getLanguage());
         instance.setInfrastructures(infrastructureModels);
 
+        URI graphUri = sparql.getDefaultGraphURI(InfrastructureModel.class);
+
         InfrastructureFacilityModel existingModel = sparql.getByURI(InfrastructureFacilityModel.class, instance.getUri(), user.getLanguage());
+
         if (existingModel.getAddress() != null) {
+            if (this.geospatialDAO.getGeometryByURI(instance.getUri(), graphUri) != null) {
+                this.geospatialDAO.delete(instance.getUri(), graphUri);
+            }
+
             sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
         }
+
+        createFacilityGeospatialModel(instance, graphUri);
 
         sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
         sparql.create(instance);
         return instance;
+    }
+
+    private void createFacilityGeospatialModel(InfrastructureFacilityModel facility, URI graphUri) {
+        if (facility.getAddress() == null) {
+            return;
+        }
+
+        FacilityAddressDTO addressDto = new FacilityAddressDTO();
+        addressDto.fromModel(facility.getAddress());
+
+        Geometry geom = new AddressService().getPointFromAddress(addressDto);
+
+        if (geom == null) {
+            return;
+        }
+
+        GeospatialModel geospatialModel = new GeospatialModel();
+        geospatialModel.setUri(facility.getUri());
+        geospatialModel.setName(facility.getName());
+        geospatialModel.setRdfType(facility.getType());
+        geospatialModel.setGraph(graphUri);
+        geospatialModel.setGeometry(geom);
+
+        this.geospatialDAO.create(geospatialModel);
     }
 }

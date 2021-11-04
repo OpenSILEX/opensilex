@@ -171,7 +171,7 @@ public class StudiesAPI implements BrapiCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
 
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         if (studyDbId != null) {
             ExperimentModel model = xpDao.get(studyDbId, currentUser);
             if (model != null) {
@@ -199,7 +199,7 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
     ) throws Exception {
 
-        ExperimentDAO dao = new ExperimentDAO(sparql);
+        ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         ExperimentModel model = dao.get(studyDbId, currentUser);
 
         if (model != null) {
@@ -224,7 +224,7 @@ public class StudiesAPI implements BrapiCall {
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws SQLException, URISyntaxException, Exception {
 
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         xpDAO.validateExperimentAccess(studyDbId, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(studyDbId);

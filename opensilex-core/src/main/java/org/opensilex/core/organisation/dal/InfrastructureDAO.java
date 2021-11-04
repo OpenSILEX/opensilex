@@ -24,7 +24,8 @@ import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.core.address.services.AddressService;
+import org.opensilex.core.external.geocoding.GeocodingService;
+import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.api.facitity.FacilityAddressDTO;
@@ -54,7 +55,7 @@ public class InfrastructureDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
-    protected final AddressService addressService;
+    protected final GeocodingService geocodingService;
 
     protected final GeospatialDAO geospatialDAO;
 
@@ -63,7 +64,7 @@ public class InfrastructureDAO {
         this.nosql = nosql;
 
         this.geospatialDAO = new GeospatialDAO(nosql);
-        this.addressService = new AddressService();
+        this.geocodingService = new OpenStreetMapGeocodingService();
     }
 
     public List<InfrastructureModel> search(String pattern, List<URI> organizationsRestriction, UserModel user) throws Exception {
@@ -487,7 +488,7 @@ public class InfrastructureDAO {
         FacilityAddressDTO addressDto = new FacilityAddressDTO();
         addressDto.fromModel(facility.getAddress());
 
-        Geometry geom = new AddressService().getPointFromAddress(addressDto);
+        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
 
         if (geom == null) {
             return;

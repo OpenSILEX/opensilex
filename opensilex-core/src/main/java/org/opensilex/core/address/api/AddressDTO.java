@@ -1,6 +1,10 @@
 package org.opensilex.core.address.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.address.dal.AddressModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AddressDTO<T extends AddressModel> {
     protected String countryName;
@@ -75,5 +79,34 @@ public abstract class AddressDTO<T extends AddressModel> {
         model.setStreetAddress(getStreetAddress());
         model.setRegion(getRegion());
         model.setPostalCode(getPostalCode());
+    }
+
+    @JsonProperty(
+            value = "readableAddress"
+    )
+    public String toReadableAddress() {
+        List<String> segments = new ArrayList<String>();
+        if (this.getStreetAddress() != null && !this.getStreetAddress().isEmpty()) {
+            segments.add(this.getStreetAddress());
+        }
+        if (this.getPostalCode() != null && !this.getPostalCode().isEmpty()) {
+            segments.add(this.getPostalCode());
+        }
+        if (this.getLocality() != null && !this.getLocality().isEmpty()) {
+            segments.add(this.getLocality());
+        }
+        if (this.getRegion() != null && !this.getRegion().isEmpty()) {
+            segments.add(this.getRegion());
+        }
+        if (this.getCountryName() != null && !this.getCountryName().isEmpty()) {
+            segments.add(this.getCountryName());
+        }
+        return segments.stream().reduce("", (total, current) -> {
+            if (!total.isEmpty()) {
+                total += ", ";
+            }
+            total += current;
+            return total;
+        });
     }
 }

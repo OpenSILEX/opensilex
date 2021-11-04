@@ -15,6 +15,7 @@ import java.util.List;
 import org.apache.jena.atlas.io.IO;
 import org.opensilex.core.ontology.Oeso;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -53,12 +54,14 @@ import org.opensilex.sparql.utils.Ontology;
 public class DocumentDAO {
 
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
     protected final FileStorageService fs;
 
     public final static String FS_DOCUMENT_PREFIX = "documents";
 
-    public DocumentDAO(SPARQLService sparql, FileStorageService fs) {
+    public DocumentDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         this.sparql = sparql;
+        this.nosql = nosql;
         this.fs = fs;
     }
 
@@ -251,7 +254,7 @@ public class DocumentDAO {
                 select.addWhere(makeVar(ExperimentModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
             });
 
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
             for (URI xpUri : xpUris) {
                 try {
                     xpDAO.validateExperimentAccess(xpUri, user);
@@ -266,7 +269,7 @@ public class DocumentDAO {
                 select.addWhere(makeVar(ScientificObjectModel.URI_FIELD), OA.hasTarget.asNode(), SPARQLDeserializers.nodeURI(documentURI));
             });
 
-            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql);
+            ExperimentDAO xpsoDAO = new ExperimentDAO(sparql, nosql);
             for (URI soUri : soUris) {
                 try {
                     xpsoDAO.validateExperimentAccess(soUri, user);

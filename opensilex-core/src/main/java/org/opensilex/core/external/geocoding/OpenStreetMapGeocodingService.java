@@ -3,7 +3,6 @@ package org.opensilex.core.external.geocoding;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
-import org.apache.http.client.utils.URIBuilder;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
@@ -11,11 +10,9 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class OpenStreetMapGeocodingService implements GeocodingService {
     private final Client httpClient;

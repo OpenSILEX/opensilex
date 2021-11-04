@@ -241,11 +241,7 @@ export default class VariableDetails extends Vue {
     }
 
     getInterestEntityPageUrl(): string{
-        if(this.variable.entity_of_interest.rdf_type === "vocabulary:Entity"){
-            return this.getEntityPageUrl();
-        }else{
-            return this.$opensilex.getURL("germplasm/details/"+encodeURIComponent(this.variable.entity_of_interest.uri)); 
-        }  
+        return this.getEncodedUrlPage(VariablesView.INTEREST_ENTITY_TYPE,this.variable.entity_of_interest.uri);  
     }
     
     getCharacteristicPageUrl(): string{

@@ -16,6 +16,8 @@ import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import {NamedResourceDTO} from "opensilex-security/model/namedResourceDTO";
+import {ServiceBinder} from "../services/ServiceBinder";
 
 declare var $cookies: VueCookies;
 
@@ -64,6 +66,7 @@ export default class OpenSilexVuePlugin {
         this.$i18n = i18n;
         this.$moment = moment;
         ApiServiceBinder.with(this.container);
+        ServiceBinder.with(this.container);
     }
 
     getUser() {

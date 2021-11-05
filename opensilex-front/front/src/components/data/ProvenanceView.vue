@@ -141,26 +141,27 @@ export default class ProvenanceView extends Vue {
     this.service
       .getUsedProvenances(null, null, null, null)
       .then(http => {
-        if (http.response.result.length > 0) {
-          for (let i in http.response.result) {
-            let provURI = http.response.result[i].uri;
+        let results = http.response.result;
+        if (results.length > 0) {
+          for (let result of results) {
+           let provURI = result.uri;
             if (provURI != null && provURI == uri) {
               this.$opensilex.showErrorToast(this.$i18n.t("ProvenanceView.associated-data-error"));
-            }else{
-              this.service.deleteProvenance(uri)
-              .then(() => {
-                this.provList.refresh();
-                let message =
-                  this.$i18n.t("ProvenanceView.title") +
-                  " " +
-                  uri +
-                  " " +
-                  this.$i18n.t("component.common.success.delete-success-message");
-                this.$opensilex.showSuccessToast(message);
-              })
-              .catch(this.$opensilex.errorHandler);
-              }
-        }}
+            }}
+        } else {
+          this.service.deleteProvenance(uri)
+          .then(() => {
+            this.provList.refresh();
+            let message =
+              this.$i18n.t("ProvenanceView.title") +
+              " " +
+              uri +
+              " " +
+              this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
+          })
+          .catch(this.$opensilex.errorHandler);
+          }
       }); 
   }
 

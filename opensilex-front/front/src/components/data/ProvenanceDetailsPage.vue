@@ -311,20 +311,33 @@ export default class ProvenanceDetailsPage extends Vue {
 
   deleteProvenance() {
     this.service
-      .deleteProvenance(this.provenance.uri)
-      .then(() => {
-        let message =
-          this.$i18n.t("ProvenanceView.title") +
-          " " +
-          this.provenance.uri +
-          " " +
-          this.$i18n.t("component.common.success.delete-success-message");
-        this.$opensilex.showSuccessToast(message);
-        this.$router.push({
-            path: "/provenances"
-          });
-      })
-      .catch(this.$opensilex.errorHandler);
+      .getUsedProvenances(null, null, null, null)
+      .then(http => {
+        let results = http.response.result;
+        if (results.length > 0) {
+          for (let result of results) {
+           let provURI = result.uri;
+            if (provURI != null && provURI == this.uri) {
+              this.$opensilex.showErrorToast(this.$i18n.t("ProvenanceView.associated-data-error"));
+            }}
+        } else {
+            this.service
+            .deleteProvenance(this.provenance.uri)
+            .then(() => {
+              let message =
+                this.$i18n.t("ProvenanceView.title") +
+                " " +
+                this.provenance.uri +
+                " " +
+                this.$i18n.t("component.common.success.delete-success-message");
+              this.$opensilex.showSuccessToast(message);
+              this.$router.push({
+                  path: "/provenances"
+                });
+            })
+            .catch(this.$opensilex.errorHandler);
+        }
+      }); 
   }
 
   tableFields = [

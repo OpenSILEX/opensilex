@@ -924,7 +924,7 @@ fr:
     close : Fermer
     addColumn: Ajouter colonne
     addVarColumn: Ajouter colonne variable
-    infoVariable: Seul les types Capteurs ou les Dispositifs avec la propriété vocabulary:measures peuvent être associé a une ou plusieurs variable. Pour ajouter une variable supplémentaire utilisez le bouton <Ajouter colonne variable>
+    infoVariable: Seuls les types Capteurs ou les Dispositifs avec la propriété vocabulary:measures peuvent être associés à une ou plusieurs variables. Pour ajouter une variable supplémentaire utilisez le bouton <Ajouter colonne variable>
     infoAttributes: Pour ajouter des informations supplémentaires, vous pouvez ajouter des colonnes
     help: Aide
     infoMessageDevReady: device prêts à être insérer

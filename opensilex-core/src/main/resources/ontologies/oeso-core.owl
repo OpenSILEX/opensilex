@@ -513,6 +513,12 @@ OESO</rdfs:label>
     
 
 
+    <!-- http://www.w3.org/ns/org#siteOf -->
+
+    <owl:ObjectProperty rdf:about="http://www.w3.org/ns/org#siteOf"/>
+    
+
+
     <!-- http://www.w3.org/ns/prov#generated -->
 
     <owl:ObjectProperty rdf:about="http://www.w3.org/ns/prov#generated">

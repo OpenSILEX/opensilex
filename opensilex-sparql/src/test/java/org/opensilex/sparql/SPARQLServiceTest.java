@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -22,6 +21,7 @@ import org.opensilex.sparql.model.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -41,6 +41,7 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.URIGeneratorTest;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
@@ -465,5 +466,26 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertEquals(1, results.size());
     }
+
+    @Test
+    public void testUriGenerationPerformance() throws UnsupportedEncodingException, URISyntaxException, SPARQLException {
+
+        int n=100000;
+        SPARQLNamedResourceModel<?>[] models = new SPARQLNamedResourceModel[n];
+        String allNormalizedCharacters = String.join("",URIGeneratorTest.NORMALIZED_CHARACTERS);
+
+        for (int i = 0; i < n; i++) {
+            SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();
+            model.setName("SPARQLNamedResourceModel"+allNormalizedCharacters+i);
+            models[i] = model;
+        }
+        String prefix = sparql.getDefaultGenerationURI(SPARQLNamedResourceModel.class).toString();
+
+        for(SPARQLNamedResourceModel model : models){
+            model.setUri(model.generateURI(prefix,model,0));
+        }
+
+    }
+
 
 }

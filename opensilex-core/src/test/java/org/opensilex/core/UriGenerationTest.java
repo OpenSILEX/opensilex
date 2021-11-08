@@ -61,7 +61,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
 
     /**
-     * Pattern use to check if some str has an {@link java.util.UUID} form.
+     * Pattern used to check if some str has an {@link java.util.UUID} form.
      * @see <a href="https://www.code4copy.com/java/validate-uuid-string-java/">Validate UUID in JAVA</a>
      */
     private final static Pattern UUID_REGEX_PATTERN = Pattern.compile("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$");

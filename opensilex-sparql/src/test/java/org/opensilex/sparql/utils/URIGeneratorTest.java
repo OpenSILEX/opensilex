@@ -23,64 +23,43 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class URIGeneratorTest extends AbstractUnitTest  {
 
+    public final static String[] NORMALIZED_CHARACTERS = {
+            "$",
+            "&",
+            "~",
+            "\"",
+            "'",
+            "{",
+            "}",
+            "(",
+            ")",
+            "[",
+            "]",
+            "|",
+            "`",
+            "\\",
+            "^",
+            "@",
+            "=",
+            "+",
+            "%",
+            "*",
+            "!",
+            ":",
+            "/",
+            ";",
+            ".",
+            ",",
+            "?",
+    };
+
     @Test
     public void testNormalization() throws UnsupportedEncodingException {
 
-        String result = URIGenerator.normalize("$");
-        assertEquals("$ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("&");
-        assertEquals("& Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("~");
-        assertEquals("~ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("\"");
-        assertEquals("\" Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("'");
-        assertEquals("' Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("{");
-        assertEquals("{ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("}");
-        assertEquals("} Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("(");
-        assertEquals("( Char should be removed from URI", "", result);
-        result = URIGenerator.normalize(")");
-        assertEquals(") Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("[");
-        assertEquals("[ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("]");
-        assertEquals("] Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("|");
-        assertEquals("| Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("`");
-        assertEquals("` Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("\\");
-        assertEquals("\\ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("^");
-        assertEquals("^ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("@");
-        assertEquals("@ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("=");
-        assertEquals("= Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("+");
-        assertEquals("+ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("%");
-        assertEquals("% Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("*");
-        assertEquals("* Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("!");
-        assertEquals("! Char should be removed from URI", "", result);
-        result = URIGenerator.normalize(":");
-        assertEquals(": Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("/");
-        assertEquals("/ Char should be removed from URI", "", result);
-        result = URIGenerator.normalize(";");
-        assertEquals("; Char should be removed from URI", "", result);
-        result = URIGenerator.normalize(".");
-        assertEquals(". Char should be removed from URI", "", result);
-        result = URIGenerator.normalize(",");
-        assertEquals(", Char should be removed from URI", "", result);
-        result = URIGenerator.normalize("?");
-        assertEquals("? Char should be removed from URI", "", result);
-
+        for(String character : NORMALIZED_CHARACTERS){
+            String result = URIGenerator.normalize(character);
+            assertEquals(character+" Char should be removed from URI", "", result);
+        }
     }
 
     @Test

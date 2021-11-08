@@ -5,16 +5,22 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,34 +33,54 @@ import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.OWL2;
 
 import static org.junit.Assert.*;
+
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
- *
  * @author vincent
  */
 public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     protected static SPARQLService sparql;
-
     protected static SPARQLModule sparqlModule;
+    protected static URI ontologyDataUri;
+
+    protected static byte[] ontologyDataBytes;
 
     public static void initialize() throws Exception {
         sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
         sparql.loadOntology(sparqlModule.getBaseURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        ontologyDataUri = sparql.getDefaultGraphURI(B.class);
 
+        // load ontology data in memory as byte[], use it in order to load quickly (than reading file) these data during each before() method call.
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        ontologyDataBytes = IOUtils.toByteArray(ontologyData);
+        assert (ontologyDataBytes != null && ontologyDataBytes.length > 0);
     }
 
-   // @Test
+    @Before
+    public void before() throws SPARQLException, IOException {
+        // load ontology data file
+        ByteArrayInputStream ontologyDataStream = new ByteArrayInputStream(ontologyDataBytes);
+        sparql.loadOntology(ontologyDataUri, ontologyDataStream, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        ontologyDataStream.close();
+    }
+
+    @After
+    public void after() throws Exception {
+        sparql.clearGraph(ontologyDataUri);
+    }
+
+    @Test
     public void testAskQuery() throws SPARQLException {
         testClass(TEST_ONTOLOGY.A);
         testClass(TEST_ONTOLOGY.B);
@@ -68,21 +94,13 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue("Class " + clazz.getLocalName() + " must exists in test ontology", classExists);
     }
 
-   // @Test
+    @Test
     public void testGetByURI() throws Exception {
         URI aURI = new URI("http://test.opensilex.org/a/001");
         A a = sparql.getByURI(A.class, aURI, null);
+        assertNotNull("http://test.opensilex.org/a/001 should exists", a);
 
         assertEquals("Instance URI must be the same", aURI, a.getUri());
-
-        B b = a.getB();
-
-        assertNotNull("Instance object relation should exists", b);
-        assertTrue("b Must be an instance of B", b instanceof B);
-
-        URI bURI = new URI("http://test.opensilex.org/b/001");
-
-        assertEquals("B Instance URI must be the same", bURI, b.getUri());
         assertEquals("A.getString Method should return the configured string", "azerty", a.getString());
         assertEquals("A.isBool Method should return the configured boolean", Boolean.TRUE, a.isBool());
         assertEquals("A.getByteVar Method should return the configured byte", Byte.valueOf((byte) 10), a.getByteVar());
@@ -101,6 +119,13 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         OffsetDateTime dateTime = a.getDatetime();
         assertEquals("A.getDatetime Method should return the configured date time", expectedDateTime, dateTime);
 
+        B b = a.getB();
+        assertNotNull("Instance object relation should exists", b);
+        assertTrue("b Must be an instance of B", b instanceof B);
+
+        URI bURI = new URI("http://test.opensilex.org/b/001");
+
+        assertEquals("B Instance URI must be the same", bURI, b.getUri());
         assertEquals("B.isBool Method should return the configured boolean", Boolean.FALSE, b.getBool());
         assertEquals("B.getByteVar Method should return the configured byte", Byte.valueOf((byte) -4), b.getByteVar());
         assertEquals("B.getCharVar Method should return the configured char", Character.valueOf('X'), b.getCharVar());
@@ -114,7 +139,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     }
 
-   // @Test
+    @Test
     public void testInsertQuery() throws Exception {
         A a = new A();
         URI aURI = new URI("http://test.opensilex.org/a/002");
@@ -151,21 +176,21 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertEquals("B.getStringList size should match inserted triple count", stringList.size(), selectedB.getStringList().size());
     }
 
-   // @Test
-    public void testCreateAll() throws Exception{
+    @Test
+    public void testCreateAll() throws Exception {
 
         int n = 5;
 
         List<A> aList = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             A a = new A();
-            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll" + i));
             a.setBool(true);
             a.setCharVar('V');
             aList.add(a);
         }
 
-        sparql.create(null, aList,null,false);
+        sparql.create(null, aList, null, false);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);
@@ -174,21 +199,21 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         }
     }
 
-   // @Test
-    public void testCreateAllWithQueryReuse() throws Exception{
+    @Test
+    public void testCreateAllWithQueryReuse() throws Exception {
 
         int n = 5;
 
         List<A> aList = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             A a = new A();
-            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll" + i));
             a.setBool(true);
             a.setCharVar('V');
             aList.add(a);
         }
 
-        sparql.create(null, aList,n,false);
+        sparql.create(null, aList, n, false);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);
@@ -197,7 +222,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         }
     }
 
-   // @Test
+    @Test
     public void testDeleteQuery() throws Exception {
         A a = new A();
         URI aURI = new URI("http://test.opensilex.org/a/003");
@@ -214,7 +239,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertNull("Object must be null after deletion", sparql.getByURI(A.class, aURI, null));
     }
 
-   // @Test
+    @Test
     public void testUpdateQuery() throws Exception {
         A a = new A();
         URI aURI = new URI("http://test.opensilex.org/a/004");
@@ -244,14 +269,14 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertNull("A.getInteger Method should have been deleted", updatedA.getInteger());
     }
 
-   // @Test
+    @Test
     public void testUriExistsWithClass() throws Exception {
         URI bURI = new URI("http://test.opensilex.org/b/001");
 
         assertTrue("URI must exists and be of type B", sparql.uriExists(B.class, bURI));
     }
 
-   // @Test
+    @Test
     public void testUriListExistsAll() throws Exception {
 
         List<A> aList = new ArrayList<>();
@@ -267,30 +292,30 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a2.setCharVar('V');
         aList.add(a2);
 
-        sparql.create(A.class,Arrays.asList(a,a2));
+        sparql.create(A.class, Arrays.asList(a, a2));
 
         List<URI> uris = aList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+        Set<URI> existingUris = sparql.getExistingUris(A.class, uris, true);
 
-        assertEquals(existingUris.size(),uris.size());
+        assertEquals(existingUris.size(), uris.size());
         for (URI uri : uris) {
             URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
             assertTrue(existingUris.contains(expandedURI));
         }
     }
 
-   // @Test
+    @Test
     public void testUriListExistsNone() throws Exception {
 
         List<URI> uris = new ArrayList<>();
         uris.add(new URI("test:unknownUri1"));
         uris.add(new URI("test:unknownUri2"));
 
-        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+        Set<URI> existingUris = sparql.getExistingUris(A.class, uris, true);
         assertTrue(existingUris.isEmpty());
 
-        Set<URI> unknownUris = sparql.getExistingUris(A.class,uris,false);
-        assertEquals(unknownUris.size(),uris.size());
+        Set<URI> unknownUris = sparql.getExistingUris(A.class, uris, false);
+        assertEquals(unknownUris.size(), uris.size());
         for (URI uri : uris) {
             URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
             assertTrue(unknownUris.contains(expandedURI));
@@ -299,7 +324,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
 
-   // @Test
+    @Test
     public void testRenameGraph() throws Exception {
         B b = new B();
         b.setUri(new URI("http://test.opensilex.org/a/testUriExistsWithClass"));
@@ -321,11 +346,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(bList.isEmpty());
 
         // the graph have changed so B should be found in the new graph
-        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class,null,null);
+        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null, null);
         assertFalse(bList.isEmpty());
     }
 
-    //   // @Test
+    //   @Test
     public void testUriListExists() throws Exception {
 
         B b = new B();
@@ -359,7 +384,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertFalse(sparql.uriListExists(B.class, Arrays.asList(b.getUri(), badUri)));
     }
 
-   // @Test
+    @Test
     public void testLabel() throws Exception {
         C c = new C();
         SPARQLLabel label = new SPARQLLabel("testCreateFR", "fr");
@@ -406,7 +431,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         // TODO test update
     }
 
-   // @Test
+    @Test
     public void testDistinctListSearch() throws Exception {
 
         // this test try to insert an object b with a list and a property p,

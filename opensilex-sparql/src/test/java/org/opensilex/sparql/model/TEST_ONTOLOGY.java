@@ -26,11 +26,11 @@ public class TEST_ONTOLOGY {
 
     public static final Path DATA_FILE_PATH = Paths.get("ontologies", "test_data.ttl");
     public static final Lang DATA_FILE_FORMAT = RDFLanguages.TURTLE;
+    public static final String GRAPH_SUFFIX = "test_data";
+
 
     public static final Path SHACL_FAIL_FILE_PATH = Paths.get("ontologies", "test_shacl_fail.ttl");
     public static final Lang SHACL_FAIL_FILE_FORMAT = RDFLanguages.TURTLE;
-
-    public static final String DATA_NAMESPACE = NAMESPACE + "data/";
 
     public static final Resource A = Ontology.resource(NAMESPACE, "A");
     public static final Resource B = Ontology.resource(NAMESPACE, "B");

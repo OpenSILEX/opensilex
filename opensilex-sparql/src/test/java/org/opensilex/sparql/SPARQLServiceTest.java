@@ -6,6 +6,7 @@
 package org.opensilex.sparql;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -14,6 +15,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.*;
@@ -122,7 +124,6 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         B b = a.getB();
         assertNotNull("Instance object relation should exists", b);
-        assertTrue("b Must be an instance of B", b instanceof B);
 
         URI bURI = new URI("http://test.opensilex.org/b/001");
 
@@ -403,7 +404,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(others.containsKey("en"));
         assertEquals("testCreateEN", others.get("en"));
 
-        assertTrue(labelActual.getAllTranslations().size() == 2);
+        assertEquals(2, labelActual.getAllTranslations().size());
 
         cActual = sparql.getByURI(C.class, c.getUri(), "en");
         labelActual = cActual.getLabel();
@@ -416,16 +417,16 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         List<C> list = sparql.search(C.class, "fr");
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
 
         list = sparql.search(C.class, "ru");
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
         assertEquals("ru", list.get(0).getLabel().getDefaultLang());
 
         list = sparql.search(C.class, null);
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
         assertEquals(OpenSilex.DEFAULT_LANGUAGE, list.get(0).getLabel().getDefaultLang());
 
         // TODO test delete
@@ -468,21 +469,25 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     @Test
+    @Ignore("test used to micro-bench URI generation and normalization performance")
     public void testUriGenerationPerformance() throws UnsupportedEncodingException, URISyntaxException, SPARQLException {
 
-        int n=100000;
+        int n=1000000;
         SPARQLNamedResourceModel<?>[] models = new SPARQLNamedResourceModel[n];
-        String allNormalizedCharacters = String.join("",URIGeneratorTest.NORMALIZED_CHARACTERS);
+
+        String specialCharPart = RandomStringUtils.random(8,String.join("",URIGeneratorTest.NORMALIZED_CHARACTERS));
 
         for (int i = 0; i < n; i++) {
             SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();
-            model.setName("SPARQLNamedResourceModel"+allNormalizedCharacters+i);
+            model.setName("SPARQLNamedResourceModel"+specialCharPart+i);
             models[i] = model;
         }
         String prefix = sparql.getDefaultGenerationURI(SPARQLNamedResourceModel.class).toString();
 
         for(SPARQLNamedResourceModel model : models){
-            model.setUri(model.generateURI(prefix,model,0));
+            URI uri = model.generateURI(prefix,model,0);
+            assertNotNull(uri);
+            model.setUri(uri);
         }
 
     }

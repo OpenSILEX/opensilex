@@ -5,66 +5,96 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import javax.ws.rs.core.UriBuilder;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author vidalmor
+ * @author rcolin
  */
 public interface URIGenerator<T> {
 
-    String NORMALIZING_JOIN_CHARACTER = ".";
+    /**
+     * Default universal URI separator
+     */
+    String URI_SEPARATOR = "/";
 
-    default URI generateURI(String prefix, T instance, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+    /**
+     * @param prefix     the URI schema {@link URI#getScheme()}
+     * @param instance   the instance used to generate {@link URI#getPath()} the URI path
+     * @param retryCount the retry count, added a suffix of the generated URI if > 0
+     * @return the generated URI
+     * @throws URISyntaxException if some error is encountered during URI parsing
+     */
+    default URI generateURI(String prefix, T instance, int retryCount) throws URISyntaxException {
+        String path = getInstancePath(instance);
 
-        UriBuilder builder = UriBuilder.fromUri(prefix).path(getInstanceURI(instance));
-
-        if (retryCount > 0) {
-            return builder.path(""+retryCount).build();
-        } else {
-            return builder.build();
+        if (retryCount == 0) {
+            return new URI(prefix + URI_SEPARATOR + path);
         }
+        return new URI(prefix + URI_SEPARATOR + path + retryCount);
     }
-    
-    default String getInstanceURI(T instance) throws UnsupportedEncodingException {
+
+
+    /**
+     * @param instance the instance used to generate {@link URI#getPath()} the URI path
+     * @return the path used to generate instance URI  {@link URI#getPath()}
+     */
+    default String getInstancePath(T instance) {
         return instance.toString();
     }
 
-    static String normalize(Object txt)  {
+    /**
+     * Universal REGEX Logical OR operator
+     */
+    String REGEX_OR_SEPARATOR = "|";
 
-        String value = txt.toString()
+    /**
+     * Compiled pattern for efficient search/replace.
+     * This pattern use a logical OR on multiple regex
+     */
+    Pattern pattern = Pattern.compile(String.join(
+            REGEX_OR_SEPARATOR,
+            Arrays.asList(
+                    "[$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!.]", // match a list of special character
+                    "[^\\p{ASCII}]" // match non-ASCII character
+            ))
+    );
+
+    /**
+     * @param txt the text to replace and normalize
+     * @return a normalized String with special-characters and non-ASCII character removed.
+     */
+    default String normalize(String txt) {
+        Matcher matcher = pattern.matcher(txt);
+        String value = matcher.replaceAll("")
                 .toLowerCase()
-                .trim()
-                .replaceAll(" +", " ")
-                .replace(" ", "-")
-                .replaceAll("\\$|&|\\+|\\||,|/|:|;|=|\\?|@|<|>|#|%|\\{|\\}|\\(|\\)|\\^|~|\\[|\\]|\\\\|\"|'|`|\\*|\\!|\\.", "")
-                .replaceAll("%", "");
+                .trim();
 
-        value = Normalizer
-                .normalize(value, Normalizer.Form.NFD)
-                .replaceAll(" ", "")
-                .replaceAll("[^\\p{ASCII}]", "");
-
-        try{
-            return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
-        }catch (UnsupportedEncodingException e){
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
+        return Normalizer.normalize(value, Normalizer.Form.NFD);
     }
 
-    static String normalize(String[] parts) {
+    /**
+     * The default separator to use when joining multiple normalized string for URI path building
+     */
+    String NORMALIZING_JOIN_CHARACTER = ".";
 
-        // build joined String in O(1) space complexity (no intermediate list/array creation)
+    /**
+     * @param parts Array of part
+     * @return the concatenation of all normalized String from parts.
+     * Each part is separated by {@link URIGenerator#NORMALIZING_JOIN_CHARACTER}
+     * @see URIGenerator#normalize(String)
+     */
+    default String normalize(String[] parts) {
+
+        // build joined String without intermediate list/array creation
         return Arrays.stream(parts)
-                .map(URIGenerator::normalize)
+                .map(this::normalize)
                 .collect(Collectors.joining(NORMALIZING_JOIN_CHARACTER));
     }
 

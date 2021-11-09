@@ -165,7 +165,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     }
 
     @Override
-    public String getInstanceURI(SPARQLTreeModel<DeviceModel> instance) throws UnsupportedEncodingException {
+    public String getInstancePath(SPARQLTreeModel<DeviceModel> instance) {
 
         StringBuilder sb = new StringBuilder();
         if(rdfTypeName != null){
@@ -173,7 +173,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
         }
 
         if(instance.getName() != null){
-            sb.append(URIGenerator.normalize(instance.getName()));
+            sb.append(normalize(instance.getName()));
         }else{
             sb.append(RandomStringUtils.randomAlphabetic(8));
         }

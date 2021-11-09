@@ -99,7 +99,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     }
 
     @Override
-    public String getInstanceURI(SPARQLTreeModel<ScientificObjectModel> instance) throws UnsupportedEncodingException {
+    public String getInstancePath(SPARQLTreeModel<ScientificObjectModel> instance) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if(experiment != null){
             sb.append(experiment.getName()).append("/");
@@ -107,7 +107,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
 
         sb.append(GENERATION_PREFIX);
         if(instance.getName() != null){
-            sb.append(URIGenerator.normalize(instance.getName()));
+            sb.append(normalize(instance.getName()));
         }else{
             sb.append(RandomStringUtils.randomAlphabetic(8));
         }

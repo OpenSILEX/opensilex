@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql.utils;
 
-import java.io.UnsupportedEncodingException;
-
 /**
  *
  * @author vidalmor
@@ -14,9 +12,14 @@ import java.io.UnsupportedEncodingException;
 public interface ClassURIGenerator<T> extends URIGenerator<T> {
 
     @Override
-    default String getInstanceURI(T instance) throws UnsupportedEncodingException  {
-        return URIGenerator.normalize(getUriSegments(instance));
+    default String getInstancePath(T instance) {
+        return normalize(getUriSegments(instance));
     }
 
+    /**
+     *
+     * @param instance
+     * @return
+     */
     String[] getUriSegments(T instance);
 }

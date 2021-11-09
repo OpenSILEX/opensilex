@@ -56,8 +56,9 @@ public class URIGeneratorTest extends AbstractUnitTest  {
     @Test
     public void testNormalization() throws UnsupportedEncodingException {
 
+        URIGenerator<?> uriGenerator = new DefaultURIGenerator<>();
         for(String character : NORMALIZED_CHARACTERS){
-            String result = URIGenerator.normalize(character);
+            String result = uriGenerator.normalize(character);
             assertEquals(character+" Char should be removed from URI", "", result);
         }
     }

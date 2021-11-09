@@ -61,14 +61,14 @@ public interface URIGenerator<T> {
     Pattern pattern = Pattern.compile(String.join(
             REGEX_OR_SEPARATOR,
             Arrays.asList(
-                    "[$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!.]", // match a list of special character
+                    "[$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!. ]", // match a list of special character and space character
                     "[^\\p{ASCII}]" // match non-ASCII character
             ))
     );
 
     /**
      * @param txt the text to replace and normalize
-     * @return a normalized String with special-characters and non-ASCII character removed.
+     * @return a normalized, lower-case and trimmed String with special-characters and non-ASCII character removed.
      */
     default String normalize(String txt) {
         Matcher matcher = pattern.matcher(txt);

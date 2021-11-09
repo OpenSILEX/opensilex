@@ -41,7 +41,7 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setDateTimeStamp(OffsetDateTime dateTimeStamp) { this.dateTimeStamp = dateTimeStamp; }
 
     @Override
-    public URI generateURI(String prefix, InstantModel instance, int retryCount) throws UnsupportedEncodingException, URISyntaxException {
+    public URI generateURI(String prefix, InstantModel instance, int retryCount) throws URISyntaxException {
         String instantPrefix = prefix.replace("event","instant");
         return ClassURIGenerator.super.generateURI(instantPrefix, instance, retryCount);
     }

@@ -470,12 +470,12 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     @Test
     @Ignore("test used to micro-bench URI generation and normalization performance")
-    public void testUriGenerationPerformance() throws UnsupportedEncodingException, URISyntaxException, SPARQLException {
+    public void testUriGenerationPerformance() throws URISyntaxException, SPARQLException {
 
         int n=1000000;
         SPARQLNamedResourceModel<?>[] models = new SPARQLNamedResourceModel[n];
 
-        String specialCharPart = RandomStringUtils.random(8,String.join("",URIGeneratorTest.NORMALIZED_CHARACTERS));
+        String specialCharPart = RandomStringUtils.random(8,String.join("",URIGeneratorTest.EXPECTED_REMOVED_CHARACTERS));
 
         for (int i = 0; i < n; i++) {
             SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();

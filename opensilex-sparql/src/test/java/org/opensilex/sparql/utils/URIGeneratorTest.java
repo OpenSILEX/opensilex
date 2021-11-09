@@ -12,7 +12,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.unit.test.AbstractUnitTest;
 
 import javax.ws.rs.core.UriBuilder;
@@ -23,7 +22,7 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class URIGeneratorTest extends AbstractUnitTest  {
 
-    public final static String[] NORMALIZED_CHARACTERS = {
+    public final static String[] EXPECTED_REMOVED_CHARACTERS = {
             "$",
             "&",
             "~",
@@ -51,13 +50,17 @@ public class URIGeneratorTest extends AbstractUnitTest  {
             ".",
             ",",
             "?",
+            " ",
+            "  ",
+            "\n",
+            "\r"
     };
 
     @Test
     public void testNormalization() throws UnsupportedEncodingException {
 
         URIGenerator<?> uriGenerator = new DefaultURIGenerator<>();
-        for(String character : NORMALIZED_CHARACTERS){
+        for(String character : EXPECTED_REMOVED_CHARACTERS){
             String result = uriGenerator.normalize(character);
             assertEquals(character+" Char should be removed from URI", "", result);
         }

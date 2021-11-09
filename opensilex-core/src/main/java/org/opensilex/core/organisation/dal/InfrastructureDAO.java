@@ -315,7 +315,7 @@ public class InfrastructureDAO {
      * @return
      * @throws Exception
      */
-    protected Set<URI> getUserInfrastructures(UserModel user) throws Exception {
+    public Set<URI> getUserInfrastructures(UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return null;
         }

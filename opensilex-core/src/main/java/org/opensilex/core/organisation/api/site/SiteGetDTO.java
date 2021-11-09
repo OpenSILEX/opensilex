@@ -1,0 +1,101 @@
+package org.opensilex.core.organisation.api.site;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.SiteAddressModel;
+import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "address", "organizations", "groups"})
+public class SiteGetDTO extends SiteDTO {
+    protected SiteAddressDTO address;
+
+    protected List<NamedResourceDTO<InfrastructureModel>> organizations;
+
+    protected List<NamedResourceDTO<GroupModel>> groups;
+
+    public SiteAddressDTO getAddress() {
+        return address;
+    }
+
+    public void setAddress(SiteAddressDTO address) {
+        this.address = address;
+    }
+
+    public List<NamedResourceDTO<InfrastructureModel>> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(List<NamedResourceDTO<InfrastructureModel>> organizations) {
+        this.organizations = organizations;
+    }
+
+    public List<NamedResourceDTO<GroupModel>> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<NamedResourceDTO<GroupModel>> groups) {
+        this.groups = groups;
+    }
+
+    @Override
+    public void toModel(SiteModel model) {
+        super.toModel(model);
+
+        if (getAddress() != null) {
+            model.setAddress(getAddress().newModel());
+        }
+
+        if (getOrganizations() != null) {
+            List<InfrastructureModel> organizationModels = getOrganizations().stream().map(organizationDto -> {
+                InfrastructureModel organizationModel = new InfrastructureModel();
+                organizationModel.setUri(organizationDto.getUri());
+                return organizationModel;
+            }).collect(Collectors.toList());
+            model.setOrganizations(organizationModels);
+        }
+
+        if (getGroups() != null) {
+            List<GroupModel> groupModels = getGroups().stream().map(groupDto -> {
+                GroupModel groupModel = new GroupModel();
+                groupModel.setUri(groupDto.getUri());
+                return groupModel;
+            }).collect(Collectors.toList());
+            model.setGroups(groupModels);
+        }
+    }
+
+    @Override
+    public void fromModel(SiteModel model) {
+        super.fromModel(model);
+
+        SiteAddressModel addressModel = model.getAddress();
+        if (addressModel != null) {
+            SiteAddressDTO addressDTO = new SiteAddressDTO();
+            addressDTO.fromModel(addressModel);
+            setAddress(addressDTO);
+        }
+
+        List<InfrastructureModel> organizationModels = model.getOrganizations();
+        if (organizationModels != null) {
+            List<NamedResourceDTO<InfrastructureModel>> organizationDtos = organizationModels.stream()
+                    .map(organizationModel -> (NamedResourceDTO<InfrastructureModel>) NamedResourceDTO.getDTOFromModel(organizationModel))
+                    .collect(Collectors.toList());
+            setOrganizations(organizationDtos);
+        }
+
+        List<GroupModel> groupModels = model.getGroups();
+        if (groupModels != null) {
+            List<NamedResourceDTO<GroupModel>> groupDtos = groupModels.stream()
+                    .map(groupModel -> (NamedResourceDTO<GroupModel>) NamedResourceDTO.getDTOFromModel(groupModel))
+                    .collect(Collectors.toList());
+            setGroups(groupDtos);
+        }
+    }
+
+
+}

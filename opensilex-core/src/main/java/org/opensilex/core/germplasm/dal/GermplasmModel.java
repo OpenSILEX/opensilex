@@ -214,7 +214,7 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     }
     
     @Override
-    public String[] getUriSegments(GermplasmModel instance) {
+    public String[] getInstancePathSegments(GermplasmModel instance) {
         String germplasmType = "";
         if (instance.getType().getFragment() != null) {
             germplasmType = instance.getType().getFragment();

@@ -26,7 +26,7 @@ public class MethodModel extends BaseVariableModel<MethodModel> {
     }
 
     @Override
-    public String[] getUriSegments(MethodModel instance) {
+    public String[] getInstancePathSegments(MethodModel instance) {
         return new String[]{
             "method",
             instance.getName()

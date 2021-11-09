@@ -262,4 +262,11 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     public void setFactors(List<FactorModel> factors) {
         this.factors = factors;
     }
+
+    @Override
+    public String[] getInstancePathSegments(ExperimentModel instance) {
+        return new String[]{
+            instance.getName()
+        };
+    }
 }

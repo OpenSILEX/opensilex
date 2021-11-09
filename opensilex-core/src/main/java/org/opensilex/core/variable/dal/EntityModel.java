@@ -28,7 +28,7 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
     }
 
     @Override
-    public String[] getUriSegments(EntityModel instance) {
+    public String[] getInstancePathSegments(EntityModel instance) {
         return new String[]{
                 "entity",
                 instance.getName()

@@ -32,7 +32,7 @@ public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extend
     }
 
     @Override
-    public String[] getUriSegments(T instance) {
+    public String[] getInstancePathSegments(T instance) {
         return new String[]{
             instance.getName()
         };

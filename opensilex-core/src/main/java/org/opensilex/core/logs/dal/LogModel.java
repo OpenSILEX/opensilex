@@ -72,7 +72,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
     }
     
      @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
          return new String[]{
                  UUID.randomUUID().toString()
         };

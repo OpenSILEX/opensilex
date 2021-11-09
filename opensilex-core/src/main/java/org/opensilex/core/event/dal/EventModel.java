@@ -113,7 +113,7 @@ public class EventModel extends SPARQLResourceModel implements ClassURIGenerator
     }
 
     @Override
-    public String[] getUriSegments(EventModel instance) {
+    public String[] getInstancePathSegments(EventModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

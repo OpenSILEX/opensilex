@@ -94,7 +94,7 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
     }
 
     @Override
-    public String[] getUriSegments(@NotNull AreaModel instance) {
+    public String[] getInstancePathSegments(@NotNull AreaModel instance) {
         return new String[]{
                 String.valueOf(instance.getName())
         };

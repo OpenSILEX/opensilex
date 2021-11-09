@@ -193,7 +193,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     }
 
     @Override
-    public String[] getUriSegments(UserModel instance) {
+    public String[] getInstancePathSegments(UserModel instance) {
         return new String[]{
             instance.getFirstName(),
             instance.getLastName()

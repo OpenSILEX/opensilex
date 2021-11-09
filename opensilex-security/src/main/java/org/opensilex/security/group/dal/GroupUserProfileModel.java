@@ -59,7 +59,7 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
         this.profile = profile;
     }
     
-    public String[] getUriSegments(GroupUserProfileModel instance) {
+    public String[] getInstancePathSegments(GroupUserProfileModel instance) {
         return new String[]{
             "" + System.identityHashCode(instance)
         };

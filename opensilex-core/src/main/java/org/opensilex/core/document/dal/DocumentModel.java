@@ -192,7 +192,7 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     }
 
     @Override
-    public String[] getUriSegments(DocumentModel instance) {
+    public String[] getInstancePathSegments(DocumentModel instance) {
         return new String[]{
             instance.getTitle()
         };

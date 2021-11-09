@@ -131,7 +131,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     }
     
     @Override
-    public String[] getUriSegments(FactorModel instance) {
+    public String[] getInstancePathSegments(FactorModel instance) {
         return new String[]{
             getExperiment().getName(),
             instance.getName()

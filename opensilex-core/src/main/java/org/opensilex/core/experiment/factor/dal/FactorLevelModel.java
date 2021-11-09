@@ -59,7 +59,7 @@ public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel>
     }
 
     @Override
-    public String[] getUriSegments(FactorLevelModel instance) {
+    public String[] getInstancePathSegments(FactorLevelModel instance) {
         return new String[]{
             getFactor().getExperiment().getName(),
             getFactor().getName(),

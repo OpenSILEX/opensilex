@@ -39,7 +39,7 @@ public class UnitModel extends BaseVariableModel<UnitModel> {
     }
 
     @Override
-    public String[] getUriSegments(UnitModel instance) {
+    public String[] getInstancePathSegments(UnitModel instance) {
         return new String[]{
             "unit",
             instance.getName()

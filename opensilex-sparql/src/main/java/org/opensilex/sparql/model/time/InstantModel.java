@@ -11,7 +11,6 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.utils.ClassURIGenerator;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -47,7 +46,7 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
     }
 
     @Override
-    public String[] getUriSegments(InstantModel instance) {
+    public String[] getInstancePathSegments(InstantModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

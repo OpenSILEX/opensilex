@@ -26,7 +26,7 @@ public class CharacteristicModel extends BaseVariableModel<CharacteristicModel> 
     }
 
     @Override
-    public String[] getUriSegments(CharacteristicModel instance) {
+    public String[] getInstancePathSegments(CharacteristicModel instance) {
         return new String[]{
             "characteristic",
             instance.getName()

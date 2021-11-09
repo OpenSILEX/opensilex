@@ -56,7 +56,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
     }
 
     @Override
-    public String[] getUriSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
+    public String[] getInstancePathSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
         return new String[]{
                 FACILITY,
                 instance.getName()

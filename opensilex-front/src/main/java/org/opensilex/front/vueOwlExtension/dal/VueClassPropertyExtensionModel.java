@@ -70,7 +70,7 @@ public class VueClassPropertyExtensionModel extends SPARQLResourceModel implemen
     }
 
     @Override
-    public String[] getUriSegments(VueClassPropertyExtensionModel instance) {
+    public String[] getInstancePathSegments(VueClassPropertyExtensionModel instance) {
         return new String[] {
             instance.getFromOwlClass().toString(),
             instance.getToOwlProperty().toString(),

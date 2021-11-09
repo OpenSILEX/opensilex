@@ -1,6 +1,5 @@
 package org.opensilex.core.scientificObject.dal;
 
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.utils.URIGenerator;
 
 @SPARQLResource(
         ontology = Oeso.class,
@@ -99,7 +97,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     }
 
     @Override
-    public String getInstancePath(SPARQLTreeModel<ScientificObjectModel> instance) throws UnsupportedEncodingException {
+    public String getInstanceUriPath(SPARQLTreeModel<ScientificObjectModel> instance) {
         StringBuilder sb = new StringBuilder();
         if(experiment != null){
             sb.append(experiment.getName()).append("/");

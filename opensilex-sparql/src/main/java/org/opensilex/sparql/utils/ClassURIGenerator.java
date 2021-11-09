@@ -12,14 +12,14 @@ package org.opensilex.sparql.utils;
 public interface ClassURIGenerator<T> extends URIGenerator<T> {
 
     @Override
-    default String getInstancePath(T instance) {
-        return normalize(getUriSegments(instance));
+    default String getInstanceUriPath(T instance) {
+        return normalize(getInstancePathSegments(instance));
     }
 
     /**
      *
-     * @param instance
-     * @return
+     * @param instance the instance used
+     * @return the array of string to use for generation instance URI path
      */
-    String[] getUriSegments(T instance);
+    String[] getInstancePathSegments(T instance);
 }

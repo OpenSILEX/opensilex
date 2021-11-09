@@ -6,7 +6,6 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
@@ -14,13 +13,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.utils.URIGenerator;
 
 /**
  * @author sammy
@@ -165,7 +161,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     }
 
     @Override
-    public String getInstancePath(SPARQLTreeModel<DeviceModel> instance) {
+    public String getInstanceUriPath(SPARQLTreeModel<DeviceModel> instance) {
 
         StringBuilder sb = new StringBuilder();
         if(rdfTypeName != null){

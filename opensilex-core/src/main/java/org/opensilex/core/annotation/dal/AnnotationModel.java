@@ -96,7 +96,7 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
     }
 
     @Override
-    public String[] getUriSegments(AnnotationModel instance) {
+    public String[] getInstancePathSegments(AnnotationModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

@@ -198,7 +198,7 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
     }
 
     @Override
-    public String[] getUriSegments(ProjectModel instance) {
+    public String[] getInstancePathSegments(ProjectModel instance) {
         String name =  instance.getShortname();
         if (name == null || name.trim().isEmpty()) {
             name = instance.getName();

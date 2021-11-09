@@ -26,13 +26,13 @@ public interface URIGenerator<T> {
 
     /**
      * @param prefix     the URI schema {@link URI#getScheme()}
-     * @param instance   the instance used to generate {@link URI#getPath()} the URI path
+     * @param instance instance
      * @param retryCount the retry count, added a suffix of the generated URI if > 0
      * @return the generated URI
      * @throws URISyntaxException if some error is encountered during URI parsing
      */
     default URI generateURI(String prefix, T instance, int retryCount) throws URISyntaxException {
-        String path = getInstancePath(instance);
+        String path = getInstanceUriPath(instance);
 
         if (retryCount == 0) {
             return new URI(prefix + URI_SEPARATOR + path);
@@ -42,10 +42,10 @@ public interface URIGenerator<T> {
 
 
     /**
-     * @param instance the instance used to generate {@link URI#getPath()} the URI path
-     * @return the path used to generate instance URI  {@link URI#getPath()}
+     * @param instance instance
+     * @return the path used to generate instance URI {@link URI#getPath()}
      */
-    default String getInstancePath(T instance) {
+    default String getInstanceUriPath(T instance) {
         return instance.toString();
     }
 

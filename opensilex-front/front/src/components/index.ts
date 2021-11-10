@@ -338,11 +338,6 @@ import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
-import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
-components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
-import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
-components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
-
 
 
 // Germplasm

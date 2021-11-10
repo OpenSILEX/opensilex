@@ -2,6 +2,11 @@ package org.opensilex.core.organisation.api.site;
 
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -9,7 +14,9 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -33,6 +40,7 @@ public class SiteDAO {
 
     protected final GeospatialDAO geospatialDAO;
     protected final InfrastructureDAO organizationDAO;
+    protected final OrganizationSPARQLHelper organizationSPARQLHelper;
 
     protected final URI addressGraphURI;
 
@@ -43,6 +51,8 @@ public class SiteDAO {
         this.geocodingService = new OpenStreetMapGeocodingService();
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = new InfrastructureDAO(sparql, nosql);
+        this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
+
         this.addressGraphURI = sparql.getDefaultGraphURI(InfrastructureModel.class);
     }
 
@@ -51,7 +61,7 @@ public class SiteDAO {
             throws Exception {
         Set<URI> userOrganizations = organizationDAO.getUserInfrastructures(user);
 
-        final Set<URI> userSites = getUserSites(user); //@todo quel enfer
+        final Set<URI> userSites = getUserSites(user);
 
         // Filter by organizations
         if (organizations != null && !organizations.isEmpty()) {
@@ -93,7 +103,7 @@ public class SiteDAO {
     }
 
     public SiteModel createSite(SiteModel siteModel, UserModel user) throws Exception {
-        //@todo check l'accès au site
+        //@todo check l'accès aux orgs ?
 
         List<InfrastructureModel> organizations = sparql.getListByURIs(
                 InfrastructureModel.class,
@@ -108,7 +118,7 @@ public class SiteDAO {
     }
 
     public SiteModel updateSite(SiteModel siteModel, UserModel user) throws Exception {
-        //@todo check l'accès au site
+        checkUserAccess(siteModel.getUri(), user);
 
         List<InfrastructureModel> organizations = sparql.getListByURIs(
                 InfrastructureModel.class,
@@ -131,28 +141,13 @@ public class SiteDAO {
     }
 
     public void deleteSite(URI uri, UserModel user) throws Exception {
-        //@todo check l'accès au site
+        checkUserAccess(uri, user);
 
         SiteModel siteModel = sparql.getByURI(SiteModel.class, uri, user.getLanguage());
 
         deleteSiteGeospatialModel(siteModel);
 
         sparql.delete(SiteModel.class, uri);
-    }
-
-    //@todo j'ai pas envie
-
-    /**
-     * Retourne les URI des sites auxquels l'utilisateur a accès.
-     *
-     * @param user
-     * @return
-     */
-    public Set<URI> getUserSites(UserModel user) {
-        if (user.isAdmin()) {
-            return null;
-        }
-        return null;
     }
 
     protected void deleteSiteGeospatialModel(SiteModel siteModel) throws Exception {
@@ -189,5 +184,63 @@ public class SiteDAO {
         geospatialModel.setGeometry(geom);
 
         this.geospatialDAO.create(geospatialModel);
+    }
+
+    /**
+     * Retourne les URI des sites auxquels l'utilisateur a accès.
+     *
+     * @param userModel
+     * @return
+     */
+    public Set<URI> getUserSites(UserModel userModel) throws Exception {
+        if (userModel.isAdmin()) {
+            return null;
+        }
+
+        List<URI> siteUris = sparql.searchURIs(SiteModel.class, userModel.getLanguage(), select -> {
+            Var siteUriVar = makeVar(SiteModel.URI_FIELD);
+
+            addSiteAccessClause(select, siteUriVar, userModel);
+        });
+
+        return new HashSet<>(siteUris);
+    }
+
+    protected void checkUserAccess(URI siteUri, UserModel userModel) throws Exception {
+        if (!sparql.uriExists(SiteModel.class, siteUri)) {
+            throw new NotFoundException("Site URI not found : " + siteUri);
+        }
+
+        if (userModel == null || userModel.isAdmin()) {
+            return;
+        }
+
+        AskBuilder ask = sparql.getUriExistsQuery(SiteModel.class, siteUri);
+        addSiteAccessClause(ask, siteUri, userModel);
+
+        if (!sparql.executeAskQuery(ask)) {
+            throw new ForbiddenURIAccessException(siteUri);
+        }
+    }
+
+    protected void addSiteAccessClause(WhereClause<?> where, Object siteUri, UserModel userModel) throws Exception {
+        Var organizationVar = makeVar("_organization");
+        Var groupVar = makeVar(SiteModel.GROUP_FIELD);
+        Var profileVar = makeVar(GroupModel.USER_PROFILES_FIELD);
+
+        WhereBuilder userInOrgGroup = new WhereBuilder();
+        userInOrgGroup.addWhere(organizationVar, ORG.hasSite, siteUri);
+        userInOrgGroup.addWhere(organizationSPARQLHelper.buildOrganizationGroupUserClause(organizationVar, userModel.getUri()));
+
+        WhereBuilder userInSiteGroup = new WhereBuilder();
+        userInSiteGroup.addWhere(siteUri, SecurityOntology.hasGroup, groupVar);
+        userInSiteGroup.addWhere(groupVar, SecurityOntology.hasUserProfile, profileVar);
+        userInSiteGroup.addWhere(profileVar, SecurityOntology.hasUser, userModel.getUri());
+
+        WhereBuilder userInOrgOrInSiteGroup = new WhereBuilder();
+        userInOrgOrInSiteGroup.addWhere(userInOrgGroup);
+        userInOrgOrInSiteGroup.addUnion(userInSiteGroup);
+
+        where.addWhere(userInOrgOrInSiteGroup);
     }
 }

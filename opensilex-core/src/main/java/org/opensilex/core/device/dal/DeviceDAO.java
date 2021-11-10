@@ -43,6 +43,7 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
@@ -103,13 +104,12 @@ public class DeviceDAO {
         attributeCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
     }
     
-    public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public URI create(DeviceModel devModel, UserModel currentUser) throws Exception {
         createIndexes();
         URI deviceType = devModel.getType();
         URI deviceURI = devModel.getUri();
         String deviceName = devModel.getName();
 
-        initDevice(devModel, relations, currentUser);
 
         if (deviceURI == null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -368,11 +368,31 @@ public class DeviceDAO {
             customHandlerByFields.put(DeviceModel.TYPE_FIELD, handler);
         }
     }
+    
+    public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, UserModel user) throws Exception {
+        
+        
+        List<SPARQLModelRelation> relations = device.getRelations();
+        
+       
+        for (URI variable : variables) {
+            SPARQLModelRelation relation = new SPARQLModelRelation();
+            relation.setProperty(Oeso.measures);
+            relation.setValue(variable.toString());
+            relation.setType(URI.class);
+            relations.add(relation);
+        }
+       device.setRelations(relations);
 
-    public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {
+       device = update(device, user);
+        
+        return device;
+    }
+
+    public DeviceModel update(DeviceModel instance, UserModel user) throws Exception {
         createIndexes();
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
-        initDevice(instance, relations, user);
+       // initDevice(instance, relations, user);
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
             sparql.deleteByURI(graph, instance.getUri());

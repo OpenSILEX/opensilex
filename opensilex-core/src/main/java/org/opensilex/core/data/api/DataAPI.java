@@ -212,7 +212,16 @@ public class DataAPI {
             dataList = validData(dataList);
 
             dataList = (List<DataModel>) dao.createAll(dataList);
-            
+            if(variablesToDevices.size() > 0) {
+               
+                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
+                    
+                    DeviceModel device = deviceDAO.getDeviceByURI((URI) variablesToDevice.getKey(), user);
+                    deviceDAO.associateVariablesToDevice(device,(List<URI>)variablesToDevice.getValue(), user );
+                    
+                }
+            }
             // do the  variable/device associations here ..
             
             List<URI> createdResources = new ArrayList<>();
@@ -647,9 +656,7 @@ public class DataAPI {
                     }
                     break;
                 case 1:
-                    if(devices.size() > 1){
-                        deviceToReturn = linkedDevices.get(0);
-                    }
+                    deviceToReturn = linkedDevices.get(0);
                     break;
                 default :
                     //witch device to choose ?
@@ -1010,6 +1017,17 @@ public class DataAPI {
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
                 dao.createAll(data);
+                
+                if(!validation.getVariablesToDevices().isEmpty()){
+                    DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+                    for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
+
+                        DeviceModel device = deviceDAO.getDeviceByURI((URI) variablesToDevice.getKey(), user);
+                        deviceDAO.associateVariablesToDevice(device,(List<URI>)variablesToDevice.getValue(), user );
+
+                    }
+                    
+                }
                 validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);

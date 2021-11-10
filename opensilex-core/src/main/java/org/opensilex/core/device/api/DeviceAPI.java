@@ -130,7 +130,8 @@ public class DeviceAPI {
             try {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
-                URI uri = deviceDAO.create(devModel, deviceDTO.getRelations(), currentUser);
+                deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
+                URI uri = deviceDAO.create(devModel, currentUser);
                 return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
@@ -275,7 +276,9 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
         DeviceModel DeviceModel = dto.newModel();
-        deviceDAO.update(DeviceModel, dto.getRelations(), currentUser);
+        
+        deviceDAO.initDevice(DeviceModel, dto.getRelations(), currentUser);
+        deviceDAO.update(DeviceModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
     }
 

@@ -102,6 +102,12 @@ public class SiteDAO {
         );
     }
 
+    public SiteModel getSite(URI siteUri, UserModel user) throws Exception {
+        checkUserAccess(siteUri, user);
+
+        return sparql.getByURI(SiteModel.class, siteUri, user.getLanguage());
+    }
+
     public SiteModel createSite(SiteModel siteModel, UserModel user) throws Exception {
         //@todo check l'accès aux orgs ?
 

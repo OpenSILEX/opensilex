@@ -345,28 +345,6 @@ public class ExperimentAPI {
     }
 
     @GET
-    @Path("{uri}/facilities")
-    @ApiOperation("Get facilities involved in an experiment")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
-    })
-    public Response getFacilities(
-            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
-    ) throws Exception {
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
-        List<InfrastructureFacilityModel> facilities = xpDao.getFacilities(xpUri, currentUser);
-
-        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map((item) -> {
-            return InfrastructureFacilityGetDTO.getDTOFromModel(item, false);
-        }).collect(Collectors.toList());
-        return new PaginatedListResponse<>(dtoList).getResponse();
-    }
-
-    @GET
     @Path("{uri}/available_facilities")
     @ApiOperation("Get facilities available for an experiment")
     @ApiProtected

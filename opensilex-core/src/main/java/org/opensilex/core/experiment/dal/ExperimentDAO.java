@@ -433,22 +433,6 @@ public class ExperimentDAO {
         }
     }
 
-    public List<InfrastructureFacilityModel> getFacilities(URI xpUri, UserModel user) throws Exception {
-        validateExperimentAccess(xpUri, user);
-
-        Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
-
-        List<URI> facilitiesURIs = sparql.searchPrimitives(xpGraph, xpUri, Oeso.isHosted, URI.class);
-
-        if (facilitiesURIs.size() > 0) {
-            return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
-                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.URI_FIELD, facilitiesURIs);
-            });
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
     public List<InfrastructureFacilityModel> getAvailableFacilities(URI xpUri, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
 

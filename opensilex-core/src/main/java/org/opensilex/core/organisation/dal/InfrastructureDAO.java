@@ -281,8 +281,10 @@ public class InfrastructureDAO {
         }
         // At the end of the nested select, we only keep those who don't have any group
         noGroupSelect2.addGroupBy(nestedUriVar);
-        noGroupSelect2.addHaving("COUNT(" + nestedGroupVar + ") = 0");
 
+        // append HAVING(COUNT(?_group) = 0) Expr
+        Expr noGroupEqExpr = SPARQLQueryHelper.countEqExpr(nestedGroupVar,false,0);
+        noGroupSelect2.addHaving(noGroupEqExpr);
 
         // Create the union
         userInGroupOrCreator.addUnion(noGroupSelect2);

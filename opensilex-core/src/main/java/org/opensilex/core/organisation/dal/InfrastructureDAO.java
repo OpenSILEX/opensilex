@@ -21,9 +21,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -35,14 +32,12 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -57,11 +52,15 @@ public class InfrastructureDAO {
     protected final MongoDBService nosql;
     protected final GeocodingService geocodingService;
 
+    protected final OrganizationSPARQLHelper organizationSPARQLHelper;
+
     protected final GeospatialDAO geospatialDAO;
 
     public InfrastructureDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
+
+        this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
 
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.geocodingService = new OpenStreetMapGeocodingService();
@@ -106,7 +105,7 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
-        addAskInfrastructureAccess(ask, null, SPARQLDeserializers.nodeURI(infrastructureURI), user);
+        addAskInfrastructureAccess(ask, null, infrastructureURI, user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureURI);
@@ -120,7 +119,9 @@ public class InfrastructureDAO {
         }
 
         SelectBuilder askFacilityAccess = sparql.getUriListExistQuery(InfrastructureFacilityModel.class, facilityUris);
-        addAskInfrastructureAccess(askFacilityAccess, null, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+        Var orgVar = makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD);
+        askFacilityAccess.addWhere(orgVar, Oeso.isHosted, makeVar(InfrastructureFacilityModel.URI_FIELD));
+        addAskInfrastructureAccess(askFacilityAccess, orgVar, null, user);
 
         for (SPARQLResult result : sparql.executeSelectQuery(askFacilityAccess)) {
             boolean value = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
@@ -143,7 +144,9 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureFacilityModel.class, infrastructureFacilityURI);
-        addAskInfrastructureAccess(ask, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), null, user);
+        Var orgVar = makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD);
+        ask.addWhere(orgVar, Oeso.isHosted, SPARQLDeserializers.nodeURI(infrastructureFacilityURI));
+        addAskInfrastructureAccess(ask, orgVar, null, user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureFacilityURI);
@@ -204,10 +207,9 @@ public class InfrastructureDAO {
      * @param user
      * @throws Exception
      */
-    protected void addAskInfrastructureAccess(WhereClause<?> where, Var uriVar, Object orgUri, UserModel user) throws Exception {
-        Var userProfileVar = makeVar("_userProfile");
+    protected void addAskInfrastructureAccess(WhereClause<?> where, Var uriVar, URI orgUri, UserModel user) throws Exception {
         Var userVar = makeVar("_userURI");
-        Var parentVar = makeVar("_parent");
+        Node orgUriNode = SPARQLDeserializers.nodeURI(orgUri);
 
         /*
         We'll build a quite complicated request. It will look like this :
@@ -248,11 +250,7 @@ public class InfrastructureDAO {
 
         // This first where clause is used to retrieve all users in the associated groups of the organizations, or the
         // associated groups of the ascendant organizations in the hierarchy.
-        WhereBuilder userProfileGroup = new WhereBuilder();
-        userProfileGroup.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar != null ? uriVar : orgUri);
-        userProfileGroup.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
-        userProfileGroup.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar);
-        userProfileGroup.addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar);
+        WhereBuilder userProfileGroup = organizationSPARQLHelper.buildOrganizationGroupUserClause(uriVar != null ? uriVar : orgUriNode, userVar);
         userInGroupOrCreator.addOptional(userProfileGroup);
         Expr isInGroup = SPARQLQueryHelper.and(
                 SPARQLQueryHelper.bound(userVar),
@@ -260,7 +258,7 @@ public class InfrastructureDAO {
 
         // Retrieve the creator of the organizations
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-        userInGroupOrCreator.addOptional(uriVar != null ? uriVar : orgUri, DCTerms.creator.asNode(), creatorVar);
+        userInGroupOrCreator.addOptional(organizationSPARQLHelper.buildOrganizationCreatorClause(uriVar != null ? uriVar : orgUriNode, creatorVar));
         Expr isCreator = SPARQLQueryHelper.and(
                 SPARQLQueryHelper.bound(creatorVar),
                 SPARQLQueryHelper.eq(creatorVar, user.getUri()));
@@ -269,46 +267,20 @@ public class InfrastructureDAO {
         userInGroupOrCreator.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
 
         // Here we create the nested select clause
-        Var nestedParentVar = makeVar("_parent");
-        Var nestedGroupVar = makeVar("_group");
-        Var nestedTypeFieldVar = makeVar("_rdfType");
         Var nestedUriVar = uriVar != null
                 ? uriVar
                 : makeVar(InfrastructureModel.URI_FIELD);
-        SelectBuilder noGroupSelect2 = new SelectBuilder();
-        noGroupSelect2.setDistinct(true);
-        noGroupSelect2.addVar(nestedUriVar);
+        SelectBuilder noGroupSelect = organizationSPARQLHelper.buildNoGroupOrganizationSelect(nestedUriVar, orgUri);
 
-        // The type clause for Organizations
-        noGroupSelect2.addWhere(nestedTypeFieldVar, Ontology.subClassAny, FOAF.Organization);
-        noGroupSelect2.addGraph(sparql.getDefaultGraph(InfrastructureModel.class),
-                nestedUriVar, RDF.type, nestedTypeFieldVar);
-
-        // The where clause to retrieve the groups of the organization
-        WhereBuilder noGroupWhere = new WhereBuilder();
-        noGroupWhere.addWhere(nestedParentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), nestedUriVar);
-        noGroupWhere.addWhere(nestedParentVar, SecurityOntology.hasGroup.asNode(), nestedGroupVar);
-        noGroupSelect2.addOptional(noGroupWhere);
-
-        if (orgUri != null) {
-            noGroupSelect2.addWhereValueVar(nestedUriVar);
-            noGroupSelect2.addWhereValueRow(orgUri);
-        }
-        // At the end of the nested select, we only keep those who don't have any group
-        noGroupSelect2.addGroupBy(nestedUriVar);
-
-        // append HAVING(COUNT(?_group) = 0) Expr
-        Expr noGroupEqExpr = SPARQLQueryHelper.countEqExpr(nestedGroupVar,false,0);
-        noGroupSelect2.addHaving(noGroupEqExpr);
 
         // Create the union
-        userInGroupOrCreator.addUnion(noGroupSelect2);
+        userInGroupOrCreator.addUnion(noGroupSelect);
 
         where.addWhere(userInGroupOrCreator);
     }
 
     /**
-     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Var, Object, UserModel)}
+     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Var, URI, UserModel)}
      * for further information on the conditions for an organization to be considered accessible.
      *
      * @param user

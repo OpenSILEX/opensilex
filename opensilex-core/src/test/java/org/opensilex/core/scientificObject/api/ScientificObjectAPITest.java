@@ -117,7 +117,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
-    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
+    public ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
         return getCreationDTO(withGeometry,false);
     }
 

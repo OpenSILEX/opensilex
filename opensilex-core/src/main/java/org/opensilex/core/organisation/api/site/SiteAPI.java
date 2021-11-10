@@ -12,8 +12,8 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -54,7 +54,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetDTO.class, responseContainer = "List")
     })
     public Response searchSites(
             @ApiParam(value = "Regex pattern for filtering sites by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -76,6 +76,27 @@ public class SiteAPI {
                 }).collect(Collectors.toList());
 
         return new PaginatedListResponse<>(siteDtos).getResponse();
+    }
+
+    @GET
+    @Path("{uri}")
+    @ApiOperation("Get a site")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Site retrieved", response = SiteGetDTO.class)
+    })
+    public Response getSite(
+            @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
+    ) throws Exception {
+        SiteDAO siteDAO = new SiteDAO(sparql, nosql);
+
+        SiteGetDTO siteDto = new SiteGetDTO();
+        siteDto.fromModel(siteDAO.getSite(siteUri, currentUser));
+
+        return new SingleObjectResponse<>(siteDto).getResponse();
+
     }
 
     @POST

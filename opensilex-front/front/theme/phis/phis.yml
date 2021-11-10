@@ -22,5 +22,9 @@ stylesheets:
     - hamburgers.css
     
 fonts:
+
+iconClassesRDF:
+    "org:Site": "fa#map-marker-alt"
+    "http://www.w3.org/ns/org#Site": "fa#map-marker-alt"
     
 

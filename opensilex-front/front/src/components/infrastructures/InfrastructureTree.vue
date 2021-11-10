@@ -39,9 +39,10 @@
       <template v-slot:node="{ node }">
         <span class="item-icon">
           <opensilex-Icon
-            :icon="$opensilex.getRDFIcon(node.data.rdf_type)"
-          /> </span
-        >&nbsp;
+              :icon="$opensilex.getRDFIcon(node.data.rdf_type)"
+              v-b-tooltip.hover.top="$t('InfrastructureTree.siteTypeTooltip')"
+          />
+        </span>&nbsp;
         <strong v-if="node.data.selected">{{ node.title }}</strong>
         <span v-if="!node.data.selected">{{ node.title }}</span>
       </template>
@@ -66,11 +67,11 @@
           v-if="
             user.hasCredential(
               credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-            )
-          "
-          @click="createInfrastructure(node.data.uri)"
-          label="InfrastructureTree.add-child"
-          :small="true"
+            ) && !isSite(node.data)
+        "
+            @click="createInfrastructure(node.data.uri)"
+            label="InfrastructureTree.add-child"
+            :small="true"
         ></opensilex-AddChildButton>
         <opensilex-DeleteButton
           v-if="
@@ -107,11 +108,14 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import OpenSilexVuePlugin, {TreeOption} from "../../models/OpenSilexVuePlugin";
+import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class InfrastructureTree extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $route: any;
   service: OrganisationsService;
@@ -143,7 +147,7 @@ export default class InfrastructureTree extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-      "opensilex-core.OrganisationsService"
+        "opensilex-core.OrganisationsService"
     );
 
     let query: any = this.$route.query;
@@ -171,35 +175,72 @@ export default class InfrastructureTree extends Vue {
 
   refresh(uri?) {
     this.service
-      .searchInfrastructures(this.filter)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-        if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
-          if (this.filter == "") {
-            this.infrastructureForm
-              .getFormRef()
-              .setParentInfrastructures(http.response.result);
-          } else {
-            this.infrastructureForm.getFormRef().init();
+        .searchInfrastructures(this.filter)
+        .then((orgHttp: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
+          if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
+            if (this.filter == "") {
+              this.infrastructureForm
+                  .getFormRef()
+                  .setParentInfrastructures(orgHttp.response.result);
+            } else {
+              this.infrastructureForm.getFormRef().init();
+            }
           }
-        }
 
-        let nodes = this.$opensilex.buildTreeFromDag(http.response.result, {});
+          let nodes = this.$opensilex.buildTreeFromDag(orgHttp.response.result, {});
 
-        if (nodes.length > 0) {
-          nodes[0].isSelected = true;
+          this.appendSitesToTree(nodes)
+              .then(() => {
+                if (nodes.length > 0) {
+                  nodes[0].isSelected = true;
 
-          if (!uri) {
-            this.displayNodeDetail(nodes[0].data.uri, true);
-          }
-        }
+                  if (!uri) {
+                    this.displayNodeDetail(nodes[0].data.uri, true);
+                  }
+                }
 
-        if (uri) {
-          this.displayNodeDetail(uri, true);
-        }
+                if (uri) {
+                  this.displayNodeDetail(uri, true);
+                }
 
-        this.nodes = nodes;
-      })
-      .catch(this.$opensilex.errorHandler);
+                this.nodes = nodes;
+              });
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  private appendSitesToTree(tree: Array<TreeOption>) {
+    return this.service.searchSites(this.filter)
+        .then((siteHttp: HttpResponse<OpenSilexResponse<Array<SiteGetDTO>>>) => {
+          this.$opensilex.browseTree(tree, (node: TreeOption) => {
+            for (let site of siteHttp.response.result) {
+              for (let org of site.organizations) {
+                if (org.uri === node.id) {
+                  if (!Array.isArray(node.children)) {
+                    node.children = [];
+                  }
+                  node.children.push({
+                    id: site.uri,
+                    children: [],
+                    isDefaultExpanded: true,
+                    isExpanded: true,
+                    isDisabled: false,
+                    isLeaf: true,
+                    label: site.name,
+                    data: site,
+                    title: site.name,
+                    isSelectable: true
+                  });
+                }
+              }
+            }
+          });
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  public isSite(treeNodeData: NamedResourceDTO) {
+    return treeNodeData.rdf_type === Oeso.SITE_TYPE_URI;
   }
 
   public displayNodesDetail(node: any) {
@@ -290,20 +331,24 @@ en:
     edit: Edit organization
     add-child: Add sub-organization
     delete: Delete organization
-    infrastructure-component: Organizations
+    infrastructure-component: Organizations and sites
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
     multiple-parents-tooltip: "This organization has several parent organizations"
+    siteTypeTooltip: "This is a site that hosts an organization"
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des organisations...
     add: Ajouter une organisation
     update: Modifier l'organisation
     edit: Editer l'organisation
-    add-child:  Ajouter une sous-organisation
+    add-child: Ajouter une sous-organisation
     delete: Supprimer l'organisation
-    infrastructure-component: Organisations
+    infrastructure-component: Organisations et sites
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
     multiple-parents-tooltip: "Cette organisation a plusieurs organizations parentes"
+    siteTypeTooltip: "Ceci est un site qui héberge une organisation"
+
+
 </i18n>

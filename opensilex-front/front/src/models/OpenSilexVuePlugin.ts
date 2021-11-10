@@ -23,7 +23,7 @@ declare var $cookies: VueCookies;
 
 declare var window: any;
 
-interface TreeOption {
+export interface TreeOption {
     id: string,
     label: string,
     isDefaultExpanded: boolean,
@@ -612,6 +612,22 @@ export default class OpenSilexVuePlugin {
         }
 
         return option;
+    }
+
+    public browseTree(tree: Array<TreeOption>, consumer: (TreeOption) => any) {
+        for (let rootNode of tree) {
+            this.browseTreeRecursive(rootNode, consumer);
+        }
+    }
+
+    private browseTreeRecursive(node: TreeOption, consumer: (TreeOption) => any) {
+        if (Array.isArray(node.children)) {
+            for (let child of node.children) {
+                this.browseTreeRecursive(child, consumer);
+            }
+        }
+
+        consumer(node);
     }
 
     public buildTreeFromDag(dagList: Array<ResourceDagDTO>, buildOptions?: any): Array<TreeOption> {

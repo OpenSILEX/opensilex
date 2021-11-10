@@ -153,8 +153,7 @@ public class FactorDAO {
         return sparql.search(
                 FactorCategoryModel.class,
                 lang,
-                selectBuilder -> {
-                    filterOnFactors(selectBuilder);
+                selectBuilder -> { 
                     addFactorCategoryNameRegexFilter(selectBuilder, stringPattern);
                     addFactorCategoryNameLangFilter(selectBuilder, lang);
                 },
@@ -162,15 +161,7 @@ public class FactorDAO {
         );
 
     }
-    private void filterOnFactors(SelectBuilder selectBuilder) throws URISyntaxException {
-            Var uriVar = makeVar(FactorCategoryModel.URI_FIELD);
-            selectBuilder.addWhere(new Triple(
-                    SPARQLDeserializers.nodeURI(new URI(AGROVOC_FACTOR_CONCEPT_URI)),
-                    SKOS.narrower.asNode(),
-                    uriVar)
-            );
-     }
-    
+  
     private void addFactorCategoryNameRegexFilter(SelectBuilder selectBuilder, String stringPattern) {
         Expr regexFilter = SPARQLQueryHelper.regexFilter(FactorCategoryModel.NAME_FIELD, stringPattern);
         if (regexFilter != null) {

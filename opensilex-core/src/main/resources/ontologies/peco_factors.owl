@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/set/factor/category"
+     xml:base="http://www.opensilex.org/vocabulary/set/factor/category"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:ns3="http://purl.obolibrary.org/obo/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:foaf="http://xmlns.com/foaf/0.1/"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/set/factor/category"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/IAO_0000115 -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.obolibrary.org/obo/IAO_0000115"/>
+    
+
+
+    <!-- http://www.geneontology.org/formats/oboInOwl#hasAlternativeId -->
+
+    <owl:AnnotationProperty rdf:about="http://www.geneontology.org/formats/oboInOwl#hasAlternativeId"/>
+    
+
+
+    <!-- http://www.geneontology.org/formats/oboInOwl#hasDbXref -->
+
+    <owl:AnnotationProperty rdf:about="http://www.geneontology.org/formats/oboInOwl#hasDbXref"/>
+    
+
+
+    <!-- http://www.geneontology.org/formats/oboInOwl#hasOBONamespace -->
+
+    <owl:AnnotationProperty rdf:about="http://www.geneontology.org/formats/oboInOwl#hasOBONamespace"/>
+    
+
+
+    <!-- http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym -->
+
+    <owl:AnnotationProperty rdf:about="http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym"/>
+    
+
+
+    <!-- http://www.geneontology.org/formats/oboInOwl#id -->
+
+    <owl:AnnotationProperty rdf:about="http://www.geneontology.org/formats/oboInOwl#id"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007027 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007027">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment>A plant exposure (PECO:0001001) involving growth during conditions of regional seasons.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Impact des saisons</rdfs:label>
+        <rdfs:label xml:lang="en">Seasonal environment exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007041 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007041">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007189"/>
+        <rdfs:comment xml:lang="en">A chemical exposure (PECO:0007189) involving the use of antibiotic for selection purposes.</rdfs:comment>
+        <rdfs:label xml:lang="en">Antibiotic exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Traitement curatif (antibiotique)</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007049 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007049">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment xml:lang="en">An exposure involving growing plants in soil growth media with varying contents.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Charactéristiques du sol</rdfs:label>
+        <rdfs:label xml:lang="en">Soil environment exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007085 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007085">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007189"/>
+        <rdfs:comment xml:lang="en">A plant nutrient exposure (PECO:0007241) involving the use of a fertilizer, a combination of plant nutrients.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Fertilisation engrais de synthèse</rdfs:label>
+        <rdfs:label xml:lang="en">Fertilizer exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007151 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007151">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment xml:lang="en">Electromagnetic radiation is classified according to the frequency of its waves. The electromagnetic spectrum, in order of increasing frequency and decreasing wavelength, consists of radio waves, microwaves, infrared radiation, visible light, ultraviolet radiation, X-rays and gamma rays.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Exposition à un rayonnement</rdfs:label>
+        <rdfs:label xml:lang="en">Radiation exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007161 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007161">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment xml:lang="en">The treatment involving an exposure to wind with varying degree of temperature, which may depend on the study type or the regional environment.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Air temperature exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Température de l&apos;air</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007167 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007167">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007189"/>
+        <rdfs:comment xml:lang="en">An exposure to a chemical that has the role of pesticide</rdfs:comment>
+        <rdfs:label xml:lang="en">Pesticide exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Produits phytosanitaires (pesticides)</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007189 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007189">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment xml:lang="en">An abiotic plant exposure (PECO:0007189) involving the application of chemical(s).</rdfs:comment>
+        <rdfs:label xml:lang="en">Chemical exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Traitement Chimiques</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007197 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007197">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007198"/>
+        <rdfs:comment xml:lang="en">The treatment involving an exposure to varying degree of humidity, which may depend on regional environment.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Exposition à l&apos;humidité</rdfs:label>
+        <rdfs:label xml:lang="en">Humidity exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007198 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007198">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment>A physical plant exposure (PECO:0007316) involving an exposure of varying amounts of water and watering frequencies, which may depend on regional environment.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Gestion de l&apos;eau</rdfs:label>
+        <rdfs:label xml:lang="en">water environment exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007259 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007259">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007049"/>
+        <rdfs:comment xml:lang="en">The treatment involving an exposure to varying amounts of water in soil growth media.</rdfs:comment>
+        <rdfs:label xml:lang="fr">Contenu en eau du sol</rdfs:label>
+        <rdfs:label xml:lang="en">Soil water content exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007357 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007357">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
+        <rdfs:comment xml:lang="en">A plant biotic exposure (PECO:0001001) involving the application of a biotic or biological factor such as a microbe, insect, animal, or plant or a combination thereof.</rdfs:comment>
+        <rdfs:label xml:lang="en">Biotic plant exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Exposition à des éléments biotiques</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007383 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007383">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007198"/>
+        <rdfs:label xml:lang="fr">Irrigation</rdfs:label>
+        <rdfs:label xml:lang="en">watering exposure</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://purl.obolibrary.org/obo/PECO_0007404 -->
+
+    <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007404">
+        <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007198"/>
+        <rdfs:label xml:lang="en">Drought environment exposure</rdfs:label>
+        <rdfs:label xml:lang="fr">Exposition à l&apos;environnement de sécheresse</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#FactorCategory -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#FactorCategory">
+        <rdfs:label xml:lang="fr">Catégorie de facteur</rdfs:label>
+        <rdfs:label xml:lang="en">Factor Category</rdfs:label>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
+

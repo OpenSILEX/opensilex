@@ -85,7 +85,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/set/factor/category",
-                ONTOLOGIES_DIRECTORY+"/peco-factors.rdf",
+                ONTOLOGIES_DIRECTORY+"/peco_factors.owl",
                 Lang.RDFXML,
                 "peco-factors"
         ));

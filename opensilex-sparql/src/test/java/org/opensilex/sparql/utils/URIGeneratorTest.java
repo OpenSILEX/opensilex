@@ -53,7 +53,9 @@ public class URIGeneratorTest extends AbstractUnitTest  {
             " ",
             "  ",
             "\n",
-            "\r"
+            " \n ",
+            "\r",
+            " \r"
     };
 
     @Test

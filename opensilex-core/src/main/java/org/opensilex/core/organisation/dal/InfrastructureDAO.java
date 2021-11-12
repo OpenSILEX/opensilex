@@ -154,16 +154,16 @@ public class InfrastructureDAO {
 
         // We must check if any of the parents of the organization is a child of itself
         // In that case this would create a cycle, thus we forbid it
-        List<URI> childrenUriList = model.getParents()
+        List<URI> parentUriList = model.getParents()
                 .stream().map(InfrastructureModel::getUri)
                 .collect(Collectors.toList());
 
-        if (childrenUriList.isEmpty()) {
+        if (parentUriList.isEmpty()) {
             // No parents to check, so no need to do a query
             return;
         }
 
-        SPARQLQueryHelper.addWhereUriValues(ask, childrenVar.getVarName(), childrenUriList);
+        SPARQLQueryHelper.addWhereUriValues(ask, childrenVar.getVarName(), parentUriList);
 
         if (sparql.executeAskQuery(ask)) {
             throw new SPARQLInvalidModelException("Invalid organization model : parents cannot be children of the organization");

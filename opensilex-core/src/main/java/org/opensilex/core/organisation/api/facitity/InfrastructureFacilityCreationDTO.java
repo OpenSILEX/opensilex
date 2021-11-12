@@ -37,12 +37,14 @@ class InfrastructureFacilityCreationDTO extends InfrastructureFacilityDTO {
     public void toModel(InfrastructureFacilityModel model) {
         super.toModel(model);
 
-        List<InfrastructureModel> organizationList = getOrganizations().stream().map(organizationUri -> {
-            InfrastructureModel organization = new InfrastructureModel();
-            organization.setUri(organizationUri);
-            return organization;
-        }).collect(Collectors.toList());
-        model.setInfrastructures(organizationList);
+        if (getOrganizations() != null) {
+            List<InfrastructureModel> organizationList = getOrganizations().stream().map(organizationUri -> {
+                InfrastructureModel organization = new InfrastructureModel();
+                organization.setUri(organizationUri);
+                return organization;
+            }).collect(Collectors.toList());
+            model.setInfrastructures(organizationList);
+        }
     }
 
     @Override

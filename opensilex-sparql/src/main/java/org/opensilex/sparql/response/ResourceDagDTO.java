@@ -7,7 +7,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ResourceDagDTO<T extends SPARQLDagModel<?>> extends NamedResourceDTO<T> {
+public class ResourceDagDTO<T extends SPARQLDagModel<T>> extends NamedResourceDTO<T> {
     private List<URI> parents;
 
     private List<URI> children;
@@ -32,14 +32,14 @@ public class ResourceDagDTO<T extends SPARQLDagModel<?>> extends NamedResourceDT
     public void fromModel(T model) {
         super.fromModel(model);
 
-        List<T> parents = (List<T>) model.getParents();
+        List<T> parents = model.getParents();
         if (parents != null) {
             setParents(parents
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList()));
         }
 
-        List<T> children = (List<T>) model.getChildren();
+        List<T> children = model.getChildren();
         if (children != null) {
             setChildren(children
                     .stream().map(SPARQLResourceModel::getUri)

@@ -8,16 +8,14 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
-import javax.naming.Name;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**

@@ -8,18 +8,14 @@ package org.opensilex.core.organisation.api.facitity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import java.net.URI;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-
-import org.opensilex.core.ontology.api.RDFObjectDTO;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * DTO representing JSON for getting facility
@@ -67,13 +63,15 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
     public void toModel(InfrastructureFacilityModel model) {
         super.toModel(model);
 
-        List<InfrastructureModel> infrastructureModels = new ArrayList<>();
-        getInfrastructures().forEach(infrastructure -> {
-            InfrastructureModel infrastructureModel = new InfrastructureModel();
-            infrastructureModel.setUri(infrastructure.getUri());
-            infrastructureModels.add(infrastructureModel);
-        });
-        model.setInfrastructures(infrastructureModels);
+        if (getInfrastructures() != null) {
+            List<InfrastructureModel> infrastructureModels = new ArrayList<>();
+            getInfrastructures().forEach(infrastructure -> {
+                InfrastructureModel infrastructureModel = new InfrastructureModel();
+                infrastructureModel.setUri(infrastructure.getUri());
+                infrastructureModels.add(infrastructureModel);
+            });
+            model.setInfrastructures(infrastructureModels);
+        }
     }
 
     public void fromModel(InfrastructureFacilityModel model) {

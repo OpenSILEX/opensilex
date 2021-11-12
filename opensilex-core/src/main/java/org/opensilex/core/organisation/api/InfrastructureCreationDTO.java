@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "groups", "facilities"})
 class InfrastructureCreationDTO extends InfrastructureDTO {
-    public List<URI> groups;
-    public List<URI> facilities;
+    protected List<URI> groups;
+    protected List<URI> facilities;
 
     public List<URI> getGroups() {
         return groups;
@@ -63,14 +63,14 @@ class InfrastructureCreationDTO extends InfrastructureDTO {
         super.toModel(model);
 
         List<URI> groupUris = getGroups();
-        if (groups != null) {
-            List<GroupModel> groups = new ArrayList<>(groupUris.size());
+        if (groupUris != null) {
+            List<GroupModel> groupModels = new ArrayList<>(groupUris.size());
             groupUris.forEach(groupUri -> {
                 GroupModel groupModel = new GroupModel();
                 groupModel.setUri(groupUri);
-                groups.add(groupModel);
+                groupModels.add(groupModel);
             });
-            model.setGroups(groups);
+            model.setGroups(groupModels);
         }
 
         List<URI> facilityUriList = getFacilities();

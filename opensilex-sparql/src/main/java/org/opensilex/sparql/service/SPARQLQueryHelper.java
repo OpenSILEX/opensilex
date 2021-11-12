@@ -612,6 +612,14 @@ public class SPARQLQueryHelper {
         builder.getValuesHandler().addValueVar(sparqlVar,valueNodes);
     }
 
+    /**
+     * @param var variable
+     * @return an {@link E_Bound} expression for the given variable
+     *
+     * @apiNote Example : <br>
+     * <code><b>bound(var)</b></code> returns <br>
+     * <code><b>(BOUND(?var))</b></code>
+     */
     public static Expr bound(Var var) {
         return exprFactory.bound(var);
     }
@@ -624,7 +632,7 @@ public class SPARQLQueryHelper {
      *
      * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} corresponding to value {@link Class} is found
      * @apiNote Example : <br>
-     * <code><b>countEqExpr(myVar,true,0)</b></code> return <br>
+     * <code><b>countEqExpr(myVar,true,0)</b></code> returns <br>
      * <code><b>(COUNT(DISTINCT(?myVar)) = 0)</b></code>
      */
     public static E_Equals countEqExpr(Var sparqlVar,  boolean distinct, Object value) throws SPARQLDeserializerNotFoundException {

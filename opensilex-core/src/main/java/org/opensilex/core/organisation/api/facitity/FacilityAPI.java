@@ -20,6 +20,8 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -84,7 +86,8 @@ public class FacilityAPI {
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
-                ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
+                ClassModel model = CoreModule.getOntologyCacheInstance().getClassModel(facility.getType(),
+                        new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
                     if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {

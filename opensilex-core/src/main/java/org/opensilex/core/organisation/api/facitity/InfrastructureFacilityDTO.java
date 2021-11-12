@@ -8,18 +8,13 @@ package org.opensilex.core.organisation.api.facitity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.response.NamedResourceDTO;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DTO representing JSON for getting facility

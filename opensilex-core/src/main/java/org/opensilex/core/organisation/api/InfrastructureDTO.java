@@ -20,14 +20,6 @@ import org.opensilex.sparql.response.ResourceDagDTO;
  * @author vince
  */
 public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
-
-    
-    @JsonProperty("rdf_type")
-    protected URI type;
-    
-    @JsonProperty("rdf_type_name")
-    protected String typeLabel;
-
     @Override
     public InfrastructureModel newModelInstance() {
         return new InfrastructureModel();

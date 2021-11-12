@@ -5,15 +5,12 @@
  */
 package org.opensilex.core.organisation.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceDagDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *

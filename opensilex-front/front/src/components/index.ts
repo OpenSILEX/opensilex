@@ -95,6 +95,10 @@ import OrganizationFacilityDetail from './infrastructures/facility/OrganizationF
 components["opensilex-OrganizationFacilityDetail"] = OrganizationFacilityDetail;
 import OrganizationFacilityForm from './infrastructures/facility/OrganizationFacilityForm.vue';
 components["opensilex-OrganizationFacilityForm"] = OrganizationFacilityForm;
+import SiteDetail from './infrastructures/site/SiteDetail.vue';
+components["opensilex-SiteDetail"] = SiteDetail;
+import SiteForm from './infrastructures/site/SiteForm.vue';
+components["opensilex-SiteForm"] = SiteForm;
 
 
 // Factors

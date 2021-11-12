@@ -258,6 +258,9 @@ components["opensilex-HelpButton"] = HelpButton;
 import DeprecatedButton from './common/buttons/DeprecatedButton.vue'
 components["opensilex-DeprecatedButton"] = DeprecatedButton;
 
+import Dropdown from './common/dropdown/Dropdown.vue'
+components["opensilex-Dropdown"] = Dropdown;
+
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
 import OntologyClassTreeView from './ontology/OntologyClassTreeView.vue'

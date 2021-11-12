@@ -63,21 +63,25 @@
           label="InfrastructureTree.edit"
           :small="true"
         ></opensilex-EditButton>
-        <opensilex-AddChildButton
-          v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-            ) && node.data.isOrganization
-        "
-            @click="createOrganization(node.data.uri)"
-            label="InfrastructureTree.add-child"
+        <opensilex-Dropdown
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              ) && node.data.isOrganization
+            "
+            @click="(option) => createOrganizationOrSite(option, node.data.uri)"
             :small="true"
-        ></opensilex-AddChildButton>
+            :options="createOptions"
+            icon="fa#plus"
+            variant="outline-success"
+            right
+        >
+        </opensilex-Dropdown>
         <opensilex-DeleteButton
           v-if="
             user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)
           "
-          @click="deleteOrganizationOrSite(node)"
+          @click="deleteOrganizationOrSite(node.data)"
           label="InfrastructureTree.delete"
           :small="true"
         ></opensilex-DeleteButton>
@@ -127,6 +131,7 @@ import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/Op
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import ModalForm from "../common/forms/ModalForm.vue";
 import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
+import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import Oeso from "../../ontologies/Oeso";
 
@@ -137,6 +142,11 @@ type OrganizationOrSiteData = (SiteGetDTO | InfrastructureGetDTO) & {
 
 interface OrganizationOrSiteTreeNode extends TreeOption<OrganizationOrSiteTreeNode> {
   data: OrganizationOrSiteData
+}
+
+enum AddOption {
+  ADD_ORGANIZATION = "Add organization",
+  ADD_SITE= "Add site"
 }
 
 @Component
@@ -157,6 +167,19 @@ export default class InfrastructureTree extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm;
   @Ref("siteForm") readonly siteForm!: ModalForm;
+
+  private createOptions: Array<DropdownButtonOption> = [
+    {
+      label: this.$t("InfrastructureTree.add-child").toString(),
+      id: AddOption.ADD_ORGANIZATION,
+      data: AddOption.ADD_ORGANIZATION
+    },
+    {
+      label: this.$t("InfrastructureTree.addSite").toString(),
+      id: AddOption.ADD_SITE,
+      data: AddOption.ADD_SITE
+    }
+  ];
 
   get user() {
     return this.$store.state.user;
@@ -351,6 +374,14 @@ export default class InfrastructureTree extends Vue {
     });
   }
 
+  createOrganizationOrSite(option: DropdownButtonOption, uri?: string) {
+    if (option.data === AddOption.ADD_ORGANIZATION) {
+      this.createOrganization(uri);
+    } else if (option.data === AddOption.ADD_SITE) {
+      this.createSite(uri);
+    }
+  }
+
   createOrganization(parentURI?) {
     this.parentURI = parentURI;
     this.infrastructureForm.showCreateForm();
@@ -454,6 +485,7 @@ en:
     update: Update organization
     edit: Edit organization
     add-child: Add sub-organization
+    addSite: Add site
     delete: Delete organization
     infrastructure-component: Organizations and sites
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
@@ -467,6 +499,7 @@ fr:
     update: Modifier l'organisation
     edit: Editer l'organisation
     add-child: Ajouter une sous-organisation
+    addSite: Ajouter un site
     delete: Supprimer l'organisation
     infrastructure-component: Organisations et sites
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."

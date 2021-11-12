@@ -19,7 +19,7 @@
         <!-- Infrastructure tree -->
         <opensilex-InfrastructureTree
           ref="infrastructureTree"
-          @onSelect="updateSelectedOrganization"
+          @onSelect="onSelectedOrganizationOrSite"
         ></opensilex-InfrastructureTree>
       </div>
       <div class="col-md-6">
@@ -28,6 +28,12 @@
             :selected="selectedOrganization"
             @onUpdate="refresh"
         ></opensilex-InfrastructureDetail>
+        <!-- Site detail -->
+        <opensilex-SiteDetail
+            :selected="selectedSite"
+            :withActions="true"
+            @onUpdate="refresh"
+        ></opensilex-SiteDetail>
         <!-- Facilities -->
         <opensilex-InfrastructureFacilitiesView
             v-if="selectedOrganization"
@@ -68,11 +74,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { OrganisationsService, InfrastructureGetDTO } from "opensilex-core/index";
+import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class InfrastructureView extends Vue {
@@ -97,6 +105,7 @@ export default class InfrastructureView extends Vue {
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
   selectedOrganization: InfrastructureGetDTO = null;
+  selectedSite: SiteGetDTO = null;
   selectedFacility: InfrastructureFacilityGetDTO = null;
 
   created() {
@@ -148,8 +157,22 @@ export default class InfrastructureView extends Vue {
     }
   }
 
+  onSelectedOrganizationOrSite(selection: InfrastructureGetDTO | SiteGetDTO) {
+    if (selection.rdf_type === Oeso.SITE_TYPE_URI) {
+      this.updateSeletedSite(selection);
+    } else { // Organization
+      this.updateSelectedOrganization(selection);
+    }
+  }
+
   updateSelectedOrganization(newSelection) {
+    this.selectedSite = undefined;
     this.selectedOrganization = newSelection;
+  }
+
+  updateSeletedSite(newSite) {
+    this.selectedOrganization = undefined;
+    this.selectedSite = newSite;
   }
 
   updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {

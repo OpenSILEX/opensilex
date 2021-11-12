@@ -58,6 +58,10 @@ import { Component, Prop } from "vue-property-decorator";
 import copy from "copy-to-clipboard";
 import Vue from "vue";
 
+export type UriLinkDestination = string | {
+  path: string
+};
+
 @Component
 export default class UriLink extends Vue {
   $opensilex: any;
@@ -74,7 +78,7 @@ export default class UriLink extends Vue {
   url: string;
 
   @Prop()
-  to: string;
+  to: UriLinkDestination;
 
   @Prop({
     default: false

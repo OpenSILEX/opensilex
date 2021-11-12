@@ -64,7 +64,7 @@
       <opensilex-UriListView
         v-if="hasParents"
         :list="parentUriList"
-        label="InfrastructureDetail.parent-orga"
+        label="InfrastructureDetail.parentOrganizations"
         :inline="false"
       >
       </opensilex-UriListView>
@@ -233,20 +233,18 @@ export default class InfrastructureDetail extends Vue {
 <i18n>
 en:
   InfrastructureDetail:
-    parent-orga: Parent organizations
+    parentOrganizations: Parent organizations
     groups:
       label: "Groups"
-      edit: "Edit"
     facilities:
       label: "Facilities"
     experiments:
       label: "Experiments"
 fr:
   InfrastructureDetail:
-    parent-orga: Organisations parentes
+    parentOrganizations: Organisations parentes
     groups:
       label: "Groupes"
-      edit: "Modifier"
     facilities:
       label: "Installations techniques"
     experiments:

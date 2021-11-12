@@ -18,7 +18,7 @@
               credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
             )
           "
-          @click="createInfrastructure()"
+          @click="createOrganization()"
           label="InfrastructureTree.add"
         ></opensilex-CreateButton>
       </div>
@@ -43,13 +43,13 @@
               v-b-tooltip.hover.top="$t('InfrastructureTree.siteTypeTooltip')"
           />
         </span>&nbsp;
-        <strong v-if="node.data.selected">{{ node.title }}</strong>
-        <span v-if="!node.data.selected">{{ node.title }}</span>
+        <strong v-if="node.data.selectedOrganization">{{ node.title }}</strong>
+        <span v-if="!node.data.selectedOrganization">{{ node.title }}</span>
       </template>
 
       <template v-slot:buttons="{ node }">
         <opensilex-DetailButton
-          @click="showDetail(node.data.uri)"
+          @click="showOrganizationOrSiteDetail(node.data)"
           label="InfrastructureTree.showDetail"
           :small="true"
         ></opensilex-DetailButton>
@@ -59,7 +59,7 @@
               credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
             )
           "
-          @click="editInfrastructure(node.data.uri)"
+          @click="editOrganizationOrSite(node.data)"
           label="InfrastructureTree.edit"
           :small="true"
         ></opensilex-EditButton>
@@ -67,9 +67,9 @@
           v-if="
             user.hasCredential(
               credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-            ) && !isSite(node.data)
+            ) && node.data.isOrganization
         "
-            @click="createInfrastructure(node.data.uri)"
+            @click="createOrganization(node.data.uri)"
             label="InfrastructureTree.add-child"
             :small="true"
         ></opensilex-AddChildButton>
@@ -77,7 +77,7 @@
           v-if="
             user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)
           "
-          @click="deleteInfrastructure(node.data.uri)"
+          @click="deleteOrganizationOrSite(node)"
           label="InfrastructureTree.delete"
           :small="true"
         ></opensilex-DeleteButton>
@@ -97,7 +97,22 @@
       icon="ik#ik-globe"
       @onCreate="refresh($event ? $event.uri : undefined)"
       @onUpdate="refresh($event ? $event.uri : undefined)"
-      :initForm="setParents"
+      :initForm="initOrganizationForm"
+    ></opensilex-ModalForm>
+    <opensilex-ModalForm
+        v-if="
+          user.hasCredential(
+            credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+          )
+        "
+        ref="siteForm"
+        component="opensilex-SiteForm"
+        createTitle="InfrastructureTree.add"
+        editTitle="InfrastructureTree.update"
+        icon="ik#ik-globe"
+        @onCreate="refresh($event ? $event.uri : undefined)"
+        @onUpdate="refresh($event ? $event.uri : undefined)"
+        :initForm="initSiteForm"
     ></opensilex-ModalForm>
   </b-card>
 </template>
@@ -108,10 +123,21 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
-import OpenSilexVuePlugin, {TreeOption} from "../../models/OpenSilexVuePlugin";
+import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import ModalForm from "../common/forms/ModalForm.vue";
+import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import Oeso from "../../ontologies/Oeso";
+
+type OrganizationOrSiteData = (SiteGetDTO | InfrastructureGetDTO) & {
+  isOrganization: boolean,
+  isSite: boolean
+}
+
+interface OrganizationOrSiteTreeNode extends TreeOption<OrganizationOrSiteTreeNode> {
+  data: OrganizationOrSiteData
+}
 
 @Component
 export default class InfrastructureTree extends Vue {
@@ -120,15 +146,17 @@ export default class InfrastructureTree extends Vue {
   $route: any;
   service: OrganisationsService;
 
-  public nodes = [];
+  nodes: Array<OrganizationOrSiteTreeNode> = [];
 
-  parentURI;
+  parentURI: string;
 
   private langUnwatcher;
 
-  private selected: InfrastructureGetDTO;
+  private selectedOrganization: InfrastructureGetDTO;
+  private selectedSite: SiteGetDTO;
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: any;
+  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm;
+  @Ref("siteForm") readonly siteForm!: ModalForm;
 
   get user() {
     return this.$store.state.user;
@@ -162,8 +190,8 @@ export default class InfrastructureTree extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       (lang) => {
-        if (this.selected != null) {
-          this.displayNodeDetail(this.selected.uri, true);
+        if (this.selectedOrganization != null) {
+          this.displayOrganizationDetail(this.selectedOrganization.uri, true);
         }
       }
     );
@@ -190,87 +218,145 @@ export default class InfrastructureTree extends Vue {
           let nodes = this.$opensilex.buildTreeFromDag(orgHttp.response.result, {});
 
           this.appendSitesToTree(nodes)
-              .then(() => {
-                if (nodes.length > 0) {
-                  nodes[0].isSelected = true;
+              .then((mappedNodes) => {
+                if (mappedNodes.length > 0) {
+                  mappedNodes[0].isSelected = true;
 
                   if (!uri) {
-                    this.displayNodeDetail(nodes[0].data.uri, true);
+                    this.displayOrganizationDetail(mappedNodes[0].data.uri, true);
                   }
                 }
 
                 if (uri) {
-                  this.displayNodeDetail(uri, true);
+                  this.displayOrganizationDetail(uri, true);
                 }
 
-                this.nodes = nodes;
+                this.nodes = mappedNodes;
+                console.log(this.nodes);
               });
         })
         .catch(this.$opensilex.errorHandler);
   }
 
-  private appendSitesToTree(tree: Array<TreeOption>) {
-    return this.service.searchSites(this.filter)
-        .then((siteHttp: HttpResponse<OpenSilexResponse<Array<SiteGetDTO>>>) => {
-          this.$opensilex.browseTree(tree, (node: TreeOption) => {
-            for (let site of siteHttp.response.result) {
-              for (let org of site.organizations) {
-                if (org.uri === node.id) {
-                  if (!Array.isArray(node.children)) {
-                    node.children = [];
-                  }
-                  node.children.push({
-                    id: site.uri,
-                    children: [],
-                    isDefaultExpanded: true,
-                    isExpanded: true,
-                    isDisabled: false,
-                    isLeaf: true,
-                    label: site.name,
-                    data: site,
-                    title: site.name,
-                    isSelectable: true
-                  });
-                }
+  private async appendSitesToTree(tree: Array<GenericTreeOption>): Promise<Array<OrganizationOrSiteTreeNode>> {
+    try {
+      let siteHttp: HttpResponse<OpenSilexResponse<Array<SiteGetDTO>>> = await this.service.searchSites(this.filter);
+
+      return this.$opensilex.mapTree<GenericTreeOption, OrganizationOrSiteTreeNode>(tree, (node, mappedChildren) => {
+        let orgNode: OrganizationOrSiteTreeNode = {
+          ...node,
+          children: mappedChildren,
+          data: {
+            ...node.data,
+            isOrganization: true,
+            isSite: false
+          }
+        };
+
+        for (let site of siteHttp.response.result) {
+          for (let org of site.organizations) {
+            if (org.uri === orgNode.id) {
+              if (!Array.isArray(orgNode.children)) {
+                orgNode.children = [];
               }
+              orgNode.children.push({
+                id: site.uri,
+                children: [],
+                isDefaultExpanded: true,
+                isExpanded: true,
+                isDisabled: false,
+                isLeaf: true,
+                label: site.name,
+                data: {
+                  ...site,
+                  isOrganization: false,
+                  isSite: true
+                },
+                title: site.name,
+                isSelectable: true
+              });
             }
-          });
-        })
-        .catch(this.$opensilex.errorHandler);
+          }
+        }
+
+        return orgNode;
+      });
+    } catch (e) {
+      this.$opensilex.errorHandler(e);
+      throw e;
+    }
   }
 
-  public isSite(treeNodeData: NamedResourceDTO) {
-    return treeNodeData.rdf_type === Oeso.SITE_TYPE_URI;
+  public displayNodesDetail(node: OrganizationOrSiteTreeNode) {
+    if (node.data.isOrganization) {
+      this.displayOrganizationDetail(node.data.uri);
+    } else if (node.data.isSite) {
+      this.displaySiteDetail(node.data.uri);
+    }
   }
 
-  public displayNodesDetail(node: any) {
-    this.displayNodeDetail(node.data.uri);
-  }
-
-  public displayNodeDetail(uri: string, forceRefresh?: boolean) {
-    if (forceRefresh || this.selected == null || this.selected.uri != uri) {
+  public displayOrganizationDetail(uri: string, forceRefresh?: boolean) {
+    if (forceRefresh || this.selectedOrganization == null || this.selectedOrganization.uri != uri) {
       return this.service
         .getInfrastructure(uri)
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
           let detailDTO: InfrastructureGetDTO = http.response.result;
-          this.selected = detailDTO;
+          this.selectedOrganization = detailDTO;
+          this.selectedSite = undefined;
           this.$emit("onSelect", detailDTO);
         });
     }
   }
 
-  showDetail(uri) {
+  public displaySiteDetail(uri: string, forceRefresh?: boolean) {
+    if (forceRefresh || this.selectedOrganization == null || this.selectedOrganization.uri != uri) {
+      return this.service
+        .getSite(uri)
+        .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
+          let siteDto = http.response.result;
+          this.selectedSite = siteDto;
+          this.selectedOrganization = undefined;
+          this.$emit("onSelect", siteDto);
+        });
+    }
+  }
+
+  showOrganizationOrSiteDetail(siteOrOrg: OrganizationOrSiteData) {
+    if (siteOrOrg.isOrganization) {
+      this.showOrganizationDetail(siteOrOrg.uri);
+    } else if (siteOrOrg.isSite) {
+      this.showSiteDetail(siteOrOrg.uri);
+    }
+  }
+
+  editOrganizationOrSite(siteOrOrg: OrganizationOrSiteData) {
+    if (siteOrOrg.isOrganization) {
+      this.editOrganization(siteOrOrg.uri);
+    } else if (siteOrOrg.isSite) {
+      this.editSite(siteOrOrg.uri);
+    }
+  }
+
+  deleteOrganizationOrSite(siteOrOrg: OrganizationOrSiteData) {
+    if (siteOrOrg.isOrganization) {
+      this.deleteOrganization(siteOrOrg.uri);
+    } else if (siteOrOrg.isSite) {
+      this.deleteSite(siteOrOrg.uri);
+    }
+  }
+
+  showOrganizationDetail(uri) {
     this.$router.push({
       path: "/infrastructure/details/" + encodeURIComponent(uri),
     });
   }
 
-  createInfrastructure(parentURI?) {
+  createOrganization(parentURI?) {
     this.parentURI = parentURI;
     this.infrastructureForm.showCreateForm();
   }
 
-  editInfrastructure(uri) {
+  editOrganization(uri) {
     this.service
       .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
@@ -288,7 +374,7 @@ export default class InfrastructureTree extends Vue {
       });
   }
 
-  deleteInfrastructure(uri: string) {
+  deleteOrganization(uri: string) {
     this.service
       .deleteInfrastructure(uri)
       .then(() => {
@@ -297,8 +383,46 @@ export default class InfrastructureTree extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  setParents(form) {
+  showSiteDetail(uri) {
+    console.log("detail site", uri);
+  }
+
+  createSite(parentURI?: string) {
+    this.parentURI = parentURI;
+    this.siteForm.showCreateForm();
+  }
+
+  editSite(uri) {
+    this.service
+        .getSite(uri)
+        .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
+          let detailDTO: SiteGetDTO = http.response.result;
+
+          let editDTO: SiteUpdateDTO = {
+            ...detailDTO,
+            uri: detailDTO.uri,
+            groups: detailDTO.groups.map(group => group.uri),
+            organizations: detailDTO.organizations.map(org => org.uri)
+          };
+          this.siteForm.showEditForm(editDTO);
+        });
+  }
+
+  deleteSite(uri) {
+    this.service
+        .deleteSite(uri)
+        .then(() => {
+          this.refresh();
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  initOrganizationForm(form) {
     form.parents = [this.parentURI];
+  }
+
+  initSiteForm(form) {
+    form.organizations = [this.parentURI];
   }
 }
 </script>

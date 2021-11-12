@@ -12,6 +12,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
@@ -135,7 +136,7 @@ public class OrganizationSPARQLHelper {
         }
 
         select.addGroupBy(orgVar);
-        select.addHaving("COUNT(" + group + ") = 0");
+        select.addHaving(SPARQLQueryHelper.countEqExpr(group, true, 0));
 
         return select;
     }

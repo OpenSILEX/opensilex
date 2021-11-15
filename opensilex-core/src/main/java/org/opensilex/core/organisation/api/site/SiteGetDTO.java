@@ -1,6 +1,7 @@
 package org.opensilex.core.organisation.api.site;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.organisation.dal.SiteAddressModel;
 import org.opensilex.core.organisation.dal.SiteModel;
@@ -10,13 +11,15 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "address", "organizations", "groups"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "address", "organizations", "facilities", "groups"})
 public class SiteGetDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
     protected List<NamedResourceDTO<InfrastructureModel>> organizations;
 
     protected List<NamedResourceDTO<GroupModel>> groups;
+
+    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
 
     public SiteAddressDTO getAddress() {
         return address;
@@ -32,6 +35,14 @@ public class SiteGetDTO extends SiteDTO {
 
     public void setOrganizations(List<NamedResourceDTO<InfrastructureModel>> organizations) {
         this.organizations = organizations;
+    }
+
+    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
+        this.facilities = facilities;
     }
 
     public List<NamedResourceDTO<GroupModel>> getGroups() {
@@ -57,6 +68,15 @@ public class SiteGetDTO extends SiteDTO {
                 return organizationModel;
             }).collect(Collectors.toList());
             model.setOrganizations(organizationModels);
+        }
+
+        if (getFacilities() != null) {
+            List<InfrastructureFacilityModel> facilityModels = getFacilities().stream().map(facilityDto -> {
+                InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+                facilityModel.setUri(facilityDto.getUri());
+                return facilityModel;
+            }).collect(Collectors.toList());
+            model.setFacilities(facilityModels);
         }
 
         if (getGroups() != null) {
@@ -88,6 +108,14 @@ public class SiteGetDTO extends SiteDTO {
             setOrganizations(organizationDtos);
         }
 
+        List<InfrastructureFacilityModel> facilityModels = model.getFacilities();
+        if (facilityModels != null) {
+            List<NamedResourceDTO<InfrastructureFacilityModel>> facilityDtos = facilityModels.stream()
+                    .map(facilityModel -> (NamedResourceDTO<InfrastructureFacilityModel>) NamedResourceDTO.getDTOFromModel(facilityModel))
+                    .collect(Collectors.toList());
+            setFacilities(facilityDtos);
+        }
+
         List<GroupModel> groupModels = model.getGroups();
         if (groupModels != null) {
             List<NamedResourceDTO<GroupModel>> groupDtos = groupModels.stream()
@@ -96,6 +124,4 @@ public class SiteGetDTO extends SiteDTO {
             setGroups(groupDtos);
         }
     }
-
-
 }

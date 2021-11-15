@@ -48,6 +48,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
     public static final String INFRASTRUCTURE_FIELD = "infrastructures";
 
     @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf",
+            ignoreUpdateIfNull = true
+    )
+    private SiteModel site;
+    public static final String SITE_FIELD = "site";
+
+    @SPARQLProperty(
             ontology = VCARD4.class,
             property = "hasAddress",
             cascadeDelete = true
@@ -71,6 +79,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
                 .stream()
                 .map(InfrastructureModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    public SiteModel getSite() {
+        return site;
+    }
+
+    public void setSite(SiteModel site) {
+        this.site = site;
     }
 
     public FacilityAddressModel getAddress() {

@@ -25,6 +25,13 @@
         :multiple="true"
     ></opensilex-InfrastructureSelector>
 
+    <!-- Facilities -->
+    <opensilex-InfrastructureFacilitySelector
+        label="SiteForm.facilites"
+        :facilities.sync="form.facilities"
+        :multiple="true"
+    ></opensilex-InfrastructureFacilitySelector>
+
     <!-- Groups -->
     <opensilex-GroupSelector
         label="SiteForm.groups"
@@ -127,6 +134,7 @@ export default class SiteForm extends Vue {
 
   update(form) {
     delete form.rdf_type_name;
+    console.log(form);
     return this.$opensilex
         .getService("opensilex.OrganisationsService")
         .updateSite(form)
@@ -147,12 +155,14 @@ export default class SiteForm extends Vue {
 en:
   SiteForm:
     organizations: Organizations
+    facilities: Facilities
     groups: Groups
     toggleAddress: "Address"
     siteAlreadyExists: Site already exists
 fr:
   SiteForm:
     organizations: Organisations
+    facilities: Installations techniques
     groups: Groupes
     toggleAddress: "Adresse"
     siteAlreadyExists: Ce site existe déjà

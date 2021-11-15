@@ -44,7 +44,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
     protected List<GroupModel> groups;
     public static final String GROUP_FIELD = "groups";
 
-    //@todo facilities
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isPartOf",
+            ignoreUpdateIfNull = true,
+            inverse = true
+    )
+    protected List<InfrastructureFacilityModel> facilities;
+    public static final String FACILITY_FIELD = "facilities";
 
 
     public SiteAddressModel getAddress() {
@@ -69,6 +76,14 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
 
     public void setGroups(List<GroupModel> groups) {
         this.groups = groups;
+    }
+
+    public List<InfrastructureFacilityModel> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+        this.facilities = facilities;
     }
 
     public List<URI> getOrganizationURIListOrEmpty() {

@@ -850,6 +850,8 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = new ScientificObjectModel();
         object.setType(soType);
+        object.setName(name);
+
         if(xp != null){
             object.setExperiment(xp);
         }
@@ -861,8 +863,6 @@ public class ScientificObjectDAO {
                 }
             }
         }
-
-        object.addRelation(contextURI, new URI(RDFS.label.getURI()), String.class, name);
 
         return object;
     }

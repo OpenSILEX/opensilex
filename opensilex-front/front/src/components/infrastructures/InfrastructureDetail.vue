@@ -69,6 +69,7 @@
       >
       </opensilex-UriListView>
 
+      <!-- Groups -->
       <opensilex-UriListView
           label="InfrastructureDetail.groups.label"
           :list="groupUriList"
@@ -77,11 +78,21 @@
       >
       </opensilex-UriListView>
 
+      <!-- Facilities -->
       <opensilex-UriListView
           label="InfrastructureDetail.facilities.label"
           :list="facilityUriList"
           :inline="false"
           v-if="hasFacilities"
+        >
+      </opensilex-UriListView>
+
+      <!-- Sites -->
+      <opensilex-UriListView
+          label="InfrastructureDetail.sites.label"
+          :list="siteUriList"
+          :inline="false"
+          v-if="hasSites"
         >
       </opensilex-UriListView>
 
@@ -144,6 +155,10 @@ export default class InfrastructureDetail extends Vue {
     return this.selected.facilities.length > 0;
   }
 
+  get hasSites() {
+    return this.selected.sites.length > 0;
+  }
+
   get hasExperiments() {
     return this.selected.experiments.length > 0;
   }
@@ -179,6 +194,18 @@ export default class InfrastructureDetail extends Vue {
         value: facility.name,
         to: {
           path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri)
+        }
+      };
+    });
+  }
+
+  get siteUriList() {
+    return this.selected.sites.map(site => {
+      return {
+        uri: site.uri,
+        value: site.name,
+        to: {
+          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri)
         }
       };
     });
@@ -238,6 +265,8 @@ en:
       label: "Groups"
     facilities:
       label: "Facilities"
+    sites:
+      label: "Sites"
     experiments:
       label: "Experiments"
 fr:
@@ -247,6 +276,8 @@ fr:
       label: "Groupes"
     facilities:
       label: "Installations techniques"
+    sites:
+      label: "Sites"
     experiments:
       label: "Expérimentations"
 </i18n>

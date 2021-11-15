@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDagReferenceDTO;
@@ -24,13 +25,15 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "experiments"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "sites", "experiments"})
 public class InfrastructureGetDTO extends ResourceDagReferenceDTO<InfrastructureModel> {
     
     protected List<NamedResourceDTO<GroupModel>> groups;
 
     
     protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
+
+    protected List<NamedResourceDTO<SiteModel>> sites;
 
     protected List<NamedResourceDTO<ExperimentModel>> experiments;
 
@@ -48,6 +51,14 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
 
     public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
         this.facilities = facilities;
+    }
+
+    public List<NamedResourceDTO<SiteModel>> getSites() {
+        return sites;
+    }
+
+    public void setSites(List<NamedResourceDTO<SiteModel>> sites) {
+        this.sites = sites;
     }
 
     public List<NamedResourceDTO<ExperimentModel>> getExperiments() {
@@ -89,6 +100,17 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
         }
         setFacilities(facilities);
 
+        List<NamedResourceDTO<SiteModel>> sites;
+        if (model.getSites() != null) {
+            sites = new ArrayList<>(model.getSites().size());
+            model.getSites().forEach(site -> {
+                sites.add(NamedResourceDTO.getDTOFromModel(site));
+            });
+        } else {
+            sites = new ArrayList<>();
+        }
+        setSites(sites);
+
         List<NamedResourceDTO<ExperimentModel>> experiments;
         if (model.getExperiments() != null) {
             experiments = new ArrayList<>(model.getExperiments().size());
@@ -123,6 +145,12 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
             });
 
             model.setFacilities(facilities);
+        }
+
+        if (getSites() != null) {
+            model.setSites(getSites().stream()
+                    .map(NamedResourceDTO::newModel)
+                    .collect(Collectors.toList()));
         }
 
         if (getExperiments() != null) {

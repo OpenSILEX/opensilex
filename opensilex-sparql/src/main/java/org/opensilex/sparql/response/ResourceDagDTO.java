@@ -30,7 +30,7 @@ public class ResourceDagDTO<T extends SPARQLDagModel<T>> extends NamedResourceDT
 
     @Override
     public void fromModel(T model) {
-        super.fromModel(model);
+        fromModelChildren(model);
 
         List<T> parents = model.getParents();
         if (parents != null) {
@@ -38,6 +38,10 @@ public class ResourceDagDTO<T extends SPARQLDagModel<T>> extends NamedResourceDT
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList()));
         }
+    }
+
+    public void fromModelChildren(T model) {
+        super.fromModel(model);
 
         List<T> children = model.getChildren();
         if (children != null) {
@@ -45,17 +49,5 @@ public class ResourceDagDTO<T extends SPARQLDagModel<T>> extends NamedResourceDT
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList()));
         }
-    }
-
-    public static<T extends SPARQLDagModel<T>> ResourceDagDTO<T> getDtoFromModel(T model) {
-        ResourceDagDTO<T> dto = new ResourceDagDTO<>();
-        dto.fromModel(model);
-        return dto;
-    }
-
-    public static<T extends SPARQLDagModel<T>> List<ResourceDagDTO<T>> getDtoListFromModel(List<T> model) {
-        return model.stream()
-                .map(ResourceDagDTO::getDtoFromModel)
-                .collect(Collectors.toList());
     }
 }

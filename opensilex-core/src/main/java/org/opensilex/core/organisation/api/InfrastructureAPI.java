@@ -41,6 +41,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.ResourceDagDTO;
+import org.opensilex.sparql.response.ResourceDagDTOBuilder;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -156,7 +157,8 @@ public class InfrastructureAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
         List<InfrastructureModel> organizations = dao.search(pattern, infraURIs, currentUser);
-        return new PaginatedListResponse<>(ResourceDagDTO.getDtoListFromModel(organizations)).getResponse();
+        ResourceDagDTOBuilder<InfrastructureModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
+        return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }
 
     @PUT

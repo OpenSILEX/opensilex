@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author Valentin RIGOLLE
  */
-public abstract class SPARQLDagModel<T extends SPARQLDagModel<T>> extends SPARQLNamedResourceModel<SPARQLDagModel<T>> {
+public abstract class SPARQLDagModel<T extends SPARQLDagModel<T>> extends SPARQLNamedResourceModel<T> {
     protected List<T> parents;
     public static final String PARENTS_FIELD = "parents";
 

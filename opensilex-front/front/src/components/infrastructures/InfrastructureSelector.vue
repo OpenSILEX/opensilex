@@ -11,12 +11,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-// @ts-ignore
-import { ResourceTreeDTO } from "opensilex-core/index";
+import {Component, Prop, PropSync} from "vue-property-decorator";
+import Vue from "vue";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureSelector extends Vue {
@@ -39,7 +37,7 @@ export default class InfrastructureSelector extends Vue {
     this.$opensilex
       .getService("opensilex-core.OrganisationsService")
       .searchInfrastructures()
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
         this.infrastructuresOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );

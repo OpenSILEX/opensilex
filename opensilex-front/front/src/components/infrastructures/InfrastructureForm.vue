@@ -53,12 +53,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { ResourceTreeDTO } from "opensilex-core/index";
-import {InfrastructureGetDTO} from "opensilex-core/model/infrastructureGetDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureForm extends Vue {
@@ -90,7 +88,7 @@ export default class InfrastructureForm extends Vue {
         .getService("opensilex-core.OrganisationsService")
         .searchInfrastructures()
         .then(
-          (http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+          (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
             this.setParentInfrastructures(http.response.result);
           }
         )
@@ -120,7 +118,7 @@ export default class InfrastructureForm extends Vue {
         .getService("opensilex-core.OrganisationsService")
         .searchInfrastructures()
         .then(
-          (http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+          (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
             this.setParentInfrastructures(http.response.result);
           }
         )

@@ -102,12 +102,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { OrganisationsService, ResourceTreeDTO, InfrastructureGetDTO } from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureTree extends Vue {
@@ -122,7 +122,7 @@ export default class InfrastructureTree extends Vue {
 
   private langUnwatcher;
 
-  private selected: InfrastructureGetDTO;
+  private selected: ResourceDagDTO;
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
@@ -172,7 +172,7 @@ export default class InfrastructureTree extends Vue {
   refresh(uri?) {
     this.service
       .searchInfrastructures(this.filter)
-      .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
         if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
           if (this.filter == "") {
             this.infrastructureForm

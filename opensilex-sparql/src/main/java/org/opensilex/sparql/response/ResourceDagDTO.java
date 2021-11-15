@@ -46,4 +46,16 @@ public class ResourceDagDTO<T extends SPARQLDagModel<T>> extends NamedResourceDT
                     .collect(Collectors.toList()));
         }
     }
+
+    public static<T extends SPARQLDagModel<T>> ResourceDagDTO<T> getDtoFromModel(T model) {
+        ResourceDagDTO<T> dto = new ResourceDagDTO<>();
+        dto.fromModel(model);
+        return dto;
+    }
+
+    public static<T extends SPARQLDagModel<T>> List<ResourceDagDTO<T>> getDtoListFromModel(List<T> model) {
+        return model.stream()
+                .map(ResourceDagDTO::getDtoFromModel)
+                .collect(Collectors.toList());
+    }
 }

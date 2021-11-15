@@ -40,10 +40,8 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
  *
@@ -149,7 +147,7 @@ public class InfrastructureAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return organisations", response = InfrastructureGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return organisations", response = ResourceDagDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructures(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -158,7 +156,7 @@ public class InfrastructureAPI {
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
 
         List<InfrastructureModel> organizations = dao.search(pattern, infraURIs, currentUser);
-        return new PaginatedListResponse<>(InfrastructureGetDTO.getDTOListFromModel(organizations)).getResponse();
+        return new PaginatedListResponse<>(ResourceDagDTO.getDtoListFromModel(organizations)).getResponse();
     }
 
     @PUT

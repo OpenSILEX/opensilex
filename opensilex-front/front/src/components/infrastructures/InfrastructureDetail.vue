@@ -98,13 +98,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
-import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {InfrastructureGetDTO} from "opensilex-core/index";
 import {OrganisationsService} from "opensilex-core/api/organisations.service";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureDetail extends Vue {
@@ -198,7 +197,7 @@ export default class InfrastructureDetail extends Vue {
 
     this.organizationService
       .searchInfrastructures(".*", this.selected.parents)
-      .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
         // Update the list of parent organizations
         this.parentUriList = http.response.result.map(organization => {
           return {

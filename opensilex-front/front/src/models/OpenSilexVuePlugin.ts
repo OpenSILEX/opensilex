@@ -15,7 +15,7 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
-import {NamedResourceDTO} from "opensilex-security/model/namedResourceDTO";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 declare var $cookies: VueCookies;
 
@@ -28,7 +28,7 @@ interface TreeOption {
     isDisabled: boolean,
     children: Array<TreeOption>,
     title?: string,
-    data?: any,
+    data?: ResourceDagDTO,
     isLeaf?: boolean,
     isSelected?: boolean,
     isExpanded?: boolean,
@@ -611,7 +611,7 @@ export default class OpenSilexVuePlugin {
         return option;
     }
 
-    public buildTreeFromDag(dagList: Array<any>, buildOptions?: any): Array<TreeOption> {
+    public buildTreeFromDag(dagList: Array<ResourceDagDTO>, buildOptions?: any): Array<TreeOption> {
         if (!dagList || dagList.length === 0) {
             return [];
         }
@@ -638,7 +638,7 @@ export default class OpenSilexVuePlugin {
         return rootNodes;
     }
 
-    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, any>, buildOptions: any, disabled: boolean = false): TreeOption {
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, ResourceDagDTO>, buildOptions: any, disabled: boolean = false): TreeOption {
         let dagNode = dagMap.get(nodeUri);
 
         let treeNode: TreeOption = {

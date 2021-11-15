@@ -33,7 +33,7 @@
       </b-card>
     </div>
     <div class="col-md-6 ">
-      <div class="sticky">
+      <div>
       <opensilex-OntologyClassDetail
         :rdfType="rdfType"
         :selected="selected"

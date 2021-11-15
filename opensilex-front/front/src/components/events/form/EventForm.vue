@@ -246,56 +246,84 @@ export default class EventForm extends Vue {
 
     let properties = [];
 
-    if (this.typeModel) {
-
-      this.typeModel.data_properties
-          .concat(this.typeModel.object_properties)
-          .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
-          .forEach(propertyModel => {
-            let relation = this.form.relations.find(relation => relation.property == propertyModel.property);
-
-            properties.push({
-              property: propertyModel,
-              value: relation.value
-            });
-          });
-    }
-    return properties;
-  }
-
-  typeSwitch(type) {
-
-    if (!type) {
-      return;
-    }
-
-    return this.vueOntologyService
-        .getRDFTypeProperties(this.form.rdf_type, this.baseType)
-        .then(http => {
-          this.typeModel = http.response.result;
-          if (!this.editMode) {
-            let relations = [];
-
+        if (this.typeModel) {
             this.typeModel.data_properties
-                .concat(this.typeModel.object_properties)
-                .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
-                .forEach(propertyModel => {
-                  if (propertyModel.is_list) {
-                    relations.push({
-                      value: [],
-                      property: propertyModel.property
-                    });
-                  } else {
-                    relations.push({
-                      value: undefined,
-                      property: propertyModel.property
-                    });
-                  }
+                .filter(property => ! property.inherited)
+                .forEach(dataProperty => {
+                    if (dataProperty.property != "rdfs:label") {
+
+                        let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
+
+                        internalTypeProperties.push({
+                            property: dataProperty,
+                            value: relation.value
+                        });
+                    }
                 });
 
-            this.form.relations = relations;
-          }
-        });
+
+            this.typeModel.object_properties
+                .filter(property => ! property.inherited)
+                .forEach(objectProperty => {
+                    let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
+
+                    internalTypeProperties.push({
+                        property: objectProperty,
+                        value: relation.value
+                    });
+                });
+        }
+        return internalTypeProperties;
+    }
+
+    typeSwitch(type) {
+
+        if (!type) {
+            return;
+        }
+
+        return this.vueOntologyService
+            .getRDFTypeProperties(this.form.rdf_type, this.baseType)
+            .then(http => {
+                this.typeModel = http.response.result;
+                if (!this.editMode) {
+                    let relations = [];
+
+                    this.typeModel.data_properties
+                        .filter(property => ! property.inherited)
+                        .forEach(property => {
+                            if (property.is_list) {
+                                relations.push({
+                                    value: [],
+                                    property: property.property
+                                });
+                            } else {
+                                relations.push({
+                                    value: undefined,
+                                    property: property.property
+                                });
+                            }
+                        });
+
+                    this.typeModel.object_properties
+                        .filter(property => property.is_custom)
+                        .forEach(property => {
+                            if (property.is_list) {
+                                relations.push({
+                                    value: [],
+                                    property: property.property
+                                });
+                            } else {
+                                relations.push({
+                                    value: undefined,
+                                    property: property.property
+                                });
+                            }
+                        });
+
+                    this.form.relations = relations;
+                }
+            });
 
   }
 

@@ -220,8 +220,7 @@
         static getValuesByProperty(event: EventCreationDTO, typeModel: VueRDFTypeDTO) {
             let valueByProperties = {};
 
-            for (let i in event.relations) {
-                let relation = event.relations[i];
+            event.relations.forEach(relation => {
                 let property = relation.property;
 
                 let propertyModel = typeModel.object_properties.find(propertyModel => propertyModel.property == property)
@@ -241,7 +240,8 @@
                 }else{
                     valueByProperties[relation.property] = relation.value
                 }
-            }
+            });
+
             return valueByProperties;
         }
 

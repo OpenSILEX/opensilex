@@ -737,6 +737,7 @@ Note that the value-space is not defined, so a generic OWL2 processor cannot com
   rdfs:comment "Beginning of a temporal entity"@en ;
   rdfs:domain :TemporalEntity ;
   rdfs:label "has beginning"@en ;
+  rdfs:label "A pour début"@fr ;
   rdfs:range :Instant ;
   rdfs:subPropertyOf :hasTime ;
   skos:definition "Beginning of a temporal entity."@en ;
@@ -770,6 +771,7 @@ Note that the value-space is not defined, so a generic OWL2 processor cannot com
   rdfs:comment "End of a temporal entity."@en ;
   rdfs:domain :TemporalEntity ;
   rdfs:label "has end"@en ;
+  rdfs:label "A pour fin"@fr ;
   rdfs:range :Instant ;
   rdfs:subPropertyOf :hasTime ;
   skos:definition "End of a temporal entity."@en ;

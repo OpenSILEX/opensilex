@@ -8,6 +8,8 @@ package org.opensilex.mobile.dal;
  
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -18,6 +20,16 @@ public class FormModel  extends MongoModel {
     
     private String commitAddress;
 
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     private Instant creationDate; 
     
     private Instant lastUpdateDate;
@@ -26,13 +38,14 @@ public class FormModel  extends MongoModel {
     
     private URI type;
     
-    private Document formData;
+    //private Document formData;
+    private List<Map> formData;
     
-    public Document getFormData() {
+    public List<Map> getFormData() {
         return formData;
     }
 
-    public void setFormData(Document formData) {
+    public void setFormData(List<Map> formData) {
         this.formData = formData;
     }
 

@@ -22,6 +22,7 @@ public class FormGetDTO extends FormUpdateDTO{
         formGetDTO.setType(model.getType());
         formGetDTO.setUri( model.getUri());
         formGetDTO.setCommitAddress(model.getCommitAddress());
+        formGetDTO.setName(model.getName());
         return formGetDTO;
     }
 }

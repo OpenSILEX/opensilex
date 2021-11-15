@@ -2,6 +2,7 @@ package org.opensilex.core.organisation.api.site;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.organisation.dal.SiteAddressModel;
 import org.opensilex.core.organisation.dal.SiteModel;
@@ -11,11 +12,13 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonPropertyOrder({"uri", "rdf_type", "name", "address", "organizations", "groups"})
+@JsonPropertyOrder({"uri", "rdf_type", "name", "address", "organizations", "facilities", "groups"})
 public class SiteCreationDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
     protected List<URI> organizations;
+
+    protected List<URI> facilities;
 
     protected List<URI> groups;
 
@@ -33,6 +36,14 @@ public class SiteCreationDTO extends SiteDTO {
 
     public void setOrganizations(List<URI> organizations) {
         this.organizations = organizations;
+    }
+
+    public List<URI> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<URI> facilities) {
+        this.facilities = facilities;
     }
 
     public List<URI> getGroups() {
@@ -66,6 +77,15 @@ public class SiteCreationDTO extends SiteDTO {
             model.setOrganizations(organizationModels);
         }
 
+        if (getFacilities() != null) {
+            List<InfrastructureFacilityModel> facilityModels = getFacilities().stream().map(facilityUri -> {
+                InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+                facilityModel.setUri(facilityUri);
+                return facilityModel;
+            }).collect(Collectors.toList());
+            model.setFacilities(facilityModels);
+        }
+
         if (getGroups() != null) {
             List<GroupModel> groupModels = getGroups().stream().map(groupUri -> {
                 GroupModel groupModel = new GroupModel();
@@ -91,6 +111,13 @@ public class SiteCreationDTO extends SiteDTO {
         if (organizationModels != null) {
             setOrganizations(organizationModels.stream()
                     .map(InfrastructureModel::getUri)
+                    .collect(Collectors.toList()));
+        }
+
+        List<InfrastructureFacilityModel> facilityModels = model.getFacilities();
+        if (facilityModels != null) {
+            setOrganizations(facilityModels.stream()
+                    .map(InfrastructureFacilityModel::getUri)
                     .collect(Collectors.toList()));
         }
 

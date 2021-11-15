@@ -455,6 +455,7 @@ export default class InfrastructureTree extends Vue {
             ...detailDTO,
             uri: detailDTO.uri,
             groups: detailDTO.groups.map(group => group.uri),
+            facilities: detailDTO.facilities.map(facility => facility.uri),
             organizations: detailDTO.organizations.map(org => org.uri)
           };
           this.siteForm.showEditForm(editDTO);

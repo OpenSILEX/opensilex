@@ -46,7 +46,7 @@
           :uri="selected.uri"
           :value="selected.uri"
           :to="{
-          path: '/site/details/' + encodeURIComponent(selected.uri),
+          path: '/infrastructure/site/details/' + encodeURIComponent(selected.uri),
         }"
       ></opensilex-UriView>
       <!-- Name -->
@@ -60,7 +60,7 @@
           :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
 
-      <!-- Parents -->
+      <!-- Organizations -->
       <opensilex-UriListView
           v-if="hasOrganizations"
           :list="organizationUriList"
@@ -69,6 +69,16 @@
       >
       </opensilex-UriListView>
 
+      <!-- Organizations -->
+      <opensilex-UriListView
+          v-if="hasFacilities"
+          :list="facilityUriList"
+          label="SiteDetail.facilities"
+          :inline="false"
+      >
+      </opensilex-UriListView>
+
+      <!-- Groups -->
       <opensilex-UriListView
           label="SiteDetail.groups"
           :list="groupUriList"
@@ -137,6 +147,22 @@ export default class SiteDetail extends Vue {
     return Array.isArray(this.selected.groups) && this.selected.groups.length > 0;
   }
 
+  get hasFacilities() {
+    return Array.isArray(this.selected.facilities) && this.selected.facilities.length > 0;
+  }
+
+  get facilityUriList() {
+    return this.selected.facilities.map(facility => {
+      return {
+        uri: facility.uri,
+        value: facility.name,
+        to: {
+          path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri),
+        },
+      }
+    });
+  }
+
   get groupUriList() {
     return this.selected.groups.map(group => {
       return {
@@ -181,6 +207,7 @@ export default class SiteDetail extends Vue {
             ...getDto,
             uri: getDto.uri,
             groups: getDto.groups.map(group => group.uri),
+            facilities: getDto.facilities.map(facility => facility.uri),
             organizations: getDto.organizations.map(org => org.uri)
           };
           this.siteForm.showEditForm(editDto);
@@ -209,11 +236,12 @@ export default class SiteDetail extends Vue {
 en:
   SiteDetail:
     organizations: Organizations
+    facilities: Facilities
     groups: Groups
     address: Address
 fr:
   SiteDetail:
-    organizations: Organisations
+    facilities: Installations techniques
     groups: Groupes
     address: Adresse
 </i18n>

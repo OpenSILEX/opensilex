@@ -75,6 +75,7 @@
           <opensilex-GermplasmSelector
             :multiple="false"
             :germplasm.sync="filter.germplasm"
+            :experiment="filter.experiment"
           ></opensilex-GermplasmSelector>
         </opensilex-FilterField>
         <!-- Factors levels -->

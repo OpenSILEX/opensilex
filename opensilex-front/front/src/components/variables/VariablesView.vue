@@ -12,10 +12,11 @@
                     <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
                         <b-tab :title="$t('component.menu.variables')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.entity')" @click="refreshSelected"></b-tab>
+                        <b-tab :title="$t('VariableView.entityOfInterest')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.characteristic')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.method')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.unit')" @click="refreshSelected"></b-tab>
-                        <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab> <!--Ajout de Hamza-->
+                        <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab>
                     </b-tabs>
                 </div>
 
@@ -59,6 +60,10 @@
             <opensilex-EntityCreate
                 ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
             ></opensilex-EntityCreate>
+
+            <opensilex-InterestEntityCreate
+                ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-InterestEntityCreate>
 
             <opensilex-CharacteristicModalForm
                 ref="characteristicForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
@@ -160,6 +165,7 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VariableStructureList from "./views/VariableStructureList.vue";
 import EntityCreate from "./form/EntityCreate.vue";
+import InterestEntityCreate from "./form/InterestEntityCreate.vue";
 import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
@@ -186,6 +192,7 @@ export default class VariablesView extends Vue {
 
     static VARIABLE_TYPE: string = "Variable";
     static ENTITY_TYPE: string = "Entity";
+    static INTEREST_ENTITY_TYPE: string = "InterestEntity";
     static CHARACTERISTIC_TYPE: string = "Characteristic";
     static METHOD_TYPE: string = "Method";
     static UNIT_TYPE:  string = "Unit";
@@ -194,6 +201,7 @@ export default class VariablesView extends Vue {
     static elementTypes = [
         VariablesView.VARIABLE_TYPE,
         VariablesView.ENTITY_TYPE,
+        VariablesView.INTEREST_ENTITY_TYPE,
         VariablesView.CHARACTERISTIC_TYPE,
         VariablesView.METHOD_TYPE,
         VariablesView.UNIT_TYPE,
@@ -202,6 +210,7 @@ export default class VariablesView extends Vue {
 
     @Ref("variableCreate") readonly variableCreate!: VariableCreate;
     @Ref("entityForm") readonly entityForm!: EntityCreate;
+    @Ref("interestEntityForm") readonly interestEntityForm!: InterestEntityCreate;
     @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
@@ -332,6 +341,9 @@ export default class VariablesView extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return this.entityForm;
             }
+            case VariablesView.INTEREST_ENTITY_TYPE : {
+                return this.interestEntityForm;
+            }
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return this.characteristicForm;
             }
@@ -357,6 +369,9 @@ export default class VariablesView extends Vue {
             }
             case VariablesView.ENTITY_TYPE : {
                 return "add-entity";
+            }
+            case VariablesView.INTEREST_ENTITY_TYPE : {
+                return "add-entityOfInterest";
             }
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return "add-characteristic";
@@ -510,11 +525,13 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
+        entityOfInterest: Entity of interest
+        add-entityOfInterest: Add entity of interest
         characteristic: Characteristic
         add-characteristic: Add characteristic
         method: Method
         add-method: Add method
-        unit: "Unit/Level"
+        unit: "Unit/Scale"
         add-unit: Add unit
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
@@ -528,11 +545,13 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
+        entityOfInterest: Entité d'intérêt
+        add-entityOfInterest: Ajouter une entité d'intérêt
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
         method: Méthode
         add-method: Ajouter une méthode
-        unit: "Unité/Niveau"
+        unit: "Unité/Echelle"
         add-unit: Ajouter une unité
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables

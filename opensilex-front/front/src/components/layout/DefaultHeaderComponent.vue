@@ -18,6 +18,12 @@
     <div class="container-fluid boxed-layout">
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
+
+          <opensilex-HelpButton
+            @click="$opensilex.getGuideFile()"
+            label="component.header.user-guide"
+          ></opensilex-HelpButton>
+
           <b-dropdown
             id="langDropdown"
             :title="user.getEmail()"
@@ -77,6 +83,7 @@ import { User } from "../../models/User";
 export default class DefaultHeaderComponent extends Vue {
   $i18n: any;
   $store: any;
+  $opensilex: any;
 
   /**
    * Return the current connected user
@@ -140,7 +147,9 @@ export default class DefaultHeaderComponent extends Vue {
       this.$store.commit("showMenu");
     }
   }
+
 }
+
 </script>
 
 <style scoped lang="scss">

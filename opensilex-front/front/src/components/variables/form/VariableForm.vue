@@ -42,8 +42,30 @@
                     </opensilex-EntityCreate>
                 </div>
 
-                <div class="col-lg-6" id="v-step-characteristic">
-                    <!-- Characteristic -->
+                <!-- Entity of interest -->
+                <div class="col-lg-6" id="v-step-interestEntity">
+                    <opensilex-SelectForm
+                        ref="interestEntitySelectForm"
+                        label="VariableForm.interestEntity-label"
+                        :selected.sync="form.entity_of_interest"
+                        :multiple="false"
+                        :required="false"
+                        :searchMethod="searchInterestEntities"
+                        :itemLoadingMethod="loadInterestEntity"
+                        placeholder="VariableForm.interestEntity-placeholder"
+                        :conversionMethod="objectToSelectNode"
+                        noResultsText="VariableForm.no-interestEntity"
+                        helpMessage="VariableForm.interestEntity-help"
+                        :actionHandler="showInterestEntityCreateForm"
+                    ></opensilex-SelectForm>
+                    <opensilex-InterestEntityCreate
+                        ref="interestEntityForm"
+                        @onCreate="setLoadedInterestEntity">
+                    </opensilex-InterestEntityCreate>
+                </div>
+
+                <!-- Characteristic -->
+                <div class="col-lg-6" id="v-step-characteristic">                    
                     <opensilex-SelectForm
                         ref="characteristicSelectForm"
                         label="VariableView.characteristic"
@@ -64,10 +86,42 @@
                         @onCreate="setLoadedCharacteristic">
                     </opensilex-CharacteristicModalForm>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-lg-6">
+                <!-- Species -->
+                <div class="col-lg-6" id="v-step-species">
+                    <opensilex-SpeciesSelector
+                        label="SpeciesSelector.select-one"
+                        placeholder="SpeciesSelector.select-one-placeholder"
+                        :multiple="false"
+                        :species.sync="form.species"
+                    ></opensilex-SpeciesSelector>
+                </div>
+
+                <!-- Method -->
+                <div class="col-lg-6" id="v-step-method">
+                    <opensilex-SelectForm
+                        ref="methodSelectForm"
+                        label="VariableView.method"
+                        :selected.sync="form.method"
+                        :multiple="false"
+                        :required="true"
+                        :searchMethod="searchMethods"
+                        :itemLoadingMethod="loadMethod"
+                        placeholder="VariableForm.method-placeholder"
+                        :conversionMethod="objectToSelectNode"
+                        helpMessage="VariableForm.method-help"
+                        @select="updateMethod"
+                        :actionHandler="showMethodCreateForm"
+                        noResultsText="VariableForm.no-method"
+                    ></opensilex-SelectForm>
+                    <opensilex-MethodCreate
+                        ref="methodForm"
+                        @onCreate="setLoadedMethod">
+                    </opensilex-MethodCreate>
+                </div>
+                
+                <!-- Trait button -->
+                <div class="col-lg-6" id="traitButton">
                     <opensilex-Button
                         label="VariableForm.trait-button"
                         helpMessage="VariableForm.trait-button-help"
@@ -89,35 +143,7 @@
                     :initForm="getEmptyTraitForm"
                     :createAction="updateVariableTrait"
                     :updateAction="updateVariableTrait"
-                >
-                </opensilex-WizardForm>
-            </div>
-
-            <hr/>
-
-            <div class="row">
-                <div class="col-lg-6" id="v-step-method">
-                    <!-- Method -->
-                    <opensilex-SelectForm
-                        ref="methodSelectForm"
-                        label="VariableView.method"
-                        :selected.sync="form.method"
-                        :multiple="false"
-                        :required="false"
-                        :searchMethod="searchMethods"
-                        :itemLoadingMethod="loadMethod"
-                        placeholder="VariableForm.method-placeholder"
-                        :conversionMethod="objectToSelectNode"
-                        helpMessage="VariableForm.method-help"
-                        @select="updateMethod"
-                        :actionHandler="showMethodCreateForm"
-                        noResultsText="VariableForm.no-method"
-                    ></opensilex-SelectForm>
-                    <opensilex-MethodCreate
-                        ref="methodForm"
-                        @onCreate="setLoadedMethod">
-                    </opensilex-MethodCreate>
-                </div>
+                ></opensilex-WizardForm>
 
                 <!-- Unit -->
                 <div class="col-lg-6" id="v-step-unit">
@@ -130,6 +156,7 @@
                         :searchMethod="searchUnits"
                         :itemLoadingMethod="loadUnit"
                         :conversionMethod="objectToSelectNode"
+                        helpMessage="VariableForm.unit-help"
                         placeholder="VariableForm.unit-placeholder"
                         @select="updateUnit"
                         :actionHandler="showUnitCreateForm"
@@ -145,8 +172,8 @@
             <hr/>
 
             <div class="row">
+                <!-- Name -->
                 <div class="col-lg-6" id="v-step-name">
-                    <!-- Name -->
                     <opensilex-InputForm
                         :value.sync="form.name"
                         label="component.common.name"
@@ -154,28 +181,17 @@
                         :required="true"
                     ></opensilex-InputForm>
                 </div>
+
+                <!-- altName -->
                 <div class="col-lg-6" id="v-step-alt">
-                    <!-- altName -->
                     <opensilex-InputForm
                         :value.sync="form.alternative_name"
                         label="VariableForm.altName"
                         type="text"
                     ></opensilex-InputForm>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-lg-6" id="v-step-species">
-                    <opensilex-SpeciesSelector
-                        label="SpeciesSelector.select-one"
-                        placeholder="SpeciesSelector.select-one-placeholder"
-                        :multiple="false"
-                        :species.sync="form.species"
-                    ></opensilex-SpeciesSelector>
-                </div>
-            </div>
-
-            <div class="row" >
+                <!-- DataType -->
                 <div class="col-lg-6" id="v-step-datatype">
                     <opensilex-SelectForm
                         label="OntologyPropertyForm.data-type"
@@ -188,11 +204,9 @@
                         placeholder="VariableForm.datatype-placeholder"
                     ></opensilex-SelectForm>
                 </div>
-            </div>
 
-            <div class="row">
+                <!-- time-interval -->
                 <div class="col-lg-6" id="v-step-time-interval">
-                    <!-- time-interval -->
                     <opensilex-SelectForm
                         label="VariableForm.time-interval"
                         :selected.sync="form.time_interval"
@@ -203,8 +217,11 @@
                     ></opensilex-SelectForm>
                 </div>
 
+                <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
+                <div class="col-lg-6"></div>
+
+                <!-- sample/distance-interval -->
                 <div class="col-lg-6" id="v-step-sampling-interval">
-                    <!-- sample/distance-interval -->
                     <opensilex-SelectForm
                         label="VariableForm.sampling-interval"
                         :selected.sync="form.sampling_interval"
@@ -214,14 +231,20 @@
                         helpMessage="VariableForm.sampling-interval-help"
                     ></opensilex-SelectForm>
                 </div>
-            </div>
 
-            <div class="row">
+                <!-- description -->
                 <div class="col-xl-12" id="v-step-description">
-                    <!-- description -->
                     <opensilex-TextAreaForm :value.sync="form.description" label="component.common.description">
                     </opensilex-TextAreaForm>
                 </div>
+                
+                <!-- variables groups-->
+                <!-- <div class="col-xl-12">
+                    <opensilex-GroupVariablesTable
+                        ref="groupVariablesTable"
+                        :variablesGroupArray="variablesGroupArray"
+                    ></opensilex-GroupVariablesTable>
+                </div> -->
             </div>
         </ValidationObserver>
     </div>
@@ -236,6 +259,7 @@ import Tutorial from "../../common/views/Tutorial.vue";
 import {
   CharacteristicCreationDTO,
   EntityCreationDTO,
+  InterestEntityCreationDTO,
   MethodCreationDTO,
   NamedResourceDTO,
   UnitCreationDTO,
@@ -273,11 +297,13 @@ export default class VariableForm extends Vue {
     @Ref("variableTutorial") readonly variableTutorial!: Tutorial;
 
     @Ref("entitySelectForm") entitySelectForm!: SelectForm;
+    @Ref("interestEntitySelectForm") interestEntitySelectForm!: any;
     @Ref("characteristicSelectForm") characteristicSelectForm!: any;
     @Ref("methodSelectForm") methodSelectForm!: any;
     @Ref("unitSelectForm") unitSelectForm!: any;
 
     @Ref("entityForm") readonly entityForm!: any;
+    @Ref("interestEntityForm") readonly interestEntityForm!: any;
     @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: any;
@@ -294,6 +320,7 @@ export default class VariableForm extends Vue {
     sampleList: Array<any> = [];
 
     @Ref("validatorRef") readonly validatorRef!: any;
+    //@Ref("groupVariablesTable") readonly varTable!: any;
 
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
@@ -343,6 +370,17 @@ export default class VariableForm extends Vue {
         return "";
     }
 
+    // variablesGroupArray = [];
+    // setVariablesGroups(form) {
+    //     this.variablesGroupArray = [];
+    //     if (form.relations != null) {  
+    //         form.variablesGroup.forEach(variablesGroup => {
+    //             if(variablesGroup.uri != null){
+    //                 this.variablesGroupArray.push(variablesGroup);
+    //             }
+    //         })        
+    //     }
+    // }
 
     selectedEntityName;
     selectedCharacteristicName;
@@ -374,7 +412,8 @@ export default class VariableForm extends Vue {
         let nameParts: string[] = [];
 
         if(this.selectedEntityName && this.selectedEntityName.length > 0 ){
-            nameParts.push(this.selectedEntityName);
+            let name = this.selectedEntityName.split(' ');
+            nameParts.push(name[0]);
         }
         if(this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0 ){
             nameParts.push(this.selectedCharacteristicName);
@@ -397,6 +436,10 @@ export default class VariableForm extends Vue {
 
     showEntityCreateForm() {
         this.entityForm.showCreateForm();
+    }
+
+    showInterestEntityCreateForm(){
+        this.interestEntityForm.showCreateForm();
     }
 
     showCharacteristicCreateForm() {
@@ -425,6 +468,7 @@ export default class VariableForm extends Vue {
         alternative_name: undefined,
         name: undefined,
         entity: undefined,
+        entity_of_interest: undefined,
         characteristic: undefined,
         description: undefined,
         time_interval: undefined,
@@ -440,6 +484,7 @@ export default class VariableForm extends Vue {
         narrow_match: [],
         species: undefined,
         linked_data_nb: 0
+//        variablesGroup: []
       };
     }
 
@@ -474,6 +519,33 @@ export default class VariableForm extends Vue {
         this.entitySelectForm.select({id: created.uri, label: created.name});
     }
 
+    searchInterestEntities(name: string, page, pageSize){
+        return this.service.searchInterestEntity(name, ["name=asc"], page, pageSize)
+            .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                return http;
+            });
+    }
+
+    loadInterestEntity(uris: Array<any>) {
+
+        if (!uris || uris.length !== 1) {
+            return undefined;
+        }
+
+        // in edit mode, the loaded entity is an object composed of uri and name
+        if (uris[0].uri) {
+            return [this.form.entity_of_interest];
+        }
+        return this.service.getInterestEntity( uris[0]).then(http =>
+           [http.response.result]
+        );
+    }    
+
+    setLoadedInterestEntity(created: InterestEntityCreationDTO) {
+        this.form.entity_of_interest = created.uri;
+        this.interestEntitySelectForm.select({id: created.uri, label: created.name});
+    }
+    
     searchCharacteristics(name: string, page, pageSize){
         return this.service
             .searchCharacteristics(name, ["name=asc"], page, pageSize)
@@ -678,6 +750,18 @@ export default class VariableForm extends Vue {
                 params: {placement: "right"},
             },
             {
+                target: "#v-step-interestEntity",
+                header: { title: this.$i18n.t("VariableView.entityOfInterest")},
+                content: this.$i18n.t("VariableForm.tutorial.entityOfInterest"),
+                params: {placement: "left"},
+            },
+            {
+                target: "#v-step-interestEntity",
+                header: { title: this.$i18n.t("VariableView.entityOfInterest")},
+                content: this.$i18n.t("VariableForm.tutorial.entityOfInterest-check"),
+                params: {placement: "right"},
+            },
+            {
                 target: "#v-step-characteristic",
                 header: { title: this.$i18n.t("VariableView.characteristic")},
                 content: this.$i18n.t("VariableForm.tutorial.characteristic"),
@@ -755,6 +839,12 @@ export default class VariableForm extends Vue {
 }
 </script>
 
+<style scoped>
+    #traitButton {
+        padding-top: 23px;
+    }
+</style>
+
 <i18n>
 en:
     VariableForm:
@@ -762,12 +852,16 @@ en:
         add: Add variable
         edit: Edit variable
         altName: Alternative name
-        entity-help: "Involved object or event. e.g : Leaf, plant, rain fall"
+        entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
         entity-placeholder: Search and select an entity
-        characteristic-help: "Define what was measured/observed. e.g: temperature, infection level, weight, area"
+        interestEntity-label: Entity of interest
+        interestEntity-help: "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
+        interestEntity-placeholder: Search and select an entity of interest
+        characteristic-help: "Define what is measured/observed. e.g: temperature, infection level, weight, area"
         characteristic-placeholder: Search and select a characteristic
         method-placeholder: Search and select a method
-        method-help : How it was measured
+        method-help : How it was measured. If you don't want to specify a method, select the standard method.
+        unit-help: "Scale for ordinal variable (such as good, medium, bad...). e.g : kg/m2"
         unit-placeholder: Search and select an unit
         time-interval: Time interval
         time-interval-placeholder: Select an interval
@@ -784,6 +878,7 @@ en:
         trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
         class-placeholder: Select a type
         no-entity: Unknown entity. Add one with the + button.
+        no-interestEntity: Unknown entity of interest. Add one with the + button.
         no-characteristic: Unknown characteristic. Add one with the + button.
         no-method: Unknown method. Add one with the + button.
         no-unit: Unknown unit. Add one with the + button.
@@ -813,6 +908,8 @@ en:
             global: "Create a variable : Before creating a new variable, make sur you check the existing ones in order to avoid duplicates. For example 'grain yield at harvest'."
             entity: "Select the entity that is the object of the observation/measurement. Here 'Grain'."
             entity-check: "If the entity is not already present in the list you can add it. Double check if there is no other spelling - seed, crop, etc."
+            entityOfInterest: "Select the entity of interest that is the object of the observation/measurement."
+            entityOfInterest-check: "If the entity of interest is not already present in the list you can add it. Double check if there is no other spelling."
             characteristic: "Select the measured characteristic. Here 'Yield' "
             characteristic-check: "If the characteristic is not in the list you can add it. Double check if it is not already present under another name."
             method: "Select the method that is associated with this variable. In our case this is a yield sensor onboard the harvester."
@@ -845,12 +942,16 @@ fr:
         add: Ajouter une variable
         edit: Éditer une variable
         altName: Nom alternatif
-        entity-help: "Objet ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, plante, pluie"
+        entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
         entity-placeholder: Rechercher et sélectionner une entité
+        interestEntity-label: Entité d'intérêt
+        interestEntity-help: "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
+        interestEntity-placeholder: Rechercher et sélectionner un entité d'intérêt
         characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
         characteristic-placeholder: Rechercher et sélectionner une caractéristique
-        method-help: Définir comment la mesure/l'observation a été effectuée.
+        method-help: Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard.
         method-placeholder: Rechercher et sélectionner une méthode
+        unit-help: "Echelle de la variable ordinale (tel que bon, moyen, mauvais...). ex: kg/m2"
         unit-placeholder: Rechercher et sélectionner une unité
         time-interval: Intervalle de temps
         time-interval-placeholder: Sélectionner un intervalle
@@ -867,6 +968,7 @@ fr:
         trait-uri-placeholder: http://purl.obolibrary.org/obo/WTO_0000171
         class-placeholder: Sélectionner un type
         no-entity: Entité inconnue. L'ajouter avec le bouton +.
+        no-interestEntity: Entité d'intérêt inconnue. L'ajouter avec le bouton +.
         no-characteristic: Caractéristique inconnue. L'ajouter avec le bouton +.
         no-method: Méthode inconnue. L'ajouter avec le bouton +.
         no-unit: Unité inconnue. L'ajouter avec le bouton +.
@@ -896,6 +998,8 @@ fr:
             global: "Création de variable : Avant de créer une variable, soyez bien sûr d'avoir vérifié la liste existante pour ne pas introduire de doublon. Par exemple 'Rendement du grain à la récolte'."
             entity: "Sélectionner l'entité sur laquelle la variable est mesurée/observée. Ici le 'grain'."
             entity-check: "Si l'entité n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives - seed, crop, etc."
+            entityOfInterest: "Sélectionner l'entité d'intérêt sur laquelle la variable est mesurée/observée."
+            entityOfInterest-check: "Si l'entité d'intérêt n'est pas dans la liste, vous pouvez la créer. Vérifier toutefois des orthographes alternatives."
             characteristic: "Sélectionner la caractéristique mesurée. Ici 'rendement'."
             characteristic-check: "Si la caractéristique n'est pas dans la liste, vous pouvez l'ajouter. Vérifier encore une fois que la caractéristique n'est pas présente sous un autre nom."
             method: " Sélectionner la méthode qui vous a permis de réaliser cette variable. Dans notre cas, un capteur embarqué à bord de la moissoneuse-batteuse."

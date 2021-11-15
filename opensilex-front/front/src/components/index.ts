@@ -474,6 +474,8 @@ import GroupVariablesList from './groupVariable/GroupVariablesList.vue';
 components["opensilex-GroupVariablesList"] = GroupVariablesList;
 import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue';
 components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
+import GroupVariablesListWithVariables from './groupVariable/GroupVariablesListWithVariables.vue';
+components["opensilex-GroupVariablesListWithVariables"] = GroupVariablesListWithVariables;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -487,6 +489,13 @@ components["opensilex-VariableStructureList"] = VariableStructureList;
 import VariableStructureDetails from './variables/views/VariableStructureDetails.vue';
 components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
 
+// Entity of interest
+import InterestEntityForm from './variables/form/InterestEntityForm.vue';
+components["opensilex-InterestEntityForm"] = InterestEntityForm;
+import InterestEntityCreate from './variables/form/InterestEntityCreate.vue';
+components["opensilex-InterestEntityCreate"] = InterestEntityCreate;
+import InterestEntityExternalReferencesForm from './variables/form/InterestEntityExternalReferencesForm.vue';
+components["opensilex-InterestEntityExternalReferencesForm"] = InterestEntityExternalReferencesForm;
 
 // Method
 import MethodCreate from './variables/form/MethodCreate.vue';

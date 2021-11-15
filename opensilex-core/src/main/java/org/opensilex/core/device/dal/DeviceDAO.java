@@ -95,8 +95,16 @@ public class DeviceDAO {
         this.sparql = sparql;
         this.nosql = nosql;
     }
+    
+    public void createIndexes() {
+        IndexOptions unicityOptions = new IndexOptions().unique(true);
 
+        MongoCollection attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
+        attributeCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
+    }
+    
     public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+        createIndexes();
         URI deviceType = devModel.getType();
         URI deviceURI = devModel.getUri();
         String deviceName = devModel.getName();
@@ -362,6 +370,7 @@ public class DeviceDAO {
     }
 
     public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {
+        createIndexes();
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
         initDevice(instance, relations, user);
         Node graph = sparql.getDefaultGraph(DeviceModel.class);

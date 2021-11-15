@@ -13,19 +13,19 @@ import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
@@ -63,12 +63,18 @@ public class GermplasmDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    protected final Node defaultGraph;
 
     public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttributes";
 
     public GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
+        try {
+            defaultGraph = sparql.getDefaultGraph(GermplasmModel.class);
+        } catch (SPARQLException e) {
+           throw new RuntimeException("Unexpected error when retrieving GermplasmModel default graph",e);
+        }
     }
 
     public MongoCollection getAttributesCollection() {
@@ -246,59 +252,35 @@ public class GermplasmDAO {
         } else {
             filteredUris = null;
         }
-        
-        if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
-            return new ListWithPagination<>(new ArrayList());
-        } else {           
 
-            if (experiment != null) {
-                List<URI> gplUrisFromExp = getGermplasmURIsFromExp(experiment);
-                if (gplUrisFromExp.isEmpty()) {
-                    return new ListWithPagination<>(new ArrayList());
-                } else {
-                    return sparql.searchWithPagination(
-                            GermplasmModel.class,
-                            user.getLanguage(),
-                            (SelectBuilder select) -> {
-                                appendRegexUriFilter(select, uri);
-                                appendRdfTypeFilter(select, rdfType);
-                                appendRegexLabelAndSynonymFilter(select, label);
-                                appendSpeciesFilter(select, species);
-                                appendVarietyFilter(select, variety);
-                                appendAccessionFilter(select, accession);
-                                appendRegexInstituteFilter(select, institute);
-                                appendProductionYearFilter(select, productionYear);
-                                appendURIsFilter(select, filteredUris);
-                                SPARQLQueryHelper.inURI(select, GermplasmModel.URI_FIELD, gplUrisFromExp);
-                            },
-                            orderByList,
-                            page,
-                            pageSize
-                    );
-                }
-
-            } else {
-
-                return sparql.searchWithPagination(
-                        GermplasmModel.class,
-                        user.getLanguage(),
-                        (SelectBuilder select) -> {
-                            appendRegexUriFilter(select, uri);
-                            appendRdfTypeFilter(select, rdfType);
-                            appendRegexLabelAndSynonymFilter(select, label);
-                            appendSpeciesFilter(select, species);
-                            appendVarietyFilter(select, variety);
-                            appendAccessionFilter(select, accession);
-                            appendRegexInstituteFilter(select, institute);
-                            appendProductionYearFilter(select, productionYear);
-                            appendURIsFilter(select, filteredUris);
-                        },
-                        orderByList,
-                        page,
-                        pageSize
-                );
-            }
+        if (metadata != null && CollectionUtils.isEmpty(filteredUris)) {
+            return new ListWithPagination<>(Collections.emptyList());
         }
+
+        return sparql.searchWithPagination(
+                GermplasmModel.class,
+                user.getLanguage(),
+                (SelectBuilder select) -> {
+
+                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
+
+                    appendRegexUriFilter(select, uri);
+                    appendRdfTypeFilter(select, rdfType);
+                    appendRegexLabelAndSynonymFilter(select, label);
+                    appendSpeciesFilter(select, species);
+                    appendVarietyFilter(select, variety);
+                    appendAccessionFilter(select, accession);
+                    appendRegexInstituteFilter(select, institute);
+                    appendProductionYearFilter(select, productionYear);
+                    appendURIsFilter(select, filteredUris);
+
+                    ElementGroup germplasmGraphElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, defaultGraph);
+                    appendExperimentFilter(select, experiment, germplasmGraphElem);
+                },
+                orderByList,
+                page,
+                pageSize
+        );
     }
 
     public List<GermplasmModel> searchForExport(
@@ -314,70 +296,33 @@ public class GermplasmDAO {
             URI experiment,
             Document metadata
     ) throws Exception {        
-        
-        final Set<URI> filteredUris;
-        if (metadata != null) {
-            filteredUris = filterURIsOnAttributes(metadata);
-        } else {
-            filteredUris = null;
-        }
-        
-        List<GermplasmModel> germplasmList;
-        if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
-            germplasmList = new ArrayList();
-        } else { 
-        
-        
-            if (experiment != null) {
-                List<URI> gplUrisFromExp = getGermplasmURIsFromExp(experiment);
-                if (gplUrisFromExp.isEmpty()) {
-                    germplasmList = new ArrayList();
-                } else {
-                    germplasmList = sparql.search(
-                            GermplasmModel.class,
-                            user.getLanguage(),
-                            (SelectBuilder select) -> {
-                                appendRegexLabelAndSynonymFilter(select, label);
-                                appendRegexUriFilter(select, uri);
-                                appendRdfTypeFilter(select, rdfType);                            
-                                appendSpeciesFilter(select, species);
-                                appendVarietyFilter(select, variety);
-                                appendAccessionFilter(select, accession);
-                                appendRegexInstituteFilter(select, institute);
-                                appendProductionYearFilter(select, productionYear);
-                                appendURIsFilter(select, filteredUris);
-                                SPARQLQueryHelper.inURI(select, GermplasmModel.URI_FIELD, gplUrisFromExp);
-                            });
-                }
 
-            } else {
+       ListWithPagination<GermplasmModel> germplasmList = search(
+               user,
+               uri,
+               rdfType,
+               label,
+               species,
+               variety,
+               accession,
+               institute,
+               productionYear,
+               experiment,
+               metadata,
+               null,
+               null,
+               null
+       );
 
-                germplasmList = sparql.search(
-                        GermplasmModel.class,
-                        user.getLanguage(),
-                        (SelectBuilder select) -> {
-                            appendRegexUriFilter(select, uri);
-                            appendRdfTypeFilter(select, rdfType);
-                            appendRegexLabelAndSynonymFilter(select, label);
-                            appendSpeciesFilter(select, species);
-                            appendVarietyFilter(select, variety);
-                            appendAccessionFilter(select, accession);
-                            appendRegexInstituteFilter(select, institute);
-                            appendProductionYearFilter(select, productionYear);
-                            appendURIsFilter(select, filteredUris);
-                        }
-                );
-            }
-        }
-        
+
         //get metadata part from mongo
-        for (GermplasmModel germplasm:germplasmList) {
+        for (GermplasmModel germplasm:germplasmList.getList()) {
             GermplasmAttributeModel storedAttributes = getStoredAttributes(germplasm.getUri());
             if (storedAttributes != null) {
                 germplasm.setAttributes(storedAttributes.getAttribute());
             }
         }
-        return germplasmList;
+        return germplasmList.getList();
     }
 
     public List<URI> getGermplasmURIsBySpecies(List<URI> species, String lang) throws Exception {
@@ -538,21 +483,6 @@ public class GermplasmDAO {
 
     }
 
-    public ListWithPagination<GermplasmModel> getGermplasmFromExp(
-            UserModel currentUser,
-            URI uri,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
-
-        return sparql.searchWithPagination(GermplasmModel.class, currentUser.getLanguage(),
-                (SelectBuilder select) -> {
-                    appendExperimentFilter(select, uri);
-                },
-                orderByList, page, pageSize);
-
-    }
-
     private void appendGermplasmFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
             WhereBuilder builder = new WhereBuilder();
@@ -569,37 +499,21 @@ public class GermplasmDAO {
         }
     }
 
-    private void appendExperimentFilter(SelectBuilder selectBuilder, URI uri) throws SPARQLException, Exception {
-        if (uri != null) {
-            List<URI> germplasmURIs = getGermplasmURIsFromExp(uri);
-            SPARQLQueryHelper.inURI(selectBuilder, GermplasmModel.URI_FIELD, germplasmURIs);
+    private void appendExperimentFilter(SelectBuilder select, URI xpUri, ElementGroup germplasmGraphElem) throws SPARQLException {
+        if (xpUri != null) {
+
+            // search into global experiment graph, which species are associated to this xp
+            Node xpGlobalGraphNode = sparql.getDefaultGraph(ExperimentModel.class);
+            Node xpNode = SPARQLDeserializers.nodeURI(xpUri);
+            Node hasSpecies = SPARQLDeserializers.nodeURI(Oeso.hasSpecies);
+            Var speciesVar = makeVar("species");
+            select.addGraph(xpGlobalGraphNode,xpNode,hasSpecies,speciesVar);
+
+            // join xp species to germplasm associated to these species
+            Var germplasmVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            Node fromSpecies = SPARQLDeserializers.nodeURI(Oeso.fromSpecies);
+            germplasmGraphElem.addTriplePattern(new Triple(germplasmVar,fromSpecies,speciesVar));
         }
-    }
-
-    private List<URI> getGermplasmURIsFromExp(URI uri) throws SPARQLDeserializerNotFoundException, SPARQLException, Exception {
-        SelectBuilder select = new SelectBuilder();
-        select.addVar("uri");
-        WhereBuilder builder1 = new WhereBuilder();
-        WhereBuilder builder2 = new WhereBuilder();
-        builder1.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("uri")));
-        builder2.addWhere(makeVar("gpl"), makeVar("p"), makeVar("uri"));
-        builder2.addWhere(makeVar("uri"), RDF.type, makeVar("gplType"));
-        builder2.addWhere(makeVar("gplType"), Ontology.subClassAny, Oeso.Germplasm);
-        builder2.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), new Triple(makeVar("so"), NodeFactory.createURI(Oeso.hasGermplasm.toString()), makeVar("gpl")));
-        builder1.addUnion(builder2);
-        select.addWhere(builder1);
-
-        List<URI> germplasmURIs = new ArrayList<>();
-        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-
-        List<SPARQLResult> result = sparql.executeSelectQuery(select);
-
-        for (SPARQLResult res : result) {
-            germplasmURIs.add(uriDeserializer.fromString((res.getStringValue("uri"))));
-        }
-
-        return germplasmURIs;
-
     }
 
     private GermplasmAttributeModel getStoredAttributes(URI uri) {

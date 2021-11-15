@@ -6,6 +6,7 @@
 package org.opensilex.core.variablesGroup.dal;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class VariablesGroupDAO {
     public VariablesGroupModel get(URI uri) throws Exception {
         return sparql.getByURI(VariablesGroupModel.class, uri, null);
     }
-    
+   
     public List<VariablesGroupModel> getList(List<URI> uris) throws Exception {
         return sparql.getListByURIs(VariablesGroupModel.class, uris, null);
     }

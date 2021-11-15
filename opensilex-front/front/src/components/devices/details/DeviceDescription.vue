@@ -9,7 +9,7 @@
             <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               label="DeviceDescription.update"
-              @click="updateDevice"
+              @click="editDeviceForm"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
@@ -53,7 +53,7 @@
       <!-- <b-col sm="5">
         <opensilex-Card label="DeviceDescription.events" icon="ik#ik-clipboard">
             <template v-slot:body>
-
+ 
             </template>
         </opensilex-Card>
       </b-col> -->
@@ -223,8 +223,8 @@ export default class DeviceDescription extends Vue {
 
   @Ref("deviceForm") readonly deviceForm!: any;
 
-  updateDevice() {
-    this.deviceForm.getFormRef().getAttributes(this.device);
+  editDeviceForm() {
+    this.deviceForm.getFormRef().setRelationsAndAttributes(this.device);
     let devicetoSend = JSON.parse(JSON.stringify(this.device));
     this.deviceForm.showEditForm(devicetoSend);
   }
@@ -251,6 +251,7 @@ en:
     personInCharge: Person in charge
     localisation: Localisation
     variables: Variables
+    position: Position
     update: Update device
     delete: Delete device
     additionalInfo: Additional information
@@ -274,6 +275,7 @@ fr:
     personInCharge: Personne responsable
     localisation: Localisation
     variables: Variables
+    position: Position
     update: Modifier le dispositif
     delete: Supprimer ce dispositif
     additionalInfo: Informations supplémentaires

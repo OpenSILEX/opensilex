@@ -184,5 +184,4 @@ public class EntityAPI {
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-
 }

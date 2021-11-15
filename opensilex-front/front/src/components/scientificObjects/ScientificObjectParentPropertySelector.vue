@@ -7,6 +7,7 @@
       :required="property.is_required"
       :searchMethod="searchParents"
       :itemLoadingMethod="getParentsByURI"
+      placeholder="ScientificObjectParentPropertySelector.parent-placeholder"
     ></opensilex-SelectForm>
   </div>
 </template>
@@ -104,10 +105,12 @@ export default class ScientificObjectParentPropertySelector extends Vue {
 en:
   ScientificObjectParentPropertySelector:
     label: Facilities
-    placeholder: Please select a facility
+    placeholder: Select a facility
+    parent-placeholder: Select a scientific object
 
 fr:
   ScientificObjectParentPropertySelector:
     label: Installation technique
     placeholder: Sélectionner une installation technique
+    parent-placeholder: Sélectionner un objet scientifique
 </i18n>

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+1] - 2021-11-02
+
+### Added
+
+- Variable:
+  - add concept of **Entity Of Interest** to represent which is characterized by variable.
+  - add **Export Variables** functionalities in CSV.
+
+- User documentation at homepage.
+
+- Impove **Organization** in progress:
+  - Association of Groups to Organizations: you can now associate some groups with an organization at the creation or update of it.
+
+###  Fixed or optimized
+
+- Provenance : fix no device selector render when selecting oeso:SensingDevice's Agents .
+- Ergonomic mistakes fixed
+
+
 ## [1.0.0-rc] - 2021-10-08
 
 ### Added

@@ -20,8 +20,7 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-DeviceList
-          ref="deviceList"
-          v-bind:credentialsGroups="credentialsGroups"
+          ref="deviceList"          
         ></opensilex-DeviceList>
       </template>
     </opensilex-PageContent>

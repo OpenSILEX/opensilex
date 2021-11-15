@@ -2,26 +2,32 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.germplasm.api.GermplasmAPITest;
+import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.CharacteristicModel;
-import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.core.variable.api.entity.EntityCreationDTO;
+import org.opensilex.core.variable.dal.*;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import static junit.framework.TestCase.assertTrue;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
@@ -36,6 +42,25 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public String createPath = path ;
     public String updatePath = path ;
     public String deletePath = path + "/{uri}";
+
+    private GermplasmCreationDTO germplasm;
+    private EntityCreationDTO entity;
+
+    @Before
+    public void beforeTest() throws Exception {
+
+        // create an entity to use as InterestEntity
+        entity = EntityApiTest.getCreationDto();
+        final Response postEntityResult = getJsonPostResponse(target(EntityApiTest.createPath), entity);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postEntityResult.getStatus());
+        entity.setUri(extractUriFromResponse(postEntityResult));
+
+        // create a germplasm to use as InterestEntity
+        germplasm = GermplasmAPITest.getCreationSpeciesDTO();
+        final Response postGermplasmResult = getJsonPostResponse(target(GermplasmAPITest.createPath), germplasm);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
+        germplasm.setUri(extractUriFromResponse(postGermplasmResult));
+    }
 
     public VariableCreationDTO getCreationDto() throws Exception {
 
@@ -215,7 +240,11 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(VariableModel.class);
+        return Arrays.asList(
+                EntityModel.class,
+                GermplasmModel.class,
+                VariableModel.class
+        );
     }
 
 }

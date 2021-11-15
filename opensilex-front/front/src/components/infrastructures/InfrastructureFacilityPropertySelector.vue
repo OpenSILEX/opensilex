@@ -92,7 +92,7 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
 en:
   InfrastructureFacilityPropertySelector:
     label: Facilities
-    placeholder: Please select a facility
+    placeholder: Select a facility
 
 fr:
   InfrastructureFacilityPropertySelector:

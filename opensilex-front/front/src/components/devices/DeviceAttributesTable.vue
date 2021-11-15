@@ -4,7 +4,7 @@
       <h6 class="mb-3">
         <strong>{{$t('DeviceAttributesTable.title')}}</strong>
       </h6>
-      <b-row class="ml-2">
+      <b-row >
         <b-col md="4">
           <opensilex-AddChildButton
             class="mr-2"
@@ -32,7 +32,7 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { DevicesService } from "opensilex-core/index";
@@ -62,9 +62,6 @@ export default class DeviceAttributesTable extends Vue {
 
   @Ref("tabulatorRef") readonly tabulatorRef!: any;
   @Ref("langInput") readonly langInput!: any;
-
-  @Prop()
-  editMode: boolean; 
 
   @Prop()
   attributesArray;
@@ -140,12 +137,6 @@ export default class DeviceAttributesTable extends Vue {
     });
   }
 
-  addRow(row) {
-    if (row.attribute != undefined && row.attribute != null && row.attribute != "") {
-      this.attributesArray.unshift(row);
-    }
-  }
-
   removeRow(evt, clickedCell) {
     let columnName = clickedCell.getField();
 
@@ -155,16 +146,14 @@ export default class DeviceAttributesTable extends Vue {
     }
   }
 
-  pushAttributes() {
+  getAttributes() {
     let attributes = {};
     
     let data = this.tabulatorRef.getInstance().getData();
-    for (let y = 0; y < data.length; y++) {
-       if (data[y].attribute !== null) {
-        let key = data[y].attribute;
-        attributes[key] = data[y].value;
+    for (let item of data) {
+       if (item.attribute !== null) {
+        attributes[item.attribute] = item.value;
       }
-
     }
     return attributes;
   }

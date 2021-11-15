@@ -15,7 +15,7 @@
             Copyright © - INRA - 2014 - 2021
             Oeso extention ontology for PHIS is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
         <rdfs:label xml:lang="en">OpenSILEX - Phenome</rdfs:label>
-        <owl:versionInfo>Version 3.2 (2021-10-07) created by INRA</owl:versionInfo>
+        <owl:versionInfo>Version 3.2.1 (2021-10-20) created by INRAE</owl:versionInfo>
     </owl:Ontology>
     
 
@@ -51,6 +51,60 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#aperture -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#aperture">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#attenuatorFilter -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#MultispectralCamera"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#brdfP1 -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP1">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#brdfP2 -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP2">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#brdfP3 -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP3">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#brdfP4 -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP4">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
+    </owl:ObjectProperty>
     
 
 
@@ -451,71 +505,37 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#aperture -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#aperture">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
-        <rdfs:label xml:lang="en">aperture (fnumber)</rdfs:label>
-        <rdfs:label xml:lang="fr">ouverture (fnumber)</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#aperture"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#attenuatorFilter -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#MultispectralCamera"/>
-        <rdfs:label xml:lang="en">attenuator filter</rdfs:label>
-        <rdfs:label xml:lang="fr">filtre atténuateur</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#brdfP1 -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP1">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
-        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
-        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
-        <rdfs:label xml:lang="en">BRDF P1</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP1"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#brdfP2 -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP2">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
-        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
-        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
-        <rdfs:label xml:lang="en">BRDF P2</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP2"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#brdfP3 -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP3">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
-        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
-        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
-        <rdfs:label xml:lang="en">BRDF P3</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP3"/>
     
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#brdfP4 -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP4">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
-        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
-        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
-        <rdfs:label xml:lang="en">BRDF P4</rdfs:label>
-    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP4"/>
     
 
 
@@ -623,6 +643,18 @@
                 </owl:oneOf>
             </rdfs:Datatype>
         </rdfs:range>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasReplication -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasReplication">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment xml:lang="en">In statistics, replication is the repetition of the conditions of an experiment, so that the variability associated with the phenomenon can be estimated.</rdfs:comment>
+        <rdfs:label xml:lang="en">replication</rdfs:label>
+        <rdfs:label xml:lang="fr">réplication</rdfs:label>
     </owl:DatatypeProperty>
     
 
@@ -988,6 +1020,14 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#EntityOfInterest -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
@@ -1071,7 +1111,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:label xml:lang="fr">Capteur d&apos;air</rdfs:label>
         <rdfs:label xml:lang="en">Gas sensor</rdfs:label>
     </owl:Class>
@@ -1270,6 +1310,12 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#aperture"/>
+                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#focalLength"/>
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
@@ -1278,12 +1324,6 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
                 <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#aperture"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="en">lens</rdfs:label>
@@ -1353,6 +1393,12 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
         <rdfs:subClassOf>
             <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter"/>
+                <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#focalLength"/>
                 <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minCardinality>
             </owl:Restriction>
@@ -1385,12 +1431,6 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#wavelength"/>
                 <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">6</owl:maxCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter"/>
-                <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="fr">caméra multispectrale</rdfs:label>
@@ -1641,6 +1681,13 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
                 <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasReplication"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -1989,6 +2036,12 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#VariableBase -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#Variety -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variety">
@@ -2089,6 +2142,26 @@
     
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#germplasmEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#germplasmEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">germplasm</rdfs:label>
+        <rdfs:label xml:lang="fr">germplasm</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#growthchamberEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#growthchamberEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#inrafunding -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#inrafunding">
@@ -2104,6 +2177,26 @@
         <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#FinancialFunding"/>
         <rdfs:label xml:lang="en">International</rdfs:label>
         <rdfs:label xml:lang="fr">International</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plantEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plantEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="en">plant</rdfs:label>
+        <rdfs:label xml:lang="fr">plante</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#plotEOI -->
+
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#plotEOI">
+        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest"/>
+        <rdfs:label xml:lang="fr">parcelle</rdfs:label>
+        <rdfs:label xml:lang="en">plot</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -2126,6 +2219,34 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#aperture">
+        <rdfs:label xml:lang="en">aperture (fnumber)</rdfs:label>
+        <rdfs:label xml:lang="fr">ouverture (fnumber)</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#attenuatorFilter">
+        <rdfs:label xml:lang="en">attenuator filter</rdfs:label>
+        <rdfs:label xml:lang="fr">filtre atténuateur</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP1">
+        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
+        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
+        <rdfs:label xml:lang="en">BRDF P1</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP2">
+        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
+        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
+        <rdfs:label xml:lang="en">BRDF P2</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP3">
+        <rdfs:label xml:lang="en">BRDF P3</rdfs:label>
+        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
+        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#brdfP4">
+        <rdfs:label xml:lang="en">BRDF P4</rdfs:label>
+        <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
+        <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
+    </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
         <rdfs:label xml:lang="fr">date de la dernière calibration</rdfs:label>
         <rdfs:label xml:lang="en">date of last calibration</rdfs:label>
@@ -2200,8 +2321,8 @@
         <rdfs:label xml:lang="fr">longueur d&apos;onde maximale (nm)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#minWavelength">
-        <rdfs:label xml:lang="fr">longueur d&apos;onde minimale (nm)</rdfs:label>
         <rdfs:label xml:lang="en">minimum wavelength (nm)</rdfs:label>
+        <rdfs:label xml:lang="fr">longueur d&apos;onde minimale (nm)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#pixelSize">
         <rdfs:label xml:lang="en">pixel size (μm)</rdfs:label>

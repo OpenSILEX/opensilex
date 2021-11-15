@@ -5,7 +5,16 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
+import java.io.IOException;
+import java.io.StringWriter;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -37,9 +46,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import org.opensilex.core.URIsListPostDTO;
 
 import org.opensilex.server.response.ErrorDTO;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -309,6 +322,132 @@ public class VariableAPI {
                     "Unknown variable URIs"
             ).getResponse();
         }
+    }
+    
+    private Response buildCSVForClassicExport(List<VariableModel> variableList) throws IOException {
+                // Convert list to DTO
+        List<VariableExportDTOClassic> resultDTOList = new ArrayList<>();
+        for (VariableModel variable : variableList) {
+            VariableExportDTOClassic dto = VariableExportDTOClassic.fromModel(variable);
+            resultDTOList.add(dto);          
+        }
+
+        if (resultDTOList.isEmpty()) {
+            resultDTOList.add(new VariableExportDTOClassic()); // to return an empty table
+        }
+        
+        //Construct manually json to convert it to csv
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+        JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
+        List<JsonNode> list = new ArrayList<>();
+        if(jsonTree.isArray()) {
+            for(JsonNode jsonNode : jsonTree) {               
+                list.add(jsonNode);              
+            }
+        }
+        
+        ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance, list);
+
+        CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
+        JsonNode firstObject = arrayNode.elements().next();
+        firstObject.fieldNames().forEachRemaining(fieldName -> {
+            csvSchemaBuilder.addColumn(fieldName);
+        });
+                        
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        StringWriter str = new StringWriter();
+
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.writerFor(JsonNode.class).with(csvSchema).writeValue(str, arrayNode);
+
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String fileName = "export_classic_variable" + dtf.format(date) + ".csv";
+
+        return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=\"" + fileName + "\"").build();
+    }
+
+    private Response buildCSVForDetailsExport(List<VariableModel> variableList) throws IOException {
+                // Convert list to DTO
+        List<VariableExportDTODetails> resultDTOList = new ArrayList<>();
+        for (VariableModel variable : variableList) {
+            VariableExportDTODetails dto = VariableExportDTODetails.fromModel(variable);
+            resultDTOList.add(dto);          
+        }
+
+        if (resultDTOList.isEmpty()) {
+            resultDTOList.add(new VariableExportDTODetails()); // to return an empty table
+        }
+        
+        //Construct manually json to convert it to csv
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+        JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
+        List<JsonNode> list = new ArrayList<>();
+        if(jsonTree.isArray()) {
+            for(JsonNode jsonNode : jsonTree) {               
+                list.add(jsonNode);              
+            }
+        }
+        
+        ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance, list);
+
+        CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
+        JsonNode firstObject = arrayNode.elements().next();
+        firstObject.fieldNames().forEachRemaining(fieldName -> {
+            csvSchemaBuilder.addColumn(fieldName);
+        });
+                        
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        StringWriter str = new StringWriter();
+
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.writerFor(JsonNode.class).with(csvSchema).writeValue(str, arrayNode);
+
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String fileName = "export_detailed_variable" + dtf.format(date) + ".csv";
+
+        return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", "attachment; filename=\"" + fileName + "\"").build();
+    }
+    
+    @POST
+    @Path("export_classic_by_uris")
+    @ApiOperation("export variable by list of uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with variable list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response classicExportVariableByURIs(
+            @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        List<VariableModel> variableList = dao.getList(dto.getUris());
+        
+        return buildCSVForClassicExport(variableList);
+        
+    }
+
+    @POST
+    @Path("export_details_by_uris")
+    @ApiOperation("export detailed variable by list of uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return a csv file with detailed variable list"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response detailsExportVariableByURIs(
+            @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        List<VariableModel> variableList = dao.getList(dto.getUris());
+        
+        return buildCSVForDetailsExport(variableList);
+        
     }
 }
 

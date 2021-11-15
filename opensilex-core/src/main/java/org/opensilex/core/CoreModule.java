@@ -26,6 +26,9 @@ import org.opensilex.core.ontology.Time;
 import org.opensilex.core.ontology.dal.cache.*;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.variable.dal.InterestEntityModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
@@ -130,6 +133,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         populateOntologyCache();
         
         insertDefaultVariablesGroup();
+        insertDefaultMethod();
+        insertDefaultInterestEntities();
     }
 
 
@@ -220,7 +225,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     }
     
     private void insertDefaultVariablesGroup() throws Exception {
-
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         
@@ -236,6 +240,63 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
            dao.create(variablesGroup); 
         } catch (Exception e) {
            LOGGER.warn("Couldn't create default variables group : " + e.getMessage());
+           throw e;
+        }
+    }
+    
+    private void insertDefaultMethod() throws Exception {
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        
+        MethodModel method = new MethodModel();
+        String name = "Standard";
+        
+        method.setName(name);
+        method.setDescription("This method is standard");
+        
+        LOGGER.info("Insert default method: " + method.getUri());
+        try {
+           sparql.create(method); 
+        } catch (Exception e) {
+           LOGGER.warn("Couldn't create default method : " + e.getMessage());
+           throw e;
+        }
+    }
+    
+    private void insertDefaultInterestEntities() throws Exception {
+        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        
+        InterestEntityModel plot = new InterestEntityModel();
+        InterestEntityModel plant = new InterestEntityModel();
+        InterestEntityModel genotype = new InterestEntityModel();
+        InterestEntityModel site = new InterestEntityModel();
+        InterestEntityModel greenHouse = new InterestEntityModel();
+        InterestEntityModel chamberGrowth = new InterestEntityModel();
+        
+        String plotName = "Plot";
+        String plantName = "Plant";
+        String genotypeName = "Genotype";
+        String siteName = "Site";
+        String greenHouseName = "Green house";
+        String chamberGrowthName = "Chamber growth";
+        
+        plot.setName(plotName);
+        plant.setName(plantName);
+        genotype.setName(genotypeName);
+        site.setName(siteName);
+        greenHouse.setName(greenHouseName);
+        chamberGrowth.setName(chamberGrowthName);
+        
+        try {
+           sparql.create(plot);
+           sparql.create(plant);
+           sparql.create(genotype);
+           sparql.create(site);
+           sparql.create(greenHouse);
+           sparql.create(chamberGrowth);
+        } catch (Exception e) {
+           LOGGER.warn("Couldn't create default entities of interest : " + e.getMessage());
            throw e;
         }
     }

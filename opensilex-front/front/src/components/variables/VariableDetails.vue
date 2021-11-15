@@ -59,6 +59,13 @@
                                            :value="variable.entity.name" :uri="variable.entity.uri"
                                            :url="getEntityPageUrl()">
                         </opensilex-UriView>
+
+                        <opensilex-UriView title="VariableForm.interestEntity-label"
+                                           :value="variable.entity_of_interest ? variable.entity_of_interest.name: undefined" 
+                                           :uri="variable.entity_of_interest ? variable.entity_of_interest.uri: undefined"
+                                           :url="variable.entity_of_interest ? getInterestEntityPageUrl(): undefined">
+                        </opensilex-UriView>
+
                         <opensilex-UriView title="VariableView.characteristic" v-if="variable.characteristic"
                                            :value="variable.characteristic.name" :uri="variable.characteristic.uri"
                                            :url="getCharacteristicPageUrl()">
@@ -88,7 +95,6 @@
             <b-col>
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
-
                       <opensilex-UriView title="GermplasmList.speciesLabel"
                                          :value="variable.species ? variable.species.name: undefined"
                                          :uri="variable.species ? variable.species.uri : undefined"
@@ -234,6 +240,10 @@ export default class VariableDetails extends Vue {
         return this.getEncodedUrlPage(VariablesView.ENTITY_TYPE,this.variable.entity.uri);
     }
 
+    getInterestEntityPageUrl(): string{
+        return this.getEncodedUrlPage(VariablesView.INTEREST_ENTITY_TYPE,this.variable.entity_of_interest.uri);  
+    }
+    
     getCharacteristicPageUrl(): string{
         return this.getEncodedUrlPage(VariablesView.CHARACTERISTIC_TYPE,this.variable.characteristic.uri);
     }

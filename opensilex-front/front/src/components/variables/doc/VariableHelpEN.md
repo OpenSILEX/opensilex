@@ -14,7 +14,7 @@ change the **method** used to observe, and change the **unit** to express the re
 Variables are made of four main fields. Fields are separated by underscores. 
 Note that the two first fields define the **trait=Entity_Quality**. Each field is using the CamelCase format.
 
-**`Entity`**: the object that is targeted. You can find for example some entities :
+**`Entity`**: the object that is targeted and observed. You can find for example some entities :
 
 - Canopy
 - Row
@@ -30,7 +30,7 @@ Note that the two first fields define the **trait=Entity_Quality**. Each field i
     - DiseaseSpot
     - Contaminated 
     
-**`Characteristic`**: he type of measurements. It can be some physical quantities as well as some observed qualities. 
+**`Characteristic`**: the type of measurements. It can be some physical quantities as well as some observed qualities. 
 Here are some characteristic used:
  
 - Radiance

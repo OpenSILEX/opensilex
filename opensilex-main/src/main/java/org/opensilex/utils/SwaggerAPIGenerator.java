@@ -189,6 +189,7 @@ public final class SwaggerAPIGenerator {
             ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(Include.NON_NULL);
             File swaggerFile = new File(destination);
+            swaggerFile.getParentFile().mkdirs();
             swaggerFile.createNewFile();
             mapper.writeValue(swaggerFile, swagger);
         }

@@ -34,7 +34,6 @@
     <opensilex-TreeView
         :nodes.sync="nodes"
         @select="displayNodesDetail"
-        :multipleElementsTooltip="$t('InfrastructureTree.multiple-parents-tooltip')"
     >
       <template v-slot:node="{ node }">
         <span class="item-icon">
@@ -45,6 +44,12 @@
         </span>&nbsp;
         <strong v-if="node.data.selectedOrganization">{{ node.title }}</strong>
         <span v-if="!node.data.selectedOrganization">{{ node.title }}</span>
+        <span class="tree-multiple-icon">
+          <opensilex-Icon
+              v-if="hasMultipleParents(node)"
+              icon="fa#project-diagram"
+              v-b-tooltip.hover.top="getMultipleParentsTooltip(node)" />
+        </span>
       </template>
 
       <template v-slot:buttons="{ node }">
@@ -187,6 +192,23 @@ export default class InfrastructureTree extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  private hasMultipleParents(node: OrganizationOrSiteTreeNode) {
+    if (node.data.isSite && (node.data as SiteGetDTO).organizations.length > 1) {
+      return true;
+    }
+    if (node.data.isOrganization && (node.data as InfrastructureGetDTO).parents.length > 1) {
+      return true;
+    }
+    return false;
+  }
+
+  private getMultipleParentsTooltip(node: OrganizationOrSiteTreeNode) {
+    if (node.data.isOrganization) {
+      return this.$t("InfrastructureTree.organization-multiple-tooltip");
+    }
+    return this.$t("InfrastructureTree.site-multiple-tooltip");
   }
 
   private filter: any = "";
@@ -475,6 +497,11 @@ export default class InfrastructureTree extends Vue {
     min-height: auto;
   }
 }
+
+.tree-multiple-icon {
+  padding-left: 8px;
+  color: #3cc6ff;
+}
 </style>
 
 <i18n>
@@ -490,7 +517,8 @@ en:
     infrastructure-component: Organizations and sites
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
-    multiple-parents-tooltip: "This organization has several parent organizations"
+    organization-multiple-tooltip: "This organization has several parent organizations"
+    site-multiple-tooltip: "This site has several parent organizations"
     siteTypeTooltip: "This is a site that hosts an organization"
 fr:
   InfrastructureTree:
@@ -504,7 +532,8 @@ fr:
     infrastructure-component: Organisations et sites
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
-    multiple-parents-tooltip: "Cette organisation a plusieurs organizations parentes"
+    organization-multiple-tooltip: "Cette organisation a plusieurs organisations parentes"
+    site-multiple-tooltip: "Ce site a plusieurs organisations parentes"
     siteTypeTooltip: "Ceci est un site qui héberge une organisation"
 
 

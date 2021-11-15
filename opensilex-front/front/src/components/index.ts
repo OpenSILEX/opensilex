@@ -99,6 +99,8 @@ import SiteDetail from './infrastructures/site/SiteDetail.vue';
 components["opensilex-SiteDetail"] = SiteDetail;
 import SiteForm from './infrastructures/site/SiteForm.vue';
 components["opensilex-SiteForm"] = SiteForm;
+import SiteView from './infrastructures/site/SiteView.vue';
+components["opensilex-SiteView"] = SiteView;
 
 
 // Factors

@@ -3,6 +3,7 @@
       :value.sync="internalValue"
       :label="property.name"
       :title="internalValue ? $t('component.common.yes') : $t('component.common.no')"
+      :helpMessage="property.comment"
     ></opensilex-CheckboxForm>
 </template>
 

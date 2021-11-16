@@ -15,15 +15,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDIntegerInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -38,10 +35,10 @@ export default class XSDIntegerInput extends Vue {
 
 <i18n>
 
-fr:
-    XSDIntegerInput:
-        placeholder: "Saisissez un nombre entier"
 en:
     XSDIntegerInput:
-        placeholder: "Enter an number"
+        placeholder: "Enter an integer number, ex : 8611"
+fr:
+    XSDIntegerInput:
+        placeholder: "Saisir un nombre entier, ex : 8611"
 </i18n>

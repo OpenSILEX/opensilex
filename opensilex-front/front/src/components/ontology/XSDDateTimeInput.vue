@@ -5,6 +5,7 @@
     :label="property.name"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
   ></opensilex-DateTimeForm>
 </div>
 </template>

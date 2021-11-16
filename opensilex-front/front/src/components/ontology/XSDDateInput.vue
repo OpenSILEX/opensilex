@@ -4,6 +4,7 @@
     :label="property.name"
     :required="property.is_required"
     :value.sync="internalValue"
+    :helpMessage="property.comment"
   ></opensilex-DateForm>
 </template>
 

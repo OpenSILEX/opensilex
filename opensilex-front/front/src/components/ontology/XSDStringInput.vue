@@ -14,15 +14,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDStringInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -38,10 +35,10 @@ export default class XSDStringInput extends Vue {
 
 <i18n>
 
-fr:
-    XSDStringInput:
-        placeholder: "Saisissez un nombre entier"
 en:
     XSDStringInput:
-        placeholder: "Enter an number"
+        placeholder: "Enter text, ex : Opensilex"
+fr:
+    XSDStringInput:
+        placeholder: "Saisir du texte, ex : Opensilex"
 </i18n>

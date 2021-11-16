@@ -15,15 +15,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDDecimalInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -38,11 +35,11 @@ export default class XSDDecimalInput extends Vue {
 
 <i18n>
 
-fr:
-    XSDDecimalInput:
-        placeholder: "Saisissez un nombre entier"
 en:
     XSDDecimalInput:
-        placeholder: "Enter an number"
+        placeholder: "Enter a decimal number, ex : 8611.53"
+fr:
+    XSDDecimalInput:
+        placeholder: "Saisir un nombre décimal, ex : 8611.53"
 </i18n>
 

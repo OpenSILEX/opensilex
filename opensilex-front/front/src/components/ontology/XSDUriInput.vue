@@ -15,15 +15,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDUriInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -37,12 +34,12 @@ export default class XSDUriInput extends Vue {
 </style>
 
 <i18n>
-fr:
-    XSDUriInput:
-        placeholder: "Saisissez un nombre entier"
 en:
     XSDUriInput:
-        placeholder: "Enter an number"
+        placeholder: "Enter an URI, ex : http://www.opensilex.org/"
+fr:
+    XSDUriInput:
+        placeholder: "Saisir un URI, ex : http://www.opensilex.org/"
 </i18n>
 
 

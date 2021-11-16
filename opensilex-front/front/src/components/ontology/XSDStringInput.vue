@@ -5,6 +5,8 @@
     type="text"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
+    placeholder="XSDStringInput.placeholder"
   ></opensilex-InputForm>
 </template>
 
@@ -34,3 +36,12 @@ export default class XSDStringInput extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+
+fr:
+    XSDStringInput:
+        placeholder: "Saisissez un nombre entier"
+en:
+    XSDStringInput:
+        placeholder: "Enter an number"
+</i18n>

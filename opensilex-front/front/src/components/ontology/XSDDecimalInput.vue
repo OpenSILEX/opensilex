@@ -6,7 +6,9 @@
     rules="decimal"
     :disabled="false"
     :required="property.is_required"
-  ></opensilex-InputForm>
+    :helpMessage="property.comment"
+    placeholder="XSDDecimalInput.placeholder"
+    ></opensilex-InputForm>
 </template>
 
 <script lang="ts">
@@ -33,4 +35,14 @@ export default class XSDDecimalInput extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+fr:
+    XSDDecimalInput:
+        placeholder: "Saisissez un nombre entier"
+en:
+    XSDDecimalInput:
+        placeholder: "Enter an number"
+</i18n>
 

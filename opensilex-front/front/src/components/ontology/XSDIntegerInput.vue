@@ -6,6 +6,8 @@
     rules="integer"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
+    placeholder="XSDIntegerInput.placeholder"
   ></opensilex-InputForm>
 </template>
 
@@ -34,3 +36,12 @@ export default class XSDIntegerInput extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+
+fr:
+    XSDIntegerInput:
+        placeholder: "Saisissez un nombre entier"
+en:
+    XSDIntegerInput:
+        placeholder: "Enter an number"
+</i18n>

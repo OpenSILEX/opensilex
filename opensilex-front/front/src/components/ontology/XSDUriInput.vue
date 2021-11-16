@@ -6,6 +6,8 @@
     rules="url"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
+    placeholder="XSDUriInput.placeholder"
   ></opensilex-InputForm>
 </template>
 
@@ -33,4 +35,14 @@ export default class XSDUriInput extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+fr:
+    XSDUriInput:
+        placeholder: "Saisissez un nombre entier"
+en:
+    XSDUriInput:
+        placeholder: "Enter an number"
+</i18n>
+
 

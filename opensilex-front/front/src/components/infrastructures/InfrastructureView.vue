@@ -28,6 +28,19 @@
             :selected="selectedOrganization"
             @onUpdate="refresh"
         ></opensilex-InfrastructureDetail>
+        <!-- Facilities -->
+        <opensilex-InfrastructureFacilitiesView
+            v-if="selectedOrganization"
+
+            :withActions="true"
+            @onUpdate="refresh"
+            @onCreate="refresh"
+            @onDelete="refresh"
+            :selected="selectedOrganization"
+            :isSelectable="false"
+            ref="organizationFacilitiesView"
+            @facilitySelected="updateSelectedFacility"
+        ></opensilex-InfrastructureFacilitiesView>
       </div>
     </div>
     <div class="row" v-if="facilityTab">
@@ -80,6 +93,7 @@ export default class InfrastructureView extends Vue {
   currentTabName = InfrastructureView.TABS[this.currentTabIndex];
 
   @Ref("infrastructureTree") readonly infrastructureTree!: any;
+  @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
   selectedOrganization: InfrastructureGetDTO = null;

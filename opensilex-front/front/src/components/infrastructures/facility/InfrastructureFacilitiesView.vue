@@ -98,18 +98,22 @@
       "
       @onCreate="onCreate"
       @onUpdate="onUpdate"
+      :initForm="initForm"
     ></opensilex-OrganizationFacilityModalForm>
   </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import { InfrastructureGetDTO } from "opensilex-core/index";
+import {InfrastructureGetDTO} from "opensilex-core/index";
 import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
+import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
+import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
@@ -117,7 +121,7 @@ export default class InfrastructureFacilitiesView extends Vue {
   $store: any;
   service: OrganisationsService;
 
-  @Ref("facilityForm") readonly facilityForm!: any;
+  @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
   @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
@@ -164,8 +168,8 @@ export default class InfrastructureFacilitiesView extends Vue {
     return fields;
   }
 
-  facilities: Array<InfrastructureFacilityGetDTO> = [];
-  selectedFacility: InfrastructureFacilityGetDTO = undefined;
+  facilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
+  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
 
   public deleteFacility(uri) {
     this.$opensilex
@@ -204,6 +208,21 @@ export default class InfrastructureFacilitiesView extends Vue {
             this.facilityTable.selectRow(0);
           }
         });
+  }
+
+  @Watch("selected")
+  onRefreshSelectedOrganization() {
+    this.facilities = this.selected.facilities;
+  }
+
+  initForm(form: InfrastructureFacilityCreationDTO) {
+    if (this.selected) {
+      form.organizations = [this.selected.uri];
+    }
+  }
+
+  createFacility() {
+    this.facilityForm.showCreateForm()
   }
 
   editFacility(facility: InfrastructureFacilityGetDTO) {

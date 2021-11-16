@@ -9,6 +9,7 @@
     :updateAction="callInfrastructureFacilityUpdate"
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
+    :initForm="initForm"
   ></opensilex-ModalForm>
 </template>
 
@@ -16,10 +17,16 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 
 @Component
 export default class OrganizationFacilityModalForm extends Vue {
   $opensilex: any;
+
+  @Prop({
+    default: () => {}
+  })
+  initForm: (f: InfrastructureFacilityCreationDTO) => {};
 
   @Ref("facilityForm") readonly facilityForm!: any;
 

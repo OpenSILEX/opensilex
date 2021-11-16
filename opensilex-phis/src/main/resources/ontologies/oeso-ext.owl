@@ -140,7 +140,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+<!--     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/> -->
     
 
 
@@ -181,16 +181,6 @@
             </owl:Class>
         </rdfs:domain>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasContact -->
@@ -544,7 +534,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+<!--     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/> -->
     
 
 
@@ -572,7 +562,9 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+    </owl:DatatypeProperty>
     
 
 
@@ -731,11 +723,12 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#personInCharge -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#personInCharge">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#personInCharge">
         <rdfs:label xml:lang="en">person in charge</rdfs:label>
         <rdfs:label xml:lang="fr">responsable</rdfs:label>
-    </owl:DatatypeProperty>
-    
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+    </owl:ObjectProperty>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#pixelSize -->
@@ -948,7 +941,7 @@
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#removal">
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="en">Removal</rdfs:label>
-        <rdfs:label xml:lang="fr">Date d'enlèvement </rdfs:label>
+        <rdfs:label xml:lang="fr">Date d'enlèvement</rdfs:label>
     </owl:DatatypeProperty>
 
 
@@ -976,12 +969,6 @@
                     <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                     <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
                 </owl:Restriction>
-
-<!--                 <owl:Restriction> -->
-<!--                     <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/> -->
-<!--                     <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality> -->
-<!--                     <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/> -->
-<!--                 </owl:Restriction> -->
 
                  <owl:Restriction>
                     <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
@@ -1366,12 +1353,6 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#focalLength"/>
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
-                <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="en">lens</rdfs:label>
@@ -2306,6 +2287,7 @@
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty">
         <rdfs:label xml:lang="fr">propriété d&apos;un équipement</rdfs:label>
         <rdfs:label xml:lang="en">device property</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#focalLength">
         <rdfs:label xml:lang="fr">longueur focale (mm)</rdfs:label>

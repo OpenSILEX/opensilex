@@ -4,7 +4,7 @@
       :label="property.name"
       :required="property.is_required"
       :helpMessage="property.comment"
-      placeholder="XSDStringInput.placeholder"
+      placeholder="XSDLongStringInput.placeholder"
    ></opensilex-TextAreaForm>
 </template>
 
@@ -30,4 +30,13 @@ export default class XSDLongStringInput extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+    XSDLongStringInput:
+        placeholder: "Enter a long text, ex : OpenSILEX is an ontology-driven Information System designed for life science data."
+fr:
+    XSDLongStringInput:
+        placeholder: "Saisissez un texte long, ex : OpenSILEX est un système d'information guidé par des ontologies, conçu pour les données issues des sciences de la vie "
+</i18n>
 

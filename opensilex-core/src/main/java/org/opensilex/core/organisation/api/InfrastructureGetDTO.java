@@ -12,6 +12,7 @@ import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.response.ResourceDagReferenceDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +25,7 @@ import java.util.stream.Collectors;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "experiments"})
-public class InfrastructureGetDTO extends InfrastructureDTO {
-
+public class InfrastructureGetDTO extends ResourceDagReferenceDTO<InfrastructureModel> {
     
     protected List<NamedResourceDTO<GroupModel>> groups;
 
@@ -92,7 +92,6 @@ public class InfrastructureGetDTO extends InfrastructureDTO {
         List<NamedResourceDTO<ExperimentModel>> experiments;
         if (model.getExperiments() != null) {
             experiments = new ArrayList<>(model.getExperiments().size());
-            Object[] xp = model.getExperiments().toArray();
             model.getExperiments().forEach(experiment -> {
                 experiments.add(NamedResourceDTO.getDTOFromModel(experiment));
             });

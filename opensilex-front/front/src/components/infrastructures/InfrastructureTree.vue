@@ -122,7 +122,7 @@ export default class InfrastructureTree extends Vue {
 
   private langUnwatcher;
 
-  private selected: ResourceDagDTO;
+  private selected: InfrastructureGetDTO;
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
@@ -240,7 +240,8 @@ export default class InfrastructureTree extends Vue {
           ...detailDTO,
           uri: detailDTO.uri,
           groups: detailDTO.groups.map(group => group.uri),
-          facilities: detailDTO.facilities.map(facility => facility.uri)
+          facilities: detailDTO.facilities.map(facility => facility.uri),
+          parents: detailDTO.parents.map(parent => parent.uri)
         };
         this.infrastructureForm.showEditForm(editDTO);
       });

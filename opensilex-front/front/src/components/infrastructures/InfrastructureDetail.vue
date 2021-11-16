@@ -120,12 +120,8 @@ export default class InfrastructureDetail extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
-  parentUriList: Array<any> = [];
-
   created() {
     this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
-
-    this.refresh();
   }
 
   get user() {
@@ -137,7 +133,7 @@ export default class InfrastructureDetail extends Vue {
   }
 
   get hasParents() {
-    return this.parentUriList && this.parentUriList.length > 0;
+    return this.selected.parents.length > 0;
   }
 
   get hasGroups() {
@@ -159,6 +155,18 @@ export default class InfrastructureDetail extends Vue {
         value: group.name,
         to: {
           path: "/groups#" + encodeURIComponent(group.uri),
+        },
+      }
+    });
+  }
+
+  get parentUriList() {
+    return this.selected.parents.map(parent => {
+      return {
+        uri: parent.uri,
+        value: parent.name,
+        to: {
+          path: "/groups#" + encodeURIComponent(parent.uri),
         },
       }
     });
@@ -188,29 +196,6 @@ export default class InfrastructureDetail extends Vue {
     });
   }
 
-  @Watch("selected")
-  refresh() {
-    if (!this.selected || !this.selected.parents || this.selected.parents.length === 0) {
-      this.parentUriList = [];
-      return;
-    }
-
-    this.organizationService
-      .searchInfrastructures(".*", this.selected.parents)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-        // Update the list of parent organizations
-        this.parentUriList = http.response.result.map(organization => {
-          return {
-            uri: organization.uri,
-            value: organization.name,
-            to: {
-              path: "/infrastructure/details/" + encodeURIComponent(organization.uri)
-            }
-          };
-        });
-      });
-  }
-
   editInfrastructure() {
     this.organizationService
       .getInfrastructure(this.selected.uri)
@@ -220,7 +205,8 @@ export default class InfrastructureDetail extends Vue {
           ...getDto,
           uri: getDto.uri,
           groups: getDto.groups.map(group => group.uri),
-          facilities: getDto.facilities.map(facility => facility.uri)
+          facilities: getDto.facilities.map(facility => facility.uri),
+          parents: getDto.parents.map(parent => parent.uri)
         };
         this.infrastructureForm.showEditForm(editDto);
       })

@@ -22,8 +22,7 @@ import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.response.ResourceDagDTO;
 
 /**
  * @author Vincent MIGOT
@@ -140,13 +139,13 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        PaginatedListResponse<InfrastructureGetDTO> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureGetDTO>>() {
+        PaginatedListResponse<ResourceDagDTO<InfrastructureModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<InfrastructureModel>>>() {
         });
 
-        List<InfrastructureGetDTO> list = response.getResult();
+        List<ResourceDagDTO<InfrastructureModel>> list = response.getResult();
         assertFalse(list.isEmpty());
-        Optional<InfrastructureGetDTO> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
-        Optional<InfrastructureGetDTO> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
+        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
+        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
         assertTrue(searchedRoot1.isPresent());
         assertTrue(searchedRoot2.isPresent());
 

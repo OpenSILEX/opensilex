@@ -10,12 +10,14 @@ import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.net.URI;
+import java.time.Instant;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import java.util.List;
 import java.time.LocalDate;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,15 +30,19 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -58,6 +64,7 @@ public class DeviceDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    protected final FileStorageService fs;
 
     public static final String ATTRIBUTES_COLLECTION_NAME = "devicesAttributes";
 
@@ -91,9 +98,10 @@ public class DeviceDAO {
 
     }
 
-    public DeviceDAO(SPARQLService sparql, MongoDBService nosql) {
+    public DeviceDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
         this.sparql = sparql;
         this.nosql = nosql;
+        this.fs = fs;
     }
     
     public void createIndexes() {
@@ -438,6 +446,20 @@ public class DeviceDAO {
     }
 
     public void delete(URI deviceURI, UserModel currentUser) throws Exception {
+        
+        // test if device in provenances
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
+        int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
+        if(provCount > 0) {
+            throw new ForbiddenURIAccessException(deviceURI,"Device can't be deleted. "+provCount+" linked provenances");
+      
+        }
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
+        if(dataCount > 0){
+            throw new ForbiddenURIAccessException(deviceURI,"Device can't be deleted. "+dataCount+" linked data");
+        }  
+        
         nosql.startTransaction();
         sparql.startTransaction();
         sparql.delete(DeviceModel.class, deviceURI);

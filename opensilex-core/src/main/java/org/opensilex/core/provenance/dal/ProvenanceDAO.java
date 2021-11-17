@@ -51,6 +51,66 @@ public class ProvenanceDAO {
         return provenance;
     }
     
+    public int count(
+            Set<URI> uris,
+            String name, 
+            String description,
+            URI activityType,
+            URI activityUri,
+            URI agentType, 
+            URI agentURI
+    ) throws Exception {
+         Document filter = new Document();
+        
+        if (uris != null && !uris.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", uris);
+            filter.put("uri", inFilter);
+        }
+        
+        if (name != null) {
+            Document regexFilter = new Document();
+            regexFilter.put("$regex", ".*" + Pattern.quote(name) + ".*" );
+            // Case ignore
+            regexFilter.put("$options", "i" );
+
+            //regexFilter.put("$options", "i");
+            filter.put("name", regexFilter);
+        }
+        
+        if (description != null) {
+            Document regexFilter = new Document();
+            regexFilter.put("$regex", ".*" + Pattern.quote(description) + ".*" );
+            // Case ignore
+            regexFilter.put("$options", "i" );
+
+            //regexFilter.put("$options", "i");
+            filter.put("description", regexFilter);
+        }
+        
+        if (activityType != null) {
+            filter.put("activity.rdfType", activityType);
+        }
+        
+        if (activityUri != null) {
+            filter.put("activity.uri", activityUri);
+        }
+        
+        if (agentType != null) {
+            filter.put("agents.rdfType", agentType);
+        }
+        
+        if (agentURI != null) {
+            filter.put("agents.uri", agentURI);
+        }   
+        
+        int count = nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
+
+        return count;
+        
+        
+    }
+    
     public ListWithPagination<ProvenanceModel> search(
             Set<URI> uris,
             String name, 

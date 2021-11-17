@@ -940,7 +940,7 @@ public class DataAPI {
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();
         
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();

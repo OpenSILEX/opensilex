@@ -18,7 +18,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import static junit.framework.TestCase.assertEquals;
 import org.bson.Document;
-import org.junit.After;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
@@ -46,9 +45,10 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     
     public String devicePath = "/core/devices";
     public String deviceUriPath = devicePath + "/{uri}";
-    private URI deviceURI;
+    private static URI deviceURI;
     private URI deviceType = URI.create(Oeso.SensingDevice.toString());
     private URI activityType = URI.create(Oeso.ImageAnalysis.toString());
+    public static boolean dbInit = false;
     
     public DeviceCreationDTO getCreationDeviceDTO() throws URISyntaxException {
         DeviceCreationDTO device = new DeviceCreationDTO();
@@ -59,21 +59,13 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     
     @Before
     public void beforeTest() throws Exception {
-        final Response postResultXP = getJsonPostResponse(target(devicePath), getCreationDeviceDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResultXP.getStatus());
-
-        // ensure that the result is a well formed URI, else throw exception
-        deviceURI = extractUriFromResponse(postResultXP);
-        final Response getResultXP = getJsonGetByUriResponse(target(deviceUriPath), deviceURI.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), getResultXP.getStatus());
+        
+        if(deviceURI == null){ // create only once ( static )
+            final Response postResultXP = getJsonPostResponse(target(devicePath), getCreationDeviceDTO());
+            deviceURI = extractUriFromResponse(postResultXP);
+        }
     }
     
-    @After
-    public void afterTest() throws Exception {
-        final Response delResult = getDeleteByUriResponse(target(deviceUriPath), deviceURI.toString());
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-        deviceURI = null;
-    }
     
     public ProvenanceCreationDTO getCreationProvDTO(URI activityType, URI agentType) throws URISyntaxException {
         ProvenanceCreationDTO provDTO = new ProvenanceCreationDTO();

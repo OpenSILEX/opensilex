@@ -68,6 +68,8 @@ import java.time.format.DateTimeParseException;
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 
 /**
  *
@@ -102,6 +104,9 @@ public class DeviceAPI {
     private SPARQLService sparql;
     @Inject
     private MongoDBService nosql;
+    @Inject
+    private FileStorageService fs;
+    
     
     @POST
     @ApiOperation("Create a device")
@@ -121,7 +126,7 @@ public class DeviceAPI {
             @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         ErrorResponse error = check(deviceDTO, deviceDAO);
         if (error != null) {
             return error.getResponse();
@@ -175,7 +180,7 @@ public class DeviceAPI {
             }
         }
         
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         ListWithPagination<DeviceModel> devices = dao.search(name,
             rdfType,
             includeSubTypes,
@@ -209,7 +214,7 @@ public class DeviceAPI {
             @PathParam("uri") URI uri
     ) throws Exception {
 
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
@@ -237,7 +242,7 @@ public class DeviceAPI {
     public Response getDeviceByUris(
             @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> models = dao.getList(uris,currentUser);
 
         if (!models.isEmpty()) {
@@ -273,7 +278,7 @@ public class DeviceAPI {
             @NotNull
             @Valid DeviceCreationDTO dto
     ) throws Exception {
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         DeviceModel DeviceModel = dto.newModel();
         deviceDAO.update(DeviceModel, dto.getRelations(), currentUser);
         return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
@@ -299,9 +304,15 @@ public class DeviceAPI {
             @NotNull
             @ValidURI URI uri
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         
-        dao.delete(uri, currentUser);
+        try {
+             dao.delete(uri, currentUser);
+        } catch (ForbiddenURIAccessException e){
+              return new ErrorResponse(Response.Status.BAD_REQUEST, "LINKED_DEVICE_ERROR", e.getMessage())
+                    .getResponse(); 
+        }
+       
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         
     }
@@ -394,7 +405,7 @@ public class DeviceAPI {
         }
 
         // Search device with device DAO
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.searchForExport(
             name,
             rdfType,
@@ -425,7 +436,7 @@ public class DeviceAPI {
     public Response exportList(
             @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
         return buildCSV(resultList);
     }
@@ -850,7 +861,7 @@ public class DeviceAPI {
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {        
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

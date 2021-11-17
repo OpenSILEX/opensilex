@@ -27,7 +27,7 @@
 
     <!-- Facilities -->
     <opensilex-InfrastructureFacilitySelector
-        label="SiteForm.facilites"
+        label="SiteForm.facilities"
         :facilities.sync="form.facilities"
         :multiple="true"
     ></opensilex-InfrastructureFacilitySelector>

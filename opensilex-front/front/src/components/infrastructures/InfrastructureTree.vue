@@ -140,7 +140,7 @@ import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import Oeso from "../../ontologies/Oeso";
 
-type OrganizationOrSiteData = (SiteGetDTO | InfrastructureGetDTO) & {
+type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
   isSite: boolean
 }
@@ -195,13 +195,7 @@ export default class InfrastructureTree extends Vue {
   }
 
   private hasMultipleParents(node: OrganizationOrSiteTreeNode) {
-    if (node.data.isSite && (node.data as SiteGetDTO).organizations.length > 1) {
-      return true;
-    }
-    if (node.data.isOrganization && (node.data as InfrastructureGetDTO).parents.length > 1) {
-      return true;
-    }
-    return false;
+    return node.data.parents.length > 1;
   }
 
   private getMultipleParentsTooltip(node: OrganizationOrSiteTreeNode) {
@@ -304,7 +298,17 @@ export default class InfrastructureTree extends Vue {
               if (!Array.isArray(orgNode.children)) {
                 orgNode.children = [];
               }
-              orgNode.children.push({
+              let siteNodeData: OrganizationOrSiteData = {
+                isSite: true,
+                isOrganization: false,
+                uri: site.uri,
+                name: site.name,
+                rdf_type: site.rdf_type,
+                rdf_type_name: site.rdf_type_name,
+                children: [],
+                parents: site.organizations.map(org => org.uri)
+              };
+              let siteNode: OrganizationOrSiteTreeNode = {
                 id: site.uri,
                 children: [],
                 isDefaultExpanded: true,
@@ -312,14 +316,11 @@ export default class InfrastructureTree extends Vue {
                 isDisabled: false,
                 isLeaf: true,
                 label: site.name,
-                data: {
-                  ...site,
-                  isOrganization: false,
-                  isSite: true
-                },
+                data: siteNodeData,
                 title: site.name,
                 isSelectable: true
-              });
+              };
+              orgNode.children.push(siteNode);
             }
           }
         }
@@ -414,7 +415,7 @@ export default class InfrastructureTree extends Vue {
       .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
-        this.parentURI = detailDTO.parents[0];
+        this.parentURI = detailDTO.parents[0].uri;
 
         let editDTO: InfrastructureUpdateDTO = {
           ...detailDTO,

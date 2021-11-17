@@ -20,7 +20,7 @@
       <div class="col-md-6">
         <!-- Infrastructure facilities -->
         <opensilex-InfrastructureFacilitiesView
-          :selected="selected"
+          :facilities="selected.facilities"
           :withActions="true"
           :isSelectable="false"
           @onUpdate="refresh"
@@ -43,7 +43,7 @@ import { InfrastructureGetDTO } from "opensilex-core/index";
 export default class InfrastructureDetailView extends Vue {
   $opensilex: any;
 
-  selected = null;
+  selected: InfrastructureGetDTO = null;
   uri = null;
   service;
 

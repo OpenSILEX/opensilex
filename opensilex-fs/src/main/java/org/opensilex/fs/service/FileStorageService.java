@@ -6,11 +6,7 @@
 //******************************************************************************
 package org.opensilex.fs.service;
 
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.opensilex.config.InvalidConfigException;
 import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.service.BaseService;
@@ -24,7 +20,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import org.apache.commons.codec.binary.Hex;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * File storage service to access any filesystem (default to local)
@@ -34,9 +34,9 @@ import org.apache.commons.codec.binary.Hex;
 @ServiceDefaultDefinition(config = FileStorageServiceConfig.class)
 public class FileStorageService extends BaseService implements Service {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
-    public final static String DEFAULT_FS_SERVICE = "fs";
+    public static final String DEFAULT_FS_SERVICE = "fs";
 
     private final FileStorageConnection defaultFS;
 
@@ -148,40 +148,40 @@ public class FileStorageService extends BaseService implements Service {
     }
 
     public String readFile(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("READ FILE: " + filePath.toString());
+        LOGGER.debug("READ FILE: {}", filePath);
         return getConnection(prefix).readFile(filePath);
     }
 
     public void writeFile(String prefix, Path filePath, String content) throws IOException {
-        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        LOGGER.debug("WRITE FILE: {}", filePath);
         getConnection(prefix).writeFile(filePath, content);
     }
 
     public void writeFile(String prefix, Path filePath, File file) throws IOException {
-        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        LOGGER.debug("WRITE FILE: {}", filePath);
         getConnection(prefix).writeFile(filePath, file);
     }
 
     public void createDirectories(String prefix, Path directoryPath) throws IOException {
-        LOGGER.debug("CREATE DIRECTORIES: " + directoryPath.toString());
+        LOGGER.debug("CREATE DIRECTORIES: {}", directoryPath);
         getConnection(prefix).createDirectories(directoryPath);
     }
 
     public byte[] readFileAsByteArray(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("READ FILE BYTES: " + filePath.toString());
+        LOGGER.debug("READ FILE BYTES: {}", filePath);
         return getConnection(prefix).readFileAsByteArray(filePath);
     }
 
     public boolean exist(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("TEST FILE EXISTENCE: " + filePath.toString());
+        LOGGER.debug("TEST FILE EXISTENCE: {}", filePath);
         return getConnection(prefix).exist(filePath);
     }
 
     public void delete(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("DELETE FILE: " + filePath.toString());
+        LOGGER.debug("DELETE FILE: {}", filePath);
         getConnection(prefix).delete(filePath);
     }
-    
+
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
         return Paths.get(prefix, fileURI.getPath(), Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
     }
@@ -195,7 +195,7 @@ public class FileStorageService extends BaseService implements Service {
     }
 
     public void writeFile(String prefix, URI fileURI, File file) throws IOException {
-        Path filePath = getFilePathFromPrefixURI(prefix, fileURI);        
+        Path filePath = getFilePathFromPrefixURI(prefix, fileURI);
         try {
             createDirectories(prefix, filePath.getParent());
         } catch (Exception e) {
@@ -216,11 +216,7 @@ public class FileStorageService extends BaseService implements Service {
         getConnection(prefix).delete(getFilePathFromPrefixURI(prefix, fileURI));
     }
 
-    public void deleteIfExists(String prefix, Path file) {
-        try {
-            getConnection(prefix).delete(file);
-        } catch (Exception e) {
-            
-        }
+    public void deleteIfExists(String prefix, Path file) throws IOException {
+        getConnection(prefix).delete(file);
     }
 }

@@ -19,7 +19,13 @@ public interface FileStorageConnection extends Service {
 
     byte[] readFileAsByteArray(Path filePath) throws IOException;
 
-    String readFile(Path filePath) throws IOException;
+    default String readFile(Path filePath) throws IOException{
+        byte[] data = readFileAsByteArray(filePath);
+        if(data == null || data.length == 0){
+            return null;
+        }
+        return new String(data);
+    }
 
     void writeFile(Path filePath, String content) throws IOException;
 

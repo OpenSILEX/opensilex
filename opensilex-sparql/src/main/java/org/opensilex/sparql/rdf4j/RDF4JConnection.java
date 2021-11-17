@@ -5,21 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.rdf4j;
 
-import java.io.StringReader;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -34,14 +20,24 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
 import org.opensilex.service.BaseService;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLValidationException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLStatement;
-import org.opensilex.sparql.exceptions.SPARQLValidationException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.utils.SHACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.StringReader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  *
@@ -181,13 +177,8 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
-        executeUpdateQuery(update.buildRequest().toString());
-    }
-
-    @Override
-    public void executeUpdateQuery(String update) throws SPARQLException {
         try {
-            Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update);
+            Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update.buildRequest().toString());
             if (getTimeout() > 0) {
                 updateQuery.setMaxExecutionTime(getTimeout());
             }

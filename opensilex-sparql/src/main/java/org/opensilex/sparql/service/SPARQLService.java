@@ -6,13 +6,8 @@
 package org.opensilex.sparql.service;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -20,25 +15,38 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.PathFactory;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.opensilex.OpenSilex;
+import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
+import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
-import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.sparql.utils.URIGenerator;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
 import org.slf4j.Logger;
@@ -54,19 +62,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.path.Path;
-import org.apache.jena.sparql.path.PathFactory;
-import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.opensilex.OpenSilex;
-import org.opensilex.service.BaseService;
-import org.opensilex.service.ServiceDefaultDefinition;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -235,11 +230,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 //        if (LOGGER.isDebugEnabled()) {
 //            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
 //        }
-        connection.executeUpdateQuery(update);
-    }
-
-    @Override
-    public void executeUpdateQuery(String update) throws SPARQLException {
         connection.executeUpdateQuery(update);
     }
 

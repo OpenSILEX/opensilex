@@ -36,13 +36,13 @@
         ></opensilex-SiteDetail>
         <!-- Facilities -->
         <opensilex-InfrastructureFacilitiesView
-            v-if="selectedOrganization"
+            v-if="selectedFacilities"
 
             :withActions="true"
             @onUpdate="refresh"
             @onCreate="refresh"
             @onDelete="refresh"
-            :selected="selectedOrganization"
+            :facilities="selectedFacilities"
             :isSelectable="false"
             ref="organizationFacilitiesView"
             @facilitySelected="updateSelectedFacility"
@@ -81,6 +81,7 @@ import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import Oeso from "../../ontologies/Oeso";
+import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 
 @Component
 export default class InfrastructureView extends Vue {
@@ -129,6 +130,16 @@ export default class InfrastructureView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get selectedFacilities(): Array<NamedResourceDTOInfrastructureFacilityModel> {
+    if (this.selectedOrganization) {
+      return this.selectedOrganization.facilities;
+    }
+    if (this.selectedSite) {
+      return this.selectedSite.facilities;
+    }
+    return undefined;
   }
 
   get organizationTab() {

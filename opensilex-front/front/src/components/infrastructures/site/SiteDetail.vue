@@ -107,6 +107,7 @@ import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {UriLinkDescription} from "../../common/views/UriListView.vue";
 import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class SiteDetail extends Vue {
@@ -184,7 +185,7 @@ export default class SiteDetail extends Vue {
 
     this.organizationService
         .searchInfrastructures(".*", this.selected.organizations.map(org => org.uri))
-        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureGetDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
           // Update the list of parent organizations
           this.organizationUriList = http.response.result.map(organization => {
             return {

@@ -5,46 +5,18 @@
  */
 package org.opensilex.core.organisation.api;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.ResourceDagDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author vince
  */
-public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
-
-    
-    @JsonProperty("rdf_type")
-    protected URI type;
-    
-    @JsonProperty("rdf_type_name")
-    protected String typeLabel;
-    
-    protected URI parent;
-
-    protected List<URI> children;
-
-    public URI getParent() {
-        return parent;
-    }
-
-    public void setParent(URI parent) {
-        this.parent = parent;
-    }
-
-    public List<URI> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<URI> children) {
-        this.children = children;
-    }
-
+public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
     @Override
     public InfrastructureModel newModelInstance() {
         return new InfrastructureModel();
@@ -54,39 +26,40 @@ public class InfrastructureDTO extends NamedResourceDTO<InfrastructureModel> {
     public void fromModel(InfrastructureModel model) {
         super.fromModel(model);
 
-        if (model.getParent() != null) {
-            setParent(model.getParent().getUri());
+        List<InfrastructureModel> parents = model.getParents();
+        if (parents != null) {
+            setParents(parents
+                    .stream().map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList()));
         }
 
-        List<InfrastructureModel> mc = model.getChildren();
-        List<URI> children = new ArrayList<>(mc.size());
-        mc.forEach(child -> {
-            children.add(child.getUri());
-        });
-
+        List<InfrastructureModel> children = model.getChildren();
+        if (children != null) {
+            setChildren(children
+                    .stream().map(SPARQLResourceModel::getUri)
+                    .collect(Collectors.toList()));
+        }
     }
 
     @Override
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        if (getParent() != null) {
-            InfrastructureModel parentModel = new InfrastructureModel();
-            parentModel.setUri(getParent());
-            model.setParent(parentModel);
+        if (getParents() != null) {
+            model.setParents(getParents().stream().map(parentUri -> {
+                InfrastructureModel parentModel = new InfrastructureModel();
+                parentModel.setUri(parentUri);
+                return parentModel;
+            }).collect(Collectors.toList()));
         }
 
-        List<URI> mc = getChildren();
-        if (mc != null) {
-            List<InfrastructureModel> children = new ArrayList<>(mc.size());
-            mc.forEach(child -> {
+        if (getChildren() != null) {
+            model.setChildren(getChildren().stream().map(childUri -> {
                 InfrastructureModel childModel = new InfrastructureModel();
-                childModel.setUri(child);
-                children.add(childModel);
-            });
-            model.setChildren(children);
+                childModel.setUri(childUri);
+                return childModel;
+            }).collect(Collectors.toList()));
         }
-
     }
 
     public static InfrastructureDTO getDTOFromModel(InfrastructureModel model) {

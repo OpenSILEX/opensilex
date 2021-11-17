@@ -33,7 +33,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.OrderBy;
@@ -67,9 +67,6 @@ import org.opensilex.OpenSilex;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
-import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 

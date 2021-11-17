@@ -1,6 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
-    :rdfType="$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI"
+    :rdfType="$opensilex.Oeso.FACILITY_TYPE_URI"
     icon="ik#ik-settings"
     typeTitle="InfrastructureFacilitiesTypes.typeTitle"
     typeURI="/facilities-types"

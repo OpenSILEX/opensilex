@@ -123,7 +123,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
             "name",
             "vocabulary:hasCreationDate",
             "vocabulary:hasDestructionDate",
-            "vocabulary:hasFacility",
+            "vocabulary:isHosted",
             "vocabulary:isPartOf",
             "rdfs:comment",
             "geometry",
@@ -168,7 +168,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
               this.$t("ScientificObjectCSVTemplateGenerator.required") +
               ": " +
               this.$t("component.common.no"),
-            "vocabulary:hasFacility":
+            "vocabulary:isHosted":
               this.$t("ScientificObjectImportHelp.hasFacility-help") +
               "\n" +
               this.$t("ScientificObjectCSVTemplateGenerator.data-type") +

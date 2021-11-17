@@ -5,10 +5,22 @@
  */
 package org.opensilex.core.organisation.api.facitity;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModel;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+
 /**
  *
  * @author vince
  */
+@ApiModel
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations"})
 public class InfrastructureFacilityUpdateDTO extends InfrastructureFacilityCreationDTO {
-
+    @Override
+    @NotNull
+    public URI getUri() {
+        return super.getUri();
+    }
 }

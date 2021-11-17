@@ -1,7 +1,7 @@
 <template>
   <opensilex-ModalForm
     ref="facilityForm"
-    component="opensilex-OntologyObjectForm"
+    component="opensilex-OrganizationFacilityForm"
     createTitle="InfrastructureFacilitiesView.add"
     editTitle="InfrastructureFacilitiesView.update"
     icon="ik#ik-map"
@@ -9,20 +9,24 @@
     :updateAction="callInfrastructureFacilityUpdate"
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
+    :initForm="initForm"
   ></opensilex-ModalForm>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 
 @Component
-export default class InfrastructureFacilityForm extends Vue {
+export default class OrganizationFacilityModalForm extends Vue {
   $opensilex: any;
 
-  @Prop()
-  infrastructure;
+  @Prop({
+    default: () => {}
+  })
+  initForm: (f: InfrastructureFacilityCreationDTO) => {};
 
   @Ref("facilityForm") readonly facilityForm!: any;
 
@@ -33,15 +37,19 @@ export default class InfrastructureFacilityForm extends Vue {
       .then((http) => {
         this.facilityForm
           .getFormRef()
-          .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
-        this.facilityForm.showEditForm(http.response.result);
+          .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
+        let editDto = {
+          ...http.response.result,
+          organizations: http.response.result.organizations.map(org => org.uri)
+        };
+        this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }
 
   showCreateForm() {
     this.facilityForm
       .getFormRef()
-      .setBaseType(this.$opensilex.Oeso.INFRASTRUCTURE_FACILITY_TYPE_URI);
+      .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
     this.facilityForm.showCreateForm();
   }
 
@@ -63,7 +71,6 @@ export default class InfrastructureFacilityForm extends Vue {
       }
     }
 
-    form.organisation = this.infrastructure;
     form.relations = definedRelations;
 
     return this.$opensilex
@@ -106,7 +113,6 @@ export default class InfrastructureFacilityForm extends Vue {
       }
     }
 
-    form.organisation = this.infrastructure;
     form.relations = definedRelations;
     return this.$opensilex
       .getService("opensilex.OrganisationsService")

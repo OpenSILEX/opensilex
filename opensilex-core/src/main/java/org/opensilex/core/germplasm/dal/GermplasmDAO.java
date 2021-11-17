@@ -473,7 +473,7 @@ public class GermplasmDAO {
                 (SelectBuilder select) -> {
                     appendGermplasmFilter(select, uri);
                     if (!StringUtils.isEmpty(name)) {
-                        select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, name));
+                        select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
                         appendUserExperimentsFilter(select, currentUser);
                     }
                 },

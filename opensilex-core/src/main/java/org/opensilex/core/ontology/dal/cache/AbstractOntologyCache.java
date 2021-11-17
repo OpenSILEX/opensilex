@@ -35,7 +35,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
                     new URI(Oeso.ScientificObject.toString()),
                     new URI(Oeso.Document.toString()),
                     new URI(Oeev.Event.toString()),
-                    new URI(Oeso.InfrastructureFacility.toString()),
+                    new URI(Oeso.Facility.toString()),
                     new URI(Oeso.Device.toString())
             );
         } catch (URISyntaxException e) {

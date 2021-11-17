@@ -21,11 +21,11 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  */
 public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQLProxyList<T> {
 
-    protected final Node uriGraph;
+    protected final Node objectGraph;
 
-    public SPARQLProxyListObject(SPARQLClassObjectMapperIndex repository, Node graph, URI uri, Node uriGraph, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
-        super(repository, graph, uri, property, genericType, isReverseRelation, lang, service);
-        this.uriGraph = uriGraph;
+    public SPARQLProxyListObject(SPARQLClassObjectMapperIndex repository, Node propertyGraph, URI uri, Node objectGraph, Property property, Class<T> genericType, boolean isReverseRelation, String lang, SPARQLService service) {
+        super(repository, propertyGraph, uri, property, genericType, isReverseRelation, lang, service);
+        this.objectGraph = objectGraph;
     }
 
     @Override
@@ -38,12 +38,10 @@ public class SPARQLProxyListObject<T extends SPARQLResourceModel> extends SPARQL
         }
         Node nodeURI = SPARQLDeserializers.nodeURI(uri);
         List<T> list = service.search(graphNode, genericType, lang, (SelectBuilder select) -> {
-            if (uriGraph != null) {
-                if (isReverseRelation) {
-                    select.addGraph(uriGraph, makeVar(mapper.getURIFieldName()), property, nodeURI);
-                } else {
-                    select.addGraph(uriGraph, nodeURI, property, makeVar(mapper.getURIFieldName()));
-                }
+            if (graph != null && isReverseRelation) {
+                select.addGraph(graph, makeVar(mapper.getURIFieldName()), property, nodeURI);
+            } else if (objectGraph != null && !isReverseRelation) {
+                select.addGraph(objectGraph, nodeURI, property, makeVar(mapper.getURIFieldName()));
             } else {
                 if (isReverseRelation) {
                     select.addWhere(makeVar(mapper.getURIFieldName()), property, nodeURI);

@@ -36,7 +36,7 @@
           icon="ik#ik-globe"
           @onCreate="$emit('onCreate', $event)"
           @onUpdate="$emit('onUpdate', $event)"
-          :initForm="setParent"
+          :initForm="setParents"
         ></opensilex-ModalForm>
       </div>
     </template>
@@ -59,35 +59,56 @@
         :type="selected.rdf_type"
         :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
-      <!-- Parent -->
-      <opensilex-InfrastructureUriView
-        v-if="selected.parent"
-        :uri="selected.parent"
-        title="InfrastructureDetail.parent-orga"
+
+      <!-- Parents -->
+      <opensilex-UriListView
+        v-if="hasParents"
+        :list="parentUriList"
+        label="InfrastructureDetail.parent-orga"
+        :inline="false"
       >
-      </opensilex-InfrastructureUriView>
+      </opensilex-UriListView>
 
       <opensilex-UriListView
           label="InfrastructureDetail.groups.label"
           :list="groupUriList"
           :inline="false"
+          v-if="hasGroups"
       >
+      </opensilex-UriListView>
+
+      <opensilex-UriListView
+          label="InfrastructureDetail.facilities.label"
+          :list="facilityUriList"
+          :inline="false"
+          v-if="hasFacilities"
+        >
+      </opensilex-UriListView>
+
+      <!-- Expe -->
+      <opensilex-UriListView
+          label="InfrastructureDetail.experiments.label"
+          :list="experimentUriList"
+          :inline="false"
+          v-if="hasExperiments"
+        >
       </opensilex-UriListView>
     </div>
   </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
-import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {InfrastructureGetDTO} from "opensilex-core/index";
+import {OrganisationsService} from "opensilex-core/api/organisations.service";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureDetail extends Vue {
   $opensilex: any;
+  organizationService: OrganisationsService;
 
   @Prop()
   selected: InfrastructureGetDTO;
@@ -99,12 +120,32 @@ export default class InfrastructureDetail extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
+  created() {
+    this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
+  }
+
   get user() {
     return this.$store.state.user;
   }
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get hasParents() {
+    return this.selected.parents.length > 0;
+  }
+
+  get hasGroups() {
+    return this.selected.groups.length > 0;
+  }
+
+  get hasFacilities() {
+    return this.selected.facilities.length > 0;
+  }
+
+  get hasExperiments() {
+    return this.selected.experiments.length > 0;
   }
 
   get groupUriList() {
@@ -119,16 +160,53 @@ export default class InfrastructureDetail extends Vue {
     });
   }
 
+  get parentUriList() {
+    return this.selected.parents.map(parent => {
+      return {
+        uri: parent.uri,
+        value: parent.name,
+        to: {
+          path: "/groups#" + encodeURIComponent(parent.uri),
+        },
+      }
+    });
+  }
+
+  get facilityUriList() {
+    return this.selected.facilities.map(facility => {
+      return {
+        uri: facility.uri,
+        value: facility.name,
+        to: {
+          path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri)
+        }
+      };
+    });
+  }
+
+  get experimentUriList() {
+    return this.selected.experiments.map(experiment => {
+      return {
+        uri: experiment.uri,
+        value: experiment.name,
+        to: {
+          path: "/experiment/details/" + encodeURIComponent(experiment.uri)
+        }
+      };
+    });
+  }
+
   editInfrastructure() {
-    this.$opensilex
-      .getService("opensilex-core.OrganisationsService")
+    this.organizationService
       .getInfrastructure(this.selected.uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let getDto = http.response.result;
         let editDto = {
           ...getDto,
           uri: getDto.uri,
-          groups: getDto.groups.map(group => group.uri)
+          groups: getDto.groups.map(group => group.uri),
+          facilities: getDto.facilities.map(facility => facility.uri),
+          parents: getDto.parents.map(parent => parent.uri)
         };
         this.infrastructureForm.showEditForm(editDto);
       })
@@ -139,8 +217,8 @@ export default class InfrastructureDetail extends Vue {
     this.$emit("onDelete");
   }
 
-  setParent(form) {
-    form.parent = this.selected.parent;
+  setParents(form) {
+    form.parents = this.selected.parents;
   }
 
   setInfrastructure(form) {
@@ -155,14 +233,22 @@ export default class InfrastructureDetail extends Vue {
 <i18n>
 en:
   InfrastructureDetail:
-    parent-orga: Parent organization
+    parent-orga: Parent organizations
     groups:
       label: "Groups"
       edit: "Edit"
+    facilities:
+      label: "Facilities"
+    experiments:
+      label: "Experiments"
 fr:
   InfrastructureDetail:
-    parent-orga: Organisation parente
+    parent-orga: Organisations parentes
     groups:
       label: "Groupes"
       edit: "Modifier"
+    facilities:
+      label: "Installations techniques"
+    experiments:
+      label: "Expérimentations"
 </i18n>

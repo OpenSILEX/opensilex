@@ -241,96 +241,103 @@ export default class InfrastructureTree extends Vue {
   }
 
   refresh(uri?) {
-    this.service
-        .searchInfrastructures(this.filter)
-        .then((orgHttp: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-          if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
-            if (this.filter == "") {
-              this.infrastructureForm
-                  .getFormRef()
-                  .setParentInfrastructures(orgHttp.response.result);
-            } else {
-              this.infrastructureForm.getFormRef().init();
-            }
-          }
+    Promise.all([
+      this.fetchOrganizationsAsTree(),
+      this.fetchSites()
+    ]).then(result => {
+      let tree: Array<GenericTreeOption> = result[0];
+      let sites: Array<SiteGetDTO> = result[1];
 
-          let nodes = this.$opensilex.buildTreeFromDag(orgHttp.response.result, {});
+      let mappedNodes = this.appendSitesToTree(tree, sites);
 
-          this.appendSitesToTree(nodes)
-              .then((mappedNodes) => {
-                if (mappedNodes.length > 0) {
-                  mappedNodes[0].isSelected = true;
+      if (mappedNodes.length > 0) {
+        mappedNodes[0].isSelected = true;
 
-                  if (!uri) {
-                    this.displayOrganizationDetail(mappedNodes[0].data.uri, true);
-                  }
-                }
+        if (!uri) {
+          this.displayOrganizationDetail(mappedNodes[0].data.uri, true);
+        }
+      }
 
-                if (uri) {
-                  this.displayOrganizationDetail(uri, true);
-                }
+      if (uri) {
+        this.displayOrganizationDetail(uri, true);
+      }
 
-                this.nodes = mappedNodes;
-                console.log(this.nodes);
-              });
-        })
-        .catch(this.$opensilex.errorHandler);
+      this.nodes = mappedNodes;
+    }).catch(this.$opensilex.errorHandler);
   }
 
-  private async appendSitesToTree(tree: Array<GenericTreeOption>): Promise<Array<OrganizationOrSiteTreeNode>> {
+  private async fetchOrganizationsAsTree(): Promise<Array<GenericTreeOption>> {
     try {
-      let siteHttp: HttpResponse<OpenSilexResponse<Array<SiteGetDTO>>> = await this.service.searchSites(this.filter);
+      let orgHttp: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>> = await this.service.searchInfrastructures(this.filter);
 
-      return this.$opensilex.mapTree<GenericTreeOption, OrganizationOrSiteTreeNode>(tree, (node, mappedChildren) => {
-        let orgNode: OrganizationOrSiteTreeNode = {
-          ...node,
-          children: mappedChildren,
-          data: {
-            ...node.data,
-            isOrganization: true,
-            isSite: false
-          }
-        };
-
-        for (let site of siteHttp.response.result) {
-          for (let org of site.organizations) {
-            if (org.uri === orgNode.id) {
-              if (!Array.isArray(orgNode.children)) {
-                orgNode.children = [];
-              }
-              let siteNodeData: OrganizationOrSiteData = {
-                isSite: true,
-                isOrganization: false,
-                uri: site.uri,
-                name: site.name,
-                rdf_type: site.rdf_type,
-                rdf_type_name: site.rdf_type_name,
-                children: [],
-                parents: site.organizations.map(org => org.uri)
-              };
-              let siteNode: OrganizationOrSiteTreeNode = {
-                id: site.uri,
-                children: [],
-                isDefaultExpanded: true,
-                isExpanded: true,
-                isDisabled: false,
-                isLeaf: true,
-                label: site.name,
-                data: siteNodeData,
-                title: site.name,
-                isSelectable: true
-              };
-              orgNode.children.push(siteNode);
-            }
-          }
+      if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
+        if (this.filter == "") {
+          this.infrastructureForm
+              .getFormRef()
+              .setParentInfrastructures(orgHttp.response.result);
+        } else {
+          this.infrastructureForm.getFormRef().init();
         }
+      }
 
-        return orgNode;
-      });
+      return this.$opensilex.buildTreeFromDag(orgHttp.response.result, {});
     } catch (e) {
       this.$opensilex.errorHandler(e);
       throw e;
     }
+  }
+
+  private async fetchSites(): Promise<Array<SiteGetDTO>> {
+    return (await this.service.searchSites(this.filter)).response.result;
+  }
+
+  private appendSitesToTree(tree: Array<GenericTreeOption>, sites: Array<SiteGetDTO>): Array<OrganizationOrSiteTreeNode> {
+    return this.$opensilex.mapTree<GenericTreeOption, OrganizationOrSiteTreeNode>(tree, (node, mappedChildren) => {
+      let orgNode: OrganizationOrSiteTreeNode = {
+        ...node,
+        children: mappedChildren,
+        data: {
+          ...node.data,
+          isOrganization: true,
+          isSite: false
+        }
+      };
+
+      for (let site of sites) {
+        for (let org of site.organizations) {
+          if (org.uri === orgNode.id) {
+            if (!Array.isArray(orgNode.children)) {
+              orgNode.children = [];
+            }
+            let siteNodeData: OrganizationOrSiteData = {
+              isSite: true,
+              isOrganization: false,
+              uri: site.uri,
+              name: site.name,
+              rdf_type: site.rdf_type,
+              rdf_type_name: site.rdf_type_name,
+              children: [],
+              parents: site.organizations.map(org => org.uri)
+            };
+            let siteNode: OrganizationOrSiteTreeNode = {
+              id: site.uri,
+              children: [],
+              isDefaultExpanded: true,
+              isExpanded: true,
+              isDisabled: false,
+              isLeaf: true,
+              label: site.name,
+              data: siteNodeData,
+              title: site.name,
+              isSelectable: true
+            };
+            orgNode.children.push(siteNode);
+          }
+        }
+      }
+
+      return orgNode;
+    });
   }
 
   public displayNodesDetail(node: OrganizationOrSiteTreeNode) {

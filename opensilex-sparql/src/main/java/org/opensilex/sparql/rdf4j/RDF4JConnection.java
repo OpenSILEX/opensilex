@@ -177,8 +177,13 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
 
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
+        executeUpdateQuery(update.buildRequest().toString());
+    }
+
+    @Override
+    public void executeUpdateQuery(String update) throws SPARQLException {
         try {
-            Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update.buildRequest().toString());
+            Update updateQuery = rdf4JConnection.prepareUpdate(QueryLanguage.SPARQL, update);
             if (getTimeout() > 0) {
                 updateQuery.setMaxExecutionTime(getTimeout());
             }

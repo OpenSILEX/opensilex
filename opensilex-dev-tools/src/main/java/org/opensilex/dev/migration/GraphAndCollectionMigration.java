@@ -36,6 +36,7 @@ import java.util.Objects;
 public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphAndCollectionMigration.class);
+    private static final String SPARQL_BASE_URI_TEMPLATE = "__OPENSILEX_BASE_URI_TO_REPLACE__";
 
     private OpenSilex opensilex;
 
@@ -115,7 +116,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             baseUri = sparqlConfig.baseURI();
         }
 
-        return renameQuery.replace("__OPENSILEX_BASE_URI_TO_REPLACE__", baseUri);
+        return renameQuery.replace(SPARQL_BASE_URI_TEMPLATE, baseUri);
     }
 
     private void executeSparqlMigration(SPARQLService sparql, SPARQLConfig sparqlConfig) throws IOException, SPARQLException {

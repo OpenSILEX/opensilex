@@ -451,13 +451,18 @@ public class DeviceDAO {
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
         int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
         if(provCount > 0) {
-            throw new ForbiddenURIAccessException(deviceURI,"Device can't be deleted. "+provCount+" linked provenances");
-      
+            throw new ForbiddenURIAccessException(deviceURI, provCount+" linked provenances");
         }
+        
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
         if(dataCount > 0){
-            throw new ForbiddenURIAccessException(deviceURI,"Device can't be deleted. "+dataCount+" linked data");
+            throw new ForbiddenURIAccessException(deviceURI, dataCount+" linked data");
+        }  
+        
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
+        if(dataFileCount > 0){
+            throw new ForbiddenURIAccessException(deviceURI, dataFileCount+" linked dataFiles");
         }  
         
         nosql.startTransaction();

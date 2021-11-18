@@ -17,7 +17,6 @@ import org.opensilex.service.ServiceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -93,7 +92,7 @@ public class HttpFileSystemConnection extends BaseService implements FileStorage
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         appendProperties(connection);
 
-        if (connection.getResponseCode() != Response.Status.MOVED_PERMANENTLY.getStatusCode()) {
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_MOVED_PERM) {
             return connection;
         }
         // handle HTTP redirection
@@ -110,12 +109,13 @@ public class HttpFileSystemConnection extends BaseService implements FileStorage
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
         HttpURLConnection connection = buildHttpGETConnection(filePath);
 
-        /*if(connection.getResponseCode() != HttpURLConnection.HTTP_OK){
+        if(connection.getResponseCode() != HttpURLConnection.HTTP_OK){
             String msg = String.format("Bad HTTP status code : %s, expected : %s ",connection.getResponseCode(),HttpURLConnection.HTTP_OK);
             throw new IOException(msg);
-        }*/
+        }
+
         byte[] data = IOUtils.toByteArray(connection.getInputStream());
-//        connection.disconnect();
+        connection.disconnect();
         return data;
     }
 
@@ -137,7 +137,9 @@ public class HttpFileSystemConnection extends BaseService implements FileStorage
     @Override
     public boolean exist(Path filePath) throws IOException {
         HttpURLConnection connection = buildHttpGETConnection(filePath);
-        return connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+        boolean exist = connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+        connection.disconnect();
+        return exist;
     }
 
     @Override

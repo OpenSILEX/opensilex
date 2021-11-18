@@ -186,6 +186,31 @@ public class DataDAO {
         return count;
 
     }
+  
+    public int countFiles(
+            UserModel user,
+            List<URI> rdfTypes,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> provenances,
+            List<URI> devices,
+            Instant startDate,
+            Instant endDate,
+            Document metadata) throws Exception {
+
+      
+          Document filter = searchFilter(user, experiments, objects, null, provenances, devices, startDate, endDate, null, null, metadata);
+                
+        if (rdfTypes != null && !rdfTypes.isEmpty()) {
+            Document inFilter = new Document(); 
+            inFilter.put("$in", rdfTypes);
+            filter.put("rdfType", inFilter);
+        }
+        int count = nosql.count(DataFileModel.class, FILE_COLLECTION_NAME, filter);
+
+        return count;
+
+    }
     
     /**
      *

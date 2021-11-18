@@ -445,7 +445,9 @@ export default class InfrastructureTree extends Vue {
   }
 
   showSiteDetail(uri) {
-    console.log("detail site", uri);
+    this.$router.push({
+      path: "/infrastructure/site/details/" + encodeURIComponent(uri),
+    });
   }
 
   createSite(parentURI?: string) {

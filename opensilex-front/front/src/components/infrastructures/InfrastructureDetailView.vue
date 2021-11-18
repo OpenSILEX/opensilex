@@ -21,6 +21,7 @@
         <!-- Infrastructure facilities -->
         <opensilex-InfrastructureFacilitiesView
           :facilities="selected.facilities"
+          :selected="selected"
           :withActions="true"
           :isSelectable="false"
           @onUpdate="refresh"

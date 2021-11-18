@@ -269,8 +269,9 @@ export default class DeviceDescription extends Vue {
         this.$emit("onDelete", uri);
       })
       .catch((error) => {
-        if (error.response.result) {
-          this.$opensilex.errorHandler(error, error.response.result.message);
+        if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {
+          let message = this.$i18n.t("DeviceList.associated-device-error") + " " + error.response.result.message;
+          this.$opensilex.showErrorToast(message);
         } else {
           this.$opensilex.errorHandler(error);
         }

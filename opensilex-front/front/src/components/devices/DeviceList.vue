@@ -210,6 +210,10 @@ export default class DeviceList extends Vue {
     return this.$store.state.user;
   }
 
+  get lang() {
+    return this.$store.getters.language;
+  }
+
   get credentials() {
     return this.$store.state.credentials;
   }
@@ -292,8 +296,9 @@ export default class DeviceList extends Vue {
         this.$emit("onDelete", uri);
       })
       .catch((error) => {
-        if (error.response.result) {
-          this.$opensilex.errorHandler(error, error.response.result.message);
+        if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {
+          let message = this.$i18n.t("DeviceList.associated-device-error") + " " + error.response.result.message;
+          this.$opensilex.showErrorToast(message);
         } else {
           this.$opensilex.errorHandler(error);
         }
@@ -347,9 +352,6 @@ export default class DeviceList extends Vue {
     );
   }
 
-  get lang() {
-    return this.$store.state.lang;
-  }
 
   exportDevices() {
     let path = "/core/devices/export_by_uris";
@@ -535,6 +537,7 @@ en:
     addMove: Move
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
+    associated-device-error: Device is associated with 
 
     filter:
       namePattern: Name
@@ -570,6 +573,7 @@ fr:
     addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
+    associated-device-error: Le dispositif est associé à  
 
     filter:
       namePattern: Nom

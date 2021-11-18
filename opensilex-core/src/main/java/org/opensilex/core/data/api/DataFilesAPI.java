@@ -194,7 +194,7 @@ public class DataFilesAPI {
                 throw new NoSQLTooLargeSetException(DataAPI.SIZE_MAX, dtoList.size());
             }
             validDataFileDescription(dtoList);
-            List<DataFileModel> dataList = new ArrayList();
+            List<DataFileModel> dataList = new ArrayList<>();
             for(DataFilePathCreationDTO dto : dtoList ){            
                 DataFileModel model = dto.newModel();
                 // get the the absolute file path according to the fileStorageDirectory
@@ -268,26 +268,24 @@ public class DataFilesAPI {
     ) throws NotFoundURIException, IOException, URISyntaxException {
         try {
             DataDAO dao = new DataDAO(nosql, sparql, fs);
+            DataFileModel description = dao.getFile(uri);
 
-            // Handle local and remote ressources identified by URI
-            java.nio.file.Path filePath = Paths.get(uri.toString());
+            java.nio.file.Path filePath = Paths.get(description.getPath());
             byte[] fileContent = fs.readFileAsByteArray(FS_FILE_PREFIX, filePath);
 
             if (ArrayUtils.isEmpty(fileContent)) {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
+                return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR,"File not found","File is referenced but no content was found").getResponse();
             }
-
-            DataFileModel description = dao.getFile(uri);
 
             return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
                     .build();
             
         } catch (NoSQLInvalidURIException e) {
-            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
+            return new ErrorResponse(Response.Status.NOT_FOUND,e.getMessage(),e).getResponse();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();           
-        } 
+            return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR,e.getMessage(),e).getResponse();
+        }
     }
     
     /**
@@ -540,9 +538,9 @@ public class DataFilesAPI {
         if (!notFoundedObjectURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs));
         }
-        if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
-        }
+//        if (!notFoundedProvenanceURIs.isEmpty()) {
+//            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
+//        }
         if (!notFoundedExpURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
         }

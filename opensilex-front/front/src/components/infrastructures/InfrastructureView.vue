@@ -43,6 +43,8 @@
             @onCreate="refresh"
             @onDelete="refresh"
             :facilities="selectedFacilities"
+            :organization="selectedOrganization"
+            :site="selectedSite"
             :isSelectable="false"
             ref="organizationFacilitiesView"
             @facilitySelected="updateSelectedFacility"

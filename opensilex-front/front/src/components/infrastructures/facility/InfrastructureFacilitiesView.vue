@@ -114,6 +114,8 @@ import {BTable} from "bootstrap-vue";
 import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
+import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
+import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
@@ -123,6 +125,12 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
   @Ref("facilityTable") readonly facilityTable: BTable;
+
+  @Prop()
+  organization: NamedResourceDTOInfrastructureModel;
+
+  @Prop()
+  site: NamedResourceDTOSiteModel;
 
   /**
    * Facilities as prop. If defined, then these facilities only are displayed in the view. Otherwise, facilities are
@@ -224,8 +232,8 @@ export default class InfrastructureFacilitiesView extends Vue {
   }
 
   initForm(form: InfrastructureFacilityCreationDTO) {
-    if (this.selected) {
-      form.organizations = [this.selected.uri];
+    if (this.organization) {
+      form.organizations = [this.organization.uri];
     }
   }
 

@@ -61,7 +61,7 @@ public class ProvenanceDAO {
             URI agentURI
     ) throws Exception {
         
-        Document filter = searchFilter(uris,name,description, activityType,activityUri,agentType, agentURI);
+        Document filter = searchFilter(uris, name, description, activityType, activityUri, agentType, agentURI);
         int count = nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
         return count;
     }
@@ -135,7 +135,7 @@ public class ProvenanceDAO {
             Integer pageSize
     ) throws NamingException, IOException, Exception {
         
-        Document filter = searchFilter(uris,name,description, activityType,activityUri,agentType, agentURI);
+        Document filter = searchFilter(uris, name, description, activityType, activityUri, agentType, agentURI);
         ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, orderByList, page, pageSize);
         return provenances; 
     }

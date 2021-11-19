@@ -72,7 +72,7 @@
         :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
         :enableActions="true"
         :modificationCredentialId="
-          credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+          credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID
         "
         :target="selected.uri"
       ></opensilex-AnnotationList>
@@ -88,7 +88,7 @@
 
     <opensilex-DocumentTabList
       v-if="isDocumentTab"
-      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+      :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
       :uri="selected.uri"
     ></opensilex-DocumentTabList>
 
@@ -109,8 +109,8 @@
       ref="positionList"
       :target="selected.uri"
       :columnsToDisplay="getPositionsColumnToDisplay()"
-      :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+      :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
+      :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
     ></opensilex-PositionList>
   </div>
 </template>

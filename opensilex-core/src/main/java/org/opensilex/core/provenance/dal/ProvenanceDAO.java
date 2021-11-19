@@ -60,7 +60,22 @@ public class ProvenanceDAO {
             URI agentType, 
             URI agentURI
     ) throws Exception {
-         Document filter = new Document();
+        
+        Document filter = searchFilter(uris,name,description, activityType,activityUri,agentType, agentURI);
+        int count = nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
+        return count;
+    }
+    
+    public Document searchFilter(
+            Set<URI> uris,
+            String name, 
+            String description,
+            URI activityType,
+            URI activityUri,
+            URI agentType, 
+            URI agentURI
+    ) throws Exception {
+          Document filter = new Document();
         
         if (uris != null && !uris.isEmpty()) {
             Document inFilter = new Document(); 
@@ -102,13 +117,9 @@ public class ProvenanceDAO {
         
         if (agentURI != null) {
             filter.put("agents.uri", agentURI);
-        }   
-        
-        int count = nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
-
-        return count;
-        
-        
+        }  
+        return filter;
+    
     }
     
     public ListWithPagination<ProvenanceModel> search(
@@ -124,53 +135,9 @@ public class ProvenanceDAO {
             Integer pageSize
     ) throws NamingException, IOException, Exception {
         
-        Document filter = new Document();
-        
-        if (uris != null && !uris.isEmpty()) {
-            Document inFilter = new Document(); 
-            inFilter.put("$in", uris);
-            filter.put("uri", inFilter);
-        }
-        
-        if (name != null) {
-            Document regexFilter = new Document();
-            regexFilter.put("$regex", ".*" + Pattern.quote(name) + ".*" );
-            // Case ignore
-            regexFilter.put("$options", "i" );
-
-            //regexFilter.put("$options", "i");
-            filter.put("name", regexFilter);
-        }
-        
-        if (description != null) {
-            Document regexFilter = new Document();
-            regexFilter.put("$regex", ".*" + Pattern.quote(description) + ".*" );
-            // Case ignore
-            regexFilter.put("$options", "i" );
-
-            //regexFilter.put("$options", "i");
-            filter.put("description", regexFilter);
-        }
-        
-        if (activityType != null) {
-            filter.put("activity.rdfType", activityType);
-        }
-        
-        if (activityUri != null) {
-            filter.put("activity.uri", activityUri);
-        }
-        
-        if (agentType != null) {
-            filter.put("agents.rdfType", agentType);
-        }
-        
-        if (agentURI != null) {
-            filter.put("agents.uri", agentURI);
-        }      
-        
+        Document filter = searchFilter(uris,name,description, activityType,activityUri,agentType, agentURI);
         ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, orderByList, page, pageSize);
-        return provenances;        
-           
+        return provenances; 
     }
     
     public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {

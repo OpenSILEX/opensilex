@@ -874,10 +874,6 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 201, message = "Data file exported")
     })
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(

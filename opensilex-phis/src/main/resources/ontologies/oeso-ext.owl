@@ -949,52 +949,55 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-
-            <rdfs:subClassOf>
-
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
-                </owl:Restriction>
-
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
-                </owl:Restriction>
-
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
-                </owl:Restriction>
-
-                 <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-                 </owl:Restriction>
-
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startUp"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-                </owl:Restriction>
-
-                 <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#removal"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-                 </owl:Restriction>
-
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#personInCharge"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-                </owl:Restriction>
-
-            </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startUp"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#removal"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#personInCharge"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 

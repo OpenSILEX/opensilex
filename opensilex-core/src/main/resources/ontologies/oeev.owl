@@ -244,7 +244,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Association"/>
         <rdfs:label xml:lang="fr">Association avec un capteur</rdfs:label>
         <rdfs:label xml:lang="en">Association with a sensing device</rdfs:label>
-         <rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
@@ -361,51 +361,43 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
         <rdfs:label xml:lang="en">Event</rdfs:label>
         <rdfs:label xml:lang="fr">Événement</rdfs:label>
-
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#concerns"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
-<!--                     <owl:Class> -->
-<!--                         <owl:unionOf rdf:parseType="Collection"> -->
-<!--                             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/> -->
-<!--                             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#InfrastructureFacility"/> -->
-<!--                             <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Device"/> -->
-<!--                         </owl:unionOf> -->
-<!--                     </owl:Class> -->
             </owl:Restriction>
-
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
             </owl:Restriction>
-
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#isInstant"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
             </owl:Restriction>
-
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2006/time#hasBeginning"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.w3.org/2006/time#Instant"/>
-
             </owl:Restriction>
-
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2006/time#hasEnd"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                 <owl:onClass rdf:resource="http://www.w3.org/2006/time#Instant"/>
-             </owl:Restriction>
-
+            </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeev#EvolutiveMaintenance -->
 

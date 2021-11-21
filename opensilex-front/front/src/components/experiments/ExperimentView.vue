@@ -79,7 +79,7 @@
 
                 <opensilex-DocumentTabList
                         v-else-if="isDocumentTab()"
-                        :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
+                        :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
                         :uri="uri"
                 ></opensilex-DocumentTabList>
                 
@@ -89,8 +89,8 @@
                         :target="uri"
                         :displayTargetColumn="false"
                         :enableActions="true"
-                        :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
-                        :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+                        :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+                        :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
                 ></opensilex-AnnotationList>
 
             </template>

@@ -206,8 +206,6 @@ public class DataAPI {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-            // put an association variable/device array
-            // valid data and return the datalist with provwasassociated in dataprovenance if it need
             
             dataList = validData(dataList);
 
@@ -768,7 +766,7 @@ public class DataAPI {
                 if (!objectURIs.contains(data.getTarget())) {
                     objectURIs.add(data.getTarget());
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        notFoundedObjectURIs.add(data.getTarget()); // object ? or target ? confusing point
+                        notFoundedObjectURIs.add(data.getTarget()); 
                     }
                 }
             }

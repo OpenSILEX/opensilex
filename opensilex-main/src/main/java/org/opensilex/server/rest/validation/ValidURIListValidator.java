@@ -14,7 +14,7 @@ import javax.validation.ConstraintValidatorContext;
 
 /**
  * Class used by URL annotation to validate that a string value list contains an
- * URL. {@code null} elements are considered valid.
+ * URL.
  *
  * @see org.opensilex.server.rest.validation.URL
  * @author Arnaud Charleroy
@@ -22,7 +22,7 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class ValidURIListValidator implements ConstraintValidator<ValidURI, List<URI>> {
 
-    private static final String INVALID_URI_MSG = "The URI at the index [%d] is not an URL : %s";
+    private static final String INVALID_URI_MSG = "The URI at the index [%d] (start at 1) is not a valid URL : %s";
 
     /**
      * Check is list is made of valid URL.
@@ -37,28 +37,27 @@ public class ValidURIListValidator implements ConstraintValidator<ValidURI, List
             return true;
         }
 
-        boolean allValid = true;
         List<Integer> invalidUrisIndexes = new LinkedList<>();
 
         for (int i = 0; i < valueList.size(); i++) {
             URI uri = valueList.get(i);
-            if (uri != null && !uri.isAbsolute()) {
-                allValid = false;
+            if (uri == null || !uri.isAbsolute()) {
                 invalidUrisIndexes.add(i);
             }
         }
 
         // append a custom constraint violation for each bad URI
-        if (!allValid) {
+        if (! invalidUrisIndexes.isEmpty()) {
             context.disableDefaultConstraintViolation();
 
             invalidUrisIndexes.forEach(badUriIdx -> {
                 // start from index 1 instead of 0 for better error comprehension for any user
                 String msg = String.format(INVALID_URI_MSG, badUriIdx + 1, valueList.get(badUriIdx));
-                context.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(msg)
+                        .addConstraintViolation();
             });
-
+            return false;
         }
-        return allValid;
+        return true;
     }
 }

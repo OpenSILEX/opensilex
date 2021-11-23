@@ -81,7 +81,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
             try {
                 return new URI(URLDecoder.decode(value, StandardCharsets.UTF_8.name()));
             } catch (URISyntaxException | UnsupportedEncodingException ex) {
-                return null;
+                throw new IllegalArgumentException(ex);
             }
         }
 

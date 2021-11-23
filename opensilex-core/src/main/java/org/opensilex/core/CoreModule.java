@@ -28,7 +28,6 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;

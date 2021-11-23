@@ -34,7 +34,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         return null;
     }
 
-    public static ParamConverter<LocalDate> localDateConverter = new ParamConverter<LocalDate>() {
+    public static final ParamConverter<LocalDate> localDateConverter = new ParamConverter<LocalDate>() {
         @Override
         public LocalDate fromString(final String value) {
             if (value == null || value.isEmpty()) {
@@ -53,7 +53,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    public static ParamConverter<OffsetDateTime> offsetDateTimeConverter = new ParamConverter<OffsetDateTime>() {
+    public static final ParamConverter<OffsetDateTime> offsetDateTimeConverter = new ParamConverter<OffsetDateTime>() {
         @Override
         public OffsetDateTime fromString(final String value) {
             if (value == null || value.isEmpty()) {
@@ -72,7 +72,7 @@ public class CustomParamConverterProvider implements ParamConverterProvider {
         }
     };
 
-    private static ParamConverter<URI> uriConverter = new ParamConverter<URI>() {
+    private static final ParamConverter<URI> uriConverter = new ParamConverter<URI>() {
         @Override
         public URI fromString(final String value) {
             if (value == null || value.isEmpty()) {

@@ -8,7 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
@@ -17,26 +19,36 @@ import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.conversions.Bson;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -47,6 +59,7 @@ import java.util.stream.Stream;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Projections.excludeId;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 public class MoveEventDAO extends EventDAO<MoveModel> {
 
@@ -379,11 +392,11 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @see MoveEventDAO#searchMoveEvents(URI, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
      */
     public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(
-            URI target,
+            @NotNull URI target,
             String descriptionPattern,
             OffsetDateTime start, OffsetDateTime end,
             List<OrderBy> orderByList,
-            Integer page, Integer pageSize) throws Exception {
+            @NotNull Integer page, @NotNull Integer pageSize) throws Exception {
 
         Objects.requireNonNull(target);
 
@@ -418,6 +431,79 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     .find(eventInIdFilter)
                     .skip(page * pageSize)
                     .limit(pageSize)
+                    .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
+                    .forEach(moveNoSqlModel -> {
+                        if (moveNoSqlModel.getTargetPositions().size() > 0) {
+                            positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
+                        } else {
+                            positionsByUri.remove(moveNoSqlModel.getUri());
+                        }
+                    });
+
+        }
+
+        LinkedHashMap<MoveModel, PositionModel> results = new LinkedHashMap<>();
+        positionsByUri.forEach((uri, position) -> {
+            results.put(moveByURI.get(uri), position);
+        });
+        return results;
+    }
+
+    /**
+     * @param target the object on which we get the position
+     * @param start  the time at which we search the position
+     * @return the position of the given object during a time interval with a descending sort on the move end.
+     * @apiNote The method run in two times :
+     * <ul>
+     * <li> Search corresponding move URI and location from the SPARQL repository </li>
+     * <li> Then for each move URI, get the corresponding {@link MoveEventNoSqlModel} from the mongodb collection.
+     * <ul>
+     * <li> This last operation is done with a single query with a IN filter on {@link MoveEventNoSqlModel#ID_FIELD} field. </li>
+     * <li> A {@link Map} between move URI and {@link PositionModel} is maintained in order to associated data from the two databases</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * @see MoveEventDAO#searchMoveEvents(URI, String, OffsetDateTime, OffsetDateTime, List, Integer, Integer)
+     */
+    public LinkedHashMap<MoveModel, PositionModel> getPositionsHistoryWithoutPagination(
+            @NotNull URI target,
+            String descriptionPattern,
+            OffsetDateTime start, OffsetDateTime end) throws Exception {
+
+        Objects.requireNonNull(target);
+//        OrderBy orderBy = new OrderBy("_end__timestamp=asc");
+        OrderBy orderBy = new OrderBy("_end__timestamp", Order.ASCENDING);
+        ArrayList<OrderBy> arr_OrderBy = new ArrayList<OrderBy>();
+        arr_OrderBy.add(orderBy);
+        // search move history sorted with DESC order on move end, from SPARQL repository
+        Stream<MoveModel> locationHistory = searchMoveEvents(target, descriptionPattern, start, end, arr_OrderBy, null, null);
+
+        // Index of position by uri, sorted by event end time
+        LinkedHashMap<URI, PositionModel> positionsByUri = new LinkedHashMap<>();
+        Map<URI, MoveModel> moveByURI = new HashMap<>();
+
+        // for each location, create a position model initialized with the location and update position index
+        locationHistory.forEach(move -> {
+            moveByURI.put(move.getUri(), move);
+            positionsByUri.put(move.getUri(), null);
+        });
+
+
+        if (start != null) {
+            MoveModel lastMove = getLastMoveAfter(target, start);
+            if (lastMove != null) {
+                positionsByUri.put(lastMove.getUri(), null);
+            }
+        }
+
+        if (!positionsByUri.isEmpty()) {
+
+            Bson eventInIdFilter = getEventIdInFilter(positionsByUri.keySet().stream());
+            Bson concernedItemPositionProjection = getConcernedItemArrayItemProjection(target);
+
+            // found all positions from mongodb collection according the filter
+            moveEventCollection
+                    .find(eventInIdFilter)
                     .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
                     .forEach(moveNoSqlModel -> {
                         if (moveNoSqlModel.getTargetPositions().size() > 0) {
@@ -565,5 +651,37 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
 
         return moveNoSqlModel.getTargetPositions().get(0).getPosition();
+    }
+
+
+    public enum ReverseLink {FROM, TO} ;
+    /**
+     * @param link The reverse search direction
+     * @param targetUri the object to reverse search
+     * @return A list of all device model which are a target of the event
+     * @apiNote if time is null, then the last known position will be returned
+     */
+    public List<URI> reverseSearchURIDevice(URI targetUri, ReverseLink link ) throws Exception {
+        // select for each target, the devices attached to it via a move event
+        Var device_var = makeVar("device");
+        Var event_var = makeVar("move");
+        Var type_var = makeVar("type");
+        SelectBuilder innerSelect = new SelectBuilder()
+                .addVar(device_var)
+                .addWhere(event_var, Oeev.to, SPARQLDeserializers.nodeURI(targetUri))
+                .addWhere(event_var, Oeev.concerns, device_var)
+                .addWhere(device_var, RDF.type, type_var)
+                .addWhere(type_var, Ontology.subClassAny, Oeso.Device);
+
+        ArrayList<URI> devicesURIs = new ArrayList<URI>();
+        sparql.executeSelectQueryAsStream(innerSelect).forEach(result -> {
+            String device_uri = result.getStringValue(device_var.getVarName());
+            try {
+                devicesURIs.add(new URI(device_uri));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        });
+        return devicesURIs;
     }
 }

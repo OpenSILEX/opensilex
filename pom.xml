@@ -10,27 +10,28 @@
  in the <dependencies> section in order to make it work.
 ******************************************************************************
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>opensilex</artifactId>
     <packaging>pom</packaging>
-    
+
     <name>opensilex</name>
-      
+
     <url>https://www.opensilex.org/</url>
-      
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
         <version>${revision}</version>
         <relativePath>opensilex-parent/pom.xml</relativePath>
     </parent>
-      
+
     <properties>
         <skipFrontBuild>true</skipFrontBuild>
         <skipTypeScriptLibBuild>true</skipTypeScriptLibBuild>
     </properties>
-      
+
     <modules>
         <!-- Main OpenSilex modules -->
         <module>opensilex-parent</module>
@@ -42,31 +43,32 @@
         <module>opensilex-module</module>
         <module>opensilex-core</module>
         <module>opensilex-front</module>
-        
+
 
         <!-- PHIS legacy module-->
         <module>opensilex-phis</module>
 
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
-        
+
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
-            
+
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
-        
+
         <!-- Release module -->
         <module>opensilex-release</module>
-         
+
         <!-- Maven Plugin module -->
         <module>opensilex-swagger-codegen-maven-plugin</module>
-        
+
         <!-- Documentation module -->
         <module>opensilex-doc</module>
         <module>opensilex-mobile</module>
+        <module>hl-services</module>
     </modules>
-    
+
     <dependencies>
         <!-- Plugin dependencies -->
         <dependency>
@@ -74,50 +76,50 @@
             <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
             <version>${revision}</version>
         </dependency>
-            
+
         <!-- OpenSilex build-in modules dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-main</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-sparql</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-nosql</artifactId>
             <version>${revision}</version>
         </dependency>
-                
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-fs</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-security</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-core</artifactId>
             <version>${revision}</version>
         </dependency>
-            
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-front</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <!--PHIS legacy dependency-->
         <dependency>
             <groupId>org.opensilex</groupId>
@@ -125,27 +127,27 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- BRAPI dependency --> 
+        <!-- BRAPI dependency -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-mobile</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <!--Other extension modules must be declared as dependencies-->
-<!--        <dependency>
+        <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>inrae-sixtine</artifactId>
+            <artifactId>hl-services</artifactId>
             <version>${revision}</version>
-        </dependency> -->
+        </dependency>
     </dependencies>
-      
+
     <build>
         <plugins>
             <!-- Documentation site generation plugin -->
@@ -153,14 +155,14 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
                 <inherited>false</inherited>
-                
+
                 <configuration>
                     <outputDirectory>${generated.doc.site.directory}</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-              
+
     <reporting>
         <plugins>
             <!-- Add Javadoc generation plugin during "site" phase -->
@@ -172,7 +174,7 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-                  
+
             <!-- Add project sources link and references in documentation during "site" phase -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -182,7 +184,7 @@
                     <javadocDir>${generated.doc.site.directory}/apidocs</javadocDir>
                 </configuration>
             </plugin>
-              
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -195,7 +197,7 @@
                     <aggregate>true</aggregate>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -213,7 +215,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
         <!-- Profile which enable Jacoco Code coverage -->
         <profile>
@@ -232,7 +234,7 @@
                             </excludes>
                             <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
                         </configuration>
-                                    
+
                         <executions>
                             <execution>
                                 <goals>
@@ -269,7 +271,7 @@
                                 <configuration>
                                     <dataFileIncludes>**/jacoco.exec</dataFileIncludes>
                                     <includes>
-                                        <!--Analyze class files only to exclude shaded agent JAR from report--> 
+                                        <!--Analyze class files only to exclude shaded agent JAR from report-->
                                         <include>**/*.class</include>
                                     </includes>
                                     <outputDirectory>${generated.doc.site.directory}/jacoco/</outputDirectory>
@@ -277,10 +279,10 @@
                             </execution>
                         </executions>
                     </plugin>
-                    
+
                 </plugins>
             </build>
-                  
+
             <reporting>
                 <plugins>
                     <!-- Add project sources link and references in documentation during "site" phase -->
@@ -299,7 +301,7 @@
                 </plugins>
             </reporting>
         </profile>
-        
+
         <!-- Profile which enable OWASP security check for libraries, could be VERY slow -->
         <profile>
             <id>with-security-check</id>
@@ -319,7 +321,7 @@
                     </plugin>
                 </plugins>
             </build>
-            
+
             <reporting>
                 <plugins>
                     <plugin>

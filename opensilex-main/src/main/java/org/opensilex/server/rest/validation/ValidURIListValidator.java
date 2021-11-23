@@ -7,6 +7,7 @@
 package org.opensilex.server.rest.validation;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -21,11 +22,13 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class ValidURIListValidator implements ConstraintValidator<ValidURI, List<URI>> {
 
+    private static final String INVALID_URI_MSG = "The URI at the index [%d] is not an URL : %s";
+
     /**
      * Check is list is made of valid URL.
      *
      * @param valueList list of values to check
-     * @param context constraint context to strore errors
+     * @param context constraint context to store errors
      * @return true if all values are URL and false otherwise
      */
     @Override
@@ -34,23 +37,27 @@ public class ValidURIListValidator implements ConstraintValidator<ValidURI, List
             return true;
         }
 
-        Boolean allValid = true;
-        URI lastUrlCheck = null;
+        boolean allValid = true;
+        List<Integer> invalidUrisIndexes = new LinkedList<>();
 
-        // loop over string
-        for (URI uri : valueList) {
-            if (!uri.isAbsolute()) {
+        for (int i = 0; i < valueList.size(); i++) {
+            URI uri = valueList.get(i);
+            if (uri != null && !uri.isAbsolute()) {
                 allValid = false;
-                lastUrlCheck = uri;
+                invalidUrisIndexes.add(i);
             }
         }
 
-        // if not valid returns the last false index
+        // append a custom constraint violation for each bad URI
         if (!allValid) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(
-                    "The uri at the index [" + valueList.indexOf(lastUrlCheck) + "] is not an URL"
-            ).addConstraintViolation();
+
+            invalidUrisIndexes.forEach(badUriIdx -> {
+                // start from index 1 instead of 0 for better error comprehension for any user
+                String msg = String.format(INVALID_URI_MSG, badUriIdx + 1, valueList.get(badUriIdx));
+                context.buildConstraintViolationWithTemplate(msg).addConstraintViolation();
+            });
+
         }
         return allValid;
     }

@@ -165,7 +165,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
         StringBuilder sb = new StringBuilder();
         if(rdfTypeName != null){
-            sb.append(rdfTypeName.getDefaultValue()).append("-");
+            sb.append(rdfTypeName.getDefaultValue().toLowerCase()).append("-");
         }
 
         if(instance.getName() != null){

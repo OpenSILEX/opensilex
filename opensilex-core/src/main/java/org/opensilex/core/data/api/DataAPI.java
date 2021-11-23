@@ -1110,8 +1110,6 @@ public class DataAPI {
     private final String dateHeader = "date";
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
-    private  List<ProvEntityModel> agentsInProvenance = null;
-    private boolean agentsInProvenanceIsCheck = false;
     
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {       
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
@@ -1141,6 +1139,8 @@ public class DataAPI {
             }
         }
         
+        Map<String,ProvEntityModel> variableCheckedAgent =  new HashMap<>();
+        List<String> checkedVariables = new ArrayList<>();
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -1221,6 +1221,8 @@ public class DataAPI {
                         validateCSVRow = validateCSVRow(
                                 provenance,
                                 hasDevice,
+                                variableCheckedAgent,
+                                checkedVariables,
                                 values, 
                                 rowIndex, 
                                 csvValidation, 
@@ -1263,6 +1265,8 @@ public class DataAPI {
     private boolean validateCSVRow(
             ProvenanceModel provenance, 
             Boolean hasDevice,
+            Map<String,ProvEntityModel> variableCheckedAgent,
+            List<String> checkedVariables,
             String[] values, 
             int rowIndex, 
             DataCSVValidationModel csvValidation, 
@@ -1453,15 +1457,14 @@ public class DataAPI {
                     
                 }
                
-            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) {
+            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])){
 
+                        String variable = headerByIndex.get(colIndex);
+                        URI varURI = URI.create(variable);
                        
-                        URI varURI = URI.create(headerByIndex.get(colIndex));
-                       
-                        DataProvenanceModel provenanceModel = new DataProvenanceModel();
                         
                         //Check variable to device association: if not add it after data create 
                         
@@ -1471,8 +1474,9 @@ public class DataAPI {
                             }
 
                         } else if(hasDevice){
+                            missingTargetOrDevice = false;
                             
-                            if(agentsInProvenance == null && !agentsInProvenanceIsCheck ) { // do it one time but write the error on each row if there is one
+                            if(!checkedVariables.contains(variable) ) { // do it one time but write the error on each row if there is one
                                 List<DeviceModel> devices = new ArrayList<>();
                                 List<DeviceModel> linkedDevice = new ArrayList<>();
                                 for (AgentModel agent : provenance.getAgents()) {
@@ -1505,9 +1509,8 @@ public class DataAPI {
                                                 URI rootType = rootDeviceTypes.get(device.getType());
                                                 agent.setType(rootType);
                                                 agent.setUri(device.getUri());
-                                                agentsInProvenance = new ArrayList<>();
-                                                agentsInProvenance.add(agent);
-                                            }else {
+                                                variableCheckedAgent.put(variable, agent);
+                                            } else {
                                                 missingTargetOrDevice = true;
                                                 validRow = false;
                                                 
@@ -1516,19 +1519,18 @@ public class DataAPI {
                                         }
                                         break;
                                     case 1:
-                                        if(devices.size() > 1){
-                                            device = linkedDevice.get(0);
-                                            ProvEntityModel agent = new ProvEntityModel();
-                                             if( rootDeviceTypes == null) {
-                                                rootDeviceTypes = getRootDeviceTypes();
-                                            }
-                                            URI rootType = rootDeviceTypes.get(device.getType());
-                                            agent.setType(rootType);
-                                            agent.setUri(device.getUri());
-                                            agentsInProvenance = new ArrayList<>();
-                                            agentsInProvenance.add(agent);
+
+                                        device = linkedDevice.get(0);
+                                        ProvEntityModel agent = new ProvEntityModel();
+                                        if (rootDeviceTypes == null) {
+                                            rootDeviceTypes = getRootDeviceTypes();
                                         }
+                                        URI rootType = rootDeviceTypes.get(device.getType());
+                                        agent.setType(rootType);
+                                        agent.setUri(device.getUri());
+                                        variableCheckedAgent.put(variable, agent);
                                         break;
+                                        
                                     default :
                                         //witch device to choose ?
                                         CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
@@ -1537,14 +1539,11 @@ public class DataAPI {
                                         break;
 
                                 }
-                                agentsInProvenanceIsCheck = true;
-                                if(agentsInProvenance != null){
-                                    provenanceModel.setProvWasAssociatedWith(agentsInProvenance);
-                                }
+                                checkedVariables.add(variable);
                                 
                             
-                            } else if(agentsInProvenanceIsCheck) {
-                                if(agentsInProvenance == null){
+                            } else {
+                                if(!variableCheckedAgent.containsKey(variable)){
                                      CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
                                      csvValidation.addDeviceChoiceAmbiguityError(cell);
                                      validRow = false;
@@ -1556,12 +1555,19 @@ public class DataAPI {
                         
                         if(validRow){
                             DataModel dataModel = new DataModel();
+                            DataProvenanceModel provenanceModel = new DataProvenanceModel();
                             provenanceModel.setUri(provenance.getUri());
                             if (!experiments.isEmpty()) {                    
                                 provenanceModel.setExperiments(experiments);
                             }
                             if (!agents.isEmpty()) {
                                 provenanceModel.setProvWasAssociatedWith(agents);
+                            }
+                            if (variableCheckedAgent.containsKey(variable) && hasDevice) {
+                                
+                                List<ProvEntityModel> agentsInProvenance = new ArrayList<>();
+                                agentsInProvenance.add(variableCheckedAgent.get(variable));
+                                provenanceModel.setProvWasAssociatedWith(agentsInProvenance);
                             }
 
                             dataModel.setDate(parsedDateTimeMongo.getInstant());

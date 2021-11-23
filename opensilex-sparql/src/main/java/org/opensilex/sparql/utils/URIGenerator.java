@@ -57,9 +57,9 @@ public interface URIGenerator<T> {
 
 
     /**
-     * list of special characters + space character
+     * list of special characters
      */
-    String FORBIDDEN_CHARS_REGEX = "$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!. ";
+    String FORBIDDEN_CHARS_REGEX = "$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!.";
 
     /**
      * non-ASCII characters

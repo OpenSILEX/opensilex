@@ -1,7 +1,6 @@
 package org.opensilex.core;
 
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
@@ -23,10 +22,6 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.project.dal.ProjectModel;
@@ -49,10 +44,10 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Timestamp;
-import java.time.*;
-import java.util.Arrays;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -83,8 +78,8 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         Assert.assertEquals(graphPrefix+"project",sparql.getDefaultGraph(ProjectModel.class).toString());
         Assert.assertEquals(graphPrefix+"experiment",sparql.getDefaultGraph(ExperimentModel.class).toString());
-        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureModel.class).toString());
-        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureFacilityModel.class).toString());
+        Assert.assertEquals(graphPrefix+"infrastructures",sparql.getDefaultGraph(InfrastructureModel.class).toString());
+        Assert.assertEquals(graphPrefix+"infrastructures",sparql.getDefaultGraph(InfrastructureFacilityModel.class).toString());
 
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(VariableModel.class).toString());
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(EntityModel.class).toString());

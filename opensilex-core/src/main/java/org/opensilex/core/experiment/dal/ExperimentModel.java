@@ -34,17 +34,9 @@ import org.opensilex.security.user.dal.UserModel;
         graph = ExperimentModel.GRAPH,
         prefix = "expe"
 )
-public class ExperimentModel extends SPARQLResourceModel implements ClassURIGenerator<ExperimentModel> {
+public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> implements ClassURIGenerator<ExperimentModel> {
 
     public static final String GRAPH = "experiment";
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    String name;
-    public static final String LABEL_FIELD = "name";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -126,8 +118,8 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
     )
     List<InfrastructureFacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
- 
-    
+
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPublic"
@@ -261,12 +253,5 @@ public class ExperimentModel extends SPARQLResourceModel implements ClassURIGene
 
     public void setFactors(List<FactorModel> factors) {
         this.factors = factors;
-    }
-
-    @Override
-    public String[] getInstancePathSegments(ExperimentModel instance) {
-        return new String[]{
-            instance.getName()
-        };
     }
 }

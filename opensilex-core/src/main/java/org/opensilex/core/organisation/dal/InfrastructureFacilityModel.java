@@ -16,7 +16,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 
 @SPARQLResource(
         ontology = Oeso.class,
-        resource = "InfrastructureFacility",
+        resource = "Facility",
         graph = InfrastructureModel.GRAPH,
         prefix = "infra"
 )
@@ -53,6 +53,13 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
 
     public void setInfrastructures(List<InfrastructureModel> infrastructures) {
         this.infrastructures = infrastructures;
+    }
+
+    public List<URI> getInfrastructureUris() {
+        return this.infrastructures
+                .stream()
+                .map(InfrastructureModel::getUri)
+                .collect(Collectors.toList());
     }
 
     @Override

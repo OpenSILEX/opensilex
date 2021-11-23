@@ -1495,17 +1495,24 @@ public class DataAPI {
                                             csvValidation.addDeviceChoiceAmbiguityError(cell);
                                             validRow = false;
                                         } else {
-                                            device = devices.get(0);
-                                            csvValidation.addVariableToDevice(device.getUri(), varURI);
-                                            ProvEntityModel agent = new ProvEntityModel();
-                                            if( rootDeviceTypes == null) {
-                                                rootDeviceTypes = getRootDeviceTypes();
+                                            if (!devices.isEmpty()) {
+                                                device = devices.get(0);
+                                                csvValidation.addVariableToDevice(device.getUri(), varURI);
+                                                ProvEntityModel agent = new ProvEntityModel();
+                                                if (rootDeviceTypes == null) {
+                                                    rootDeviceTypes = getRootDeviceTypes();
+                                                }
+                                                URI rootType = rootDeviceTypes.get(device.getType());
+                                                agent.setType(rootType);
+                                                agent.setUri(device.getUri());
+                                                agentsInProvenance = new ArrayList<>();
+                                                agentsInProvenance.add(agent);
+                                            }else {
+                                                missingTargetOrDevice = true;
+                                                validRow = false;
+                                                
                                             }
-                                            URI rootType = rootDeviceTypes.get(device.getType());
-                                            agent.setType(rootType);
-                                            agent.setUri(device.getUri());
-                                            agentsInProvenance = new ArrayList<>();
-                                            agentsInProvenance.add(agent);
+
                                         }
                                         break;
                                     case 1:

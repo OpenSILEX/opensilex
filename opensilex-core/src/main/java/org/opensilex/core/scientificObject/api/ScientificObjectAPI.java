@@ -508,6 +508,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         URI contextURI = descriptionDto.getExperiment();
+        boolean hasExperiment = contextURI != null;
         validateContextAccess(contextURI);
 
         URI globalScientificObjectGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
@@ -527,7 +528,7 @@ public class ScientificObjectAPI {
 
         sparql.startTransaction();
         try {
-            URI soURI = dao.create(contextURI, generationPrefixURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = dao.create(contextURI, generationPrefixURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser, hasExperiment);
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {

@@ -26,9 +26,8 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -46,7 +45,9 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -62,6 +63,7 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
@@ -678,7 +680,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI create(URI contextURI, URI uriGenerationPrefix, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+    public URI create(URI contextURI, URI uriGenerationPrefix, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser, boolean checkExperimentSpecies) throws DuplicateNameException, Exception {
 
         checkUniqueNameByGraph(contextURI,name,null,true);
 
@@ -696,6 +698,10 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, soType, name, relations, currentUser);
         object.setUri(objectURI);
+
+        if (checkExperimentSpecies) {
+            checkGermplasmExperimentSpecies(object, contextURI);
+        }
 
         try {
             sparql.startTransaction();
@@ -717,6 +723,25 @@ public class ScientificObjectDAO {
         }
 
         return objectURI;
+    }
+
+    private void checkGermplasmExperimentSpecies(ScientificObjectModel object, URI experimentUri) throws Exception {
+        SPARQLModelRelation germplasmRelation = object.getRelation(Oeso.hasGermplasm);
+        if (germplasmRelation != null) {
+            URI germplasmUri = new URI(germplasmRelation.getValue());
+            AskBuilder ask = sparql.getUriExistsQuery(GermplasmModel.class, germplasmUri);
+            appendGermplasmExperimentFilter(ask, germplasmUri, experimentUri);
+            if (!sparql.executeAskQuery(ask)) {
+                throw new SPARQLInvalidModelException("Incompatible types : " + germplasmUri + " is not a valid species for " + experimentUri);
+            }
+        }
+    }
+
+    private <T extends AbstractQueryBuilder<T>> void appendGermplasmExperimentFilter(WhereClause<T> where, URI germplasmUri, URI experimentUri) throws SPARQLException {
+        Var speciesVar = makeVar("species");
+        where.addGraph(sparql.getDefaultGraph(ExperimentModel.class),
+                SPARQLDeserializers.nodeURI(experimentUri), Oeso.hasSpecies, speciesVar);
+        where.addWhere(SPARQLDeserializers.nodeURI(germplasmUri), Oeso.fromSpecies, speciesVar);
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {

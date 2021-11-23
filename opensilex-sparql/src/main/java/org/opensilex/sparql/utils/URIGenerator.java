@@ -94,6 +94,7 @@ public interface URIGenerator<T> {
         Matcher matcher = pattern.matcher(src);
         String formattedSrc = matcher.replaceAll("")
                 .toLowerCase()
+                .replace(' ','_')
                 .trim();
 
         return Normalizer.normalize(formattedSrc, Normalizer.Form.NFD);

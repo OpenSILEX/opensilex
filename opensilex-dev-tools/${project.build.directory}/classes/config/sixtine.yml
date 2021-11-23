@@ -1,0 +1,52 @@
+system:
+    ignoredModules:
+        org.opensilex.phis.PhisWsModule: opensilex-phis.jar
+        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+        
+ontologies:
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
+    enableSHACL: true
+    sparql:
+        config:
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
+
+file-system: 
+    fs:
+        config:
+            basePath: ../../opensilex-data
+#            connections:
+#                irod: 
+#                    implementation: org.opensilex.fs.irod.IRODSConnection
+#                    config:
+#                        baseURI: http://example.com/
+#            customPath:
+#                images: irod
+    
+big-data:
+    mongodb:
+        config:
+            host: localhost
+            port: 8668
+            database: opensilex
+
+front:
+    theme: inrae-sixtine#sixtine
+    homeComponent: inrae-sixtine-SixtineHomeComponent
+    loginComponent: inrae-sixtine-SixtineLoginComponent
+    footerComponent: inrae-sixtine-SixtineFooterComponent
+    menuComponent: inrae-sixtine-SixtineMenuComponent
+    headerComponent: inrae-sixtine-SixtineHeaderComponent
+    customMenu:
+        
+    menuExclusions:
+        - radiometricTargets
+        - vectors
+        - actuators
+        - sensors
+        - equipments
+        - installations
+        - data
+        - dashboard
+    

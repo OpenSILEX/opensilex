@@ -1,0 +1,36 @@
+version: "3.5"
+
+services:
+   rdf4j:
+      container_name: opensilex-rdf4j
+      image: eclipse/rdf4j-workbench:amd64-3.4.3
+      networks:
+         - backend
+      ports:
+         - "8667:8080"
+      restart: always         
+      volumes:
+         - rdf4j_data:/var/rdf4j
+      environment:
+         - JAVA_OPTS='-Dorg.eclipse.rdf4j.appdata.basedir=/var/rdf4j/'
+         
+   mongodb:
+      container_name: opensilex-mongodb
+      build:
+        context: ./
+        dockerfile: mongo-with-transactions.docker
+      networks:
+         - backend
+      ports:
+         - "8668:27017"
+      restart: always   
+      volumes:
+         - mongodb_data:/data/db
+         
+networks:
+   backend:
+
+volumes:
+   mongodb_data:
+   rdf4j_data:
+

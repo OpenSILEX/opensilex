@@ -1,0 +1,69 @@
+ontologies:
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
+    sparql:
+        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
+        config:
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
+
+
+file-system:
+    fs:
+        config:
+            basePath: ../../opensilex-data
+#            defaultFS:
+#                implementation: org.opensilex.fs.local.LocalFileSystemConnection
+#            connections:
+#                irods:
+#                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+#                    config:
+#                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+#            customPath:
+#                datafile/: irods
+
+big-data:
+    mongodb:
+        config:
+            host: localhost
+            port: 8668
+            database: opensilex
+    #            timezone: Europe/Paris
+
+phisws:
+    infrastructure: opensilex
+# Configuration for module: SecurityModule (SecurityConfig)
+# security:
+# #    Email service (EmailService)
+#    email:
+#         config:
+#             enable: true
+#             simulateSending: false
+#             # Not working
+#             sender: opensilex@mail.com
+#             smtp :
+#                 host: smtp.gmail.com
+#                 port: 587
+#                 userId : ""
+#                 userPassword : ""
+
+#core:
+#    enableLogs: true
+#server:
+#    pathPrefix: /sunagri
+
+# Base system configuration OpenSilex (OpenSilexConfig)
+#system:
+#  instanceTitle: OpenSILEX
+#  # Instance description (String)
+#  instanceDescription: OpenSILEX is an ontology-driven Information System designed for life science data.
+#  # Contact name (String)
+#  contactName: OpenSILEX Team
+#  # Contact e-mail (String)
+#  contactEmail: opensilex-help@groupes.renater.fr
+#  # Project homepage (String)
+#  projectHomepage: http://www.opensilex.org/
+
+system:
+    ignoredModules:
+        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar

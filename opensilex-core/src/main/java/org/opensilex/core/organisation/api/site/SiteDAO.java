@@ -5,13 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -19,6 +19,8 @@ import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -83,7 +85,7 @@ public class SiteDAO {
                 user.getLanguage(),
                 (select -> {
                     if (finalOrganizations != null) {
-                        select.addWhere(makeVar(SiteModel.ORGANIZATION_FIELD), Oeso.isHosted, makeVar(SiteModel.URI_FIELD));
+                        select.addWhere(makeVar(SiteModel.ORGANIZATION_FIELD), ORG.hasSite, makeVar(SiteModel.URI_FIELD));
                         SPARQLQueryHelper.inURI(select, SiteModel.ORGANIZATION_FIELD, finalOrganizations);
                     }
 
@@ -109,7 +111,19 @@ public class SiteDAO {
     }
 
     public SiteModel createSite(SiteModel siteModel, UserModel user) throws Exception {
-        //@todo check l'accès aux orgs ?
+        if (!user.isAdmin()) {
+            List<URI> siteOrganizationUriList = siteModel.getOrganizationURIListOrEmpty();
+            if (siteOrganizationUriList.isEmpty()) {
+                throw new SPARQLInvalidModelException("A site must be attached to at least one organization");
+            }
+
+            Set<URI> userOrganizationList = organizationDAO.getUserInfrastructures(user);
+            for (URI siteOrganizationUri : siteOrganizationUriList) {
+                if (!userOrganizationList.contains(siteOrganizationUri)) {
+                    throw new ForbiddenURIAccessException(siteOrganizationUri);
+                }
+            }
+        }
 
         List<InfrastructureModel> organizations = sparql.getListByURIs(
                 InfrastructureModel.class,
@@ -222,7 +236,7 @@ public class SiteDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(SiteModel.class, siteUri);
-        addSiteAccessClause(ask, siteUri, userModel);
+        addSiteAccessClause(ask, SPARQLDeserializers.nodeURI(siteUri), userModel);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(siteUri);
@@ -233,15 +247,16 @@ public class SiteDAO {
         Var organizationVar = makeVar("_organization");
         Var groupVar = makeVar(SiteModel.GROUP_FIELD);
         Var profileVar = makeVar(GroupModel.USER_PROFILES_FIELD);
+        Node userUriNode = SPARQLDeserializers.nodeURI(userModel.getUri());
 
         WhereBuilder userInOrgGroup = new WhereBuilder();
         userInOrgGroup.addWhere(organizationVar, ORG.hasSite, siteUri);
-        userInOrgGroup.addWhere(organizationSPARQLHelper.buildOrganizationGroupUserClause(organizationVar, userModel.getUri()));
+        userInOrgGroup.addWhere(organizationSPARQLHelper.buildOrganizationGroupUserClause(organizationVar, userUriNode));
 
         WhereBuilder userInSiteGroup = new WhereBuilder();
         userInSiteGroup.addWhere(siteUri, SecurityOntology.hasGroup, groupVar);
         userInSiteGroup.addWhere(groupVar, SecurityOntology.hasUserProfile, profileVar);
-        userInSiteGroup.addWhere(profileVar, SecurityOntology.hasUser, userModel.getUri());
+        userInSiteGroup.addWhere(profileVar, SecurityOntology.hasUser, userUriNode);
 
         WhereBuilder userInOrgOrInSiteGroup = new WhereBuilder();
         userInOrgOrInSiteGroup.addWhere(userInOrgGroup);

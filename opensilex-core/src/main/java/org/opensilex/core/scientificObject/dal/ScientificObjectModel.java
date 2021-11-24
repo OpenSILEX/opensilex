@@ -1,9 +1,7 @@
 package org.opensilex.core.scientificObject.dal;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
@@ -11,6 +9,9 @@ import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @SPARQLResource(
         ontology = Oeso.class,
@@ -99,8 +100,8 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     @Override
     public String getInstanceUriPath(SPARQLTreeModel<ScientificObjectModel> instance) {
         StringBuilder sb = new StringBuilder();
-        if(experiment != null){
-            sb.append(experiment.getName()).append("/");
+        if(experiment != null && !StringUtils.isEmpty(experiment.getName())){
+            sb.append(normalize(experiment.getName())).append("/");
         }
 
         sb.append(GENERATION_PREFIX);

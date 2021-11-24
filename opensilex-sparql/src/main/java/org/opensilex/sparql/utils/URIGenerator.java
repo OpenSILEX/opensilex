@@ -41,7 +41,6 @@ public interface URIGenerator<T> {
         return new URI(prefix + URI_SEPARATOR + path + retryCount);
     }
 
-
     /**
      * @param instance instance
      * @return the path used to generate instance URI {@link URI#getPath()}
@@ -51,33 +50,10 @@ public interface URIGenerator<T> {
     }
 
     /**
-     * Universal REGEX Logical OR operator
-     */
-    String REGEX_OR_SEPARATOR = "|";
-
-
-    /**
-     * list of special characters
-     */
-    String FORBIDDEN_CHARS_REGEX = "$&+|,/:;=?@<>#%{}()^~\\[\\]\\\\\"'`*!.";
-
-    /**
-     * non-ASCII characters
-     */
-    String ASCII_REGEX = "^\\p{ASCII}";
-
-
-    /**
      * Compiled pattern for efficient search/replace.
-     * This pattern use a logical OR on multiple regex
+     * This regex match any non-alphanumeric character (including escape characters) except space
      */
-    Pattern pattern = Pattern.compile(String.join(
-            REGEX_OR_SEPARATOR,
-            Arrays.asList(
-                    "[" + FORBIDDEN_CHARS_REGEX + "]",
-                    "[" + ASCII_REGEX + "]"
-            ))
-    );
+    Pattern pattern = Pattern.compile("[^\\w ]+");
 
     /**
      * @param src the String to replace and normalize
@@ -94,7 +70,7 @@ public interface URIGenerator<T> {
         Matcher matcher = pattern.matcher(src);
         String formattedSrc = matcher.replaceAll("")
                 .toLowerCase()
-                .replace(' ','_')
+                .replace(' ', '_')
                 .trim();
 
         return Normalizer.normalize(formattedSrc, Normalizer.Form.NFD);

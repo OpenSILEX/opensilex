@@ -1649,16 +1649,6 @@ public class DataAPI {
         }
     }
 
-    private void childrenToRoot(List<ResourceTreeDTO> children, Map<URI, URI> map, URI agentRootType) {
-        for (ResourceTreeDTO subTree : children) {
-            map.put(subTree.getUri(), agentRootType);
-            List<ResourceTreeDTO> child = subTree.getChildren();
-            if (!child.isEmpty()) {
-                childrenToRoot(child, map, agentRootType);
-            }
-        }
-    }
-
     private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
         ExperimentModel exp;
         if (URIDeserializer.validateURI(expNameOrUri)) {

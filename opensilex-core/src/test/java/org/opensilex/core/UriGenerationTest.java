@@ -53,8 +53,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class UriGenerationTest extends AbstractMongoIntegrationTest {
-
-
+    
     /**
      * Pattern used to check if some str has an {@link java.util.UUID} form.
      * @see <a href="https://www.code4copy.com/java/validate-uuid-string-java/">Validate UUID in JAVA</a>
@@ -78,8 +77,8 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         Assert.assertEquals(graphPrefix+"project",sparql.getDefaultGraph(ProjectModel.class).toString());
         Assert.assertEquals(graphPrefix+"experiment",sparql.getDefaultGraph(ExperimentModel.class).toString());
-        Assert.assertEquals(graphPrefix+"infrastructures",sparql.getDefaultGraph(InfrastructureModel.class).toString());
-        Assert.assertEquals(graphPrefix+"infrastructures",sparql.getDefaultGraph(InfrastructureFacilityModel.class).toString());
+        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureModel.class).toString());
+        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureFacilityModel.class).toString());
 
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(VariableModel.class).toString());
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(EntityModel.class).toString());

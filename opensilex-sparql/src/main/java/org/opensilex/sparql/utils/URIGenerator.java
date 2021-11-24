@@ -51,9 +51,9 @@ public interface URIGenerator<T> {
 
     /**
      * Compiled pattern for efficient search/replace.
-     * This regex match any non-alphanumeric character (including escape characters) except space
+     * This regex match any non-alphanumeric character (including escape characters) except space and -
      */
-    Pattern pattern = Pattern.compile("[^\\w ]+");
+    Pattern pattern = Pattern.compile("[^\\w -]+");
 
     /**
      * @param src the String to replace and normalize

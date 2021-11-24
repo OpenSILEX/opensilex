@@ -63,9 +63,11 @@ public class URIGeneratorTest extends AbstractUnitTest  {
             assertEquals(character+" Char should be removed from URI", "", result);
         }
 
+        assertEquals("-",uriGenerator.normalize("=-="));
+        assertEquals("a-b",uriGenerator.normalize("a+-b*"));
+        assertEquals("_a-b_",uriGenerator.normalize(" a+-b* "));
         assertEquals("_",uriGenerator.normalize(" "));
         assertEquals("__",uriGenerator.normalize("  "));
-
         assertEquals("_",uriGenerator.normalize(" \n"));
         assertEquals("__",uriGenerator.normalize(" \n "));
         assertEquals("_",uriGenerator.normalize(" \r"));

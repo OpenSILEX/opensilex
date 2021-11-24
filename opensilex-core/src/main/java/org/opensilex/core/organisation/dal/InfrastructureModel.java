@@ -28,7 +28,7 @@ import org.opensilex.sparql.model.SPARQLDagModel;
 )
 public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
 
-    public static final String GRAPH = "infrastructures";
+    public static final String GRAPH = "organization";
 
     @SPARQLProperty(
             ontology = Oeso.class,

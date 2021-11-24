@@ -53,7 +53,7 @@
                       <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
-                    <template v-slot:cell(_interest_entity_name)="{data}">{{ data.item.entity_of_interest ? data.item.entity_of_interest.name : ""  }}</template>
+                    <!-- <template v-slot:cell(_interest_entity_name)="{data}">{{ data.item.entity_of_interest ? data.item.entity_of_interest.name : ""  }}</template> -->
                     <template v-slot:cell(_characteristic_name)="{data}">{{ data.item.characteristic.name }}</template>
                     <template v-slot:cell(_method_name)="{data}">{{ data.item.method.name }}</template>
                     <template v-slot:cell(_unit_name)="{data}">{{data.item.unit.name }}</template>
@@ -321,11 +321,11 @@ export default class VariableList extends Vue {
         label: "VariableView.entity",
         sortable: true
       },
-      {
-        key: "_interest_entity_name",
-        label: "VariableView.entityOfInterest",
-        sortable: true
-      },      
+      // {
+      //   key: "_interest_entity_name",
+      //   label: "VariableView.entityOfInterest",
+      //   sortable: true
+      // },      
       {
         key: "_characteristic_name",
         label: "VariableView.characteristic",

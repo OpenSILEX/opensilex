@@ -12,7 +12,7 @@
                     <b-tabs content-class="mt-3" :value=elementIndex @input="updateType">
                         <b-tab :title="$t('component.menu.variables')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.entity')" @click="refreshSelected"></b-tab>
-                        <b-tab :title="$t('VariableView.entityOfInterest')" @click="refreshSelected"></b-tab>
+                        <!-- <b-tab :title="$t('VariableView.entityOfInterest')" @click="refreshSelected"></b-tab> -->
                         <b-tab :title="$t('VariableView.characteristic')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.method')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.unit')" @click="refreshSelected"></b-tab>
@@ -201,7 +201,7 @@ export default class VariablesView extends Vue {
     static elementTypes = [
         VariablesView.VARIABLE_TYPE,
         VariablesView.ENTITY_TYPE,
-        VariablesView.INTEREST_ENTITY_TYPE,
+        // VariablesView.INTEREST_ENTITY_TYPE,
         VariablesView.CHARACTERISTIC_TYPE,
         VariablesView.METHOD_TYPE,
         VariablesView.UNIT_TYPE,
@@ -341,9 +341,9 @@ export default class VariablesView extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return this.entityForm;
             }
-            case VariablesView.INTEREST_ENTITY_TYPE : {
-                return this.interestEntityForm;
-            }
+            // case VariablesView.INTEREST_ENTITY_TYPE : {
+            //     return this.interestEntityForm;
+            // }
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return this.characteristicForm;
             }
@@ -370,9 +370,9 @@ export default class VariablesView extends Vue {
             case VariablesView.ENTITY_TYPE : {
                 return "add-entity";
             }
-            case VariablesView.INTEREST_ENTITY_TYPE : {
-                return "add-entityOfInterest";
-            }
+            // case VariablesView.INTEREST_ENTITY_TYPE : {
+            //     return "add-entityOfInterest";
+            // }
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return "add-characteristic";
             }

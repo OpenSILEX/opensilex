@@ -43,7 +43,7 @@
                 </div>
 
                 <!-- Entity of interest -->
-                <div class="col-lg-6" id="v-step-interestEntity">
+                <!-- <div class="col-lg-6" id="v-step-interestEntity">
                     <opensilex-SelectForm
                         ref="interestEntitySelectForm"
                         label="VariableForm.interestEntity-label"
@@ -62,7 +62,31 @@
                         ref="interestEntityForm"
                         @onCreate="setLoadedInterestEntity">
                     </opensilex-InterestEntityCreate>
+                </div> -->
+
+                <!-- Trait button -->
+                <div class="col-lg-6" id="traitButton">
+                    <opensilex-Button
+                        label="VariableForm.trait-button"
+                        helpMessage="VariableForm.trait-button-help"
+                        @click="showTraitForm()"
+                        :small="false"
+                        icon="fa#globe-americas"
+                        variant="primary"
+                    ></opensilex-Button>
                 </div>
+                <opensilex-WizardForm
+                    ref="traitForm"
+                    :steps="traitSteps"
+                    createTitle="VariableForm.trait-form-create-title"
+                    editTitle="VariableForm.trait-form-edit-title"
+                    icon="fa#vials"
+                    modalSize="full"
+                    :static="false"
+                    :initForm="getEmptyTraitForm"
+                    :createAction="updateVariableTrait"
+                    :updateAction="updateVariableTrait"
+                ></opensilex-WizardForm>
 
                 <!-- Characteristic -->
                 <div class="col-lg-6" id="v-step-characteristic">                    
@@ -118,33 +142,11 @@
                         ref="methodForm"
                         @onCreate="setLoadedMethod">
                     </opensilex-MethodCreate>
-                </div>
+                </div>  
+
+                <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
+                <div class="col-lg-6"></div>
                 
-                <!-- Trait button -->
-                <div class="col-lg-6" id="traitButton">
-                    <opensilex-Button
-                        label="VariableForm.trait-button"
-                        helpMessage="VariableForm.trait-button-help"
-                        @click="showTraitForm()"
-                        :small="false"
-                        icon="fa#globe-americas"
-                        variant="primary"
-                    ></opensilex-Button>
-                </div>
-
-                <opensilex-WizardForm
-                    ref="traitForm"
-                    :steps="traitSteps"
-                    createTitle="VariableForm.trait-form-create-title"
-                    editTitle="VariableForm.trait-form-edit-title"
-                    icon="fa#vials"
-                    modalSize="full"
-                    :static="false"
-                    :initForm="getEmptyTraitForm"
-                    :createAction="updateVariableTrait"
-                    :updateAction="updateVariableTrait"
-                ></opensilex-WizardForm>
-
                 <!-- Unit -->
                 <div class="col-lg-6" id="v-step-unit">
                     <opensilex-SelectForm

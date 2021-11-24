@@ -9,17 +9,13 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.E_LogicalAnd;
-import org.apache.jena.sparql.expr.E_LogicalOr;
-import org.apache.jena.sparql.expr.E_Regex;
-import org.apache.jena.sparql.expr.E_Str;
-import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.expr.E_GreaterThanOrEqual;
-import org.apache.jena.sparql.expr.E_LessThanOrEqual;
+import org.apache.jena.sparql.expr.*;
+import org.apache.jena.sparql.expr.aggregate.Aggregator;
+import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
@@ -30,8 +26,6 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.opensilex.utils.OrderBy;
@@ -41,8 +35,6 @@ import org.opensilex.utils.OrderBy;
  */
 public class SPARQLQueryHelper {
 
-   
-   
     private SPARQLQueryHelper() {
     }
 
@@ -620,4 +612,43 @@ public class SPARQLQueryHelper {
         builder.getValuesHandler().addValueVar(sparqlVar,valueNodes);
     }
 
+    /**
+     * @param var variable
+     * @return an {@link E_Bound} expression for the given variable
+     *
+     * @apiNote Example : <br>
+     * <code><b>bound(var)</b></code> returns <br>
+     * <code><b>(BOUND(?var))</b></code>
+     */
+    public static Expr bound(Var var) {
+        return exprFactory.bound(var);
+    }
+
+    /**
+     * @param sparqlVar variable
+     * @param distinct indicate if we use or not DISTINCT on variable into COUNT
+     * @param value value
+     * @return a {@link E_Equals} expression between a COUNT aggregator on sparqlVar and value
+     *
+     * @throws SPARQLDeserializerNotFoundException if no {@link SPARQLDeserializer} corresponding to value {@link Class} is found
+     * @apiNote Example : <br>
+     * <code><b>countEqExpr(myVar,true,0)</b></code> returns <br>
+     * <code><b>(COUNT(DISTINCT(?myVar)) = 0)</b></code>
+     */
+    public static E_Equals countEqExpr(Var sparqlVar,  boolean distinct, Object value) throws SPARQLDeserializerNotFoundException {
+
+        // COUNT Aggregator
+        Aggregator countAgg = AggregatorFactory.createCountExpr(
+                distinct,
+                exprFactory.asExpr(sparqlVar)
+        );
+
+        XSDDatatype datatype = SPARQLDeserializers.getForClass(value.getClass()).getDataType();
+
+        // use ExprAggregator in order to transform Aggregator to Expr
+        return exprFactory.eq(
+                new ExprAggregator(sparqlVar,countAgg) ,
+                NodeFactory.createLiteral(value.toString(), datatype)
+        );
+    }
 }

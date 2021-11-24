@@ -71,26 +71,31 @@ import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
 components["opensilex-InfrastructureTree"] = InfrastructureTree;
 import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
 components["opensilex-InfrastructureForm"] = InfrastructureForm;
-import InfrastructureFacilityForm from './infrastructures/InfrastructureFacilityForm.vue';
-components["opensilex-InfrastructureFacilityForm"] = InfrastructureFacilityForm;
-import InfrastructureFacilitiesView from './infrastructures/InfrastructureFacilitiesView.vue';
+import OrganizationFacilityModalForm from './infrastructures/facility/OrganizationFacilityModalForm.vue';
+components["opensilex-OrganizationFacilityModalForm"] = OrganizationFacilityModalForm;
+import InfrastructureFacilitiesView from './infrastructures/facility/InfrastructureFacilitiesView.vue';
 components["opensilex-InfrastructureFacilitiesView"] = InfrastructureFacilitiesView;
 import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
 components["opensilex-InfrastructureDetail"] = InfrastructureDetail;
 import InfrastructureSelector from './infrastructures/InfrastructureSelector.vue';
 components["opensilex-InfrastructureSelector"] = InfrastructureSelector;
-import InfrastructureFacilitiesTypes from './infrastructures/InfrastructureFacilitiesTypes.vue';
+import InfrastructureFacilitiesTypes from './infrastructures/facility/InfrastructureFacilitiesTypes.vue';
 components["opensilex-InfrastructureFacilitiesTypes"] = InfrastructureFacilitiesTypes;
-import InfrastructureFacilityPropertyView from './infrastructures/InfrastructureFacilityPropertyView.vue';
+import InfrastructureFacilityPropertyView from './infrastructures/facility/InfrastructureFacilityPropertyView.vue';
 components["opensilex-InfrastructureFacilityPropertyView"] = InfrastructureFacilityPropertyView;
-import InfrastructureFacilityPropertySelector from './infrastructures/InfrastructureFacilityPropertySelector.vue';
+import InfrastructureFacilityPropertySelector from './infrastructures/facility/InfrastructureFacilityPropertySelector.vue';
 components["opensilex-InfrastructureFacilityPropertySelector"] = InfrastructureFacilityPropertySelector;
-import InfrastructureFacilitySelector from './infrastructures/InfrastructureFacilitySelector.vue';
+import InfrastructureFacilitySelector from './infrastructures/facility/InfrastructureFacilitySelector.vue';
 components["opensilex-InfrastructureFacilitySelector"] = InfrastructureFacilitySelector;
 import InfrastructureUriView from './infrastructures/InfrastructureUriView.vue';
 components["opensilex-InfrastructureUriView"] = InfrastructureUriView;
-import InfrastructureFacilityView from './infrastructures/InfrastructureFacilityView.vue';
+import InfrastructureFacilityView from './infrastructures/facility/InfrastructureFacilityView.vue';
 components["opensilex-InfrastructureFacilityView"] = InfrastructureFacilityView;
+import OrganizationFacilityDetail from './infrastructures/facility/OrganizationFacilityDetail.vue';
+components["opensilex-OrganizationFacilityDetail"] = OrganizationFacilityDetail;
+import OrganizationFacilityForm from './infrastructures/facility/OrganizationFacilityForm.vue';
+components["opensilex-OrganizationFacilityForm"] = OrganizationFacilityForm;
+
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';
@@ -333,11 +338,6 @@ import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
-import ExperimentFacilitySelector from './experiments/ExperimentFacilitySelector.vue';
-components["opensilex-ExperimentFacilitySelector"] = ExperimentFacilitySelector;
-import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
-components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
-
 
 
 // Germplasm

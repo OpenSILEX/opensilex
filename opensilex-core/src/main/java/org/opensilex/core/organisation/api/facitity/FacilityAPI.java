@@ -20,6 +20,8 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
@@ -84,7 +86,8 @@ public class FacilityAPI {
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
-                ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+                ClassModel model = CoreModule.getOntologyCacheInstance().getClassModel(facility.getType(),
+                        new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
                     if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
@@ -179,16 +182,17 @@ public class FacilityAPI {
     })
     public Response searchInfrastructureFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
+            @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
         InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, orderByList, page, pageSize);
+        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, organizations, orderByList, page, pageSize);
 
-        List<InfrastructureFacilityNamedDTO> dtoList = facilities.getList().stream()
-                .map(InfrastructureFacilityNamedDTO::new)
+        List<InfrastructureFacilityGetDTO> dtoList = facilities.getList().stream()
+                .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, false))
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -239,7 +243,7 @@ public class FacilityAPI {
 
         if (dto.getRelations() != null) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
-            ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.InfrastructureFacility.getURI()), currentUser.getLanguage());
+            ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
             URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
                 if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {

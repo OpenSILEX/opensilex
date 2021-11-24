@@ -85,8 +85,8 @@
               ref="eventList"
               :target="uri"
               :columnsToDisplay="new Set(['type','start','end','description'])"
-              :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-              :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+              :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
+              :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
               :displayTargetFilter="false"
           ></opensilex-EventList>
 
@@ -94,8 +94,8 @@
               v-if="isPositionTab()"
               ref="positionList"
               :target="uri"
-              :modificationCredentialId="credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID"
-              :deleteCredentialId="credentials.CREDENTIAL_EXPERIMENT_DELETE_ID"
+              :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
+              :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
           ></opensilex-PositionList>
 
         </template>

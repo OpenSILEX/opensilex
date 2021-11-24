@@ -15,10 +15,26 @@ import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 declare var $cookies: VueCookies;
 
 declare var window: any;
+
+interface TreeOption {
+    id: string,
+    label: string,
+    isDefaultExpanded: boolean,
+    isDisabled: boolean,
+    children: Array<TreeOption>,
+    title?: string,
+    data?: ResourceDagDTO,
+    isLeaf?: boolean,
+    isSelected?: boolean,
+    isExpanded?: boolean,
+    isDraggable?: boolean,
+    isSelectable?: boolean
+}
 
 export default class OpenSilexVuePlugin {
 
@@ -536,7 +552,7 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
-    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?) {
+    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?): Array<TreeOption> {
         let options = [];
 
         buildOptions = buildOptions || {
@@ -560,7 +576,7 @@ export default class OpenSilexVuePlugin {
         return options;
     }
 
-    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean) {
+    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean): TreeOption {
 
         let option = {
             id: resourceTree.uri,
@@ -593,6 +609,72 @@ export default class OpenSilexVuePlugin {
         }
 
         return option;
+    }
+
+    public buildTreeFromDag(dagList: Array<ResourceDagDTO>, buildOptions?: any): Array<TreeOption> {
+        if (!dagList || dagList.length === 0) {
+            return [];
+        }
+
+        let dagMap = new Map<string, any>();
+        for (let dag of dagList) {
+            dagMap.set(dag.uri, dag);
+        }
+
+        //Filter out the parents/children that does not exist (e.g. if use doesn't have the rights to see them)
+        dagList.forEach(dagNode => {
+           dagNode.parents = dagNode.parents.filter(parentUri => dagMap.has(parentUri));
+           dagNode.children = dagNode.children.filter(childUri => dagMap.has(childUri));
+        });
+
+        let rootNodes: Array<TreeOption> = [];
+
+        dagList.forEach(dagNode => {
+            if (!dagNode.parents || dagNode.parents.length === 0) {
+                rootNodes.push(this.buildTreeFromDagNode(dagNode.uri, dagMap, buildOptions || {}))
+            }
+        });
+
+        return rootNodes;
+    }
+
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, ResourceDagDTO>, buildOptions: any, disabled: boolean = false): TreeOption {
+        let dagNode = dagMap.get(nodeUri);
+
+        let treeNode: TreeOption = {
+            id: dagNode.uri,
+            label: dagNode.name,
+            isDefaultExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,
+            isDisabled: disabled,
+            children: [],
+            title: dagNode.name,
+            data: dagNode,
+            isDraggable: buildOptions.draggable != undefined ? buildOptions.draggable : false,
+            isExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,
+            isLeaf: true,
+            isSelectable: buildOptions.selectable != undefined ? buildOptions.selectable : true,
+            isSelected: buildOptions.selected != undefined ? buildOptions.selected : false
+        };
+
+        let disableChildren = disabled;
+        if (buildOptions.disableSubTree === nodeUri) {
+            disableChildren = true;
+            treeNode.isDisabled = true;
+            treeNode.isExpanded = false;
+            treeNode.isDefaultExpanded = false;
+        }
+
+        dagNode.children.forEach(childUri => {
+            let subTreeNode = this.buildTreeFromDagNode(childUri, dagMap, buildOptions, disableChildren);
+            treeNode.children.push(subTreeNode)
+            treeNode.isLeaf = false;
+        });
+
+        if (treeNode.children.length === 0) {
+            delete treeNode.children;
+        }
+
+        return treeNode;
     }
 
     private flatOntologies = {};

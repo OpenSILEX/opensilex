@@ -218,7 +218,7 @@ public class ExperimentDAO {
 
     private void appendRegexLabelFilter(SelectBuilder select, String name) {
         if (!StringUtils.isEmpty(name)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.LABEL_FIELD, name));
+            select.addFilter(SPARQLQueryHelper.regexFilter(ExperimentModel.NAME_FIELD, name));
         }
     }
 
@@ -433,22 +433,6 @@ public class ExperimentDAO {
         }
     }
 
-    public List<InfrastructureFacilityModel> getFacilities(URI xpUri, UserModel user) throws Exception {
-        validateExperimentAccess(xpUri, user);
-
-        Node xpGraph = SPARQLDeserializers.nodeURI(xpUri);
-
-        List<URI> facilitiesURIs = sparql.searchPrimitives(xpGraph, xpUri, Oeso.hasFacility, URI.class);
-
-        if (facilitiesURIs.size() > 0) {
-            return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
-                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.URI_FIELD, facilitiesURIs);
-            });
-        } else {
-            return new ArrayList<>();
-        }
-    }
-
     public List<InfrastructureFacilityModel> getAvailableFacilities(URI xpUri, UserModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
 
@@ -484,7 +468,7 @@ public class ExperimentDAO {
             ExperimentModel.class,
             null,
             (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.LABEL_FIELD, name));
+                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.NAME_FIELD, name));
             },
             null,
             0,

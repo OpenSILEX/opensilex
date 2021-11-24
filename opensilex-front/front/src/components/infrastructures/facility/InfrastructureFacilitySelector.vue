@@ -61,6 +61,7 @@
             return this.$service.searchInfrastructureFacilities(
                 searchQuery, //name
                 undefined,
+                undefined,
                 page,
                 pageSize
             ).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {

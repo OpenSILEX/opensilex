@@ -22,6 +22,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 public class FormUpdateDTO extends FormCreationDTO{
     
     protected URI uri;
+
     
     @NotNull
     @ValidURI
@@ -40,5 +41,6 @@ public class FormUpdateDTO extends FormCreationDTO{
     public void setUri(URI uri) {
         this.uri = uri;
     }
+    
     
 }

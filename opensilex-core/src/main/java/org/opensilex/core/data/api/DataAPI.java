@@ -593,28 +593,27 @@ public class DataAPI {
 
         if (!checkOnProvWasAssociatedWithDataProvenance(data, deviceDAO)) {
            DeviceModel device = checkOnAgentsProvenance(deviceDAO, provDAO, data);
-           if(device == null){
-              throw new NoDeviceOrTargetToDataException(); 
-           } // if not add the device to the provWasAssociated ?
-           if(rootDeviceTypes == null) {
-               rootDeviceTypes = getRootDeviceTypes();
-           }
-           
-           DataProvenanceModel provMod = data.getProvenance();
-           List<ProvEntityModel> agents  = null;
-           if(provMod.getProvWasAssociatedWith() == null){
-               agents = new ArrayList<>();
-           } else {
-               agents = provMod.getProvWasAssociatedWith() ;
-           }
-           
-           ProvEntityModel agent = new ProvEntityModel();
-           agent.setUri(device.getUri());
-           URI rootType = rootDeviceTypes.get(device.getType());
-           agent.setType(rootType);
-           agents.add(agent);
-           provMod.setProvWasAssociatedWith(agents);
-           data.setProvenance(provMod);
+            if (device != null) {
+                if (rootDeviceTypes == null) {
+                    rootDeviceTypes = getRootDeviceTypes();
+                }
+
+                DataProvenanceModel provMod = data.getProvenance();
+                List<ProvEntityModel> agents = null;
+                if (provMod.getProvWasAssociatedWith() == null) {
+                    agents = new ArrayList<>();
+                } else {
+                    agents = provMod.getProvWasAssociatedWith();
+                }
+
+                ProvEntityModel agent = new ProvEntityModel();
+                agent.setUri(device.getUri());
+                URI rootType = rootDeviceTypes.get(device.getType());
+                agent.setType(rootType);
+                agents.add(agent);
+                provMod.setProvWasAssociatedWith(agents);
+                data.setProvenance(provMod);
+            } 
            
         }
         return data;
@@ -649,6 +648,10 @@ public class DataAPI {
                     if (devices.size() > 1) {
                         throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
                     } else {
+                        if (!devices.isEmpty()) {
+                            deviceToReturn = devices.get(0);
+                            addVariableToDevice(deviceToReturn.getUri(),data.getVariable()); // add variable/device
+                        }
                         deviceToReturn = devices.get(0);
                         addVariableToDevice(deviceToReturn.getUri(),data.getVariable()); // add variable/device
                     }
@@ -778,10 +781,7 @@ public class DataAPI {
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } else {
-                    if (data.getTarget() == null) { //if data isn't associated to target then it is associated to device
-                         data = checkVariablesDeviceAssociation(provDAO, data);
-                    }
-                  
+                    data = checkVariablesDeviceAssociation(provDAO, data);
                 }
 
             }

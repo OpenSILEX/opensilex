@@ -3,12 +3,10 @@ package org.opensilex.core.species.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
 
 @SPARQLResource(
         ontology = Oeso.class,

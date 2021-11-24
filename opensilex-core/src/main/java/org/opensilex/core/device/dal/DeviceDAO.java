@@ -6,30 +6,20 @@
 package org.opensilex.core.device.dal;
 
 import com.mongodb.client.MongoCollection;
-import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import java.net.URI;
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.sparql.expr.Expr;
-import java.util.List;
-import java.time.LocalDate;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.bson.Document;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
+import org.bson.Document;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
@@ -45,11 +35,17 @@ import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *

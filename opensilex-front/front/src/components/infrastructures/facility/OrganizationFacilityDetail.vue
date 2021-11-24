@@ -59,11 +59,24 @@
       ></opensilex-TypeView>
       <!-- Organisations -->
       <opensilex-UriListView
+          v-if="hasOrganizations"
           label="OrganizationFacilityDetail.organizations"
           :list="organizationUriList"
           :inline="false"
       >
       </opensilex-UriListView>
+
+      <!-- Site -->
+      <opensilex-UriView
+          v-if="selectedFacilityOrDefault.site"
+          title="OrganizationFacilityDetail.site"
+          :uri="selectedFacilityOrDefault.site.uri"
+          :value="selectedFacilityOrDefault.site.name"
+          :to="{
+              path: '/infrastructure/site/details/' + encodeURIComponent(selectedFacilityOrDefault.site.uri),
+            }"
+      >
+      </opensilex-UriView>
 
       <!-- Address -->
       <opensilex-StringView
@@ -151,6 +164,10 @@ export default class OrganizationFacilityDetail extends Vue {
       return this.selected;
     }
     return {};
+  }
+
+  get hasOrganizations() {
+    return !!this.selected && this.selected.organizations.length > 0;
   }
 
   get organizationUriList() {
@@ -319,9 +336,11 @@ export default class OrganizationFacilityDetail extends Vue {
 en:
   OrganizationFacilityDetail:
     organizations: Organizations
+    site: "Site"
     address: "Address"
 fr:
   OrganizationFacilityDetail:
     organizations: Organisations
+    site: "Site"
     address: "Adresse"
 </i18n>

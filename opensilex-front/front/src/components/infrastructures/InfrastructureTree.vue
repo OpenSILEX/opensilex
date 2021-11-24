@@ -330,6 +330,7 @@ export default class InfrastructureTree extends Vue {
               title: site.name,
               isSelectable: true
             };
+            orgNode.isLeaf = false;
             orgNode.children.push(siteNode);
           }
         }

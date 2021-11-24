@@ -39,7 +39,6 @@
         <span class="item-icon">
           <opensilex-Icon
               :icon="$opensilex.getRDFIcon(node.data.rdf_type)"
-              v-b-tooltip.hover.top="$t('InfrastructureTree.siteTypeTooltip')"
           />
         </span>&nbsp;
         <strong v-if="node.data.selectedOrganization">{{ node.title }}</strong>
@@ -529,8 +528,7 @@ en:
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
     organization-multiple-tooltip: "This organization has several parent organizations"
-    site-multiple-tooltip: "This site has several parent organizations"
-    siteTypeTooltip: "This is a site that hosts an organization"
+    site-multiple-tooltip: "This site hosts several organizations"
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des organisations...
@@ -544,8 +542,7 @@ fr:
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
     organization-multiple-tooltip: "Cette organisation a plusieurs organisations parentes"
-    site-multiple-tooltip: "Ce site a plusieurs organisations parentes"
-    siteTypeTooltip: "Ceci est un site qui héberge une organisation"
+    site-multiple-tooltip: "Ce site héberge plusieurs organisations"
 
 
 </i18n>

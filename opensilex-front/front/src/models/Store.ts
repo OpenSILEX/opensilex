@@ -139,7 +139,11 @@ let store = new Vuex.Store({
       CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID: "scientific-objects-experiment-delete",
       CREDENTIAL_DEVICE_DELETE_ID: "devices-delete",
       CREDENTIAL_DEVICE_MODIFICATION_ID: "device-modification",
-      CREDENTIAL_DATA_MODIFICATION_ID: "data-modification"
+      CREDENTIAL_DATA_MODIFICATION_ID: "data-modification",
+      CREDENTIAL_EVENT_MODIFICATION_ID: "event-modification",
+      CREDENTIAL_EVENT_DELETE_ID: "event-delete",
+      CREDENTIAL_ANNOTATION_MODIFICATION_ID: "annotation-modification",
+      CREDENTIAL_ANNOTATION_DELETE_ID: "annotation-delete"
     }
   },
   getters: {

@@ -1,5 +1,5 @@
 <template>
-  <b-card v-if="selected">
+  <b-card>
     <template v-slot:header>
       <h3>
         {{ $t("InfrastructureFacilitiesView.facilities") }}
@@ -11,7 +11,7 @@
           "
         />
       </h3>
-      <div class="card-header-right">
+      <div class="card-header-right" v-if="withActions">
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
@@ -33,15 +33,16 @@
       sort-by="rdf_type_name"
       :selectable="isSelectable"
       selectMode="single"
-      :items="selected.facilities"
+      :items="facilities"
       :fields="fields"
-      @row-selected="$emit('rowSelected', $event)"
+      @row-selected="onFacilitySelected"
+      ref="facilityTable"
     >
       <template v-slot:head(name)="data">{{ $t(data.label) }}</template>
       <template v-slot:head(rdf_type_name)="data">{{
         $t(data.label)
       }}</template>
-      <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
+      <template v-slot:head(actions)="data" v-if="withActions">{{ $t(data.label) }}</template>
 
       <template v-slot:cell(name)="data">
         <opensilex-UriLink
@@ -61,7 +62,7 @@
         }}</span>
       </template>
 
-      <template v-slot:cell(actions)="data">
+      <template v-slot:cell(actions)="data" v-if="withActions">
         <b-button-group size="sm">
           <opensilex-EditButton
             v-if="
@@ -87,32 +88,44 @@
       </template>
     </b-table>
 
-    <opensilex-InfrastructureFacilityForm
+    <opensilex-OrganizationFacilityModalForm
       ref="facilityForm"
       v-if="
+        withActions &&
         user.hasCredential(
           credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
         )
       "
-      @onCreate="$emit('onCreate', $event)"
-      @onUpdate="$emit('onUpdate', $event)"
-      :infrastructure="selected.uri"
-    ></opensilex-InfrastructureFacilityForm>
+      @onCreate="onCreate"
+      @onUpdate="onUpdate"
+      :initForm="initForm"
+    ></opensilex-OrganizationFacilityModalForm>
   </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
+import {InfrastructureGetDTO} from "opensilex-core/index";
+import {OrganisationsService} from "opensilex-core/api/organisations.service";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {BTable} from "bootstrap-vue";
+import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
+import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
+  service: OrganisationsService;
 
-  @Ref("facilityForm") readonly facilityForm!: any;
+  @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
+  @Ref("facilityTable") readonly facilityTable: BTable;
+
+  @Prop()
+  selected: InfrastructureGetDTO;
 
   get user() {
     return this.$store.state.user;
@@ -122,30 +135,41 @@ export default class InfrastructureFacilitiesView extends Vue {
     return this.$store.state.credentials;
   }
 
-  @Prop()
-  private selected: InfrastructureGetDTO;
-
   @Prop({
     default: false,
   })
   isSelectable;
 
-  fields = [
-    {
-      key: "name",
-      label: "component.common.name",
-      sortable: true,
-    },
-    {
-      key: "rdf_type_name",
-      label: "component.common.type",
-      sortable: true,
-    },
-    {
-      label: "component.common.actions",
-      key: "actions",
-    },
-  ];
+  @Prop({
+    default: false
+  })
+  withActions: boolean;
+
+  get fields() {
+    let fields = [
+      {
+        key: "name",
+        label: "component.common.name",
+        sortable: true,
+      },
+      {
+        key: "rdf_type_name",
+        label: "component.common.type",
+        sortable: true,
+      }
+    ];
+    if (this.withActions) {
+      fields.push({
+        label: "component.common.actions",
+        key: "actions",
+        sortable: false
+      });
+    }
+    return fields;
+  }
+
+  facilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
+  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
 
   public deleteFacility(uri) {
     this.$opensilex
@@ -156,9 +180,61 @@ export default class InfrastructureFacilitiesView extends Vue {
       });
   }
 
-  editFacility(facility) {
-    let copy = JSON.parse(JSON.stringify(facility));
-    this.facilityForm.showEditForm(copy);
+  onFacilitySelected(selected: Array<InfrastructureFacilityGetDTO>) {
+    this.selectedFacility = selected[0];
+    this.$emit('facilitySelected', this.selectedFacility);
+  }
+
+  created() {
+    this.service = this.$opensilex.getService(
+        "opensilex-core.OrganisationsService"
+    );
+
+    this.refresh();
+  }
+
+  refresh() {
+    let searchPromise = this.selected
+      ? this.service.searchInfrastructureFacilities(undefined, [this.selected.uri])
+      : this.service.searchInfrastructureFacilities();
+
+    return searchPromise
+        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
+          this.facilities = http.response.result;
+        }).then(() => {
+
+          // Select the first element
+          if (this.isSelectable && this.facilities.length > 0) {
+            this.facilityTable.selectRow(0);
+          }
+        });
+  }
+
+  @Watch("selected")
+  onRefreshSelectedOrganization() {
+    this.facilities = this.selected.facilities;
+  }
+
+  initForm(form: InfrastructureFacilityCreationDTO) {
+    if (this.selected) {
+      form.organizations = [this.selected.uri];
+    }
+  }
+
+  createFacility() {
+    this.facilityForm.showCreateForm()
+  }
+
+  editFacility(facility: InfrastructureFacilityGetDTO) {
+    this.facilityForm.showEditForm(facility);
+  }
+
+  onUpdate() {
+    this.$emit("onUpdate");
+  }
+
+  onCreate() {
+    this.$emit("onCreate");
   }
 }
 </script>

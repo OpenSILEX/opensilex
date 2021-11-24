@@ -74,13 +74,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,18 +90,15 @@ import java.util.stream.Collectors;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
-import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -117,7 +112,6 @@ import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.Date;
@@ -769,7 +763,7 @@ public class ScientificObjectAPI {
                         if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                             moveDAO.create(facilityMoveEvent);
                         }
-                        sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.hasFacility);
+                        sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.isHosted);
                     }
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();
@@ -825,7 +819,7 @@ public class ScientificObjectAPI {
                     if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
                         moveDAO.create(facilityMoveEvent);
                     }
-                    sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.hasFacility);
+                    sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.isHosted);
                 }
                 if (globalCopy) {
                     UpdateBuilder update = new UpdateBuilder();
@@ -880,10 +874,6 @@ public class ScientificObjectAPI {
             @ApiResponse(code = 201, message = "Data file exported")
     })
     @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_LABEL_KEY
-    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
@@ -926,7 +916,7 @@ public class ScientificObjectAPI {
             customColumns.add(Oeso.hasCreationDate.toString());
             customColumns.add(Oeso.hasDestructionDate.toString());
             customColumns.add(Oeso.hasFactorLevel.toString());
-            customColumns.add(Oeso.hasFacility.toString());
+            customColumns.add(Oeso.isHosted.toString());
         }
         customColumns.add(GEOMETRY_COLUMN_ID);
 
@@ -958,7 +948,7 @@ public class ScientificObjectAPI {
                     // remove last space character
                     return sb.length() > 0 ? sb.substring(0,sb.length()-1) : sb.toString();
 
-                } else if (columnID.equals(Oeso.hasFacility.toString())) {
+                } else if (columnID.equals(Oeso.isHosted.toString())) {
                     if (arrivalFacilityByOs.containsKey(value.getUri())) {
                         return arrivalFacilityByOs.get(value.getUri()).toString();
                     }
@@ -1128,7 +1118,7 @@ public class ScientificObjectAPI {
                 facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
             }
 
-            customValidators.put(Oeso.hasFacility.toString(), (cell, csvErrors) -> {
+            customValidators.put(Oeso.isHosted.toString(), (cell, csvErrors) -> {
                 try {
                     if (!cell.getValue().isEmpty()) {
                         String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));

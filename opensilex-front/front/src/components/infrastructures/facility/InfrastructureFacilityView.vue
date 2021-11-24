@@ -8,44 +8,42 @@
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
     <div class="row">
-      <div class="col-md-6">
-        <!-- Infrastructure detail -->
-        <opensilex-InfrastructureDetail
+      <div class="col-md-12">
+        <opensilex-OrganizationFacilityDetail
           :selected="selected"
           :withActions="true"
-          @onDelete="deleteInfrastructure"
           @onUpdate="refresh"
-        ></opensilex-InfrastructureDetail>
-      </div>
-      <div class="col-md-6">
-        <!-- Infrastructure facilities -->
-        <opensilex-InfrastructureFacilitiesView
-          :selected="selected"
-          :withActions="true"
-          :isSelectable="false"
-          @onUpdate="refresh"
-          @onCreate="refresh"
-          @onDelete="refresh"
-        ></opensilex-InfrastructureFacilitiesView>
+        >
+        </opensilex-OrganizationFacilityDetail>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component
-export default class InfrastructureDetailView extends Vue {
+export default class InfrastructureFacilityView extends Vue {
   $opensilex: any;
 
-  selected = null;
+  selected: InfrastructureGetDTO = null;
   uri = null;
   service;
+
+  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
 
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -57,22 +55,11 @@ export default class InfrastructureDetailView extends Vue {
 
   refresh() {
     this.service
-      .getInfrastructure(this.uri)
+      .getInfrastructureFacility(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
         this.selected = detailDTO;
       });
-  }
-
-  deleteInfrastructure() {
-    this.service
-      .deleteInfrastructure(this.uri)
-      .then(() => {
-        this.$router.push({
-          path: "/infrastructures",
-        });
-      })
-      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

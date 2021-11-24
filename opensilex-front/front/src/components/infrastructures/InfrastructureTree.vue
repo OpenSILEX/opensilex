@@ -31,7 +31,11 @@
       placeholder="InfrastructureTree.filter-placeholder"
     ></opensilex-StringFilter>
 
-    <opensilex-TreeView :nodes.sync="nodes" @select="displayNodesDetail">
+    <opensilex-TreeView
+        :nodes.sync="nodes"
+        @select="displayNodesDetail"
+        :multipleElementsTooltip="$t('InfrastructureTree.multiple-parents-tooltip')"
+    >
       <template v-slot:node="{ node }">
         <span class="item-icon">
           <opensilex-Icon
@@ -92,18 +96,18 @@
       icon="ik#ik-globe"
       @onCreate="refresh($event ? $event.uri : undefined)"
       @onUpdate="refresh($event ? $event.uri : undefined)"
-      :initForm="setParent"
+      :initForm="setParents"
     ></opensilex-ModalForm>
   </b-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { OrganisationsService, ResourceTreeDTO, InfrastructureGetDTO } from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 
 @Component
 export default class InfrastructureTree extends Vue {
@@ -111,6 +115,16 @@ export default class InfrastructureTree extends Vue {
   $store: any;
   $route: any;
   service: OrganisationsService;
+
+  public nodes = [];
+
+  parentURI;
+
+  private langUnwatcher;
+
+  private selected: InfrastructureGetDTO;
+
+  @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -140,7 +154,6 @@ export default class InfrastructureTree extends Vue {
     this.refresh();
   }
 
-  private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
@@ -158,8 +171,8 @@ export default class InfrastructureTree extends Vue {
 
   refresh(uri?) {
     this.service
-      .searchInfrastructuresTree(this.filter)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+      .searchInfrastructures(this.filter)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
         if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
           if (this.filter == "") {
             this.infrastructureForm
@@ -169,61 +182,25 @@ export default class InfrastructureTree extends Vue {
             this.infrastructureForm.getFormRef().init();
           }
         }
-        let treeNode = [];
-        let first = true;
-        for (let i in http.response.result) {
-          let resourceTree: ResourceTreeDTO = http.response.result[i];
-          let node = this.dtoToNode(resourceTree, first, uri);
-          treeNode.push(node);
 
-          if (first && uri == null) {
-            this.displayNodeDetail(node.data.uri, true);
-            first = false;
+        let nodes = this.$opensilex.buildTreeFromDag(http.response.result, {});
+
+        if (nodes.length > 0) {
+          nodes[0].isSelected = true;
+
+          if (!uri) {
+            this.displayNodeDetail(nodes[0].data.uri, true);
           }
         }
 
-        if (uri != null) {
+        if (uri) {
           this.displayNodeDetail(uri, true);
         }
 
-        if (http.response.result.length == 0) {
-          this.selected = null;
-        }
-
-        this.nodes = treeNode;
+        this.nodes = nodes;
       })
       .catch(this.$opensilex.errorHandler);
   }
-
-  private dtoToNode(dto: ResourceTreeDTO, first: boolean, uri: string) {
-    let isLeaf = dto.children.length == 0;
-
-    let childrenDTOs = [];
-    if (!isLeaf) {
-      for (let i in dto.children) {
-        childrenDTOs.push(this.dtoToNode(dto.children[i], false, uri));
-      }
-    }
-
-    let isSeleted = first && uri == null;
-    if (uri != null) {
-      isSeleted = uri == dto.uri;
-    }
-    return {
-      title: dto.name,
-      data: dto,
-      isLeaf: isLeaf,
-      children: childrenDTOs,
-      isExpanded: true,
-      isSelected: isSeleted,
-      isDraggable: false,
-      isSelectable: true,
-    };
-  }
-
-  public nodes = [];
-
-  private selected: InfrastructureGetDTO;
 
   public displayNodesDetail(node: any) {
     this.displayNodeDetail(node.data.uri);
@@ -241,15 +218,11 @@ export default class InfrastructureTree extends Vue {
     }
   }
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: any;
-
   showDetail(uri) {
     this.$router.push({
       path: "/infrastructure/details/" + encodeURIComponent(uri),
     });
   }
-
-  parentURI;
 
   createInfrastructure(parentURI?) {
     this.parentURI = parentURI;
@@ -261,13 +234,14 @@ export default class InfrastructureTree extends Vue {
       .getInfrastructure(uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
         let detailDTO: InfrastructureGetDTO = http.response.result;
-        this.parentURI = detailDTO.parent;
-
+        this.parentURI = detailDTO.parents[0];
 
         let editDTO: InfrastructureUpdateDTO = {
           ...detailDTO,
           uri: detailDTO.uri,
-          groups: detailDTO.groups.map(group => group.uri)
+          groups: detailDTO.groups.map(group => group.uri),
+          facilities: detailDTO.facilities.map(facility => facility.uri),
+          parents: detailDTO.parents.map(parent => parent.uri)
         };
         this.infrastructureForm.showEditForm(editDTO);
       });
@@ -282,8 +256,8 @@ export default class InfrastructureTree extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  setParent(form) {
-    form.parent = this.parentURI;
+  setParents(form) {
+    form.parents = [this.parentURI];
   }
 }
 </script>
@@ -319,6 +293,7 @@ en:
     infrastructure-component: Organizations
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
+    multiple-parents-tooltip: "This organization has several parent organizations"
 fr:
   InfrastructureTree:
     filter-placeholder: Rechercher des organisations...
@@ -330,4 +305,5 @@ fr:
     infrastructure-component: Organisations
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
+    multiple-parents-tooltip: "Cette organisation a plusieurs organizations parentes"
 </i18n>

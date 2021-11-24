@@ -19,10 +19,10 @@ import org.junit.Test;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.ResourceTreeDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.response.ResourceDagDTO;
 
 /**
  * @author Vincent MIGOT
@@ -44,13 +44,25 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         infraCount++;
         InfrastructureCreationDTO dto = new InfrastructureCreationDTO();
         dto.setName("Infra " + infraCount);
-        dto.setParent(parent);
+        if (parent != null) {
+            List<URI> parents = new ArrayList<>();
+            parents.add(parent);
+            dto.setParents(parents);
+        }
         return dto;
     }
 
-//    @Test
-    public void testCreate() throws Exception {
+    protected InfrastructureUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents) {
+        InfrastructureUpdateDTO dto = new InfrastructureUpdateDTO();
+        dto.setUri(organizationUri);
+        if (updatedParents != null) {
+            dto.setParents(updatedParents);
+        }
+        return dto;
+    }
 
+    @Test
+    public void testCreate() throws Exception {
         final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -58,6 +70,57 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         URI createdUri = extractUriFromResponse(postResult);
         final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+    }
+
+    /**
+     * Updating an organization to change its parent
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParents() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root2 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
+
+        assertEquals(Status.OK.getStatusCode(), updateResponse.getStatus());
+    }
+
+    /**
+     * Updating an organization to create a cycle should fail
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParentsCycle() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(root1));
+        URI root2 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
+
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResponse.getStatus());
+    }
+
+    /**
+     * Updating an organization to have itself as a parent should fail
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testUpdateParentsSelf() throws Exception {
+        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root1); }}));
+
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResponse.getStatus());
     }
 
     @Test
@@ -76,20 +139,20 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        ResourceTreeResponse response = mapper.convertValue(node, new TypeReference<ResourceTreeResponse>() {
+        PaginatedListResponse<ResourceDagDTO<InfrastructureModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<InfrastructureModel>>>() {
         });
 
-        List<ResourceTreeDTO> list = response.getResult();
+        List<ResourceDagDTO<InfrastructureModel>> list = response.getResult();
         assertFalse(list.isEmpty());
-        Optional<ResourceTreeDTO> searchedRoot1 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root1)).findFirst();
-        Optional<ResourceTreeDTO> searchedRoot2 = list.stream().filter(treeDTO -> SPARQLDeserializers.compareURIs(treeDTO.getUri(), root2)).findFirst();
+        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
+        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
         assertTrue(searchedRoot1.isPresent());
         assertTrue(searchedRoot2.isPresent());
 
-        List<ResourceTreeDTO> root1Children = searchedRoot1.get().getChildren();
+        List<URI> root1Children = searchedRoot1.get().getChildren();
         assertEquals(1, root1Children.size());
         assertEquals(0, searchedRoot2.get().getChildren().size());
-        assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0).getUri()));
+        assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0)));
     }
 
     @Override

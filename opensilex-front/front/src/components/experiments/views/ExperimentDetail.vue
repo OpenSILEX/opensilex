@@ -113,6 +113,10 @@
               :list="infrastructuresListURIs"
             ></opensilex-UriListView>
             <opensilex-UriListView
+              label="component.experiment.facilities"
+              :list="facilityListUris"
+            ></opensilex-UriListView>
+            <opensilex-UriListView
               label="component.experiment.species"
               :list="speciesList"
             ></opensilex-UriListView>
@@ -245,6 +249,15 @@ export default class ExperimentDetail extends Vue {
       infraUris.push(infra);
     }
     return infraUris;
+  }
+
+  get facilityListUris() {
+    return this.experiment.facilities.map(facility => {
+      return {
+        uri: facility.uri,
+        value: facility.name
+      }
+    });
   }
 
   deleteExperiment(uri: string) {

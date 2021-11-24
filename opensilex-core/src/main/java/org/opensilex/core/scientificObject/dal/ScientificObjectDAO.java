@@ -58,7 +58,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.server.response.ListItemDTO;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -536,15 +535,15 @@ public class ScientificObjectDAO {
             Path subPartOf = new P_ZeroOrMore1(new P_Link(Oeso.isPartOf.asNode()));
             if (searchFilter.getExperiment() != null) {
                 WhereBuilder graphQuery = new WhereBuilder();
-                graphQuery.addGraph(contextNode, uriVar, Oeso.hasFacility, directFacility);
+                graphQuery.addGraph(contextNode, uriVar, Oeso.isHosted, directFacility);
                 graphQuery.addGraph(contextNode, uriVar, subPartOf, parentLinkURI);
-                graphQuery.addGraph(contextNode, parentLinkURI, Oeso.hasFacility, parentFacility);
+                graphQuery.addGraph(contextNode, parentLinkURI, Oeso.isHosted, parentFacility);
                 builder.addOptional(graphQuery);
             } else {
                 WhereBuilder graphQuery = new WhereBuilder();
-                graphQuery.addWhere(uriVar, Oeso.hasFacility, directFacility);
+                graphQuery.addWhere(uriVar, Oeso.isHosted, directFacility);
                 graphQuery.addWhere(uriVar, subPartOf, parentLinkURI);
-                graphQuery.addWhere(parentLinkURI, Oeso.hasFacility, parentFacility);
+                graphQuery.addWhere(parentLinkURI, Oeso.isHosted, parentFacility);
                 builder.addOptional(graphQuery);
             }
 
@@ -709,7 +708,7 @@ public class ScientificObjectDAO {
             if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
                 moveDAO.create(facilityMoveEvent);
             }
-            sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.hasFacility);
+            sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
             nosql.commitTransaction();
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -731,7 +730,7 @@ public class ScientificObjectDAO {
 
         boolean hasFacility = false;
         for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFacility.getURI())) {
+            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
                 InfrastructureFacilityModel infraModel = new InfrastructureFacilityModel();
                 infraModel.setUri(new URI(relation.getValue()));
                 facilityMoveEvent.setTo(infraModel);
@@ -789,7 +788,7 @@ public class ScientificObjectDAO {
 
         boolean hasFacilityURI = false;
         for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.hasFacility.getURI())) {
+            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
                 hasFacilityURI = true;
                 break;
             }
@@ -843,7 +842,7 @@ public class ScientificObjectDAO {
                     }
                 }
             }
-            sparql.deletePrimitives(graphNode, objectURI, Oeso.hasFacility);
+            sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
 
             sparql.commitTransaction();
             nosql.commitTransaction();

@@ -162,6 +162,7 @@ public class DataAPI {
     public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
     public static final int SIZE_MAX = 50000;
 
+    private Map<URI, URI> rootDeviceTypes = null;
 
     @Inject
     private MongoDBService nosql;
@@ -1098,7 +1099,6 @@ public class DataAPI {
             List<ImportDataIndex> duplicateDataByIndex) 
         throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
         
-        Map<URI, URI> rootDeviceTypes = getRootDeviceTypes();
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
@@ -1252,6 +1252,9 @@ public class DataAPI {
                             validRow = false;
                             break;
                         } else {
+                            if (rootDeviceTypes == null) {
+                                rootDeviceTypes = getRootDeviceTypes();
+                            }
                             URI rootType = rootDeviceTypes.get(device.getType());
                             device.setType(rootType);
                             nameURIDevices.put(deviceNameOrUri, device);                        
@@ -1328,25 +1331,33 @@ public class DataAPI {
         return validRow;
     }
 
+    // Map who associate each type with its root type
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
-        SPARQLTreeListModel<ClassModel> treeList = CoreModule.getOntologyCacheInstance().getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(),true);
+        SPARQLTreeListModel<ClassModel> treeList = CoreModule.getOntologyCacheInstance().getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
-        
+
         Map<URI, URI> map = new HashMap<>();
-        
-        for (ResourceTreeDTO tree:treeDtos) {
+
+        for (ResourceTreeDTO tree : treeDtos) {
             URI agentRootType = tree.getUri();
             List<ResourceTreeDTO> children = tree.getChildren();
-            while (!children.isEmpty()) {
-                for (ResourceTreeDTO subTree:children) {
-                    map.put(subTree.getUri(), agentRootType);
-                    children = subTree.getChildren();
-                }
+            if (!children.isEmpty()) {
+                childrenToRoot(children, map, agentRootType);
             }
         }
-            
+
         return map;
+    }
+
+    private void childrenToRoot(List<ResourceTreeDTO> children, Map<URI, URI> map, URI agentRootType) {
+        for (ResourceTreeDTO subTree : children) {
+            map.put(subTree.getUri(), agentRootType);
+            List<ResourceTreeDTO> child = subTree.getChildren();
+            if (!child.isEmpty()) {
+                childrenToRoot(child, map, agentRootType);
+            }
+        }
     }
 
     private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {

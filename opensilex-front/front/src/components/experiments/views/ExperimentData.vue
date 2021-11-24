@@ -4,7 +4,7 @@
       <opensilex-Card icon>
         <template v-slot:header>
           <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID) && user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
             @click="dataForm.showCreateForm()"
             label="OntologyCsvImporter.import"
           ></opensilex-CreateButton>

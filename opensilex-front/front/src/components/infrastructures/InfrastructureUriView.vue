@@ -35,6 +35,9 @@ export default class InfrastructureUriView extends Vue {
   @Prop()
   uri;
 
+  @Prop()
+  value;
+
   label = "";
 
   mounted() {

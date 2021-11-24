@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.Required;
@@ -62,6 +63,9 @@ public class ExperimentGetDTO {
     
     @JsonProperty("organisations") 
     protected List<NamedResourceDTO<InfrastructureModel>> infrastructures = new ArrayList<>();
+
+    @JsonProperty("facilities")
+    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities = new ArrayList<>();
      
     @JsonProperty("projects")
     protected List<NamedResourceDTO<ProjectModel>> projects = new ArrayList<>();
@@ -187,6 +191,14 @@ public class ExperimentGetDTO {
         this.infrastructures = infrastructures;
     }
 
+    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
+        this.facilities = facilities;
+    }
+
     public List<URI> getVariables() {
         return variables;
     }
@@ -247,6 +259,13 @@ public class ExperimentGetDTO {
             projectsDTO.add(projectDTO);
         });
         dto.setProjects(projectsDTO);
+
+        List<NamedResourceDTO<InfrastructureFacilityModel>> facilitiesDTO = new ArrayList<>();
+        model.getFacilities().forEach((facilityModel) -> {
+            facilitiesDTO.add(NamedResourceDTO.getDTOFromModel(facilityModel));
+        });
+        dto.setFacilities(facilitiesDTO);
+
         return dto;
     }
 }

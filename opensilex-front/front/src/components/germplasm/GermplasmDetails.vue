@@ -47,7 +47,7 @@
                 :uri="germplasm.uri"
                 :url="germplasm.uri"
               ></opensilex-UriView>
-              <opensilex-StringView class="test" v-else label="GermplasmDetails.uri" :value="germplasm.uri"></opensilex-StringView>
+              <opensilex-UriView v-else :uri="germplasm.uri" ></opensilex-UriView>
               <opensilex-StringView label="GermplasmDetails.rdfType" :value="germplasm.rdf_type_name"></opensilex-StringView>
               <opensilex-StringView label="GermplasmDetails.name" :value="germplasm.name"></opensilex-StringView>
               <opensilex-StringView

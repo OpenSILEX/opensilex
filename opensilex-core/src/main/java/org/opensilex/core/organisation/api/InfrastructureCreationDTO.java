@@ -8,12 +8,14 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.group.dal.GroupModel;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -22,9 +24,10 @@ import java.util.List;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name", "parent", "children", "groups"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "groups", "facilities"})
 class InfrastructureCreationDTO extends InfrastructureDTO {
-    public List<URI> groups;
+    protected List<URI> groups;
+    protected List<URI> facilities;
 
     public List<URI> getGroups() {
         return groups;
@@ -32,6 +35,14 @@ class InfrastructureCreationDTO extends InfrastructureDTO {
 
     public void setGroups(List<URI> groups) {
         this.groups = groups;
+    }
+
+    public List<URI> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<URI> facilities) {
+        this.facilities = facilities;
     }
 
     // Don't display this property as required for the creation
@@ -42,18 +53,34 @@ class InfrastructureCreationDTO extends InfrastructureDTO {
     }
 
     @Override
+    @JsonIgnore
+    public List<URI> getChildren() {
+        return super.getChildren();
+    }
+
+    @Override
     public void toModel(InfrastructureModel model) {
         super.toModel(model);
 
-        List<URI> groupUriList = getGroups();
-        if (groupUriList != null) {
-            List<GroupModel> groups = new ArrayList<>(groupUriList.size());
-            groupUriList.forEach(groupUri -> {
+        List<URI> groupUris = getGroups();
+        if (groupUris != null) {
+            List<GroupModel> groupModels = new ArrayList<>(groupUris.size());
+            groupUris.forEach(groupUri -> {
                 GroupModel groupModel = new GroupModel();
                 groupModel.setUri(groupUri);
-                groups.add(groupModel);
+                groupModels.add(groupModel);
             });
-            model.setGroups(groups);
+            model.setGroups(groupModels);
+        }
+
+        List<URI> facilityUriList = getFacilities();
+        if (facilityUriList != null) {
+            List<InfrastructureFacilityModel> facilityModels = facilityUriList.stream().map(facilityUri -> {
+                InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+                facilityModel.setUri(facilityUri);
+                return facilityModel;
+            }).collect(Collectors.toList());
+            model.setFacilities(facilityModels);
         }
     }
 }

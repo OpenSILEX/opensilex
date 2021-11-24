@@ -16,7 +16,7 @@ public class VueFacilities implements VueOntologyObjectType {
 
     @Override
     public String getTypeUri() {
-        return Oeso.InfrastructureFacility.getURI();
+        return Oeso.Facility.getURI();
     }
 
     @Override

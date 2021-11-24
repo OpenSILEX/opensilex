@@ -7,23 +7,23 @@
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author Vincent MIGOT

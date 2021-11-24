@@ -15,7 +15,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.util.ArrayList;
 import java.util.List;

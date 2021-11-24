@@ -1,9 +1,12 @@
-//******************************************************************************
-// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
-// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
-//******************************************************************************
-package org.opensilex.sparql.utils;
+/*******************************************************************************
+ *                         URIGenerator.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2021.
+ * Last Modification: 24/11/2021 17:18
+ * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+package org.opensilex.uri.generation;
 
 import java.net.URI;
 import java.net.URISyntaxException;

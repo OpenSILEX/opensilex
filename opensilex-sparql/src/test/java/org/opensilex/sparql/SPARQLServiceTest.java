@@ -12,18 +12,24 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.unit.test.AbstractUnitTest;
+import org.opensilex.uri.generation.URIGeneratorTest;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -32,19 +38,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.jena.vocabulary.OWL2;
-
 import static org.junit.Assert.*;
-
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
-
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.URIGeneratorTest;
-import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
  * @author vincent

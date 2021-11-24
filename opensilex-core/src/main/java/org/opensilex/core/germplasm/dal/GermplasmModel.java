@@ -6,20 +6,20 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 /**
  *

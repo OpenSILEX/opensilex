@@ -1,28 +1,33 @@
+/*******************************************************************************
+ *                         URIGeneratorTest.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2021.
+ * Last Modification: 24/11/2021 17:18
+ * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.sparql.utils;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-
-import static org.junit.Assert.assertEquals;
+package org.opensilex.uri.generation;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.unit.test.AbstractUnitTest;
 
 import javax.ws.rs.core.UriBuilder;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 
 /**
  *
  * @author vince
  */
-public class URIGeneratorTest extends AbstractUnitTest  {
+public class URIGeneratorTest {
 
-    public final static String[] EXPECTED_REMOVED_CHARACTERS = {
+    public static final  String[] EXPECTED_REMOVED_CHARACTERS = {
             "$",
             "&",
             "~",
@@ -62,18 +67,18 @@ public class URIGeneratorTest extends AbstractUnitTest  {
         URIGenerator<?> uriGenerator = new DefaultURIGenerator<>();
         for(String character : EXPECTED_REMOVED_CHARACTERS){
             String result = uriGenerator.normalize(character);
-            assertEquals(character+" Char should be removed from URI", "", result);
+            Assert.assertEquals(character+" Char should be removed from URI", "", result);
         }
 
-        assertEquals("-",uriGenerator.normalize("=-="));
-        assertEquals("a-b",uriGenerator.normalize("a+-b*"));
-        assertEquals("_a-b_",uriGenerator.normalize(" a+-b* "));
-        assertEquals("_",uriGenerator.normalize(" "));
-        assertEquals("__",uriGenerator.normalize("  "));
-        assertEquals("_",uriGenerator.normalize(" \n"));
-        assertEquals("__",uriGenerator.normalize(" \n "));
-        assertEquals("_",uriGenerator.normalize(" \r"));
-        assertEquals("__",uriGenerator.normalize(" \r "));
+        Assert.assertEquals("-",uriGenerator.normalize("=-="));
+        Assert.assertEquals("a-b",uriGenerator.normalize("a+-b*"));
+        Assert.assertEquals("_a-b_",uriGenerator.normalize(" a+-b* "));
+        Assert.assertEquals("_",uriGenerator.normalize(" "));
+        Assert.assertEquals("__",uriGenerator.normalize("  "));
+        Assert.assertEquals("_",uriGenerator.normalize(" \n"));
+        Assert.assertEquals("__",uriGenerator.normalize(" \n "));
+        Assert.assertEquals("_",uriGenerator.normalize(" \r"));
+        Assert.assertEquals("__",uriGenerator.normalize(" \r "));
     }
 
 

@@ -5,12 +5,6 @@
 //******************************************************************************
 package org.opensilex.security.user.dal;
 
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -18,7 +12,14 @@ import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  *

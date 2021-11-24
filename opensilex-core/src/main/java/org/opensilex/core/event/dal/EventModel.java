@@ -9,12 +9,12 @@ package org.opensilex.core.event.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.model.time.Time;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 import java.util.List;

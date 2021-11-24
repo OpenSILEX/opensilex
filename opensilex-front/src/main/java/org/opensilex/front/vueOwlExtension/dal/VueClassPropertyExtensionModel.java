@@ -6,11 +6,12 @@
 package org.opensilex.front.vueOwlExtension.dal;
 
 import org.opensilex.front.vueOwlExtension.VueOwlExtension;
-import java.net.URI;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.net.URI;
 
 /**
  *

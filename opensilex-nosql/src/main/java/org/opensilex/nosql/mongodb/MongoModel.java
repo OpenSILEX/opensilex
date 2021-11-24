@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 

@@ -1,0 +1,439 @@
+[[1;34mINFO[m] Error stacktraces are turned on.
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Build Order:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] hl-services                                                        [jar]
+[[1;34mINFO[m] opensilex                                                          [pom]
+[[1;34mINFO[m] opensilex-dev-tools                                                [jar]
+[[1;34mINFO[m] opensilex-release                                                  [pom]
+[[1;34mINFO[m] opensilex-doc                                                      [pom]
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---------------------< [0;36morg.opensilex:hl-services[0;1m >----------------------[m
+[[1;34mINFO[m] [1mBuilding hl-services BUILD-SNAPSHOT                                [1/5][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Deleting /home/heinrich/opensilex-dev/hl-services/target
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.1.0:clean[m [1m(flatten.clean)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(clean Vue front lib)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Deleting /home/heinrich/opensilex-dev/hl-services/front/src/lib (includes = [**/*], excludes = [.gitkeep])
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M2:enforce[m [1m(enforce-maven)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mfrontend-maven-plugin:1.10.0:yarn[m [1m(install Vue application dependencies)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Running 'yarn --network-timeout 1000000 install' in /home/heinrich/opensilex-dev/hl-services/front
+[[1;34mINFO[m] yarn install v1.19.2
+[[1;34mINFO[m] [1/4] Resolving packages...
+[[1;34mINFO[m] success Already up-to-date.
+[[1;34mINFO[m] Done in 0.52s.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:copy-resources[m [1m(Copy Vue theme files)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] skip non existing resourceDirectory /home/heinrich/opensilex-dev/hl-services/front/theme
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:copy-resources[m [1m(Copy Vue tomcat configuration)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] skip non existing resourceDirectory /home/heinrich/opensilex-dev/hl-services/front/WEB-INF
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:copy-resources[m [1m(Copy Vue application configuration files)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 1 resource
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mproperties-maven-plugin:1.0.0:write-project-properties[m [1m(default)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mversions-maven-plugin:2.7:display-dependency-updates[m [1m(default)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] The following dependencies in Dependency Management have newer versions:
+[[1;34mINFO[m]   org.glassfish.jersey.bundles:jaxrs-ri .................. 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-apache-connector ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-grizzly-connector ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-helidon-connector ...
+[[1;34mINFO[m]                                                             2.32 -> 2.35
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-jdk-connector ... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-jetty-connector ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.connectors:jersey-netty-connector ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-grizzly2-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-grizzly2-servlet ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-jdk-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-jetty-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-jetty-servlet ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-netty-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-servlet ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-servlet-core ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers:jersey-container-simple-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.containers.glassfish:jersey-gf-ejb ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.core:jersey-client ................ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.core:jersey-common ................ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.core:jersey-server ................ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-bean-validation ........ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-declarative-linking .... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-entity-filtering ....... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-metainf-services ....... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-mvc .................... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-mvc-bean-validation .... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-mvc-freemarker ......... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-mvc-jsp ................ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-mvc-mustache ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-proxy-client ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-servlet-portability ..... 2.32 -> 2.35
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-spring4 ................. 2.32 -> 2.35
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-spring5 ................. 2.32 -> 2.35
+[[1;34mINFO[m]   org.glassfish.jersey.ext:jersey-wadl-doclet ............ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-cdi1x .............. 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-cdi1x-ban-custom-hk2-binding ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-cdi1x-servlet ...... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-cdi1x-transaction ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-cdi1x-validation ... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.cdi:jersey-weld2-se ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.microprofile:jersey-mp-config ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.microprofile:jersey-mp-rest-client ...
+[[1;34mINFO[m]                                                             2.32 -> 2.35
+[[1;34mINFO[m]   org.glassfish.jersey.ext.rx:jersey-rx-client-guava ..... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.rx:jersey-rx-client-rxjava .... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.ext.rx:jersey-rx-client-rxjava2 ... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.inject:jersey-cdi2-se ............. 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.inject:jersey-hk2 ................. 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-jaxb ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-json-binding ... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-json-jackson ... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-json-jettison ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-json-processing ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-kryo ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-moxy ........... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-multipart ...... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.media:jersey-media-sse ............ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.security:oauth1-client ............ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.security:oauth1-server ............ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.security:oauth1-signature ......... 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.security:oauth2-client ............ 2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework:jersey-test-framework-core ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework:jersey-test-framework-util ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-external ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2 ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jetty ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m]   org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-simple ...
+[[1;34mINFO[m]                                                            2.32 -> 3.0.3
+[[1;34mINFO[m] 
+[[1;34mINFO[m] The following dependencies in Dependencies have newer versions:
+[[1;34mINFO[m]   ch.qos.logback:logback-classic ........................ 1.2.3 -> 1.2.7
+[[1;34mINFO[m]   ch.qos.logback:logback-core ........................... 1.2.3 -> 1.2.7
+[[1;34mINFO[m]   com.auth0:java-jwt .................................. 3.11.0 -> 3.18.2
+[[1;34mINFO[m]   com.fasterxml.jackson.core:jackson-annotations ...... 2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.core:jackson-core ............. 2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.core:jackson-databind ......... 2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.dataformat:jackson-dataformat-csv ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.dataformat:jackson-dataformat-yaml ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.datatype:jackson-datatype-jdk8 ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.datatype:jackson-datatype-jsr310 ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.fasterxml.jackson.module:jackson-module-parameter-names ...
+[[1;34mINFO[m]                                                         2.12.0 -> 2.13.0
+[[1;34mINFO[m]   com.github.spullara.mustache.java:compiler ........... 0.9.7 -> 0.9.10
+[[1;34mINFO[m]   com.nimbusds:oauth2-oidc-sdk ........................... 9.2.3 -> 9.19
+[[1;34mINFO[m]   commons-io:commons-io ................................ 2.8.0 -> 2.11.0
+[[1;34mINFO[m]   de.flapdoodle.embed:de.flapdoodle.embed.mongo ......... 3.0.0 -> 3.2.0
+[[1;34mINFO[m]   info.picocli:picocli .................................. 4.5.2 -> 4.6.2
+[[1;34mINFO[m]   io.swagger:swagger-jersey2-jaxrs ...................... 1.6.2 -> 1.6.3
+[[1;34mINFO[m]   junit:junit ......................................... 4.13.1 -> 4.13.2
+[[1;34mINFO[m]   net.bytebuddy:byte-buddy ........................... 1.10.18 -> 1.12.2
+[[1;34mINFO[m]   net.logstash.logback:logstash-logback-encoder ........... 6.5 -> 7.0.1
+[[1;34mINFO[m]   org.apache.jena:jena-querybuilder .................... 3.16.0 -> 4.2.0
+[[1;34mINFO[m]   org.apache.maven:maven-resolver-provider .............. 3.6.3 -> 3.8.4
+[[1;34mINFO[m]   org.apache.maven.resolver:maven-resolver-api .......... 1.6.1 -> 1.7.2
+[[1;34mINFO[m]   org.apache.maven.resolver:maven-resolver-connector-basic ...
+[[1;34mINFO[m]                                                           1.6.1 -> 1.7.2
+[[1;34mINFO[m]   org.apache.maven.resolver:maven-resolver-impl ......... 1.6.1 -> 1.7.2
+[[1;34mINFO[m]   org.apache.maven.resolver:maven-resolver-transport-file ...
+[[1;34mINFO[m]                                                           1.6.1 -> 1.7.2
+[[1;34mINFO[m]   org.apache.maven.resolver:maven-resolver-transport-http ...
+[[1;34mINFO[m]                                                           1.6.1 -> 1.7.2
+[[1;34mINFO[m]   org.apache.tika:tika-core .............................. 1.25 -> 2.1.0
+[[1;34mINFO[m]   org.apache.tomcat.embed:tomcat-embed-core .......... 9.0.39 -> 10.0.13
+[[1;34mINFO[m]   org.apache.tomcat.embed:tomcat-embed-jasper ........ 9.0.39 -> 10.0.13
+[[1;34mINFO[m]   org.apache.tomcat.embed:tomcat-embed-websocket ..... 9.0.39 -> 10.0.13
+[[1;34mINFO[m]   org.awaitility:awaitility ............................. 4.0.3 -> 4.1.1
+[[1;34mINFO[m]   org.codehaus.janino:janino ............................ 3.1.2 -> 3.1.6
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-client ........................ 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-repository-http ............... 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-repository-sail ............... 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-sail-inferencer ............... 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-sail-memory ................... 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-sail-nativerdf ................ 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.eclipse.rdf4j:rdf4j-shacl ......................... 3.6.1 -> 3.7.4
+[[1;34mINFO[m]   org.hibernate.validator:hibernate-validator-annotation-processor ...
+[[1;34mINFO[m]                                               6.1.6.Final -> 7.0.1.Final
+[[1;34mINFO[m]   org.locationtech.jts:jts-core ....................... 1.17.1 -> 1.18.2
+[[1;34mINFO[m]   org.locationtech.jts.io:jts-io-common ............... 1.17.1 -> 1.18.2
+[[1;34mINFO[m]   org.mockito:mockito-core ............................. 3.6.28 -> 4.1.0
+[[1;34mINFO[m]   org.mongodb:mongodb-driver-sync ....................... 4.2.2 -> 4.4.0
+[[1;34mINFO[m]   org.reflections:reflections ......................... 0.9.12 -> 0.10.2
+[[1;34mINFO[m]   org.simplejavamail:simple-java-mail ................... 6.5.2 -> 6.6.1
+[[1;34mINFO[m]   org.slf4j:slf4j-api ................................. 1.7.30 -> 1.7.32
+[[1;34mINFO[m] 
+[[1;34mINFO[m] No dependencies in Plugin Dependencies have newer versions.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mversions-maven-plugin:2.7:display-plugin-updates[m [1m(default)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] All plugins with a version specified are using the latest versions.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] All plugins have a version specified.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Project inherits minimum Maven version as: 3.5
+[[1;34mINFO[m] Plugins require minimum Maven version of: null
+[[1;34mINFO[m] 
+[[1;34mINFO[m] No plugins require a newer version of Maven than specified by the pom.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:resources[m [1m(default-resources)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 0 resource
+[[1;34mINFO[m] Copying 0 resource
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.1.0:flatten[m [1m(flatten)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Generating flattened POM of project org.opensilex:hl-services:jar:BUILD-SNAPSHOT...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.1:compile[m [1m(default-compile)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Changes detected - recompiling the module!
+[[1;34mINFO[m] Compiling 2 source files to /home/heinrich/opensilex-dev/hl-services/target/classes
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mexec-maven-plugin:3.0.0:java[m [1m(default)[m @ [36mhl-services[0;1m ---[m
+24 nov. 2021;15:31:28.113 [org.opensilex.utils.SwaggerAPIGenerator.main()] INFO  org.opensilex.core.CoreModule - Invalidate ontology cache
+24 nov. 2021;15:31:28.119 [org.opensilex.utils.SwaggerAPIGenerator.main()] INFO  org.opensilex.core.CoreModule - Ontology cache invalidated with success
+24 nov. 2021;15:31:28.119 [org.opensilex.utils.SwaggerAPIGenerator.main()] INFO  org.opensilex.core.CoreModule - Populating ontology cache
+24 nov. 2021;15:31:28.122 [org.opensilex.utils.SwaggerAPIGenerator.main()] INFO  org.opensilex.core.CoreModule - Ontology cache loaded with success. Duration: 2 ms
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mopensilex-swagger-codegen-maven-plugin:BUILD-SNAPSHOT:generate[m [1m(default)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Swagger file doesn't exists, code generation skipped: /home/heinrich/opensilex-dev/hl-services/front/src/lib/swagger.json
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mserviceloader-maven-plugin:1.1.0:generate[m [1m(opensilex-standard-services)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Scanning generated classes for implementations...
+[[1;34mINFO[m] Generating service file /home/heinrich/opensilex-dev/hl-services/target/classes/META-INF/services/org.opensilex.OpenSilexModule
+[[1;34mINFO[m]   + org.opensilex.services.HlServicesModule
+[[1;34mINFO[m] Generating service file /home/heinrich/opensilex-dev/hl-services/target/classes/META-INF/services/org.opensilex.cli.OpenSilexCommand
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mserviceloader-maven-plugin:1.1.0:generate[m [1m(opensilex-sparql-services)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Scanning generated classes for implementations...
+[[1;34mINFO[m] Generating service file /home/heinrich/opensilex-dev/hl-services/target/classes/META-INF/services/org.opensilex.sparql.deserializer.SPARQLDeserializer
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mserviceloader-maven-plugin:1.1.0:generate[m [1m(opensilex-vue-types-services)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Scanning generated classes for implementations...
+[[1;34mINFO[m] Generating service file /home/heinrich/opensilex-dev/hl-services/target/classes/META-INF/services/org.opensilex.front.vueOwlExtension.types.VueOntologyType
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mfrontend-maven-plugin:1.10.0:yarn[m [1m(build-typescript-definition)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Skipping execution.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mfrontend-maven-plugin:1.10.0:yarn[m [1m(build Vue application)[m @ [36mhl-services[0;1m ---[m
+[[1;34mINFO[m] Running 'yarn run build' in /home/heinrich/opensilex-dev/hl-services/front
+[[1;34mINFO[m] yarn run v1.19.2
+[[1;34mINFO[m] $ vue-cli-service build --target lib --formats commonjs,umd-min src/index.ts --mode production
+[[1;34mINFO[m] 
+[[1;34mINFO[m] -  Building for production as library (commonjs,umd-min)...
+[[1;34mINFO[m] Starting type checking service...
+[[1;34mINFO[m] Using 1 worker with 2048MB memory limit
+[[1;34mINFO[m] Starting type checking service...
+[[1;34mINFO[m] Using 1 worker with 2048MB memory limit
+[[1;34mINFO[m]  ERROR  Failed to compile with 2 errors15:31:35
+[[1;34mINFO[m] 
+[[1;34mINFO[m] These relative modules were not found:
+[[1;34mINFO[m] 
+[[1;34mINFO[m] * ./lang/sinfonia-en.json in ./src/index.ts
+[[1;34mINFO[m] * ./lang/sinfonia-fr.json in ./src/index.ts
+[[1;34mINFO[m]  ERROR  Failed to compile with 2 errors15:31:36
+[[1;34mINFO[m] 
+[[1;34mINFO[m] These relative modules were not found:
+[[1;34mINFO[m] 
+[[1;34mINFO[m] * ./lang/sinfonia-en.json in ./src/index.ts
+[[1;34mINFO[m] * ./lang/sinfonia-fr.json in ./src/index.ts
+[[1;34mINFO[m]  ERROR  Build failed with errors.
+[[1;34mINFO[m] error Command failed with exit code 1.
+[[1;34mINFO[m] error Command failed with exit code 1.info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Summary for opensilex BUILD-SNAPSHOT:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] hl-services ........................................ [1;31mFAILURE[m [ 19.210 s]
+[[1;34mINFO[m] opensilex .......................................... [1;33mSKIPPED[m
+[[1;34mINFO[m] opensilex-dev-tools ................................ [1;33mSKIPPED[m
+[[1;34mINFO[m] opensilex-release .................................. [1;33mSKIPPED[m
+[[1;34mINFO[m] opensilex-doc ...................................... [1;33mSKIPPED[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;31mBUILD FAILURE[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  19.901 s
+[[1;34mINFO[m] Finished at: 2021-11-24T15:31:36+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;31mERROR[m] Failed to execute goal [32mcom.github.eirslett:frontend-maven-plugin:1.10.0:yarn[m [1m(build Vue application)[m on project [36mhl-services[m: [1;31mFailed to run task[m: 'yarn run build' failed. org.apache.commons.exec.ExecuteException: Process exited with an error: 1 (Exit value: 1) -> [1m[Help 1][m
+[1;31morg.apache.maven.lifecycle.LifecycleExecutionException[m: [1;31mFailed to execute goal [32mcom.github.eirslett:frontend-maven-plugin:1.10.0:yarn[m [1m(build Vue application)[m on project [36mhl-services[m: [1;31mFailed to run task[m[m
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:215[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:156[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:148[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:117[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:81[m)
+    [1mat[m org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build ([1mSingleThreadedBuilder.java:56[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleStarter.execute ([1mLifecycleStarter.java:128[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:305[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:192[m)
+    [1mat[m org.apache.maven.DefaultMaven.execute ([1mDefaultMaven.java:105[m)
+    [1mat[m org.apache.maven.cli.MavenCli.execute ([1mMavenCli.java:956[m)
+    [1mat[m org.apache.maven.cli.MavenCli.doMain ([1mMavenCli.java:288[m)
+    [1mat[m org.apache.maven.cli.MavenCli.main ([1mMavenCli.java:192[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 ([1mNative Method[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke ([1mNativeMethodAccessorImpl.java:62[m)
+    [1mat[m jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke ([1mDelegatingMethodAccessorImpl.java:43[m)
+    [1mat[m java.lang.reflect.Method.invoke ([1mMethod.java:566[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced ([1mLauncher.java:289[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launch ([1mLauncher.java:229[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode ([1mLauncher.java:415[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.main ([1mLauncher.java:356[m)
+[1mCaused by[m: org.apache.maven.plugin.MojoFailureException: [1;31mFailed to run task[m
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.AbstractFrontendMojo.execute ([1mAbstractFrontendMojo.java:100[m)
+    [1mat[m org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo ([1mDefaultBuildPluginManager.java:137[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:210[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:156[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:148[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:117[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:81[m)
+    [1mat[m org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build ([1mSingleThreadedBuilder.java:56[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleStarter.execute ([1mLifecycleStarter.java:128[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:305[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:192[m)
+    [1mat[m org.apache.maven.DefaultMaven.execute ([1mDefaultMaven.java:105[m)
+    [1mat[m org.apache.maven.cli.MavenCli.execute ([1mMavenCli.java:956[m)
+    [1mat[m org.apache.maven.cli.MavenCli.doMain ([1mMavenCli.java:288[m)
+    [1mat[m org.apache.maven.cli.MavenCli.main ([1mMavenCli.java:192[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 ([1mNative Method[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke ([1mNativeMethodAccessorImpl.java:62[m)
+    [1mat[m jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke ([1mDelegatingMethodAccessorImpl.java:43[m)
+    [1mat[m java.lang.reflect.Method.invoke ([1mMethod.java:566[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced ([1mLauncher.java:289[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launch ([1mLauncher.java:229[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode ([1mLauncher.java:415[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.main ([1mLauncher.java:356[m)
+[1mCaused by[m: com.github.eirslett.maven.plugins.frontend.lib.TaskRunnerException: [1;31m'yarn run build' failed.[m
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.YarnTaskExecutor.execute ([1mYarnTaskExecutor.java:64[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.YarnMojo.execute ([1mYarnMojo.java:65[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.AbstractFrontendMojo.execute ([1mAbstractFrontendMojo.java:94[m)
+    [1mat[m org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo ([1mDefaultBuildPluginManager.java:137[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:210[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:156[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:148[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:117[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:81[m)
+    [1mat[m org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build ([1mSingleThreadedBuilder.java:56[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleStarter.execute ([1mLifecycleStarter.java:128[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:305[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:192[m)
+    [1mat[m org.apache.maven.DefaultMaven.execute ([1mDefaultMaven.java:105[m)
+    [1mat[m org.apache.maven.cli.MavenCli.execute ([1mMavenCli.java:956[m)
+    [1mat[m org.apache.maven.cli.MavenCli.doMain ([1mMavenCli.java:288[m)
+    [1mat[m org.apache.maven.cli.MavenCli.main ([1mMavenCli.java:192[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 ([1mNative Method[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke ([1mNativeMethodAccessorImpl.java:62[m)
+    [1mat[m jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke ([1mDelegatingMethodAccessorImpl.java:43[m)
+    [1mat[m java.lang.reflect.Method.invoke ([1mMethod.java:566[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced ([1mLauncher.java:289[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launch ([1mLauncher.java:229[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode ([1mLauncher.java:415[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.main ([1mLauncher.java:356[m)
+[1mCaused by[m: com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutionException: [1;31morg.apache.commons.exec.ExecuteException: Process exited with an error: 1 (Exit value: 1)[m
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutor.execute ([1mProcessExecutor.java:82[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutor.executeAndRedirectOutput ([1mProcessExecutor.java:64[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.YarnExecutor.executeAndRedirectOutput ([1mYarnExecutor.java:28[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.YarnTaskExecutor.execute ([1mYarnTaskExecutor.java:58[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.YarnMojo.execute ([1mYarnMojo.java:65[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.AbstractFrontendMojo.execute ([1mAbstractFrontendMojo.java:94[m)
+    [1mat[m org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo ([1mDefaultBuildPluginManager.java:137[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:210[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:156[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:148[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:117[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:81[m)
+    [1mat[m org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build ([1mSingleThreadedBuilder.java:56[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleStarter.execute ([1mLifecycleStarter.java:128[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:305[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:192[m)
+    [1mat[m org.apache.maven.DefaultMaven.execute ([1mDefaultMaven.java:105[m)
+    [1mat[m org.apache.maven.cli.MavenCli.execute ([1mMavenCli.java:956[m)
+    [1mat[m org.apache.maven.cli.MavenCli.doMain ([1mMavenCli.java:288[m)
+    [1mat[m org.apache.maven.cli.MavenCli.main ([1mMavenCli.java:192[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 ([1mNative Method[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke ([1mNativeMethodAccessorImpl.java:62[m)
+    [1mat[m jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke ([1mDelegatingMethodAccessorImpl.java:43[m)
+    [1mat[m java.lang.reflect.Method.invoke ([1mMethod.java:566[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced ([1mLauncher.java:289[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launch ([1mLauncher.java:229[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode ([1mLauncher.java:415[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.main ([1mLauncher.java:356[m)
+[1mCaused by[m: org.apache.commons.exec.ExecuteException: [1;31mProcess exited with an error: 1 (Exit value: 1)[m
+    [1mat[m org.apache.commons.exec.DefaultExecutor.executeInternal ([1mDefaultExecutor.java:404[m)
+    [1mat[m org.apache.commons.exec.DefaultExecutor.execute ([1mDefaultExecutor.java:166[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutor.execute ([1mProcessExecutor.java:74[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.ProcessExecutor.executeAndRedirectOutput ([1mProcessExecutor.java:64[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.YarnExecutor.executeAndRedirectOutput ([1mYarnExecutor.java:28[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.lib.YarnTaskExecutor.execute ([1mYarnTaskExecutor.java:58[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.YarnMojo.execute ([1mYarnMojo.java:65[m)
+    [1mat[m com.github.eirslett.maven.plugins.frontend.mojo.AbstractFrontendMojo.execute ([1mAbstractFrontendMojo.java:94[m)
+    [1mat[m org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo ([1mDefaultBuildPluginManager.java:137[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:210[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:156[m)
+    [1mat[m org.apache.maven.lifecycle.internal.MojoExecutor.execute ([1mMojoExecutor.java:148[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:117[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject ([1mLifecycleModuleBuilder.java:81[m)
+    [1mat[m org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build ([1mSingleThreadedBuilder.java:56[m)
+    [1mat[m org.apache.maven.lifecycle.internal.LifecycleStarter.execute ([1mLifecycleStarter.java:128[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:305[m)
+    [1mat[m org.apache.maven.DefaultMaven.doExecute ([1mDefaultMaven.java:192[m)
+    [1mat[m org.apache.maven.DefaultMaven.execute ([1mDefaultMaven.java:105[m)
+    [1mat[m org.apache.maven.cli.MavenCli.execute ([1mMavenCli.java:956[m)
+    [1mat[m org.apache.maven.cli.MavenCli.doMain ([1mMavenCli.java:288[m)
+    [1mat[m org.apache.maven.cli.MavenCli.main ([1mMavenCli.java:192[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 ([1mNative Method[m)
+    [1mat[m jdk.internal.reflect.NativeMethodAccessorImpl.invoke ([1mNativeMethodAccessorImpl.java:62[m)
+    [1mat[m jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke ([1mDelegatingMethodAccessorImpl.java:43[m)
+    [1mat[m java.lang.reflect.Method.invoke ([1mMethod.java:566[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced ([1mLauncher.java:289[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.launch ([1mLauncher.java:229[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode ([1mLauncher.java:415[m)
+    [1mat[m org.codehaus.plexus.classworlds.launcher.Launcher.main ([1mLauncher.java:356[m)
+[[1;31mERROR[m] 
+[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
+[[1;31mERROR[m] 
+[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
+[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

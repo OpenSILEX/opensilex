@@ -66,7 +66,7 @@ import org.opensilex.core.event.dal.move.MoveModel;
         groupId = HlServicesAPI.CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_ID,
         groupLabelKey = HlServicesAPI.CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_LABEL_KEY
 )
-public class HlServicesAPI extends OpenSilexModule implements APIExtension {
+public class HlServicesAPI {
 
     public static final String CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_ID = "High Level Services";
     public static final String CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_LABEL_KEY = "credential-groups.hl-services";
@@ -87,10 +87,10 @@ public class HlServicesAPI extends OpenSilexModule implements APIExtension {
     @Path("{uri}/environmental_data")
 //    @Path("/core/scientific_objects/{uri}/environmental_data")
 //    @Api(ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
-//    @ApiCredentialGroup(
-//            groupId = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID,
-//            groupLabelKey = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY
-//    )
+    @ApiCredential(
+            credentialId = HlServicesAPI.CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_ID,
+            credentialLabelKey = HlServicesAPI.CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_LABEL_KEY
+    )
     @ApiOperation(value = "Retrieve the environmental data of a scientific object, following the move event sequence over various facilities")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "ALL NOT WELL")
@@ -109,7 +109,10 @@ public class HlServicesAPI extends OpenSilexModule implements APIExtension {
         ScientificObjectModel scientificObject = soDAO.getObjectByURI(objectURI, sparql.getDefaultGraphURI(ScientificObjectModel.class), null);
         MoveModel moveEvent = moveDAO.getLastMoveAfter(objectURI, null);
         LocalDate creationDate = scientificObject.getCreationDate();
-        Instant destructionDate = scientificObject.getDestructionDate().atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant destructionDate = null;
+        if (Objects.nonNull(scientificObject.getDestructionDate())) {
+                    destructionDate = scientificObject.getDestructionDate().atStartOfDay().toInstant(ZoneOffset.UTC);
+        }
         ArrayList<DeviceModel> devices = new ArrayList<>();
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();

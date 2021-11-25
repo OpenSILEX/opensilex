@@ -41,7 +41,7 @@ import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@ServiceDefaultDefinition(config = MongoDBConfig.class)
+    @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);

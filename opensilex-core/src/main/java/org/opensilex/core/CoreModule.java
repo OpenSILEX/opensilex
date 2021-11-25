@@ -147,7 +147,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     private void insertDefaultProvenance() throws Exception {
 
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 

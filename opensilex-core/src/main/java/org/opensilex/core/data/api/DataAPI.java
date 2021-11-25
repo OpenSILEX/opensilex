@@ -739,8 +739,8 @@ public class DataAPI {
         Map<URI, URI> variableTypes = new HashMap<>();
         Set<URI> variableURIs = new HashSet<>();
         Set<URI> notFoundedVariableURIs = new HashSet<>();
-        Set<URI> objectURIs = new HashSet<>();
-        Set<URI> notFoundedObjectURIs = new HashSet<>();
+        Set<URI> targetURIs = new HashSet<>();
+        Set<URI> notFoundedTargetURIs = new HashSet<>();
         Set<URI> provenanceURIs = new HashSet<>();
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
         Set<URI> expURIs = new HashSet<>();
@@ -764,12 +764,12 @@ public class DataAPI {
                 }
             }
 
-            //check objects uri
+            //check targets uri
             if (data.getTarget() != null) {
-                if (!objectURIs.contains(data.getTarget())) {
-                    objectURIs.add(data.getTarget());
+                if (!targetURIs.contains(data.getTarget())) {
+                    targetURIs.add(data.getTarget());
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        notFoundedObjectURIs.add(data.getTarget()); 
+                        notFoundedTargetURIs.add(data.getTarget()); 
                     }
                 }
             }
@@ -805,8 +805,8 @@ public class DataAPI {
         if (!notFoundedVariableURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));// NOSQL Exception ? come from sparql request
         }
-        if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs)); // NOSQL Exception ? come from sparql request
+        if (!notFoundedTargetURIs.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedTargetURIs)); // NOSQL Exception ? come from sparql request
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
             throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs)); 
@@ -1106,7 +1106,7 @@ public class DataAPI {
     }
     
     private final String expHeader = "experiment";
-    private final String soHeader = "target";
+    private final String targetHeader = "target";
     private final String dateHeader = "date";
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
@@ -1114,9 +1114,9 @@ public class DataAPI {
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {       
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        Map<String, SPARQLNamedResourceModel> nameURIScientificObjects = new HashMap<>();
-        List<String> notExistingObjects = new ArrayList<>();
-        List<String> duplicatedObjects = new ArrayList<>();
+        Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
+        List<String> notExistingTargets = new ArrayList<>();
+        List<String> duplicatedTargets = new ArrayList<>();
         
         ExperimentDAO xpDAO = new ExperimentDAO(sparql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
@@ -1155,8 +1155,8 @@ public class DataAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && !headers.contains(soHeader) && !hasDevice) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + soHeader));
+            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !hasDevice) {
+                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader));
             }  
             
             // 1. check variables
@@ -1171,7 +1171,7 @@ public class DataAPI {
                         csvValidation.addEmptyHeader(i+1);
                     } else {                       
                     
-                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(soHeader) 
+                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader)
                             || header.equalsIgnoreCase(rawdataHeader)) {
                             headerByIndex.put(i, header);                            
@@ -1232,9 +1232,9 @@ public class DataAPI {
                                 duplicatedExperiments,
                                 nameURIExperiments,                                
                                 ontologyDAO,
-                                notExistingObjects,
-                                duplicatedObjects,
-                                nameURIScientificObjects,
+                                notExistingTargets,
+                                duplicatedTargets,
+                                nameURITargets,
                                 deviceDAO,
                                 notExistingDevices,
                                 duplicatedDevices,
@@ -1276,9 +1276,9 @@ public class DataAPI {
             List<String> duplicatedExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
             OntologyDAO ontologyDAO, 
-            List<String> notExistingObjects,
-            List<String> duplicatedObjects,
-            Map<String, SPARQLNamedResourceModel> nameURIScientificObjects,
+            List<String> notExistingTargets,
+            List<String> duplicatedTargets,
+            Map<String, SPARQLNamedResourceModel> nameURITargets,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevices,
             List<String> duplicatedDevices,
@@ -1293,9 +1293,9 @@ public class DataAPI {
         
         List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
-        SPARQLNamedResourceModel object = null;
+        SPARQLNamedResourceModel target = null;
         
-        Boolean missingTargetOrDevice = true;
+        Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
         
@@ -1314,7 +1314,7 @@ public class DataAPI {
                         if (duplicatedExperiments.contains(expNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addDuplicateExperimentError(cell);
-                            duplicatedExperiments.add(expNameOrUri); // ? 
+                            validRow = false;
                             break;
                         }
                         
@@ -1325,11 +1325,15 @@ public class DataAPI {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                                 csvValidation.addDuplicateExperimentError(cell);
                                 duplicatedExperiments.add(expNameOrUri);
+                                validRow = false;
                                 break;
                             }
                         }
                         if (exp == null) {
-                            notExistingExperiments.add(expNameOrUri);
+                            if (!notExistingExperiments.contains(expNameOrUri)) {
+                                notExistingExperiments.add(expNameOrUri);
+                            }
+                           
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addInvalidExperimentError(cell);
                             validRow = false;
@@ -1344,46 +1348,51 @@ public class DataAPI {
                 }
                 
             
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
-                //check object column
-                String objectNameOrUri = values[colIndex];   
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(targetHeader)) {
+                //check target column
+                String targetNameOrUri = values[colIndex];   
                 targetColIndex = colIndex;
                 
-                if (StringUtils.isEmpty(objectNameOrUri)) {
-                   if (hasDevice) {
-                       missingTargetOrDevice = false;
-                   }
+                if (StringUtils.isEmpty(targetNameOrUri)) {
+                   if (!hasDevice) {
+                       missingTargetOrDevice = true;
+                       validRow = false;
+                       break;
+                    }
                 } else {
-                    missingTargetOrDevice = false;
-                    if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
-                        object = nameURIScientificObjects.get(objectNameOrUri);
+                    if (nameURITargets.containsKey(targetNameOrUri)) {
+                        target = nameURITargets.get(targetNameOrUri);
                     } else {
                         // test not in uri list
-                        if (duplicatedObjects.contains(objectNameOrUri)) {
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        if (duplicatedTargets.contains(targetNameOrUri)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                             csvValidation.addDuplicateObjectError(cell);
-                            duplicatedObjects.add(objectNameOrUri);
+                            validRow = false;
                             break;
                         }
                         
-                        if (!notExistingObjects.contains(objectNameOrUri)) {
+                        if (!notExistingTargets.contains(targetNameOrUri)) {
                             try {
-                                object = getTargetByNameOrURI(ontologyDAO, objectNameOrUri);
+                                target = getTargetByNameOrURI(ontologyDAO, targetNameOrUri);
                             } catch (DuplicateNameException e) {
-                                CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                                 csvValidation.addDuplicateObjectError(cell);
-                                duplicatedObjects.add(objectNameOrUri);
+                                duplicatedTargets.add(targetNameOrUri);
+                                validRow = false;
                                 break;
                             }                            
                         }
-                        if (object == null) {
-                            notExistingObjects.add(objectNameOrUri);
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        if (target == null) {
+                            if (!notExistingTargets.contains(targetNameOrUri)) {
+                               notExistingTargets.add(targetNameOrUri);   
+                            }
+                           
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                             csvValidation.addInvalidObjectError(cell);
                             validRow = false;
                             break;
                         } else {
-                            nameURIScientificObjects.put(objectNameOrUri, object);
+                            nameURITargets.put(targetNameOrUri, target);
                         }
                     }
                 }
@@ -1405,12 +1414,13 @@ public class DataAPI {
                 deviceColIndex = colIndex;
                 
                 // test in uri list
-                if (StringUtils.isEmpty(deviceNameOrUri)) {
-                    if (hasDevice) {
-                        missingTargetOrDevice = false;
+                if (!StringUtils.isEmpty(deviceNameOrUri)) {
+                    if (!hasDevice) {
+                        missingTargetOrDevice = true;
+                        validRow = false;
+                        break;
                     }                    
                 } else {
-                    missingTargetOrDevice = false;
                      if (nameURIDevices.containsKey(deviceNameOrUri)) {                    
                         device = nameURIDevices.get(deviceNameOrUri);                    
                     } else {
@@ -1418,7 +1428,7 @@ public class DataAPI {
                         if (duplicatedDevices.contains(deviceNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addDuplicateDeviceError(cell);
-                            duplicatedDevices.add(deviceNameOrUri);
+                            validRow = false;
                             break;
                         }
                         
@@ -1429,53 +1439,49 @@ public class DataAPI {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                                 csvValidation.addDuplicateDeviceError(cell);
                                 duplicatedDevices.add(deviceNameOrUri);
+                                validRow = false;
                                 break;
                             }
                         }
                         if (device == null) {
-                            notExistingDevices.add(deviceNameOrUri);
+                            if (!notExistingDevices.contains(deviceNameOrUri)) {
+                                notExistingDevices.add(deviceNameOrUri);
+                            }
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addInvalidDeviceError(cell);
                             validRow = false;
                             break;
                         } else {
-                            if( rootDeviceTypes == null) {
-                                rootDeviceTypes = getRootDeviceTypes();
-                            }
-                            URI rootType = rootDeviceTypes.get(device.getType());
-                            device.setType(rootType);
                             nameURIDevices.put(deviceNameOrUri, device);                        
                         }
                     }    
-                }
-                
-                if (device != null) {
-                    ProvEntityModel agent = new ProvEntityModel();
-                    agent.setUri(device.getUri());
-                    agent.setType(device.getType());
-                    agents.add(agent);
-                    
                 }
                
             } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
-                    if (!StringUtils.isEmpty(values[colIndex])){
+                    if (!StringUtils.isEmpty(values[colIndex])){ // and if it' s null ???
 
                         String variable = headerByIndex.get(colIndex);
                         URI varURI = URI.create(variable);
                        
                         
                         //Check variable to device association: if not add it after data create 
-                        
                         if (device != null) {
                             if (!variableIsAssociatedToDevice(device, varURI)) {
                                 csvValidation.addVariableToDevice(device.getUri(), varURI);
                             }
-
+                            if( rootDeviceTypes == null) {
+                                rootDeviceTypes = getRootDeviceTypes();
+                            }
+                            URI rootType = rootDeviceTypes.get(device.getType());
+                            device.setType(rootType);
+                            ProvEntityModel agent = new ProvEntityModel();
+                            agent.setUri(device.getUri());
+                            agent.setType(device.getType());
+                            agents.add(agent);
+                    
                         } else if(hasDevice){
-                            missingTargetOrDevice = false;
-                            
                             if(!checkedVariables.contains(variable) ) { // do it one time but write the error on each row if there is one
                                 List<DeviceModel> devices = new ArrayList<>();
                                 List<DeviceModel> linkedDevice = new ArrayList<>();
@@ -1511,8 +1517,10 @@ public class DataAPI {
                                                 agent.setUri(device.getUri());
                                                 variableCheckedAgent.put(variable, agent);
                                             } else {
-                                                missingTargetOrDevice = true;
-                                                validRow = false;
+                                                if(target == null){
+                                                    missingTargetOrDevice = true;
+                                                    validRow = false;
+                                                }
                                                 
                                             }
 
@@ -1547,6 +1555,7 @@ public class DataAPI {
                                      CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
                                      csvValidation.addDeviceChoiceAmbiguityError(cell);
                                      validRow = false;
+                                     break;
                                 }
                                 
                             }
@@ -1574,8 +1583,8 @@ public class DataAPI {
                             dataModel.setOffset(parsedDateTimeMongo.getOffset());
                             dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
 
-                            if (object != null) {
-                                dataModel.setTarget(object.getUri());
+                            if (target != null) {
+                                dataModel.setTarget(target.getUri());
                             }                        
                             dataModel.setProvenance(provenanceModel);
                             dataModel.setVariable(varURI);
@@ -1587,11 +1596,11 @@ public class DataAPI {
                             }
 
                             // check for duplicate data
-                            URI objectUri = null;
-                            if (object != null) {
-                                objectUri = object.getUri();
+                            URI targetUri = null;
+                            if (target != null) {
+                                targetUri = target.getUri();
                             }
-                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), objectUri);
+                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri);
                             if (!duplicateDataByIndex.contains(importDataIndex)) { 
                                 duplicateDataByIndex.add(importDataIndex);
                             }else{

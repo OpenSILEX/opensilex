@@ -38,7 +38,7 @@
         <opensilex-InfrastructureFacilitiesView
             v-if="selectedFacilities"
 
-            :withActions="true"
+            :withActions="facilitiesActions"
             @onUpdate="refresh"
             @onCreate="refresh"
             @onDelete="refresh"
@@ -132,6 +132,10 @@ export default class InfrastructureView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get facilitiesActions(): boolean {
+    return !!this.selectedOrganization;
   }
 
   get selectedFacilities(): Array<NamedResourceDTOInfrastructureFacilityModel> {

@@ -1,3 +1,12 @@
+/*******************************************************************************
+ *                         GraphAndCollectionMigration.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2021.
+ * Last Modification: 25/11/2021 11:45
+ * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+
 package org.opensilex.dev.migration;
 
 import com.mongodb.MongoNamespace;
@@ -18,6 +27,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.update.OpenSilexModuleUpdate;
+import org.opensilex.update.OpensilexModuleUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,34 +66,36 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
     }
 
     @Override
-    public void execute() throws Exception {
+    public void execute() throws OpensilexModuleUpdateException {
 
         Objects.requireNonNull(opensilex);
 
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        SPARQLConfig sparqlConfig = opensilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
 
         MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
-        MongoDBConfig mongoDBConfig = opensilex.loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoDBConfig mongoDBConfig = opensilex.loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
 
         try {
+            SPARQLConfig sparqlConfig = opensilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
             sparql.startTransaction();
             mongodb.startTransaction();
-
             executeSparqlMigration(sparql, sparqlConfig);
             executeMongoMigration(mongodb, mongoDBConfig);
 
             sparql.commitTransaction();
             mongodb.commitTransaction();
+            LOGGER.info("SPARQL graphs migration [OK]");
+            LOGGER.info("MongoDB collections migration [OK]");
+
         } catch (Exception e) {
             try {
                 sparql.rollbackTransaction();
                 mongodb.rollbackTransaction();
-                throw e;
+                throw new OpensilexModuleUpdateException(this,e);
             } catch (Exception e2) {
-                LOGGER.error("Error on rollback {}", e2.getMessage());
-                throw e2;
+                throw new OpensilexModuleUpdateException(this,e2);
             }
         }
     }
@@ -108,15 +120,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             throw new IllegalArgumentException("Empty baseURI property for sparql config");
         }
 
-        String baseUri;
-        if (sparqlConfig.baseURI().endsWith("/")) {
-            // remove last character
-            baseUri = StringUtils.chop(sparqlConfig.baseURI());
-        } else {
-            baseUri = sparqlConfig.baseURI();
-        }
-
-        return renameQuery.replace(SPARQL_BASE_URI_TEMPLATE, baseUri);
+        return renameQuery.replace(SPARQL_BASE_URI_TEMPLATE, sparqlConfig.baseURI());
     }
 
     private void executeSparqlMigration(SPARQLService sparql, SPARQLConfig sparqlConfig) throws IOException, SPARQLException {
@@ -125,7 +129,6 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         LOGGER.debug("Executing SPARQL UPDATE query : {}{}", System.getProperty("line.separator"), templatedMoveQuery);
 
         sparql.executeUpdateQuery(templatedMoveQuery);
-        LOGGER.debug("SPARQL graph migration [OK]");
     }
 
     private void executeMongoMigration(MongoDBService mongodb, MongoDBConfig mongoDBConfig) {

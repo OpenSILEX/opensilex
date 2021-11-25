@@ -1139,8 +1139,10 @@ public class DataAPI {
             }
         }
         
-        Map<String,ProvEntityModel> variableCheckedAgent =  new HashMap<>();
+        Map<String,DeviceModel> variableCheckedProvDevice =  new HashMap<>();
         List<String> checkedVariables = new ArrayList<>();
+        
+        Map<String, DeviceModel> variableCheckedDevice = new HashMap<>();
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -1221,7 +1223,8 @@ public class DataAPI {
                         validateCSVRow = validateCSVRow(
                                 provenance,
                                 hasDevice,
-                                variableCheckedAgent,
+                                variableCheckedDevice,
+                                variableCheckedProvDevice,
                                 checkedVariables,
                                 values, 
                                 rowIndex, 
@@ -1265,7 +1268,8 @@ public class DataAPI {
     private boolean validateCSVRow(
             ProvenanceModel provenance, 
             Boolean hasDevice,
-            Map<String,ProvEntityModel> variableCheckedAgent,
+            Map<String, DeviceModel> variableCheckedDevice,
+            Map<String,DeviceModel> variableCheckedProvDevice,
             List<String> checkedVariables,
             String[] values, 
             int rowIndex, 
@@ -1299,7 +1303,7 @@ public class DataAPI {
         int targetColIndex = 0;
         int deviceColIndex = 0;
         
-        DeviceModel device = null;  
+        DeviceModel device = null; 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {  
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
@@ -1414,8 +1418,8 @@ public class DataAPI {
                 deviceColIndex = colIndex;
                 
                 // test in uri list
-                if (!StringUtils.isEmpty(deviceNameOrUri)) {
-                    if (!hasDevice) {
+                if (StringUtils.isEmpty(deviceNameOrUri)) {
+                    if (!hasDevice && target == null) {
                         missingTargetOrDevice = true;
                         validRow = false;
                         break;
@@ -1464,36 +1468,30 @@ public class DataAPI {
 
                         String variable = headerByIndex.get(colIndex);
                         URI varURI = URI.create(variable);
-                       
-                        
-                        //Check variable to device association: if not add it after data create 
+                   
                         if (device != null) {
-                            if (!variableIsAssociatedToDevice(device, varURI)) {
-                                csvValidation.addVariableToDevice(device.getUri(), varURI);
+                            boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == device ;
+                            if(!variableIsChecked){
+                                if (!variableIsAssociatedToDevice(device, varURI)) {
+                                    csvValidation.addVariableToDevice(device.getUri(), varURI);
+                                }
+                                variableCheckedDevice.put(variable, device);
                             }
-                            if( rootDeviceTypes == null) {
-                                rootDeviceTypes = getRootDeviceTypes();
-                            }
-                            URI rootType = rootDeviceTypes.get(device.getType());
-                            device.setType(rootType);
-                            ProvEntityModel agent = new ProvEntityModel();
-                            agent.setUri(device.getUri());
-                            agent.setType(device.getType());
-                            agents.add(agent);
                     
-                        } else if(hasDevice){
-                            if(!checkedVariables.contains(variable) ) { // do it one time but write the error on each row if there is one
+                        } else if (hasDevice) {
+                            if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
                                 List<DeviceModel> devices = new ArrayList<>();
                                 List<DeviceModel> linkedDevice = new ArrayList<>();
+                                DeviceModel dev = null;
                                 for (AgentModel agent : provenance.getAgents()) {
                                     if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
-                                        device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                        if (device != null) {
+                                        dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                        if (dev != null) {
 
-                                            if (variableIsAssociatedToDevice(device, varURI)) {
-                                                linkedDevice.add(device) ;
+                                            if (variableIsAssociatedToDevice(dev, varURI)) {
+                                                linkedDevice.add(dev) ;
                                             }
-                                            devices.add(device);
+                                            devices.add(dev);
                                         }
                                     }
                                 }
@@ -1506,16 +1504,9 @@ public class DataAPI {
                                             validRow = false;
                                         } else {
                                             if (!devices.isEmpty()) {
-                                                device = devices.get(0);
-                                                csvValidation.addVariableToDevice(device.getUri(), varURI);
-                                                ProvEntityModel agent = new ProvEntityModel();
-                                                if (rootDeviceTypes == null) {
-                                                    rootDeviceTypes = getRootDeviceTypes();
-                                                }
-                                                URI rootType = rootDeviceTypes.get(device.getType());
-                                                agent.setType(rootType);
-                                                agent.setUri(device.getUri());
-                                                variableCheckedAgent.put(variable, agent);
+                                                csvValidation.addVariableToDevice(devices.get(0).getUri(), varURI);
+                                               
+                                                variableCheckedProvDevice.put(variable, devices.get(0));
                                             } else {
                                                 if(target == null){
                                                     missingTargetOrDevice = true;
@@ -1528,15 +1519,7 @@ public class DataAPI {
                                         break;
                                     case 1:
 
-                                        device = linkedDevice.get(0);
-                                        ProvEntityModel agent = new ProvEntityModel();
-                                        if (rootDeviceTypes == null) {
-                                            rootDeviceTypes = getRootDeviceTypes();
-                                        }
-                                        URI rootType = rootDeviceTypes.get(device.getType());
-                                        agent.setType(rootType);
-                                        agent.setUri(device.getUri());
-                                        variableCheckedAgent.put(variable, agent);
+                                        variableCheckedProvDevice.put(variable, linkedDevice.get(0));
                                         break;
                                         
                                     default :
@@ -1551,7 +1534,7 @@ public class DataAPI {
                                 
                             
                             } else {
-                                if(!variableCheckedAgent.containsKey(variable)){
+                                if(!variableCheckedProvDevice.containsKey(variable)){
                                      CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
                                      csvValidation.addDeviceChoiceAmbiguityError(cell);
                                      validRow = false;
@@ -1562,21 +1545,39 @@ public class DataAPI {
                             
                         }
                         
-                        if(validRow){
+                        if (validRow) {
                             DataModel dataModel = new DataModel();
                             DataProvenanceModel provenanceModel = new DataProvenanceModel();
                             provenanceModel.setUri(provenance.getUri());
+                            
                             if (!experiments.isEmpty()) {                    
                                 provenanceModel.setExperiments(experiments);
                             }
-                            if (!agents.isEmpty()) {
+                            
+                            if (device != null) {
+                                ProvEntityModel agent = new ProvEntityModel();
+                                if (rootDeviceTypes == null) {
+                                    rootDeviceTypes = getRootDeviceTypes();
+                                }
+                                URI rootType = rootDeviceTypes.get(device.getType());
+                                agent.setType(rootType);
+                                agent.setUri(device.getUri());
+                                agents.add(agent);
                                 provenanceModel.setProvWasAssociatedWith(agents);
-                            }
-                            if (variableCheckedAgent.containsKey(variable) && hasDevice) {
                                 
-                                List<ProvEntityModel> agentsInProvenance = new ArrayList<>();
-                                agentsInProvenance.add(variableCheckedAgent.get(variable));
-                                provenanceModel.setProvWasAssociatedWith(agentsInProvenance);
+                            } else if (hasDevice ) {
+                                
+                                DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                                ProvEntityModel agent = new ProvEntityModel();
+                                if (rootDeviceTypes == null) {
+                                    rootDeviceTypes = getRootDeviceTypes();
+                                }
+                                URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                                agent.setType(rootType);
+                                agent.setUri(checkedDevice.getUri());
+                                agents.add(agent);
+                                provenanceModel.setProvWasAssociatedWith(agents);
+                                
                             }
 
                             dataModel.setDate(parsedDateTimeMongo.getInstant());
@@ -1603,7 +1604,7 @@ public class DataAPI {
                             ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri);
                             if (!duplicateDataByIndex.contains(importDataIndex)) { 
                                 duplicateDataByIndex.add(importDataIndex);
-                            }else{
+                            } else {
                                 String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
                                 CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
                                 csvValidation.addDuplicatedDataError(duplicateCell);

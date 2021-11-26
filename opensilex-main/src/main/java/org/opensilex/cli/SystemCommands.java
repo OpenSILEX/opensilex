@@ -16,9 +16,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.stream.StreamSupport;
+import java.util.Iterator;
 
 /**
  * This class regroup all commands concerning OpenSilex system operations.
@@ -32,7 +33,8 @@ import java.util.stream.StreamSupport;
 )
 public class SystemCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
-    private static final String MODULE_NOT_FOUND_ERROR = "[ERROR] Module [%s] could not be loaded";
+    private static final String CLASS_NOT_LOADED_ERROR = "[ERROR] Class [%s] could not be loaded from any OpenSILEX module";
+    private static final String RUN_UPDATE_COMMAND_NAME = "run-update";
 
     /**
      * Class Logger.
@@ -40,62 +42,67 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
     private static final  Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 
 
+     private OpenSilexModuleUpdate loadModuleUpdate(String updateClassPath) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+
+        if(StringUtils.isEmpty(updateClassPath)){
+            throw new IllegalArgumentException("Null or empty <updateClassName>. Provide a non-empty value for this parameter");
+        }
+
+        // try to load class from current ClassLoader
+        Class<?> updateClass = null;
+        try {
+            updateClass = Class.forName(updateClassPath);
+        }catch (ClassNotFoundException e){
+
+            // try to load Class from one OpenSILEX module
+            Iterator<OpenSilexModule> moduleIt = getOpenSilex().getModules().iterator();
+            while(updateClass == null && moduleIt.hasNext()){
+                OpenSilexModule module = moduleIt.next();
+                try{
+                    // try to load class from the OpenSILEX module ClassLoader
+                    ClassLoader moduleClassLoader = module.getClass().getClassLoader();
+                    updateClass = moduleClassLoader.loadClass(updateClassPath);
+                }catch (ClassNotFoundException e2){
+                    // just try to load class from another module
+                }
+            }
+            if(updateClass == null){
+                throw new ClassNotFoundException(String.format(CLASS_NOT_LOADED_ERROR,updateClassPath));
+            }
+        }
+        OpenSilexModuleUpdate update = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
+        update.setOpensilex(getOpenSilex());
+        return update;
+    }
+
     /**
      * Command to execute an update.
      *
      * @param updateClassPath absolute java path to {@link OpenSilexModuleUpdate} {@link Class} instance (e.g : org.opensilex.MyUpdateClass)
-     * @param moduleName name of an {@link OpenSilexModule} which contains the update class (optional)
      * @throws OpensilexCommandException If some error is encountered during update execution
      */
 
     @Command(
-            name = "run-update",
+            name = RUN_UPDATE_COMMAND_NAME,
             header = "Execute opensilex module specific update",
             hidden = true
     )
     public void runUpdate(
-            @Parameters(description = "Update class to execute") String updateClassPath,
-            @CommandLine.Option(names = {"--module"}, description = "Name of a opensilex module which contains the update class", defaultValue = "") String moduleName
+            @Parameters(description = "Update class to execute") String updateClassPath
     ) throws OpensilexCommandException {
 
         try {
-            if(StringUtils.isEmpty(updateClassPath)){
-                throw new IllegalArgumentException("Null or empty <updateClassName>. Provide a non-empty value for this parameter");
-            }
+            OpenSilexModuleUpdate update = loadModuleUpdate(updateClassPath);
 
-            Class<?> updateClass;
-
-            // try to load class from current ClassLoader
-            if (StringUtils.isEmpty(moduleName)) {
-                updateClass = Class.forName(updateClassPath);
-            } else {
-                // search module matching with the given module name, throw exception if no module is found
-                OpenSilexModule matchingModule = StreamSupport.stream(getOpenSilex().getModules().spliterator(), false)  // transform iterable to stream
-                        .filter(module -> module.getClass().getSimpleName().equals(moduleName))
-                        .findAny()
-                        .orElseThrow(() -> new IllegalArgumentException(String.format(MODULE_NOT_FOUND_ERROR, moduleName)));
-
-                // load class from the given OpenSILEX module ClassLoader
-                ClassLoader moduleClassLoader = matchingModule.getClass().getClassLoader();
-                updateClass = moduleClassLoader.loadClass(updateClassPath);
-            }
-
-            OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
-            updateInstance.setOpensilex(getOpenSilex());
-
-            LOGGER.info("[{}] Running update {description: {}, date: {} }",
-                    updateClassPath,
-                    updateInstance.getDescription(),
-                    updateInstance.getDate()
-            );
-
+            LOGGER.info("[{}] Running update {description: {}, date: {} }", updateClassPath, update.getDescription(), update.getDate());
             Instant begin = Instant.now();
-            updateInstance.execute();
+            update.execute();
+
             long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
             LOGGER.info("[{}] Update run [OK] {time: {} ms}", updateClassPath, elapsedMs);
 
         } catch (Exception e) {
-            throw new OpensilexCommandException(this, "run-update", e);
+            throw new OpensilexCommandException(this, RUN_UPDATE_COMMAND_NAME, e);
         }
     }
 

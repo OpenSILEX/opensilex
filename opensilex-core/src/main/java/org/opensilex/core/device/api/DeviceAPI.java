@@ -75,12 +75,15 @@ import static org.opensilex.core.data.api.DataAPI.*;
  */
 
 @Api(DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID)
-@Path("/core/devices")
+@Path(DeviceAPI.PATH)
 @ApiCredentialGroup(
         groupId = DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID,
         groupLabelKey = DeviceAPI.CREDENTIAL_DEVICE_GROUP_LABEL_KEY
 )
 public class DeviceAPI {
+
+    public static final String PATH = "/core/devices";
+
     public static final String CREDENTIAL_DEVICE_GROUP_ID = "Devices";
     public static final String CREDENTIAL_DEVICE_GROUP_LABEL_KEY = "credential-groups.device";
 
@@ -94,7 +97,6 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
-
 
     public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
 
@@ -297,7 +299,7 @@ public class DeviceAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted", response = ErrorResponse.class),
+            @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", response = ErrorResponse.class),
             @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
     public Response deleteDevice(

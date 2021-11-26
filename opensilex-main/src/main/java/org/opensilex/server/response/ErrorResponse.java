@@ -8,6 +8,7 @@ package org.opensilex.server.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import javax.ws.rs.core.Response.Status;
 
 /**
@@ -43,6 +44,10 @@ import javax.ws.rs.core.Response.Status;
  */
 @JsonInclude(Include.NON_NULL)
 public class ErrorResponse extends JsonResponse<ErrorDTO> {
+
+    public ErrorResponse(){
+
+    }
 
     /**
      * Constructor.

@@ -8,18 +8,7 @@ package org.opensilex.core.provenance.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import static junit.framework.TestCase.assertEquals;
 import org.bson.Document;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -28,6 +17,19 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -45,14 +47,14 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     
     public String devicePath = "/core/devices";
     private static URI deviceURI;
-    private static final URI deviceType = URI.create(Oeso.SensingDevice.toString());
+    private static final URI sensingDeviceType = URI.create(Oeso.SensingDevice.toString());
     private static final URI activityType = URI.create(Oeso.ImageAnalysis.toString());
     public static boolean dbInit = false;
     
     public DeviceCreationDTO getCreationDeviceDTO() throws URISyntaxException {
         DeviceCreationDTO device = new DeviceCreationDTO();
         device.setName("sensor01");
-        device.setType(deviceType);
+        device.setType(sensingDeviceType);
         return device;
     }
     
@@ -93,7 +95,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     }    
     
     public ProvenanceCreationDTO getCreationProvDTO() {
-        return getCreationProvDTO(activityType, deviceType);
+        return getCreationProvDTO(activityType, sensingDeviceType);
     }
     
     @Test
@@ -104,7 +106,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());
         
         // test that creating a provenance is not possible if activity type doesn't exist
-        ProvenanceCreationDTO prov = getCreationProvDTO(new URI(Oeso.Accession.toString()), deviceType);
+        ProvenanceCreationDTO prov = getCreationProvDTO(new URI(Oeso.Accession.toString()), sensingDeviceType);
         final Response postResult1 = getJsonPostResponse(target(createPath), prov);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult1.getStatus());
 

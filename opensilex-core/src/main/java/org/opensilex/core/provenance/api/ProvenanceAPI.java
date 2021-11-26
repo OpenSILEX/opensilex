@@ -6,39 +6,8 @@
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.naming.NamingException;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
@@ -59,16 +28,26 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.naming.NamingException;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Provenance API
@@ -76,12 +55,14 @@ import org.opensilex.utils.OrderBy;
  * @author Alice Boizet
  */
 @Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
-@Path("/core/provenances")
+@Path(ProvenanceAPI.PATH)
 @ApiCredentialGroup(
         groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
         groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
 )
 public class ProvenanceAPI {
+
+    public static final String PATH = "/core/provenances";
 
     public static final String PROVENANCE_ACTIVITY_TYPE = "http://www.w3.org/ns/prov#Activity";
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";

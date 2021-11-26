@@ -586,14 +586,29 @@ public class DataAPI {
         }
     }
     
-    // return the good DataModel
-    private DataModel checkVariablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data) throws Exception{
+    // return the  DataModel with Device on DataProvenance if not
+    private DataModel checkVariablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
-
-        if (!checkOnProvWasAssociatedWithDataProvenance(data, deviceDAO)) {
-           DeviceModel device = checkOnAgentsProvenance(deviceDAO, provDAO, data);
+        URI provenanceURI = data.getProvenance().getUri();
+        DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO); 
+        if (deviceFromProvWasAssociated == null) {
+            
+            DeviceModel device = null;
+            if(provenanceToDevice.containsKey(provenanceURI)) {
+               device = provenanceToDevice.get(provenanceURI);
+               //check
+            } else {
+                device = checkAndReturnDeviceFromProvenance(deviceDAO, provDAO, data);
+                provenanceToDevice.put(provenanceURI,device);
+            }
+          
             if (device != null) {
+                
+                if (!variableIsAssociatedToDevice(device, data.getVariable())) {
+                    addVariableToDevice(device.getUri(),data.getVariable()); // add variable/device
+                }
+                
                 if (rootDeviceTypes == null) {
                     rootDeviceTypes = getRootDeviceTypes();
                 }
@@ -608,19 +623,32 @@ public class DataAPI {
 
                 ProvEntityModel agent = new ProvEntityModel();
                 agent.setUri(device.getUri());
-                URI rootType = rootDeviceTypes.get(device.getType());
+                URI rootType = rootDeviceTypes.get(device.getType()); 
                 agent.setType(rootType);
                 agents.add(agent);
                 provMod.setProvWasAssociatedWith(agents);
                 data.setProvenance(provMod);
+            } else {
+                if(!hasTarget) {
+                   throw new NoDeviceOrTargetToDataException();
+                }
             } 
            
+        } else {
+            boolean deviceIsChecked = variableCheckedDevice.containsKey(deviceFromProvWasAssociated) && variableCheckedDevice.get(deviceFromProvWasAssociated) == data.getVariable() ;
+            if(!deviceIsChecked){
+                if (!variableIsAssociatedToDevice(deviceFromProvWasAssociated, data.getVariable())) {
+                    addVariableToDevice(deviceFromProvWasAssociated.getUri(),data.getVariable()); // add variable/device
+                }
+                variableCheckedDevice.put(deviceFromProvWasAssociated,data.getVariable());
+                
+            }
         }
         return data;
     }
     
-    // check if the variable is associated to 
-    private DeviceModel checkOnAgentsProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
+    // check and return Device from Provenance if no ambiguity
+    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
 
        ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
 
@@ -650,17 +678,13 @@ public class DataAPI {
                     } else {
                         if (!devices.isEmpty()) {
                             deviceToReturn = devices.get(0);
-                            addVariableToDevice(deviceToReturn.getUri(),data.getVariable()); // add variable/device
                         }
-                        deviceToReturn = devices.get(0);
-                        addVariableToDevice(deviceToReturn.getUri(),data.getVariable()); // add variable/device
                     }
                     break;
                 case 1:
                     deviceToReturn = linkedDevices.get(0);
                     break;
                 default :
-                    //witch device to choose ?
                     throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
 
             }    
@@ -681,32 +705,30 @@ public class DataAPI {
         
     }
     
-    // check if there is a Device in provWasAssociatedWith
-    // if yes check if he is associated with the variable ( if no create an association, if yes exit)
-    // if no device in provWasAssociatedWith continue the check outside function 
-    private boolean checkOnProvWasAssociatedWithDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
-       boolean deviceIsChecked = false;
+    // check and return Device from Data Provenance if no ambiguity
+    private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
+        
+        
        boolean deviceIsLinked = false; // to test if there are 2 devices
+       URI agentToReturn = null;
+       DeviceModel device = null;
        if(data.getProvenance().getProvWasAssociatedWith()!= null && !data.getProvenance().getProvWasAssociatedWith().isEmpty()){
-             for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
-                     if (agent.getType() != null && deviceDAO.isDeviceType(agent.getType())) {
-                            if(!deviceIsLinked) {
-                                deviceIsLinked = true;
-                                DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                if (!variableIsAssociatedToDevice(device, data.getVariable())) {
-                                    addVariableToDevice(device.getUri(),data.getVariable()); // add variable/device
-                                }
-                                deviceIsChecked = true;
-                                
-                            } else {
-                                  throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
-                            }
-                          
-                     }
-              
-             }
-         }
-         return deviceIsChecked;
+            for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
+                    if (agent.getType() != null && deviceDAO.isDeviceType(agent.getType())) {
+                        if(!deviceIsLinked) {
+                            deviceIsLinked = true;
+                            agentToReturn = agent.getUri();
+
+                        } else {
+                            throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
+                        }
+                    }
+            }
+        }
+        if(agentToReturn != null){
+           device = deviceDAO.getDeviceByURI(agentToReturn, user);
+        }
+        return device;
     }
      
     public Map<URI, List<URI>> getVariablesToDevices() {
@@ -745,10 +767,14 @@ public class DataAPI {
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
         Set<URI> expURIs = new HashSet<>();
         Set<URI> notFoundedExpURIs = new HashSet<>();
-
+        Map<DeviceModel, URI> variableCheckedDevice =  new HashMap<>();
+        Map<URI, DeviceModel> provenanceToDevice =  new HashMap<>();
+        
         List<DataModel> validData = new ArrayList<>();
         int dataIndex = 0;
         for (DataModel data : dataList) {
+            
+            boolean hasTarget = false;
             // check variable uri and datatype
             if (data.getVariable() != null) {
                 if (!variableURIs.contains(data.getVariable())) {
@@ -766,9 +792,11 @@ public class DataAPI {
 
             //check targets uri
             if (data.getTarget() != null) {
+                hasTarget = true ;
                 if (!targetURIs.contains(data.getTarget())) {
                     targetURIs.add(data.getTarget());
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
+                        hasTarget = false ;
                         notFoundedTargetURIs.add(data.getTarget()); 
                     }
                 }
@@ -780,10 +808,11 @@ public class DataAPI {
                 provenanceURIs.add(data.getProvenance().getUri());
                 if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
-                } else {
-                    data = checkVariablesDeviceAssociation(provDAO, data);
-                }
+                } 
 
+            }
+            if(!notFoundedProvenanceURIs.contains(data.getProvenance().getUri())){
+                data = checkVariablesDeviceAssociation(provDAO, data, hasTarget, variableCheckedDevice, provenanceToDevice);
             }
 
             // check experiments uri

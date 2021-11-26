@@ -8,21 +8,19 @@ package org.opensilex.core.provenance.dal;
 
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import java.io.IOException;
+import org.bson.Document;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import javax.naming.NamingException;
-import org.bson.Document;
-import org.opensilex.nosql.exceptions.NoSQLBadPersistenceManagerException;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
-        
+
 /**
  * Provenance DAO
  * @author Alice Boizet
@@ -41,14 +39,13 @@ public class ProvenanceDAO {
 
     public ProvenanceModel create(ProvenanceModel provenance) throws Exception {
 
-        nosql.getDatabase().getCollection(PROVENANCE_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
+        nosql.getDatabase().getCollection(PROVENANCE_COLLECTION_NAME).createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
         nosql.create(provenance, ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, PROVENANCE_PREFIX);
         return provenance;
     }
     
     public ProvenanceModel get(URI uri) throws NoSQLInvalidURIException {
-        ProvenanceModel provenance = nosql.findByURI(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
-        return provenance;
+        return nosql.findByURI(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
     }
     
     public int count(
@@ -62,8 +59,7 @@ public class ProvenanceDAO {
     ) throws Exception {
         
         Document filter = searchFilter(uris, name, description, activityType, activityUri, agentType, agentURI);
-        int count = nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
-        return count;
+        return nosql.count(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter );
     }
     
     public Document searchFilter(
@@ -75,12 +71,13 @@ public class ProvenanceDAO {
             URI agentType, 
             URI agentURI
     ) throws Exception {
-          Document filter = new Document();
+
+        Document filter = new Document();
         
         if (uris != null && !uris.isEmpty()) {
             Document inFilter = new Document(); 
             inFilter.put("$in", uris);
-            filter.put("uri", inFilter);
+            filter.put(MongoModel.URI_FIELD, inFilter);
         }
         
         if (name != null) {
@@ -133,14 +130,13 @@ public class ProvenanceDAO {
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize
-    ) throws NamingException, IOException, Exception {
+    ) throws Exception {
         
         Document filter = searchFilter(uris, name, description, activityType, activityUri, agentType, agentURI);
-        ListWithPagination<ProvenanceModel> provenances = nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, orderByList, page, pageSize);
-        return provenances; 
+        return nosql.searchWithPagination(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
     
-    public void delete(URI uri) throws NamingException, NoSQLInvalidURIException, NoSQLBadPersistenceManagerException {
+    public void delete(URI uri) throws NoSQLInvalidURIException {
         nosql.delete(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
     }
     
@@ -149,37 +145,34 @@ public class ProvenanceDAO {
         return model;
     }
 
-    public boolean provenanceExists(URI uri) throws NamingException, IOException{  
+    public boolean provenanceExists(URI uri){
         return nosql.uriExists(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME, uri);
     }
     
-    public boolean provenanceListExists(Set<URI> uris) throws NamingException, IOException {  
-        Document filter = new Document("uri", new Document("$in",uris));
-        Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
+    public boolean provenanceListExists(Set<URI> uris) {
+        Document filter = new Document(MongoModel.URI_FIELD, new Document("$in",uris));
+        Set<URI> foundedURIs = nosql.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
         return (foundedURIs.size() == uris.size());
     }
     
-    public Set<URI> getExistingProvenanceURIs(Set<URI> uris) throws NamingException, IOException {  
-        Document filter = new Document("uri", new Document("$in",uris));
-        Set foundedURIs = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
-        return foundedURIs;
+    public Set<URI> getExistingProvenanceURIs(Set<URI> uris){
+        Document filter = new Document(MongoModel.URI_FIELD, new Document("$in",uris));
+        return nosql.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
     }
     
-    public Set<URI> getNotExistingProvenanceURIs(Set<URI> uris) throws NamingException, IOException {
+    public Set<URI> getNotExistingProvenanceURIs(Set<URI> uris){
         Set<URI> existingURIs = getExistingProvenanceURIs(uris);
         uris.removeAll(existingURIs);
         return uris;
     }
     
-    public List<ProvenanceModel> getListByURIs(List<URI> uris) throws NamingException, IOException, NoSQLInvalidUriListException{  
-        List<ProvenanceModel> findByURIs = nosql.findByURIs(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME,uris);
-        return findByURIs;
+    public List<ProvenanceModel> getListByURIs(List<URI> uris) {
+        return nosql.findByURIs(ProvenanceModel.class, PROVENANCE_COLLECTION_NAME,uris);
     }
     
     public Set<URI> getProvenancesURIsByAgents(List<URI> agents) {
         Document filter = new Document("agents.uri", new Document("$in",agents));
-        Set uris = nosql.distinct("uri", URI.class, PROVENANCE_COLLECTION_NAME, filter);
-        return uris;
+        return nosql.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
     }
 
 }

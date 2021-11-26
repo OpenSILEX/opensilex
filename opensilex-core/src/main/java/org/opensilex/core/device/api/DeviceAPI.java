@@ -31,10 +31,12 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
@@ -63,13 +65,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.format.DateTimeParseException;
 
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
 
 /**
  *
@@ -96,6 +94,9 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
+
+
+    public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
 
     @CurrentUser
     UserModel currentUser;
@@ -127,7 +128,7 @@ public class DeviceAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-        ErrorResponse error = check(deviceDTO, deviceDAO);
+        ErrorResponse error = check(deviceDTO);
         if (error != null) {
             return error.getResponse();
         }
@@ -295,29 +296,26 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted", response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
     public Response deleteDevice(
             @ApiParam(value = "Device URI", example = DEVICE_EXAMPLE_URI, required = true)
-            @PathParam("uri")
-            @NotNull
-            @ValidURI URI uri
+            @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        
+
         try {
-             dao.delete(uri, currentUser);
-        } catch (ForbiddenURIAccessException e){
-              return new ErrorResponse(Response.Status.BAD_REQUEST, "LINKED_DEVICE_ERROR", e.getMessage())
-                    .getResponse(); 
+            dao.delete(uri, currentUser);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+        } catch (ForbiddenURIAccessException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, LINKED_DEVICE_ERROR, e.getMessage()).getResponse();
         }
-       
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        
     }
     
-    private ErrorResponse check(DeviceDTO deviceDTO, DeviceDAO deviceDAO) throws Exception {
+    private ErrorResponse check(DeviceDTO deviceDTO) throws Exception {
 
         // check if device URI already exists
         if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
@@ -829,13 +827,13 @@ public class DeviceAPI {
             }
         }
 
-        ListWithPagination<DataFileModel> resultList = dao.searchFilesByDevice(
-                uri,
+        ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 currentUser,
-                rdfType,
+                rdfType == null ? null : Collections.singletonList(rdfType),
                 experiments,
                 objects,
                 provenances,
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 metadataFilter,

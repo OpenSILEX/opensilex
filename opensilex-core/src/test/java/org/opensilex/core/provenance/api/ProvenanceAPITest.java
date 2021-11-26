@@ -44,16 +44,15 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public String deletePath = path + "/{uri}";
     
     public String devicePath = "/core/devices";
-    public String deviceUriPath = devicePath + "/{uri}";
     private static URI deviceURI;
-    private URI deviceType = URI.create(Oeso.SensingDevice.toString());
-    private URI activityType = URI.create(Oeso.ImageAnalysis.toString());
+    private static final URI deviceType = URI.create(Oeso.SensingDevice.toString());
+    private static final URI activityType = URI.create(Oeso.ImageAnalysis.toString());
     public static boolean dbInit = false;
     
     public DeviceCreationDTO getCreationDeviceDTO() throws URISyntaxException {
         DeviceCreationDTO device = new DeviceCreationDTO();
         device.setName("sensor01");
-        device.setType(new URI(deviceType.toString()));
+        device.setType(deviceType);
         return device;
     }
     
@@ -67,31 +66,33 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     }
     
     
-    public ProvenanceCreationDTO getCreationProvDTO(URI activityType, URI agentType) throws URISyntaxException {
+    public ProvenanceCreationDTO getCreationProvDTO(URI activityType, URI agentType) {
         ProvenanceCreationDTO provDTO = new ProvenanceCreationDTO();
         provDTO.setName("label");
         provDTO.setDescription("comment");
         
         ActivityCreationDTO activity = new ActivityCreationDTO();
         activity.setRdfType(activityType);
-        ArrayList activities = new ArrayList();
+        ArrayList<ActivityCreationDTO> activities = new ArrayList<>();
         activities.add(activity);
         provDTO.setActivity(activities);
         
         AgentModel agent = new AgentModel();
         agent.setRdfType(agentType);
         agent.setUri(deviceURI);
+
         Document settings = new Document();
         settings.put("param", "value");
         agent.setSettings(settings);
-        ArrayList agents = new ArrayList();
+
+        ArrayList<AgentModel> agents = new ArrayList<>();
         agents.add(agent);
         provDTO.setAgents(agents);
         
         return provDTO;        
     }    
     
-    public ProvenanceCreationDTO getCreationProvDTO() throws URISyntaxException {
+    public ProvenanceCreationDTO getCreationProvDTO() {
         return getCreationProvDTO(activityType, deviceType);
     }
     
@@ -179,7 +180,6 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
 
         ProvenanceCreationDTO creationDTO = getCreationProvDTO();
         final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
-        URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {

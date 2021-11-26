@@ -24,6 +24,8 @@ public class DataFileModel extends DataModel {
     String filename;
     String path;
 
+    public static final String RDF_TYPE_FIELD = "rdfType";
+
     public URI getRdfType() {
         return rdfType;
     }

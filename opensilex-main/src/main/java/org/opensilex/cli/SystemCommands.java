@@ -36,15 +36,12 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
     private static final String CLASS_NOT_LOADED_ERROR = "[ERROR] Class [%s] could not be loaded from any OpenSILEX module";
     private static final String RUN_UPDATE_COMMAND_NAME = "run-update";
 
-    /**
-     * Class Logger.
-     */
-    private static final  Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
 
 
-     private OpenSilexModuleUpdate loadModuleUpdate(String updateClassPath) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private OpenSilexModuleUpdate loadModuleUpdate(String updateClassPath) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 
-        if(StringUtils.isEmpty(updateClassPath)){
+        if (StringUtils.isEmpty(updateClassPath)) {
             throw new IllegalArgumentException("Null or empty <updateClassName>. Provide a non-empty value for this parameter");
         }
 
@@ -52,22 +49,24 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         Class<?> updateClass = null;
         try {
             updateClass = Class.forName(updateClassPath);
-        }catch (ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
 
             // try to load Class from one OpenSILEX module
             Iterator<OpenSilexModule> moduleIt = getOpenSilex().getModules().iterator();
-            while(updateClass == null && moduleIt.hasNext()){
+            while (updateClass == null && moduleIt.hasNext()) {
+
+                // try to load class from the OpenSILEX module ClassLoader
                 OpenSilexModule module = moduleIt.next();
-                try{
-                    // try to load class from the OpenSILEX module ClassLoader
-                    ClassLoader moduleClassLoader = module.getClass().getClassLoader();
+                ClassLoader moduleClassLoader = module.getClass().getClassLoader();
+
+                try {
                     updateClass = moduleClassLoader.loadClass(updateClassPath);
-                }catch (ClassNotFoundException e2){
+                } catch (ClassNotFoundException e2) {
                     // just try to load class from another module
                 }
             }
-            if(updateClass == null){
-                throw new ClassNotFoundException(String.format(CLASS_NOT_LOADED_ERROR,updateClassPath));
+            if (updateClass == null) {
+                throw new ClassNotFoundException(String.format(CLASS_NOT_LOADED_ERROR, updateClassPath));
             }
         }
         OpenSilexModuleUpdate update = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
@@ -102,10 +101,9 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
             LOGGER.info("[{}] Update run [OK] {time: {} ms}", updateClassPath, elapsedMs);
 
         } catch (Exception e) {
-            throw new OpensilexCommandException(this, RUN_UPDATE_COMMAND_NAME, e);
+            throw new OpensilexCommandException(this, e);
         }
     }
-
 
     /**
      * Install or re-install all modules content.
@@ -153,9 +151,9 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
      */
     public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{
-            "system",
-            "check",
-            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
+                "system",
+                "check",
+                "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
     }
 

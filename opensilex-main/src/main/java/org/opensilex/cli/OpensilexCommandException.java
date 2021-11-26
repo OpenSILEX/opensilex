@@ -18,8 +18,8 @@ public class OpensilexCommandException extends Exception{
         super(message, cause);
     }
 
-    public OpensilexCommandException(OpenSilexCommand command, String message, Throwable cause){
-        super("["+command.getClass().getName()+"] : "+message,cause);
+    public OpensilexCommandException(OpenSilexCommand command, Throwable cause){
+        super(command.getClass().getName(),cause);
     }
 
 }

@@ -10,7 +10,6 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.document.dal.DocumentModel;
@@ -485,9 +484,11 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+
     public void testFile(){
-        DataFileModel model = new DataFileModel();
+        // #TODO test file generation
     }
+
 
 
     @Test

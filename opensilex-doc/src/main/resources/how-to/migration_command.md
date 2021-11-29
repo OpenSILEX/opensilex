@@ -11,13 +11,7 @@ This document describe migration commands into OpenSILEX, the list of available 
 
 Opensilex provide a way to easily performs some update/migration operation by just executing commands.
 
-- Move to the directory which contains your OpenSILEX executable .jar file.
-
-```bash
-cd /opensilex-dev/opensilex-release/target/opensilex/
-```
-
-- Execute migration command
+- Move to the directory which contains your OpenSILEX executable .jar file. and execute migration command
 
 ```bash
 java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update <opensilex_command>
@@ -35,7 +29,7 @@ java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update <opensilex_c
 
 | Date       | Name                                                     | Description                                  | Usage                                                                     |
 |------------|---------------------------------------------------------|----------------------------------------------|---------------------------------------------------------------------------|
-| 2021/11/29 | org.opensilex.migration.GraphAndCollectionMigration | SPARQL graph and MongoDB collection renaming | system run-update org.opensilex.migration.GraphAndCollectionMigration |
+| 2021/11/29 |<b>org.opensilex.migration.GraphAndCollectionMigration</b> | SPARQL graph and MongoDB collection renaming | system run-update org.opensilex.migration.GraphAndCollectionMigration |
 |            |                                                         |                                              |                                                                           |
 |            |                                                         |                                              |                                                                           |
 

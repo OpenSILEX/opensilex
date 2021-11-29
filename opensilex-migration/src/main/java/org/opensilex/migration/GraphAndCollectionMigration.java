@@ -47,6 +47,9 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphAndCollectionMigration.class);
     private static final String SPARQL_BASE_URI_TEMPLATE = "__OPENSILEX_BASE_URI_TO_REPLACE__";
 
+    private static final String SPARQL_TEMPLATE_QUERY_FILE = "sparql_graph_rename_template.rq";
+    private static final String SPARQL_TEMPLATE_DIR = "migration";
+
     private OpenSilex opensilex;
 
     @Override
@@ -102,7 +105,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
     private String getTemplatedMoveQuery(SPARQLConfig sparqlConfig) throws IOException {
 
         // read file which contains templated SPARQL query
-        String filePath = Paths.get("migration", "sparql_graph_rename_template.rq").toString();
+        String filePath = Paths.get(SPARQL_TEMPLATE_DIR, SPARQL_TEMPLATE_QUERY_FILE).toString();
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath);
 
         if (inputStream == null) {

@@ -1,23 +1,31 @@
 //******************************************************************************
 //                          SystemCommands.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
-// Copyright © INRA 2019
+// Copyright © INRAE 2021
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.cli;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.update.OpenSilexModuleUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
-import org.opensilex.update.OpenSilexModuleUpdate;
-import picocli.CommandLine;
+
+import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Iterator;
 
 /**
  * This class regroup all commands concerning OpenSilex system operations.
  *
  * @author Vincent Migot
+ * @author rcolin
  */
 @Command(
         name = "system",
@@ -25,29 +33,76 @@ import picocli.CommandLine;
 )
 public class SystemCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
-    /**
-     * Class Logger.
-     */
-    private final static Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
+    private static final String CLASS_NOT_LOADED_ERROR = "[ERROR] Class [%s] could not be loaded from any OpenSILEX module";
+    private static final String RUN_UPDATE_COMMAND_NAME = "run-update";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemCommands.class);
+
+
+    private OpenSilexModuleUpdate loadModuleUpdate(String updateClassPath) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+
+        if (StringUtils.isEmpty(updateClassPath)) {
+            throw new IllegalArgumentException("Null or empty <updateClassName>. Provide a non-empty value for this parameter");
+        }
+
+        // try to load class from current ClassLoader
+        Class<?> updateClass = null;
+        try {
+            updateClass = Class.forName(updateClassPath);
+        } catch (ClassNotFoundException e) {
+
+            // try to load Class from one OpenSILEX module
+            Iterator<OpenSilexModule> moduleIt = getOpenSilex().getModules().iterator();
+            while (updateClass == null && moduleIt.hasNext()) {
+
+                // try to load class from the OpenSILEX module ClassLoader
+                OpenSilexModule module = moduleIt.next();
+                ClassLoader moduleClassLoader = module.getClass().getClassLoader();
+
+                try {
+                    updateClass = moduleClassLoader.loadClass(updateClassPath);
+                } catch (ClassNotFoundException e2) {
+                    // just try to load class from another module
+                }
+            }
+            if (updateClass == null) {
+                throw new ClassNotFoundException(String.format(CLASS_NOT_LOADED_ERROR, updateClassPath));
+            }
+        }
+        OpenSilexModuleUpdate update = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
+        update.setOpensilex(getOpenSilex());
+        return update;
+    }
 
     /**
      * Command to execute an update.
      *
-     * @param updateClassName Update class to execution.
-     * @throws Exception
+     * @param updateClassPath absolute java path to {@link OpenSilexModuleUpdate} {@link Class} instance (e.g : org.opensilex.MyUpdateClass)
+     * @throws OpensilexCommandException If some error is encountered during update execution
      */
+
     @Command(
-            name = "run-update",
+            name = RUN_UPDATE_COMMAND_NAME,
             header = "Execute opensilex module specific update",
             hidden = true
     )
-    @SuppressWarnings("unchecked")
     public void runUpdate(
-            @Parameters(description = "Update class to execute") String updateClassName
-    ) throws Exception {
-        Class<?> updateClass = Class.forName(updateClassName, true, OpenSilex.getClassLoader());
-        OpenSilexModuleUpdate updateInstance = (OpenSilexModuleUpdate) updateClass.getConstructor().newInstance();
-        updateInstance.execute();
+            @Parameters(description = "Update class to execute") String updateClassPath
+    ) throws OpensilexCommandException {
+
+        try {
+            OpenSilexModuleUpdate update = loadModuleUpdate(updateClassPath);
+
+            LOGGER.info("[{}] Running update {description: {}, date: {} }", updateClassPath, update.getDescription(), update.getDate());
+            Instant begin = Instant.now();
+            update.execute();
+
+            long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info("[{}] Update run [OK] {time: {} ms}", updateClassPath, elapsedMs);
+
+        } catch (Exception e) {
+            throw new OpensilexCommandException(this, e);
+        }
     }
 
     /**
@@ -96,9 +151,9 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
      */
     public static void main(String[] args) throws Exception {
         MainCommand.main(new String[]{
-            "system",
-            "check",
-            "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
+                "system",
+                "check",
+                "--" + OpenSilex.PROFILE_ID_ARG_KEY + "=" + OpenSilex.DEV_PROFILE_ID
         });
     }
 
@@ -115,6 +170,6 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         OpenSilex opensilex = getOpenSilex();
 
         LOGGER.debug("Actual expanded configuration");
-        System.out.print(opensilex.getExpandedYAMLConfig());
+        LOGGER.info(opensilex.getExpandedYAMLConfig());
     }
 }

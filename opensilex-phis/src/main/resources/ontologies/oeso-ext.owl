@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://www.opensilex.org/vocabulary/oeev#"
-     xml:base="http://www.opensilex.org/vocabulary/oeev"
+<rdf:RDF
+    xmlns="http://www.opensilex.org/vocabulary/oeso-ext#"
+         xml:base="http://www.opensilex.org/vocabulary/oeso-ext"
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -9,7 +10,7 @@
      xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:time="http://www.w3.org/2006/time#">
-    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso-ext">
         <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
         <rdfs:comment>INRA MISTEA
             Copyright © - INRA - 2014 - 2021

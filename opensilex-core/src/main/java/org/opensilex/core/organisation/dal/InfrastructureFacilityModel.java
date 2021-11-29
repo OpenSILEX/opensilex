@@ -17,10 +17,12 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Facility",
-        graph = "set/infrastructures",
+        graph = InfrastructureModel.GRAPH,
         prefix = "infra"
 )
 public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureFacilityModel> {
+
+    private static final String FACILITY = "facility";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -58,6 +60,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
                 .stream()
                 .map(InfrastructureModel::getUri)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String[] getInstancePathSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
+        return new String[]{
+                FACILITY,
+                instance.getName()
+        };
     }
 
 }

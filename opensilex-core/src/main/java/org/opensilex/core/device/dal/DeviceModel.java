@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -22,10 +24,13 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Device",
-        graph = "set/devices",
+        graph = DeviceModel.GRAPH,
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
+
+    public static final String GRAPH = "device";
+
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
@@ -153,5 +158,21 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public String getInstanceUriPath(SPARQLTreeModel<DeviceModel> instance) {
+
+        StringBuilder sb = new StringBuilder();
+        if(rdfTypeName != null){
+            sb.append(rdfTypeName.getDefaultValue().toLowerCase()).append("-");
+        }
+
+        if(instance.getName() != null){
+            sb.append(normalize(instance.getName()));
+        }else{
+            sb.append(RandomStringUtils.randomAlphabetic(8));
+        }
+        return sb.toString();
     }
 }

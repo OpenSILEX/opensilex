@@ -13,7 +13,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Method",
-        graph = "set/variables"
+        graph = VariableModel.GRAPH
 )
 public class MethodModel extends BaseVariableModel<MethodModel> {
 
@@ -26,9 +26,8 @@ public class MethodModel extends BaseVariableModel<MethodModel> {
     }
 
     @Override
-    public String[] getUriSegments(MethodModel instance) {
+    public String[] getInstancePathSegments(MethodModel instance) {
         return new String[]{
-            "variable",
             "method",
             instance.getName()
         };

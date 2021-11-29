@@ -41,31 +41,29 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Projections.excludeId;
 
 public class MoveEventDAO extends EventDAO<MoveModel> {
 
-
-    public final static String POSITION_ARRAY_FIELD = "targetPositions";
-    public final static String TARGET_FIELD = "target";
-
-    public final static String moveCollectionName = "Moves";
-    private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
+    public static final String POSITION_ARRAY_FIELD = "targetPositions";
+    public static final String TARGET_FIELD = "target";
+    public static final String MOVE_COLLECTION_NAME = "move";
 
     public static final Var fromNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.FROM_FIELD));
     public static final Var toNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(MoveModel.TO_FIELD));
-    private static final Triple moveFromTriple = new Triple(uriVar, Oeev.from.asNode(), fromVar);
+    private static final Var lastEndTimeStampVar = SPARQLQueryHelper.makeVar("last_end_ts");
     private static final Triple moveToTriple = new Triple(uriVar, Oeev.to.asNode(), toVar);
     private static final Triple moveTypeTriple = new Triple(uriVar, RDF.type.asNode(), Oeev.Move.asNode());
+    private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
+
+    private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
 
     public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
-        this.moveEventCollection = mongodb.getDatabase().getCollection(moveCollectionName, MoveEventNoSqlModel.class);
+        this.moveEventCollection = mongodb.getDatabase().getCollection(MOVE_COLLECTION_NAME, MoveEventNoSqlModel.class);
     }
 
     public final MongoCollection<MoveEventNoSqlModel> getMoveEventCollection() {
@@ -483,11 +481,6 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     public MoveModel getLastMoveEvent(URI concernedItem) throws Exception {
         return this.getLastMoveAfter(concernedItem, null);
     }
-
-    private final static Var lastEndTimeStampVar = SPARQLQueryHelper.makeVar("last_end_ts");
-
-    private final static TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
-
 
     public Map<URI, URI> getLastLocations(Stream<URI> targets, int size) throws Exception {
 

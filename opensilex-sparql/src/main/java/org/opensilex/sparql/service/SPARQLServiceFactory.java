@@ -36,9 +36,9 @@ import org.slf4j.LoggerFactory;
 @ServiceDefaultDefinition(implementation = RDF4JServiceFactory.class)
 public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLServiceFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLServiceFactory.class);
 
-    public SPARQLServiceFactory(ServiceConfig config) {
+    protected SPARQLServiceFactory(ServiceConfig config) {
         super(config);
     }
 
@@ -91,20 +91,21 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
                 String resourceNamespace = mapper.getResourceGraphNamespace();
                 String resourcePrefix = mapper.getResourceGraphPrefix();
                 if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                    SPARQLService.addPrefix(sparqlModule.getBaseURIAlias().toString() + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+                    SPARQLService.addPrefix(sparqlModule.getBaseURIAlias() + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
                 }
             });
 
             SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI());
 
             if (!StringUtils.isBlank(sparqlConfig.generationBaseURI())
-                    && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI().toString())
+                    && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI())
                     && !sparqlConfig.baseURIAlias().equals(sparqlConfig.generationBaseURIAlias())) {
+
                 SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());
             }
-            sparqlModule.getCustomPrefixes().forEach((prefix, uri) -> {
-                SPARQLService.addPrefix(prefix, uri.toString());
-            });
+            sparqlModule.getCustomPrefixes().forEach((prefix, uri) ->
+                SPARQLService.addPrefix(prefix, uri.toString())
+            );
 
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
@@ -119,12 +120,13 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
     }
 
+    @Override
     public void shutdown() {
         SPARQLService.clearPrefixes();
         URIDeserializer.clearPrefixes();
     }
 
-    public SPARQLClassObjectMapperIndex getMapperIndex() throws Exception {
+    public SPARQLClassObjectMapperIndex getMapperIndex() {
         return mapperIndex;
     }
 

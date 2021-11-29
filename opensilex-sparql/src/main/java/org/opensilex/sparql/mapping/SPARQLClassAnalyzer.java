@@ -7,38 +7,24 @@ package org.opensilex.sparql.mapping;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.opensilex.sparql.annotations.SPARQLIgnore;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.annotations.SPARQLResourceURI;
+import org.opensilex.sparql.annotations.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.sparql.annotations.SPARQLTypeRDF;
-import org.opensilex.sparql.annotations.SPARQLTypeRDFLabel;
+
+import java.lang.reflect.*;
+import java.net.URI;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  *
@@ -57,7 +43,7 @@ public final class SPARQLClassAnalyzer {
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
     private final Resource resource;
-    private final String graphSuffix;
+    private final String graph;
     private final String graphPrefix;
 
     private Field fieldURI;
@@ -139,9 +125,9 @@ public final class SPARQLClassAnalyzer {
             allowBlankNode = resourceAnnotation.allowBlankNode();
             LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
-                graphSuffix = resourceAnnotation.graph();
+                graph = resourceAnnotation.graph();
             } else {
-                graphSuffix = null;
+                graph = null;
             }
 
             if (!resourceAnnotation.prefix().isEmpty()) {
@@ -608,8 +594,8 @@ public final class SPARQLClassAnalyzer {
         return resource;
     }
 
-    public String getGraphSuffix() {
-        return graphSuffix;
+    public String getGraph() {
+        return graph;
     }
 
     public Field getFieldFromName(String fieldName) {

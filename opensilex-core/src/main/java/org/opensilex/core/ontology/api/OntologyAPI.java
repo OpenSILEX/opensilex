@@ -6,9 +6,9 @@
 package org.opensilex.core.ontology.api;
 
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -85,8 +85,10 @@ public class OntologyAPI {
     public static final String PROPERTY_UPDATE_MSG = "Update a RDF property";
     public static final String PARENT_URI_NOT_FOUND_MSG = "Parent URI not found";
 
+    public static final String PROPERTIES_GRAPH = SPARQLClassObjectMapper.DEFAULT_GRAPH_KEYWORD+"/properties";
+
     private Node getPropertyGraph() {
-        return SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI("properties"));
+        return SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI(PROPERTIES_GRAPH));
     }
 
 

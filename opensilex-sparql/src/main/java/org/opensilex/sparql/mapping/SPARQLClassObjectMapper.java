@@ -5,32 +5,15 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URI;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.expr.E_Str;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.utils.ClassUtils;
-import org.opensilex.utils.ThrowingConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.function.BiConsumer;
-
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
@@ -38,34 +21,51 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLLabel;
-
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.URIGenerator;
+import org.opensilex.uri.generation.URIGenerator;
+import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ThrowingBiConsumer;
+import org.opensilex.utils.ThrowingConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.*;
+import java.util.function.BiConsumer;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * @author vincent
  */
 public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLClassObjectMapper.class);
 
     private final Class<T> objectClass;
 
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
-    private final URI baseGraphURI;
-
-    private final URI generationPrefixURI;
+    private URI baseGraphURI;
+    private URI generationPrefixURI;
 
     private Constructor<T> constructor;
     protected SPARQLClassQueryBuilder classQueryBuilder;
     protected SPARQLClassAnalyzer classAnalizer;
+
+    /**
+     * Default keyword used for each {@link org.opensilex.sparql.model.SPARQLResourceModel} associated graph
+     */
+    public static final String DEFAULT_GRAPH_KEYWORD = "set";
 
     protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, URI generationPrefixURI, SPARQLClassObjectMapperIndex mapperIndex) {
         LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
@@ -89,10 +89,24 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
             LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
+
+            if (classAnalizer.getGraph() != null) {
+                URI classGraph = new URI(classAnalizer.getGraph());
+                if (classGraph.isAbsolute()) {
+                    generationPrefixURI = classGraph;
+                    baseGraphURI = classGraph;
+                }else{
+                    generationPrefixURI = new URI(generationPrefixURI+"/"+classGraph);
+                    baseGraphURI = new URI(baseGraphURI+DEFAULT_GRAPH_KEYWORD+"/"+ classGraph);
+                }
+            }else{
+                baseGraphURI = null;
+            }
+
         } catch (SPARQLInvalidClassDefinitionException ex) {
             throw ex;
-        } catch (Throwable t) {
-            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", t);
+        } catch (Exception ex) {
+            throw new SPARQLInvalidClassDefinitionException(objectClass, "Unexpected error while initializing SPARQL Mapping", ex);
         }
 
     }
@@ -268,20 +282,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     public URI getDefaultGraphURI() {
-        if (classAnalizer.getGraphSuffix() != null) {
-            try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
-                if (graphSuffixUri.isAbsolute()) {
-                    return graphSuffixUri;
-                }
-                String classGraphURI = baseGraphURI.resolve(classAnalizer.getGraphSuffix()).toString();
-                return new URI(classGraphURI);
-            } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
-            }
-        }
-
-        return null;
+        return baseGraphURI;
     }
 
     public Node getDefaultGraph() {
@@ -293,21 +294,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return null;
     }
 
-    public URI getDefaultGenerationURI() {
-        if (classAnalizer.getGraphSuffix() != null) {
-            try {
-                URI graphSuffixUri = new URI(classAnalizer.getGraphSuffix());
-                if (graphSuffixUri.isAbsolute()) {
-                    return graphSuffixUri;
-                }
-                String classGraphURI = generationPrefixURI.resolve(classAnalizer.getGraphSuffix()).toString();
-                return new URI(classGraphURI);
-            } catch (Exception ex) {
-                LOGGER.error("Invalid class suffix for: " + objectClass.getCanonicalName() + " - " + classAnalizer.getGraphSuffix(), ex);
-            }
-        }
-
-        return null;
+    public URI getGenerationPrefixURI() {
+        return generationPrefixURI;
     }
 
     public AskBuilder getAskBuilder(Node graph, String lang) throws Exception {
@@ -575,7 +563,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
                             if (propertyFieldURI != null) {
                                 if (!existingMap.containsKey(mapper)) {
-                                    existingMap.put(mapper, new HashSet());
+                                    existingMap.put(mapper, new HashSet<>());
                                 }
                                 existingMap.get(mapper).add(propertyFieldURI);
                             }
@@ -597,7 +585,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
                                 if (propertyFieldURI != null) {
                                     if (!existingMap.containsKey(mapper)) {
-                                        existingMap.put(mapper, new HashSet());
+                                        existingMap.put(mapper, new HashSet<>());
                                     }
                                     existingMap.get(mapper).add(propertyFieldURI);
                                 }

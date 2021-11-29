@@ -6,13 +6,39 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.mongodb.MongoBulkWriteException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
+import org.bson.Document;
+import org.opensilex.core.data.api.DataExportDTO;
+import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.utils.ExportDataIndex;
+import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
@@ -23,42 +49,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.bson.Document;
-import org.opensilex.core.data.api.DataExportDTO;
-import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.UnitModel;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
-import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.utils.OrderBy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  *
@@ -66,22 +57,21 @@ import org.slf4j.LoggerFactory;
  */
 public class DataDAO {
 
-    protected final URI RDFTYPE_VARIABLE;
-    private final URI RDFTYPE_SCIENTIFICOBJECT;
     public static final String DATA_COLLECTION_NAME = "data";
+    public static final String DATA_PREFIX = "data";
+
     public static final String FILE_COLLECTION_NAME = "file";
-    public final static String FS_FILE_PREFIX = "datafile";
+    public static final String FILE_PREFIX = "file";
+
+    public static final String FS_FILE_PREFIX = "datafile";
 
     protected final MongoDBService nosql;
     protected final SPARQLService sparql;
     protected final FileStorageService fs;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
         
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
-        this.RDFTYPE_VARIABLE = new URI(Oeso.Variable.toString());
-        this.RDFTYPE_SCIENTIFICOBJECT = new URI(Oeso.ScientificObject.toString());
-
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
@@ -109,27 +99,27 @@ public class DataDAO {
         fileCollection.createIndex(Indexes.ascending("date"));
     }
 
-    public DataModel create(DataModel instance) throws Exception, MongoWriteException {
+    public DataModel create(DataModel instance) throws Exception {
         createIndexes();
-        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, "id/data");
+        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         return instance;
     }
 
-    public DataFileModel createFile(DataFileModel instance) throws Exception, MongoBulkWriteException {
+    public DataFileModel createFile(DataFileModel instance) throws Exception {
         createIndexes();
-        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, "id/file");
+        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
         return instance;
     }
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
         createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, "id/data");
+        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         return instances;
     } 
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, "id/file");
+        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
         return instances;
     }
 
@@ -570,12 +560,12 @@ public class DataDAO {
     public List<ProvenanceModel> getProvenancesByDevice(UserModel user, URI uri, String collectionName) throws Exception {
         Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null);
         Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
+        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
     }
 
-    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws URISyntaxException, Exception {
+    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
         //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, "id/file", FILE_COLLECTION_NAME);
+        nosql.generateUniqueUriIfNullOrValidateCurrent(model, FILE_PREFIX, FILE_COLLECTION_NAME);
 
         final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
         Path filePath = Paths.get(FS_FILE_PREFIX, filename);

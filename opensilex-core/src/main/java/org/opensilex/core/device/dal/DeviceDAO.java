@@ -6,29 +6,21 @@
 package org.opensilex.core.device.dal;
 
 import com.mongodb.client.MongoCollection;
-import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import java.net.URI;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.sparql.expr.Expr;
-import java.util.List;
-import java.time.LocalDate;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
-import org.bson.Document;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.event.dal.EventModel;
+import org.bson.Document;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
@@ -41,14 +33,19 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.*;
+
+import static com.mongodb.client.model.Filters.eq;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -59,7 +56,7 @@ public class DeviceDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
 
-    public static final String ATTRIBUTES_COLLECTION_NAME = "devicesAttributes";
+    public static final String ATTRIBUTES_COLLECTION_NAME = "deviceAttribute";
 
     public void initDevice(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -77,7 +74,7 @@ public class DeviceDAO {
         devModel.addRelation(sparql.getDefaultGraphURI(DeviceModel.class), new URI(RDFS.label.getURI()), String.class, devModel.getName());
     }
 
-    public MongoCollection getAttributesCollection() {
+    public MongoCollection<DeviceAttributeModel> getAttributesCollection() {
         return nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceAttributeModel.class);
     }
 
@@ -104,36 +101,30 @@ public class DeviceDAO {
     }
     
     public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
-        createIndexes();
-        URI deviceType = devModel.getType();
-        URI deviceURI = devModel.getUri();
-        String deviceName = devModel.getName();
 
         initDevice(devModel, relations, currentUser);
 
-        if (deviceURI == null) {
-            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-            ClassModel model = ontologyDAO.getClassModel(deviceType, new URI(Oeso.Device.getURI()), currentUser.getLanguage());
-            DeviceURIGenerator uriGenerator = new DeviceURIGenerator(sparql.getDefaultGenerationURI(DeviceModel.class));
-            deviceURI = uriGenerator.generateURI(model.getName(), deviceName, 0);
-        }
-        if (sparql.uriExists(sparql.getDefaultGraphURI(DeviceModel.class), deviceURI)) {
-            throw new SPARQLAlreadyExistingUriException(deviceURI);
-        }
+        ClassModel classModel = CoreModule.getOntologyCacheInstance().getClassModel(
+                devModel.getType(),
+                new URI(Oeso.Device.getURI()),
+                currentUser.getLanguage()
+        );
+        devModel.setTypeLabel(classModel.getLabel());
 
-        devModel.setUri(deviceURI);
+        if (!MapUtils.isEmpty(devModel.getAttributes())) {
 
-        if (devModel.getAttributes() != null && !devModel.getAttributes().isEmpty()) {
-            MongoCollection collection = getAttributesCollection();
+            MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
             collection.createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
             sparql.startTransaction();
             nosql.startTransaction();
             try {
                 sparql.create(devModel);
-                DeviceAttributeModel model = new DeviceAttributeModel();
-                model.setUri(devModel.getUri());
-                model.setAttribute(devModel.getAttributes());
-                collection.insertOne(nosql.getSession(), model);
+
+                DeviceAttributeModel attributeModel = new DeviceAttributeModel();
+                attributeModel.setUri(devModel.getUri());
+                attributeModel.setAttribute(devModel.getAttributes());
+                collection.insertOne(nosql.getSession(), attributeModel);
+
                 nosql.commitTransaction();
                 sparql.commitTransaction();
             } catch (Exception ex) {
@@ -141,7 +132,7 @@ public class DeviceDAO {
                 sparql.rollbackTransaction(ex);
             }
         } else {
-            sparql.create(devModel, false);
+            sparql.create(devModel, true);
         }
 
         return devModel.getUri();

@@ -56,7 +56,7 @@ public class ProvenanceModel extends MongoModel {
     }
 
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
         return new String[]{
             this.getName()
         };

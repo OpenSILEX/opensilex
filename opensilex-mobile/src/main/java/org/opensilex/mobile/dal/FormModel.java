@@ -89,7 +89,7 @@ public class FormModel  extends MongoModel {
     }
     
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
         return new String[]{
             creationDate.toString()
         };

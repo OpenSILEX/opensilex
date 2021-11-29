@@ -5,9 +5,6 @@
  */
 package org.opensilex.core.project.dal;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
@@ -15,7 +12,11 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author Julien BONNEFONT
@@ -23,10 +24,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Project",
-        graph = "set/projects",
+        graph = ProjectModel.GRAPH,
         prefix = "prj"
 )
 public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> implements ClassURIGenerator<ProjectModel> {
+
+    public static final String GRAPH = "project";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -195,7 +198,7 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
     }
 
     @Override
-    public String[] getUriSegments(ProjectModel instance) {
+    public String[] getInstancePathSegments(ProjectModel instance) {
         String name =  instance.getShortname();
         if (name == null || name.trim().isEmpty()) {
             name = instance.getName();

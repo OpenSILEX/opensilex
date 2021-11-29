@@ -65,7 +65,7 @@ public class GermplasmDAO {
     protected final MongoDBService nosql;
     protected final Node defaultGraph;
 
-    public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttributes";
+    public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttribute";
 
     public GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;

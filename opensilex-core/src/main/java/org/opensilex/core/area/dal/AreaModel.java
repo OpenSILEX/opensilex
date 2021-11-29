@@ -15,12 +15,13 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.opensilex.core.area.dal.AreaModel.GRAPH;
 
 /**
  * Area Model
@@ -30,17 +31,12 @@ import java.net.URISyntaxException;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Area",
-        graph = "set/area",
+        graph = GRAPH,
         prefix = "area"
 )
-public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<AreaModel> {
+public class AreaModel extends SPARQLNamedResourceModel<AreaModel> implements ClassURIGenerator<AreaModel> {
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    String name;
+    public static final String GRAPH = "area";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -65,14 +61,6 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
         }
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -87,12 +75,5 @@ public class AreaModel extends SPARQLResourceModel implements ClassURIGenerator<
 
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
-    }
-
-    @Override
-    public String[] getUriSegments(@NotNull AreaModel instance) {
-        return new String[]{
-                String.valueOf(instance.getName())
-        };
     }
 }

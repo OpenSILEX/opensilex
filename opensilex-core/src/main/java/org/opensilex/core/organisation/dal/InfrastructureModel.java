@@ -23,10 +23,12 @@ import org.opensilex.sparql.model.SPARQLDagModel;
 @SPARQLResource(
         ontology = FOAF.class,
         resource = "Organization",
-        graph = "set/infrastructures",
+        graph = InfrastructureModel.GRAPH,
         prefix = "infra"
 )
 public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
+
+    public static final String GRAPH = "organization";
 
     @SPARQLProperty(
             ontology = Oeso.class,

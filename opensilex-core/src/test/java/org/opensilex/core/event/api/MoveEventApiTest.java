@@ -441,6 +441,6 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(MoveEventDAO.moveCollectionName);
+        return Collections.singletonList(MoveEventDAO.MOVE_COLLECTION_NAME);
     }
 }

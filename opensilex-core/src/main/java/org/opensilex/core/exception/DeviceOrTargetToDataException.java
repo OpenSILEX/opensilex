@@ -12,10 +12,10 @@ import org.opensilex.core.data.dal.DataModel;
  *
  * @author Julien Bonnefont
  */
-public class DeviceProvenanceAmbiguityException extends Exception {
+public class DeviceOrTargetToDataException extends Exception {
     
-    public DeviceProvenanceAmbiguityException(DataModel data) {
-        super("The Data can't be linked to a specific device : " + data);
+    public DeviceOrTargetToDataException(DataModel data) {
+        super("The Data isn't linked to any target or device : " + data);
         
     }
 

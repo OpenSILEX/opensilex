@@ -78,10 +78,9 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.exception.DeviceOrTargetToDataException;
 import org.opensilex.core.exception.DeviceProvenanceAmbiguityException;
 import org.opensilex.core.exception.DuplicateNameException;
-import org.opensilex.core.exception.NoDeclaredVariableOnDeviceException;
-import org.opensilex.core.exception.NoDeviceOrTargetToDataException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
@@ -630,7 +629,7 @@ public class DataAPI {
                 data.setProvenance(provMod);
             } else {
                 if(!hasTarget) {
-                   throw new NoDeviceOrTargetToDataException();
+                   throw new DeviceOrTargetToDataException(data);
                 }
             } 
            
@@ -674,7 +673,7 @@ public class DataAPI {
             switch (linkedDevices.size()) {
                 case 0:
                     if (devices.size() > 1) {
-                        throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
+                        throw new DeviceProvenanceAmbiguityException(data);
                     } else {
                         if (!devices.isEmpty()) {
                             deviceToReturn = devices.get(0);
@@ -685,7 +684,7 @@ public class DataAPI {
                     deviceToReturn = linkedDevices.get(0);
                     break;
                 default :
-                    throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
+                    throw new DeviceProvenanceAmbiguityException(data);
 
             }    
             
@@ -720,7 +719,7 @@ public class DataAPI {
                             agentToReturn = agent.getUri();
 
                         } else {
-                            throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
+                            throw new DeviceProvenanceAmbiguityException(data);
                         }
                     }
             }

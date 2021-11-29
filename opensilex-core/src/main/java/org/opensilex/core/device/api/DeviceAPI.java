@@ -91,6 +91,7 @@ public class DeviceAPI {
     public static final String CREDENTIAL_DEVICE_DELETE_LABEL_KEY = "credential.device.delete";
     
     public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
+    public static final String DEVICE_EXAMPLE_VARIABLE = "test:set/variables#air_temperature_thermocouple_degree-celsius";
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
@@ -156,6 +157,7 @@ public class DeviceAPI {
             @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
             @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
+            @ApiParam(value = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
             @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
@@ -179,6 +181,7 @@ public class DeviceAPI {
         ListWithPagination<DeviceModel> devices = dao.search(name,
             rdfType,
             includeSubTypes,
+            variable,
             year,
             existenceDate,
             brand,

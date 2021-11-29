@@ -35,16 +35,16 @@ java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update <opensilex_c
 
 | Date       | Name                                                     | Description                                  | Usage                                                                     |
 |------------|---------------------------------------------------------|----------------------------------------------|---------------------------------------------------------------------------|
-| 2021/11/29 | org.opensilex.dev.migration.GraphAndCollectionMigration | SPARQL graph and MongoDB collection renaming | system run-update org.opensilex.dev.migration.GraphAndCollectionMigration |
+| 2021/11/29 | org.opensilex.migration.GraphAndCollectionMigration | SPARQL graph and MongoDB collection renaming | system run-update org.opensilex.migration.GraphAndCollectionMigration |
 |            |                                                         |                                              |                                                                           |
 |            |                                                         |                                              |                                                                           |
 
-### org.opensilex.dev.migration.GraphAndCollectionMigration
+### org.opensilex.migration.GraphAndCollectionMigration
 
 This command performs SPARQL graph and MongoDB collection renaming, after URI/graph/collection renaming. <br>
 
 ```bash
-java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update GraphAndCollectionMigration
+java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update org.opensilex.migration.GraphAndCollectionMigration
 ```	
 
 <b>[IMPORTANT]</b> : Run `sparql reset-ontologies` command in order to refresh ontologies.
@@ -91,10 +91,13 @@ public interface OpenSilexModuleUpdate {
 
 #### Example
  
-`org.opensilex.dev.migration.GraphAndCollectionMigration` from `opensilex-dev-tools` module
+`org.opensilex.migration.GraphAndCollectionMigration` from `opensilex-migration` module
 
 
 ```java
+
+package org.opensilex.migration;
+
 public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
     private OpenSilex opensilex;

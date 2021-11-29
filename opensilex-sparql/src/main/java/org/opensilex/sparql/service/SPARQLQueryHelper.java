@@ -527,7 +527,7 @@ public class SPARQLQueryHelper {
        
     /**
      * <pre>
-     *    Append a Property clause to the given select
+     *    Append a Subject Property Object clause to the given select
      * </pre>
      *
      * @param select the SelectBuilder to update  

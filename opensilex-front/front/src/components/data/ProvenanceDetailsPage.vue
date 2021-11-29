@@ -100,11 +100,11 @@
                   <opensilex-UriLink v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
                     :uri="data.item.uri"
                     :value="data.item.name"
-                    :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
                   ></opensilex-UriLink>
                   <opensilex-UriLink v-else
                     :uri="data.item.uri"
                     :value="data.item.name"
+                    :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
                   ></opensilex-UriLink>
                 </template>
                 

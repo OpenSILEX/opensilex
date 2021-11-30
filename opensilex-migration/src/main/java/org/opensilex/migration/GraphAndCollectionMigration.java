@@ -122,7 +122,15 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             throw new IllegalArgumentException("Empty baseURI property for sparql config");
         }
 
-        return renameQuery.replace(SPARQL_BASE_URI_TEMPLATE, sparqlConfig.baseURI());
+        String baseUri;
+        if (sparqlConfig.baseURI().endsWith("/")) {
+            // remove last character
+            baseUri = StringUtils.chop(sparqlConfig.baseURI());
+        } else {
+            baseUri = sparqlConfig.baseURI();
+        }
+
+        return renameQuery.replace(SPARQL_BASE_URI_TEMPLATE, baseUri);
     }
 
     private void executeSparqlMigration(SPARQLService sparql, SPARQLConfig sparqlConfig) throws IOException, SPARQLException {

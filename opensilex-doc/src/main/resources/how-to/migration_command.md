@@ -4,55 +4,74 @@ Opensilex Migration Commands
 Author : Renaud COLIN (MISTEA INRAE) <br>
 Date : 2021/11/29
 
-This document describe migration commands into OpenSILEX, the list of available Commands and how to add a new one.
-
+This document describes how to execute migration commands into OpenSILEX, the list of available migrations and how to add a new one.
 
 # Introduction
 
-Opensilex provide a way to easily performs some update/migration operation by just executing commands.
+OpenSILEX allow to easily perform some update/migration operation by just executing commands. <br>
+There are two-way to run an update through OpenSILEX command mechanism.
 
-- Move to the directory which contains your OpenSILEX executable .jar file. and execute migration command
+## Running command line on OpenSILEX executable .jar file (User/Admin oriented)
+
+- From the directory which contains your OpenSILEX executable .jar file
 
 ```bash
 java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update <opensilex_command>
 ```
 
-`<opensilex_command>` <b>(required)</b> : name of a valid migration command (see the list just below). <br>
-`CONFIG-FILE=<config_file>` : <b>(optionnal)</b> : option to specify path to your custom opensilex config (if set, then command will run on an Opensilex instance running with the given config)
+- `<opensilex_command>` <b>(required)</b> : name of a valid migration command (see list below)
+  . <br>
+- `CONFIG-FILE=<config_file>` : <b>(optional)</b> : option to specify the path to your custom OpenSILEX config (if set, then
+  command will run on an OpenSILEX instance running with the given config)
+
+## Running update inside IDE with opensilex-dev-tools module (For developers)
+
+Execute `main` from the `RunUpdate` class (`opensilex-dev-tools` module) with some OpenSILEX update name (see list below) as program argument.
+
+Example :
+
+```bash
+org.opensilex.migration.GraphAndCollectionMigration
+```
+
+# List
+
+- Name must be unique and match to a JAVA `Class` which implements `org.opensilex.update.OpenSilexModuleUpdate`
+- The `Class` path must be resolvable by the OpenSILEX executable .jar file
+- To be resolvable, the `Class` must exist in one OpenSILEX module (embedded or custom module).
 
 
-## Commands
+| Date       | Name (id)                                                  | Description                                  | 
+|------------|---------------------------------------------------------|----------------------------------------------|
+| 2021/11/29 |<b>org.opensilex.migration.GraphAndCollectionMigration</b> | SPARQL graph and MongoDB collection renaming after URI generation update |  |
+|            |                                                         |                                              |                                                                          
 
+# Descriptions
 
-### Index
+## org.opensilex.migration.GraphAndCollectionMigration
 
+### Description
 
-| Date       | Name                                                     | Description                                  | Usage                                                                     |
-|------------|---------------------------------------------------------|----------------------------------------------|---------------------------------------------------------------------------|
-| 2021/11/29 |<b>org.opensilex.migration.GraphAndCollectionMigration</b> | SPARQL graph and MongoDB collection renaming | system run-update org.opensilex.migration.GraphAndCollectionMigration |
-|            |                                                         |                                              |                                                                           |
-|            |                                                         |                                              |                                                                           |
+This update performs SPARQL graph and MongoDB collection renaming, after major changes on URI generation and
+graph/collection renaming
+(commit <b>`46a276118a6b8c47669997c7cb5ee4aca4524141`</b> on `master` branch). <br>
 
-### org.opensilex.migration.GraphAndCollectionMigration
-
-This command performs SPARQL graph and MongoDB collection renaming, after URI/graph/collection renaming. <br>
+### Usage
 
 ```bash
 java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update org.opensilex.migration.GraphAndCollectionMigration
-```	
+```
 
-<b>[IMPORTANT]</b> : Run `sparql reset-ontologies` command in order to refresh ontologies.
+<b>[IMPORTANT]</b> : After update success, run `sparql reset-ontologies` command in order to refresh ontologies.
 
 ```bash
 java -jar opensilex.jar CONFIG-FILE=<config_file> sparql reset-ontologies
-```	
+```
 
-## Add a command
+# Create an update command
 
-Each Opensilex command implements the 
-<b>`org.opensilex.update.OpenSilexModuleUpdate`
+Each Opensilex update implements the <b>`org.opensilex.update.OpenSilexModuleUpdate`
 </b> interface (from `opensilex-main` module).
-
 
 ```java
 public interface OpenSilexModuleUpdate {
@@ -74,23 +93,25 @@ public interface OpenSilexModuleUpdate {
     /**
      * Update logic to implement.
      */
-     void execute() throws OpensilexModuleUpdateException;
+    void execute() throws OpensilexModuleUpdateException;
 
     /**
      * @param opensilex the Opensilex instance
      */
-     void setOpensilex(OpenSilex opensilex);
+    void setOpensilex(OpenSilex opensilex);
 }
 ```
+To add a new update, just add inside one OpenSILEX module some `Class` which implements `org.opensilex.update.OpenSilexModuleUpdate`
 
 #### Example
- 
-`org.opensilex.migration.GraphAndCollectionMigration` from `opensilex-migration` module
 
+`org.opensilex.migration.GraphAndCollectionMigration` from `opensilex-migration` module
 
 ```java
 
 package org.opensilex.migration;
+
+import java.time.OffsetDateTime;
 
 public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
@@ -98,7 +119,7 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
     @Override
     public OffsetDateTime getDate() {
-        return OffsetDateTime.now();
+        return OffsetDateTime.parse("2021/11/29");
     }
 
     @Override
@@ -113,6 +134,15 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
 
     @Override
     public void execute() throws OpensilexModuleUpdateException {
+
+        // access to OpenSILEX SPARQL and MongoDB services/configs
+        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
+        SPARQLService sparql = factory.provide();
+        SPARQLConfig sparqlConfig = opensilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
+        MongoDBService mongodb = opensilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
+        MongoDBConfig mongoDBConfig = opensilex.loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
+
         // graph and collection migration code here
     }
 }

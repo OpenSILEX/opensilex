@@ -47,11 +47,13 @@
             :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item)"
             label="component.profile.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_DELETE_ID)"
             @click="deleteProfile(data.item.uri)"
             label="component.profile.delete"
             :small="true"

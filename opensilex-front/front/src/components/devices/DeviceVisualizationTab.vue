@@ -47,9 +47,6 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 export default class DeviceVisualizationTab extends Vue {
   $opensilex: any;
 
-  @Prop()
-  modificationCredentialId;
-
   get user() {
     return this.$store.state.user;
   }

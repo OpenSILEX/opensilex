@@ -63,7 +63,7 @@
         :initForm="initAreaForm"
     ></opensilex-ModalForm>
     <opensilex-ScientificObjectForm
-        v-if=" user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+        v-if=" user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
         ref="soForm"
         :context="{ experimentURI: this.experiment }"
         @onCreate="callScientificObjectUpdate"
@@ -477,8 +477,8 @@
 
               <opensilex-EditButton
                   v-if=" data.item.properties.nature === 'Area'
-                    ? user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)
-                    : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+                    ? user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)
+                    : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
                   :small="true"
                   label="MapView.update"
                   @click="edit(data)"

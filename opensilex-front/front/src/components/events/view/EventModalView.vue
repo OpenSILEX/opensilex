@@ -52,6 +52,7 @@
         </div>
 
         <opensilex-DocumentTabList
+            :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
             :uri="event.uri"
             :search=false
         ></opensilex-DocumentTabList>
@@ -89,6 +90,10 @@
         baseEventType: string;
 
         eventPropertyByUri: Map<string, VueRDFTypeDTO> = new Map();
+
+        get credentials() {
+          return this.$store.state.credentials;
+        }
 
         static getEmptyForm(): EventDetailsDTO {
             return {

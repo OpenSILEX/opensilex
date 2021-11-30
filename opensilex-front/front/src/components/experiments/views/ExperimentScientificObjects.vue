@@ -99,18 +99,24 @@
               :disabled="selectedObjects.length == 0"
               text=actions>
 
-                <b-dropdown-item-button @click="createDocument()" >
+                <b-dropdown-item-button
+                    v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+                    @click="createDocument()" >
                   {{$t('component.common.addDocument')}}
                 </b-dropdown-item-button>
                 <b-dropdown-item-button @click="exportCSV(false)">
                   Export CSV
                 </b-dropdown-item-button>
 
-                <b-dropdown-item-button @click="createEvents()">
+                <b-dropdown-item-button
+                    v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+                    @click="createEvents()">
                   {{$t('Event.add-multiple')}}
                 </b-dropdown-item-button>
 
-                <b-dropdown-item-button @click="createMoves()">
+                <b-dropdown-item-button
+                    v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+                    @click="createMoves()">
                   {{$t('Move.add')}}
                 </b-dropdown-item-button>
 
@@ -164,7 +170,7 @@
               <opensilex-EditButton
                 v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
                   )
                 "
                 @click="soForm.editScientificObject(node.data.uri)"
@@ -174,7 +180,7 @@
               <opensilex-AddChildButton
                 v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
                   )
                 "
                 @click="soForm.createScientificObject(node.data.uri)"
@@ -184,7 +190,7 @@
               <opensilex-DeleteButton
                 v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                    credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
                   )
                 "
                 @click="deleteScientificObject(node)"
@@ -196,7 +202,7 @@
           <opensilex-ScientificObjectForm
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
+                credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
               )
             "
             ref="soForm"
@@ -224,7 +230,7 @@
     ></opensilex-ExperimentDataVisuView>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
       createTitle="component.common.addDocument"
@@ -234,11 +240,13 @@
     ></opensilex-ModalForm>
 
     <opensilex-EventCsvForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="eventCsvForm"
         :targets="selectedObjects"
     ></opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="moveCsvForm"
         :targets="selectedObjects"
         :isMove="true"
@@ -255,6 +263,7 @@ import { ScientificObjectsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
+import {User} from "../../../models/User";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: any;
@@ -292,7 +301,7 @@ export default class ExperimentScientificObjects extends Vue {
     ];
   }
 
-  get user() {
+  get user(): User {
     return this.$store.state.user;
   }
 

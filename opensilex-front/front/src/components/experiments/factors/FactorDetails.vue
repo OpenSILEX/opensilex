@@ -6,7 +6,10 @@
           <template v-slot:rightHeader>
             <div class="ml-3">
               <opensilex-EditButton
-                v-if="xpUri == factor.experiment"
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
+                  ) && xpUri == factor.experiment"
                 @click="factorForm.showEditForm(factor)"
                 variant="outline-primary"
                 label="component.factor.update-button"

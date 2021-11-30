@@ -254,7 +254,7 @@ public class ProjectAPI {
     /**
      * Remove a project
      *
-     * @param prjctUri the project URI
+     * @param uri the project URI
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the deleted Project {@link URI}
      */

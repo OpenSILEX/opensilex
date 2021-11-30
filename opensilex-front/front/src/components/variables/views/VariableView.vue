@@ -35,8 +35,8 @@
                         :target="uri"
                         :displayTargetColumn="false"
                         :enableActions="true"
-                        :modificationCredentialId="credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID"
-                        :deleteCredentialId="credentials.CREDENTIAL_VARIABLE_DELETE_ID"
+                        :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+                        :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
                 ></opensilex-AnnotationList>
             </template>
 

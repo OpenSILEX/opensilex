@@ -107,7 +107,8 @@
           :small="true"
           :disabled="numberOfSelectedRows == 0"
           text=actions>
-            <b-dropdown-item-button    
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="createDocument()"
             >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
             <b-dropdown-item-button

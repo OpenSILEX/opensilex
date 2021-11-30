@@ -81,9 +81,6 @@
     <opensilex-ScientificObjectVisualizationTab
       v-if="isVisualizationTab"
       :scientificObject="selected.uri"
-      :modificationCredentialId="
-        credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID
-      "
     ></opensilex-ScientificObjectVisualizationTab>
 
     <opensilex-DocumentTabList

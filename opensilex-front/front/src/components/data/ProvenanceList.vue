@@ -106,14 +106,14 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item.uri)"
             label="ProvenanceList.update"
             :small="true"
             
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
             @click="$emit('onDelete', data.item.uri)"
             label="ProvenanceList.delete"
             :small="true"

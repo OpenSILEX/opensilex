@@ -73,26 +73,21 @@
                     :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
 
                     <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-                        <b-dropdown
-                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                            dropright
-                            class="mb-2 mr-2"
-                            :small="true"
-                            :disabled="numberOfSelectedRows == 0"
-                            text="actions">
+                      <b-dropdown
+                        dropright
+                        class="mb-2 mr-2"
+                        :small="true"
+                        :disabled="numberOfSelectedRows == 0"
+                        text="actions">
 
-                            <b-dropdown-item-button @click="addVariablesToGroups()">
-                                {{$t("VariableList.add-groupVariable")}}
-                            </b-dropdown-item-button>
-                            <b-dropdown-item-button @click="showCreateForm()">
-                                {{$t("VariableList.add-newGroupVariable")}}
-                            </b-dropdown-item-button>
-                            <b-dropdown-item-button @click="classicExportVariables()">
-                                {{$t('VariableList.export-variables')}}
-                            </b-dropdown-item-button>
-                            <b-dropdown-item-button @click="detailsExportVariables()">
-                                {{$t('VariableList.export-variables-details')}}
-                            </b-dropdown-item-button>
+                        <b-dropdown-item-button
+                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button
+                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
 
                         </b-dropdown>
                     </template>
@@ -276,7 +271,7 @@ export default class VariableList extends Vue {
         };
         this.refresh();
     }
-    
+
     refresh() {
         this.tableRef.selectAll = false;
         this.tableRef.onSelectAll();

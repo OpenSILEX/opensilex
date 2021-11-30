@@ -13,6 +13,8 @@
             ref="eventList"
             :enableActions="true"
             :columnsToDisplay="new Set(['type','start','end','description', 'targets'])"
+            :modificationCredentialId="credentials.CREDENTIAL_EVENT_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_EVENT_DELETE_ID"
             :displayTitle="false"
             :isExperimentalFeature="false"
         ></opensilex-EventList>

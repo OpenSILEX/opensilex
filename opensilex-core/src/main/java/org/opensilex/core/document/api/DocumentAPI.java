@@ -229,6 +229,10 @@ public class DocumentAPI {
         @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
     })
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_DOCUMENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DOCUMENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateDocument(

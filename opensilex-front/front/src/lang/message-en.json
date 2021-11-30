@@ -571,7 +571,9 @@
         "documents": "Documents",
         "annotations" : "Annotations",
         "device" : "Device",
-        "events": "Events"
+        "events": "Events",
+        "facilities": "Facilities",
+        "provenances": "Provenances"
     },
     "credential": {
         "experiment": {
@@ -633,6 +635,18 @@
         "event": {
             "modification": "Add / update events",
             "delete": "Delete events"
+        },
+        "facility":  {
+            "modification": "Add / update facilities",
+            "delete": "Delete facilities"
+        },
+        "provenance": {
+            "modification": "Add / update provenances",
+            "delete": "Delete provenances"
+        },
+        "profile": {
+            "modification": "Add / update profiles",
+            "delete": "Delete profiles"
         }
     },
     "validations": {

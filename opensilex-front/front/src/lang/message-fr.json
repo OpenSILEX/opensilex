@@ -576,7 +576,9 @@
         "documents": "Documents",
         "annotations" : "Annotations",
         "device" : "Dispositifs",
-        "events": "Événements"
+        "events": "Événements",
+        "facilities": "Installations techniques",
+        "provenance": "Provenances"
     },
     "credential": {
         "experiment": {
@@ -638,6 +640,18 @@
         "event": {
             "modification": "Ajout / Modification des événements",
             "delete": "Suppression des événements"
+        },
+        "facility":  {
+            "modification": "Ajout / Modification des installations techniques",
+            "delete": "Suppression des installations techniques"
+        },
+        "provenance": {
+            "modification": "Ajout / Modification des provenances",
+            "delete": "Suppression des provenances"
+        },
+        "profile": {
+            "modification": "Ajout / Modification des profils",
+            "delete": "Suppression des profils"
         }
     },
     "validations": {

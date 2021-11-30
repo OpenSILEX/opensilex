@@ -15,7 +15,7 @@
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
           @click="facilityForm.showCreateForm()"
@@ -67,7 +67,7 @@
           <opensilex-EditButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
               )
             "
             @click="editFacility(data.item)"
@@ -77,7 +77,7 @@
           <opensilex-DeleteButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_DELETE_ID
               )
             "
             @click="deleteFacility(data.item.uri)"
@@ -93,7 +93,7 @@
       v-if="
         withActions &&
         user.hasCredential(
-          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+          credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
         )
       "
       @onCreate="onCreate"

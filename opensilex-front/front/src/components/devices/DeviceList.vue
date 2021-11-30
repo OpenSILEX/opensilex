@@ -8,7 +8,7 @@
     >
       <template v-slot:filters>
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.namePattern')}}</label>
+          <label>{{ $t("DeviceList.filter.namePattern") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.name"
             placeholder="DeviceList.filter.namePattern-placeholder"
@@ -24,7 +24,7 @@
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.start_up')}}</label>
+          <label>{{ $t("DeviceList.filter.start_up") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.start_up"
             placeholder="DeviceList.filter.start_up-placeholder"
@@ -33,7 +33,7 @@
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.brand')}}</label>
+          <label>{{ $t("DeviceList.filter.brand") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.brand"
             placeholder="DeviceList.filter.brand-placeholder"
@@ -41,7 +41,7 @@
         </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.model')}}</label>
+          <label>{{ $t("DeviceList.filter.model") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.model"
             placeholder="DeviceList.filter.model-placeholder"
@@ -50,14 +50,14 @@
       </template>
       <template v-slot:advancedSearch>
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.metadataKey')}}</label>
+          <label>{{ $t("DeviceList.filter.metadataKey") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.metadataKey"
             placeholder="DeviceList.filter.metadataKey-placeholder"
           ></opensilex-StringFilter>
         </div>
         <div class="col col-xl-3 col-sm-6 col-12">
-          <label>{{$t('DeviceList.filter.metadataValue')}}</label>
+          <label>{{ $t("DeviceList.filter.metadataValue") }}</label>
           <opensilex-StringFilter
             :filter.sync="filter.metadataValue"
             placeholder="DeviceList.filter.metadataValue-placeholder"
@@ -77,39 +77,53 @@
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
         <b-dropdown
-          v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)
+          "
           dropright
           class="mb-2 mr-2"
           :small="true"
           :disabled="numberOfSelectedRows == 0"
           text="actions"
         >
-          <b-dropdown-item-button @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="exportDevices()">{{$t('DeviceList.export')}}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="linkVariable()">{{$t('DeviceList.linkVariable')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="createDocument()">{{
+            $t("component.common.addDocument")
+          }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="exportDevices()">{{
+            $t("DeviceList.export")
+          }}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="linkVariable()">{{
+            $t("DeviceList.linkVariable")
+          }}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
 
           <!-- <b-dropdown-item-button disabled>{{$t('DeviceList.addAnnotation')}}
           </b-dropdown-item-button>-->
 
-          <b-dropdown-item-button @click="createEvents()">{{$t('Event.add-multiple')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="createEvents()">{{
+            $t("Event.add-multiple")
+          }}</b-dropdown-item-button>
 
-          <b-dropdown-item-button @click="createMoves()">{{$t('Move.add')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="createMoves()">{{
+            $t("Move.add")
+          }}</b-dropdown-item-button>
         </b-dropdown>
       </template>
 
-      <template v-slot:cell(name)="{data}">
+      <template v-slot:cell(name)="{ data }">
         <opensilex-UriLink
           :uri="data.item.uri"
           :value="data.item.name"
-          :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
+          :to="{ path: '/device/details/' + encodeURIComponent(data.item.uri) }"
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(actions)="{data}">
+      <template v-slot:cell(actions)="{ data }">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+            v-if="
+              user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)
+            "
             @click="editDevice(data.item.uri)"
             label="DeviceList.update"
             :small="true"
@@ -153,7 +167,11 @@
       @onValidate="editDeviceVar"
     ></opensilex-VariableModalList>
 
-    <opensilex-EventCsvForm v-if="showEventForm" ref="eventCsvForm" :targets="selectedUris"></opensilex-EventCsvForm>
+    <opensilex-EventCsvForm
+      v-if="showEventForm"
+      ref="eventCsvForm"
+      :targets="selectedUris"
+    ></opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
       v-if="showMoveForm"
@@ -192,6 +210,10 @@ export default class DeviceList extends Vue {
     return this.$store.state.user;
   }
 
+  get lang() {
+    return this.$store.getters.language;
+  }
+
   get credentials() {
     return this.$store.state.credentials;
   }
@@ -206,7 +228,7 @@ export default class DeviceList extends Vue {
     brand: undefined,
     model: undefined,
     metadataKey: undefined,
-    metadataValue: undefined
+    metadataValue: undefined,
   };
 
   exportFilter = {
@@ -217,7 +239,7 @@ export default class DeviceList extends Vue {
     brand: undefined,
     model: undefined,
     serial_number: undefined,
-    metadata: undefined
+    metadata: undefined,
   };
 
   resetFilters() {
@@ -229,7 +251,7 @@ export default class DeviceList extends Vue {
       brand: undefined,
       model: undefined,
       metadataKey: undefined,
-      metadataValue: undefined
+      metadataValue: undefined,
     };
 
     /*this.exportFilter = {
@@ -273,29 +295,36 @@ export default class DeviceList extends Vue {
         this.refresh();
         this.$emit("onDelete", uri);
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch((error) => {
+        if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {
+          let message = this.$i18n.t("DeviceList.associated-device-error") + " " + error.response.result.message;
+          this.$opensilex.showErrorToast(message);
+        } else {
+          this.$opensilex.errorHandler(error);
+        }
+      });
   }
 
   fields = [
     {
       key: "name",
       label: "DeviceList.name",
-      sortable: true
+      sortable: true,
     },
     {
       key: "rdf_type_name",
       label: "DeviceList.rdfTypes",
-      sortable: true
+      sortable: true,
     },
     {
       key: "start_up",
       label: "DeviceList.start_up",
-      sortable: true
+      sortable: true,
     },
     {
       key: "actions",
-      label: "component.common.actions"
-    }
+      label: "component.common.actions",
+    },
   ];
 
   refresh() {
@@ -323,9 +352,6 @@ export default class DeviceList extends Vue {
     );
   }
 
-  get lang() {
-    return this.$store.state.lang;
-  }
 
   exportDevices() {
     let path = "/core/devices/export_by_uris";
@@ -355,7 +381,7 @@ export default class DeviceList extends Vue {
     let deniedType = [
       "vocabulary:RadiometricTarget",
       "vocabulary:Station",
-      "vocabulary:ControlLaw"
+      "vocabulary:ControlLaw",
     ];
     for (let select of this.tableRef.getSelected()) {
       typeDevice = select.rdf_type;
@@ -381,7 +407,7 @@ export default class DeviceList extends Vue {
           for (let select of variableSelected) {
             varList.push({
               property: "vocabulary:measures",
-              value: select.uri
+              value: select.uri,
             });
             console.debug("result device" + varList);
           }
@@ -451,9 +477,9 @@ export default class DeviceList extends Vue {
         authors: undefined,
         language: undefined,
         deprecated: undefined,
-        keywords: undefined
+        keywords: undefined,
       },
-      file: undefined
+      file: undefined,
     };
   }
 
@@ -511,6 +537,7 @@ en:
     addMove: Move
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
+    associated-device-error: Device is associated with 
 
     filter:
       namePattern: Name
@@ -546,6 +573,7 @@ fr:
     addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
+    associated-device-error: Le dispositif est associé à  
 
     filter:
       namePattern: Nom

@@ -19,6 +19,8 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
     protected URI baseURI;
     protected URI uri;
 
+    public static final String URI_FIELD = "uri";
+
     public URI getUri() {
         return uri;
     }

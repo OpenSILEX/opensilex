@@ -21,14 +21,19 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.opensilex.core.CoreModule;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -55,12 +60,20 @@ public class DeviceDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+    protected final FileStorageService fs;
 
     public static final String ATTRIBUTES_COLLECTION_NAME = "deviceAttribute";
+    private static final URI deviceURI = URI.create(Oeso.Device.getURI());
+
+    public DeviceDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) {
+        this.sparql = sparql;
+        this.nosql = nosql;
+        this.fs = fs;
+    }
 
     public void initDevice(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(devModel.getType(), new URI(Oeso.Device.getURI()), currentUser.getLanguage());
+        ClassModel model = ontologyDAO.getClassModel(devModel.getType(), deviceURI, currentUser.getLanguage());
 
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
@@ -83,21 +96,17 @@ public class DeviceDAO {
         try {
             storedAttributes = nosql.findByURI(DeviceAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, uri);
         } catch (NoSQLInvalidURIException e) {
+            // no attribute found, just continue since it's optional
         }
         return storedAttributes;
 
     }
 
-    public DeviceDAO(SPARQLService sparql, MongoDBService nosql) {
-        this.sparql = sparql;
-        this.nosql = nosql;
-    }
-    
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
-        attributeCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
+        MongoCollection<DeviceModel> attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
+        attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
     
     public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -114,7 +123,7 @@ public class DeviceDAO {
         if (!MapUtils.isEmpty(devModel.getAttributes())) {
 
             MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
-            collection.createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
+            collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
             sparql.startTransaction();
             nosql.startTransaction();
             try {
@@ -170,7 +179,7 @@ public class DeviceDAO {
         ListWithPagination<DeviceModel> returnList = null;
 
         if (metadata != null && (filteredUris == null || filteredUris.isEmpty())) {
-            return new ListWithPagination<>(new ArrayList());
+            return new ListWithPagination<>(new ArrayList<>());
         } else {
             // set the custom filter on type
             Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
@@ -243,8 +252,7 @@ public class DeviceDAO {
                 filter.put("attribute." + key, metadata.get(key));
             }
         }
-        Set<URI> devicesURIs = nosql.distinct("uri", URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
-        return devicesURIs;
+        return nosql.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
     }
 
     public List<DeviceModel> searchForExport(
@@ -373,7 +381,7 @@ public class DeviceDAO {
             sparql.startTransaction();
             sparql.deleteByURI(graph, instance.getUri());
             sparql.create(instance);
-            MongoCollection collection = getAttributesCollection();
+            MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
             try {
                 if (instance.getAttributes() != null && !instance.getAttributes().isEmpty()) {
@@ -381,12 +389,12 @@ public class DeviceDAO {
                     model.setUri(instance.getUri());
                     model.setAttribute(instance.getAttributes());
                     if (storedAttributes != null) {
-                        collection.findOneAndReplace(nosql.getSession(), eq("uri", instance.getUri()), model);
+                        collection.findOneAndReplace(nosql.getSession(), eq(MongoModel.URI_FIELD, instance.getUri()), model);
                     } else {
                         collection.insertOne(nosql.getSession(), model);
                     }
                 } else {
-                    collection.findOneAndDelete(nosql.getSession(), eq("uri", instance.getUri()));
+                    collection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, instance.getUri()));
                 }
                 nosql.commitTransaction();
                 sparql.commitTransaction();
@@ -428,14 +436,44 @@ public class DeviceDAO {
         return devices;
     }
 
+    /**
+     *
+     * @param deviceURI uri of device
+     * @param currentUser current user
+     * @throws ForbiddenURIAccessException if the device is linked to some existing data, datafile or provenance.
+     * @throws Exception if some error is encountered during delete
+     *
+     * @see org.opensilex.core.provenance.dal.ProvenanceModel
+     * @see org.opensilex.core.data.dal.DataModel
+     * @see org.opensilex.core.data.dal.DataFileModel
+     */
     public void delete(URI deviceURI, UserModel currentUser) throws Exception {
+        
+        // test if device in provenances
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
+        int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
+        if(provCount > 0) {
+            throw new ForbiddenURIAccessException(deviceURI, provCount+" provenance(s)");
+        }
+        
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
+        if(dataCount > 0){
+            throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
+        }  
+        
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
+        if(dataFileCount > 0){
+            throw new ForbiddenURIAccessException(deviceURI, dataFileCount+" datafile(s)");
+        }  
+        
         nosql.startTransaction();
         sparql.startTransaction();
         sparql.delete(DeviceModel.class, deviceURI);
-        MongoCollection collection = getAttributesCollection();
+        MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
         try {
-            collection.findOneAndDelete(nosql.getSession(), eq("uri", deviceURI));
+            collection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, deviceURI));
             nosql.commitTransaction();
             sparql.commitTransaction();
         } catch (Exception ex) {

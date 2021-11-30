@@ -31,10 +31,12 @@ import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
@@ -63,11 +65,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.time.format.DateTimeParseException;
 
 import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
 
 /**
  *
@@ -75,12 +75,15 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
  */
 
 @Api(DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID)
-@Path("/core/devices")
+@Path(DeviceAPI.PATH)
 @ApiCredentialGroup(
         groupId = DeviceAPI.CREDENTIAL_DEVICE_GROUP_ID,
         groupLabelKey = DeviceAPI.CREDENTIAL_DEVICE_GROUP_LABEL_KEY
 )
 public class DeviceAPI {
+
+    public static final String PATH = "/core/devices";
+
     public static final String CREDENTIAL_DEVICE_GROUP_ID = "Devices";
     public static final String CREDENTIAL_DEVICE_GROUP_LABEL_KEY = "credential-groups.device";
 
@@ -95,6 +98,8 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
 
+    public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
+
     @CurrentUser
     UserModel currentUser;
 
@@ -102,6 +107,9 @@ public class DeviceAPI {
     private SPARQLService sparql;
     @Inject
     private MongoDBService nosql;
+    @Inject
+    private FileStorageService fs;
+    
     
     @POST
     @ApiOperation("Create a device")
@@ -121,8 +129,8 @@ public class DeviceAPI {
             @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {       
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
-        ErrorResponse error = check(deviceDTO, deviceDAO);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        ErrorResponse error = check(deviceDTO);
         if (error != null) {
             return error.getResponse();
         }
@@ -175,7 +183,7 @@ public class DeviceAPI {
             }
         }
         
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         ListWithPagination<DeviceModel> devices = dao.search(name,
             rdfType,
             includeSubTypes,
@@ -209,7 +217,7 @@ public class DeviceAPI {
             @PathParam("uri") URI uri
     ) throws Exception {
 
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
@@ -237,7 +245,7 @@ public class DeviceAPI {
     public Response getDeviceByUris(
             @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> models = dao.getList(uris,currentUser);
 
         if (!models.isEmpty()) {
@@ -273,7 +281,7 @@ public class DeviceAPI {
             @NotNull
             @Valid DeviceCreationDTO dto
     ) throws Exception {
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         DeviceModel DeviceModel = dto.newModel();
         deviceDAO.update(DeviceModel, dto.getRelations(), currentUser);
         return new ObjectUriResponse(Response.Status.OK, DeviceModel.getUri()).getResponse();
@@ -290,23 +298,26 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
-        @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
     public Response deleteDevice(
             @ApiParam(value = "Device URI", example = DEVICE_EXAMPLE_URI, required = true)
-            @PathParam("uri")
-            @NotNull
-            @ValidURI URI uri
+            @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
-        
-        dao.delete(uri, currentUser);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-        
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+
+        try {
+            dao.delete(uri, currentUser);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+        } catch (ForbiddenURIAccessException e) {
+            return new ErrorResponse(Response.Status.BAD_REQUEST, LINKED_DEVICE_ERROR, e.getMessage()).getResponse();
+        }
     }
     
-    private ErrorResponse check(DeviceDTO deviceDTO, DeviceDAO deviceDAO) throws Exception {
+    private ErrorResponse check(DeviceDTO deviceDTO) throws Exception {
 
         // check if device URI already exists
         if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
@@ -394,7 +405,7 @@ public class DeviceAPI {
         }
 
         // Search device with device DAO
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.searchForExport(
             name,
             rdfType,
@@ -425,7 +436,7 @@ public class DeviceAPI {
     public Response exportList(
             @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
     ) throws Exception {
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
         return buildCSV(resultList);
     }
@@ -818,13 +829,13 @@ public class DeviceAPI {
             }
         }
 
-        ListWithPagination<DataFileModel> resultList = dao.searchFilesByDevice(
-                uri,
+        ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 currentUser,
-                rdfType,
+                rdfType == null ? null : Collections.singletonList(rdfType),
                 experiments,
                 objects,
                 provenances,
+                Collections.singletonList(uri),
                 startInstant,
                 endInstant,
                 metadataFilter,
@@ -850,7 +861,7 @@ public class DeviceAPI {
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {        
-        DeviceDAO dao = new DeviceDAO(sparql, nosql);
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

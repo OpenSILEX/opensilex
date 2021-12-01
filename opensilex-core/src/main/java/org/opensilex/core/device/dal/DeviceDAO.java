@@ -151,6 +151,7 @@ public class DeviceDAO {
             String namePattern,
             URI rdfType,
             boolean includeSubTypes,
+            URI variable,
             Integer year,
             LocalDate existenceDate,
             String brandPattern,
@@ -210,11 +211,15 @@ public class DeviceDAO {
                         if (date != null) {
                             appendDateFilters(select, date);
                         }
+                        String graph = sparql.getDefaultGraph(DeviceModel.class).getURI();
+                        Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
+                        if(variable != null) {
+                            SPARQLQueryHelper.appendRelationFilter(select,graph, uriVar, Oeso.measures, variable);
+                        }
 
                         DateDeserializer dateDeserializer = new DateDeserializer();
                         ExprFactory exprFactory = new ExprFactory();
                         if (existenceDate != null) {
-                            Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
                             Node startupVar = NodeFactory.createVariable(DeviceModel.STARTUP_FIELD);
                             Node removalVar = NodeFactory.createVariable(DeviceModel.REMOVAL_FIELD);
 

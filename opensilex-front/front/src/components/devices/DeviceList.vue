@@ -23,6 +23,13 @@
           ></opensilex-TypeForm>
         </div>
 
+         <div class="col col-xl-3 col-sm-6 col-12">
+          <opensilex-VariableSelector
+            label="DeviceList.filter.variable"
+            :variables.sync="filter.variable"
+          ></opensilex-VariableSelector>
+         </div>
+
         <div class="col col-xl-3 col-sm-6 col-12">
           <label>{{ $t("DeviceList.filter.start_up") }}</label>
           <opensilex-StringFilter
@@ -223,6 +230,7 @@ export default class DeviceList extends Vue {
   filter = {
     name: undefined,
     rdf_type: undefined,
+    variable: undefined,
     start_up: undefined,
     existence_date: undefined,
     brand: undefined,
@@ -234,6 +242,7 @@ export default class DeviceList extends Vue {
   exportFilter = {
     name: undefined,
     rdf_type: undefined,
+    variable: undefined,
     start_up: undefined,
     existence_date: undefined,
     brand: undefined,
@@ -246,6 +255,7 @@ export default class DeviceList extends Vue {
     this.filter = {
       name: undefined,
       rdf_type: undefined,
+      variable: undefined,
       start_up: undefined,
       existence_date: undefined,
       brand: undefined,
@@ -338,8 +348,9 @@ export default class DeviceList extends Vue {
     //this.updateExportFilters();
     return this.service.searchDevices(
       this.filter.rdf_type, // rdf_type filter
-      true, // include_subtypes boolean
+      true, // include_subtypes boolean,
       this.filter.name, // name filter
+      this.filter.variable, // variable filter
       this.filter.start_up, // year filter
       this.filter.existence_date, // existence_date filter
       this.filter.brand, // brand filter
@@ -524,6 +535,7 @@ en:
     uri: URI
     name: Name
     rdfTypes: Device Type
+    variable: Variable
     start_up: Start up
     update: Update Device
     delete: Delete Device
@@ -544,6 +556,8 @@ en:
       namePattern-placeholder: Enter name
       rdfTypes: Type
       rdfTypes-placeholder: Select a device type
+      variable: Variable
+      variable-placeholder: Select a variable
       start_up: Start up
       start_up-placeholder: Enter year
       brand: Brand
@@ -560,6 +574,7 @@ fr:
     uri: URI
     name: Nom
     rdfTypes: Type du dispositif
+    variable: Variable
     start_up: Date d'obtention
     update: Editer le dispositif
     delete: Supprimer le dispositif
@@ -580,6 +595,8 @@ fr:
       namePattern-placeholder: Entrer un nom
       rdfTypes: Type
       rdfTypes-placeholder: Sélectionner un type de dispositif
+      variable: Variable
+      variable-placeholder: Sélectionner une variable
       start_up: Date d'obtention
       start_up-placeholder: Entrer une année
       brand: Marque

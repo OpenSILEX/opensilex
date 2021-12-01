@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 
 import org.opensilex.utils.OrderBy;
 
@@ -522,6 +524,39 @@ public class SPARQLQueryHelper {
         }
        
     }
+       
+    /**
+     * <pre>
+     *    Append a Subject Property Object clause to the given select
+     * </pre>
+     *
+     * @param select the SelectBuilder to update  
+     * @param graph the graph to find 
+     * @param subject the subject of the relation
+     * @param property the property of the relation
+     * @param value the object of the relation
+     * 
+     */
+     
+    public static void appendRelationFilter(SelectBuilder select, String graph, Node subject, Property property, Object value) throws Exception {
+
+        Objects.requireNonNull(select);
+        Objects.requireNonNull(subject);
+
+        // Get the ElementGroup in which we must append the triple
+        ElementGroup elementGroup;
+        if (graph != null) {
+            elementGroup = getSelectOrCreateGraphElementGroup(select.getWhereHandler().getClause(), NodeFactory.createURI(graph));
+        } else {
+            elementGroup = select.getWhereHandler().getClause();
+        }
+
+        // get deserializer associated to the given value and create triple
+        SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(value.getClass());
+        Triple triple = new Triple(subject, property.asNode(), deserializer.getNode(value));
+        elementGroup.addTriplePattern(triple);
+    }
+    
 
     public static Var makeVar(Object o) {
         return Converters.makeVar(o);

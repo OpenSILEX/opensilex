@@ -1,122 +1,121 @@
 <template>
-  <ValidationObserver ref="validatorRef">
+    <ValidationObserver ref="validatorRef">
 
-    <div class="row">
-      <div class="col">
-        <opensilex-UriForm
-            :uri.sync="form.uri"
-            label="component.common.uri"
-            :editMode="editMode"
-            helpMessage="component.common.uri-help-message"
-            :generated.sync="uriGenerated"
-            :required="true"
-        ></opensilex-UriForm>
-      </div>
-    </div>
+        <div class="row">
+            <div class="col">
+                <opensilex-UriForm
+                    :uri.sync="form.uri"
+                    label="component.common.uri"
+                    :editMode="editMode"
+                    helpMessage="component.common.uri-help-message"
+                    :generated.sync="uriGenerated"
+                    :required="true"
+                ></opensilex-UriForm>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col">
-        <!-- Type -->
-        <opensilex-TypeForm
-            :type.sync="form.rdf_type"
-            :baseType="baseType"
-            :ignoreRoot="false"
-            :required="false"
-            :disabled="editMode"
-            placeholder="Event.type-placeholder"
-            @update:type="typeSwitch"
-        ></opensilex-TypeForm>
-      </div>
-    </div>
+        <div class="row">
+            <div class="col">
+                <!-- Type -->
+                <opensilex-TypeForm
+                    :type.sync="form.rdf_type"
+                    :baseType="baseType"
+                    :ignoreRoot="false"
+                    :required="false"
+                    :disabled="editMode"
+                    placeholder="Event.type-placeholder"
+                    @update:type="typeSwitch"
+                ></opensilex-TypeForm>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col">
-        <opensilex-TagInputForm
-            :value.sync="form.targets"
-            :baseType="$opensilex.Oeev.CONCERNS"
-            label="Event.targets"
-            type="text"
-            :required="true"
-            helpMessage="Event.targets-help"
-        ></opensilex-TagInputForm>
-      </div>
-    </div>
+        <div class="row">
+            <div class="col">
+                <opensilex-TagInputForm
+                    :value.sync="form.targets"
+                    :baseType="$opensilex.Oeev.CONCERNS"
+                    label="Event.targets"
+                    type="text"
+                    :required="true"
+                    helpMessage="Event.targets-help"
+                ></opensilex-TagInputForm>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col">
+        <div class="row">
+            <div class="col">
 
-        <opensilex-FormField
-            :required="true"
-            label="Event.is-instant"
-            helpMessage="Event.is-instant-help"
-        >
-          <template v-slot:field="field">
-            <b-form-checkbox v-model="form.is_instant" switch>
-            </b-form-checkbox>
-          </template>
-        </opensilex-FormField>
-      </div>
-    </div>
+                <opensilex-FormField
+                    :required="true"
+                    label="Event.is-instant"
+                    helpMessage="Event.is-instant-help"
+                >
+                    <template v-slot:field="field">
+                        <b-form-checkbox v-model="form.is_instant" switch>
+                        </b-form-checkbox>
+                    </template>
+                </opensilex-FormField>
+            </div>
+        </div>
 
-    <div class="row">
-      <div class="col" v-if="! form.is_instant">
-        <opensilex-DateTimeForm
-            :value.sync="form.start"
-            label="Event.start"
-            :maxDate="form.end"
-            :required="startRequired"
-            @update:value="updateRequiredProps"
-            helpMessage="Event.start-help"
-        ></opensilex-DateTimeForm>
-      </div>
+        <div class="row">
+            <div class="col" v-if="! form.is_instant">
+                <opensilex-DateTimeForm
+                    :value.sync="form.start"
+                    label="Event.start"
+                    :maxDate="form.end"
+                    :required="startRequired"
+                    @update:value="updateRequiredProps"
+                    helpMessage="Event.start-help"
+                ></opensilex-DateTimeForm>
+            </div>
 
-      <div class="col">
-        <opensilex-DateTimeForm
-            :value.sync="form.end"
-            label="Event.end"
-            :required="endRequired"
-            @update:value="updateRequiredProps"
-            helpMessage="Event.end-help"
-        ></opensilex-DateTimeForm>
-      </div>
+            <div class="col">
+                <opensilex-DateTimeForm
+                    :value.sync="form.end"
+                    label="Event.end"
+                    :required="endRequired"
+                    @update:value="updateRequiredProps"
+                    helpMessage="Event.end-help"
+                ></opensilex-DateTimeForm>
+            </div>
 
-    </div>
+        </div>
 
-    <br>
+        <br>
 
-    <div class="row">
-      <div class="col">
-        <!-- Comment -->
-        <opensilex-TextAreaForm
-            :value.sync="form.description"
-            label="component.common.description"
-            helpMessage="Event.description"
-            placeholder="Event.description"
-        >
-        </opensilex-TextAreaForm>
-      </div>
-    </div>
+        <div class="row">
+            <div class="col">
+                <!-- Comment -->
+                <opensilex-TextAreaForm
+                    :value.sync="form.description"
+                    label="component.common.description"
+                    placeholder="XSDLongStringInput.placeholder"
+                >
+                </opensilex-TextAreaForm>
+            </div>
+        </div>
 
-    <slot v-bind:form="form"></slot>
+        <slot v-bind:form="form"></slot>
 
-    <div v-for="(relation, index) in typeRelations" v-bind:key="index">
-      <component
-          :is="getInputComponent(relation.property)"
-          :property="relation.property"
-          :label="relation.property.name"
-          :required="relation.property.is_required"
-          :multiple="relation.property.is_list"
-          :value.sync="relation.value"
-          :context="context"
-          @update:value="updateRelation($event,relation.property)"
-      ></component>
-    </div>
+        <div v-for="(relation, index) in typeRelations" v-bind:key="index">
+            <component
+                :is="getInputComponent(relation.property)"
+                :property="relation.property"
+                :label="relation.property.name"
+                :required="relation.property.is_required"
+                :multiple="relation.property.is_list"
+                :value.sync="relation.value"
+                :context="context"
+                @update:value="updateRelation($event,relation.property)"
+            ></component>
+        </div>
 
-    <div>
-      <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
-    </div>
+        <div>
+            <opensilex-MoveForm v-if="isMove()" :form.sync="form"></opensilex-MoveForm>
+        </div>
 
-  </ValidationObserver>
+    </ValidationObserver>
 </template>
 
 <script lang="ts">

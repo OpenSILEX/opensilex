@@ -11,16 +11,11 @@
 </template>
 
 <script lang="ts">
-import {
-  Component,
-  Prop,
-  PropSync
-} from "vue-property-decorator";
+import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDDateTimeInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;

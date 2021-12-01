@@ -573,7 +573,7 @@
         "device" : "Device",
         "events": "Events",
         "facilities": "Facilities",
-        "provenances": "Provenances"
+        "provenance": "Provenances"
     },
     "credential": {
         "experiment": {

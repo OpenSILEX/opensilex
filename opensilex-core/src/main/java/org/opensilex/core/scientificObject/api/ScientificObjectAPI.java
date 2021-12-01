@@ -196,6 +196,10 @@ public class ScientificObjectAPI {
             ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
             Set<URI> graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
+            if (graphFilterURIs.isEmpty()) {
+                return new PaginatedListResponse<>(new ArrayList<>()).getResponse();
+            }
+
             select.addGraph("?g", "?uri", RDF.type, "?type");
             select.addFilter(SPARQLQueryHelper.inURIFilter("?g", graphFilterURIs));
         }

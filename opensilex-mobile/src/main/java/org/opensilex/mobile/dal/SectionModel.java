@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          FormModel.java
+//                          SectionModel.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2021
 // Contact: maximilian.hart@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
@@ -16,7 +16,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 /**
  * @author Maximilian Hart
  */
-public class FormModel  extends MongoModel {  
+public class SectionModel  extends MongoModel {  
     
     private String commitAddress;
 

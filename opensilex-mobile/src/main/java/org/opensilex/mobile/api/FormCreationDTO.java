@@ -18,7 +18,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
-import org.opensilex.mobile.dal.FormModel;
+import org.opensilex.mobile.dal.SectionModel;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 
@@ -100,8 +100,8 @@ public class FormCreationDTO {
         this.type = type;
     }
 
-    public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
-        FormModel model = new FormModel();
+    public SectionModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
+        SectionModel model = new SectionModel();
         model.setCommitAddress(commitAddress);
         model.setName(name);
         model.setType(type);

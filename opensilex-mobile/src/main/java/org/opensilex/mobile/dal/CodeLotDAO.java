@@ -1,18 +1,17 @@
 //******************************************************************************
-//                          FormDAO.java
+//                          CodeLotDAO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2021
 // Contact: maximilian.hart@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-
 package org.opensilex.mobile.dal;
-
 
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import java.net.URI;
 import java.util.List;
 import org.bson.Document;
+import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.utils.ListWithPagination;
@@ -20,26 +19,30 @@ import org.opensilex.utils.OrderBy;
 
 /**
  *
- * @author Arnaud Charleroy
+ * @author Maximilian Hart
  */
-public class FormDAO {
-    public static final String FORM_COLLECTION_NAME = "forms";
-    public static final String FORM_PREFIX = "id/forms";
-    protected final MongoDBService nosql; 
-     
-    public FormDAO(MongoDBService nosql ) {
+public class CodeLotDAO {
+    public static final String CODELOT_COLLECTION_NAME = "code_lots";
+    public static final String CODELOT_PREFIX = "id/code_lots";
+    protected final MongoDBService nosql;
+
+    public CodeLotDAO(MongoDBService nosql ) {
         this.nosql = nosql; 
-    }  
-
-    public SectionModel create(SectionModel form) throws Exception {
-        nosql.getDatabase().getCollection(FORM_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
-        nosql.create(form, SectionModel.class, FORM_COLLECTION_NAME, FORM_PREFIX);
-
-        return form;
     }
-    
-    
-    public ListWithPagination<SectionModel> search(
+
+    public CodeLotModel create(CodeLotModel code) throws Exception {
+        nosql.getDatabase().getCollection(CODELOT_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
+        nosql.create(code, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
+
+        return code;
+    }
+
+    public List<CodeLotModel> createAll(List<CodeLotModel> instances) throws Exception {
+        nosql.createAll(instances, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
+        return instances;
+    }
+
+    public ListWithPagination<CodeLotModel> search(
             List<URI> uris,
             List<OrderBy> orderByList,
             Integer page,
@@ -47,9 +50,9 @@ public class FormDAO {
 
         Document filter = searchFilter(uris);
 
-        ListWithPagination<SectionModel> forms = nosql.searchWithPagination(SectionModel.class, FORM_COLLECTION_NAME, filter, orderByList, page, pageSize);
+        ListWithPagination<CodeLotModel> codes = nosql.searchWithPagination(CodeLotModel.class, CODELOT_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
-        return forms;
+        return codes;
 
     }
     
@@ -66,17 +69,6 @@ public class FormDAO {
     }
     
     public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(SectionModel.class, FORM_COLLECTION_NAME, uri);
+        nosql.delete(CodeLotModel.class, CODELOT_COLLECTION_NAME, uri);
     }
-
-    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(SectionModel.class, FORM_COLLECTION_NAME, uris);
-    }
-    
-    public SectionModel update(SectionModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, SectionModel.class, FORM_COLLECTION_NAME);
-        return instance;
-    }
-
 }
-

@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
 import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
-import org.opensilex.mobile.dal.FormModel;
+import org.opensilex.mobile.dal.SectionModel;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -32,8 +32,8 @@ public class FormUpdateDTO extends FormCreationDTO{
     }
     
     @Override
-    public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
-        FormModel model = super.newModel();
+    public SectionModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
+        SectionModel model = super.newModel();
         model.setUri(uri);
         return model;
     }

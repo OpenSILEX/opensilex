@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.mobile.api;
 
-import org.opensilex.mobile.dal.FormModel;
+import org.opensilex.mobile.dal.SectionModel;
 
 /**
  *
@@ -14,7 +14,7 @@ import org.opensilex.mobile.dal.FormModel;
  */
 public class FormGetDTO extends FormUpdateDTO{
     
-    public static FormGetDTO fromModel(FormModel model) {
+    public static FormGetDTO fromModel(SectionModel model) {
         FormGetDTO formGetDTO = new FormGetDTO();
         formGetDTO.setCreationDate(model.getCreationDate().toString());
         formGetDTO.setFormData(model.getFormData());

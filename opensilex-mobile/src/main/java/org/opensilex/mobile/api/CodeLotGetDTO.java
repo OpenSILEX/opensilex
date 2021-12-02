@@ -25,6 +25,7 @@ public class CodeLotGetDTO {
     private String head;
 
     private List<URI> availableChildren;
+    private List<URI> parents;
 
     @NotNull
     @ValidURI
@@ -46,6 +47,15 @@ public class CodeLotGetDTO {
         this.availableChildren = children;
     }
 
+    @JsonProperty("available_children")
+    public List<URI> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<URI> parents) {
+        this.parents = parents;
+    }
+
     @JsonProperty("head")
     @NotNull
     @ApiModelProperty(value = "topmost code lot", required = true)
@@ -61,7 +71,8 @@ public class CodeLotGetDTO {
         CodeLotGetDTO codeLotGetDTO = new CodeLotGetDTO();
         codeLotGetDTO.setUri(model.getUri());
         codeLotGetDTO.setHead(model.getHead());
-        codeLotGetDTO.setChildren(model.getAvailableChildren().stream().map(e -> e.getUri()).collect(Collectors.toList()));
+        codeLotGetDTO.setChildren(model.getAvailableChildren());
+        codeLotGetDTO.setParents(model.getParents());
         return codeLotGetDTO;
     }
 

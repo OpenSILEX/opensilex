@@ -239,6 +239,7 @@ public class MobileAPI {
      * @throws java.lang.Exception if fail
      */
     @GET
+    @Path("/codelot")
     @ApiOperation("Search codeLots")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -274,7 +275,7 @@ public class MobileAPI {
      * @throws java.lang.Exception if fail
      */
     @DELETE
-    @Path("{uri}")
+    @Path("/codelot/{uri}")
     @ApiOperation("Delete codelot")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -375,7 +376,7 @@ public class MobileAPI {
 
     private CodeLotCSVValidationModel validateWholeCSV(InputStream file) throws Exception {
         CodeLotCSVValidationModel csvValidation = new CodeLotCSVValidationModel();
-        List<CodeLotModel> allCodes = new ArrayList<>();
+        Map<URI, CodeLotModel> allCodesMap = new HashMap<>();
         Map<String, Integer> IndexByHeader = new HashMap<>();
         try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
             CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
@@ -432,7 +433,7 @@ public class MobileAPI {
                                 csvValidation,
                                 IndexByHeader.get(parentHeader),
                                 IndexByHeader.get(childHeader),
-                                allCodes
+                                allCodesMap
                                 );
                     } catch (Exception e) {
                         System.out.println("Something went wrong with row call");
@@ -444,7 +445,7 @@ public class MobileAPI {
         return csvValidation;
     }
 
-    private class BackPropagationObject {
+    private static class BackPropagationObject {
         final int steps;
         final boolean backPropagationPossible;
 
@@ -454,15 +455,15 @@ public class MobileAPI {
         }
     }
 
-    private BackPropagationObject isBackPropagationPossible(CodeLotModel currentNode, CodeLotModel endNode, int steps) {
+    private BackPropagationObject isBackPropagationPossible(CodeLotModel currentNode, CodeLotModel endNode, int steps, Map<URI, CodeLotModel> allCodesMap) {
         if (currentNode == endNode) {
             return new BackPropagationObject(steps, true);
         } else {
-            List<CodeLotModel> parents = currentNode.getParents();
+            List<URI> parentUris = currentNode.getParents();
             int branchIndex = 0;
             BackPropagationObject currentBranch = new BackPropagationObject(steps, false);
-            while (branchIndex < parents.size() && (!currentBranch.backPropagationPossible)) {
-                currentBranch = isBackPropagationPossible(parents.get(branchIndex), endNode, steps+1);
+            while (branchIndex < parentUris.size() && (!currentBranch.backPropagationPossible)) {
+                currentBranch = isBackPropagationPossible(allCodesMap.get(parentUris.get(branchIndex)), endNode, steps+1, allCodesMap);
                 branchIndex++;
             }
             return currentBranch;
@@ -475,8 +476,10 @@ public class MobileAPI {
             CodeLotCSVValidationModel csvValidation,
             int parentColumnIndex,
             int childColumnIndex,
-            List<CodeLotModel> allCodes
+            //List<CodeLotModel> allCodes
+            Map<URI, CodeLotModel> allCodesMap
     ){
+        CodeLotModel[] allCodes = allCodesMap.values().toArray(new CodeLotModel[0]);
         boolean validRow = true;
         String parent = null;
         String child = null;
@@ -510,8 +513,9 @@ public class MobileAPI {
                 boolean foundParent = false;
                 boolean foundChild = false;
                 int i = 0;
-                while ((!(foundParent && (childNotNull ? foundChild : true))) && i < allCodes.size()) {
-                    CodeLotModel currentCode = allCodes.get(i);
+                while ((!(foundParent && (!childNotNull || foundChild))) && i < allCodes.length) {
+                    //CodeLotModel currentCode = allCodes.get(i);
+                    CodeLotModel currentCode = allCodes[i];
                     if (currentCode.getHead().equals(parent)) {
                         foundParent = true;
                         parentCode = currentCode;
@@ -528,31 +532,33 @@ public class MobileAPI {
                         parentCode.addChild(childCode);
                         childCode.addParent(parentCode);
                     }
-                    allCodes.add(parentCode);
+                    //allCodes.add(parentCode);
+                    allCodesMap.put(parentCode.getUri(), parentCode);
                 }
                 if (childNotNull && !foundChild) {
                     childCode.addParent(parentCode);
-                    allCodes.add(childCode);
-                    //csvValidation.addData(childCode, rowIndex);
+                    //allCodes.add(childCode);
+                    allCodesMap.put(childCode.getUri(), childCode);
                     parentCode.addChild(childCode);
                 }
                 if (foundParent && foundChild) {
                     //Run tests as this is the only case where problems can occur:
                     //Linked sibbling test:
-                    for (CodeLotModel parentOfParent : parentCode.getParents()) {
-                        if (parentOfParent.containsChild(child)) {
+                    for (URI parentOfParentUri : parentCode.getParents()) {
+                        CodeLotModel parentOfParent = allCodesMap.get(parentOfParentUri);
+                        if (parentOfParent.containsChild(child, allCodesMap)) {
                             csvValidation.addLinkedSibblingError(errorCell);
                             return false;
                         }
                     }
                     //Shortcircuit test:
-                    BackPropagationObject shortcircuitTest = isBackPropagationPossible(childCode, parentCode, 0);
+                    BackPropagationObject shortcircuitTest = isBackPropagationPossible(childCode, parentCode, 0, allCodesMap);
                     if (shortcircuitTest.backPropagationPossible && shortcircuitTest.steps > 1) {
                         csvValidation.addShortCircuitError(errorCell);
                         return false;
                     } else {
                         //Boucle test:
-                        BackPropagationObject boucleTest = isBackPropagationPossible(parentCode, childCode, 0);
+                        BackPropagationObject boucleTest = isBackPropagationPossible(parentCode, childCode, 0, allCodesMap);
                         if (boucleTest.backPropagationPossible) {
                             csvValidation.addBoucleError(errorCell);
                             return false;

@@ -81,10 +81,10 @@ public class UserAPI {
     public static final String CREDENTIAL_GROUP_USER_LABEL_KEY = "credential-groups.users";
 
     public static final String CREDENTIAL_USER_MODIFICATION_ID = "user-modification";
-    public static final String CREDENTIAL_USER_MODIFICATION_LABEL_KEY = "credential.user.modification";
+    public static final String CREDENTIAL_USER_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_USER_DELETE_ID = "user-delete";
-    public static final String CREDENTIAL_USER_DELETE_LABEL_KEY = "credential.user.delete";
+    public static final String CREDENTIAL_USER_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
     UserModel currentUser;

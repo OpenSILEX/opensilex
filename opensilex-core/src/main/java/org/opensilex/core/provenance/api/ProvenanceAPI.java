@@ -71,10 +71,10 @@ public class ProvenanceAPI {
     public static final String CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY = "credential-groups.provenance";
 
     public static final String CREDENTIAL_PROVENANCE_MODIFICATION_ID = "provenance-modification";
-    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY = "credential.provenance.modification";
+    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_PROVENANCE_DELETE_ID = "provenance-delete";
-    public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.provenance.delete";
+    public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
     UserModel currentUser;
@@ -167,7 +167,7 @@ public class ProvenanceAPI {
 
     /**
      * @param name
-     * @param experiment
+     * @param description
      * @param activityType
      * @param agentURI
      * @param agentType

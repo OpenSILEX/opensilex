@@ -139,10 +139,10 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY = "credential-groups.experiments";
 
     public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_ID = "experiment-modification";
-    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY = "credential.experiment.modification";
+    public static final String CREDENTIAL_EXPERIMENT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
-    public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.experiment.delete";
+    public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.default.delete";
 
     public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
     public static final String EXPERIMENT_API_VALUE = "Experiment URI";

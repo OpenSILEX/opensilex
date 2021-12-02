@@ -97,10 +97,10 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY = "credential-groups.germplasm";
 
     public static final String CREDENTIAL_GERMPLASM_MODIFICATION_ID = "germplasm-modification";
-    public static final String CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY = "credential.germplasm.modification";
+    public static final String CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_GERMPLASM_DELETE_ID = "germplasm-delete";
-    public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.germplasm.delete";
+    public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.default.delete";
 
     public final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
     public static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";

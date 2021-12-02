@@ -57,10 +57,10 @@ public class FacilityAPI {
     public static final String CREDENTIAL_GROUP_FACILITY_LABEL_KEY = "credential-groups.facilities";
 
     public static final String CREDENTIAL_FACILITY_MODIFICATION_ID = "facility-modification";
-    public static final String CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY = "credential.facility.modification";
+    public static final String CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_FACILITY_DELETE_ID = "facility-delete";
-    public static final String CREDENTIAL_FACILITY_DELETE_LABEL_KEY = "credential.facility.delete";
+    public static final String CREDENTIAL_FACILITY_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

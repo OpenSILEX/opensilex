@@ -84,10 +84,10 @@ public class FactorAPI {
     public static final String CREDENTIAL_FACTOR_GROUP_LABEL_KEY = "credential-groups.factors";
 
     public static final String CREDENTIAL_FACTOR_MODIFICATION_ID = "factor-modification";
-    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.factor.modification";
+    public static final String CREDENTIAL_FACTOR_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_FACTOR_DELETE_ID = "factor-delete";
-    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.factor.delete";
+    public static final String CREDENTIAL_FACTOR_DELETE_LABEL_KEY = "credential.default.delete";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(FactorAPI.class);
 

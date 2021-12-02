@@ -88,10 +88,10 @@ public class DeviceAPI {
     public static final String CREDENTIAL_DEVICE_GROUP_LABEL_KEY = "credential-groups.device";
 
     public static final String CREDENTIAL_DEVICE_MODIFICATION_ID = "device-modification";
-    public static final String CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY = "credential.device.modification";
+    public static final String CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_DEVICE_DELETE_ID = "device-delete";
-    public static final String CREDENTIAL_DEVICE_DELETE_LABEL_KEY = "credential.device.delete";
+    public static final String CREDENTIAL_DEVICE_DELETE_LABEL_KEY = "credential.default.delete";
     
     public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
     public static final String DEVICE_EXAMPLE_VARIABLE = "test:set/variables#air_temperature_thermocouple_degree-celsius";

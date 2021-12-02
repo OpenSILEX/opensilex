@@ -57,14 +57,14 @@ import org.opensilex.sparql.service.SPARQLService;
 )
 public class InfrastructureAPI {
 
-    public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Organisations";
+    public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Organizations";
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY = "credential-groups.infrastructures";
 
     public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID = "infrastructure-modification";
-    public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY = "credential.infrastructure.modification";
+    public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_ID = "infrastructure-delete";
-    public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY = "credential.infrastructure.delete";
+    public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

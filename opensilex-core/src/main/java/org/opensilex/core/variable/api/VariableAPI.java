@@ -64,10 +64,10 @@ public class VariableAPI {
     public static final String CREDENTIAL_VARIABLE_GROUP_LABEL_KEY = "credential-groups.variables";
 
     public static final String CREDENTIAL_VARIABLE_MODIFICATION_ID = "variable-modification";
-    public static final String CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY = "credential.variable.modification";
+    public static final String CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_VARIABLE_DELETE_ID = "variable-delete";
-    public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.variable.delete";
+    public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

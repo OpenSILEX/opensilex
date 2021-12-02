@@ -578,9 +578,16 @@
         "device" : "Dispositifs",
         "events": "Événements",
         "facilities": "Installations techniques",
-        "provenance": "Provenances"
+        "provenance": "Provenances",
+        "vocabulary": "Vocabulaire",
+        "packages": "Librairies"
     },
     "credential": {
+        "default": {
+            "access": "Accès menu",
+            "modification": "Ajout / modification",
+            "delete": "Suppression"
+        },
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
             "delete": "Suppression des expérimentations"

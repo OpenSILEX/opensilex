@@ -70,10 +70,10 @@ public class DocumentAPI {
     public static final String CREDENTIAL_DOCUMENT_GROUP_LABEL_KEY = "credential-groups.documents";
 
     public static final String CREDENTIAL_DOCUMENT_MODIFICATION_ID = "document-modification";
-    public static final String CREDENTIAL_DOCUMENT_MODIFICATION_LABEL_KEY = "credential.document.modification";
+    public static final String CREDENTIAL_DOCUMENT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_DOCUMENT_DELETE_ID = "document-delete";
-    public static final String CREDENTIAL_DOCUMENT_DELETE_LABEL_KEY = "credential.document.delete";
+    public static final String CREDENTIAL_DOCUMENT_DELETE_LABEL_KEY = "credential.default.delete";
 
     protected static final String DOCUMENT_EXAMPLE_URI = "http://opensilex/set/documents/d21";
 
@@ -157,7 +157,7 @@ public class DocumentAPI {
     }
 
     /**
-     * @param Uri Document URI
+     * @param uri Document URI
      * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link DocumentGetDTO}
      */
     @GET
@@ -187,7 +187,7 @@ public class DocumentAPI {
     }
 
     /**
-     * @param Uri Document URI
+     * @param uri Document URI
      * @return a {@link Response} with a {@link SingleObjectResponse} containing the {@link DocumentGetDTO}
      */
     @GET

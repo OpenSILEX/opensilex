@@ -74,10 +74,10 @@ public class ProfileAPI {
     public static final String CREDENTIAL_PROFILE_GROUP_LABEL_KEY = "credential-groups.profiles";
 
     public static final String CREDENTIAL_PROFILE_MODIFICATION_ID = "profile-modification";
-    public static final String CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY = "credential.profile.modification";
+    public static final String CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_PROFILE_DELETE_ID = "profile-delete";
-    public static final String CREDENTIAL_PROFILE_DELETE_LABEL_KEY = "credential.profile.delete";
+    public static final String CREDENTIAL_PROFILE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

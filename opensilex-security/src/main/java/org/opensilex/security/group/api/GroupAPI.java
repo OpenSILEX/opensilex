@@ -62,10 +62,10 @@ public class GroupAPI {
     public static final String CREDENTIAL_GROUP_GROUP_LABEL_KEY = "credential-groups.groups";
 
     public static final String CREDENTIAL_GROUP_MODIFICATION_ID = "group-modification";
-    public static final String CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY = "credential.group.modification";
+    public static final String CREDENTIAL_GROUP_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_GROUP_DELETE_ID = "group-delete";
-    public static final String CREDENTIAL_GROUP_DELETE_LABEL_KEY = "credential.group.delete";
+    public static final String CREDENTIAL_GROUP_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

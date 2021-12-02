@@ -48,10 +48,10 @@ public class AnnotationAPI {
     public static final String CREDENTIAL_ANNOTATION_GROUP_LABEL_KEY = "credential-groups.annotations";
 
     public static final String CREDENTIAL_ANNOTATION_MODIFICATION_ID = "annotation-modification";
-    public static final String CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY = "credential.annotation.modification";
+    public static final String CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_ANNOTATION_DELETE_ID = "annotation-delete";
-    public static final String CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY = "credential.annotation.delete";
+    public static final String CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;

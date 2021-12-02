@@ -573,9 +573,16 @@
         "device" : "Device",
         "events": "Events",
         "facilities": "Facilities",
-        "provenance": "Provenances"
+        "provenance": "Provenances",
+        "vocabulary": "Vocabulary",
+        "packages": "Packages"
     },
     "credential": {
+        "default": {
+            "access": "Access",
+            "modification": "Add / update",
+            "delete": "Delete"
+        },
         "experiment": {
             "modification": "Add / update experiments",
             "delete": "Delete experiments"

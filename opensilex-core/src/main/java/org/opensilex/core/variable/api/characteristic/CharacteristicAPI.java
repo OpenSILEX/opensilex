@@ -6,35 +6,34 @@
 package org.opensilex.core.variable.api.characteristic;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.CharacteristicModel;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.*;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
-import java.net.URI;
-import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.opensilex.core.variable.api.VariableAPI;
-import org.opensilex.core.variable.dal.CharacteristicModel;
-import org.opensilex.core.variable.dal.BaseVariableDAO;
-import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ListWithPagination;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
 
@@ -106,7 +105,39 @@ public class CharacteristicAPI {
             throw new NotFoundURIException(uri);
         }
     }
+    
+    
+    @GET
+    @Path("by_uris")
+    @ApiOperation("Get detailed characteristics by uris")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return characteristics", response = CharacteristicDetailsDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Characteristic not found (if any provided URIs is not found", response = ErrorDTO.class)
+    })
+    public Response getCharacteristicsByURIs(
+            @ApiParam(value = "Characteristics URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty List<URI> uris
+    ) throws Exception {
+        
+        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 
+        try {
+            List<CharacteristicDetailsDTO> resultDTOList = dao.getList(uris)
+                    .stream()
+                    .map(CharacteristicDetailsDTO::new)
+                    .collect(Collectors.toList());
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+        }catch (SPARQLInvalidUriListException e){
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getUris()).getResponse();
+        }
+    }
+    
+    
     @PUT
     @ApiOperation("Update a characteristic")
     @ApiProtected

@@ -439,6 +439,8 @@ components["opensilex-ScientificObjectView"] = ScientificObjectView;
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
+// import UsedVariableList from './variables/UsedVariableList.vue';
+// components["opensilex-UsedVariableList"] = UsedVariableList;
 import VariablesView from './variables/VariablesView.vue';
 components["opensilex-VariablesView"] = VariablesView;
 import VariableDetails from './variables/VariableDetails.vue';
@@ -456,10 +458,16 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
+// import UsedVariableModalList from './variables/UsedVariableModalList.vue';
+// components["opensilex-UsedVariableModalList"] = UsedVariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
 import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
 components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
+// import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
+// components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
+// import UsedVariableSelectorWithFilter from './variables/views/UsedVariableSelectorWithFilter.vue';
+// components["opensilex-UsedVariableSelectorWithFilter"] = UsedVariableSelectorWithFilter;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';
@@ -474,8 +482,12 @@ import GroupVariablesList from './groupVariable/GroupVariablesList.vue';
 components["opensilex-GroupVariablesList"] = GroupVariablesList;
 import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue';
 components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
-import GroupVariablesListWithVariables from './groupVariable/GroupVariablesListWithVariables.vue';
-components["opensilex-GroupVariablesListWithVariables"] = GroupVariablesListWithVariables;
+// import GroupVariablesListWithVariables from './groupVariable/GroupVariablesListWithVariables.vue';
+// components["opensilex-GroupVariablesListWithVariables"] = GroupVariablesListWithVariables;
+// import GroupVariablesModalListWithVariables from './groupVariable/GroupVariablesModalListWithVariables.vue';
+// components["opensilex-GroupVariablesModalListWithVariables"] = GroupVariablesModalListWithVariables;
+import GroupVariablesSelector from './groupVariable/GroupVariablesSelector.vue';
+components["opensilex-GroupVariablesSelector"] = GroupVariablesSelector;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';
@@ -488,6 +500,8 @@ import VariableStructureList from './variables/views/VariableStructureList.vue';
 components["opensilex-VariableStructureList"] = VariableStructureList;
 import VariableStructureDetails from './variables/views/VariableStructureDetails.vue';
 components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
+import EntitySelector from './variables/form/EntitySelector.vue';
+components["opensilex-EntitySelector"] = EntitySelector;
 
 // Entity of interest
 import InterestEntityForm from './variables/form/InterestEntityForm.vue';
@@ -496,6 +510,8 @@ import InterestEntityCreate from './variables/form/InterestEntityCreate.vue';
 components["opensilex-InterestEntityCreate"] = InterestEntityCreate;
 import InterestEntityExternalReferencesForm from './variables/form/InterestEntityExternalReferencesForm.vue';
 components["opensilex-InterestEntityExternalReferencesForm"] = InterestEntityExternalReferencesForm;
+import InterestEntitySelector from './variables/form/InterestEntitySelector.vue';
+components["opensilex-InterestEntitySelector"] = InterestEntitySelector;
 
 // Method
 import MethodCreate from './variables/form/MethodCreate.vue';
@@ -504,6 +520,9 @@ import MethodForm from './variables/form/MethodForm.vue';
 components["opensilex-MethodForm"] = MethodForm;
 import MethodExternalReferencesForm from './variables/form/MethodExternalReferencesForm.vue';
 components["opensilex-MethodExternalReferencesForm"] = MethodExternalReferencesForm;
+import MethodSelector from './variables/form/MethodSelector.vue';
+components["opensilex-MethodSelector"] = MethodSelector;
+
 
 //Characteristic
 import CharacteristicForm from './variables/form/CharacteristicForm.vue';
@@ -512,6 +531,8 @@ import CharacteristicModalForm from './variables/form/CharacteristicModalForm.vu
 components["opensilex-CharacteristicModalForm"] = CharacteristicModalForm;
 import CharacteristicExternalReferencesForm from './variables/form/CharacteristicExternalReferencesForm.vue';
 components["opensilex-CharacteristicExternalReferencesForm"] = CharacteristicExternalReferencesForm;
+import CharacteristicSelector from './variables/form/CharacteristicSelector.vue';
+components["opensilex-CharacteristicSelector"] = CharacteristicSelector;
 
 // Unit
 import UnitForm from './variables/form/UnitForm.vue';
@@ -522,6 +543,8 @@ import UnitExternalReferencesForm from './variables/form/UnitExternalReferencesF
 components["opensilex-UnitExternalReferencesForm"] = UnitExternalReferencesForm;
 import UnitDetails from './variables/views/UnitDetails.vue';
 components["opensilex-UnitDetails"] = UnitDetails;
+import UnitSelector from './variables/form/UnitSelector.vue';
+components["opensilex-UnitSelector"] = UnitSelector;
 
 
 // Data

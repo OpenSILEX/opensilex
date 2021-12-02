@@ -347,10 +347,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return instance;
     }
 
+    /**
+     *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+     */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
         return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang,null);
     }
 
+    /**
+     *
+     * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+     */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler
     ) throws Exception {
@@ -412,11 +419,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param listFieldsToFetch . Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
      * By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
      * The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
-     * must be added into the query which getch these fields data.
+     * must be added into the query which fetch these fields data.
      *
      * @param <T> type of {@link SPARQLResourceModel}
      * @return the list of T corresponding to uris
-     * @throws Exception
+     * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+     * @throws Exception if some error is encountered during query execution
      */
     public <T extends SPARQLResourceModel> List<T> loadListByURIs(Node graph, Class<T> objectClass,
                                                                   Collection<URI> uris,
@@ -436,7 +444,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         String finalLang = lang != null ? lang : getDefaultLang();
 
-        List<T> results =  executeSelectQueryAsStream(select).map(
+        List<T> results = executeSelectQueryAsStream(select).map(
                 result -> {
                     try {
                         if (resultHandler == null) {
@@ -445,19 +453,32 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                             return resultHandler.apply(result);
                         }
                     } catch (Exception e) {
-                        LOGGER.error("Unexpected exception", e);
                         throw new RuntimeException(new SPARQLException(e));
                     }
                 }
         ).collect(Collectors.toCollection(() -> new ArrayList<>(uris.size())));
 
-        if(listFieldsToFetch != null && ! listFieldsToFetch.isEmpty()){
-            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(this, objectClass,graph,listFieldsToFetch,select,results);
+        // check that all URIS have been loaded, if not then throw SPARQLInvalidUriListException
+        if (results.size() < uris.size()) {
+
+            Set<String> existingUris = results.stream()
+                    .map(result -> SPARQLDeserializers.getShortURI(result.getUri()))
+                    .collect(Collectors.toSet());
+
+            // compute the list of URI from input uris which were not found from results
+            List<URI> unknownUris = uris.stream()
+                    .filter(uri -> !existingUris.contains(SPARQLDeserializers.getShortURI(uri)))
+                    .collect(Collectors.toList());
+
+            throw new SPARQLInvalidUriListException("[" + objectClass.getSimpleName() + "] URIs not found: ", unknownUris);
+        }
+
+        if (listFieldsToFetch != null && !listFieldsToFetch.isEmpty()) {
+            SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(this, objectClass, graph, listFieldsToFetch, select, results);
             listFetcher.updateModels();
         }
 
         return results;
-
     }
 
     public <T extends SPARQLResourceModel> T getByUniquePropertyValue(Class<T> objectClass, String lang, Property property, Object propertyValue) throws Exception {

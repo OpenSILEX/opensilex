@@ -6,6 +6,7 @@
 package org.opensilex.sparql.service;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
@@ -34,7 +35,6 @@ import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -45,7 +45,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyStore;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
@@ -80,18 +80,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
-    private final OntologyDAO ontologyDAO;
+    private final OntologyStore ontologyStore;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
         this.connection = config.connection();
-        ontologyDAO = new OntologyDAO(this);
+        ontologyStore = new OntologyStore(this);
     }
 
     public SPARQLService(SPARQLConnection connection) {
         super(null);
         this.connection = connection;
-        ontologyDAO = new OntologyDAO(this);
+        ontologyStore = new OntologyStore(this);
     }
 
     private String defaultLang = OpenSilex.DEFAULT_LANGUAGE;
@@ -759,8 +759,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param lang                  lang
      * @param filterHandler         function defined to update the SPARQL query used for search.
      * @param customHandlerByFields map between {@link SPARQLResourceModel} field and a custom {@link WhereHandler}.
-     *                              By default, all fields are handled by {@link org.opensilex.sparql.mapping.SPARQLClassQueryBuilder},
-     *                              but in some case you may want so specify a custom way to handle this field into the query. Can be null
+     *                              By default, all fields are automatically handled, but in some case you may want to specify
+     *                              a custom way to handle this field into the query. Can be null
      * @param resultHandler         function which define a custom transformation of {@link SPARQLResult} into a instance of T. Can be null
      * @param orderByList
      * @param offset
@@ -902,10 +902,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return new ListWithPagination<>(list, page, pageSize, total);
 
     }
-
-//    public <T extends SPARQLResourceModel> ListWithPagination<T> searchWithPagination(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-//        return this.searchWithPagination(graph, objectClass, lang, filterHandler,null, null, orderByList, page, pageSize);
-//    }
 
     public <T extends SPARQLResourceModel> void create(T instance) throws Exception {
         create(getDefaultGraph(instance.getClass()), instance);
@@ -1147,8 +1143,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
 
-    private final static String NO_CLASS_MODEL_ERROR_MSG = "[%s] No ClassModel associated to type %s . Add the corresponding ClassModel definition into your triplestore or remove the handleCustomProperties annotation on your model";
+    private static final  String NO_CLASS_MODEL_ERROR_MSG = "[%s] No ClassModel associated to type %s ." +
+            " Add the corresponding ClassModel definition into your triplestore or remove the handleCustomProperties annotation on your model";
 
+    /**
+     *
+     * @param graph
+     * @param mapper
+     * @param instance
+     * @param <T>
+     * @throws SPARQLException
+     */
     private <T extends SPARQLResourceModel> void deleteCustomRelations(Node graph, SPARQLClassObjectMapper<T> mapper, T instance) throws SPARQLException {
 
         SPARQLClassAnalyzer analyzer = mapper.getClassAnalizer();
@@ -1162,21 +1167,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI rootType = analyzer.getRdfTypeURI();
         ClassModel classModel;
         try {
-            classModel = ontologyDAO.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
-        } catch (NotFoundURIException e) {
+            classModel = ontologyStore.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
+        } catch (SPARQLInvalidURIException e) {
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
+        }
+
+        if(MapUtils.isEmpty(classModel.getRestrictions())){
+            return;
         }
 
         Set<String> managedPropUris = mapper.getClassAnalizer().getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
-        Set<URI> customProperties = classModel.getRestrictions().values()
+        Set<URI> customProperties = classModel.getRestrictions()
+                .values()
                 .stream()
                 .map(OwlRestrictionModel::getOnProperty)
-                .filter(property -> managedPropUris.contains(URIDeserializer.formatURIAsStr(property.toString())))
+                .filter(property -> ! managedPropUris.contains(property.toString()))
                 .collect(Collectors.toSet());
 
-        deleteRelations(graph, instance.getUri(), customProperties);
+        if(! customProperties.isEmpty()){
+            deleteRelations(graph, instance.getUri(), customProperties);
+        }
     }
 
     public <T extends SPARQLResourceModel> void update(Node graph, T instance) throws Exception {
@@ -1255,17 +1267,20 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void delete(Node graph, Class<T> objectClass, URI uri) throws Exception {
+
+        // load object by uri in order to directly check if the object exist or not
+        T instance = loadByURI(graph, objectClass, uri, getDefaultLang());
+
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         try {
             startTransaction();
-//            if (!uriExists(graph, uri)) {
-//                throw new SPARQLInvalidURIException(uri);
-//            }
             SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
 
+            // DELETE CASCADE object
             Map<Class<? extends SPARQLResourceModel>, List<URI>> relationsToDelete = new HashMap<>();
             Map<Class<? extends SPARQLResourceModel>, List<URI>> reverseRelationsToDelete = new HashMap<>();
             Map<Field, Class<? extends SPARQLResourceModel>> cascadeDeleteClassesProperties = mapper.getCascadeDeleteClassesField();
+
             for (Map.Entry<Field, Class<? extends SPARQLResourceModel>> cascadeDeleteClassField : cascadeDeleteClassesProperties.entrySet()) {
                 Field f = cascadeDeleteClassField.getKey();
 
@@ -1276,37 +1291,37 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     List<URI> relations = getRelationsURI(objectClass, cascadeDeleteClassField.getValue(), f, uri);
                     relationsToDelete.put(cascadeDeleteClassField.getValue(), relations);
                 }
-
             }
-            T instance = loadByURI(graph, objectClass, uri, getDefaultLang());
 
             for (Map.Entry<Class<? extends SPARQLResourceModel>, List<URI>> relationToDelete : reverseRelationsToDelete.entrySet()) {
                 delete(relationToDelete.getKey(), relationToDelete.getValue());
             }
 
+            // DELETE reverse relations
             Iterator<Map.Entry<Class<? extends SPARQLResourceModel>, Field>> i = mapperIndex.getReverseReferenceIterator(objectClass);
             Node uriNode = SPARQLDeserializers.nodeURI(uri);
 
             while (i.hasNext()) {
                 UpdateBuilder deleteAllReverseReferencesBuilder = new UpdateBuilder();
                 Map.Entry<Class<? extends SPARQLResourceModel>, Field> entry = i.next();
-                String var = "?x1";
+                String uriVar = "?uri";
                 SPARQLClassObjectMapper<SPARQLResourceModel> reverseMapper = mapperIndex.getForClass(entry.getKey());
                 Property reverseProp = reverseMapper.getFieldProperty(entry.getValue());
                 Node defaultGraph = reverseMapper.getDefaultGraph();
+
                 if (defaultGraph != null) {
-                    deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), var, reverseProp, uriNode);
+                    deleteAllReverseReferencesBuilder.addDelete(reverseMapper.getDefaultGraph(), uriVar, reverseProp, uriNode);
                 } else {
-                    deleteAllReverseReferencesBuilder.addDelete(var, reverseProp, uriNode);
+                    deleteAllReverseReferencesBuilder.addDelete(uriVar, reverseProp, uriNode);
                 }
-                deleteAllReverseReferencesBuilder.addWhere(var, reverseProp, uriNode);
+                deleteAllReverseReferencesBuilder.addWhere(uriVar, reverseProp, uriNode);
                 executeDeleteQuery(deleteAllReverseReferencesBuilder);
             }
 
-            if (instance != null) {
-                UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
-                executeDeleteQuery(delete);
-            }
+            deleteCustomRelations(graph,mapper,instance);
+
+            UpdateBuilder delete = mapper.getDeleteBuilder(graph, instance);
+            executeDeleteQuery(delete);
 
             UpdateBuilder deleteRelations = mapper.getDeleteRelationsBuilder(graph, uri);
             if (deleteRelations != null) {

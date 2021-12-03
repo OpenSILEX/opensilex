@@ -1159,7 +1159,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         // try to retrieve associated ClassModel
-        URI rootType = analyzer.getRDFTypeURI();
+        URI rootType = analyzer.getRdfTypeURI();
         ClassModel classModel;
         try {
             classModel = ontologyDAO.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);

@@ -201,10 +201,12 @@ let store = new Vuex.Store({
         console.debug("Define user");
         currentUser = user;
         state.user = user;
-        console.debug("Reset router");
-        state.openSilexRouter.resetRouter(state.user);
-        console.debug("Reset menu");
-        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+        if (state.openSilexRouter) {
+          console.debug("Reset router");
+          state.openSilexRouter.resetRouter(state.user);
+          console.debug("Reset menu");
+          state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+        }
       }
     },
     logout(state) {
@@ -296,6 +298,14 @@ let store = new Vuex.Store({
     },
     goBack(state) {
       state.previousPage.pop();
+    },
+    resetRouter(state) {
+      if (state.openSilexRouter) {
+        console.debug("Reset router");
+        state.openSilexRouter.resetRouter(state.user);
+        console.debug("Reset menu");
+        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+      }
     }
   },
   actions: {

@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import org.opensilex.front.config.CustomMenuItem;
 import org.opensilex.front.config.MenuItem;
@@ -17,7 +18,7 @@ import org.opensilex.front.config.MenuItem;
 @ApiModel
 public class MenuItemDTO {
 
-    public static MenuItemDTO fromModel(MenuItem menuItem, Map<String, String> menuLabelMap, List<String> menuExclusions) {
+    public static MenuItemDTO fromModel(MenuItem menuItem, Map<String, String> menuLabelMap, List<String> menuExclusions, Set<String> userCredentials) {
         MenuItemDTO menuDTO = new MenuItemDTO();
 
         menuDTO.setId(menuItem.id());
@@ -26,8 +27,11 @@ public class MenuItemDTO {
         List<MenuItem> mc = menuItem.children();
         List<MenuItemDTO> children = new ArrayList<>(mc.size());
         for (MenuItem child : mc) {
-            if (!menuExclusions.contains(child.id())) {
-                children.add(fromModel(child, menuLabelMap, menuExclusions));
+            // Exclude menu entries based on the config and the user credentials
+            boolean hasUserCredentials = userCredentials == null || // null credentials means we don't check (e.g. user is admin)
+                    child.route().credentials() == null || userCredentials.containsAll(child.route().credentials());
+            if (!menuExclusions.contains(child.id()) && hasUserCredentials) {
+                children.add(fromModel(child, menuLabelMap, menuExclusions, userCredentials));
             }
         }
         menuDTO.setChildren(children.toArray(new MenuItemDTO[children.size()]));

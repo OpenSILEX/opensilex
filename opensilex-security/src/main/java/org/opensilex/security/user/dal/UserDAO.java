@@ -110,7 +110,7 @@ public final class UserDAO {
         return user;
     }
 
-    public List<String> getAccessList(URI uri) throws Exception {
+    public List<String> getCredentialList(URI uri) throws Exception {
         ProfileDAO profileDAO = new ProfileDAO(sparql);
         List<ProfileModel> userProfiles = profileDAO.getByUserURI(uri);
 

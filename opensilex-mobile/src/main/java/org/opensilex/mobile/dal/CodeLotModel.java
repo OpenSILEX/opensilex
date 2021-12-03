@@ -6,12 +6,8 @@
 //******************************************************************************
 package org.opensilex.mobile.dal;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * This class builds objects that represent an available unused CodeLot with all
@@ -21,11 +17,11 @@ import org.opensilex.nosql.mongodb.MongoModel;
  *
  * @author Maximilian Hart
  */
-public class CodeLotModel extends MongoModel {
+public class CodeLotModel {
 
     private final String head;
-    private final List<URI> availableChildren;
-    private final List<URI> parents;
+    private final List<CodeLotModel> availableChildren;
+    private final List<CodeLotModel> parents;
 
     public CodeLotModel(String head) {
         this.head = head;
@@ -37,34 +33,27 @@ public class CodeLotModel extends MongoModel {
         return head;
     }
 
-    public List<URI> getParents() {
+    public List<CodeLotModel> getParents() {
         return parents;
     }
 
-    public List<URI> getAvailableChildren() {
+    public List<CodeLotModel> getAvailableChildren() {
         return availableChildren;
     }
 
     public void addChild(CodeLotModel child) {
-        this.availableChildren.add(child.uri);
+        this.availableChildren.add(child);
     }
 
     public void addParent(CodeLotModel parent) {
-        this.parents.add(parent.uri);
+        this.parents.add(parent);
     }
 
-    @Override
-    public String[] getUriSegments(MongoModel instance) {
-        return new String[]{
-            "code_lot_head:" + head
-        };
-    }
-
-    public boolean containsChild(String child, Map<URI, CodeLotModel> allCodesMap) {
+    public boolean containsChild(String child) {
         boolean found = false;
         int i = 0;
         while (!found && i < availableChildren.size()) {
-            if (allCodesMap.get(availableChildren.get(i)).getHead().equals(child)) {
+            if (availableChildren.get(i).getHead().equals(child)) {
                 found = true;
             }
             i++;

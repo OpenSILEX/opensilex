@@ -32,13 +32,13 @@ public class CodeLotDAO {
 
     public CodeLotModel create(CodeLotModel code) throws Exception {
         nosql.getDatabase().getCollection(CODELOT_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
-        nosql.create(code, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
+        //nosql.create(code, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
 
         return code;
     }
 
     public List<CodeLotModel> createAll(List<CodeLotModel> instances) throws Exception {
-        nosql.createAll(instances, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
+        //nosql.createAll(instances, CodeLotModel.class, CODELOT_COLLECTION_NAME, CODELOT_PREFIX);
         return instances;
     }
 
@@ -69,6 +69,6 @@ public class CodeLotDAO {
     }
     
     public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(CodeLotModel.class, CODELOT_COLLECTION_NAME, uri);
+        //nosql.delete(CodeLotModel.class, CODELOT_COLLECTION_NAME, uri);
     }
 }

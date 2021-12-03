@@ -47,7 +47,7 @@ public class CodeLotGetDTO {
         this.availableChildren = children;
     }
 
-    @JsonProperty("available_children")
+    @JsonProperty("parents")
     public List<URI> getParents() {
         return parents;
     }
@@ -69,10 +69,10 @@ public class CodeLotGetDTO {
 
     public static CodeLotGetDTO fromModel(CodeLotModel model) {
         CodeLotGetDTO codeLotGetDTO = new CodeLotGetDTO();
-        codeLotGetDTO.setUri(model.getUri());
+        //codeLotGetDTO.setUri(model.getUri());
         codeLotGetDTO.setHead(model.getHead());
-        codeLotGetDTO.setChildren(model.getAvailableChildren());
-        codeLotGetDTO.setParents(model.getParents());
+        //codeLotGetDTO.setChildren(model.getAvailableChildren());
+        //codeLotGetDTO.setParents(model.getParents());
         return codeLotGetDTO;
     }
 

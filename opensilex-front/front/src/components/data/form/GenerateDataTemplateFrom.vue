@@ -11,7 +11,7 @@
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
 
     <div>
-      <ValidationObserver ref="validatorRefDataTemplate">
+      <!-- <ValidationObserver ref="validatorRefDataTemplate"> -->
         <b-row>
           <b-col>
             <b-form-group v-if="experiment==null" :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
@@ -32,23 +32,23 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-              <opensilex-VariableSelector
+              <!-- <opensilex-VariableSelector
                   label="DataTemplateForm.select-variables"
                   placeholder="VariableList.label-filter-placeholder"
                   :multiple="true"
                   :variables.sync="variables"
                   :required="requiredField"
               >
-              </opensilex-VariableSelector>
+              </opensilex-VariableSelector> -->
 
-<!--            <opensilex-VariableSelectorWithFilter-->
-<!--              label="DataTemplateForm.select-variables"-->
-<!--              placeholder="VariableList.label-filter-placeholder"-->
-<!--              :multiple="true"-->
-<!--              :variables.sync="variables"-->
-<!--              :required="requiredField"-->
-<!--            >-->
-<!--            </opensilex-VariableSelectorWithFilter>-->
+            <opensilex-VariableSelectorWithFilter
+              label="DataTemplateForm.select-variables"
+              placeholder="VariableList.label-filter-placeholder"
+              :multiple="true"
+              :variables.sync="variables"
+              :required="false"
+            >
+            </opensilex-VariableSelectorWithFilter>
 
             <opensilex-CheckboxForm
               :value.sync="withRawData"
@@ -63,9 +63,11 @@
         <b-button 
           @click="csvExport" 
           variant="outline-primary" 
-          :disabled="experiment==null && !validSelection">{{
+          :disabled="experiment==null && !validSelection || variables.length == 0">{{
           $t("OntologyCsvImporter.downloadTemplate")
         }}</b-button>
+        &nbsp;
+        <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
         <b-button
           v-if="variables.length == 0"
           class="float-right"
@@ -75,7 +77,7 @@
           >{{ $t("DataHelp.download-template-example") }}</b-button
         >
         <hr />
-      </ValidationObserver>
+      <!-- </ValidationObserver> -->
     </div>
   </b-modal>
 </template>
@@ -84,7 +86,7 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {VariableDatatypeDTO, VariablesService} from "opensilex-core/index";
+import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
@@ -123,7 +125,7 @@ export default class GenerateDataTemplateFrom extends Vue {
     { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
-  @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
+  //@Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
   @Ref("modalRef") readonly modalRef!: any;
 
@@ -144,19 +146,19 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   datatypes: Array<VariableDatatypeDTO> = [];
 
-  reset() {
-    this.validatorRefDataTemplate.reset();
-    this.experiment = null;
-    this.variables = [];
-  }
+  // reset() {
+  //   this.validatorRefDataTemplate.reset();
+  //   this.experiment = null;
+  //   this.variables = [];
+  // }
 
   show() {
     this.modalRef.show();
   }
 
-  validateTemplate() {
-    return this.validatorRefDataTemplate.validate();
-  }
+  // validateTemplate() {
+  //   return this.validatorRefDataTemplate.validate({ silent: true });
+  // }
 
   loadDatatypes() {
     if (this.datatypes.length == 0) {
@@ -309,9 +311,9 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   csvExport() {
     let arrData;
-    this.validateTemplate().then((isValid) => {
+    //this.validateTemplate().then((isValid) => {
       // fill in large
-      if (isValid) {
+      //if (isValid) {
         let line1 = [];
         let line2 = [];
         let line3 = [];
@@ -388,8 +390,8 @@ export default class GenerateDataTemplateFrom extends Vue {
             "datasetTemplate"
           );
         });
-      }
-    });
+      //}
+    //});
   }
 
   loadMethods() {
@@ -435,6 +437,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 <i18n>
 en :
   DataTemplateForm:
+    help: The button is disabled if no variables are selected
     with-raw-data: "With raw data columns"
     raw-data: "Raw data"
     type-list: "Array of "
@@ -446,6 +449,7 @@ en :
       column-data-type : "Column data type: "
 fr :
   DataTemplateForm:
+    help: Le bouton est désactivé si aucune variable n'est sélectionnée
     with-raw-data: "Avec colonnes 'raw data' (données brutes)"
     raw-data: "Données brutes"
     type-list: "Liste de "

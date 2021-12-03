@@ -22,7 +22,6 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
@@ -292,7 +291,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     }
 
     @Override
-    public MoveModel update(MoveModel model, ClassModel classModel) throws Exception {
+    public MoveModel update(MoveModel model) throws Exception {
 
         check(Collections.singletonList(model), false);
 

@@ -5,41 +5,12 @@
  */
 package org.opensilex.front.vueOwlExtension.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
-import org.opensilex.core.ontology.dal.cache.OntologyCache;
-import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
+import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
@@ -52,9 +23,25 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.service.SPARQLService;
 
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 /**
  *
  * @author vince

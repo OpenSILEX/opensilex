@@ -75,6 +75,7 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;

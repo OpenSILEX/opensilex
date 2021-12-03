@@ -7,15 +7,15 @@ package org.opensilex.front.vueOwlExtension.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
+import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.OpenSilex;
-import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  *

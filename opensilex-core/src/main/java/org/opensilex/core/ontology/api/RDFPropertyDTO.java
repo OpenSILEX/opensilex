@@ -7,14 +7,15 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.PropertyModel;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.PropertyModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  *

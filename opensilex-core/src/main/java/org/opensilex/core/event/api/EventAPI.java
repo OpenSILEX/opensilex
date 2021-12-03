@@ -11,7 +11,6 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.api.csv.EventCsvImporter;
 import org.opensilex.core.event.api.move.MoveCreationDTO;
@@ -27,7 +26,6 @@ import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.core.ontology.dal.CSVValidationModel;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -41,13 +39,13 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -309,7 +307,7 @@ public class EventAPI {
                 setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
             }
         }
-        dao.update(model,eventClassModel);
+        dao.update(model);
 
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
@@ -599,7 +597,7 @@ public class EventAPI {
             setEventRelations(model, dto.getRelations(), dao.getGraph(), ontologyDAO, eventClassModel);
         }
 
-        dao.update(model,eventClassModel);
+        dao.update(model);
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
 

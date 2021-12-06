@@ -1,5 +1,6 @@
 package org.opensilex.mobile.dal;
 
+import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 import java.net.URI;
@@ -21,6 +22,7 @@ public class FormModel extends MongoModel {
     private Instant lastUpdateDate;
     private String offset;
 
+    @BsonCreator
     public FormModel(){}
     public FormModel(String codeLot, String commitAddress, boolean isRoot, Instant creationDate){
         constructorBis(codeLot, commitAddress, isRoot);

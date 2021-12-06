@@ -139,7 +139,7 @@ export class {{classname}} {
 {{/bodyParam}}
 
 {{#hasFormParams}}
-        let formData: FormData = new FormData();
+        let sectionData: FormData = new FormData();
         headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 {{#formParams}}
 {{#required}}
@@ -151,17 +151,17 @@ export class {{classname}} {
         if ({{paramName}}) {
         {{#isCollectionFormatMulti}}
             {{paramName}}.forEach((element) => {
-                formData.append('{{baseName}}', <any>element);
+                sectionData.append('{{baseName}}', <any>element);
             })
         {{/isCollectionFormatMulti}}
         {{^isCollectionFormatMulti}}
-            formData.append('{{baseName}}', {{paramName}}.join(COLLECTION_FORMATS['{{collectionFormat}}']));
+            sectionData.append('{{baseName}}', {{paramName}}.join(COLLECTION_FORMATS['{{collectionFormat}}']));
         {{/isCollectionFormatMulti}}
         }
         {{/isListContainer}}
         {{^isListContainer}}
         if ({{paramName}} !== undefined) {
-            formData.append('{{baseName}}', <any>{{paramName}});
+            sectionData.append('{{baseName}}', <any>{{paramName}});
         }
         {{/isListContainer}}
 {{/formParams}}

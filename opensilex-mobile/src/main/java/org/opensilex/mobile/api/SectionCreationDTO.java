@@ -8,7 +8,7 @@ package org.opensilex.mobile.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
+
 import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
@@ -32,7 +32,7 @@ public class SectionCreationDTO {
   
     private String creationDate;
 
-    private Map formData;
+    private List<Map> sectionData;
 
     private String timezone;
 
@@ -40,13 +40,13 @@ public class SectionCreationDTO {
 
     private String name;
 
-    @JsonProperty("form_data")
-    public Map getFormData() {
-        return formData;
+    @JsonProperty("section_data")
+    public List<Map> getSectionData() {
+        return sectionData;
     }
 
-    public void setFormData(Map formData) {
-        this.formData = formData;
+    public void setSectionData(List<Map> sectionData) {
+        this.sectionData = sectionData;
     }
     
     @JsonProperty("created_date")
@@ -95,7 +95,7 @@ public class SectionCreationDTO {
         SectionModel model = new SectionModel();
         model.setCommitAddress(commitAddress);
         model.setName(name);
-        model.setFormData(new Document(formData));
+        model.setSectionData(sectionData);
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getCreationDate(), getTimezone());
 
         if (parsedDateTimeMongo == null) {

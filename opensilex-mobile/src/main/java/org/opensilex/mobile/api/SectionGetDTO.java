@@ -18,7 +18,7 @@ public class SectionGetDTO extends SectionUpdateDTO {
         SectionGetDTO sectionGetDTO = new SectionGetDTO();
         sectionGetDTO.setCreationDate(model.getCreationDate().toString());
         sectionGetDTO.setUpdateDate(model.getLastUpdateDate().toString());
-        sectionGetDTO.setFormData(model.getFormData());
+        sectionGetDTO.setSectionData(model.getSectionData());
         sectionGetDTO.setTimezone(model.getOffset());
         sectionGetDTO.setUri( model.getUri());
         sectionGetDTO.setCommitAddress(model.getCommitAddress());

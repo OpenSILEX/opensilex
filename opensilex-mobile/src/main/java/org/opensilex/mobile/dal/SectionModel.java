@@ -7,6 +7,9 @@
 package org.opensilex.mobile.dal;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -16,18 +19,17 @@ import org.opensilex.nosql.mongodb.MongoModel;
 public class SectionModel  extends MongoModel {  
     
     private String commitAddress;
-    private Document formData;
-    //private List<Map> formData;
+    private List<Map> sectionData;
     private String name;
     private Instant creationDate;
     private Instant lastUpdateDate;
     private String offset;
 
-    public Document getFormData() {
-        return formData;
+    public List<Map> getSectionData() {
+        return sectionData;
     }
-    public void setFormData(Document formData) {
-        this.formData = formData;
+    public void setSectionData(List<Map> sectionData) {
+        this.sectionData = sectionData;
     }
     public void setCommitAddress(String commitAddress) {
         this.commitAddress = commitAddress;

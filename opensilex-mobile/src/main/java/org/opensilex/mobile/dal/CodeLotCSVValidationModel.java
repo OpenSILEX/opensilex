@@ -25,7 +25,7 @@ public class CodeLotCSVValidationModel extends CSVValidationModel {
     //@JsonIgnore()
     //private HashMap<DataModel, Integer> data = new HashMap<>();
     @JsonIgnore()
-    private HashMap<CodeLotModel, Integer> codes = new HashMap<>();
+    private HashMap<CodeLotModel, Integer> unsavableData = new HashMap<>();
 
     private final Map<Integer, List<CSVCell>> noParentErrors = new HashMap<>();
     private final Map<Integer, List<CSVCell>> boucleErrors = new HashMap<>();
@@ -96,16 +96,16 @@ public class CodeLotCSVValidationModel extends CSVValidationModel {
         this.duplicatedDataErrors = duplicatedDataErrors;
     }
 
-    public HashMap<CodeLotModel, Integer> getData() {
-        return codes;
+    public HashMap<CodeLotModel, Integer> getUnsavableData() {
+        return unsavableData;
     }
 
-    public void setData(HashMap<CodeLotModel, Integer> codes) {
-        this.codes = codes;
+    public void setUnsavableData(HashMap<CodeLotModel, Integer> codes) {
+        this.unsavableData = codes;
     }
 
-    public void addData(CodeLotModel code, Integer rowNumber) {
-        this.codes.put(code, rowNumber);
+    public void addUnsavableData(CodeLotModel code, Integer rowNumber) {
+        this.unsavableData.put(code, rowNumber);
     }
 
     public boolean isTooLargeDataset() {

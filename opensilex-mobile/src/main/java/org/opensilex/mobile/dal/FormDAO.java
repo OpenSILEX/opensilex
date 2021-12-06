@@ -20,26 +20,26 @@ import org.opensilex.utils.OrderBy;
 
 /**
  *
- * @author Arnaud Charleroy
+ * @author Maximilian Hart
  */
 public class FormDAO {
     public static final String FORM_COLLECTION_NAME = "forms";
     public static final String FORM_PREFIX = "id/forms";
-    protected final MongoDBService nosql; 
-     
-    public FormDAO(MongoDBService nosql ) {
-        this.nosql = nosql; 
-    }  
+    protected final MongoDBService nosql;
 
-    public SectionModel create(SectionModel form) throws Exception {
+    public FormDAO(MongoDBService nosql ) {
+        this.nosql = nosql;
+    }
+
+    public FormModel create(FormModel form) throws Exception {
         nosql.getDatabase().getCollection(FORM_COLLECTION_NAME).createIndex(Indexes.ascending("uri"), new IndexOptions().unique(true));
-        nosql.create(form, SectionModel.class, FORM_COLLECTION_NAME, FORM_PREFIX);
+        nosql.create(form, FormModel.class, FORM_COLLECTION_NAME, FORM_PREFIX);
 
         return form;
     }
-    
-    
-    public ListWithPagination<SectionModel> search(
+
+
+    public ListWithPagination<FormModel> search(
             List<URI> uris,
             List<OrderBy> orderByList,
             Integer page,
@@ -47,34 +47,34 @@ public class FormDAO {
 
         Document filter = searchFilter(uris);
 
-        ListWithPagination<SectionModel> forms = nosql.searchWithPagination(SectionModel.class, FORM_COLLECTION_NAME, filter, orderByList, page, pageSize);
+        ListWithPagination<FormModel> forms = nosql.searchWithPagination(FormModel.class, FORM_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
         return forms;
 
     }
-    
-    public Document searchFilter(List<URI> uris) throws Exception {   
-                
+
+    public Document searchFilter(List<URI> uris) throws Exception {
+
         Document filter = new Document();
 
         if (uris != null && !uris.isEmpty()) {
-            Document inFilter = new Document(); 
+            Document inFilter = new Document();
             inFilter.put("$in", uris);
             filter.put("uri", inFilter);
-        }                
+        }
         return filter;
     }
-    
+
     public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(SectionModel.class, FORM_COLLECTION_NAME, uri);
+        nosql.delete(FormModel.class, FORM_COLLECTION_NAME, uri);
     }
 
     public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(SectionModel.class, FORM_COLLECTION_NAME, uris);
+        nosql.delete(FormModel.class, FORM_COLLECTION_NAME, uris);
     }
-    
-    public SectionModel update(SectionModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, SectionModel.class, FORM_COLLECTION_NAME);
+
+    public FormModel update(FormModel instance) throws NoSQLInvalidURIException {
+        nosql.update(instance, FormModel.class, FORM_COLLECTION_NAME);
         return instance;
     }
 

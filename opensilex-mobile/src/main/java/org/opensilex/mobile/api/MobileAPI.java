@@ -22,6 +22,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,11 +56,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.mobile.dal.CodeLotCSVValidationModel;
-import org.opensilex.mobile.dal.CodeLotDAO;
-import org.opensilex.mobile.dal.CodeLotModel;
-import org.opensilex.mobile.dal.FormDAO;
-import org.opensilex.mobile.dal.SectionModel;
+import org.opensilex.mobile.dal.*;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -102,7 +101,7 @@ public class MobileAPI {
     private MongoDBService nosql;
 
     /**
-     * Create a form
+     * Create a section
      *
      * @param dto the Form to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
@@ -110,18 +109,18 @@ public class MobileAPI {
      * @throws java.lang.Exception if creation failed
      */
     @POST
-    @Path("forms")
+    @Path("sections_post")
     @ApiOperation("Add a form")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add a form", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Add a section", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),})
-    public Response createForm(
-            @ApiParam("Form to save") @NotNull @Valid FormCreationDTO dto
+    public Response createSection(
+            @ApiParam("Section to save") @NotNull @Valid SectionCreationDTO dto
     ) throws Exception {
-        FormDAO dao = new FormDAO(nosql);
+        SectionDAO dao = new SectionDAO(nosql);
         SectionModel createdForm = dao.create(dto.newModel());
         return new ObjectUriResponse(Response.Status.CREATED, createdForm.getUri()).getResponse();
     }
@@ -137,12 +136,13 @@ public class MobileAPI {
      * @throws java.lang.Exception if fail
      */
     @GET
-    @ApiOperation("Search forms")
+    @Path("section_get")
+    @ApiOperation("Search sections")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return form list", response = FormGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return form list", response = SectionGetDTO.class, responseContainer = "List")
     })
     public Response searchFormList(
             @ApiParam(value = "Search by uris") @QueryParam("uris") List<URI> uris,
@@ -150,7 +150,7 @@ public class MobileAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        FormDAO dao = new FormDAO(nosql);
+        SectionDAO dao = new SectionDAO(nosql);
         
         ListWithPagination<SectionModel> resultList = dao.search(
                 uris,
@@ -159,7 +159,7 @@ public class MobileAPI {
                 pageSize
         );
         
-        ListWithPagination<FormGetDTO> resultDTOList = resultList.convert(FormGetDTO.class, FormGetDTO::fromModel);
+        ListWithPagination<SectionGetDTO> resultDTOList = resultList.convert(SectionGetDTO.class, SectionGetDTO::fromModel);
         
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
@@ -167,25 +167,25 @@ public class MobileAPI {
     /**
      * Delete form
      *
-     * @param uri , uri of the form to delete
+     * @param uri , uri of the section to delete
      * @return a {@link Response}
      * @throws java.lang.Exception if fail
      */
     @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete form")
+    @Path("delete_section/{uri}")
+    @ApiOperation("Delete section")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Form deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Section deleted", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Form URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response deleteForm(
-            @ApiParam(value = "Form URI", required = true) @PathParam("uri") @NotNull URI uri)
+    public Response deleteSection(
+            @ApiParam(value = "Section URI", required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            FormDAO dao = new FormDAO(nosql);
+            SectionDAO dao = new SectionDAO(nosql);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -194,15 +194,16 @@ public class MobileAPI {
     }
 
     /**
-     * Update form
+     * Update section
      *
-     * @param dto , form containing modifications to update
+     * @param dto , section containing modifications to update
      * @return a {@link Response}
      * @throws java.lang.Exception if fail
      */
     @PUT
+    @Path("section_put")
     @ApiProtected
-    @ApiOperation("Update form")
+    @ApiOperation("Update section")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -210,16 +211,16 @@ public class MobileAPI {
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     
-    public Response update(
-            @ApiParam("Form description") @Valid FormUpdateDTO dto
+    public Response updateSection(
+            @ApiParam("Section description") @Valid SectionUpdateDTO dto
     ) throws Exception {
         
-        FormDAO dao = new FormDAO(nosql);
+        SectionDAO dao = new SectionDAO(nosql);
         
         try {
             SectionModel model = dto.newModel();
             dao.update(model);
-            return new SingleObjectResponse<>(FormGetDTO.fromModel(model)).getResponse();
+            return new SingleObjectResponse<>(SectionGetDTO.fromModel(model)).getResponse();
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
             
@@ -239,30 +240,30 @@ public class MobileAPI {
      * @throws java.lang.Exception if fail
      */
     @GET
-    @Path("/codelot")
-    @ApiOperation("Search codeLots")
+    @Path("form_get")
+    @ApiOperation("Search forms")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return codelot list", response = CodeLotGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return form list", response = FormGetDTO.class, responseContainer = "List")
     })
-    public Response searchCodeLots(
+    public Response searchForms(
             @ApiParam(value = "Search by uris") @QueryParam("uris") List<URI> uris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        CodeLotDAO dao = new CodeLotDAO(nosql);
+        FormDAO dao = new FormDAO(nosql);
 
-        ListWithPagination<CodeLotModel> resultList = dao.search(
+        ListWithPagination<FormModel> resultList = dao.search(
                 uris,
                 orderByList,
                 page,
                 pageSize
         );
 
-        ListWithPagination<CodeLotGetDTO> resultDTOList = resultList.convert(CodeLotGetDTO.class, CodeLotGetDTO::fromModel);
+        ListWithPagination<FormGetDTO> resultDTOList = resultList.convert(FormGetDTO.class, FormGetDTO::fromModel);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
@@ -275,20 +276,20 @@ public class MobileAPI {
      * @throws java.lang.Exception if fail
      */
     @DELETE
-    @Path("/codelot/{uri}")
-    @ApiOperation("Delete codelot")
+    @Path("/form/{uri}")
+    @ApiOperation("Delete form")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Codelot deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Form deleted", response = ObjectUriResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Codelot URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
-    public Response deleteCodeLot(
+    public Response deleteForm(
             @ApiParam(value = "CodeLot URI", required = true) @PathParam("uri") @NotNull URI uri)
             throws Exception {
         try {
-            CodeLotDAO dao = new CodeLotDAO(nosql);
+            FormDAO dao = new FormDAO(nosql);
             dao.delete(uri);
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         } catch (NoSQLInvalidURIException e) {
@@ -296,6 +297,65 @@ public class MobileAPI {
         }
     }
 
+    /**
+     * Create a form
+     *
+     * @param dto the Form to create
+     * @return a {@link Response} with a {@link ObjectUriResponse} containing
+     * the created Form {@link URI}
+     * @throws java.lang.Exception if creation failed
+     */
+    @POST
+    @Path("forms_post")
+    @ApiOperation("Add a form")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Add a form", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),})
+    public Response createForm(
+            @ApiParam("Form to save") @NotNull @Valid FormCreationDTO dto
+    ) throws Exception {
+        FormDAO dao = new FormDAO(nosql);
+        FormModel createdForm = dao.create(dto.newModel());
+        return new ObjectUriResponse(Response.Status.CREATED, createdForm.getUri()).getResponse();
+    }
+
+    /**
+     * Update form
+     *
+     * @param dto , form containing modifications to update
+     * @return a {@link Response}
+     * @throws java.lang.Exception if fail
+     */
+    @PUT
+    @Path("form_put")
+    @ApiProtected
+    @ApiOperation("Update form")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
+    public Response updateForm(
+            @ApiParam("Form description") @Valid FormUpdateDTO dto
+    ) throws Exception {
+
+        FormDAO dao = new FormDAO(nosql);
+
+        try {
+            FormModel model = dto.newModel();
+            dao.update(model);
+            return new SingleObjectResponse<>(FormGetDTO.fromModel(model)).getResponse();
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Invalid or unknown data URI ", dto.getUri());
+
+        } catch (DateValidationException e) {
+            return new DateMappingExceptionResponse().toResponse(e);
+        }
+    }
 
     @POST
     @Path("import")
@@ -314,7 +374,6 @@ public class MobileAPI {
     public Response importCSVCodes(
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
-        CodeLotDAO dao = new CodeLotDAO(nosql);
 
         CodeLotCSVValidationModel validation;
 
@@ -324,13 +383,20 @@ public class MobileAPI {
 
         validation.setInsertionStep(true);
         validation.setValidCSV(!validation.hasErrors());
-        validation.setNbLinesToImport(validation.getData().size());
+        Map<CodeLotModel, Integer> unsavableDataMap = validation.getUnsavableData();
+        Map<FormModel, Integer> formLineindexMap = new HashMap<>();
+        List<FormModel> data = new ArrayList<>();
+        validation.setNbLinesToImport(unsavableDataMap.size());
 
         if (validation.isValidCSV()) {
             Instant start = Instant.now();
-            List<CodeLotModel> data = new ArrayList<>(validation.getData().keySet());
+            List<CodeLotModel> unsavableData = new ArrayList<>(unsavableDataMap.keySet());
             try {
-                dao.createAll(data);
+                Map<CodeLotModel, FormModel> codeFormMap = convertAndCreate(unsavableData.stream().filter(x -> x.getParents().isEmpty()).collect(Collectors.toList()), new HashMap<>(), null, new FormDAO(nosql));
+                data = new ArrayList<>(codeFormMap.values());
+                for(CodeLotModel c : codeFormMap.keySet()){
+                    formLineindexMap.put(codeFormMap.get(c), unsavableDataMap.get(c));
+                }
                 validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
@@ -339,9 +405,10 @@ public class MobileAPI {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
                     int index = bulkErrors.get(i).getIndex();
-                    CodeLotGetDTO fromModel = CodeLotGetDTO.fromModel(data.get(index));
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), 0, fromModel.getHead(), "cell");
+                    FormGetDTO fromModel = FormGetDTO.fromModel(data.get(index));
+                    CSVCell csvCell = new CSVCell(formLineindexMap.get(data.get(index)), 0, fromModel.getCodeLot(), "cell");
                     validation.addDuplicatedDataError(csvCell);
+
                 }
             } catch (MongoCommandException e) {
                 CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
@@ -355,6 +422,27 @@ public class MobileAPI {
         }
         csvValidation.setCodelotErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
+    }
+    /*
+     * For now this converts and creates all codes. TODO : Add a fromExisting parameter if we handle mixing with existing forms.
+     */
+    private Map<CodeLotModel, FormModel> convertAndCreate(List<CodeLotModel> codes, HashMap<CodeLotModel, FormModel> visited, FormModel parent, FormDAO dao) throws Exception {
+        for(CodeLotModel code : codes){
+            FormModel form;
+            if(!visited.containsKey(code)) {
+                form = new FormModel(code.getHead(), "firstCommit", parent==null, Instant.now());
+                form = dao.create(form);
+                visited.put(code, form);
+            }else{
+                form = visited.get(code);
+            }
+            if(parent!=null){
+                form.addParent(parent.getUri());
+                parent.addAvChild(form.getUri());
+            }
+            convertAndCreate(code.getAvailableChildren(), visited, form, dao);
+        }
+        return visited;
     }
 
     private final String parentHeader = "parent";
@@ -563,8 +651,8 @@ public class MobileAPI {
                     }
                 }
                 if (!(foundParent && (!foundChild) && child == null)) {
-                    csvValidation.addData(childCode, rowIndex);
-                    csvValidation.addData(parentCode, rowIndex);
+                    csvValidation.addUnsavableData(childCode, rowIndex);
+                    csvValidation.addUnsavableData(parentCode, rowIndex);
                 }
             }
         }

@@ -24,6 +24,7 @@ public class FormModel extends MongoModel {
 
     /*@BsonCreator
     public FormModel(){}*/
+    public FormModel(){};
     public FormModel(String codeLot, String commitAddress, boolean isRoot, Instant creationDate){
         constructorBis(codeLot, commitAddress, isRoot);
         this.creationDate = creationDate;

@@ -430,7 +430,8 @@ public class MobileAPI {
         for(CodeLotModel code : codes){
             FormModel form;
             if(!visited.containsKey(code)) {
-                form = new FormModel(code.getHead(), "firstCommit", parent==null, Instant.now());
+                Instant now = Instant.now();
+                form = new FormModel(code.getHead(), "firstCommit", parent==null, removeMillis(now));
                 form = dao.create(form);
                 visited.put(code, form);
             }else{
@@ -444,24 +445,31 @@ public class MobileAPI {
         }
         return visited;
     }
+    /*
+     * Utility function to remove milliseconds from an Instant TODO replace with regex
+     */
+    private Instant removeMillis(Instant instant){
+        String timeWithMillisString = instant.toString();
+        char[] chars = timeWithMillisString.toCharArray();
+        int i = 0;
+        char c = chars[i];
+        while(c!='.'){
+            i++;
+            c = chars[i];
+        }
+        char[] charsWithoutPoint = new char[i+1];
+        int length = charsWithoutPoint.length;
+        for(int j=0; j<length-1; j++){
+            charsWithoutPoint[j] = chars[j];
+        }
+        charsWithoutPoint[length-1] = 'Z';
+        String result = new String(charsWithoutPoint);
+        return Instant.parse(result);
+    }
 
     private final String parentHeader = "parent";
     private final String childHeader = "enfant";
 
-    public static void main(String[] args) {
-        MobileAPI api = new MobileAPI();
-        try {
-            File file = new File("/home/hart/opensilex-dev/opensilex-mobile/src/main/java/org/opensilex/mobile/api/csvexample.csv");
-            InputStream inputStream = new FileInputStream(file);
-            api.validateWholeCSV(inputStream);
-            System.out.println("ddd");
-        }catch(Exception e){
-            System.out.println("something went wrong :/");
-            System.out.println(e.getMessage());
-
-        }
-
-    }
 
     private CodeLotCSVValidationModel validateWholeCSV(InputStream file) throws Exception {
         CodeLotCSVValidationModel csvValidation = new CodeLotCSVValidationModel();

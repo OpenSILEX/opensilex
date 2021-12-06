@@ -7,7 +7,7 @@ public class FormGetDTO extends FormUpdateDTO{
     public static FormGetDTO fromModel(FormModel model) {
         FormGetDTO formGetDTO = new FormGetDTO();
         formGetDTO.setCreationDate(model.getCreationDate().toString());
-        formGetDTO.setUpdateDate(model.getLastUpdateDate().toString());
+        //formGetDTO.setUpdateDate(model.getLastUpdateDate().toString());
         formGetDTO.setUri(model.getUri());
         formGetDTO.setCommitAddress(model.getCommitAddress());
         formGetDTO.setCodeLot(model.getCodeLot());

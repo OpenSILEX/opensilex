@@ -27,6 +27,7 @@ public class FormModel extends MongoModel {
     public FormModel(String codeLot, String commitAddress, boolean isRoot, Instant creationDate){
         constructorBis(codeLot, commitAddress, isRoot);
         this.creationDate = creationDate;
+        this.lastUpdateDate = creationDate;
     }
     public FormModel(String codeLot, String commitAddress, boolean isRoot){
         constructorBis(codeLot, commitAddress, isRoot);

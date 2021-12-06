@@ -440,6 +440,8 @@ public class MobileAPI {
             if(parent!=null){
                 form.addParent(parent.getUri());
                 parent.addAvChild(form.getUri());
+                parent = dao.update(parent);
+                form = dao.update(form);
             }
             convertAndCreate(code.getAvailableChildren(), visited, form, dao);
         }

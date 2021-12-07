@@ -16,12 +16,12 @@ There are two-way to run an update through OpenSILEX command mechanism.
 - From the directory which contains your OpenSILEX executable .jar file
 
 ```bash
-java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update <opensilex_command>
+java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update <opensilex_command>
 ```
 
 - `<opensilex_command>` <b>(required)</b> : name of a valid migration command (see list below)
   . <br>
-- `CONFIG-FILE=<config_file>` : <b>(optional)</b> : option to specify the path to your custom OpenSILEX config (if set, then
+- `--CONFIG_FILE=<config_file>` : <b>(optional)</b> : option to specify the path to your custom OpenSILEX config (if set, then
   command will run on an OpenSILEX instance running with the given config)
 
 ## Running update inside IDE with opensilex-dev-tools module (For developers)
@@ -59,16 +59,16 @@ graph/collection renaming
 ### Usage
 
 ```bash
-java -jar opensilex.jar CONFIG-FILE=<config_file> system run-update org.opensilex.migration.GraphAndCollectionMigration
+java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.GraphAndCollectionMigration
 ```
 
 <b>[IMPORTANT]</b> : After update success, run `sparql reset-ontologies` command in order to refresh ontologies.
 
 ```bash
-java -jar opensilex.jar CONFIG-FILE=<config_file> sparql reset-ontologies
+java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
 ```
 
-# Create an update command
+# Create an update command (For developers)
 
 Each Opensilex update implements the <b>`org.opensilex.update.OpenSilexModuleUpdate`
 </b> interface (from `opensilex-main` module).

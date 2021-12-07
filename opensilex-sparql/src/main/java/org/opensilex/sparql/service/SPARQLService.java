@@ -45,7 +45,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyStore;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
@@ -1418,7 +1417,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return executeAskQuery(askQuery);
     }
 
-    public <T extends SPARQLResourceModel> boolean uriExists(Class<T> objectClass, URI uri) throws Exception {
+    public <T extends SPARQLResourceModel> boolean uriExists(Class<T> objectClass, URI uri) throws SPARQLException {
         if (uri == null) {
             return false;
         }

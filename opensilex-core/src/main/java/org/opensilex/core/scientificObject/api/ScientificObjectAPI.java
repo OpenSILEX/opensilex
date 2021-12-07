@@ -23,6 +23,8 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.csv.dal.CsvDao;
+import org.opensilex.core.csv.dal.DefaultCsvDao;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -38,9 +40,9 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -947,7 +949,10 @@ public class ScientificObjectAPI {
             }
 
         };
-        String csvContent = ontologyDAO.exportCSV(
+
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql);
+
+        String csvContent = csvDao.exportCSV(
                 objects.getList(),
                 new URI(Oeso.ScientificObject.toString()),
                 currentUser.getLanguage(),
@@ -1122,9 +1127,10 @@ public class ScientificObjectAPI {
         });
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql);
 
         int firstRow = 3;
-        CSVValidationModel validationResult = ontologyDAO.validateCSV(ScientificObjectModel.class,contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns);
+        CSVValidationModel validationResult = csvDao.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser.getLanguage(), customValidators, customColumns);
 
         if (!validationResult.hasErrors()) {
             URI partOfURI = new URI(Oeso.isPartOf.toString());

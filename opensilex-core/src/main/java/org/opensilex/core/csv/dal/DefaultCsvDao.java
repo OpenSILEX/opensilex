@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-public class DefaultCsvDao extends AbstractCsvDao{
+public class DefaultCsvDao<T extends SPARQLNamedResourceModel> extends AbstractCsvDao<T>{
 
     public DefaultCsvDao(SPARQLService sparql) {
         super(sparql);

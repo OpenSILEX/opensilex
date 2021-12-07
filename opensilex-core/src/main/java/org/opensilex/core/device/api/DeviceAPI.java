@@ -26,7 +26,7 @@ import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;

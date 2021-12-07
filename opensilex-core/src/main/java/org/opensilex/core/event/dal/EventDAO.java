@@ -23,7 +23,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;

@@ -874,41 +874,6 @@ public final class OntologyDAO {
     public static final int CSV_HEADER_COL_OFFSET = 3;
     public static final int CSV_HEADER_ROWS_NB = 2;
 
-    private Map<String,String> getColumnNames(Collection<String> columnUris, String lang) throws SPARQLException, URISyntaxException {
-
-        Map<String, String> columnsNames = new HashMap<>();
-
-        // filter columns which are not parsable as a URI
-        List<URI> columnWithAbsoluteUris = new ArrayList<>();
-        columnWithAbsoluteUris.add(new URI(RDFS.label.toString()));
-
-        columnUris.forEach((columnId) -> {
-            try {
-                URI columnURI = new URI(columnId);
-                if (columnURI.isAbsolute()) {
-                    columnWithAbsoluteUris.add(columnURI);
-                }
-            } catch (Exception ex) {
-                // Ignore invalid column IDs
-            }
-        });
-
-        SelectBuilder propertyNamesRequest = new SelectBuilder();
-        Var uriVar = makeVar("uri");
-        Var nameVar = makeVar("name");
-        propertyNamesRequest.addVar(uriVar);
-        propertyNamesRequest.addVar(nameVar);
-        propertyNamesRequest.addWhere(uriVar, RDFS.label, nameVar);
-        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilter(nameVar.getVarName(), lang));
-        SPARQLQueryHelper.inURI(propertyNamesRequest, uriVar.getVarName(), columnWithAbsoluteUris);
-
-        sparql.executeSelectQuery(propertyNamesRequest, (result) -> {
-            String uri = SPARQLDeserializers.formatURI(result.getStringValue(uriVar.getVarName()));
-            columnsNames.put(uri, result.getStringValue(nameVar.getVarName()));
-        });
-
-        return columnsNames;
-    }
 
 
 //    public <T extends SPARQLNamedResourceModel> String exportCSV(

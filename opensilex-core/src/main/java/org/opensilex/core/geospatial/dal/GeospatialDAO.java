@@ -36,7 +36,7 @@ import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;

@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-public interface CsvDao {
+public interface CsvDao<T extends SPARQLNamedResourceModel> {
 
     CSVValidationModel validateCSV(URI graph,
                                    URI parentClass,
@@ -30,7 +30,7 @@ public interface CsvDao {
                                    Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
                                    List<String> customColumns);
 
-    <T extends SPARQLNamedResourceModel> String exportCSV(
+    String exportCSV(
             List<T> objects,
             URI parentClass,
             String lang,

@@ -88,7 +88,7 @@ import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;

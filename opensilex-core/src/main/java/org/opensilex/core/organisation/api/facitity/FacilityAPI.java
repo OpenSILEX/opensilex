@@ -9,7 +9,7 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;

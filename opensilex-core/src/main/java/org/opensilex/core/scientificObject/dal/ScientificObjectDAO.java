@@ -32,7 +32,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;

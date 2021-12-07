@@ -9,7 +9,7 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;

@@ -6,7 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
 
 /**
  *

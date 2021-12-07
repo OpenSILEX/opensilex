@@ -11,8 +11,8 @@ import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.security.user.dal.UserModel;
 

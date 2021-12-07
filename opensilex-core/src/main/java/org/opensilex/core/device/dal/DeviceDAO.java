@@ -25,7 +25,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;

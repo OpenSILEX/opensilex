@@ -72,13 +72,13 @@ public class URIGeneratorTest {
 
         Assert.assertEquals("-",uriGenerator.normalize("=-="));
         Assert.assertEquals("a-b",uriGenerator.normalize("a+-b*"));
-        Assert.assertEquals("_a-b_",uriGenerator.normalize(" a+-b* "));
-        Assert.assertEquals("_",uriGenerator.normalize(" "));
-        Assert.assertEquals("__",uriGenerator.normalize("  "));
-        Assert.assertEquals("_",uriGenerator.normalize(" \n"));
-        Assert.assertEquals("__",uriGenerator.normalize(" \n "));
-        Assert.assertEquals("_",uriGenerator.normalize(" \r"));
-        Assert.assertEquals("__",uriGenerator.normalize(" \r "));
+        Assert.assertEquals("a-b",uriGenerator.normalize(" a+-b* "));
+        Assert.assertEquals("",uriGenerator.normalize(" "));
+        Assert.assertEquals("",uriGenerator.normalize("  "));
+        Assert.assertEquals("",uriGenerator.normalize(" \n"));
+        Assert.assertEquals("",uriGenerator.normalize(" \n "));
+        Assert.assertEquals("",uriGenerator.normalize(" \r"));
+        Assert.assertEquals("",uriGenerator.normalize(" \r "));
     }
 
 

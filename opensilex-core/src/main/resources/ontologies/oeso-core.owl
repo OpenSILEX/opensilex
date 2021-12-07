@@ -534,27 +534,6 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/security#hasCredential -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasCredential"/>
-    
-
-
-    <!-- http://www.opensilex.org/security#hasLanguage -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasLanguage">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/security#hasPasswordHash -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasPasswordHash"/>
-    
-
-
-    <!-- http://www.opensilex.org/security#isAdmin -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isAdmin"/>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#endDate -->
@@ -1208,7 +1187,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#MeasuresAcquisition">
         <rdfs:subClassOf rdf:resource="http://www.w3.org/ns/prov#Activity"/>
-        <rdfs:label xml:lang="fr">Acquistion de measures</rdfs:label>
+        <rdfs:label xml:lang="fr">Acquisition de measures</rdfs:label>
         <rdfs:label xml:lang="en">Measures Acquisition</rdfs:label>
     </owl:Class>
     
@@ -1310,7 +1289,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Sample">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
-        <rdfs:label xml:lang="fr">Echantillon</rdfs:label>
+        <rdfs:label xml:lang="fr">Échantillon</rdfs:label>
         <rdfs:label xml:lang="en">Sample</rdfs:label>
     </owl:Class>
     
@@ -1719,58 +1698,6 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="fr">Logiciel</rdfs:label>
         <rdfs:label xml:lang="en">Software</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://xmlns.com/foaf/0.1/Agent -->
-
-    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/firstName"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/lastName"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/mbox"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasLanguage"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasPasswordHash"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#isAdmin"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">Agent</rdfs:label>
-        <rdfs:label xml:lang="fr">Agent</rdfs:label>
-    </owl:Class>
-
 
 
     <!-- http://xmlns.com/foaf/0.1/Organization -->
@@ -2324,7 +2251,6 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="en">Organization</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Organization">
-        <rdfs:label xml:lang="en">Organization</rdfs:label>
         <rdfs:label xml:lang="fr">Organisation</rdfs:label>
         <rdfs:comment xml:lang="en">The Organization class represents a kind of Agent corresponding to social instititutions such as companies, societies etc.</rdfs:comment>
     </rdf:Description>

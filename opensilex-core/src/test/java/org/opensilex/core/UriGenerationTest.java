@@ -403,6 +403,32 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testDevice() throws Exception{
+
+        DeviceModel model = new DeviceModel();
+        model.setType(URI.create(Oeso.SensingDevice.getURI()));
+        model.setName("name");
+        getSparqlService().create(model);
+
+        String expectedUri = getOpensilexBaseURI()+"id/device/name";
+        Assert.assertEquals(model.getUri().toString(),expectedUri);
+
+        // test retry with same name -> same uri generation -> retry count suffix add
+        model.setUri(null);
+        getSparqlService().create(model);
+        expectedUri = getOpensilexBaseURI()+"id/device/name1";
+        Assert.assertEquals(model.getUri().toString(),expectedUri);
+
+        // test with a custom type and a special name
+        model.setUri(null);
+        model.setName("name with space");
+        getSparqlService().create(model);
+
+        expectedUri = getOpensilexBaseURI()+"id/device/name_with_space";
+        Assert.assertEquals(model.getUri().toString(),expectedUri);
+    }
+
+    @Test
     public void testInstant() throws Exception {
 
         InstantModel model = new InstantModel();
@@ -484,7 +510,6 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-
     public void testFile(){
         // #TODO test file generation
     }

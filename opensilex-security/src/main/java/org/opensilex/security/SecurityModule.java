@@ -12,6 +12,7 @@ import java.util.*;
 import javax.inject.Singleton;
 import javax.mail.internet.InternetAddress;
 import org.apache.jena.riot.Lang;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -146,13 +147,23 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
+
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/security#",
                 "ontologies/os-sec.owl",
                 Lang.RDFXML,
                 "os-sec"
         ));
+
+        list.add(new OntologyFileDefinition(
+                FOAF.NAMESPACE,
+                "ontologies/foaf.rdf",
+                Lang.RDFXML,
+                "foaf"
+        ));
+
         return list;
     }
 }

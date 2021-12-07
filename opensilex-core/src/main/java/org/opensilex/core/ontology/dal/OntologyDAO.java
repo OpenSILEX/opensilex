@@ -43,7 +43,6 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,7 +190,7 @@ public final class OntologyDAO {
         List<DatatypePropertyModel> dataPropertiesList = sparql.getListByURIs(DatatypePropertyModel.class,
                 datatypePropertiesURI.keySet(), lang);
 
-        MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, (pModel) -> {
+        MapUtils.populateMap(dataPropertiesMap, dataPropertiesList, pModel -> {
             // don't set parent if parent is TopObjectProperty
             if (pModel.getParent() != null && SPARQLDeserializers.compareURIs(topDataPropertyUri, pModel.getParent().getUri())) {
                 pModel.setParent(null);
@@ -204,7 +203,7 @@ public final class OntologyDAO {
         Map<URI, ObjectPropertyModel> objectPropertiesMap = new HashMap<>();
         List<ObjectPropertyModel> objectPropertiesList = sparql.getListByURIs(ObjectPropertyModel.class, objectPropertiesURI.keySet(), lang);
 
-        MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, (pModel) -> {
+        MapUtils.populateMap(objectPropertiesMap, objectPropertiesList, pModel -> {
             pModel.setTypeRestriction(objectPropertiesURI.get(pModel.getUri()));
 
             // don't set parent if parent is TopObjectProperty
@@ -270,7 +269,14 @@ public final class OntologyDAO {
         return model;
     }
 
-    public CSVValidationModel validateCSV(URI graph, URI parentClass, InputStream file, int firstRow, UserModel currentUser, Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators, List<String> customColumns, URIGenerator<String> uriGenerator) throws Exception {
+    public <T extends SPARQLNamedResourceModel> CSVValidationModel validateCSV(Class<T> objectClass,
+                                          URI graph,
+                                          URI parentClass,
+                                          InputStream file,
+                                          int firstRow,
+                                          UserModel currentUser,
+                                          Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
+                                          List<String> customColumns) throws Exception {
 
         Map<String, Map<String, OwlRestrictionModel>> typeRestrictions = new HashMap<>();
         Map<String, ClassModel> typeModels = new HashMap<>();
@@ -349,7 +355,7 @@ public final class OntologyDAO {
 
                         Map<String, OwlRestrictionModel> restrictionsByID = typeRestrictions.get(rdfType.toString());
 
-                        validateCSVRow(graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators, uriGenerator);
+                        validateCSVRow(objectClass,graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators);
 
                     } catch (Exception ex) {
                         CSVCell cell = new CSVCell(rowIndex, 0, "Unhandled error while parsing row: " + ex.getMessage(), "all");
@@ -365,7 +371,8 @@ public final class OntologyDAO {
         }
     }
 
-    private void validateCSVRow(
+    private <T extends SPARQLNamedResourceModel<T>> void validateCSVRow(
+            Class<T> objectClass,
             URI graph,
             ClassModel model,
             String[] values,
@@ -378,16 +385,14 @@ public final class OntologyDAO {
             Map<Integer, String> headerByIndex,
             Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
             Map<URI, Integer> checkedURIs,
-            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-            URIGenerator<String> uriGenerator
+            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators
     ) throws Exception {
-        SPARQLNamedResourceModel<?> object = new SPARQLNamedResourceModel<>();
+
+        SPARQLNamedResourceModel<T> object = objectClass.getConstructor().newInstance();
         String name = null;
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            if (colIndex == typeIndex) {
-                continue;
-            } else if (colIndex == nameIndex) {
+            if (colIndex == nameIndex) {
                 name = values[colIndex];
                 if (StringUtils.isEmpty(name)) {
                     CSVCell cell = new CSVCell(rowIndex, colIndex, name, CSV_NAME_KEY);
@@ -442,10 +447,11 @@ public final class OntologyDAO {
         if (!csvValidation.hasErrors()) {
             if (object.getUri() == null) {
                 int retry = 0;
-                URI objectURI = uriGenerator.generateURI(graph.toString(), name, retry);
+
+                URI objectURI = object.generateURI(graph.toString(), (T) object,retry);
                 while (checkedURIs.containsKey(objectURI) || sparql.uriExists(SPARQLDeserializers.nodeURI(graph), objectURI)) {
                     retry++;
-                    objectURI = uriGenerator.generateURI(graph.toString(), name, retry);
+                    objectURI = object.generateURI(graph.toString(), (T) object, retry);
                 }
                 checkedURIs.put(objectURI, rowIndex);
                 object.setUri(objectURI);
@@ -554,18 +560,16 @@ public final class OntologyDAO {
                     LOGGER.warn("Error while searching deserializer that should never happend for type: " + restriction.getSubjectURI(), ex);
                 }
             } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                if (!value.isEmpty()) {
-                    if (URIDeserializer.validateURI(value)) {
-                        try {
-                            URI objectURI = new URI(value);
-                            URI classURI = restriction.getSubjectURI();
-                            if (sparql.uriExists(classURI, objectURI)) {
-                                object.addRelation(graph, propertyURI, URI.class, value);
-                                return true;
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.warn("Error while creating or validating URI that should never happend with value: " + value, ex);
+                if (!value.isEmpty() && URIDeserializer.validateURI(value)){
+                    try {
+                        URI objectURI = new URI(value);
+                        URI classURI = restriction.getSubjectURI();
+                        if (sparql.uriExists(classURI, objectURI)) {
+                            object.addRelation(graph, propertyURI, URI.class, value);
+                            return true;
                         }
+                    } catch (Exception ex) {
+                        LOGGER.warn("Error while creating or validating URI that should never happend with value: " + value, ex);
                     }
                 }
             }
@@ -1118,39 +1122,6 @@ public final class OntologyDAO {
     public SPARQLResourceModel getRdfType(URI uri, String language) throws Exception {
         return sparql.getByURI(SPARQLResourceModel.class, uri, language);
     }
-
-//    public List<TypeModel> getRdfTypes(URI uri, String language, boolean parents) throws SPARQLException, URISyntaxException, Exception {
-//        String typeField = "type";
-//        String typeLabelField = "typeLabel";
-//        SelectBuilder select = new SelectBuilder();
-//        select.addVar(typeField);
-//        select.addVar(typeLabelField);
-//        select.setDistinct(true);
-//        
-//        if (parents) {
-//            select.addWhere(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), RDF.type, makeVar("directType"));
-//            select.addWhere(makeVar("directType"), Ontology.subClassAny, makeVar(typeField));
-//            select.addWhere(makeVar(typeField), RDFS.label, makeVar(typeLabelField));            
-//        } else {
-//            select.addWhere(NodeFactory.createURI(SPARQLDeserializers.nodeURI(uri).toString()), RDF.type, makeVar(typeField));
-//            select.addWhere(makeVar(typeField), RDFS.label, makeVar(typeLabelField));
-//        }
-//        
-//        Locale locale = Locale.forLanguageTag(language);
-//        select.addFilter(SPARQLQueryHelper.langFilter(typeLabelField, locale.getLanguage()));
-//
-//        List<TypeModel> rdfTypes = new ArrayList<>();
-//        List<SPARQLResult> results = sparql.executeSelectQuery(select);
-//        for (SPARQLResult res:results) {
-//            TypeModel model = new TypeModel();
-//            model.setType(new URI(res.getStringValue(typeField)));
-//            model.setTypeLabel(res.getStringValue(typeLabelField));
-//            rdfTypes.add(model);
-//        }
-//
-//        return rdfTypes;
-//
-//    }
 
     public List<URITypesModel> checkURIsTypes(List<URI> uris, List<URI> rdfTypes) throws Exception {
         List<URITypesModel> urisTypes = new ArrayList<>();

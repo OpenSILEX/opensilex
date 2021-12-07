@@ -49,7 +49,7 @@ public interface URIGenerator<T> {
      * @return the path used to generate instance URI {@link URI#getPath()}
      */
     default String getInstanceUriPath(T instance) {
-        return instance.toString();
+        return normalize(instance.toString());
     }
 
     /**
@@ -73,8 +73,8 @@ public interface URIGenerator<T> {
         Matcher matcher = pattern.matcher(src);
         String formattedSrc = matcher.replaceAll("")
                 .toLowerCase()
-                .replace(' ', '_')
-                .trim();
+                .trim() // call trim before intermediate replace in order to remove leading and trailing space
+                .replace(' ', '_'); // then replace intermediate space by _
 
         return Normalizer.normalize(formattedSrc, Normalizer.Form.NFD);
     }

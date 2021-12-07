@@ -68,7 +68,6 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.uri.generation.DefaultURIGenerator;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.TokenGenerator;
@@ -1125,7 +1124,7 @@ public class ScientificObjectAPI {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
         int firstRow = 3;
-        CSVValidationModel validationResult = ontologyDAO.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns, new DefaultURIGenerator<>());
+        CSVValidationModel validationResult = ontologyDAO.validateCSV(ScientificObjectModel.class,contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns);
 
         if (!validationResult.hasErrors()) {
             URI partOfURI = new URI(Oeso.isPartOf.toString());

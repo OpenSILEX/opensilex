@@ -6,17 +6,18 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
-import java.time.LocalDate;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author sammy
@@ -163,16 +164,9 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     @Override
     public String getInstanceUriPath(SPARQLTreeModel<DeviceModel> instance) {
 
-        StringBuilder sb = new StringBuilder();
-        if(rdfTypeName != null){
-            sb.append(rdfTypeName.getDefaultValue().toLowerCase()).append("-");
+        if(! StringUtils.isEmpty(instance.getName())){
+            return normalize(instance.getName());
         }
-
-        if(instance.getName() != null){
-            sb.append(normalize(instance.getName()));
-        }else{
-            sb.append(RandomStringUtils.randomAlphabetic(8));
-        }
-        return sb.toString();
+        return RandomStringUtils.randomAlphabetic(8);
     }
 }

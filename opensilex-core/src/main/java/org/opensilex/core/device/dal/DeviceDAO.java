@@ -39,6 +39,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -111,7 +112,6 @@ public class DeviceDAO {
     
     public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
 
-        initDevice(devModel, relations, currentUser);
 
         ClassModel classModel = CoreModule.getOntologyCacheInstance().getClassModel(
                 devModel.getType(),
@@ -372,11 +372,50 @@ public class DeviceDAO {
             customHandlerByFields.put(DeviceModel.TYPE_FIELD, handler);
         }
     }
+    
+    /**
+     * Linked variables to a device by the Measure relation
+     * @param device device
+     * @param variables variables to associate
+     * @throws Exception if some error is encountered 
+     *
+     * **/
+    public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, UserModel user) throws Exception {
+        
+       
+        
+        List<SPARQLModelRelation> relations = device.getRelations();
+        
+        // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
+        // Works only if all relations are measure relations .. 
+        List newRelations = new ArrayList<>();
+        for (SPARQLModelRelation relation : relations) {
+            SPARQLModelRelation rel = new SPARQLModelRelation();
+            rel.setProperty(relation.getProperty());
+            rel.setValue(relation.getValue());
+            if(relation.getType() == null) {
+                rel.setType(URI.class);
+            }
+            newRelations.add(rel);
+        }
+        // Fix
+       
+        for (URI variable : variables) {
+            SPARQLModelRelation relation = new SPARQLModelRelation();
+            relation.setProperty(Oeso.measures);
+            relation.setValue(variable.toString());
+            relation.setType(URI.class);
+            newRelations.add(relation);
+        }
+       device.setRelations(newRelations);
+       
+       device = update(device, user);
+       return device;
+    }
 
-    public DeviceModel update(DeviceModel instance, List<RDFObjectRelationDTO> relations, UserModel user) throws Exception {
+    public DeviceModel update(DeviceModel instance, UserModel user) throws Exception {
         createIndexes();
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
-        initDevice(instance, relations, user);
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
             sparql.deleteByURI(graph, instance.getUri());

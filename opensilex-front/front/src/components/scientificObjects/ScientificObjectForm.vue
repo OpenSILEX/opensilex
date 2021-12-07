@@ -78,12 +78,7 @@ export default class ScientificObjectForm extends Vue {
 
   editScientificObject(objectURI) {
     this.soForm.getFormRef().setTypePropertyFilterHandler((properties) => {
-      return properties.filter((propertyDef) => {
-        return !this.$opensilex.Oeso.checkURIs(
-          propertyDef.definition.property,
-          this.$opensilex.Oeso.HAS_FACILITY
-        );
-      });
+      return properties;
     });
 
     this.soForm

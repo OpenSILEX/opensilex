@@ -138,12 +138,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
-
-<!--     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/> -->
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#endDate -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#endDate">
@@ -534,8 +528,8 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
 
-<!--     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/> -->
-    
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#focalLength -->

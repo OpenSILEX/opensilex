@@ -46,6 +46,10 @@ import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
+/**
+ * @author vince
+ * @param <T> SPARQLNamedResourceModel Class to handle for CSV import/export
+ */
 public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> implements CsvDao<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCsvDao.class);

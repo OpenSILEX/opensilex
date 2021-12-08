@@ -562,6 +562,7 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeso#hasCreationDate -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasCreationDate">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="en">Creation date</rdfs:label>
         <rdfs:label xml:lang="fr">Date de création</rdfs:label>
@@ -578,6 +579,7 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeso#hasDestructionDate -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasDestructionDate">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="fr">Date de destruction</rdfs:label>
         <rdfs:label xml:lang="en">Destruction date</rdfs:label>

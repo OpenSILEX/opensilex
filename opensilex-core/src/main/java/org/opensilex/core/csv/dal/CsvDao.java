@@ -9,6 +9,7 @@
 package org.opensilex.core.csv.dal;
 
 import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public interface CsvDao<T extends SPARQLNamedResourceModel> {
                                    int firstRow,
                                    String lang,
                                    Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-                                   List<String> customColumns) throws IOException;
+                                   List<String> customColumns) throws SPARQLException, IOException;
 
     String exportCSV(
             List<T> objects,
@@ -39,30 +40,6 @@ public interface CsvDao<T extends SPARQLNamedResourceModel> {
             List<String> customColumns,
             Set<String> strictlyAllowedColumns,
             Comparator<String> columnSorter
-            ) throws Exception;
+            ) throws IOException, SPARQLException;
 
-//    void validateCSVRow(URI graph,
-//            ClassModel model,
-//            String[] values,
-//            int rowIndex,
-//            CSVValidationModel csvValidation,
-//            int uriIndex,
-//            int typeIndex,
-//            int nameIndex,
-//            Map<String, OwlRestrictionModel> restrictionsByID,
-//            Map<Integer, String> headerByIndex,
-//            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
-//            Map<URI, Integer> checkedURIs,
-//            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators);
-//
-//    void validateCSVSingleValue(
-//            URI graph,
-//            ClassModel model,
-//            URI propertyURI,
-//            CSVCell cell,
-//            OwlRestrictionModel restriction,
-//            CSVValidationModel csvValidation,
-//            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
-//            BiConsumer<CSVCell, CSVValidationModel> customValidator,
-//            SPARQLResourceModel object);
 }

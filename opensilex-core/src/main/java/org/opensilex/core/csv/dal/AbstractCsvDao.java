@@ -192,7 +192,6 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
 
         SPARQLNamedResourceModel<T> object = objectClass.getConstructor().newInstance();
 
-//        SPARQLNamedResourceModel<?> object = new SPARQLNamedResourceModel<>();
         String name = null;
 
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
@@ -342,7 +341,15 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
 
 
     @Override
-    public String exportCSV(List<T> objects, URI parentClass, String lang, BiFunction<String, T, String> customValueGenerator, List<String> customColumns, Set<String> strictlyAllowedColumns, Comparator<String> columnSorter) throws Exception {
+    public String exportCSV(
+            List<T> objects,
+            URI parentClass,
+            String lang,
+            BiFunction<String, T, String> customValueGenerator,
+            List<String> customColumns,
+            Set<String> strictlyAllowedColumns,
+            Comparator<String> columnSorter) throws SPARQLException, IOException  {
+
         boolean sortColumns = columnSorter != null;
         boolean restrictionOnColumn = strictlyAllowedColumns != null;
 
@@ -513,13 +520,13 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
         return strWriter.toString();
     }
 
-    private Map<String, String> getColumnNames(Collection<String> columnUris, String lang) throws SPARQLException, URISyntaxException {
+    private Map<String, String> getColumnNames(Collection<String> columnUris, String lang) throws SPARQLException {
 
         Map<String, String> columnsNames = new HashMap<>();
 
         // filter columns which are not parsable as a URI
         List<URI> columnWithAbsoluteUris = new ArrayList<>();
-        columnWithAbsoluteUris.add(new URI(RDFS.label.toString()));
+        columnWithAbsoluteUris.add(URI.create(RDFS.label.toString()));
 
         columnUris.forEach(columnId -> {
             try {

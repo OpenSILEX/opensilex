@@ -144,7 +144,7 @@ public class MobileAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return form list", response = SectionGetDTO.class, responseContainer = "List")
     })
-    public Response searchFormList(
+    public Response searchSections(
             @ApiParam(value = "Search by uris") @QueryParam("uris") List<URI> uris,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,

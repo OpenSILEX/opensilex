@@ -22,8 +22,7 @@ import java.util.function.BiFunction;
 
 public class DefaultCsvDao<T extends SPARQLNamedResourceModel> extends AbstractCsvDao<T>{
 
-    public DefaultCsvDao(SPARQLService sparql) {
-        super(sparql);
+    public DefaultCsvDao(SPARQLService sparql, Class<T> objectClass) {
+        super(sparql, objectClass);
     }
-
 }

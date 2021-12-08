@@ -45,6 +45,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.rdf4j.RDF4JConnection;
 import org.opensilex.sparql.utils.Ontology;
@@ -79,18 +80,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
-    private final OntologyStore ontologyStore;
+    private final OntologyDAO ontologyDao;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
         this.connection = config.connection();
-        ontologyStore = new OntologyStore(this);
+        ontologyDao = new OntologyDAO(this);
     }
 
     public SPARQLService(SPARQLConnection connection) {
         super(null);
         this.connection = connection;
-        ontologyStore = new OntologyStore(this);
+        ontologyDao = new OntologyDAO(this);
+    }
+
+    public OntologyDAO getOntologyDao() {
+        return ontologyDao;
     }
 
     private String defaultLang = OpenSilex.DEFAULT_LANGUAGE;
@@ -1166,7 +1171,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI rootType = analyzer.getRdfTypeURI();
         ClassModel classModel;
         try {
-            classModel = ontologyStore.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
+            classModel = ontologyDao.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
         } catch (SPARQLInvalidURIException e) {
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }

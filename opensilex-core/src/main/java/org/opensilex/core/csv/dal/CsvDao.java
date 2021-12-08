@@ -11,6 +11,7 @@ package org.opensilex.core.csv.dal;
 import org.opensilex.core.csv.dal.error.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Comparator;
@@ -28,7 +29,7 @@ public interface CsvDao<T extends SPARQLNamedResourceModel> {
                                    int firstRow,
                                    String lang,
                                    Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-                                   List<String> customColumns);
+                                   List<String> customColumns) throws IOException;
 
     String exportCSV(
             List<T> objects,

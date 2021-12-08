@@ -469,7 +469,7 @@ public class DataFilesAPI {
         List<URI> rdfTypes = new ArrayList<>();
         
         if (rdfType != null) {
-            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user);
+            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user.getLanguage());
         }        
         
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(

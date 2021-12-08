@@ -528,18 +528,16 @@ public final class OntologyDAO {
                     LOGGER.warn("Error while searching deserializer that should never happend for type: " + restriction.getSubjectURI(), ex);
                 }
             } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                if (!value.isEmpty()) {
-                    if (URIDeserializer.validateURI(value)) {
-                        try {
-                            URI objectURI = new URI(value);
-                            URI classURI = restriction.getSubjectURI();
-                            if (sparql.uriExists(classURI, objectURI)) {
-                                object.addRelation(graph, propertyURI, URI.class, value);
-                                return true;
-                            }
-                        } catch (Exception ex) {
-                            LOGGER.warn("Error while creating or validating URI that should never happend with value: " + value, ex);
+                if (!value.isEmpty() && URIDeserializer.validateURI(value)) {
+                    try {
+                        URI objectURI = new URI(value);
+                        URI classURI = restriction.getSubjectURI();
+                        if (sparql.uriExists(classURI, objectURI)) {
+                            object.addRelation(graph, propertyURI, URI.class, value);
+                            return true;
                         }
+                    } catch (Exception ex) {
+                        LOGGER.warn("Error while creating or validating URI that should never happend with value: " + value, ex);
                     }
                 }
             }

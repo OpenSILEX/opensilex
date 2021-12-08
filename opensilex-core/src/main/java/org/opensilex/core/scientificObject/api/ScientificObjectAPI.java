@@ -950,7 +950,7 @@ public class ScientificObjectAPI {
 
         };
 
-        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql);
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
 
         String csvContent = csvDao.exportCSV(
                 objects.getList(),
@@ -1127,7 +1127,7 @@ public class ScientificObjectAPI {
         });
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql);
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
 
         int firstRow = 3;
         CSVValidationModel validationResult = csvDao.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser.getLanguage(), customValidators, customColumns);

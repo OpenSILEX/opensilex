@@ -32,7 +32,6 @@ import org.opensilex.core.exception.*;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -670,7 +669,6 @@ public class DataAPI {
      * Exception if two devices as provenance agent
      *
      * @param deviceDAO
-     * @param provDAO
      * @param data
      * @throws Exception
      */

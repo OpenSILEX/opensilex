@@ -23,6 +23,7 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.csv.dal.AbstractCsvDao;
 import org.opensilex.core.csv.dal.CsvDao;
 import org.opensilex.core.csv.dal.DefaultCsvDao;
 import org.opensilex.core.data.dal.DataDAO;
@@ -830,7 +831,7 @@ public class ScientificObjectAPI {
                 URI existingObjectWithSameName = existingUriByName.get(name);
                 String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name,existingObjectWithSameName.toString());
 
-                CSVCell cell = new CSVCell(OntologyDAO.CSV_HEADER_ROWS_NB +i,OntologyDAO.CSV_NAME_INDEX,object.getName(),errorMsg);
+                CSVCell cell = new CSVCell(AbstractCsvDao.CSV_HEADER_ROWS_NB +i, AbstractCsvDao.CSV_NAME_INDEX,object.getName(),errorMsg);
                 validationModel.addInvalidValueError(cell);
             }
             i++;
@@ -838,9 +839,9 @@ public class ScientificObjectAPI {
     }
 
     private static final Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
-            OntologyDAO.CSV_URI_KEY,
-            OntologyDAO.CSV_TYPE_KEY,
-            OntologyDAO.CSV_NAME_KEY,
+            AbstractCsvDao.CSV_URI_KEY,
+            AbstractCsvDao.CSV_TYPE_KEY,
+            AbstractCsvDao.CSV_NAME_KEY,
             GEOMETRY_COLUMN_ID
     ));
 

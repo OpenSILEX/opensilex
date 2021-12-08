@@ -38,7 +38,7 @@ public class SectionUpdateDTO extends SectionCreationDTO {
         return uri;
     }
 
-    @JsonProperty("created_date")
+    @JsonProperty("updated_date")
     @ApiModelProperty(value = "timestamp", example = "YYYY-MM-DDTHH:MM:SSZ", required = true)
     @Date(DateFormat.YMDTHMSX)
     public String getUpdateDate() {

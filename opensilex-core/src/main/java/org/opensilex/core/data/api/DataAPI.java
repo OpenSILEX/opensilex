@@ -88,6 +88,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -168,10 +169,9 @@ public class DataAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response addListData(
-            @ApiParam("Data description") @Valid List<DataCreationDTO> dtoList
+            @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-
         List<DataModel> dataList = new ArrayList<>();
         try {
             if (dtoList.size() > SIZE_MAX) {

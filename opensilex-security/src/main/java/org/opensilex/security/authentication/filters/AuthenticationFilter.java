@@ -99,31 +99,31 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
-            LOGGER.debug("Incoming request method: " + requestContext.getMethod());
-            final AtomicBoolean isJSON = new AtomicBoolean(false);
-            requestContext.getHeaders().forEach((header, value) -> {
-                if (value.size() == 1) {
-                    if (header.equalsIgnoreCase("content-type") && value.get(0).equals(MediaType.APPLICATION_JSON)) {
-                        isJSON.set(true);
-                    }
-                }
-                LOGGER.debug("Incoming request header: " + header + " -> " + value);
-            });
 
-            try {
-                if (isJSON.get()) {
-                    String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
-                    ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-                    String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
-                    LOGGER.debug("Incoming request JSON body: \n" + json);
-                    requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+        LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
+        LOGGER.debug("Incoming request method: " + requestContext.getMethod());
+        final AtomicBoolean isJSON = new AtomicBoolean(false);
+        requestContext.getHeaders().forEach((header, value) -> {
+            if (value.size() == 1) {
+                if (header.equalsIgnoreCase("content-type") && value.get(0).equals(MediaType.APPLICATION_JSON)) {
+                    isJSON.set(true);
                 }
-            } catch (IOException ex) {
-                LOGGER.debug("Error while reading request body: ", ex);
             }
+            LOGGER.debug("Incoming request header: " + header + " -> " + value);
+        });
+
+        try {
+            if (isJSON.get()) {
+                String body = IOUtils.toString(requestContext.getEntityStream(), Charset.forName("UTF-8"));
+                ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(body));
+                LOGGER.debug("Incoming request JSON body: \n" + json);
+                requestContext.setEntityStream(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))));
+            }
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Error JSON: " + ex.getMessage());
         }
+
 
         // get user header token
         String tokenValue = requestContext.getHeaderString(ApiProtected.HEADER_NAME);

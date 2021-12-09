@@ -395,7 +395,7 @@
             type-placeholder: Select an event type
             type-help: Event type URI
             type-example: "oeev:Trouble"
-            description: Description
+            description: Description of the event
             start: Begin
             start-help: Begin of event, only if the event is not instantaneous
             start-example: "2019-09-08T13:00:00+01:00"
@@ -426,7 +426,7 @@
             type-placeholder: Selectionner un type d'événement
             type-help: URI du type d'événement
             type-example: "oeev:Trouble"
-            description: Description
+            description: "Description de l'événement"
             targets: Concerne
             targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
             targets-example: "os-so:plant1"

@@ -90,7 +90,8 @@
                 <opensilex-TextAreaForm
                     :value.sync="form.description"
                     label="component.common.description"
-                    placeholder="XSDLongStringInput.placeholder"
+                    helpMessage="Event.description"
+                    placeholder="Event.description"
                 >
                 </opensilex-TextAreaForm>
             </div>

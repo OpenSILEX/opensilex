@@ -2,7 +2,7 @@
   <opensilex-InputForm
     :value.sync="internalValue"
     :label="property.name"
-    type="text"
+    type="url"
     rules="url"
     :disabled="false"
     :required="property.is_required"

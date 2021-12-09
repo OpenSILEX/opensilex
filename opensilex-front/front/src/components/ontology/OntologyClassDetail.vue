@@ -99,6 +99,19 @@
         <template v-slot:head(inherited)="data">{{ $t(data.label) }}</template>
         <template v-slot:head(actions)="data">{{ $t(data.label) }}</template>
 
+        <template v-slot:cell(name)="data">
+          <span class="capitalize-first-letter">
+            {{data.item.name}}
+          </span>
+        </template>
+
+        <template v-slot:cell(property)="data">
+          <opensilex-UriLink
+              :uri="data.item.property"
+              :value="data.item.property"
+          ></opensilex-UriLink>
+        </template>
+
         <template v-slot:cell(is_list)="data">
           <span class="capitalize-first-letter">{{
             data.item.is_list
@@ -145,10 +158,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { OntologyService } from "opensilex-core/index";
+import {OntologyService} from "opensilex-core/index";
 
 @Component
 export default class OntologyClassDetail extends Vue {
@@ -174,7 +187,7 @@ export default class OntologyClassDetail extends Vue {
     },
     {
       key: "property",
-      label: "component.common.type",
+      label: "component.common.uri",
     },
     {
       key: "is_required",

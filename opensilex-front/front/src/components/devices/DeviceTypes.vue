@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -31,8 +31,8 @@ en:
 
 fr:
   DeviceTypes:
-    typeTitle: Types d'équipement
-    propertiesTitle: Propriétés des équipements
+    typeTitle: Types de dispositif
+    propertiesTitle: Propriétés des dispositifs
 </i18n>
 
 

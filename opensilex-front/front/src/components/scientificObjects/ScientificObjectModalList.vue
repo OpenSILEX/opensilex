@@ -108,20 +108,26 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 
 @Component
 export default class ScientificObjectModalList extends Vue {
 
-  filter = {
-    name: "",
-    experiment: undefined,
-    germplasm: undefined,
-    factorLevels: [],
-    types: [],
-    existenceDate: undefined,
-    creationDate: undefined,
-  };
+  @PropSync("searchFilter", {
+    default: () => {
+      return {
+        name: "",
+        experiment: undefined,
+        germplasm: undefined,
+        factorLevels: [],
+        types: [],
+        existenceDate: undefined,
+        creationDate: undefined,
+      };
+    },
+  })
+  filter;
+
 
   @Ref("soList") readonly soList!: any;
   @Ref("modalRef") readonly modalRef!: any;

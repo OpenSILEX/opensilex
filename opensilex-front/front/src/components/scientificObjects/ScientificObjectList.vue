@@ -35,6 +35,7 @@
           </b-dropdown>
 
           <opensilex-CreateButton
+              v-if="!noActions" 
               class="mb-2 mr-2"
               @click="exportCSV(true)"
               :disabled="tableRef.totalRow === 0"

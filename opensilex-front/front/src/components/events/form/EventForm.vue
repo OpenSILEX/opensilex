@@ -131,149 +131,139 @@ import {VueJsOntologyExtensionService} from "../../../lib";
 @Component
 export default class EventForm extends Vue {
 
-  @Ref("validatorRef") readonly validatorRef!: any;
+    @Ref("validatorRef") readonly validatorRef!: any;
 
-  $opensilex: any;
-  ontologyService: OntologyService;
-  vueOntologyService: VueJsOntologyExtensionService;
-  uriGenerated = true;
+    $opensilex: any;
+    ontologyService: OntologyService;
+    vueOntologyService: VueJsOntologyExtensionService;
+    uriGenerated = true;
 
-  @Prop({default: false})
-  editMode: boolean;
+    @Prop({default: false})
+    editMode: boolean;
 
-  errorMsg: String = "";
+    errorMsg: String = "";
 
-  @Prop({default: () => MoveForm.getEmptyForm()})
-  form: MoveCreationDTO;
+    @Prop({default: () => MoveForm.getEmptyForm()})
+    form: MoveCreationDTO;
 
-  context: any;
+    context: any;
 
-  baseType: string = "";
-  typeModel = null;
-  propertyComponents = [];
+    baseType: string = "";
+    typeModel = null;
+    propertyComponents = [];
 
-  startRequired = false;
-  endRequired = true;
+    startRequired = false;
+    endRequired = true;
 
-  internalTypeProperties: Set<string> = new Set(["rdfs:comment", "oeev:concerns", "time:hasBeginning", "time:hasEnd", "oeev:isInstant"]);
+    internalTypeProperties: Set<string> = new Set(["rdfs:comment", "oeev:concerns", "time:hasBeginning", "time:hasEnd", "oeev:isInstant"]);
 
-  propertyFilter = (property) => property;
+    propertyFilter = (property) => property;
 
-  setTypePropertyFilterHandler(handler) {
-    this.propertyFilter = handler;
-  }
-
-  created() {
-    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-    this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
-    this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
-  }
-
-  static getEmptyForm(): EventCreationDTO {
-    return {
-      uri: undefined,
-      rdf_type: undefined,
-      relations: [],
-      start: undefined,
-      end: undefined,
-      targets: [],
-      description: undefined,
-      is_instant: true
-    };
-  }
-
-  getEmptyForm() {
-    return MoveForm.getEmptyForm();
-  }
-
-  setBaseType(baseType) {
-    this.baseType = baseType;
-  }
-
-  setContext(context) {
-    this.context = context;
-  }
-
-  updateRequiredProps() {
-
-    if (this.form.is_instant) {
-      this.endRequired = true;
-    } else {
-      if (this.form.start) {
-        this.startRequired = true;
-        this.endRequired = false;
-      } else {
-        this.startRequired = true;
-        this.endRequired = true;
-      }
+    setTypePropertyFilterHandler(handler) {
+        this.propertyFilter = handler;
     }
-  }
 
-  reset() {
-    this.uriGenerated = true;
-    return this.validatorRef.reset();
-  }
-
-  validate() {
-    return this.validatorRef.validate();
-  }
-
-  handleErrorMessage(errorMsg: string) {
-    this.errorMsg = errorMsg;
-  }
-
-  initHandler = () => {
-  };
-
-  setInitObjHandler(handler) {
-    this.initHandler = handler;
-  }
-
-
-  getInputComponent(property) {
-    if (property.input_components_by_property && property.input_components_by_property[property.property]) {
-      return property.input_components_by_property[property.property];
+    created() {
+        this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+        this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+        this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
     }
-    return property.input_component;
-  }
 
-  resetTypeModel() {
-    this.typeModel = undefined;
-  }
+    static getEmptyForm(): EventCreationDTO {
+        return {
+            uri: undefined,
+            rdf_type: undefined,
+            relations: [],
+            start: undefined,
+            end: undefined,
+            targets: [],
+            description: undefined,
+            is_instant: true
+        };
+    }
 
+    getEmptyForm() {
+        return MoveForm.getEmptyForm();
+    }
 
-  get typeRelations() {
+    setBaseType(baseType) {
+        this.baseType = baseType;
+    }
 
-    let properties = [];
+    setContext(context) {
+        this.context = context;
+    }
 
-        if (this.typeModel) {
-            this.typeModel.data_properties
-                .filter(property => ! property.inherited)
-                .forEach(dataProperty => {
-                    if (dataProperty.property != "rdfs:label") {
+    updateRequiredProps() {
 
-                        let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
-
-                        internalTypeProperties.push({
-                            property: dataProperty,
-                            value: relation.value
-                        });
-                    }
-                });
-
-
-            this.typeModel.object_properties
-                .filter(property => ! property.inherited)
-                .forEach(objectProperty => {
-                    let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
-
-                    internalTypeProperties.push({
-                        property: objectProperty,
-                        value: relation.value
-                    });
-                });
+        if (this.form.is_instant) {
+            this.endRequired = true;
+        } else {
+            if (this.form.start) {
+                this.startRequired = true;
+                this.endRequired = false;
+            } else {
+                this.startRequired = true;
+                this.endRequired = true;
+            }
         }
-        return internalTypeProperties;
+    }
+
+    reset() {
+        this.uriGenerated = true;
+        return this.validatorRef.reset();
+    }
+
+    validate() {
+        return this.validatorRef.validate();
+    }
+
+    handleErrorMessage(errorMsg: string) {
+        this.errorMsg = errorMsg;
+    }
+
+    initHandler = () => {
+    };
+
+    setInitObjHandler(handler) {
+        this.initHandler = handler;
+    }
+
+
+    getInputComponent(property) {
+        if (property.input_components_by_property && property.input_components_by_property[property.property]) {
+            return property.input_components_by_property[property.property];
+        }
+        return property.input_component;
+    }
+
+    resetTypeModel() {
+        this.typeModel = undefined;
+    }
+
+
+    get typeRelations() {
+
+        if (!this.typeModel) {
+            return [];
+        }
+
+        let properties = [];
+
+        this.typeModel.data_properties
+            .concat(this.typeModel.object_properties)
+            .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
+            .forEach(propertyModel => {
+
+                let relation = this.form.relations.find(relation => relation.property == propertyModel.property);
+
+                properties.push({
+                    property: propertyModel,
+                    value: relation.value
+                });
+            });
+
+        return properties;
     }
 
     typeSwitch(type) {
@@ -290,23 +280,8 @@ export default class EventForm extends Vue {
                     let relations = [];
 
                     this.typeModel.data_properties
-                        .filter(property => ! property.inherited)
-                        .forEach(property => {
-                            if (property.is_list) {
-                                relations.push({
-                                    value: [],
-                                    property: property.property
-                                });
-                            } else {
-                                relations.push({
-                                    value: undefined,
-                                    property: property.property
-                                });
-                            }
-                        });
-
-                    this.typeModel.object_properties
-                        .filter(property => property.is_custom)
+                        .concat(this.typeModel.object_properties)
+                        .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
                         .forEach(property => {
                             if (property.is_list) {
                                 relations.push({
@@ -325,25 +300,25 @@ export default class EventForm extends Vue {
                 }
             });
 
-  }
-
-  updateRelation(newValue, property) {
-
-    let relation = this.form.relations.find(relation =>
-        relation.property == property.property
-    );
-
-    relation.value = newValue;
-  }
-
-
-  isMove(): boolean {
-    if (!this.form) {
-      return false;
     }
-    return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
-        || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
-  }
+
+    updateRelation(newValue, property) {
+
+        let relation = this.form.relations.find(relation =>
+            relation.property == property.property
+        );
+
+        relation.value = newValue;
+    }
+
+
+    isMove(): boolean {
+        if (!this.form) {
+            return false;
+        }
+        return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
+            || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
+    }
 
 }
 </script>

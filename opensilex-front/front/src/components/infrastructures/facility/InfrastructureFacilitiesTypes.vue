@@ -30,12 +30,12 @@ en:
     typeTitle: Facilities types
     propertiesTitle:  Facilities properties
     typeDescription: Manage and configure facilities types
-    propertiesDescription: Manage and configure properties that apply specifically to a facility
+    propertiesDescription: Manage and configure properties that can apply specifically to a facility
 fr:
   InfrastructureFacilitiesTypes:
     typeTitle: Types d'installations techniques
     propertiesTitle: Propriétés des installations techniques
     typeDescription: "Gérer et configurer les types d'installations techniques"
-    propertiesDescription: "Gérer et configurer les propriétés qui s'appliquent spécifiquement à une installation technique"
+    propertiesDescription: "Gérer et configurer les propriétés qui peuvent s'appliquer spécifiquement à une installation technique"
 </i18n>
 

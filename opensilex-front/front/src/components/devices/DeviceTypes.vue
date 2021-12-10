@@ -31,13 +31,13 @@ en:
     typeTitle: Devices types
     propertiesTitle: Devices properties
     typeDescription: Manage and configure devices types
-    propertiesDescription: Manage and configure properties that apply specifically to a device
+    propertiesDescription: Manage and configure properties that can apply specifically to a device
 fr:
   DeviceTypes:
     typeTitle: Types de dispositif
     propertiesTitle: Propriétés des dispositifs
     typeDescription: "Gérer et configurer les types de dispositif"
-    propertiesDescription: "Gérer et configurer les propriétés qui s'appliquent spécifiquement à un dispositif"
+    propertiesDescription: "Gérer et configurer les propriétés qui peuvent s'appliquer spécifiquement à un dispositif"
 </i18n>
 
 

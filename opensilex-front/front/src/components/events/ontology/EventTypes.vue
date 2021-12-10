@@ -31,13 +31,13 @@ en:
         typeTitle: Event types
         propertiesTitle: Event properties
         typeDescription: Manage and configure event types
-        propertiesDescription: Manage and configure properties that apply specifically to an event
+        propertiesDescription: Manage and configure properties that can apply specifically to an event
 fr:
     EventTypes:
         typeTitle: Types d'évenements
         propertiesTitle: Propriétés des évenements
         typeDescription: "Gérer et configurer les types d'évenements"
-        propertiesDescription: "Gérer et configurer les propriétés qui s'appliquent spécifiquement à un évenement"
+        propertiesDescription: "Gérer et configurer les propriétés qui peuvent s'appliquer spécifiquement à un évenement"
 </i18n>
 
 

@@ -16,8 +16,9 @@ import javax.ws.rs.core.Response;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.junit.Assert;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
 
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.dal.CharacteristicModel;
@@ -199,7 +200,7 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         
         assertEquals(dto.getName(), dtoFromDb.getName());
         assertEquals(dto.getDescription(), dtoFromDb.getDescription());
-        assertTrue(dto.getVariablesList().size() == 1);
+        Assert.assertEquals(1, dto.getVariablesList().size());
         
         //Try to deserialize object and check if the variables uris are the same
         Response getResult2 = getJsonGetByUriResponse(target(getVariableByUriPath), uriVariable.toString());

@@ -85,13 +85,12 @@ import {VariablesService, VariablesGroupGetDTO} from "opensilex-core/index";
 import GroupVariablesForm from './GroupVariablesForm.vue'
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GroupVariablesDetails extends Vue {
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
     service: VariablesService;
-    $route: any;
-    $router: any;
     $i18n: any;
     uri: string = null;
 
@@ -133,15 +132,6 @@ export default class GroupVariablesDetails extends Vue {
         this.$router.push({path: "/variables?elementType=VariableGroup"});
       }).catch(this.$opensilex.errorHandler);
     }
-    
-    // loadVariablesGroup() {
-    //     this.service
-    //     .getVariablesGroup(this.variablesGroup.uri)
-    //     .then((http: HttpResponse<OpenSilexResponse<VariablesGroupGetDTO>>) => {
-    //         this.variablesGroup = http.response.result;
-    //     })
-    //     .catch(this.$opensilex.errorHandler);
-    // }
 }
 </script>
 

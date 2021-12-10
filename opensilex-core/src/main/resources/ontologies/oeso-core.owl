@@ -2079,18 +2079,6 @@ Used in OpenSILEX for group things</rdfs:comment>
     </owl:NamedIndividual>
 
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#standard_method -->
-
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#standard_method">
-        <rdf:type rdf:resource="http://www.opensilex.org/vocabulary/oeso#Method"/>
-        <rdfs:comment xml:lang="en">For usual method</rdfs:comment>
-        <rdfs:label xml:lang="fr">méthode standard</rdfs:label>
-        <rdfs:label xml:lang="en">standard method</rdfs:label>
-    </owl:NamedIndividual>
-
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
     <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>

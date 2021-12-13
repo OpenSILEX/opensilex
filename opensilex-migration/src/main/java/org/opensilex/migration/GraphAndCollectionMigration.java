@@ -35,9 +35,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author rcolin
@@ -95,9 +93,9 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             try {
                 sparql.rollbackTransaction();
                 mongodb.rollbackTransaction();
-                throw new OpensilexModuleUpdateException(this,e);
+                throw new OpensilexModuleUpdateException(this, e);
             } catch (Exception e2) {
-                throw new OpensilexModuleUpdateException(this,e2);
+                throw new OpensilexModuleUpdateException(this, e2);
             }
         }
     }
@@ -156,20 +154,29 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
         oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);
 
-        /* iterate over mongodb collections in order to ensure to rename only old collection which already exists.
-         Unfortunately there isn't a better way to do it efficiently since 3.0 MongoDB Driver
-         (https://stackoverflow.com/questions/31909247/mongodb-3-java-check-if-collection-exists) */
 
-        for (String collectionName : mongodb.getDatabase().listCollectionNames()) {
+        Set<String> collectionNames = new HashSet<>();
+        mongodb.getDatabase().listCollectionNames().forEach(collectionNames::add);
+
+        /* iterate over mongodb collections in order to ensure to rename only old collection which already exists.
+        Unfortunately there isn't a better way to do it efficiently since 3.0 MongoDB Driver
+        (https://stackoverflow.com/questions/31909247/mongodb-3-java-check-if-collection-exists) */
+
+        for (String collectionName : collectionNames) {
 
             if (oldToNewCollectionNames.containsKey(collectionName)) {
                 String newName = oldToNewCollectionNames.get(collectionName);
 
-                MongoNamespace newNameSpace = new MongoNamespace(mongodb.getDatabase().getName(), newName);
-                MongoCollection<?> oldCollection = mongodb.getDatabase().getCollection(collectionName);
+                // ensure that new collection doesn't already exist, else a MongoException is throw
+                if (!collectionNames.contains(newName)) {
+                    MongoNamespace newNameSpace = new MongoNamespace(mongodb.getDatabase().getName(), newName);
+                    MongoCollection<?> oldCollection = mongodb.getDatabase().getCollection(collectionName);
 
-                oldCollection.renameCollection(newNameSpace);
-                LOGGER.debug("[{}] Mongo collection migration : {} -> {} [OK]", database, collectionName, newName);
+                    oldCollection.renameCollection(newNameSpace);
+                    LOGGER.debug("[{}] Mongo collection migration : {} -> {} [OK]", database, collectionName, newName);
+                } else {
+                    LOGGER.warn("[{}] Mongo collection migration, target collection already exist: {} -> {} [ERROR]", database, collectionName, newName);
+                }
             }
         }
     }

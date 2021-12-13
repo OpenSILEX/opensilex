@@ -8,10 +8,14 @@
 
 package org.opensilex.sparql.ontology.store;
 
+import org.apache.commons.collections4.trie.PatriciaTrie;
+
 public class DefaultOntologyStore extends AbstractOntologyStore {
 
     DefaultOntologyStore(){
-        super();
+        super(new PatriciaTrie<>());
     }
+
+
 
 }

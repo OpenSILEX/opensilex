@@ -17,7 +17,8 @@ import java.util.List;
         ontology = Oeso.class,
         resource = "ScientificObject",
         graph = ScientificObjectModel.GRAPH,
-        prefix = ScientificObjectModel.PREFIX
+        prefix = ScientificObjectModel.PREFIX,
+        handleCustomProperties = true
 )
 public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
 

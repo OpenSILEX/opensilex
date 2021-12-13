@@ -27,6 +27,7 @@
     <properties>
         <skipFrontBuild>true</skipFrontBuild>
         <skipTypeScriptLibBuild>true</skipTypeScriptLibBuild>
+        <jgrapht.version>1.5.1</jgrapht.version>
     </properties>
     
     <dependencies>
@@ -44,6 +45,14 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>${jgrapht.version}</version>
+        </dependency>
+
     </dependencies>    
         
     <build>

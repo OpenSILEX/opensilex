@@ -113,6 +113,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 Lang.TURTLE,
                 OWL.PREFIX
         ));
+        list.add(new OntologyFileDefinition(
+                Time.NS,
+                ONTOLOGIES_DIRECTORY+"/time.ttl",
+                Lang.TURTLE,
+                Time.PREFIX
+        ));
         return list;
     }
 

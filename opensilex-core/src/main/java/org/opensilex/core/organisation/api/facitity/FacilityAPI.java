@@ -5,14 +5,29 @@
  */
 package org.opensilex.core.organisation.api.facitity;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.core.organisation.api.InfrastructureAPI;
+import org.opensilex.core.organisation.dal.InfrastructureDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.response.*;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -20,31 +35,11 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.organisation.api.InfrastructureAPI;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.server.response.*;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.service.SPARQLService;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
-import org.opensilex.server.exceptions.InvalidValueException;
-
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 /**
  *

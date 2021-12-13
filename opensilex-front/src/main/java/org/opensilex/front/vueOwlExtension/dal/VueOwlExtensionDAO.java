@@ -5,26 +5,22 @@
  */
 package org.opensilex.front.vueOwlExtension.dal;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -32,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VueOwlExtensionDAO {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(VueOwlExtensionDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VueOwlExtensionDAO.class);
 
     private final SPARQLService sparql;
 

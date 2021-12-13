@@ -13,6 +13,10 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *

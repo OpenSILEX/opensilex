@@ -23,6 +23,9 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.csv.dal.AbstractCsvDao;
+import org.opensilex.core.csv.dal.CsvDao;
+import org.opensilex.core.csv.dal.DefaultCsvDao;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -38,9 +41,9 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -828,7 +831,7 @@ public class ScientificObjectAPI {
                 URI existingObjectWithSameName = existingUriByName.get(name);
                 String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name,existingObjectWithSameName.toString());
 
-                CSVCell cell = new CSVCell(OntologyDAO.CSV_HEADER_ROWS_NB +i,OntologyDAO.CSV_NAME_INDEX,object.getName(),errorMsg);
+                CSVCell cell = new CSVCell(AbstractCsvDao.CSV_HEADER_ROWS_NB +i, AbstractCsvDao.CSV_NAME_INDEX,object.getName(),errorMsg);
                 validationModel.addInvalidValueError(cell);
             }
             i++;
@@ -836,9 +839,9 @@ public class ScientificObjectAPI {
     }
 
     private static final Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
-            OntologyDAO.CSV_URI_KEY,
-            OntologyDAO.CSV_TYPE_KEY,
-            OntologyDAO.CSV_NAME_KEY,
+            AbstractCsvDao.CSV_URI_KEY,
+            AbstractCsvDao.CSV_TYPE_KEY,
+            AbstractCsvDao.CSV_NAME_KEY,
             GEOMETRY_COLUMN_ID
     ));
 
@@ -947,7 +950,10 @@ public class ScientificObjectAPI {
             }
 
         };
-        String csvContent = ontologyDAO.exportCSV(
+
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
+
+        String csvContent = csvDao.exportCSV(
                 objects.getList(),
                 new URI(Oeso.ScientificObject.toString()),
                 currentUser.getLanguage(),
@@ -1122,9 +1128,10 @@ public class ScientificObjectAPI {
         });
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
 
         int firstRow = 3;
-        CSVValidationModel validationResult = ontologyDAO.validateCSV(ScientificObjectModel.class,contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser, customValidators, customColumns);
+        CSVValidationModel validationResult = csvDao.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser.getLanguage(), customValidators, customColumns);
 
         if (!validationResult.hasErrors()) {
             URI partOfURI = new URI(Oeso.isPartOf.toString());

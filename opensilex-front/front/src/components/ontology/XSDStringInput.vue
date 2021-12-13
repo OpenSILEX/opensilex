@@ -5,6 +5,8 @@
     type="text"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
+    placeholder="XSDStringInput.placeholder"
   ></opensilex-InputForm>
 </template>
 
@@ -12,15 +14,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDStringInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -34,3 +33,12 @@ export default class XSDStringInput extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+
+en:
+    XSDStringInput:
+        placeholder: "Enter text, ex : Opensilex"
+fr:
+    XSDStringInput:
+        placeholder: "Saisir du texte, ex : Opensilex"
+</i18n>

@@ -8,7 +8,7 @@ package org.opensilex.core.ontology.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.List;
-import org.opensilex.core.ontology.dal.URITypesModel;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
 
 /**
  *

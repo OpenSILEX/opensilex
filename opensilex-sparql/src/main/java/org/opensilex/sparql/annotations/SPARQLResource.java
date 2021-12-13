@@ -25,7 +25,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Inherited
 public @interface SPARQLResource {
 
-
     Class<?> ontology();
 
     String resource();
@@ -39,4 +38,6 @@ public @interface SPARQLResource {
     boolean ignoreValidation() default false;
 
     boolean allowBlankNode() default false;
+
+    boolean handleCustomProperties() default false;
 }

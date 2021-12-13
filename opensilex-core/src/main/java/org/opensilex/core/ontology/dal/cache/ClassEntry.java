@@ -1,9 +1,9 @@
 package org.opensilex.core.ontology.dal.cache;
 
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 
 /**
  * Class which aggregate several objects to index by class URI

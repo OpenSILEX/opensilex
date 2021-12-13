@@ -7,7 +7,6 @@
 package org.opensilex.core.data.dal;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
@@ -18,7 +17,7 @@ import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.MethodModel;

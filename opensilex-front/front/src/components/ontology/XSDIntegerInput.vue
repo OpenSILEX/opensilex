@@ -6,6 +6,8 @@
     rules="integer"
     :disabled="false"
     :required="property.is_required"
+    :helpMessage="property.comment"
+    placeholder="XSDIntegerInput.placeholder"
   ></opensilex-InputForm>
 </template>
 
@@ -13,15 +15,12 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDIntegerInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -34,3 +33,12 @@ export default class XSDIntegerInput extends Vue {
 <style scoped lang="scss">
 </style>
 
+<i18n>
+
+en:
+    XSDIntegerInput:
+        placeholder: "Enter an integer number, ex : 8611"
+fr:
+    XSDIntegerInput:
+        placeholder: "Saisir un nombre entier, ex : 8611"
+</i18n>

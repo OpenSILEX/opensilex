@@ -32,7 +32,6 @@ import org.opensilex.core.exception.*;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.ontology.dal.ClassModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -50,8 +49,8 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -75,6 +74,7 @@ import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -669,7 +669,6 @@ public class DataAPI {
      * Exception if two devices as provenance agent
      *
      * @param deviceDAO
-     * @param provDAO
      * @param data
      * @throws Exception
      */

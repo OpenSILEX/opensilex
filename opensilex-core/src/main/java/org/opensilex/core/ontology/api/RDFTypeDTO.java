@@ -5,8 +5,9 @@
  */
 package org.opensilex.core.ontology.api;
 
+import org.opensilex.sparql.ontology.dal.ClassModel;
+
 import java.net.URI;
-import org.opensilex.core.ontology.dal.ClassModel;
 
 /**
  *

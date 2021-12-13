@@ -90,11 +90,23 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
 
     <!-- http://www.opensilex.org/vocabulary/oeev#concerns -->
 
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#concerns">
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#concerns">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
-    </owl:ObjectProperty>
-    
+         <rdfs:label xml:lang="en">Concerns</rdfs:label>
+         <rdfs:label xml:lang="fr">Concerne</rdfs:label>
+         <rdfs:comment xml:lang="en">Object concerned by the event</rdfs:comment>
+         <rdfs:comment xml:lang="fr">Objet concerné par l'évènement</rdfs:comment>
+    </owl:DatatypeProperty>
 
+    <!-- http://www.opensilex.org/vocabulary/oeev#isInstant -->
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeev#isInstant">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeev#Event"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+        <rdfs:label xml:lang="en">Is instant</rdfs:label>
+        <rdfs:label xml:lang="fr">Est instantané</rdfs:label>
+        <rdfs:comment xml:lang="en">Indicate if the event is instantaneous or not</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Indique si l'évenement est instantané ou non</rdfs:comment>
+    </owl:DatatypeProperty>
 
     <!-- http://www.opensilex.org/vocabulary/oeev#from -->
 
@@ -104,7 +116,6 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:label xml:lang="fr">Depuis</rdfs:label>
         <rdfs:label xml:lang="en">From</rdfs:label>
     </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#hasDocument -->
@@ -211,6 +222,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     
 
 
+
     <!-- http://www.opensilex.org/vocabulary/oeev#AssociationWithScientificObject -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#AssociationWithScientificObject">
@@ -232,7 +244,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#Association"/>
         <rdfs:label xml:lang="fr">Association avec un capteur</rdfs:label>
         <rdfs:label xml:lang="en">Association with a sensing device</rdfs:label>
-         <rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
@@ -345,13 +357,47 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <!-- http://www.opensilex.org/vocabulary/oeev#Event -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Event">
-        <rdfs:comment xml:lang="fr">Evenement lie a un objet</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Événement lié a un objet</rdfs:comment>
         <rdfs:comment xml:lang="en">Event linked to an object involved in an experiment</rdfs:comment>
         <rdfs:label xml:lang="en">Event</rdfs:label>
-        <rdfs:label xml:lang="fr">Evénement</rdfs:label>
+        <rdfs:label xml:lang="fr">Événement</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#concerns"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#isInstant"/>
+                <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2006/time#hasBeginning"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.w3.org/2006/time#Instant"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.w3.org/2006/time#hasEnd"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.w3.org/2006/time#Instant"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeev#EvolutiveMaintenance -->
 

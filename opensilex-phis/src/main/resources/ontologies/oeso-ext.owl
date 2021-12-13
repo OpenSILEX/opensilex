@@ -138,12 +138,6 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#endDate -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#endDate">
@@ -181,16 +175,6 @@
             </owl:Class>
         </rdfs:domain>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:ObjectProperty>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasContact -->
@@ -545,7 +529,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#deviceProperty -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-    
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#focalLength -->
@@ -572,7 +556,9 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
+        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
+    </owl:DatatypeProperty>
     
 
 
@@ -731,11 +717,12 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#personInCharge -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#personInCharge">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#personInCharge">
         <rdfs:label xml:lang="en">person in charge</rdfs:label>
         <rdfs:label xml:lang="fr">responsable</rdfs:label>
-    </owl:DatatypeProperty>
-    
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+    </owl:ObjectProperty>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#pixelSize -->
@@ -935,14 +922,76 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp"/>
     
+    <!-- http://www.opensilex.org/vocabulary/oeso#startUp -->
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:label xml:lang="en">Startup</rdfs:label>
+        <rdfs:label xml:lang="fr">Date de démarrage</rdfs:label>
+    </owl:DatatypeProperty>
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#removal -->
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#removal">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:label xml:lang="en">Removal</rdfs:label>
+        <rdfs:label xml:lang="fr">Date d'enlèvement</rdfs:label>
+    </owl:DatatypeProperty>
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#isPartOf"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startUp"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#removal"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#personInCharge"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 
@@ -1301,12 +1350,6 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#focalLength"/>
                 <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
-                <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxCardinality>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:label xml:lang="en">lens</rdfs:label>
@@ -2241,6 +2284,7 @@
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty">
         <rdfs:label xml:lang="fr">propriété d&apos;un équipement</rdfs:label>
         <rdfs:label xml:lang="en">device property</rdfs:label>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#focalLength">
         <rdfs:label xml:lang="fr">longueur focale (mm)</rdfs:label>

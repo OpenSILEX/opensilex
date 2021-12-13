@@ -270,7 +270,6 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return instance;
     }
 
-
     /**
      *
      * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded

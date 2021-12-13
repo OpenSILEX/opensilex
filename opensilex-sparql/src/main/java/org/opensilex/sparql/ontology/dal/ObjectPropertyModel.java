@@ -1,13 +1,17 @@
+/*******************************************************************************
+ *                         ObjectPropertyModel.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2021.
+ * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.ontology.dal;
-
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
+package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
@@ -17,16 +21,20 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author vmigot
  */
 @SPARQLResource(
         ontology = OWL2.class,
-        resource = "DatatypeProperty",
+        resource = "ObjectProperty",
         ignoreValidation = true
 )
-public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel> implements PropertyModel {
+public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> implements PropertyModel {
 
     @SPARQLIgnore()
     protected String name;
@@ -50,13 +58,13 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
             property = "subPropertyOf",
             inverse = true
     )
-    protected List<DatatypePropertyModel> children;
+    protected List<ObjectPropertyModel> children;
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "subPropertyOf"
     )
-    protected DatatypePropertyModel parent;
+    protected ObjectPropertyModel parent;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -69,7 +77,7 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
             ontology = RDFS.class,
             property = "range"
     )
-    protected URI range;
+    protected ClassModel range;
     public final static String RANGE_FIELD = "range";
 
     protected URI typeRestriction;
@@ -116,11 +124,11 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
         this.domain = domain;
     }
 
-    public URI getRange() {
+    public ClassModel getRange() {
         return range;
     }
 
-    public void setRange(URI range) {
+    public void setRange(ClassModel range) {
         this.range = range;
     }
 
@@ -132,20 +140,20 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
         this.typeRestriction = typeRestriction;
     }
 
-    public DatatypePropertyModel() {
+    public ObjectPropertyModel() {
     }
 
-    public DatatypePropertyModel(DatatypePropertyModel other) {
+    public ObjectPropertyModel(ObjectPropertyModel other) {
         this(other, true);
     }
 
-    public DatatypePropertyModel(DatatypePropertyModel other, boolean readChildren) {
+    public ObjectPropertyModel(ObjectPropertyModel other, boolean readChildren) {
         fromModel(other);
         range = other.getRange();
 
         if (readChildren && other.getChildren() != null) {
             children = other.getChildren().stream()
-                    .map(child -> new DatatypePropertyModel(child, true))
+                    .map(child -> new ObjectPropertyModel(child, true))
                     .collect(Collectors.toList());
 
             children.forEach(child -> setParent(this));
@@ -155,11 +163,9 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
         }
 
         if (other.getParent() != null) {
-            this.parent = new DatatypePropertyModel(other.getParent(), false);
-
-            // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
+            parent = new ObjectPropertyModel(other.getParent(), false);
             setParent(parent);
         }
-
     }
+
 }

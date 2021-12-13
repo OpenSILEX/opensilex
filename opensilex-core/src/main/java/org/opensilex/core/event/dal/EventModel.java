@@ -28,7 +28,8 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = Oeev.class,
         resource = "Event",
-        graph = EventModel.GRAPH
+        graph = EventModel.GRAPH,
+        handleCustomProperties = true
 )
 public class EventModel extends SPARQLResourceModel implements ClassURIGenerator<EventModel> {
 

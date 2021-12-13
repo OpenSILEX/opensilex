@@ -1,12 +1,21 @@
+/*******************************************************************************
+ *                         PropertyModel.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2021.
+ * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.ontology.dal;
+package org.opensilex.sparql.ontology.dal;
+
+import org.opensilex.sparql.model.SPARQLLabel;
 
 import java.net.URI;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  *
@@ -26,25 +35,25 @@ public interface PropertyModel{
 
      void setTypeLabel(SPARQLLabel typeLabel);
 
-    public String getName();
+    String getName();
 
     void setName(String name);
 
-    public void setLabel(SPARQLLabel label);
+    void setLabel(SPARQLLabel label);
 
-    public SPARQLLabel getLabel();
+    SPARQLLabel getLabel();
 
-    public void setComment(SPARQLLabel comment);
+    void setComment(SPARQLLabel comment);
 
-    public SPARQLLabel getComment();
+    SPARQLLabel getComment();
 
-    public ClassModel getDomain();
+    ClassModel getDomain();
 
-    public void setDomain(ClassModel domain);
+    void setDomain(ClassModel domain);
 
-    public URI getTypeRestriction();
+    URI getTypeRestriction();
 
-    public void setTypeRestriction(URI typeRestriction);
+    void setTypeRestriction(URI typeRestriction);
 
     default void fromModel(PropertyModel copy) {
 

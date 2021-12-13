@@ -25,8 +25,8 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -39,7 +39,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -388,7 +388,7 @@ public class DeviceDAO {
         
         // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
         // Works only if all relations are measure relations .. 
-        List newRelations = new ArrayList<>();
+        List<SPARQLModelRelation> newRelations = new ArrayList<>();
         for (SPARQLModelRelation relation : relations) {
             SPARQLModelRelation rel = new SPARQLModelRelation();
             rel.setProperty(relation.getProperty());

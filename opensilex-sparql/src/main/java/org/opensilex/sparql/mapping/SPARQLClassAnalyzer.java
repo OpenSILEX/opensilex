@@ -43,6 +43,7 @@ public final class SPARQLClassAnalyzer {
     private final SPARQLClassObjectMapperIndex mapperIndex;
 
     private final Resource resource;
+    private final URI rdfTypeURI;
     private final String graph;
     private final String graphPrefix;
 
@@ -67,6 +68,7 @@ public final class SPARQLClassAnalyzer {
     private final Map<Property, String> fieldsByUniqueProperty = new HashMap<>();
 
     private final Set<Property> managedProperties = new HashSet<>();
+    private final Set<String> managedPropertiesUris = new HashSet<>();
 
     private final BiMap<Method, String> fieldsByGetter;
 
@@ -89,8 +91,8 @@ public final class SPARQLClassAnalyzer {
     private final URIGenerator<? extends SPARQLResourceModel> uriGenerator;
 
     private final boolean ignoreValidation;
-
     private final boolean allowBlankNode;
+    private final boolean handleCustomProperties;
 
     @SuppressWarnings("unchecked")
     public SPARQLClassAnalyzer(SPARQLClassObjectMapperIndex mapperIndex, Class<?> objectClass) throws SPARQLInvalidClassDefinitionException {
@@ -122,7 +124,11 @@ public final class SPARQLClassAnalyzer {
             Class<?> resourceOntology = resourceAnnotation.ontology();
             Field resourceField = resourceOntology.getField(resourceAnnotation.resource());
             resource = (Resource) resourceField.get(null);
+            rdfTypeURI = URI.create(resource.getURI());
+
             allowBlankNode = resourceAnnotation.allowBlankNode();
+            handleCustomProperties = resourceAnnotation.handleCustomProperties();
+
             LOGGER.debug("RDF Type for class: " + objectClass.getName() + " is: " + resource.toString());
             if (!resourceAnnotation.graph().isEmpty()) {
                 graph = resourceAnnotation.graph();
@@ -345,6 +351,7 @@ public final class SPARQLClassAnalyzer {
         fieldsByName.put(field.getName(), field);
 
         managedProperties.add(property);
+        managedPropertiesUris.add(SPARQLDeserializers.formatURI(property.getURI()));
     }
 
     private void checkAllowedReverseField(Field field) throws SPARQLInvalidClassDefinitionException {
@@ -418,6 +425,7 @@ public final class SPARQLClassAnalyzer {
         }
 
         managedProperties.add(RDF.type);
+        managedPropertiesUris.add(SPARQLDeserializers.formatURI(RDF.type.getURI()));
     }
 
     private boolean isGetter(Method method) {
@@ -594,6 +602,10 @@ public final class SPARQLClassAnalyzer {
         return resource;
     }
 
+    public URI getRdfTypeURI() {
+        return rdfTypeURI;
+    }
+
     public String getGraph() {
         return graph;
     }
@@ -690,6 +702,10 @@ public final class SPARQLClassAnalyzer {
 
     public Set<Property> getManagedProperties() {
         return Collections.unmodifiableSet(managedProperties);
+    }
+
+    public Set<String> getManagedPropertiesUris() {
+        return Collections.unmodifiableSet(managedPropertiesUris);
     }
 
     public String getResourceGraphPrefix() {
@@ -802,4 +818,7 @@ public final class SPARQLClassAnalyzer {
         return allowBlankNode;
     }
 
+    public boolean isHandleCustomProperties() {
+        return handleCustomProperties;
+    }
 }

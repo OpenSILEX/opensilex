@@ -20,6 +20,10 @@ import java.util.function.Consumer;
 
 public interface OntologyStore {
 
+    void load() throws SPARQLException;
+
+    void clear();
+
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 
     <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, String lang, boolean excludeRoot, Consumer<T> handler) throws SPARQLException;

@@ -23,6 +23,7 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,8 +69,27 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
     )
     protected ClassModel parent;
 
-    public ClassModel(){
+    protected List<ClassModel> parents;
 
+    public ClassModel(){
+        children = new LinkedList<>();
+        parents = new LinkedList<>();
+    }
+
+    public ClassModel(ClassModel classModel){
+        this();
+
+        uri = classModel.getUri();
+        label = classModel.getLabel();
+        comment = classModel.getComment();
+        rdfType = classModel.getType();
+        rdfTypeName = classModel.getTypeLabel();
+
+        children = classModel.getChildren();
+        parents = classModel.getParents();
+        datatypeProperties = classModel.getDatatypeProperties();
+        objectProperties = classModel.getObjectProperties();
+        restrictions = classModel.getRestrictions();
     }
 
     /**
@@ -78,6 +98,8 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
      * @param readChildren flag which indicate if this constructor must iterate over classModel children
      */
     public ClassModel(ClassModel classModel, boolean readChildren){
+
+        this();
 
         uri = classModel.getUri();
         if(classModel.getLabel() != null){
@@ -101,6 +123,8 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
             // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
             setChildren(children);
         }
+
+
 
         if(classModel.getParent() != null){
             this.parent = new ClassModel(classModel.getParent(),false);
@@ -193,4 +217,11 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> {
         return getObjectProperties().get(propertyURI);
     }
 
+    public List<ClassModel> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<ClassModel> parents) {
+        this.parents = parents;
+    }
 }

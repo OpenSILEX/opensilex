@@ -8,14 +8,14 @@
 
 package org.opensilex.sparql.ontology.store;
 
-import org.apache.commons.collections4.trie.PatriciaTrie;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.service.SPARQLService;
+
+import java.util.List;
 
 public class DefaultOntologyStore extends AbstractOntologyStore {
 
-    DefaultOntologyStore(){
-        super(new PatriciaTrie<>());
+    public DefaultOntologyStore(SPARQLService sparql, List<String> languages) throws SPARQLException {
+        super(sparql, languages);
     }
-
-
-
 }

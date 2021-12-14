@@ -42,10 +42,7 @@ public abstract class ExperimentDTO {
     
     @JsonProperty("species")
     protected List<URI> species = new ArrayList<>();
-   
-    @JsonProperty("variables")  
-    protected List<URI> variables = new ArrayList<>();
-    
+
     @JsonProperty("organisations") 
     protected List<URI> infrastructures = new ArrayList<>();
 
@@ -203,15 +200,6 @@ public abstract class ExperimentDTO {
 
     public ExperimentDTO setFacilities(List<URI> facilities) {
         this.facilities = facilities;
-        return this;
-    }
-
-    public List<URI> getVariables() {
-        return variables;
-    }
-
-    public ExperimentDTO setVariables(List<URI> variables) {
-        this.variables = variables;
         return this;
     }
 

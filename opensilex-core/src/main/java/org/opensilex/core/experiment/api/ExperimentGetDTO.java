@@ -54,9 +54,9 @@ public class ExperimentGetDTO {
     
     @JsonProperty("species")
     protected List<URI> species = new ArrayList<>();
-   
-    @JsonProperty("variables")  
-    protected List<URI> variables = new ArrayList<>();
+//
+//    @JsonProperty("variables")
+//    protected List<URI> variables = new ArrayList<>();
     
     @JsonProperty("factors") 
     protected List<URI> factors = new ArrayList<>();
@@ -198,14 +198,14 @@ public class ExperimentGetDTO {
     public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
         this.facilities = facilities;
     }
-
-    public List<URI> getVariables() {
-        return variables;
-    }
-
-    public void setVariables(List<URI> variables) {
-        this.variables = variables;
-    }
+//
+//    public List<URI> getVariables() {
+//        return variables;
+//    }
+//
+//    public void setVariables(List<URI> variables) {
+//        this.variables = variables;
+//    }
 
     public List<URI> getFactors() {
         return factors;
@@ -234,7 +234,7 @@ public class ExperimentGetDTO {
         dto.setObjective(model.getObjective());
         dto.setDescription(model.getDescription());
         dto.setIsPublic(model.getIsPublic());
-        dto.setVariables(model.getVariables());
+//        dto.setVariables(model.getVariables());
 
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate());

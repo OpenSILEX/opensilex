@@ -35,7 +35,6 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setObjective(getObjective());
         model.setDescription(getDescription());
         model.setIsPublic(isPublic);
-        model.setVariables(variables);
 
         List<SpeciesModel> speciesList = new ArrayList<>(species.size());
         species.forEach((URI u) -> {

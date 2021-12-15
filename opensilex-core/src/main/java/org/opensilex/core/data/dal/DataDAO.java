@@ -350,8 +350,8 @@ public class DataDAO {
                 
         if (devices != null && !devices.isEmpty()) {
             //Get all data that have :
-            //    provenance.provUsed.uri IN deviceURIs 
-            // OR ( provenance.uri IN deviceProvenances list && provenance.provUsed.uri isEmpty or not exists)
+            //    provenance.provWasAssociatedWith.uri IN deviceURIs
+            // OR ( provenance.uri IN deviceProvenances list && provenance.provWasAssociatedWith.uri isEmpty or not exists)
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(devices);
 

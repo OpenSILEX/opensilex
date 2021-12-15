@@ -125,7 +125,11 @@ public class ScientificObjectDAO {
 
     public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(ScientificObjectSearchFilter searchFilter) throws Exception {
 
-        searchFilter.setOnlyFetchOsWithNoParent(true);
+        if(!searchFilter.getRdfTypes().isEmpty() || !searchFilter.getFactorLevels().isEmpty() || !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") || searchFilter.getFacility() != null) {
+            searchFilter.setOnlyFetchOsWithNoParent(false);
+        } else {
+            searchFilter.setOnlyFetchOsWithNoParent(true);
+        }
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
         if(results.getList().isEmpty()){

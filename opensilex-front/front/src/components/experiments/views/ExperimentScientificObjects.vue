@@ -45,6 +45,7 @@
                   :types.sync="filters.types"
                   :multiple="true"
                   :experimentURI="uri"
+                  :key="refreshKey"
                 ></opensilex-ScientificObjectTypeSelector>
               </b-form-group>
             </opensilex-FilterField>
@@ -265,6 +266,11 @@ export default class ExperimentScientificObjects extends Vue {
   showDataVisuView = false;
   numberOfSelectedRows = 0;
 
+  refreshKey = 0;
+
+  refreshTypeSelectorComponent(){
+    this.refreshKey += 1
+  }
   
   @Ref("soForm") readonly soForm!: any;
   @Ref("soTree") readonly soTree!: TreeViewAsync;
@@ -414,7 +420,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   refreshAfterCreateOrUpdate(result){
       this.refresh();
-
+      this.refreshTypeSelectorComponent();
       if(! result || ! result.response.result) {
         return;
       }
@@ -428,6 +434,7 @@ export default class ExperimentScientificObjects extends Vue {
       this.onSelectAll();
       this.selected = null;
     }
+    
   }
 
   loadAllChildren(nodeURI,page,pageSize) {
@@ -467,7 +474,7 @@ export default class ExperimentScientificObjects extends Vue {
 
   searchMethod(nodeURI, page, pageSize) {
     let orderBy = ["name=asc"];
-    return this.soService.getScientificObjectsChildren(
+       return this.soService.getScientificObjectsChildren(
         this.filters.parent ? this.filters.parent : nodeURI,
         this.uri,
         this.filters.types,
@@ -540,6 +547,7 @@ export default class ExperimentScientificObjects extends Vue {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
+          this.refreshTypeSelectorComponent();
         }
       });
   }

@@ -18,29 +18,24 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.OpenSilex;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.ontology.dal.*;
+import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.apache.jena.arq.querybuilder.Converters.makeVar;
@@ -67,7 +62,6 @@ class OntologyStoreLoader {
     protected final List<String> languages;
     protected final List<Var> commentVars;
     protected final List<Var> nameVars;
-    protected final SelectBuilder getAllClassesQuery;
 
     OntologyStoreLoader(SPARQLService sparql, AbstractOntologyStore ontologyStore, List<String> languages) {
         this.sparql = sparql;
@@ -81,8 +75,6 @@ class OntologyStoreLoader {
         nameVars = languages.stream()
                 .map(lang -> getLangVar(SPARQLNamedResourceModel.NAME_FIELD, lang))
                 .collect(Collectors.toList());
-
-        getAllClassesQuery = buildGetAllClassesQuery();
     }
 
     private static Var getLangVar(String field, String lang) {
@@ -90,40 +82,37 @@ class OntologyStoreLoader {
         return makeVar(varName);
     }
 
-    private void fromResult(SPARQLResult result, SPARQLTranslatedTreeModel<?> treeModel) {
-        treeModel.setLabel(getLabel(result, nameVars));
-        treeModel.setComment(getLabel(result, commentVars));
+    private void fromResult(SPARQLResult result, TranslatedModel model) {
+        model.setLabel(getLabel(result, nameVars));
+        model.setComment(getLabel(result, commentVars));
     }
 
-    private void resultToProperty(SPARQLResult result, SPARQLTranslatedTreeModel model) {
+    private void fromResult(SPARQLResult result, PropertyModel model) {
 
         String domainStr = result.getStringValue(DatatypePropertyModel.DOMAIN_FIELD);
-        ClassModel domainClass = null;
         if (!StringUtils.isEmpty(domainStr)) {
-            domainClass = new ClassModel();
+            ClassModel domainClass = new ClassModel();
             domainClass.setUri(URIDeserializer.formatURI(domainStr));
+            model.setDomain(domainClass);
         }
 
-        if (model instanceof DatatypePropertyModel) {
-            String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
-            if (!StringUtils.isEmpty(rangeStr)) {
+        String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
+        if (!StringUtils.isEmpty(rangeStr)) {
+            if (model instanceof DatatypePropertyModel) {
                 ((DatatypePropertyModel) model).setRange(URIDeserializer.formatURI(rangeStr));
-                ((DatatypePropertyModel) model).setDomain(domainClass);
-            }
-
-        } else {
-            String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
-            if (!StringUtils.isEmpty(rangeStr)) {
+            } else {
                 ClassModel rangeClass = new ClassModel();
                 rangeClass.setUri(URIDeserializer.formatURI(rangeStr));
                 ((ObjectPropertyModel) model).setRange(rangeClass);
-                ((ObjectPropertyModel) model).setDomain(domainClass);
             }
         }
+
     }
 
-    private <T extends SPARQLTranslatedTreeModel<T>> List<T> getModels(
-            SelectBuilder select, Function<SPARQLResult, T> modelConstructor, BiConsumer<SPARQLResult, T> resultToModel) throws SPARQLException {
+    private <T extends VocabularyModel<T>> List<T> getModels(
+            SelectBuilder select,
+            Function<SPARQLResult, T> modelConstructor,
+            BiConsumer<SPARQLResult, T> resultToModel) throws SPARQLException {
 
         List<T> models = new ArrayList<>();
         AtomicReference<String> lastURI = new AtomicReference<>();
@@ -161,22 +150,24 @@ class OntologyStoreLoader {
 
     }
 
-    public void loadClasses() throws SPARQLException {
-        List<ClassModel> classes = getModels(getAllClassesQuery, result -> new ClassModel(), (result, model) -> {
-            model.setType(AbstractOntologyStore.OWL_CLASS_URI);
-            model.setTypeLabel(ontologyStore.OWL_CLASS_MODEL.getTypeLabel());
-        });
-        ontologyStore.addAll(classes);
+    public List<ClassModel> getClasses() throws SPARQLException {
+        return getModels(
+                buildGetAllClassesQuery(),
+                result -> new ClassModel(),
+                (result, model) -> {
+                    model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+                    model.setTypeLabel(ontologyStore.OWL_CLASS_MODEL.getTypeLabel());
+                });
     }
 
-    public List<AbstractPropertyModel> loadProperties() throws SPARQLException {
+    public List<PropertyModel> loadProperties() throws SPARQLException {
 
-       return getModels(
+        return getModels(
                 buildGetAllPropertiesQuery(),
                 result -> {
                     String typeUri = result.getStringValue(ROOT_PROPERTY_TYPE_VAR.getVarName());
 
-                    AbstractPropertyModel model;
+                    PropertyModel model;
 
                     if (SPARQLDeserializers.compareURIs(typeUri, OWL2.DatatypeProperty.getURI())) {
                         model = new DatatypePropertyModel();
@@ -187,7 +178,7 @@ class OntologyStoreLoader {
                     }
                     return model;
                 },
-                this::resultToProperty
+                this::fromResult
         );
 
     }

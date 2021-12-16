@@ -14,6 +14,7 @@
 package org.opensilex.sparql.ontology.dal;
 
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
 
@@ -21,31 +22,7 @@ import java.net.URI;
  *
  * @author vince
  */
-public interface PropertyModel{
-
-    URI getUri();
-
-    void setUri(URI uri);
-
-    URI getType();
-
-    void setType(URI uri);
-
-     SPARQLLabel getTypeLabel();
-
-     void setTypeLabel(SPARQLLabel typeLabel);
-
-    String getName();
-
-    void setName(String name);
-
-    void setLabel(SPARQLLabel label);
-
-    SPARQLLabel getLabel();
-
-    void setComment(SPARQLLabel comment);
-
-    SPARQLLabel getComment();
+public interface PropertyModel<T extends VocabularyModel<T>> extends VocabularyModel<T> {
 
     ClassModel getDomain();
 

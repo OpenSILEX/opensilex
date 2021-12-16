@@ -6,11 +6,6 @@
  *
  ******************************************************************************/
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
@@ -22,11 +17,13 @@ import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author vmigot
  */
 @SPARQLResource(
@@ -34,10 +31,24 @@ import java.util.stream.Collectors;
         resource = "ObjectProperty",
         ignoreValidation = true
 )
-public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyModel>{
+public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> implements PropertyModel<ObjectPropertyModel> {
 
     @SPARQLIgnore()
     protected String name;
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label",
+            required = true
+    )
+    protected SPARQLLabel label;
+    public final static String LABEL_FIELD = "label";
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    protected SPARQLLabel comment;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -68,6 +79,38 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
 
     protected URI typeRestriction;
 
+    protected Set<ObjectPropertyModel> parents;
+
+    public ObjectPropertyModel() {
+        children = new LinkedList<>();
+        parents = new HashSet<>();
+    }
+
+    public ObjectPropertyModel(ObjectPropertyModel other) {
+        this(other, true);
+    }
+
+    public ObjectPropertyModel(ObjectPropertyModel other, boolean readChildren) {
+        fromModel(other);
+        range = other.getRange();
+
+        if (readChildren && other.getChildren() != null) {
+            children = other.getChildren().stream()
+                    .map(child -> new ObjectPropertyModel(child, true))
+                    .collect(Collectors.toList());
+
+            children.forEach(child -> setParent(this));
+
+            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
+            setChildren(children);
+        }
+
+        if (other.getParent() != null) {
+            parent = new ObjectPropertyModel(other.getParent(), false);
+            setParent(parent);
+        }
+    }
+
     @Override
     public String getName() {
         if (name != null) {
@@ -84,6 +127,22 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
     @Override
     public void setName(String name) {
         this.name = name;
+    }
+
+    public SPARQLLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(SPARQLLabel label) {
+        this.label = label;
+    }
+
+    public SPARQLLabel getComment() {
+        return comment;
+    }
+
+    public void setComment(SPARQLLabel comment) {
+        this.comment = comment;
     }
 
     public ClassModel getDomain() {
@@ -110,12 +169,13 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
         this.typeRestriction = typeRestriction;
     }
 
-    public ObjectPropertyModel() {
+    @Override
+    public Set<ObjectPropertyModel> getParents() {
+        return parents;
     }
 
-//    public ObjectPropertyModel(ObjectPropertyModel other) {
-//        super(other);
-//    }
-
-
+    @Override
+    public void setParents(Set<ObjectPropertyModel> parents) {
+        this.parents = parents;
+    }
 }

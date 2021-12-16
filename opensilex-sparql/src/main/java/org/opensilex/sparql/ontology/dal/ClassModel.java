@@ -20,6 +20,7 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
 import java.util.*;
@@ -34,11 +35,24 @@ import java.util.stream.Collectors;
         resource = "Class",
         ignoreValidation = true
 )
-public class ClassModel extends SPARQLTranslatedTreeModel<ClassModel> {
+public class ClassModel extends SPARQLTreeModel<ClassModel> implements VocabularyModel<ClassModel> {
 
     @SPARQLIgnore()
     protected String name;
 
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label"
+    )
+    protected SPARQLLabel label;
+    public static final String NAME_FIELD = "label";
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    protected SPARQLLabel comment;
+    public static final String COMMENT_FIELD = "comment";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -53,14 +67,28 @@ public class ClassModel extends SPARQLTranslatedTreeModel<ClassModel> {
     )
     protected ClassModel parent;
 
+    protected Set<ClassModel> parents;
 
     public ClassModel(){
         super();
         children = new LinkedList<>();
+        parents = new HashSet<>();
     }
 
     public ClassModel(ClassModel other){
-        super(other);
+
+        uri = other.getUri();
+        rdfType = other.getType();
+
+        if(other.getLabel() != null){
+            label = new SPARQLLabel(other.getLabel());
+        }
+        if(other.getComment() != null){
+            comment = new SPARQLLabel(other.getComment());
+        }
+        if(other.getTypeLabel() != null){
+            rdfTypeName = new SPARQLLabel(other.getTypeLabel());
+        }
 
         children = other.getChildren();
         setChildren(children);
@@ -78,6 +106,44 @@ public class ClassModel extends SPARQLTranslatedTreeModel<ClassModel> {
      * @param readChildren flag which indicate if this constructor must iterate over classModel children
      */
     public ClassModel(ClassModel classModel, boolean readChildren){
+
+        this();
+
+        uri = classModel.getUri();
+        if(classModel.getLabel() != null){
+            label = new SPARQLLabel(classModel.getLabel());
+        }
+        if(classModel.getComment() != null){
+            comment = new SPARQLLabel(classModel.getComment());
+        }
+        rdfType = classModel.getType();
+        if(classModel.getTypeLabel() != null){
+            rdfTypeName = new SPARQLLabel(classModel.getTypeLabel());
+        }
+
+        if(readChildren && classModel.getChildren() != null){
+            children = classModel.getChildren().stream()
+                    .map(child -> new ClassModel(child,true))
+                    .collect(Collectors.toList());
+
+            children.forEach(child -> setParent(this));
+
+            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
+            setChildren(children);
+        }
+
+
+
+        if(classModel.getParent() != null){
+            this.parent = new ClassModel(classModel.getParent(),false);
+        }
+
+        // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
+        setParent(parent);
+
+        datatypeProperties = classModel.getDatatypeProperties();
+        objectProperties = classModel.getObjectProperties();
+        restrictions = classModel.getRestrictions();
     }
 
 
@@ -93,6 +159,22 @@ public class ClassModel extends SPARQLTranslatedTreeModel<ClassModel> {
         } else {
             return getUri().toString();
         }
+    }
+
+    public SPARQLLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(SPARQLLabel label) {
+        this.label = label;
+    }
+
+    public SPARQLLabel getComment() {
+        return comment;
+    }
+
+    public void setComment(SPARQLLabel comment) {
+        this.comment = comment;
     }
 
     public Map<URI, DatatypePropertyModel> getDatatypeProperties() {
@@ -143,12 +225,10 @@ public class ClassModel extends SPARQLTranslatedTreeModel<ClassModel> {
         return getObjectProperties().get(propertyURI);
     }
 
-    @Override
     public Set<ClassModel> getParents() {
         return parents;
     }
 
-    @Override
     public void setParents(Set<ClassModel> parents) {
         this.parents = parents;
     }

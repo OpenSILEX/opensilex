@@ -3,7 +3,8 @@
     ref="modalRef"
     size="lg"
     ok-only
-    :static="true"
+    :static="true"  
+    @hide="requiredField = false" 
     @show="shown()"
   >
     <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
@@ -45,7 +46,7 @@
                   placeholder="VariableList.label-filter-placeholder"
                   :multiple="true"
                   :variables.sync="variables"
-                  :required="true"
+                  :required="requiredField"
               >
               </opensilex-VariableSelector>
 
@@ -96,7 +97,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   $i18n: any;
   $papa: any;
   service: VariablesService;
-
+  requiredField: boolean = false;
   separator = ",";
 
   selectedColumns = [];
@@ -431,6 +432,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   shown() {
     this.validSelection = this.hasDeviceAgent;
+    this.requiredField = true; // due to the impact on the required field on the Form who encapsulte this form component
     this.selectedColumns = [];
   }
 

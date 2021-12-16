@@ -32,6 +32,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -110,8 +111,8 @@ public class OntologyAPI {
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
 
-        OntologyCache cache = CoreModule.getOntologyCacheInstance();
-        SPARQLTreeListModel<ClassModel> treeList = cache.getSubClassesOf(parentClass, stringPattern, currentUser.getLanguage(), ignoreRootClasses);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        SPARQLTreeListModel<ClassModel> treeList = ontologyStore.searchSubClasses(parentClass,stringPattern,currentUser.getLanguage(),ignoreRootClasses);
 
         List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
         return new ResourceTreeResponse(treeDto).getResponse();
@@ -131,8 +132,9 @@ public class OntologyAPI {
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
 
-        ClassModel classDescription = CoreModule.getOntologyCacheInstance()
-                .getClassModel(rdfType, parentType, currentUser.getLanguage());
+        ClassModel classDescription =
+                SPARQLModule.getOntologyStoreInstance().getClassModel(rdfType,parentType,currentUser.getLanguage());
+//                CoreModule.getOntologyCacheInstance().getClassModel(rdfType, parentType, currentUser.getLanguage());
 
         return new SingleObjectResponse<>(RDFTypeDTO.fromModel(new RDFTypeDTO(), classDescription)).getResponse();
     }

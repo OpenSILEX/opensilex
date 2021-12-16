@@ -19,23 +19,28 @@ import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.apache.jena.arq.querybuilder.Converters.makeVar;
@@ -43,7 +48,7 @@ import static org.apache.jena.arq.querybuilder.Converters.makeVar;
 /**
  * @author rcolin
  */
-public class OntologyStoreLoader {
+class OntologyStoreLoader {
 
     private final SPARQLService sparql;
     private final AbstractOntologyStore ontologyStore;
@@ -54,14 +59,17 @@ public class OntologyStoreLoader {
     protected static final Var PARENT_VAR = makeVar(SPARQLTreeModel.PARENT_FIELD);
     protected static final Var DOMAIN_VAR = makeVar(DatatypePropertyModel.DOMAIN_FIELD);
     protected static final Var RANGE_VAR = makeVar(DatatypePropertyModel.RANGE_FIELD);
-    private static final Node OWL_CLASS_URI = NodeFactory.createURI(OWL2.Class.getURI());
+    protected static final Var ROOT_PROPERTY_TYPE_VAR = makeVar("propertyType");
+
+    private static final Node OWL_DATATYPE_PROPERTY = NodeFactory.createURI(OWL2.DatatypeProperty.getURI());
+    private static final Node OWL_OBJECT_PROPERTY = NodeFactory.createURI(OWL2.ObjectProperty.getURI());
 
     protected final List<String> languages;
     protected final List<Var> commentVars;
     protected final List<Var> nameVars;
     protected final SelectBuilder getAllClassesQuery;
 
-    public OntologyStoreLoader(SPARQLService sparql, AbstractOntologyStore ontologyStore, List<String> languages) {
+    OntologyStoreLoader(SPARQLService sparql, AbstractOntologyStore ontologyStore, List<String> languages) {
         this.sparql = sparql;
         this.ontologyStore = ontologyStore;
 
@@ -82,40 +90,106 @@ public class OntologyStoreLoader {
         return makeVar(varName);
     }
 
-    public void load() throws SPARQLException {
+    private void fromResult(SPARQLResult result, SPARQLTranslatedTreeModel<?> treeModel) {
+        treeModel.setLabel(getLabel(result, nameVars));
+        treeModel.setComment(getLabel(result, commentVars));
+    }
 
-        List<ClassModel> classes = new ArrayList<>();
-        AtomicReference<String> lastClassURI = new AtomicReference<>();
+    private void resultToProperty(SPARQLResult result, SPARQLTranslatedTreeModel model) {
 
-        sparql.executeSelectQueryAsStream(getAllClassesQuery).forEach(result -> {
+        String domainStr = result.getStringValue(DatatypePropertyModel.DOMAIN_FIELD);
+        ClassModel domainClass = null;
+        if (!StringUtils.isEmpty(domainStr)) {
+            domainClass = new ClassModel();
+            domainClass.setUri(URIDeserializer.formatURI(domainStr));
+        }
 
-            ClassModel classModel;
-            String classURI = URIDeserializer.formatURIAsStr(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+        if (model instanceof DatatypePropertyModel) {
+            String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
+            if (!StringUtils.isEmpty(rangeStr)) {
+                ((DatatypePropertyModel) model).setRange(URIDeserializer.formatURI(rangeStr));
+                ((DatatypePropertyModel) model).setDomain(domainClass);
+            }
 
-            if (!classURI.equals(lastClassURI.get())) {
-                classModel = new ClassModel();
-                classModel.setUri(URI.create(classURI));
-                classModel.setType(AbstractOntologyStore.OWL_CLASS_URI);
-//            model.setTypeLabel(defaultClassLabel);
-                classModel.setLabel(getLabel(result, nameVars));
-                classModel.setComment(getLabel(result, commentVars));
-                classes.add(classModel);
+        } else {
+            String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
+            if (!StringUtils.isEmpty(rangeStr)) {
+                ClassModel rangeClass = new ClassModel();
+                rangeClass.setUri(URIDeserializer.formatURI(rangeStr));
+                ((ObjectPropertyModel) model).setRange(rangeClass);
+                ((ObjectPropertyModel) model).setDomain(domainClass);
+            }
+        }
+    }
 
-                lastClassURI.set(classURI);
+    private <T extends SPARQLTranslatedTreeModel<T>> List<T> getModels(
+            SelectBuilder select, Function<SPARQLResult, T> modelConstructor, BiConsumer<SPARQLResult, T> resultToModel) throws SPARQLException {
+
+        List<T> models = new ArrayList<>();
+        AtomicReference<String> lastURI = new AtomicReference<>();
+
+        sparql.executeSelectQueryAsStream(select).forEach(result -> {
+
+            T model;
+            String uri = URIDeserializer.getShortURI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+
+            if (!uri.equals(lastURI.get())) {
+                model = modelConstructor.apply(result);
+                model.setUri(URI.create(uri));
+
+                fromResult(result, model);
+                models.add(model);
+
+                lastURI.set(uri);
             } else {
-                classModel = classes.get(classes.size() - 1);
+                model = models.get(models.size() - 1);
             }
 
             String parentURI = result.getStringValue(SPARQLTreeModel.PARENT_FIELD);
             if (!StringUtils.isEmpty(parentURI)) {
-                ClassModel parentModel = new ClassModel();
+                T parentModel = modelConstructor.apply(result);
                 parentModel.setUri(URIDeserializer.formatURI(parentURI));
-                classModel.getParents().add(parentModel);
+                model.getParents().add(parentModel);
             }
 
+            if (resultToModel != null) {
+                resultToModel.accept(result, model);
+            }
         });
 
+        return models;
+
+    }
+
+    public void loadClasses() throws SPARQLException {
+        List<ClassModel> classes = getModels(getAllClassesQuery, result -> new ClassModel(), (result, model) -> {
+            model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+            model.setTypeLabel(ontologyStore.OWL_CLASS_MODEL.getTypeLabel());
+        });
         ontologyStore.addAll(classes);
+    }
+
+    public List<AbstractPropertyModel> loadProperties() throws SPARQLException {
+
+       return getModels(
+                buildGetAllPropertiesQuery(),
+                result -> {
+                    String typeUri = result.getStringValue(ROOT_PROPERTY_TYPE_VAR.getVarName());
+
+                    AbstractPropertyModel model;
+
+                    if (SPARQLDeserializers.compareURIs(typeUri, OWL2.DatatypeProperty.getURI())) {
+                        model = new DatatypePropertyModel();
+                        model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+                    } else {
+                        model = new ObjectPropertyModel();
+                        model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+                    }
+                    return model;
+                },
+                this::resultToProperty
+        );
+
     }
 
     private void appendNamesAndComments(SelectBuilder select) {
@@ -151,31 +225,54 @@ public class OntologyStoreLoader {
             }
         }
 
-        Map<String, String> labelTranslations = label.getTranslations();
-        if (labelTranslations.containsKey(OpenSilex.DEFAULT_LANGUAGE)) {
-            label.setDefaultValue(labelTranslations.get(OpenSilex.DEFAULT_LANGUAGE));
-            label.setDefaultLang(OpenSilex.DEFAULT_LANGUAGE);
-        }
-
         return label;
     }
 
 
     private SelectBuilder buildGetAllClassesQuery() {
 
+        final Node owlClassNode = NodeFactory.createURI(OWL2.Class.getURI());
+
         SelectBuilder select = new SelectBuilder()
                 .setDistinct(true)
                 .addVar(URI_VAR)
                 .addVar(PARENT_VAR)
-                .addWhere(URI_VAR, RDF.type, OWL_CLASS_URI)
+                .addWhere(URI_VAR, RDF.type, owlClassNode)
                 .addFilter(exprFactory.isIRI(URI_VAR))
                 .addOptional(new WhereBuilder()
                         .addWhere(URI_VAR, RDFS.subClassOf, PARENT_VAR)
-                        .addWhere(PARENT_VAR, RDF.type, OWL_CLASS_URI)
+                        .addWhere(PARENT_VAR, RDF.type, owlClassNode)
                         .addFilter(exprFactory.isIRI(PARENT_VAR))
                 ).addOrderBy(URI_VAR);
 
         appendNamesAndComments(select);
+
+        return select;
+    }
+
+    private SelectBuilder buildGetAllPropertiesQuery() {
+
+        SelectBuilder select = new SelectBuilder()
+                .setDistinct(true)
+                .addVar(URI_VAR)
+                .addVar(ROOT_PROPERTY_TYPE_VAR)
+                .addVar(PARENT_VAR)
+                .addVar(RANGE_VAR)
+                .addVar(DOMAIN_VAR)
+                .addWhere(URI_VAR, RDF.type, ROOT_PROPERTY_TYPE_VAR)
+                .addFilter(exprFactory.isIRI(URI_VAR))
+                .addOptional(new WhereBuilder()
+                        .addWhere(URI_VAR, RDFS.subPropertyOf, PARENT_VAR)
+                        .addWhere(PARENT_VAR, RDF.type, ROOT_PROPERTY_TYPE_VAR)
+                        .addFilter(exprFactory.isIRI(PARENT_VAR))
+                )
+                .addOptional(new WhereBuilder().addWhere(URI_VAR, RDFS.domain, DOMAIN_VAR))
+                .addOptional(new WhereBuilder().addWhere(URI_VAR, RDFS.range, RANGE_VAR))
+                .addOrderBy(URI_VAR);
+
+        appendNamesAndComments(select);
+
+        select.addWhereValueVar(ROOT_PROPERTY_TYPE_VAR, OWL_OBJECT_PROPERTY, OWL_DATATYPE_PROPERTY);
 
         return select;
     }

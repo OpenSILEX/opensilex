@@ -10,13 +10,11 @@ package org.opensilex.sparql.ontology.store;
 
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 
 import java.net.URI;
-import java.util.function.Consumer;
 
 public interface OntologyStore {
 
@@ -26,7 +24,7 @@ public interface OntologyStore {
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 
-    <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchSubClasses(URI parent, Class<T> clazz, String stringPattern, String lang, boolean excludeRoot, Consumer<T> handler) throws SPARQLException;
+    SPARQLTreeListModel<ClassModel> searchSubClasses(URI parent, String stringPattern, String lang, boolean excludeRoot) throws SPARQLException;
 
     SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws SPARQLException;
 

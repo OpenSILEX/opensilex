@@ -57,7 +57,10 @@ public class RDFTypeDTO {
 
     public static RDFTypeDTO fromModel(RDFTypeDTO dto, ClassModel model) {
         dto.setUri(model.getUri());
-        dto.setName(model.getName());
+
+        if (model.getLabel() != null) {
+            dto.setName(model.getLabel().getDefaultValue());
+        }
         if (model.getComment() != null) {
             dto.setComment(model.getComment().getDefaultValue());
         }

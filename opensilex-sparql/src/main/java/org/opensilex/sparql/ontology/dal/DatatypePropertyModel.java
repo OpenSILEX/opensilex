@@ -34,24 +34,10 @@ import java.util.stream.Collectors;
         resource = "DatatypeProperty",
         ignoreValidation = true
 )
-public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel> implements PropertyModel {
+public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropertyModel>{
 
     @SPARQLIgnore()
     protected String name;
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    protected SPARQLLabel label;
-    public final static String LABEL_FIELD = "label";
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    protected SPARQLLabel comment;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -98,22 +84,6 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    public SPARQLLabel getLabel() {
-        return label;
-    }
-
-    public void setLabel(SPARQLLabel label) {
-        this.label = label;
-    }
-
-    public SPARQLLabel getComment() {
-        return comment;
-    }
-
-    public void setComment(SPARQLLabel comment) {
-        this.comment = comment;
     }
 
     public ClassModel getDomain() {

@@ -506,7 +506,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             entry.classModel.getObjectProperties().put(propertyModel.getUri(), propertyModel);
             entry.objectPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
         };
-        createOrUpdateProperty(property, createPropertyEntryConsumer,ObjectPropertyModel::new);
+//        createOrUpdateProperty(property, createPropertyEntryConsumer,ObjectPropertyModel::new);
     }
 
     @Override
@@ -530,7 +530,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             entry.objectPropertiesWithDomain.remove(propertyModel.getUri());
             entry.objectPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
         };
-        createOrUpdateProperty(property, updatePropertyEntryConsumer,ObjectPropertyModel::new);
+//        createOrUpdateProperty(property, updatePropertyEntryConsumer,ObjectPropertyModel::new);
     }
 
     protected void deleteProperty(URI domain, Consumer<ClassEntry> deletePropertyConsumer){

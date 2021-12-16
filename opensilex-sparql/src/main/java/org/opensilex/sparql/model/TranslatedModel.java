@@ -14,6 +14,8 @@ public interface TranslatedModel {
 
     void setLabel(SPARQLLabel label);
 
+    String COMMENT_FIELD = "comment";
+
     SPARQLLabel getComment();
 
     void setComment(SPARQLLabel comment);

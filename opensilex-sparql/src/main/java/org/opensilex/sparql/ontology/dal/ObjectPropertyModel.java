@@ -57,11 +57,11 @@ public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> im
     )
     protected List<ObjectPropertyModel> children;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subPropertyOf"
-    )
-    protected ObjectPropertyModel parent;
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "subPropertyOf"
+//    )
+//    protected ObjectPropertyModel parent;
 
     @SPARQLProperty(
             ontology = RDFS.class,

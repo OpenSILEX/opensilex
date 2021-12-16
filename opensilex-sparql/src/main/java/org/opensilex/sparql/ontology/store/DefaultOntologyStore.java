@@ -13,8 +13,6 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
 
-import java.util.List;
-
 public class DefaultOntologyStore extends AbstractOntologyStore {
 
     public DefaultOntologyStore(SPARQLService sparql, OpenSilex openSilex) throws OpenSilexModuleNotFoundException, SPARQLException {

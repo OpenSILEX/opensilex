@@ -28,6 +28,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
@@ -53,6 +54,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private static final String NO_LANG = "";
 
     private final Map<String, ClassModel> classesByUris;
+//    private final Map<String, PropertyModel<?>> propertiesByUris;
 
     private final Graph<String, DefaultEdge> classesGraph;
     static final int MAX_GRAPH_PATH_LENGTH = 20;
@@ -73,6 +75,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         this.languages.add(NO_LANG);
 
         this.classesByUris = new PatriciaTrie<>();
+//        this.propertiesByUris = new PatriciaTrie<>();
         this.classesGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
 
         OWL_CLASS_MODEL = new ClassModel();
@@ -91,7 +94,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         // Initial classes loading
         Instant begin = Instant.now();
         OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, this, languages);
-        storeLoader.loadClasses();
+        addAll(storeLoader.getClasses());
         long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
         LOGGER.info(CLASSES_LOADED_INFO_MSG, classesByUris.size(), elapsedMs);
 
@@ -108,13 +111,13 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return SPARQLDeserializers.formatURI(uri.toString());
     }
 
-    public void addAll(List<ClassModel> classes) {
+    public <T extends VocabularyModel<T>> void addAll(List<T> classes) {
 
         Objects.requireNonNull(classes);
 
         // compute map of Class URI <-> Class
-        Map<String, ClassModel> localClassesByUris = new HashMap<>();
-        for (ClassModel classModel : classes) {
+        Map<String, T> localClassesByUris = new HashMap<>();
+        for (T classModel : classes) {
             String classURI = formatURI(classModel.getUri());
             if (localClassesByUris.containsKey(classURI)) {
                 throw new IllegalArgumentException("Duplicate URI " + classURI);
@@ -122,37 +125,55 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             localClassesByUris.put(classURI, classModel);
         }
 
-        for (ClassModel classModel : classes) {
+        for (T classModel : classes) {
             String classURI = formatURI(classModel.getUri());
             if (classesByUris.containsKey(classURI)) {
                 throw new IllegalArgumentException("Class already exist");
             }
 
             resolveParentAndUpdateClasses(localClassesByUris, classModel, classURI);
-            classesByUris.put(classURI, classModel);
+            register(classURI,classModel);
+//            classesByUris.put(classURI, classModel);
 //            OWL_CLASS_MODEL.getChildren().add(classModel);
         }
     }
 
-    private void resolveParentAndUpdateClasses(Map<String, ClassModel> localClassesByUris, ClassModel classModel, String classURI) {
+    private void register(String uri, VocabularyModel<?> model) {
+        if(model instanceof ClassModel){
+            classesByUris.put(uri, (ClassModel) model);
+        }
+//        classesByUris.put(uri, model);
+    }
+
+
+    private <T extends VocabularyModel<?>> T getFromIndex(String uri, T model){
+        if(model instanceof ClassModel){
+            return (T) this.classesByUris.get(uri);
+        }
+       return null;
+    }
+
+    private <T extends VocabularyModel<T>> void resolveParentAndUpdateClasses(Map<String,T> localClassesByUris, T classModel, String classURI) {
 
         if (CollectionUtils.isEmpty(classModel.getParents())) {
             return;
         }
 
-        Set<ClassModel> newParents = new HashSet<>(classModel.getParents().size());
+        Set<T> newParents = new HashSet<>(classModel.getParents().size());
 
         // iterate over incomplete parent and build a list of parent full-filled class parent
-        for (ClassModel parentClass : classModel.getParents()) {
+        for (T parentClass : classModel.getParents()) {
             String parentURI = formatURI(parentClass.getUri());
-            ClassModel resolvedParent = localClassesByUris.get(parentURI);
+            T resolvedParent = localClassesByUris.get(parentURI);
 
             // try to resolve locally or from already existing parents
             if (resolvedParent == null) {
-                resolvedParent = classesByUris.get(parentURI);
-                if (resolvedParent == null) {
-                    throw new IllegalArgumentException("Parent URI is unknown");
+
+                VocabularyModel<?> modelFromIndex = getFromIndex(parentURI,parentClass);
+                if(modelFromIndex == null ){
+                    throw new IllegalArgumentException("Parent URI is unknown : "+parentURI);
                 }
+                resolvedParent = (T) modelFromIndex;
             }
 
             addEdgeBetweenParentAndClass(parentURI, classURI);
@@ -161,7 +182,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
 
         classModel.setParents(newParents);
-        classModel.setParent(classModel.getParents().iterator().next());
+//        classModel.setParent(classModel.getParents().iterator().next());
     }
 
 
@@ -179,12 +200,12 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         // compute a ClassModel which take care of parent and lang
         ClassModel finalModel = new ClassModel(model);
 
-        if(ancestorURI != null){
+        if (ancestorURI != null) {
             handleAncestor(ancestorURI, finalModel);
         }
-        if (! StringUtils.isEmpty(lang)) {
+        if (!StringUtils.isEmpty(lang)) {
             handleLang(lang, finalModel);
-            finalModel.visit(descendant -> handleLang(lang,descendant));
+            finalModel.visit(descendant -> handleLang(lang, descendant));
         }
 
         return finalModel;
@@ -202,7 +223,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
         Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(classesGraph, ancestorURI.toString(), classURI, MAX_GRAPH_PATH_LENGTH);
         if (ancestors.isEmpty()) {
-            throw new SPARQLInvalidURIException(ancestorURI.toString() + " is not a " + classURI + " parent or ancestor . ", ancestorURI);
+            throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classURI + " parent or ancestor . ", ancestorURI);
         }
 
         // append inherited OWL restrictions

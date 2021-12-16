@@ -22,7 +22,10 @@ import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -34,10 +37,24 @@ import java.util.stream.Collectors;
         resource = "DatatypeProperty",
         ignoreValidation = true
 )
-public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropertyModel>{
+public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel> implements PropertyModel<DatatypePropertyModel> {
 
     @SPARQLIgnore()
     protected String name;
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label",
+            required = true
+    )
+    protected SPARQLLabel label;
+    public final static String LABEL_FIELD = "label";
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    protected SPARQLLabel comment;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -51,6 +68,8 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
             property = "subPropertyOf"
     )
     protected DatatypePropertyModel parent;
+
+    protected Set<DatatypePropertyModel> parents;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -68,49 +87,9 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
 
     protected URI typeRestriction;
 
-    @Override
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        SPARQLLabel slabel = getLabel();
-        if (slabel != null) {
-            return getLabel().getDefaultValue();
-        } else {
-            return getUri().toString();
-        }
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ClassModel getDomain() {
-        return domain;
-    }
-
-    public void setDomain(ClassModel domain) {
-        this.domain = domain;
-    }
-
-    public URI getRange() {
-        return range;
-    }
-
-    public void setRange(URI range) {
-        this.range = range;
-    }
-
-    public URI getTypeRestriction() {
-        return typeRestriction;
-    }
-
-    public void setTypeRestriction(URI typeRestriction) {
-        this.typeRestriction = typeRestriction;
-    }
-
     public DatatypePropertyModel() {
+        children = new LinkedList<>();
+        parents = new HashSet<>();
     }
 
     public DatatypePropertyModel(DatatypePropertyModel other) {
@@ -139,5 +118,74 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
             setParent(parent);
         }
 
+    }
+
+    @Override
+    public String getName() {
+        if (name != null) {
+            return name;
+        }
+        SPARQLLabel slabel = getLabel();
+        if (slabel != null) {
+            return getLabel().getDefaultValue();
+        } else {
+            return getUri().toString();
+        }
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public SPARQLLabel getLabel() {
+        return label;
+    }
+
+    public void setLabel(SPARQLLabel label) {
+        this.label = label;
+    }
+
+    public SPARQLLabel getComment() {
+        return comment;
+    }
+
+    public void setComment(SPARQLLabel comment) {
+        this.comment = comment;
+    }
+
+    public ClassModel getDomain() {
+        return domain;
+    }
+
+    public void setDomain(ClassModel domain) {
+        this.domain = domain;
+    }
+
+    public URI getRange() {
+        return range;
+    }
+
+    public void setRange(URI range) {
+        this.range = range;
+    }
+
+    public URI getTypeRestriction() {
+        return typeRestriction;
+    }
+
+    public void setTypeRestriction(URI typeRestriction) {
+        this.typeRestriction = typeRestriction;
+    }
+
+
+    @Override
+    public Set<DatatypePropertyModel> getParents() {
+        return parents;
+    }
+
+    @Override
+    public void setParents(Set<DatatypePropertyModel> parents) {
+        this.parents = parents;
     }
 }

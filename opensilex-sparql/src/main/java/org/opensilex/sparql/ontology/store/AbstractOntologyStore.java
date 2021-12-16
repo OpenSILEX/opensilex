@@ -32,6 +32,7 @@ import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.JgraphtUtils;
 import org.slf4j.Logger;
@@ -53,15 +54,15 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private final List<String> languages;
     private static final String NO_LANG = "";
 
-    private final Map<String, ClassModel> classesByUris;
-//    private final Map<String, PropertyModel<?>> propertiesByUris;
+    private final Map<String, VocabularyModel<?>> modelsByUris;
+    private final Graph<String, DefaultEdge> modelsGraph;
 
-    private final Graph<String, DefaultEdge> classesGraph;
     static final int MAX_GRAPH_PATH_LENGTH = 20;
 
     public static final URI OWL_CLASS_URI = SPARQLDeserializers.formatURI(URI.create(OWL2.Class.getURI()));
     public final ClassModel OWL_CLASS_MODEL;
-    private static final String CLASSES_LOADED_INFO_MSG = "{} classes loaded [OK] time: {} ms";
+
+    private static final String STORE_LOADING_MSG = "{} {} loaded [OK] time: {} ms";
 
     protected AbstractOntologyStore(SPARQLService sparql, OpenSilex openSilex) throws OpenSilexModuleNotFoundException {
 
@@ -74,37 +75,40 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         this.languages = serverConfig.availableLanguages();
         this.languages.add(NO_LANG);
 
-        this.classesByUris = new PatriciaTrie<>();
-//        this.propertiesByUris = new PatriciaTrie<>();
-        this.classesGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
+        this.modelsByUris = new PatriciaTrie<>();
+        this.modelsGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
 
         OWL_CLASS_MODEL = new ClassModel();
         OWL_CLASS_MODEL.setUri(OWL_CLASS_URI);
         OWL_CLASS_MODEL.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
         OWL_CLASS_MODEL.setTypeLabel(new SPARQLLabel(RDF.type.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
         OWL_CLASS_MODEL.setLabel(new SPARQLLabel(OWL.CLASS.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
-//
-//        this.classesByUris.put(OWL_CLASS_URI.toString(), OWL_CLASS_MODEL);
-//        this.classesGraph.addVertex(OWL_CLASS_URI.toString());
-
     }
 
     public void load() throws SPARQLException {
 
+        OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, this, languages);
+
         // Initial classes loading
         Instant begin = Instant.now();
-        OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, this, languages);
-        addAll(storeLoader.getClasses());
+        List<ClassModel> classes = storeLoader.getClasses();
+        addAll(classes);
         long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-        LOGGER.info(CLASSES_LOADED_INFO_MSG, classesByUris.size(), elapsedMs);
+        LOGGER.info(STORE_LOADING_MSG, classes.size(), "classes", elapsedMs);
 
-        storeLoader.loadProperties();
+
+        // Initial properties loading
+        begin = Instant.now();
+        List<PropertyModel> properties = storeLoader.getProperties();
+        addAll(properties);
+        elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+        LOGGER.info(STORE_LOADING_MSG, properties.size(), "properties", elapsedMs);
     }
 
     public void clear() {
-        classesByUris.clear();
-        Set<String> vertexesCopy = new HashSet<>(classesGraph.vertexSet());
-        classesGraph.removeAllVertices(vertexesCopy);
+        modelsByUris.clear();
+        Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
+        modelsGraph.removeAllVertices(vertexesCopy);
     }
 
     private String formatURI(URI uri) {
@@ -127,30 +131,15 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         for (T classModel : classes) {
             String classURI = formatURI(classModel.getUri());
-            if (classesByUris.containsKey(classURI)) {
-                throw new IllegalArgumentException("Class already exist");
+            if (modelsByUris.containsKey(classURI)) {
+                throw new IllegalArgumentException("URI already exist : "+classURI);
             }
 
             resolveParentAndUpdateClasses(localClassesByUris, classModel, classURI);
-            register(classURI,classModel);
+            modelsByUris.put(classURI,classModel);
 //            classesByUris.put(classURI, classModel);
 //            OWL_CLASS_MODEL.getChildren().add(classModel);
         }
-    }
-
-    private void register(String uri, VocabularyModel<?> model) {
-        if(model instanceof ClassModel){
-            classesByUris.put(uri, (ClassModel) model);
-        }
-//        classesByUris.put(uri, model);
-    }
-
-
-    private <T extends VocabularyModel<?>> T getFromIndex(String uri, T model){
-        if(model instanceof ClassModel){
-            return (T) this.classesByUris.get(uri);
-        }
-       return null;
     }
 
     private <T extends VocabularyModel<T>> void resolveParentAndUpdateClasses(Map<String,T> localClassesByUris, T classModel, String classURI) {
@@ -169,10 +158,10 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             // try to resolve locally or from already existing parents
             if (resolvedParent == null) {
 
-                VocabularyModel<?> modelFromIndex = getFromIndex(parentURI,parentClass);
-                if(modelFromIndex == null ){
+                if(! modelsByUris.containsKey(parentURI)){
                     throw new IllegalArgumentException("Parent URI is unknown : "+parentURI);
                 }
+                VocabularyModel<?> modelFromIndex = this.modelsByUris.get(parentURI);
                 resolvedParent = (T) modelFromIndex;
             }
 
@@ -182,7 +171,21 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
 
         classModel.setParents(newParents);
-//        classModel.setParent(classModel.getParents().iterator().next());
+        classModel.setParent(classModel.getParents().iterator().next());
+    }
+
+    private ClassModel getClassModel(URI classURI) throws SPARQLInvalidURIException {
+
+        URI formattedURI = URIDeserializer.formatURI(classURI);
+
+        VocabularyModel<?> genericModel = modelsByUris.get(formattedURI.toString());
+        if (genericModel == null) {
+            throw new SPARQLInvalidURIException("owl:Class URI not found : ", formattedURI);
+        }
+        if(! (genericModel instanceof ClassModel)){
+            throw new SPARQLInvalidURIException("URI is not a Class URI : ", formattedURI);
+        }
+        return (ClassModel) genericModel;
     }
 
 
@@ -190,18 +193,13 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException {
 
         Objects.requireNonNull(classURI);
-        classURI = URIDeserializer.formatURI(classURI);
-
-        ClassModel model = classesByUris.get(classURI.toString());
-        if (model == null) {
-            throw new SPARQLInvalidURIException("owl:Class URI not found : ", classURI);
-        }
+        ClassModel model = getClassModel(classURI);
 
         // compute a ClassModel which take care of parent and lang
         ClassModel finalModel = new ClassModel(model);
 
         if (ancestorURI != null) {
-            handleAncestor(ancestorURI, finalModel);
+            addInheritedRestrictions(ancestorURI, finalModel);
         }
         if (!StringUtils.isEmpty(lang)) {
             handleLang(lang, finalModel);
@@ -211,32 +209,31 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return finalModel;
     }
 
-    private void handleAncestor(URI ancestorURI, ClassModel classModel) throws SPARQLInvalidURIException {
+    private void addInheritedRestrictions(URI ancestorURI, ClassModel classModel) throws SPARQLInvalidURIException {
 
-        ancestorURI = URIDeserializer.formatURI(ancestorURI);
+        String formattedAncestorURI = URIDeserializer.formatURI(ancestorURI).toString();
         String classURI = classModel.getUri().toString();
 
-        // check if ancestor exist and if it's an ancestor of the given class
-        ClassModel ancestorClass = classesByUris.get(ancestorURI.toString());
-        if (ancestorClass == null) {
+        if(! modelsByUris.containsKey(formattedAncestorURI)){
             throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classURI, ancestorURI);
         }
-        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(classesGraph, ancestorURI.toString(), classURI, MAX_GRAPH_PATH_LENGTH);
+
+        // check if ancestor exist and if it's an ancestor of the given class
+        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, ancestorURI.toString(), classURI, MAX_GRAPH_PATH_LENGTH);
         if (ancestors.isEmpty()) {
             throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classURI + " parent or ancestor . ", ancestorURI);
         }
 
         // append inherited OWL restrictions
         for (String ancestor : ancestors) {
-            ClassModel ancestorModel = classesByUris.get(ancestor);
+            ClassModel ancestorModel = (ClassModel) modelsByUris.get(ancestor);
             ancestorModel.getRestrictions().values().forEach(ancestorRestriction ->
                     classModel.getRestrictions().put(ancestorRestriction.getUri(), ancestorRestriction)
             );
         }
-
     }
 
-    private void handleLang(String lang, ClassModel classModel) {
+    private void handleLang(String lang, VocabularyModel<?> classModel) {
 
         SPARQLLabel label = classModel.getLabel();
         if (label.getTranslations().containsKey(lang)) {
@@ -260,11 +257,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     void addEdgeBetweenParentAndClass(String parentURI, String classURI) {
 
-        classesGraph.addVertex(classURI);
-        classesGraph.addVertex(parentURI);
+        modelsGraph.addVertex(classURI);
+        modelsGraph.addVertex(parentURI);
 
-        if (!classesGraph.containsEdge(parentURI, classURI)) {
-            classesGraph.addEdge(parentURI, classURI);
+        if (!modelsGraph.containsEdge(parentURI, classURI)) {
+            modelsGraph.addEdge(parentURI, classURI);
         }
     }
 

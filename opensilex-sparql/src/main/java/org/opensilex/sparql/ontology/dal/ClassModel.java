@@ -40,32 +40,32 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> implements Vocabular
     @SPARQLIgnore()
     protected String name;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label"
-    )
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "label"
+//    )
     protected SPARQLLabel label;
-    public static final String NAME_FIELD = "label";
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
+//    public static final String NAME_FIELD = "label";
+//
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "comment"
+//    )
     protected SPARQLLabel comment;
-    public static final String COMMENT_FIELD = "comment";
+//    public static final String COMMENT_FIELD = "comment";
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subClassOf",
-            inverse = true
-    )
-    protected List<ClassModel> children;
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "subClassOf",
+//            inverse = true
+//    )
+//    protected List<ClassModel> children;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subClassOf"
-    )
-    protected ClassModel parent;
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "subClassOf"
+//    )
+//    protected ClassModel parent;
 
     protected Set<ClassModel> parents;
 
@@ -90,10 +90,9 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> implements Vocabular
             rdfTypeName = new SPARQLLabel(other.getTypeLabel());
         }
 
-        children = other.getChildren();
-        setChildren(children);
-
-        parents = other.getParents();
+        setChildren(other.getChildren());
+        setParent(other.getParent());
+        setParents(other.getParents());
 
         datatypeProperties = new HashMap<>(other.getDatatypeProperties());
         objectProperties = new HashMap<>(other.getObjectProperties());

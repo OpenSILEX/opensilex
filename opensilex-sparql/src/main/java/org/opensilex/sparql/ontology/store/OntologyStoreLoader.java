@@ -160,7 +160,7 @@ class OntologyStoreLoader {
                 });
     }
 
-    public List<PropertyModel> loadProperties() throws SPARQLException {
+    public List<PropertyModel> getProperties() throws SPARQLException {
 
         return getModels(
                 buildGetAllPropertiesQuery(),

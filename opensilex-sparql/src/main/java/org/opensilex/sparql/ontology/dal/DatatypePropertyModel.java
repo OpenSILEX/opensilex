@@ -63,11 +63,11 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
     )
     protected List<DatatypePropertyModel> children;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subPropertyOf"
-    )
-    protected DatatypePropertyModel parent;
+//    @SPARQLProperty(
+//            ontology = RDFS.class,
+//            property = "subPropertyOf"
+//    )
+//    protected DatatypePropertyModel parent;
 
     protected Set<DatatypePropertyModel> parents;
 

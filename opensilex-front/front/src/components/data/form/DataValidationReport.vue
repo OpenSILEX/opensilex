@@ -138,7 +138,6 @@ export default class DataValidationReport extends Vue {
    * @dataErrors dataErrors validation model
    */
   checkValidation(dataErrors) {
-    console.debug("Verification data", dataErrors);
     this.tooLargeDataset = dataErrors.tooLargeDataset;
     this.nbLinesToImport = dataErrors.nbLinesToImport;
     let errors = dataErrors;
@@ -152,6 +151,7 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("missingRequiredValueErrors", errors, globalErrors);
     this.loadErrorType("invalidValueErrors", errors, globalErrors);
     this.loadErrorType("invalidObjectErrors", errors, globalErrors);
+    this.loadErrorType("invalidTargetErrors", errors, globalErrors);
     this.loadErrorType("invalidDateErrors", errors, globalErrors);
     this.loadErrorType("invalidExperimentErrors", errors, globalErrors);
     this.loadErrorType("invalidDeviceErrors", errors, globalErrors);
@@ -160,6 +160,7 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("duplicatedDataErrors", errors, globalErrors);
     this.loadErrorType("duplicatedExperimentErrors", errors, globalErrors);
     this.loadErrorType("duplicatedObjectErrors", errors, globalErrors);
+    this.loadErrorType("duplicatedTargetErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDeviceErrors", errors, globalErrors);
 
     this.loadErrorType("alreadyExistingURIErrors", errors, globalErrors);
@@ -245,6 +246,11 @@ export default class DataValidationReport extends Vue {
           "DataValidationReport.invalidObjectErrorMessage",
           validationError
         );
+      case "invalidTargetErrors":
+        return this.$t(
+          "DataValidationReport.invalidTargetErrorMessage",
+          validationError
+        );
       case "invalidDateErrors":
         return this.$t(
           "DataValidationReport.invalidDateErrorMessage",
@@ -288,6 +294,11 @@ export default class DataValidationReport extends Vue {
       case "duplicatedObjectErrors":
         return this.$t(
           "DataValidationReport.invalidObjectErrorMessage",
+          validationError
+        );
+      case "duplicatedTargetErrors":
+        return this.$t(
+          "DataValidationReport.invalidTargetErrorMessage",
           validationError
         );
       case "duplicatedDeviceErrors":
@@ -454,6 +465,7 @@ en:
     missingRequiredValueErrors: Missing required value
     invalidValueErrors: Invalid value
     invalidObjectErrors: Object name or uri not found in this experiment
+    invalidTargetErrors: Target name or uri not found 
     invalidDateErrors: Invalid date format
     invalidExperimentErrors: Experiment name or uri not found
     invalidDeviceErrors: Device name or uri not found
@@ -461,6 +473,7 @@ en:
     duplicatedExperimentErrors: Duplicate experiment name (you must use uri)
     duplicatedDeviceErrors: Duplicate device name (you must use uri)
     duplicatedObjectErrors: Duplicate object name (you must use uri)
+    duplicatedTargetErrors: Duplicate target name (you must use uri)
     alreadyExistingURIErrors:  URI already existing
     duplicateURIErrors: Duplicate URI
     invalidDataTypeErrorMessage: Invalid value data type
@@ -472,6 +485,7 @@ en:
     validationErrorDuplicatedDataMessage : "Column: '{header}' - Value: '{value}'"
     invalidValueErrorMessage: "Column: '{header}' - Value: '{value}'"
     invalidObjectErrorMessage: "Column: scientific_object - Value: '{value}'" 
+    invalidTargetErrorMessage: "Column: target - Value: '{value}'" 
     invalidExperimentErrorMessage: "Column: experiment - Value: '{value}'" 
     invalidDeviceErrorMessage: "Column: device - Value: '{value}'" 
     invalidDateErrorMessage: "Column: Date - Value: '{value}'" 
@@ -512,6 +526,7 @@ fr:
     missingRequiredValueErrors: Valeur obligatoire manquante
     invalidValueErrors: Valeur invalide
     invalidObjectErrors: Le nom ou l'uri de l'objet n'est pas présent dans cette expérimentation
+    invalidTargetErrors: Le nom ou l'uri de la cible n'existe pas
     invalidDateErrors: Format de date invalide
     invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
     invalidDeviceErrors: Le nom ou l'uri du dispositif n'existe pas
@@ -519,6 +534,7 @@ fr:
     duplicatedExperimentErrors: Doublon sur le nom de l'experimentation (utilisez l'uri)
     duplicatedDeviceErrors: Doublon sur le nom du dispositif (utilisez l'uri)
     duplicatedObjectErrors: Doublon sur le nom de l'objet (utilisez l'uri)
+    duplicatedTargetErrors: Doublon sur le nom de la cible (utilisez l'uri)
     alreadyExistingURIErrors: URI déjà existante
     duplicateURIErrors: URI dupliquée
     validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
@@ -529,6 +545,7 @@ fr:
     validationErrorDuplicatedDataMessage : "Colonne: '{header}' - Valeur: '{value}'"
     invalidValueErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
     invalidObjectErrorMessage: "Colonne: scientific_object - Valeur: '{value}'" 
+    invalidTargetErrorMessage: "Colonne: cible - Valeur: '{value}'" 
     invalidExperimentErrorMessage: "Colonne: experiment - Valeur: '{value}'" 
     invalidDeviceErrorMessage: "Colonne: dispositif - Valeur: '{value}'" 
     invalidDateErrorMessage: "Colonne:  Date - Valeur: '{value}'" 

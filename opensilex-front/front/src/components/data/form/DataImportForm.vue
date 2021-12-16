@@ -8,15 +8,19 @@
           helpMessage="DataImportForm.use-default-provenance-help"
         >
           <template v-slot:field="field">
-            <b-form-checkbox v-model="selectDefaultProvenance" switch @change="changeCheckBox($event)">
-              {{$t('DataImportForm.use-default-provenance-title')}}
+            <b-form-checkbox
+              v-model="selectDefaultProvenance"
+              switch
+              @change="changeCheckBox($event)"
+            >
+              {{ $t("DataImportForm.use-default-provenance-title") }}
             </b-form-checkbox>
           </template>
         </opensilex-FormField>
       </b-col>
       <b-col>
-        <opensilex-ProvenanceSelector     
-          v-if="!selectDefaultProvenance" 
+        <opensilex-ProvenanceSelector
+          v-if="!selectDefaultProvenance"
           ref="provenanceSelector"
           :provenances.sync="form.provenance.uri"
           :filterLabel="filterProvenanceLabel"
@@ -45,84 +49,83 @@
       editTitle="ProvenanceView.update"
       icon="fa#seedling"
       modalSize="lg"
-      @hide="validateProvenanceForm='true'"
+      @hide="validateProvenanceForm = 'true'"
       :initForm="initForm"
       :successMessage="successMessage"
       :validationDisabled="validateProvenanceForm"
       @onCreate="afterCreateProvenance"
     ></opensilex-ModalForm>
-    
-      <!-- Upload file  -->
-      <opensilex-GenerateDataTemplateFrom
-        ref="templateForm"
-        :experiment="form.experiment"
-        :hasDeviceAgent="hasDeviceAgent"
-      ></opensilex-GenerateDataTemplateFrom>
-      <div>
-        <label
-          >{{ $t("DataImportForm.import-file") }}
-          <span class="required">*</span></label
-        >
 
-        <b-row>
-          <b-col cols="4">
-            <b-form-file
-              size="sm"
-              ref="inputFile"
-              accept="text/csv, .csv"
-              @input="uploadCSV"
-              :placeholder="$t('DataImportForm.csv-file-placeholder')"
-              :drop-placeholder="$t('DataImportForm.csv-file-drop-placeholder')"
-              :browse-text="$t('component.common.import-files.select-button')"
-              v-model="file"
-              :state="Boolean(file)"
-            ></b-form-file>
-          </b-col>
-          <b-col cols="2">
-            <opensilex-Button
-              variant="secondary"
-              @click="templateForm.show()"
-              class="mr-2"
-              :small="false"
-              icon
-              label="DataView.buttons.generate-template"
-            ></opensilex-Button>
-          </b-col>
-          <b-col cols="5"></b-col>
-        </b-row>
-        <br />
-      </div>
-      <div>
-        <opensilex-DataHelpTableView 
-          :experiment="form.experiment">
-        </opensilex-DataHelpTableView>
-      </div>
-      <!-- validation report  -->
-      <opensilex-DataValidationReport
-        v-if="form.dataFile != null"
-        ref="validationReport"
+    <!-- Upload file  -->
+    <opensilex-GenerateDataTemplateFrom
+      ref="templateForm"
+      :experiment="form.experiment"
+      :hasDeviceAgent="hasDeviceAgent"
+    ></opensilex-GenerateDataTemplateFrom>
+    <div>
+      <label
+        >{{ $t("DataImportForm.import-file") }}
+        <span class="required">*</span></label
       >
-      </opensilex-DataValidationReport>
-      <p v-if="!isImported && isValid && insertionError" class="alert-warning">
-        {{ $t("DataImportForm.data-not-imported") }}
-      </p>
-      <p
-        v-if="!isImported && tooLargeDataset && insertionError"
-        class="alert alert-warning"
-      >
-        {{ $t("DataImportForm.data-too-much-data") }}
-      </p>
-      <p
-        v-if="
-          insertionError && form.dataFile != null && insertionDataError != null
-        "
-        class="alert alert-warning"
-      >
-        {{ $t("DataImportForm.error") }} : {{ insertionDataError.title }}
-        <br />
-        {{ $t("DataImportForm.message") }} : {{ insertionDataError.message }}
-      </p>
+
+      <b-row>
+        <b-col cols="4">
+          <b-form-file
+            size="sm"
+            ref="inputFile"
+            accept="text/csv, .csv"
+            @input="uploadCSV"
+            :placeholder="$t('DataImportForm.csv-file-placeholder')"
+            :drop-placeholder="$t('DataImportForm.csv-file-drop-placeholder')"
+            :browse-text="$t('component.common.import-files.select-button')"
+            v-model="file"
+            :state="Boolean(file)"
+          ></b-form-file>
+        </b-col>
+        <b-col cols="2">
+          <opensilex-Button
+            variant="secondary"
+            @click="templateForm.show()"
+            class="mr-2"
+            :small="false"
+            icon
+            label="DataView.buttons.generate-template"
+          ></opensilex-Button>
+        </b-col>
+        <b-col cols="5"></b-col>
+      </b-row>
       <br />
+    </div>
+    <div>
+      <opensilex-DataHelpTableView :experiment="form.experiment">
+      </opensilex-DataHelpTableView>
+    </div>
+    <!-- validation report  -->
+    <opensilex-DataValidationReport
+      v-if="form.dataFile != null"
+      ref="validationReport"
+    >
+    </opensilex-DataValidationReport>
+    <p v-if="!isImported && isValid && insertionError" class="alert-warning">
+      {{ $t("DataImportForm.data-not-imported") }}
+    </p>
+    <p
+      v-if="!isImported && tooLargeDataset && insertionError"
+      class="alert alert-warning"
+    >
+      {{ $t("DataImportForm.data-too-much-data") }}
+    </p>
+    <p
+      v-if="
+        insertionError && form.dataFile != null && insertionDataError != null
+      "
+      class="alert alert-warning"
+    >
+      {{ $t("DataImportForm.error") }} : {{ insertionDataError.title }}
+      <br />
+      {{ $t("DataImportForm.message") }} : {{ insertionDataError.message }}
+    </p>
+    <br />
   </b-form>
 </template>
 
@@ -187,18 +190,19 @@ export default class DataImportForm extends Vue {
           provActivity: [],
           provAgent: [],
         },
-        dataFile: null
+        dataFile: null,
       };
     },
   })
   form;
 
   created() {
-    this.$opensilex.getService("opensilex.DataService")
-    .searchProvenance("standard_provenance")
-    .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          this.standardProvURI = http.response.result[0].uri;
-        });
+    this.$opensilex
+      .getService("opensilex.DataService")
+      .searchProvenance("standard_provenance")
+      .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+        this.standardProvURI = http.response.result[0].uri;
+      });
   }
 
   getEmptyForm() {
@@ -211,7 +215,7 @@ export default class DataImportForm extends Vue {
         prov_agent: [],
       },
       dataFile: null,
-      experiment: null
+      experiment: null,
     };
   }
 
@@ -311,32 +315,16 @@ export default class DataImportForm extends Vue {
         resolve(true);
       } else {
         let promise;
-
-        if (this.form.experiment != null) {
-          promise = this.$opensilex
-            .uploadFileToService(
-              "/core/experiments/" +
-              encodeURIComponent(this.form.experiment) +
-              "/data/import",
-              {
-                file: this.form.dataFile
-              },
-              {
-                provenance: this.form.provenance.uri
-              }
-            )
-        } else {
-          promise = this.$opensilex
-            .uploadFileToService(
-              "/core/data/import",
-              {
-                file: this.form.dataFile
-              },
-              {
-                provenance: this.form.provenance.uri
-              }
-            )
-        }
+        promise = this.$opensilex.uploadFileToService(
+          "/core/data/import",
+          {
+            file: this.form.dataFile,
+          },
+          {
+            provenance: this.form.provenance.uri,
+            experiment: this.form.experiment ? this.form.experiment : null,
+          }
+        );
 
         return promise
           .then((data) => {
@@ -420,47 +408,24 @@ export default class DataImportForm extends Vue {
       this.duplicateData = false;
       this.duplicatedData = [];
       this.tooLargeDataset = false;
-
-      if (this.form.experiment != null) {
-        return this.$opensilex
-          .uploadFileToService(
-            "/core/experiments/" +
-            encodeURIComponent(this.form.experiment) +
-            "/data/import_validation",
-            {
-              file: this.form.dataFile
-            },
-            {
-              provenance: this.form.provenance.uri
-            }
-          )
-          .then((response) => {
-            this.checkCSVValidation(response);
-            this.$opensilex.disableLoader();
-          })
-          .catch((e) => {
-            console.error(e);
-          });
-      } else {
-        return this.$opensilex
-          .uploadFileToService(
-            "/core/data/import_validation",
-            {
-              file: this.form.dataFile
-            },
-            {
-              provenance: this.form.provenance.uri
-            }
-          )
-          .then((response) => {
-            this.checkCSVValidation(response);
-            this.$opensilex.disableLoader();
-          })
-          .catch((e) => {
-            console.error(e);
-          });
-      }
-      
+      return this.$opensilex
+        .uploadFileToService(
+          "/core/data/import_validation",
+          {
+            file: this.form.dataFile,
+          },
+          {
+            provenance: this.form.provenance.uri,
+            experiment: this.form.experiment ? this.form.experiment : null,
+          }
+        )
+        .then((response) => {
+          this.checkCSVValidation(response);
+          this.$opensilex.disableLoader();
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     } else {
       if (this.validationReport != undefined) {
         this.validationReport.reset();
@@ -481,7 +446,7 @@ export default class DataImportForm extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.name
+        label: dto.name,
       };
     }
     return null;
@@ -493,24 +458,24 @@ export default class DataImportForm extends Vue {
       uris.push(provenance.prov_agent[i].uri);
     }
 
-    if (uris.length>0) {
+    if (uris.length > 0) {
       let body = {
-        uris: uris
-      }
-      this.$opensilex.getService("opensilex.OntologyService")
-      .checkURIsTypes(new Array(Oeso.DEVICE_TYPE_URI), body)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
-        let results = http.response.result;
-        for (let i in results) {
-          if (results[i].rdf_types.includes(Oeso.DEVICE_TYPE_URI)) {
-            this.hasDeviceAgent= true;
-            break;
+        uris: uris,
+      };
+      this.$opensilex
+        .getService("opensilex.OntologyService")
+        .checkURIsTypes(new Array(Oeso.DEVICE_TYPE_URI), body)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          let results = http.response.result;
+          for (let i in results) {
+            if (results[i].rdf_types.includes(Oeso.DEVICE_TYPE_URI)) {
+              this.hasDeviceAgent = true;
+              break;
+            }
           }
-        }          
-      })
-      .catch(this.$opensilex.errorHandler);
-      }
-    
+        })
+        .catch(this.$opensilex.errorHandler);
+    }
   }
 
   changeCheckBox(value) {

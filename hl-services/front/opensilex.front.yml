@@ -1,8 +1,0 @@
-  - id: hl-services
-    label: component.menu.hl-services
-    children:
-      - id: environmental-data
-        label: component.menu.environmental-data
-        route:
-          path: /environmental-data
-          component: hl-services-environmentalData

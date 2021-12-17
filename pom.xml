@@ -10,8 +10,8 @@
  in the <dependencies> section in order to make it work.
 ******************************************************************************
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>opensilex</artifactId>
     <packaging>pom</packaging>
@@ -66,7 +66,8 @@
         <!-- Documentation module -->
         <module>opensilex-doc</module>
         <module>opensilex-mobile</module>
-        <module>hl-services</module>
+        <module>opensilex-hl-services</module>
+        <!-- <module>inrae-weis</module> -->
     </modules>
 
     <dependencies>
@@ -149,9 +150,15 @@
         <!--Other extension modules must be declared as dependencies-->
         <dependency>
             <groupId>org.opensilex</groupId>
-            <artifactId>hl-services</artifactId>
+            <artifactId>opensilex-hl-services</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <!-- <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>inrae-weis</artifactId>
+            <version>${revision}</version>
+        </dependency> -->
     </dependencies>
 
     <build>

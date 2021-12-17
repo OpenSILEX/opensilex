@@ -1,6 +1,7 @@
-package org.opensilex.services;
+package org.opensilex.hlservices.api;
 
 import org.opensilex.OpenSilexModule;
+import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -58,6 +59,7 @@ import java.util.List;
 import org.opensilex.core.data.dal.DataDAO;
 
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.utils.ListWithPagination;
 
 
 @Api(HlServicesAPI.CREDENTIAL_HIGHLEVEL_SERVICES_GROUP_ID)
@@ -93,10 +95,10 @@ public class HlServicesAPI {
     )
     @ApiOperation(value = "Retrieve the environmental data of a scientific object, following the move event sequence over various facilities")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "ALL NOT WELL")
+            @ApiResponse(code = 200, message = "ALL NOT WELL",response = DataGetDTO.class, responseContainer = "List")
     })
     @ApiProtected
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEnvironmentalData(@ApiParam(value = "scientific object URI", example = "test:set/scientific-objects/so-gui-test-4", required = true)
                                          @QueryParam("uri") @ValidURI @NotNull URI objectURI,
@@ -114,7 +116,7 @@ public class HlServicesAPI {
                     destructionDate = scientificObject.getDestructionDate().atStartOfDay().toInstant(ZoneOffset.UTC);
         }
         ArrayList<DeviceModel> devices = new ArrayList<>();
-
+        ArrayList<DataGetDTO> resultlist = new ArrayList<>();
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         List<DataModel> data = new ArrayList<>();
         // Helper class
@@ -165,6 +167,7 @@ public class HlServicesAPI {
 
 
             DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+
 //            ArrayList<URI> devicesURIs = new ArrayList<>();
             for (Integer index = 0; index < SOpath_with_timestamp.size(); index++) {
                 ArrayList<URI> devicesURIs = (ArrayList<URI>) moveDAO.reverseSearchURIDevice(SOpath_with_timestamp.get(index).to.getUri(), MoveEventDAO.ReverseLink.TO);
@@ -193,12 +196,19 @@ public class HlServicesAPI {
                         null)
                 );
             }
+
+
+            data.forEach((dataModel) -> {
+                resultlist.add(DataGetDTO.getDtoFromModel(dataModel));
+            });
+
+
 //            Not used right now
 //            DeviceDAO deviceDao = new DeviceDAO(sparql, nosql);
 //            devices.addAll(deviceDao.getDevicesByURI(devicesURIs, currentUser));
 
 
         }
-        return new PaginatedListResponse<>(data).getResponse();
+        return new PaginatedListResponse<>(resultlist).getResponse();
     }
 }

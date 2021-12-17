@@ -22,5 +22,5 @@ Steps :
 
 - Go to ``opensilex-dev-tools/src/main/resources/module/skeleton`` folder
 
-- Execute ``chmod +u generateModule.sh`` and run ``./generateModule.sh organisation module`` script
+- Execute ``chmod u+x generateModule.sh`` and run ``./generateModule.sh organisation module`` script
 Where organisation => inrae or ifv or google and module is module name exemple sinfonia, sixtine other

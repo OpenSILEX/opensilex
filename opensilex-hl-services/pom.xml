@@ -15,13 +15,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>hl-services</artifactId>
+    <artifactId>opensilex-hl-services</artifactId>
     <packaging>jar</packaging>
-    <name>hl-services</name>
+    <name>opensilex-hl-services</name>
     <version>${revision}</version>
     <properties>
         <revision>BUILD-SNAPSHOT</revision>
-        <skipFrontTypesGeneration>true</skipFrontTypesGeneration>
+        <skipFrontTypesGeneration>false</skipFrontTypesGeneration>
     </properties>
 
     <parent>

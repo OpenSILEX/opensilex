@@ -473,19 +473,36 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   searchMethod(nodeURI, page, pageSize) {
+
     let orderBy = ["name=asc"];
-       return this.soService.getScientificObjectsChildren(
-        this.filters.parent ? this.filters.parent : nodeURI,
-        this.uri,
-        this.filters.types,
-        this.filters.name,
-        this.filters.factorLevels,
+    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0||  this.filters.name.length !== 0) {
+       return this.soService.searchScientificObjects(
+        this.uri, // experiment uri?: string,
+        this.filters.types, 
+        this.filters.name, 
+        this.filters.parent ? this.filters.parent : nodeURI, 
+        undefined, // Germplasm
+        this.filters.factorLevels, 
+        undefined, // facility?: string,
+        undefined,
         undefined,
         orderBy,
         page,
-        pageSize
-    );
+        pageSize );
 
+    } else {
+
+        return this.soService.getScientificObjectsChildren(
+        nodeURI,
+        this.uri,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        orderBy,
+        page,
+        pageSize );
+    }
   }
 
   searchParents(query, page, pageSize) {

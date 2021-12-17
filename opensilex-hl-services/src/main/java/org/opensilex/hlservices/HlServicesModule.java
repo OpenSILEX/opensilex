@@ -1,4 +1,4 @@
-package org.opensilex.services;
+package org.opensilex.hlservices;
 
 import org.opensilex.OpenSilexModule;
 import org.opensilex.security.authentication.injection.CurrentUser;

@@ -37,24 +37,10 @@ import java.util.stream.Collectors;
         resource = "DatatypeProperty",
         ignoreValidation = true
 )
-public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel> implements PropertyModel<DatatypePropertyModel> {
+public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropertyModel> {
 
     @SPARQLIgnore()
     protected String name;
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    protected SPARQLLabel label;
-    public final static String LABEL_FIELD = "label";
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    protected SPARQLLabel comment;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -63,103 +49,25 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
     )
     protected List<DatatypePropertyModel> children;
 
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "subPropertyOf"
-//    )
-//    protected DatatypePropertyModel parent;
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "subPropertyOf"
+    )
+    protected DatatypePropertyModel parent;
 
     protected Set<DatatypePropertyModel> parents;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "domain"
-    )
-    protected ClassModel domain;
-    public final static String DOMAIN_FIELD = "domain";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "range"
     )
     protected URI range;
-    public final static String RANGE_FIELD = "range";
 
-    protected URI typeRestriction;
 
     public DatatypePropertyModel() {
         children = new LinkedList<>();
         parents = new HashSet<>();
-    }
-
-    public DatatypePropertyModel(DatatypePropertyModel other) {
-        this(other, true);
-    }
-
-    public DatatypePropertyModel(DatatypePropertyModel other, boolean readChildren) {
-        fromModel(other);
-        range = other.getRange();
-
-        if (readChildren && other.getChildren() != null) {
-            children = other.getChildren().stream()
-                    .map(child -> new DatatypePropertyModel(child, true))
-                    .collect(Collectors.toList());
-
-            children.forEach(child -> setParent(this));
-
-            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
-            setChildren(children);
-        }
-
-        if (other.getParent() != null) {
-            this.parent = new DatatypePropertyModel(other.getParent(), false);
-
-            // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
-            setParent(parent);
-        }
-
-    }
-
-    @Override
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        SPARQLLabel slabel = getLabel();
-        if (slabel != null) {
-            return getLabel().getDefaultValue();
-        } else {
-            return getUri().toString();
-        }
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public SPARQLLabel getLabel() {
-        return label;
-    }
-
-    public void setLabel(SPARQLLabel label) {
-        this.label = label;
-    }
-
-    public SPARQLLabel getComment() {
-        return comment;
-    }
-
-    public void setComment(SPARQLLabel comment) {
-        this.comment = comment;
-    }
-
-    public ClassModel getDomain() {
-        return domain;
-    }
-
-    public void setDomain(ClassModel domain) {
-        this.domain = domain;
     }
 
     public URI getRange() {
@@ -170,14 +78,25 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
         this.range = range;
     }
 
-    public URI getTypeRestriction() {
-        return typeRestriction;
+    @Override
+    public List<DatatypePropertyModel> getChildren() {
+        return children;
     }
 
-    public void setTypeRestriction(URI typeRestriction) {
-        this.typeRestriction = typeRestriction;
+    @Override
+    public void setChildren(List<DatatypePropertyModel> children) {
+        this.children = children;
     }
 
+    @Override
+    public DatatypePropertyModel getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(DatatypePropertyModel parent) {
+        this.parent = parent;
+    }
 
     @Override
     public Set<DatatypePropertyModel> getParents() {
@@ -188,4 +107,5 @@ public class DatatypePropertyModel extends SPARQLTreeModel<DatatypePropertyModel
     public void setParents(Set<DatatypePropertyModel> parents) {
         this.parents = parents;
     }
+
 }

@@ -13,8 +13,6 @@
  */
 package org.opensilex.sparql.ontology.dal;
 
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
 
@@ -22,7 +20,7 @@ import java.net.URI;
  *
  * @author vince
  */
-public interface PropertyModel<T extends VocabularyModel<T>> extends VocabularyModel<T> {
+public interface PropertyModel {
 
     ClassModel getDomain();
 
@@ -31,28 +29,5 @@ public interface PropertyModel<T extends VocabularyModel<T>> extends VocabularyM
     URI getTypeRestriction();
 
     void setTypeRestriction(URI typeRestriction);
-
-    default void fromModel(PropertyModel copy) {
-
-        setUri(copy.getUri());
-        setName(copy.getName());
-
-        setType(copy.getType());
-        if (copy.getTypeLabel() != null) {
-            setTypeLabel(new SPARQLLabel(copy.getTypeLabel()));
-        }
-
-        if (copy.getLabel() != null) {
-            setLabel(new SPARQLLabel(copy.getLabel()));
-        }
-        if (copy.getComment() != null) {
-            setComment(new SPARQLLabel(copy.getComment()));
-        }
-
-        setTypeRestriction(copy.getTypeRestriction());
-        if(copy.getDomain() != null){
-            setDomain(new ClassModel(copy.getDomain(),false));
-        }
-    }
 
 }

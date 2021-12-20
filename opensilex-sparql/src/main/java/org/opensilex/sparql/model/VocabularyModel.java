@@ -8,6 +8,52 @@
 
 package org.opensilex.sparql.model;
 
-public interface VocabularyModel<T extends VocabularyModel<T>> extends SPARQLModel, TranslatedModel, DagModel<T> {
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 
+public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPARQLTreeModel<T>
+        implements TranslatedModel, DagModel<T> {
+
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "label"
+    )
+    protected SPARQLLabel label;
+
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "comment"
+    )
+    protected SPARQLLabel comment;
+
+    @Override
+    public SPARQLLabel getLabel() {
+        return label;
+    }
+
+    @Override
+    public void setLabel(SPARQLLabel label) {
+        this.label = label;
+    }
+
+    @Override
+    public SPARQLLabel getComment() {
+        return comment;
+    }
+
+    @Override
+    public void setComment(SPARQLLabel comment) {
+        this.comment = comment;
+    }
+
+    @Override
+    public String getName() {
+        SPARQLLabel slabel = getLabel();
+        if (slabel != null) {
+            return getLabel().getDefaultValue();
+        } else {
+            return getUri().toString();
+        }
+    }
 }

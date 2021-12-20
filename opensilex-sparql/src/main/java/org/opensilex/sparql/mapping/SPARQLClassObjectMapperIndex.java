@@ -7,15 +7,11 @@ package org.opensilex.sparql.mapping;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.annotations.SPARQLManualLoading;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -58,7 +54,7 @@ public class SPARQLClassObjectMapperIndex {
         }
     }
 
-    public void forEach(BiConsumer<Resource, SPARQLClassObjectMapper<?>> lambda) throws SPARQLInvalidClassDefinitionException {
+    public void forEach(BiConsumer<Resource, SPARQLClassObjectMapper<?>> lambda) {
         resourcesMapper.forEach(lambda);
     }
 
@@ -70,9 +66,10 @@ public class SPARQLClassObjectMapperIndex {
 
     @SuppressWarnings("unchecked")
     private void addClasses(Collection<Class<? extends SPARQLResourceModel>> newClasses) throws SPARQLInvalidClassDefinitionException {
-        newClasses.forEach((clazz) -> {
-            LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
-        });
+
+        newClasses.forEach(clazz ->
+                LOGGER.debug("SPARQL Resource class found: {}", clazz.getCanonicalName())
+        );
 
         newClasses.removeIf((Class<?> resource) -> {
             SPARQLManualLoading manualAnnotation = resource.getAnnotation(SPARQLManualLoading.class);

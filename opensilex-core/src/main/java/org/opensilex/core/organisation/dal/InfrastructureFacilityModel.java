@@ -6,6 +6,7 @@
 package org.opensilex.core.organisation.dal;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,14 +38,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
             ignoreUpdateIfNull = true,
             useDefaultGraph = false
     )
-    protected List<InfrastructureFacilityModel> children;
+    protected List<InfrastructureFacilityModel> children = new LinkedList<>();
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             inverse = true
     )
-    private List<InfrastructureModel> infrastructures;
+    private List<InfrastructureModel> infrastructures = new LinkedList<>();
     public static final String INFRASTRUCTURE_FIELD = "infrastructures";
 
     public List<InfrastructureModel> getInfrastructures() {
@@ -53,6 +54,26 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
 
     public void setInfrastructures(List<InfrastructureModel> infrastructures) {
         this.infrastructures = infrastructures;
+    }
+
+    @Override
+    public InfrastructureFacilityModel getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(InfrastructureFacilityModel parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public List<InfrastructureFacilityModel> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void setChildren(List<InfrastructureFacilityModel> children) {
+        this.children = children;
     }
 
     public List<URI> getInfrastructureUris() {

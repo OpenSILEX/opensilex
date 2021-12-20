@@ -29,10 +29,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.VocabularyModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
-import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.JgraphtUtils;
 import org.slf4j.Logger;
@@ -59,10 +56,14 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     static final int MAX_GRAPH_PATH_LENGTH = 20;
 
-    public static final URI OWL_CLASS_URI = SPARQLDeserializers.formatURI(URI.create(OWL2.Class.getURI()));
-    public final ClassModel OWL_CLASS_MODEL;
+    public static final ClassModel OWL_CLASS_MODEL = getRootClassModel();
+    public static final DatatypePropertyModel OWL_DATATYPE_PROPERTY_MODEL = getRootDataTypePropertyModel();
+    public static final ObjectPropertyModel OWL_OBJECT_PROPERTY_MODEL = getRootObjectPropertyModel();
+    public static final OwlRestrictionModel OWL_ROOT_RESTRICTION_MODEL = getRootRestrictionModel();
 
     private static final String STORE_LOADING_MSG = "{} {} loaded [OK] time: {} ms";
+    private static final String WRONG_PROPERTY_TYPE_MSG = "Property (%s) type (%s) don't match with the given type : %s. ";
+    private static final String WRONG_DOMAIN_MSG = "Property (%s) domain (%s) don't match with the given domain : %s. ";
 
     protected AbstractOntologyStore(SPARQLService sparql, OpenSilex openSilex) throws OpenSilexModuleNotFoundException {
 
@@ -77,17 +78,46 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         this.modelsByUris = new PatriciaTrie<>();
         this.modelsGraph = new SimpleDirectedGraph<>(DefaultEdge.class);
+    }
 
-        OWL_CLASS_MODEL = new ClassModel();
-        OWL_CLASS_MODEL.setUri(OWL_CLASS_URI);
-        OWL_CLASS_MODEL.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
-        OWL_CLASS_MODEL.setTypeLabel(new SPARQLLabel(RDF.type.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
-        OWL_CLASS_MODEL.setLabel(new SPARQLLabel(OWL.CLASS.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+    private static ClassModel getRootClassModel() {
+        ClassModel model = new ClassModel();
+        model.setUri(SPARQLDeserializers.formatURI(URI.create(OWL2.Class.getURI())));
+        model.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
+        model.setTypeLabel(new SPARQLLabel(RDF.type.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        model.setLabel(new SPARQLLabel(OWL.CLASS.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        return model;
+    }
+
+    private static DatatypePropertyModel getRootDataTypePropertyModel() {
+        DatatypePropertyModel model = new DatatypePropertyModel();
+        model.setUri(SPARQLDeserializers.formatURI(URI.create(OWL2.DatatypeProperty.getURI())));
+        model.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
+        model.setTypeLabel(new SPARQLLabel(OWL2.DatatypeProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        model.setLabel(new SPARQLLabel(OWL2.DatatypeProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        return model;
+    }
+
+    private static ObjectPropertyModel getRootObjectPropertyModel() {
+        ObjectPropertyModel model = new ObjectPropertyModel();
+        model.setUri(SPARQLDeserializers.formatURI(URI.create(OWL2.ObjectProperty.getURI())));
+        model.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
+        model.setTypeLabel(new SPARQLLabel(OWL2.ObjectProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        model.setLabel(new SPARQLLabel(OWL2.ObjectProperty.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        return model;
+    }
+
+    private static OwlRestrictionModel getRootRestrictionModel() {
+        OwlRestrictionModel model = new OwlRestrictionModel();
+        model.setUri(SPARQLDeserializers.formatURI(URI.create(OWL2.Restriction.getURI())));
+        model.setType(URIDeserializer.formatURI(RDFS.Class.getURI()));
+        model.setTypeLabel(new SPARQLLabel(OWL2.Restriction.getLocalName(), OpenSilex.DEFAULT_LANGUAGE));
+        return model;
     }
 
     public void load() throws SPARQLException {
 
-        OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, this, languages);
+        OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, languages);
 
         // Initial classes loading
         Instant begin = Instant.now();
@@ -99,10 +129,18 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         // Initial properties loading
         begin = Instant.now();
-        List<PropertyModel> properties = storeLoader.getProperties();
+        List<AbstractPropertyModel> properties = storeLoader.getProperties();
         addAll(properties);
+        linkPropertiesWithClasses(properties);
         elapsedMs = Duration.between(begin, Instant.now()).toMillis();
         LOGGER.info(STORE_LOADING_MSG, properties.size(), "properties", elapsedMs);
+
+        // Initial OWL restrictions loading
+        begin = Instant.now();
+        List<OwlRestrictionModel> restrictions = storeLoader.getRestrictions();
+        linkRestrictions(restrictions);
+        elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+        LOGGER.info(STORE_LOADING_MSG, restrictions.size(), "restriction", elapsedMs);
     }
 
     public void clear() {
@@ -115,34 +153,32 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return SPARQLDeserializers.formatURI(uri.toString());
     }
 
-    public <T extends VocabularyModel<T>> void addAll(List<T> classes) {
+    public <T extends VocabularyModel<T>> void addAll(Collection<T> models) {
 
-        Objects.requireNonNull(classes);
+        Objects.requireNonNull(models);
 
         // compute map of Class URI <-> Class
-        Map<String, T> localClassesByUris = new HashMap<>();
-        for (T classModel : classes) {
-            String classURI = formatURI(classModel.getUri());
-            if (localClassesByUris.containsKey(classURI)) {
-                throw new IllegalArgumentException("Duplicate URI " + classURI);
+        Map<String, T> localModelsByUri = new HashMap<>();
+        for (T model : models) {
+            String uri = formatURI(model.getUri());
+            if (localModelsByUri.containsKey(uri)) {
+                throw new IllegalArgumentException("Duplicate URI " + uri);
             }
-            localClassesByUris.put(classURI, classModel);
+            localModelsByUri.put(uri, model);
         }
 
-        for (T classModel : classes) {
-            String classURI = formatURI(classModel.getUri());
-            if (modelsByUris.containsKey(classURI)) {
-                throw new IllegalArgumentException("URI already exist : "+classURI);
+        for (T model : models) {
+            String uri = formatURI(model.getUri());
+            if (modelsByUris.containsKey(uri)) {
+                throw new IllegalArgumentException("URI already exist : " + uri);
             }
 
-            resolveParentAndUpdateClasses(localClassesByUris, classModel, classURI);
-            modelsByUris.put(classURI,classModel);
-//            classesByUris.put(classURI, classModel);
-//            OWL_CLASS_MODEL.getChildren().add(classModel);
+            linkWithParent(localModelsByUri, model, uri);
+            modelsByUris.put(uri, model);
         }
     }
 
-    private <T extends VocabularyModel<T>> void resolveParentAndUpdateClasses(Map<String,T> localClassesByUris, T classModel, String classURI) {
+    private <T extends VocabularyModel<T>> void linkWithParent(Map<String, T> localClassesByUris, T classModel, String classURI) {
 
         if (CollectionUtils.isEmpty(classModel.getParents())) {
             return;
@@ -158,8 +194,8 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             // try to resolve locally or from already existing parents
             if (resolvedParent == null) {
 
-                if(! modelsByUris.containsKey(parentURI)){
-                    throw new IllegalArgumentException("Parent URI is unknown : "+parentURI);
+                if (!modelsByUris.containsKey(parentURI)) {
+                    throw new IllegalArgumentException("Parent URI is unknown : " + parentURI);
                 }
                 VocabularyModel<?> modelFromIndex = this.modelsByUris.get(parentURI);
                 resolvedParent = (T) modelFromIndex;
@@ -174,47 +210,67 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         classModel.setParent(classModel.getParents().iterator().next());
     }
 
-    private ClassModel getClassModel(URI classURI) throws SPARQLInvalidURIException {
+    void addEdgeBetweenParentAndClass(String parentURI, String classURI) {
 
-        URI formattedURI = URIDeserializer.formatURI(classURI);
+        modelsGraph.addVertex(classURI);
+        modelsGraph.addVertex(parentURI);
 
-        VocabularyModel<?> genericModel = modelsByUris.get(formattedURI.toString());
-        if (genericModel == null) {
-            throw new SPARQLInvalidURIException("owl:Class URI not found : ", formattedURI);
+        if (!modelsGraph.containsEdge(parentURI, classURI)) {
+            modelsGraph.addEdge(parentURI, classURI);
         }
-        if(! (genericModel instanceof ClassModel)){
-            throw new SPARQLInvalidURIException("URI is not a Class URI : ", formattedURI);
-        }
-        return (ClassModel) genericModel;
     }
 
+    private void linkPropertiesWithClasses(Collection<AbstractPropertyModel> properties) throws SPARQLInvalidURIException {
 
-    @Override
-    public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException {
+        for (AbstractPropertyModel<?> property : properties) {
 
-        Objects.requireNonNull(classURI);
-        ClassModel model = getClassModel(classURI);
+            ClassModel domain = property.getDomain();
+            if (domain == null || domain.getUri() == null) {
+                LOGGER.warn("NULL domain for property {}", property.getUri());
+                continue;
+            }
 
-        // compute a ClassModel which take care of parent and lang
-        ClassModel finalModel = new ClassModel(model);
+            ClassModel existingDomain = getClassModel(domain.getUri());
+            property.setDomain(existingDomain);
 
-        if (ancestorURI != null) {
-            addInheritedRestrictions(ancestorURI, finalModel);
+            if (property instanceof DatatypePropertyModel) {
+                existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
+            } else if (property instanceof ObjectPropertyModel) {
+                existingDomain.getObjectProperties().put(property.getUri(), (ObjectPropertyModel) property);
+            }
         }
-        if (!StringUtils.isEmpty(lang)) {
-            handleLang(lang, finalModel);
-            finalModel.visit(descendant -> handleLang(lang, descendant));
+    }
+
+    private void linkRestrictions(Collection<OwlRestrictionModel> models) throws SPARQLException {
+
+        for (OwlRestrictionModel model : models) {
+            ClassModel onClass = model.getOnClass();
+            if (onClass == null || onClass.getUri() == null) {
+                throw new IllegalArgumentException("Null class URI for restriction : " + model.getUri());
+            }
+            ClassModel classModel = getClassModel(onClass.getUri());
+
+            URI property = model.getOnProperty();
+            if (property == null) {
+                throw new IllegalArgumentException("Null property URI for restriction : " + model.getUri());
+            }
+            AbstractPropertyModel<?> propertyModel = getProperty(property, null, null);
+            // #TODO check coherence between prop and restriction onClass, fill the
+            classModel.getRestrictions().put(model.getUri(), model);
         }
 
-        return finalModel;
     }
 
     private void addInheritedRestrictions(URI ancestorURI, ClassModel classModel) throws SPARQLInvalidURIException {
 
+        if (ancestorURI == null) {
+            return;
+        }
+
         String formattedAncestorURI = URIDeserializer.formatURI(ancestorURI).toString();
         String classURI = classModel.getUri().toString();
 
-        if(! modelsByUris.containsKey(formattedAncestorURI)){
+        if (!modelsByUris.containsKey(formattedAncestorURI)) {
             throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classURI, ancestorURI);
         }
 
@@ -233,54 +289,108 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
     }
 
-    private void handleLang(String lang, VocabularyModel<?> classModel) {
+    private void handleLang(String lang, VocabularyModel<?> model) {
 
-        SPARQLLabel label = classModel.getLabel();
+        if (StringUtils.isEmpty(lang)) {
+            return;
+        }
+
+        SPARQLLabel label = model.getLabel();
         if (label.getTranslations().containsKey(lang)) {
             label.setDefaultLang(lang);
             label.setDefaultValue(label.getTranslations().get(lang));
         }
 
-        SPARQLLabel comment = classModel.getComment();
+        SPARQLLabel comment = model.getComment();
         if (comment.getTranslations().containsKey(lang)) {
             comment.setDefaultLang(lang);
             comment.setDefaultValue(comment.getTranslations().get(lang));
         }
 
-        SPARQLLabel typeLabel = classModel.getTypeLabel();
+        SPARQLLabel typeLabel = model.getTypeLabel();
         if (typeLabel.getTranslations().containsKey(lang)) {
             typeLabel.setDefaultLang(lang);
             typeLabel.setDefaultValue(typeLabel.getTranslations().get(lang));
         }
     }
 
+    private ClassModel getClassModel(URI uri) throws SPARQLInvalidURIException {
 
-    void addEdgeBetweenParentAndClass(String parentURI, String classURI) {
+        URI formattedURI = URIDeserializer.formatURI(uri);
 
-        modelsGraph.addVertex(classURI);
-        modelsGraph.addVertex(parentURI);
-
-        if (!modelsGraph.containsEdge(parentURI, classURI)) {
-            modelsGraph.addEdge(parentURI, classURI);
+        VocabularyModel<?> genericModel = modelsByUris.get(formattedURI.toString());
+        if (genericModel == null) {
+            throw new SPARQLInvalidURIException("owl:Class URI not found : ", formattedURI);
         }
+        if (!(genericModel instanceof ClassModel)) {
+            throw new SPARQLInvalidURIException("URI is not a Class URI : ", formattedURI);
+        }
+        return (ClassModel) genericModel;
+    }
+
+    private AbstractPropertyModel<?> getProperty(URI uri, URI type, URI domain) throws SPARQLInvalidURIException {
+
+        URI formattedURI = URIDeserializer.formatURI(uri);
+
+        VocabularyModel<?> genericModel = modelsByUris.get(formattedURI.toString());
+        if (genericModel == null) {
+            throw new SPARQLInvalidURIException("owl:property URI not found : ", formattedURI);
+        }
+
+        if (!(AbstractPropertyModel.class.isAssignableFrom(genericModel.getClass()))) {
+            throw new SPARQLInvalidURIException("URI is not a property URI : ", formattedURI);
+        }
+
+        AbstractPropertyModel<?> model = (AbstractPropertyModel<?>) genericModel;
+        if (type != null && !SPARQLDeserializers.compareURIs(model.getType(), type)) {
+            throw new SPARQLInvalidURIException(String.format(WRONG_PROPERTY_TYPE_MSG, uri, model.getType(), type), uri);
+        }
+        if (domain != null && (model.getDomain() == null || !SPARQLDeserializers.compareURIs(model.getDomain().getUri(), domain))) {
+            throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, uri, model.getDomain(), domain), uri);
+        }
+
+        return model;
+    }
+
+    @Override
+    public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException {
+
+        Objects.requireNonNull(classURI);
+        ClassModel model = getClassModel(classURI);
+
+        // compute a ClassModel which take care of parent and lang
+        ClassModel finalModel = new ClassModel(model);
+        addInheritedRestrictions(ancestorURI, finalModel);
+        handleLang(lang, finalModel);
+        model.visit(descendant -> handleLang(lang, descendant));
+        return finalModel;
     }
 
     @Override
     public SPARQLTreeListModel<ClassModel> searchSubClasses(URI classURI, String stringPattern, String lang, boolean excludeRoot) throws SPARQLException {
         ClassModel classModel = getClassModel(classURI, null, lang);
-        if (classModel == null) {
-            return null;
-        }
         return new SPARQLTreeListModel<>(classModel, excludeRoot, true);
     }
 
     @Override
     public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws SPARQLException {
-        return null;
+        ClassModel classModel = getClassModel(domain, null, lang);
+        return new SPARQLTreeListModel<>(classModel.getDatatypeProperties().values(), OWL_DATATYPE_PROPERTY_MODEL.getUri(), true, true);
     }
 
     @Override
     public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws SPARQLException {
-        return null;
+        ClassModel classModel = getClassModel(domain, null, lang);
+        return new SPARQLTreeListModel<>(classModel.getObjectProperties().values(), OWL_OBJECT_PROPERTY_MODEL.getUri(), true, true);
+    }
+
+    @Override
+    public AbstractPropertyModel<?> getProperty(URI uri, URI type, URI domain, String lang) throws SPARQLException {
+
+        AbstractPropertyModel<?> model = getProperty(uri, type, domain);
+        handleLang(lang, model);
+        model.visit(descendant -> handleLang(lang, descendant));
+
+        return model;
     }
 }

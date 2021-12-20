@@ -8,10 +8,7 @@ package org.opensilex.core.ontology.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
-import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
-import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
 import java.util.Map;
@@ -157,7 +154,7 @@ public class RDFTypePropertyDTO {
         this.cardinality = cardinality;
     }
 
-    public static RDFTypePropertyDTO fromModel(PropertyModel property, OwlRestrictionModel restriction, boolean isLiteral) {
+    public static RDFTypePropertyDTO fromModel(AbstractPropertyModel<?> property, OwlRestrictionModel restriction, boolean isLiteral) {
         RDFTypePropertyDTO dto = new RDFTypePropertyDTO();
         dto.setUri(restriction.getOnProperty());
         dto.setName(property.getName());
@@ -219,13 +216,13 @@ public class RDFTypePropertyDTO {
         if (isLiteral()) {
             restriction.setOnDataRange(getTypeRestriction());
         } else {
-            restriction.setOnClass(getTypeRestriction());
+//            restriction.setOnClass(getTypeRestriction());
         }
 
         return restriction;
     }
 
-    private void getPropertyModel(PropertyModel property, String lang) {
+    private void getPropertyModel(AbstractPropertyModel<?> property, String lang) {
         property.setUri(getUri());
 
         SPARQLLabel sparqlLabel = new SPARQLLabel(getName(), lang);

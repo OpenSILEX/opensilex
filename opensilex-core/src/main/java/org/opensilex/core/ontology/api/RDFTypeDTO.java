@@ -10,7 +10,6 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import java.net.URI;
 
 /**
- *
  * @author vmigot
  */
 public class RDFTypeDTO {
@@ -55,20 +54,23 @@ public class RDFTypeDTO {
         this.parent = parent;
     }
 
-    public static RDFTypeDTO fromModel(RDFTypeDTO dto, ClassModel model) {
-        dto.setUri(model.getUri());
+    public RDFTypeDTO() {
+
+    }
+
+    public RDFTypeDTO(ClassModel model) {
+        setUri(model.getUri());
 
         if (model.getLabel() != null) {
-            dto.setName(model.getLabel().getDefaultValue());
+            setName(model.getLabel().getDefaultValue());
         }
         if (model.getComment() != null) {
-            dto.setComment(model.getComment().getDefaultValue());
+            setComment(model.getComment().getDefaultValue());
         }
 
         if (model.getParent() != null) {
-            dto.setParent(model.getParent().getUri());
+            setParent(model.getParent().getUri());
         }
-
-        return dto;
     }
+
 }

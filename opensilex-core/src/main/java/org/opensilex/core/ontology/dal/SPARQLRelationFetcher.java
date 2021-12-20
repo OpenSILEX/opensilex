@@ -22,6 +22,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -59,7 +60,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     private final SelectBuilder initialSelect;
     private final List<T> results;
 
-    private final Set<PropertyModel> typesProperties;
+    private final Set<AbstractPropertyModel<?>> typesProperties;
     private final Map<URI, List<URI>> propertiesByType;
     private final Map<URI, List<String>> propertiesByTypeVarNames;
 
@@ -95,7 +96,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
             // get class from OntologyCache and compute stream of data/object property
             ClassModel classModel = ontologyCache.getClassModel(type, OpenSilex.DEFAULT_LANGUAGE);
-            Stream<PropertyModel> propertyStream = Stream.concat(
+            Stream<AbstractPropertyModel<?>> propertyStream = Stream.concat(
                     classModel.getDatatypeProperties().values().stream(),
                     classModel.getObjectProperties().values().stream()
             );
@@ -159,7 +160,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         // append triple <?uri :property_uri ?property_name> for each property
         int propertyIdx = 0;
-        for (PropertyModel property : typesProperties) {
+        for (AbstractPropertyModel<?> property : typesProperties) {
 
             Node propertyNode = SPARQLDeserializers.nodeURI(property.getUri());
             Var propertyVar = propertiesVars.get(propertyIdx++);

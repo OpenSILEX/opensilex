@@ -6,11 +6,6 @@
  *
  ******************************************************************************/
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
@@ -27,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author vince
  */
 @SPARQLResource(
@@ -35,114 +29,56 @@ import java.util.stream.Collectors;
         resource = "Class",
         ignoreValidation = true
 )
-public class ClassModel extends SPARQLTreeModel<ClassModel> implements VocabularyModel<ClassModel> {
+public class ClassModel extends VocabularyModel<ClassModel> {
 
     @SPARQLIgnore()
     protected String name;
 
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "label"
-//    )
-    protected SPARQLLabel label;
-//    public static final String NAME_FIELD = "label";
-//
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "comment"
-//    )
-    protected SPARQLLabel comment;
-//    public static final String COMMENT_FIELD = "comment";
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "subClassOf",
+            inverse = true
+    )
+    protected List<ClassModel> children;
 
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "subClassOf",
-//            inverse = true
-//    )
-//    protected List<ClassModel> children;
-
-//    @SPARQLProperty(
-//            ontology = RDFS.class,
-//            property = "subClassOf"
-//    )
-//    protected ClassModel parent;
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "subClassOf"
+    )
+    protected ClassModel parent;
 
     protected Set<ClassModel> parents;
 
-    public ClassModel(){
+    public ClassModel() {
         super();
         children = new LinkedList<>();
         parents = new HashSet<>();
     }
 
-    public ClassModel(ClassModel other){
+    public ClassModel(ClassModel other) {
 
         uri = other.getUri();
         rdfType = other.getType();
+        label = other.getLabel();
+        comment = other.getComment();
+        rdfTypeName = other.getTypeLabel();
 
-        if(other.getLabel() != null){
-            label = new SPARQLLabel(other.getLabel());
-        }
-        if(other.getComment() != null){
-            comment = new SPARQLLabel(other.getComment());
-        }
-        if(other.getTypeLabel() != null){
-            rdfTypeName = new SPARQLLabel(other.getTypeLabel());
-        }
+        children = other.getChildren();
+        parent = other.getParent();
+        parents = other.getParents();
 
-        setChildren(other.getChildren());
-        setParent(other.getParent());
-        setParents(other.getParents());
-
-        datatypeProperties = new HashMap<>(other.getDatatypeProperties());
-        objectProperties = new HashMap<>(other.getObjectProperties());
-        restrictions= new HashMap<>(other.getRestrictions());
+        datatypeProperties = other.getDatatypeProperties();
+        objectProperties = other.getObjectProperties();
+        restrictions = other.getRestrictions();
     }
 
     /**
      * Copy constructor
-     * @param classModel class to copy
+     *
+     * @param classModel   class to copy
      * @param readChildren flag which indicate if this constructor must iterate over classModel children
      */
-    public ClassModel(ClassModel classModel, boolean readChildren){
-
-        this();
-
-        uri = classModel.getUri();
-        if(classModel.getLabel() != null){
-            label = new SPARQLLabel(classModel.getLabel());
-        }
-        if(classModel.getComment() != null){
-            comment = new SPARQLLabel(classModel.getComment());
-        }
-        rdfType = classModel.getType();
-        if(classModel.getTypeLabel() != null){
-            rdfTypeName = new SPARQLLabel(classModel.getTypeLabel());
-        }
-
-        if(readChildren && classModel.getChildren() != null){
-            children = classModel.getChildren().stream()
-                    .map(child -> new ClassModel(child,true))
-                    .collect(Collectors.toList());
-
-            children.forEach(child -> setParent(this));
-
-            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
-            setChildren(children);
-        }
-
-
-
-        if(classModel.getParent() != null){
-            this.parent = new ClassModel(classModel.getParent(),false);
-        }
-
-        // call super setter in order to ensure that {@link SPARQLTreeModel#parent} field is set
-        setParent(parent);
-
-        datatypeProperties = classModel.getDatatypeProperties();
-        objectProperties = classModel.getObjectProperties();
-        restrictions = classModel.getRestrictions();
+    public ClassModel(ClassModel classModel, boolean readChildren) {
     }
 
 
@@ -150,15 +86,6 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> implements Vocabular
     protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
     protected Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
 
-    @Override
-    public String getName() {
-        SPARQLLabel slabel = getLabel();
-        if (slabel != null) {
-            return getLabel().getDefaultValue();
-        } else {
-            return getUri().toString();
-        }
-    }
 
     public SPARQLLabel getLabel() {
         return label;
@@ -222,6 +149,26 @@ public class ClassModel extends SPARQLTreeModel<ClassModel> implements Vocabular
 
     public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
+    }
+
+    @Override
+    public List<ClassModel> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void setChildren(List<ClassModel> children) {
+        this.children = children;
+    }
+
+    @Override
+    public ClassModel getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(ClassModel parent) {
+        this.parent = parent;
     }
 
     public Set<ClassModel> getParents() {

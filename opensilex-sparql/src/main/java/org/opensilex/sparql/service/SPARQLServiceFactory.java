@@ -6,8 +6,10 @@
 package org.opensilex.sparql.service;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.ws.rs.ext.Provider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
@@ -73,14 +75,15 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
         generationPrefixURI = sparqlModule.getGenerationPrefixURI();
     }
 
+
     @Override
     public void startup() throws Exception {
-        LOGGER.debug("Build SPARQL models for base URI: " + baseURI.toString());
+        LOGGER.debug("Build SPARQL models for base URI: {}", baseURI);
 
-        Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
+        Set<Class<? extends SPARQLResourceModel>> initClasses = new TreeSet<>(Comparator.comparing(Class::getSimpleName));
 
         getOpenSilex().getAnnotatedClasses(SPARQLResource.class).forEach(c -> {
-            LOGGER.debug("Register model class to build: " + c.getCanonicalName());
+            LOGGER.debug("Register model class to build: {}", c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });
         mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, generationPrefixURI, initClasses);

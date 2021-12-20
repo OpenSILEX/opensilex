@@ -172,29 +172,29 @@ public final class SPARQLClassAnalyzer {
 
             SPARQLIgnore ignoreProperty = field.getAnnotation(SPARQLIgnore.class);
             if (ignoreProperty != null) {
-                LOGGER.debug("Ignore field: " + field.getName());
+                LOGGER.debug("Ignore field: {}",field.getName());
                 continue;
             }
 
             SPARQLProperty sProperty = field.getAnnotation(SPARQLProperty.class);
 
             if (sProperty != null) {
-                LOGGER.debug("Analyse " + SPARQLProperty.class.getCanonicalName() + " annotation for field: " + field.getName());
+                LOGGER.debug("Analyse annotation {} for field {}", SPARQLProperty.class.getCanonicalName(), field.getName());
                 analyzeSPARQLPropertyField(sProperty, field);
             } else {
                 SPARQLResourceURI sURI = field.getAnnotation(SPARQLResourceURI.class);
                 if (sURI != null) {
-                    LOGGER.debug("Analyse " + SPARQLResourceURI.class.getCanonicalName() + " annotation for field: " + field.getName());
+                    LOGGER.debug("Analyse annotation {} for field {}", SPARQLResourceURI.class.getCanonicalName(), field.getName());
                     analyzeSPARQLResourceURIField(field);
                 } else {
                     SPARQLTypeRDF sType = field.getAnnotation(SPARQLTypeRDF.class);
                     if (sType != null) {
-                        LOGGER.debug("Analyse " + SPARQLTypeRDF.class.getCanonicalName() + " annotation for field: " + field.getName());
+                        LOGGER.debug("Analyse annotation {} for field {}", SPARQLTypeRDF.class.getCanonicalName(), field.getName());
                         analyzeSPARQLTypeField(field);
                     } else {
                         SPARQLTypeRDFLabel sTypeLabel = field.getAnnotation(SPARQLTypeRDFLabel.class);
                         if (sTypeLabel != null) {
-                            LOGGER.debug("Analyse " + SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation for field: " + field.getName());
+                            LOGGER.debug("Analyse annotation {} for field {}", SPARQLTypeRDFLabel.class.getCanonicalName(), field.getName());
                             analyzeSPARQLTypeLabelField(field);
                         }
                     }
@@ -217,20 +217,27 @@ public final class SPARQLClassAnalyzer {
             throw new SPARQLInvalidClassDefinitionException(objectClass, SPARQLTypeRDFLabel.class.getCanonicalName() + " annotation not found");
         }
 
-        LOGGER.debug("Init fields accessor registry for: " + objectClass.getName());
+        LOGGER.debug("Init fields accessor registry for: {}", objectClass.getName());
         Method[] methods = objectClass.getMethods();
         fieldsByGetter = HashBiMap.create(fieldsByName.size());
         fieldsBySetter = HashBiMap.create(fieldsByName.size());
         for (Method method : methods) {
+
+            // Don't consider an abstract getter/setter as a field getter, only consider implemented methods
+            // Else IllegalArgumentException if thrown since the method name will be inserted two time (definition + implementation)
+            if(Modifier.isAbstract(method.getModifiers())){
+               continue;
+            }
+
             if (isGetter(method)) {
-                Field getter = findFieldByGetter(method);
-                if (getter != null) {
-                    fieldsByGetter.put(method, getter.getName());
+                Field getterField = findFieldByGetter(method);
+                if (getterField != null) {
+                    fieldsByGetter.put(method, getterField.getName());
                 }
             } else if (isSetter(method)) {
-                Field setter = findFieldBySetter(method);
-                if (setter != null) {
-                    fieldsBySetter.put(method, setter.getName());
+                Field setterField = findFieldBySetter(method);
+                if (setterField != null) {
+                    fieldsBySetter.put(method, setterField.getName());
                 }
             }
         }
@@ -463,7 +470,7 @@ public final class SPARQLClassAnalyzer {
             }
         }
 
-        if (candidateField != null && (getter.getReturnType().equals(candidateField.getType()) || getter.getReturnType().isAssignableFrom(candidateField.getType()))) {
+        if (candidateField != null && getter.getReturnType().equals(candidateField.getType()) ) {
             return candidateField;
         } else {
             return null;
@@ -484,7 +491,7 @@ public final class SPARQLClassAnalyzer {
             Field field = fieldsByName.get(fieldName);
             if (field != null
                     && setter.getParameterCount() == 1
-                    && setter.getParameters()[0].getType().isAssignableFrom(field.getType())) {
+                    && setter.getParameters()[0].getType().equals(field.getType())) {
                 return field;
             }
         }

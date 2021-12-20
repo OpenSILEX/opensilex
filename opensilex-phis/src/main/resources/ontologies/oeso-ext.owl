@@ -922,8 +922,6 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp"/>
-    
     <!-- http://www.opensilex.org/vocabulary/oeso#startUp -->
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp">
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>

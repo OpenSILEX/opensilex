@@ -211,8 +211,8 @@ public final class OntologyDAO {
                 datatypePropertiesURI.put(propertyURI, restriction.getOnDataRange());
             }
         } else if (restriction.getOnClass() != null) {
-            if (sparql.uriExists(ClassModel.class, restriction.getOnClass())) {
-                objectPropertiesURI.put(propertyURI, restriction.getOnClass());
+            if (sparql.uriExists(ClassModel.class, restriction.getOnClass().getUri())) {
+                objectPropertiesURI.put(propertyURI, restriction.getOnClass().getUri());
             }
         } else if (restriction.getSomeValuesFrom() != null) {
             URI someValueFrom = restriction.getSomeValuesFrom();

@@ -53,18 +53,20 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         this.icon = icon;
     }
 
-    public static VueRDFTypeDTO fromModel(VueRDFTypeDTO dto, ClassModel model, VueClassExtensionModel extClass) {
-        RDFTypeTranslatedDTO.fromModel(dto, model);
-
-        if (extClass != null) {
-            dto.setIsAbstract(extClass.getIsAbstractClass());
-            dto.setIcon(extClass.getIcon());
+    public VueRDFTypeDTO(ClassModel model, VueClassExtensionModel modelExt){
+        super(model);
+        if (modelExt != null) {
+            setIsAbstract(modelExt.getIsAbstractClass());
+            setIcon(modelExt.getIcon());
         } else {
-            dto.setIsAbstract(false);
+            setIsAbstract(false);
         }
-
-        return dto;
     }
+
+    public VueRDFTypeDTO(){
+
+    }
+
 
     public List<VueRDFTypePropertyDTO> getDataProperties() {
         return dataProperties;

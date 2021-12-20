@@ -22,16 +22,14 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.*;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
-import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -46,15 +44,17 @@ import static org.apache.jena.arq.querybuilder.Converters.makeVar;
 class OntologyStoreLoader {
 
     private final SPARQLService sparql;
-    private final AbstractOntologyStore ontologyStore;
 
     protected static final ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
 
     protected static final Var URI_VAR = makeVar(SPARQLResourceModel.URI_FIELD);
     protected static final Var PARENT_VAR = makeVar(SPARQLTreeModel.PARENT_FIELD);
-    protected static final Var DOMAIN_VAR = makeVar(DatatypePropertyModel.DOMAIN_FIELD);
-    protected static final Var RANGE_VAR = makeVar(DatatypePropertyModel.RANGE_FIELD);
+    protected static final Var DOMAIN_VAR = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
+    protected static final Var RANGE_VAR = makeVar(AbstractPropertyModel.RANGE_FIELD);
     protected static final Var ROOT_PROPERTY_TYPE_VAR = makeVar("propertyType");
+
+    protected static final Var ON_PROPERTY_VAR = makeVar(OwlRestrictionModel.ON_PROPERTY_FIELD);
+    protected static final Var ON_CLASS_VAR = makeVar(OwlRestrictionModel.ON_CLASS_FIELD);
 
     private static final Node OWL_DATATYPE_PROPERTY = NodeFactory.createURI(OWL2.DatatypeProperty.getURI());
     private static final Node OWL_OBJECT_PROPERTY = NodeFactory.createURI(OWL2.ObjectProperty.getURI());
@@ -63,13 +63,12 @@ class OntologyStoreLoader {
     protected final List<Var> commentVars;
     protected final List<Var> nameVars;
 
-    OntologyStoreLoader(SPARQLService sparql, AbstractOntologyStore ontologyStore, List<String> languages) {
+    OntologyStoreLoader(SPARQLService sparql, List<String> languages) {
         this.sparql = sparql;
-        this.ontologyStore = ontologyStore;
 
         this.languages = languages;
         commentVars = languages.stream()
-                .map(lang -> getLangVar(ClassModel.COMMENT_FIELD, lang))
+                .map(lang -> getLangVar(TranslatedModel.COMMENT_FIELD, lang))
                 .collect(Collectors.toList());
 
         nameVars = languages.stream()
@@ -87,16 +86,16 @@ class OntologyStoreLoader {
         model.setComment(getLabel(result, commentVars));
     }
 
-    private void fromResult(SPARQLResult result, PropertyModel model) {
+    private void fromResult(SPARQLResult result, AbstractPropertyModel<?> model) {
 
-        String domainStr = result.getStringValue(DatatypePropertyModel.DOMAIN_FIELD);
+        String domainStr = result.getStringValue(AbstractPropertyModel.DOMAIN_FIELD);
         if (!StringUtils.isEmpty(domainStr)) {
             ClassModel domainClass = new ClassModel();
             domainClass.setUri(URIDeserializer.formatURI(domainStr));
             model.setDomain(domainClass);
         }
 
-        String rangeStr = result.getStringValue(DatatypePropertyModel.RANGE_FIELD);
+        String rangeStr = result.getStringValue(AbstractPropertyModel.RANGE_FIELD);
         if (!StringUtils.isEmpty(rangeStr)) {
             if (model instanceof DatatypePropertyModel) {
                 ((DatatypePropertyModel) model).setRange(URIDeserializer.formatURI(rangeStr));
@@ -105,6 +104,47 @@ class OntologyStoreLoader {
                 rangeClass.setUri(URIDeserializer.formatURI(rangeStr));
                 ((ObjectPropertyModel) model).setRange(rangeClass);
             }
+        }
+
+    }
+
+    private void fromResult(SPARQLResult result, OwlRestrictionModel model) throws Exception {
+
+        model.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+        model.setOnProperty(URIDeserializer.formatURI(result.getStringValue(OwlRestrictionModel.ON_PROPERTY_FIELD)));
+        model.setType(AbstractOntologyStore.OWL_ROOT_RESTRICTION_MODEL.getUri());
+        model.setTypeLabel(AbstractOntologyStore.OWL_ROOT_RESTRICTION_MODEL.getTypeLabel());
+
+        String onClass = result.getStringValue(OwlRestrictionModel.ON_CLASS_FIELD);
+        if (!StringUtils.isEmpty(onClass)) {
+            ClassModel onClassModel = new ClassModel();
+            onClassModel.setUri(URIDeserializer.formatURI(onClass));
+            model.setOnClass(onClassModel);
+        }
+
+        String onDataRange = result.getStringValue(OwlRestrictionModel.ON_DATA_RANGE_FIELD);
+        if (!StringUtils.isEmpty(onDataRange)) {
+            model.setOnDataRange(URIDeserializer.formatURI(onDataRange));
+        }
+
+        String minCardinality = result.getStringValue(OwlRestrictionModel.MIN_CARDINALITY_FIELD);
+        if (!StringUtils.isEmpty(minCardinality)) {
+            model.setMinCardinality(SPARQLDeserializers.getForClass(Integer.class).fromString(minCardinality));
+        }
+
+        String maxCardinality = result.getStringValue(OwlRestrictionModel.MAX_CARDINALITY_FIELD);
+        if (!StringUtils.isEmpty(maxCardinality)) {
+            model.setMaxCardinality(SPARQLDeserializers.getForClass(Integer.class).fromString(maxCardinality));
+        }
+
+        String cardinality = result.getStringValue(OwlRestrictionModel.CARDINALITY_FIELD);
+        if (!StringUtils.isEmpty(cardinality)) {
+            model.setMaxCardinality(SPARQLDeserializers.getForClass(Integer.class).fromString(cardinality));
+        }
+
+        String someValuesFrom = result.getStringValue(OwlRestrictionModel.SOME_VALUES_FROM_FIELD);
+        if (!StringUtils.isEmpty(someValuesFrom)) {
+            model.setSomeValuesFrom(URIDeserializer.formatURI(someValuesFrom));
         }
 
     }
@@ -150,37 +190,66 @@ class OntologyStoreLoader {
 
     }
 
-    public List<ClassModel> getClasses() throws SPARQLException {
+    List<ClassModel> getClasses() throws SPARQLException {
         return getModels(
                 buildGetAllClassesQuery(),
                 result -> new ClassModel(),
                 (result, model) -> {
-                    model.setType(AbstractOntologyStore.OWL_CLASS_URI);
-                    model.setTypeLabel(ontologyStore.OWL_CLASS_MODEL.getTypeLabel());
+                    model.setType(AbstractOntologyStore.OWL_CLASS_MODEL.getUri());
+                    model.setTypeLabel(AbstractOntologyStore.OWL_CLASS_MODEL.getTypeLabel());
                 });
     }
 
-    public List<PropertyModel> getProperties() throws SPARQLException {
+    List<AbstractPropertyModel> getProperties() throws SPARQLException {
 
         return getModels(
                 buildGetAllPropertiesQuery(),
                 result -> {
                     String typeUri = result.getStringValue(ROOT_PROPERTY_TYPE_VAR.getVarName());
 
-                    PropertyModel model;
+                    AbstractPropertyModel model;
 
                     if (SPARQLDeserializers.compareURIs(typeUri, OWL2.DatatypeProperty.getURI())) {
                         model = new DatatypePropertyModel();
-                        model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+                        model.setType(AbstractOntologyStore.OWL_DATATYPE_PROPERTY_MODEL.getUri());
+                        model.setTypeLabel(AbstractOntologyStore.OWL_DATATYPE_PROPERTY_MODEL.getTypeLabel());
                     } else {
                         model = new ObjectPropertyModel();
-                        model.setType(AbstractOntologyStore.OWL_CLASS_URI);
+                        model.setType(AbstractOntologyStore.OWL_OBJECT_PROPERTY_MODEL.getUri());
+                        model.setTypeLabel(AbstractOntologyStore.OWL_OBJECT_PROPERTY_MODEL.getTypeLabel());
                     }
                     return model;
                 },
                 this::fromResult
         );
 
+    }
+
+    List<OwlRestrictionModel> getRestrictions() throws SPARQLException {
+
+        try {
+            return sparql.searchAsStream(
+                    null,
+                    OwlRestrictionModel.class,
+                    null,
+                    select -> {
+                        select.addFilter(exprFactory.isIRI(ON_CLASS_VAR));
+                        select.addFilter(exprFactory.isIRI(ON_PROPERTY_VAR));
+                    },
+                    Collections.emptyMap(),
+                    result -> {
+                        OwlRestrictionModel model = new OwlRestrictionModel();
+                        fromResult(result, model);
+                        return model;
+                    },
+                    Collections.emptyList(),
+                    null,
+                    null
+            ).collect(Collectors.toList());
+
+        } catch (Exception e) {
+            throw new SPARQLException(e);
+        }
     }
 
     private void appendNamesAndComments(SelectBuilder select) {
@@ -257,12 +326,17 @@ class OntologyStoreLoader {
                         .addWhere(PARENT_VAR, RDF.type, ROOT_PROPERTY_TYPE_VAR)
                         .addFilter(exprFactory.isIRI(PARENT_VAR))
                 )
-                .addOptional(new WhereBuilder().addWhere(URI_VAR, RDFS.domain, DOMAIN_VAR))
-                .addOptional(new WhereBuilder().addWhere(URI_VAR, RDFS.range, RANGE_VAR))
+                .addOptional(new WhereBuilder()
+                        .addWhere(URI_VAR, RDFS.domain, DOMAIN_VAR)
+                        .addFilter(exprFactory.isIRI(DOMAIN_VAR))
+                )
+                .addOptional(new WhereBuilder().
+                        addWhere(URI_VAR, RDFS.range, RANGE_VAR)
+                        .addFilter(exprFactory.isIRI(RANGE_VAR))
+                )
                 .addOrderBy(URI_VAR);
 
         appendNamesAndComments(select);
-
         select.addWhereValueVar(ROOT_PROPERTY_TYPE_VAR, OWL_OBJECT_PROPERTY, OWL_DATATYPE_PROPERTY);
 
         return select;

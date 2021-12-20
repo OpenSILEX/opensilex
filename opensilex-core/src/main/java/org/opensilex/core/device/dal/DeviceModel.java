@@ -162,6 +162,26 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     }
 
     @Override
+    public DeviceModel getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(DeviceModel parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public List<DeviceModel> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void setChildren(List<DeviceModel> children) {
+        this.children = children;
+    }
+
+    @Override
     public String getInstanceUriPath(SPARQLTreeModel<DeviceModel> instance) {
 
         if(! StringUtils.isEmpty(instance.getName())){

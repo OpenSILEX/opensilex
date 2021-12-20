@@ -14,6 +14,7 @@
 package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -22,7 +23,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import java.net.URI;
 
 /**
- *
  * @author vince
  */
 @SPARQLResource(
@@ -38,45 +38,56 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = OWL2.class,
-            property = "onProperty"
+            property = "onProperty",
+            required = true
     )
     URI onProperty;
+    public static final String ON_PROPERTY_FIELD = "onProperty";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "onDataRange"
     )
     URI onDataRange;
+    public static final String ON_DATA_RANGE_FIELD = "onDataRange";
+
 
     @SPARQLProperty(
-            ontology = OWL2.class,
-            property = "onClass"
+            ontology = RDFS.class,
+            property = "subClassOf",
+            required = true,
+            inverse = true
     )
-    URI onClass;
+    ClassModel onClass;
+    public static final String ON_CLASS_FIELD = "onClass";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "minQualifiedCardinality"
     )
     Integer minCardinality;
+    public static final String MIN_CARDINALITY_FIELD = "minCardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "maxQualifiedCardinality"
     )
     Integer maxCardinality;
+    public static final String MAX_CARDINALITY_FIELD = "maxCardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "qualifiedCardinality"
     )
     Integer cardinality;
+    public static final String CARDINALITY_FIELD = "cardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "someValuesFrom"
     )
     URI someValuesFrom;
+    public static final String SOME_VALUES_FROM_FIELD = "someValuesFrom";
 
     public URI getOnProperty() {
         return onProperty;
@@ -94,11 +105,11 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
         this.onDataRange = onDataRange;
     }
 
-    public URI getOnClass() {
+    public ClassModel getOnClass() {
         return onClass;
     }
 
-    public void setOnClass(URI onClass) {
+    public void setOnClass(ClassModel onClass) {
         this.onClass = onClass;
     }
 
@@ -171,7 +182,7 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
         if (getMinCardinality() != null) {
             return getMinCardinality() >= 1;
         }
-        
+
         return false;
     }
 
@@ -180,7 +191,7 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
             return getOnDataRange();
         }
         if (getOnClass() != null) {
-            return getOnClass();
+            return getOnClass().getUri();
         }
         if (getSomeValuesFrom() != null) {
             return getSomeValuesFrom();

@@ -272,8 +272,8 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     }
 
     private void loadAllTranslations(PropertyModel propertyModel) {
-        propertyModel.setLabel(getLabelWithAllTranslation(propertyModel.getLabel()));
-        propertyModel.setComment(getLabelWithAllTranslation(propertyModel.getComment()));
+//        propertyModel.setLabel(getLabelWithAllTranslation(propertyModel.getLabel()));
+//        propertyModel.setComment(getLabelWithAllTranslation(propertyModel.getComment()));
     }
 
     private void loadAllTranslations(ClassModel classModel) {
@@ -455,8 +455,8 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         }
 
         properties.traverse(property -> {
-            applyTranslation(property.getLabel(), lang);
-            applyTranslation(property.getComment(), lang);
+//            applyTranslation(property.getLabel(), lang);
+//            applyTranslation(property.getComment(), lang);
         });
 
         return properties;
@@ -496,7 +496,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             entry.classModel.getDatatypeProperties().put(propertyModel.getUri(), propertyModel);
             entry.dataPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
         };
-        createOrUpdateProperty(property, createPropertyEntryConsumer, DatatypePropertyModel::new);
+//        createOrUpdateProperty(property, createPropertyEntryConsumer, DatatypePropertyModel::new);
     }
 
     @Override
@@ -512,24 +512,24 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     @Override
     public void updateDataProperty(DatatypePropertyModel property) throws OntologyCacheException {
 
-        BiConsumer<ClassEntry,DatatypePropertyModel> updatePropertyEntryConsumer = (entry,propertyModel) -> {
-            entry.classModel.getDatatypeProperties().replace(propertyModel.getUri(), propertyModel);
-
-            entry.dataPropertiesWithDomain.remove(propertyModel.getUri());
-            entry.dataPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
-        };
-        createOrUpdateProperty(property, updatePropertyEntryConsumer,DatatypePropertyModel::new);
+//        BiConsumer<ClassEntry,DatatypePropertyModel> updatePropertyEntryConsumer = (entry,propertyModel) -> {
+//            entry.classModel.getDatatypeProperties().replace(propertyModel.getUri(), propertyModel);
+//
+//            entry.dataPropertiesWithDomain.remove(propertyModel.getUri());
+//            entry.dataPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
+//        };
+//        createOrUpdateProperty(property, updatePropertyEntryConsumer,DatatypePropertyModel::new);
     }
 
     @Override
     public void updateObjectProperty(ObjectPropertyModel property) throws OntologyCacheException {
 
-        BiConsumer<ClassEntry,ObjectPropertyModel> updatePropertyEntryConsumer = (entry,propertyModel) -> {
-            entry.classModel.getObjectProperties().replace(propertyModel.getUri(), propertyModel);
-
-            entry.objectPropertiesWithDomain.remove(propertyModel.getUri());
-            entry.objectPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
-        };
+//        BiConsumer<ClassEntry,ObjectPropertyModel> updatePropertyEntryConsumer = (entry,propertyModel) -> {
+//            entry.classModel.getObjectProperties().replace(propertyModel.getUri(), propertyModel);
+//
+//            entry.objectPropertiesWithDomain.remove(propertyModel.getUri());
+//            entry.objectPropertiesWithDomain.addTreeWithParent(propertyModel,propertyModel.getParent());
+//        };
 //        createOrUpdateProperty(property, updatePropertyEntryConsumer,ObjectPropertyModel::new);
     }
 

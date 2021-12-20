@@ -17,12 +17,4 @@ public interface DagModel<T> {
 
      void setParents(Set<T> parents);
 
-     List<T> getChildren();
-
-     void setChildren(List<T> children);
-
-     void setParent(T parent);
-
-     T getParent();
-
 }

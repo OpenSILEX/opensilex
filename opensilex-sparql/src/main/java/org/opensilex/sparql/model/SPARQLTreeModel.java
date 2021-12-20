@@ -16,27 +16,16 @@ import java.util.function.Consumer;
  */
 public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPARQLNamedResourceModel<SPARQLTreeModel<T>> {
 
-    protected T parent;
     public static final String PARENT_FIELD = "parent";
-
-    protected List<T> children = new LinkedList<>();
     public static final String CHILDREN_FIELD = "children";
 
-    public T getParent() {
-        return parent;
-    }
+    public abstract T getParent() ;
 
-    public void setParent(T parent) {
-        this.parent = parent;
-    }
+    public abstract void setParent(T parent);
 
-    public List<T> getChildren() {
-        return children;
-    }
+    public abstract List<T> getChildren();
 
-    public void setChildren(List<T> children) {
-        this.children = children;
-    }
+    public abstract void setChildren(List<T> children);
 
     public List<T> getNodes() {
         List<T> visitedList = new ArrayList<>();

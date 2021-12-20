@@ -10,6 +10,7 @@ package org.opensilex.sparql.ontology.store;
 
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
@@ -21,6 +22,8 @@ public interface OntologyStore {
     void load() throws SPARQLException;
 
     void clear();
+
+    AbstractPropertyModel<?> getProperty(URI property, URI type, URI domain, String lang) throws SPARQLException;
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 

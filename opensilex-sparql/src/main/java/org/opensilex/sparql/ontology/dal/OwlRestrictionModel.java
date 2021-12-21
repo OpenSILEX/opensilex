@@ -33,8 +33,14 @@ import java.net.URI;
 )
 public class OwlRestrictionModel extends SPARQLResourceModel {
 
-    @SPARQLIgnore
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "subClassOf",
+            required = true,
+            inverse = true
+    )
     URI domain;
+    public static final String DOMAIN_FIELD = "domain";
 
     @SPARQLProperty(
             ontology = OWL2.class,
@@ -53,13 +59,12 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
 
 
     @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "subClassOf",
-            required = true,
-            inverse = true
+            ontology = OWL2.class,
+            property = ON_CLASS
     )
     ClassModel onClass;
-    public static final String ON_CLASS_FIELD = "onClass";
+    public static final String ON_CLASS = "onClass";
+
 
     @SPARQLProperty(
             ontology = OWL2.class,

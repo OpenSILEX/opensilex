@@ -54,7 +54,7 @@ class OntologyStoreLoader {
     protected static final Var ROOT_PROPERTY_TYPE_VAR = makeVar("propertyType");
 
     protected static final Var ON_PROPERTY_VAR = makeVar(OwlRestrictionModel.ON_PROPERTY_FIELD);
-    protected static final Var ON_CLASS_VAR = makeVar(OwlRestrictionModel.ON_CLASS_FIELD);
+    protected static final Var ON_CLASS_VAR = makeVar(OwlRestrictionModel.ON_CLASS);
 
     private static final Node OWL_DATATYPE_PROPERTY = NodeFactory.createURI(OWL2.DatatypeProperty.getURI());
     private static final Node OWL_OBJECT_PROPERTY = NodeFactory.createURI(OWL2.ObjectProperty.getURI());
@@ -111,11 +111,13 @@ class OntologyStoreLoader {
     private void fromResult(SPARQLResult result, OwlRestrictionModel model) throws Exception {
 
         model.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
-        model.setOnProperty(URIDeserializer.formatURI(result.getStringValue(OwlRestrictionModel.ON_PROPERTY_FIELD)));
         model.setType(AbstractOntologyStore.OWL_ROOT_RESTRICTION_MODEL.getUri());
         model.setTypeLabel(AbstractOntologyStore.OWL_ROOT_RESTRICTION_MODEL.getTypeLabel());
 
-        String onClass = result.getStringValue(OwlRestrictionModel.ON_CLASS_FIELD);
+        model.setOnProperty(URIDeserializer.formatURI(result.getStringValue(OwlRestrictionModel.ON_PROPERTY_FIELD)));
+        model.setDomain(URIDeserializer.formatURI(result.getStringValue(OwlRestrictionModel.DOMAIN_FIELD)));
+
+        String onClass = result.getStringValue(OwlRestrictionModel.ON_CLASS);
         if (!StringUtils.isEmpty(onClass)) {
             ClassModel onClassModel = new ClassModel();
             onClassModel.setUri(URIDeserializer.formatURI(onClass));
@@ -225,31 +227,29 @@ class OntologyStoreLoader {
 
     }
 
-    List<OwlRestrictionModel> getRestrictions() throws SPARQLException {
+    List<OwlRestrictionModel> getRestrictions() throws Exception {
 
-        try {
-            return sparql.searchAsStream(
-                    null,
-                    OwlRestrictionModel.class,
-                    null,
-                    select -> {
-                        select.addFilter(exprFactory.isIRI(ON_CLASS_VAR));
-                        select.addFilter(exprFactory.isIRI(ON_PROPERTY_VAR));
-                    },
-                    Collections.emptyMap(),
-                    result -> {
-                        OwlRestrictionModel model = new OwlRestrictionModel();
-                        fromResult(result, model);
-                        return model;
-                    },
-                    Collections.emptyList(),
-                    null,
-                    null
-            ).collect(Collectors.toList());
+        return sparql.searchAsStream(
+                null,
+                OwlRestrictionModel.class,
+                null,
+                select -> {
+                    select.addFilter(exprFactory.and(
+                            exprFactory.isIRI(ON_PROPERTY_VAR),
+                            exprFactory.isIRI(DOMAIN_VAR)
+                    ));
+                },
+                Collections.emptyMap(),
+                result -> {
+                    OwlRestrictionModel model = new OwlRestrictionModel();
+                    fromResult(result, model);
+                    return model;
+                },
+                Collections.emptyList(),
+                null,
+                null
+        ).collect(Collectors.toList());
 
-        } catch (Exception e) {
-            throw new SPARQLException(e);
-        }
     }
 
     private void appendNamesAndComments(SelectBuilder select) {

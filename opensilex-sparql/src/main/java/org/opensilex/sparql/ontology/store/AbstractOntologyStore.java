@@ -117,30 +117,36 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     public void load() throws SPARQLException {
 
-        OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, languages);
+        try {
+            OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, languages);
+            clear();
 
-        // Initial classes loading
-        Instant begin = Instant.now();
-        List<ClassModel> classes = storeLoader.getClasses();
-        addAll(classes);
-        long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-        LOGGER.info(STORE_LOADING_MSG, classes.size(), "classes", elapsedMs);
+            // Initial classes loading
+            Instant begin = Instant.now();
+            List<ClassModel> classes = storeLoader.getClasses();
+            addAll(classes);
+            long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(STORE_LOADING_MSG, classes.size(), "classes", elapsedMs);
 
+            // Initial properties loading
+            begin = Instant.now();
+            List<AbstractPropertyModel> properties = storeLoader.getProperties();
+            addAll(properties);
+            linkPropertiesWithClasses(properties);
+            elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(STORE_LOADING_MSG, properties.size(), "properties", elapsedMs);
 
-        // Initial properties loading
-        begin = Instant.now();
-        List<AbstractPropertyModel> properties = storeLoader.getProperties();
-        addAll(properties);
-        linkPropertiesWithClasses(properties);
-        elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-        LOGGER.info(STORE_LOADING_MSG, properties.size(), "properties", elapsedMs);
+            // Initial OWL restrictions loading
+            begin = Instant.now();
+            List<OwlRestrictionModel> restrictions = storeLoader.getRestrictions();
+            linkRestrictions(restrictions);
+            elapsedMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(STORE_LOADING_MSG, restrictions.size(), "restrictions", elapsedMs);
 
-        // Initial OWL restrictions loading
-        begin = Instant.now();
-        List<OwlRestrictionModel> restrictions = storeLoader.getRestrictions();
-        linkRestrictions(restrictions);
-        elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-        LOGGER.info(STORE_LOADING_MSG, restrictions.size(), "restriction", elapsedMs);
+        } catch (Exception e) {
+            throw new SPARQLException(e);
+        }
+
     }
 
     public void clear() {
@@ -241,22 +247,38 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         }
     }
 
-    private void linkRestrictions(Collection<OwlRestrictionModel> models) throws SPARQLException {
+    private void linkRestrictions(Collection<OwlRestrictionModel> restrictions) throws SPARQLException {
 
-        for (OwlRestrictionModel model : models) {
-            ClassModel onClass = model.getOnClass();
-            if (onClass == null || onClass.getUri() == null) {
-                throw new IllegalArgumentException("Null class URI for restriction : " + model.getUri());
+        for (OwlRestrictionModel restriction : restrictions) {
+
+            Objects.requireNonNull(restriction.getDomain());
+            ClassModel restrictedClass = getClassModel(restriction.getDomain());
+
+            // update onClass with complete ClassModel from store
+            ClassModel onClass = restriction.getOnClass();
+            if (onClass != null && onClass.getUri() != null) {
+                restriction.setOnClass(getClassModel(onClass.getUri()));
             }
-            ClassModel classModel = getClassModel(onClass.getUri());
 
-            URI property = model.getOnProperty();
+            URI property = restriction.getOnProperty();
             if (property == null) {
-                throw new IllegalArgumentException("Null property URI for restriction : " + model.getUri());
+                throw new IllegalArgumentException("Null property URI for restriction : " + restriction.getUri());
             }
+
+            // check that property exist
             AbstractPropertyModel<?> propertyModel = getProperty(property, null, null);
-            // #TODO check coherence between prop and restriction onClass, fill the
-            classModel.getRestrictions().put(model.getUri(), model);
+
+            if (restriction.getDomain() == null) {
+                restriction.setDomain(propertyModel.getDomain().getUri());
+            }
+            if (restriction.getOnDataRange() == null) {
+                if (propertyModel instanceof DatatypePropertyModel) {
+                    restriction.setOnDataRange(((DatatypePropertyModel) propertyModel).getRange());
+                } else if (propertyModel instanceof ObjectPropertyModel) {
+                    restriction.setOnClass(((ObjectPropertyModel) propertyModel).getRange());
+                }
+            }
+            restrictedClass.getRestrictions().put(restriction.getUri(), restriction);
         }
 
     }
@@ -287,6 +309,16 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                     classModel.getRestrictions().put(ancestorRestriction.getUri(), ancestorRestriction)
             );
         }
+    }
+
+    private void addPropertiesFromSubClass(ClassModel classModel) {
+
+        classModel.visit(child -> {
+            if (classModel != child) {
+                classModel.getDatatypeProperties().putAll(child.getDatatypeProperties());
+                classModel.getObjectProperties().putAll(child.getObjectProperties());
+            }
+        });
     }
 
     private void handleLang(String lang, VocabularyModel<?> model) {
@@ -373,14 +405,22 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     }
 
     @Override
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws SPARQLException {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException {
+
         ClassModel classModel = getClassModel(domain, null, lang);
+        if (includeSubClasses) {
+            addPropertiesFromSubClass(classModel);
+        }
         return new SPARQLTreeListModel<>(classModel.getDatatypeProperties().values(), OWL_DATATYPE_PROPERTY_MODEL.getUri(), true, true);
+
     }
 
     @Override
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws SPARQLException {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException {
         ClassModel classModel = getClassModel(domain, null, lang);
+        if (includeSubClasses) {
+            addPropertiesFromSubClass(classModel);
+        }
         return new SPARQLTreeListModel<>(classModel.getObjectProperties().values(), OWL_OBJECT_PROPERTY_MODEL.getUri(), true, true);
     }
 

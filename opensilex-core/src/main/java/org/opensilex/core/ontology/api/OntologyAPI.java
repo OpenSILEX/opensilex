@@ -327,8 +327,8 @@ public class OntologyAPI {
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                ontologyStore.searchDataProperties(domainURI, currentUser.getLanguage()),
-                ontologyStore.searchObjectProperties(domainURI, currentUser.getLanguage()))
+                ontologyStore.searchDataProperties(domainURI, currentUser.getLanguage(),true),
+                ontologyStore.searchObjectProperties(domainURI, currentUser.getLanguage(),true))
         );
         return new ResourceTreeResponse(properties).getResponse();
     }

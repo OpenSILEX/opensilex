@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -484,8 +485,44 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
             assertNotNull(uri);
             model.setUri(uri);
         }
-
     }
 
+    @Test
+    public void testLoadByUris() throws Exception {
+
+        A a1 = new A();
+        A a2 = new A();
+        sparql.create(a1);
+        sparql.create(a2);
+
+        List<A> loadedList = sparql.loadListByURIs(A.class,Arrays.asList(a1.getUri(),a2.getUri()),OpenSilex.DEFAULT_LANGUAGE);
+        assertTrue(loadedList.contains(a1));
+        assertTrue(loadedList.contains(a2));
+        assertEquals(2,loadedList.size());
+
+        // try to insert doublons, ensure loading is OK
+        loadedList = sparql.loadListByURIs(A.class,Arrays.asList(a1.getUri(),a2.getUri(),a1.getUri()),OpenSilex.DEFAULT_LANGUAGE);
+        assertTrue(loadedList.contains(a1));
+        assertTrue(loadedList.contains(a2));
+        assertEquals(2,loadedList.size());
+    }
+
+    @Test
+    public void testLoadByUrisFail() throws Exception{
+
+        A a1 = new A();
+        A a2 = new A();
+        sparql.create(a1);
+        sparql.create(a2);
+
+        URI unknownUri = URI.create("test:testLoadByUrisFail");
+
+        // try to trigger exception throw
+        SPARQLInvalidUriListException loadExpectedEx = assertThrows(SPARQLInvalidUriListException.class, () -> {
+            sparql.loadListByURIs(A.class, Arrays.asList(a1.getUri(), a2.getUri(), unknownUri), OpenSilex.DEFAULT_LANGUAGE);
+        });
+
+        assertTrue(loadExpectedEx.getUris().contains(unknownUri));
+    }
 
 }

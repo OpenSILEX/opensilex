@@ -447,10 +447,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             return Collections.emptyList();
         }
 
+        Set<URI> uniqueUris = new HashSet<>(uris);
+
         SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang);
 
-        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(uris);
+        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(uniqueUris);
         select.addValueVar(mapper.getURIFieldExprVar(), uriNodes);
 
         String finalLang = lang != null ? lang : getDefaultLang();
@@ -467,17 +469,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                         throw new RuntimeException(new SPARQLException(e));
                     }
                 }
-        ).collect(Collectors.toCollection(() -> new ArrayList<>(uris.size())));
+        ).collect(Collectors.toCollection(() -> new ArrayList<>(uniqueUris.size())));
 
         // check that all URIS have been loaded, if not then throw SPARQLInvalidUriListException
-        if (results.size() < uris.size()) {
+        if (results.size() < uniqueUris.size()) {
 
             Set<String> existingUris = results.stream()
                     .map(result -> SPARQLDeserializers.getShortURI(result.getUri()))
                     .collect(Collectors.toSet());
 
             // compute the list of URI from input uris which were not found from results
-            List<URI> unknownUris = uris.stream()
+            List<URI> unknownUris = uniqueUris.stream()
                     .filter(uri -> !existingUris.contains(SPARQLDeserializers.getShortURI(uri)))
                     .collect(Collectors.toList());
 

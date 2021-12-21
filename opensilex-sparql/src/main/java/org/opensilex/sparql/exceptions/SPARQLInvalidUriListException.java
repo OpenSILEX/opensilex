@@ -18,7 +18,11 @@ public class SPARQLInvalidUriListException extends SPARQLException {
        setField(field);
     }
 
-    public String getUris() {
+    public Collection<URI> getUris() {
+        return uris;
+    }
+
+    public String getStrUris() {
         if (uris.isEmpty()) {
             return null;
         } else {

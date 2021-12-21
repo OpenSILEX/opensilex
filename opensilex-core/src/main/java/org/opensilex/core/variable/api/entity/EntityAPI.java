@@ -131,7 +131,7 @@ public class EntityAPI {
             return new PaginatedListResponse<>(resultDTOList).getResponse();
 
         }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Entities not found", e.getUris()).getResponse();
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Entities not found", e.getStrUris()).getResponse();
         }
 
     }

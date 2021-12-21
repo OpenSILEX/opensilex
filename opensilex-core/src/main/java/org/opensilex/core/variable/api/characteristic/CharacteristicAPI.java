@@ -133,7 +133,7 @@ public class CharacteristicAPI {
             return new PaginatedListResponse<>(resultDTOList).getResponse();
 
         }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getUris()).getResponse();
+            return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getStrUris()).getResponse();
         }
     }
     

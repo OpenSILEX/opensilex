@@ -26,6 +26,8 @@ public interface PropertyModel {
 
     void setDomain(ClassModel domain);
 
+    URI getRangeURI();
+
     URI getTypeRestriction();
 
     void setTypeRestriction(URI typeRestriction);

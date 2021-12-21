@@ -1192,14 +1192,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }
 
-        if(MapUtils.isEmpty(classModel.getRestrictions())){
+        if(MapUtils.isEmpty(classModel.getRestrictionsByProperties())){
             return;
         }
 
         Set<String> managedPropUris = mapper.getClassAnalizer().getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
-        Set<URI> customProperties = classModel.getRestrictions()
+        Set<URI> customProperties = classModel.getRestrictionsByProperties()
                 .values()
                 .stream()
                 .map(OwlRestrictionModel::getOnProperty)

@@ -9,10 +9,7 @@ import io.swagger.annotations.*;
 import org.apache.jena.graph.Node;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
-import org.opensilex.sparql.ontology.dal.*;
-import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -27,6 +24,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -145,11 +143,12 @@ public class OntologyAPI {
             @ApiParam(value = "RDF classes URI") @QueryParam("rdf_type") @NotNull @ValidURI List<URI> rdfTypes,
             @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentType
     ) throws Exception {
-        OntologyDAO dao = new OntologyDAO(sparql);
+
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<RDFTypeDTO> classes = new ArrayList<>(rdfTypes.size());
         for (URI rdfType : rdfTypes) {
-            ClassModel model = dao.getClassModel(rdfType, parentType, currentUser.getLanguage());
+            ClassModel model = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
             classes.add(new RDFTypeDTO(model));
         }
 
@@ -345,10 +344,9 @@ public class OntologyAPI {
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
 
-        OntologyCache cache = CoreModule.getOntologyCacheInstance();
-
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
-                cache.searchDataProperties(domainURI, currentUser.getLanguage())
+                ontologyStore.searchDataProperties(domainURI, currentUser.getLanguage(),true)
         );
         return new ResourceTreeResponse(properties).getResponse();
     }
@@ -366,10 +364,10 @@ public class OntologyAPI {
             @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
     ) throws Exception {
 
-        OntologyCache cache = CoreModule.getOntologyCacheInstance();
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
-                cache.searchObjectProperties(domainURI, currentUser.getLanguage())
+                ontologyStore.searchObjectProperties(domainURI, currentUser.getLanguage(),true)
         );
         return new ResourceTreeResponse(properties).getResponse();
     }

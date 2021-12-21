@@ -5,15 +5,15 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
-import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.csv.dal.error.CSVValidationModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.utils.ClassUtils;
@@ -252,7 +252,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
             String propValue = row[i];
             URI property = propsIt.next();
-            OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
+            OwlRestrictionModel propertyRestriction = classModel.getRestrictionsByProperties().get(property);
 
             boolean nullOrEmpty = StringUtils.isEmpty(propValue);
 
@@ -288,7 +288,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             // compute the list of required property excluded from the custom properties list
             missedRequiredProperties = new LinkedList<>();
 
-            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
+            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictionsByProperties().entrySet()) {
                 if (entry.getValue().isRequired() && !customProperties.contains(entry.getKey())) {
                     missedRequiredProperties.add(entry.getKey());
                 }

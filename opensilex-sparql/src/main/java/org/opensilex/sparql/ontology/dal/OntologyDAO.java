@@ -46,8 +46,8 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -239,7 +239,7 @@ public final class OntologyDAO {
         for(OwlRestrictionModel restriction : restrictions){
             addRestriction(restriction, mergedRestrictions, datatypePropertiesURI, objectPropertiesURI);
         }
-        model.setRestrictions(mergedRestrictions);
+        model.setRestrictionsByProperties(mergedRestrictions);
 
         buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI);
     }
@@ -253,7 +253,7 @@ public final class OntologyDAO {
             SPARQLResourceModel object
     ) {
 
-        OwlRestrictionModel restriction = model.getRestrictions().get(propertyURI);
+        OwlRestrictionModel restriction = model.getRestrictionsByProperties().get(propertyURI);
         boolean nullOrEmpty = (value == null || value.isEmpty());
         if (restriction != null) {
             if (restriction.isRequired() && nullOrEmpty) {

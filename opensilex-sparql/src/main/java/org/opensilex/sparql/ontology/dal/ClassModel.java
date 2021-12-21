@@ -14,12 +14,10 @@ import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author vince
@@ -49,6 +47,10 @@ public class ClassModel extends VocabularyModel<ClassModel> {
 
     protected Set<ClassModel> parents;
 
+    protected Map<URI, DatatypePropertyModel> datatypeProperties = new HashMap<>();
+    protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
+    protected Map<URI, OwlRestrictionModel> restrictionsByProperties = new HashMap<>();
+
     public ClassModel() {
         super();
         children = new LinkedList<>();
@@ -69,36 +71,26 @@ public class ClassModel extends VocabularyModel<ClassModel> {
 
         datatypeProperties = other.getDatatypeProperties();
         objectProperties = other.getObjectProperties();
-        restrictions = other.getRestrictions();
-    }
-
-    /**
-     * Copy constructor
-     *
-     * @param classModel   class to copy
-     * @param readChildren flag which indicate if this constructor must iterate over classModel children
-     */
-    public ClassModel(ClassModel classModel, boolean readChildren) {
+        restrictionsByProperties = other.getRestrictionsByProperties();
     }
 
 
-    protected Map<URI, DatatypePropertyModel> datatypeProperties = new HashMap<>();
-    protected Map<URI, ObjectPropertyModel> objectProperties = new HashMap<>();
-    protected Map<URI, OwlRestrictionModel> restrictions = new HashMap<>();
-
-
+    @Override
     public SPARQLLabel getLabel() {
         return label;
     }
 
+    @Override
     public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
 
+    @Override
     public SPARQLLabel getComment() {
         return comment;
     }
 
+    @Override
     public void setComment(SPARQLLabel comment) {
         this.comment = comment;
     }
@@ -119,19 +111,18 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         this.objectProperties = objectProperties;
     }
 
-    public Map<URI, OwlRestrictionModel> getRestrictions() {
-        return restrictions;
+    public Map<URI, OwlRestrictionModel> getRestrictionsByProperties() {
+        return restrictionsByProperties;
     }
 
-    public void setRestrictions(Map<URI, OwlRestrictionModel> restrictions) {
-        this.restrictions = restrictions;
+    public void setRestrictionsByProperties(Map<URI, OwlRestrictionModel> restrictionsByProperties) {
+        this.restrictionsByProperties = restrictionsByProperties;
     }
 
     public boolean isDatatypePropertyRestriction(URI datatype) {
         if (datatype == null) {
             return false;
         }
-
         return getDatatypeProperties().containsKey(datatype);
     }
 
@@ -139,8 +130,15 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         if (classURI == null) {
             return false;
         }
-
         return getObjectProperties().containsKey(classURI);
+    }
+
+    public boolean isInherited(OwlRestrictionModel restriction){
+        if(! restrictionsByProperties.containsKey(restriction.getUri())){
+            return false;
+        }
+        //  restriction is inherited if the restriction has a different domain than this Class URI
+        return ! uri.equals(restriction.getDomain());
     }
 
     public PropertyModel getDatatypeProperty(URI propertyURI) {

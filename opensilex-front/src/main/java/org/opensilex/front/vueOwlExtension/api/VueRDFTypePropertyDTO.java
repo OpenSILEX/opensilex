@@ -6,11 +6,15 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
+import org.opensilex.sparql.ontology.dal.*;
+
 import java.net.URI;
 import java.util.Map;
 
 /**
- *
  * @author vmigot
  */
 public class VueRDFTypePropertyDTO {
@@ -43,6 +47,56 @@ public class VueRDFTypePropertyDTO {
 
     @JsonProperty("is_custom")
     protected boolean isCustom;
+
+    public VueRDFTypePropertyDTO() {
+    }
+
+    private void fromModel(ClassModel classModel, AbstractPropertyModel<?> propertyModel) {
+
+        setIsCustom(false);
+        setProperty(propertyModel.getUri());
+        setName(propertyModel.getName());
+        if (propertyModel.getComment() != null) {
+            setComment(propertyModel.getComment().getDefaultValue());
+        }
+
+        OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(propertyModel.getUri());
+        setIsList(restriction.isList());
+        setIsRequired(restriction.isRequired());
+        setInherited(classModel.isInherited(restriction));
+    }
+
+    public VueRDFTypePropertyDTO(ClassModel classModel, DatatypePropertyModel propertyModel) {
+        fromModel(classModel, propertyModel);
+
+        if(propertyModel.getRange() == null){
+            return;
+        }
+        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(propertyModel.getRange());
+        if (vueType != null) {
+            setTargetProperty(propertyModel.getRange());
+            setInputComponent(vueType.getInputComponent());
+            setViewComponent(vueType.getViewComponent());
+            setIsCustom(true);
+        }
+    }
+
+    public VueRDFTypePropertyDTO(ClassModel classModel, ObjectPropertyModel propertyModel) {
+        fromModel(classModel, propertyModel);
+
+        if(propertyModel.getRange() == null){
+            return;
+        }
+
+        VueOntologyObjectType vueType = (VueOntologyObjectType) VueOwlExtensionDAO.getVueType(propertyModel.getRange().getUri());
+        if (vueType != null) {
+            setTargetProperty(propertyModel.getRange().getUri());
+            setInputComponent(vueType.getInputComponent());
+            setInputComponentsByProperty(vueType.getInputComponentsMap());
+            setViewComponent(vueType.getViewComponent());
+            setIsCustom(true);
+        }
+    }
 
     public URI getProperty() {
         return property;

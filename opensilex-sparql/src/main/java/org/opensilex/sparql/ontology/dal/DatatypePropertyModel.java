@@ -18,15 +18,12 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -108,4 +105,8 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
         this.parents = parents;
     }
 
+    @Override
+    public URI getRangeURI() {
+        return range;
+    }
 }

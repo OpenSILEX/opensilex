@@ -5,7 +5,6 @@ import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -207,7 +206,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
             // Create class copy, initially results from the SPARQL service are instance of SPARQLProxy, which handle the lazy-loading.
             // In case of caching, we prefer to retrieve all about a ClassModel during the registering of the Class into the cache,
             // and to minimize latency in further call (proxy handling comes with additional costs, not needed here).
-            ClassModel classCopy = isRoot ? new ClassModel(classModel, true) : classModel;
+            ClassModel classCopy = classModel;
 
             ClassEntry entry = new ClassEntry();
             entry.classModel = classCopy;
@@ -573,7 +572,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (classModel == null) {
             return;
         }
-        classModel.getRestrictions().put(restriction.getUri(), restriction);
+        classModel.getRestrictionsByProperties().put(restriction.getUri(), restriction);
     }
 
     @Override
@@ -585,7 +584,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (classModel == null) {
             return;
         }
-        classModel.getRestrictions().replace(restriction.getUri(), restriction);
+        classModel.getRestrictionsByProperties().replace(restriction.getUri(), restriction);
     }
 
     @Override
@@ -595,7 +594,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         if (classModel == null) {
             return;
         }
-        classModel.getRestrictions().remove(restrictionUri);
+        classModel.getRestrictionsByProperties().remove(restrictionUri);
     }
 
     @Override

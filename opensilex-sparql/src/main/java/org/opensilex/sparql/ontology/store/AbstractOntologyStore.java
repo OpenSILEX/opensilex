@@ -48,6 +48,8 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOntologyStore.class);
 
     private final SPARQLService sparql;
+    private final OntologyDAO ontologyDAO;
+
     private final List<String> languages;
     private static final String NO_LANG = "";
 
@@ -69,6 +71,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         Objects.requireNonNull(sparql);
         this.sparql = sparql;
+        ontologyDAO = new OntologyDAO(sparql);
 
         // get languages from server config and append empty language code
         ServerModule serverModule = openSilex.getModuleByClass(ServerModule.class);
@@ -230,19 +233,30 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         for (AbstractPropertyModel<?> property : properties) {
 
+            // replace partial domain ClassModel by full ClassModel
             ClassModel domain = property.getDomain();
             if (domain == null || domain.getUri() == null) {
                 LOGGER.warn("NULL domain for property {}", property.getUri());
-                continue;
+            }else{
+                ClassModel existingDomain = getClassModel(domain.getUri());
+                property.setDomain(existingDomain);
+
+                if (property instanceof DatatypePropertyModel) {
+                    existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
+                } else if (property instanceof ObjectPropertyModel) {
+                    ObjectPropertyModel objectProperty = (ObjectPropertyModel) property;
+                    existingDomain.getObjectProperties().put(property.getUri(), objectProperty);
+                }
             }
 
-            ClassModel existingDomain = getClassModel(domain.getUri());
-            property.setDomain(existingDomain);
-
-            if (property instanceof DatatypePropertyModel) {
-                existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
+            URI rangeURI = property.getRangeURI();
+            if (rangeURI == null) {
+                LOGGER.warn("NULL range for property {}", property.getUri());
             } else if (property instanceof ObjectPropertyModel) {
-                existingDomain.getObjectProperties().put(property.getUri(), (ObjectPropertyModel) property);
+
+                // replace partial range ClassModel by full ClassModel
+                ClassModel existingRange = getClassModel(rangeURI);
+                ((ObjectPropertyModel) property).setRange(existingRange);
             }
         }
     }
@@ -278,7 +292,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                     restriction.setOnClass(((ObjectPropertyModel) propertyModel).getRange());
                 }
             }
-            restrictedClass.getRestrictions().put(restriction.getUri(), restriction);
+            restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
 
     }
@@ -305,8 +319,8 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         // append inherited OWL restrictions
         for (String ancestor : ancestors) {
             ClassModel ancestorModel = (ClassModel) modelsByUris.get(ancestor);
-            ancestorModel.getRestrictions().values().forEach(ancestorRestriction ->
-                    classModel.getRestrictions().put(ancestorRestriction.getUri(), ancestorRestriction)
+            ancestorModel.getRestrictionsByProperties().values().forEach(ancestorRestriction ->
+                    classModel.getRestrictionsByProperties().put(ancestorRestriction.getUri(), ancestorRestriction)
             );
         }
     }

@@ -13,15 +13,12 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author vmigot
@@ -108,5 +105,10 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
     @Override
     public void setParents(Set<ObjectPropertyModel> parents) {
         this.parents = parents;
+    }
+
+    @Override
+    public URI getRangeURI() {
+        return range == null ? null : range.getUri();
     }
 }

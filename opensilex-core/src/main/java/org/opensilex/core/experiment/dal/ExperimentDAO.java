@@ -93,7 +93,12 @@ public class ExperimentDAO {
     }
 
     public ExperimentModel get(URI xpUri, UserModel user) throws Exception {
-        validateExperimentAccess(xpUri, user);
+        try {
+            validateExperimentAccess(xpUri, user);
+        } catch (Exception ex) {
+            throw ex ;
+        }
+
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
         return xp;
     }
@@ -468,7 +473,7 @@ public class ExperimentDAO {
             ExperimentModel.class,
             null,
             (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.NAME_FIELD, name));
+                appendRegexLabelFilter(select, name);
             },
             null,
             0,

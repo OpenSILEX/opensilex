@@ -908,12 +908,12 @@ public class ScientificObjectDAO {
                 ScientificObjectModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    appendStrictNameFilter(select, objectName);
+                    appendNameFilter(select, objectName);
                 },
                 null,
                 null,
                 null,
-                0, 1
+                0, 2
         );
         if (searchWithPagination.getList().isEmpty()) {
             return null;
@@ -936,6 +936,12 @@ public class ScientificObjectDAO {
 
     private void appendStrictNameFilter(SelectBuilder select, String name) throws Exception {
         select.addFilter(SPARQLQueryHelper.eq(ScientificObjectModel.NAME_FIELD, name));
+    }
+
+    private void appendNameFilter(SelectBuilder select, String name) throws Exception {
+        if (!StringUtils.isEmpty(name)) {
+            select.addFilter(SPARQLQueryHelper.regexFilter(ScientificObjectModel.NAME_FIELD, name));
+        }
     }
 
      

@@ -1412,6 +1412,11 @@ public class DataAPI {
                                 duplicatedExperiments.add(expNameOrUri);
                                 validRow = false;
                             }
+                        } else {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
+                            csvValidation.addInvalidExperimentError(cell);
+                            validRow = false;
+
                         }
                     }
                 }
@@ -1455,6 +1460,10 @@ public class DataAPI {
                                 validRow = false;
                             }
 
+                        } else {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                            csvValidation.addInvalidTargetError(cell);
+                            validRow = false;
                         }
 
                     }
@@ -1476,7 +1485,6 @@ public class DataAPI {
                         CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
                         csvValidation.addInvalidObjectError(cell);
                         validRow = false;
-                        break;
                     } else {
                         nameURIScientificObjects.put(objectNameOrUri, object);
                     }
@@ -1527,6 +1535,10 @@ public class DataAPI {
                                 duplicatedDevices.add(deviceNameOrUri);
                                 validRow = false;
                             }
+                        } else {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
+                            csvValidation.addInvalidDeviceError(cell);
+                            validRow = false;
                         }
 
                     }    
@@ -1700,12 +1712,16 @@ public class DataAPI {
 
 
     private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
-        ExperimentModel exp;
+        ExperimentModel exp = null;
         if (URIDeserializer.validateURI(expNameOrUri)) {
             URI expUri = URI.create(expNameOrUri);
-            exp = xpDAO.get(expUri, user);
+            try {
+                exp = xpDAO.get(expUri, user);
+            } catch (Exception ex) {
+
+            }
         } else {
-            exp = xpDAO.getByName(expNameOrUri);         
+            exp = xpDAO.getByName(expNameOrUri);
         }
         return exp;
     }
@@ -1716,7 +1732,12 @@ public class DataAPI {
             URI deviceURI = URI.create(deviceNameOrUri);
             device = deviceDAO.getDeviceByURI(deviceURI, user);
         } else {
-            device = deviceDAO.getByName(deviceNameOrUri);
+            try {
+                device = deviceDAO.getByName(deviceNameOrUri);
+            } catch (Exception ex) {
+                throw ex;
+            }
+
         }
         return device;
     }

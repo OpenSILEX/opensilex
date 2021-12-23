@@ -219,7 +219,7 @@ public class ProvenanceAPI {
         List<URI> provenances = new ArrayList();
         provenances.add(uri);
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        ListWithPagination<DataModel> dataList = dataDAO.search(
+        int datacount = dataDAO.count(
                 currentUser,
                 null,
                 null,
@@ -230,13 +230,11 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null,
-                null,
-                null,
-                0,
-                1
+                null
+              
         );
         
-        ListWithPagination<DataFileModel> datafilesList = dataDAO.searchFiles(
+       int datafilesCount = dataDAO.countFiles(
                 currentUser,
                 null,
                 null,
@@ -245,20 +243,17 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null,
-                null,
-                null,
-                0,
-                1
+                null
         );
 
-        if (dataList.getTotal() > 0 || datafilesList.getTotal() > 0) {
+        if (datacount > 0 || datafilesCount > 0) {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "The provenance is linked to some data",
                     "You can't delete a provenance linked to data"
             ).getResponse();
         } else {
-            try {
+            try { 
                 dao.delete(uri);
                 return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 

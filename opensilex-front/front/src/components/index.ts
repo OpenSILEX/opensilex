@@ -380,7 +380,8 @@ import GermplasmHelp from './germplasm/GermplasmHelp.vue';
 components["opensilex-GermplasmHelp"] = GermplasmHelp;
 import GermplasmSelector from './germplasm/GermplasmSelector.vue';
 components["opensilex-GermplasmSelector"] = GermplasmSelector;
-
+import GermplasmAttributesSelector from './germplasm/GermplasmAttributesSelector.vue';
+components["opensilex-GermplasmAttributesSelector"] = GermplasmAttributesSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

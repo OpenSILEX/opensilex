@@ -332,6 +332,31 @@ public class GermplasmAPI {
         // Return paginated list of exp DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+    
+    /**
+     * 
+     * @return
+     * @throws java.lang.Exception
+     */
+    @GET
+    @Path("attributes")
+    @ApiOperation("Get attributes of all germplasm")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return germplasm attributes", response = ExperimentGetListDTO.class, responseContainer = "List"),
+//        @ApiResponse(code = 400, message = "Bad user request", response = ErrorDTO.class),
+        @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
+    })
+    public Response getGermplasmAttributes() throws Exception {
+        // Get germplasm from DAO by URI
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        List<String> distinctAttributes = germplasmDAO.getDistinctGermplasAttributes();
+
+        // Return list of
+        return new SingleObjectResponse<>(distinctAttributes).getResponse();
+    }
 
     /**
      *

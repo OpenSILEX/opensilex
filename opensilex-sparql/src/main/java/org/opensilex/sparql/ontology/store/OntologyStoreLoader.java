@@ -8,6 +8,7 @@
 
 package org.opensilex.sparql.ontology.store;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -49,12 +50,12 @@ class OntologyStoreLoader {
 
     protected static final Var URI_VAR = makeVar(SPARQLResourceModel.URI_FIELD);
     protected static final Var PARENT_VAR = makeVar(SPARQLTreeModel.PARENT_FIELD);
-    protected static final Var DOMAIN_VAR = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
-    protected static final Var RANGE_VAR = makeVar(AbstractPropertyModel.RANGE_FIELD);
+    protected static final Var PROPERTY_DOMAIN_VAR = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
+    protected static final Var PROPERTY_RANGE_VAR = makeVar(AbstractPropertyModel.RANGE_FIELD);
     protected static final Var ROOT_PROPERTY_TYPE_VAR = makeVar("propertyType");
 
     protected static final Var ON_PROPERTY_VAR = makeVar(OwlRestrictionModel.ON_PROPERTY_FIELD);
-    protected static final Var ON_CLASS_VAR = makeVar(OwlRestrictionModel.ON_CLASS);
+    protected static final Var RESTRICTION_DOMAIN_VAR = makeVar(OwlRestrictionModel.DOMAIN_FIELD);
 
     private static final Node OWL_DATATYPE_PROPERTY = NodeFactory.createURI(OWL2.DatatypeProperty.getURI());
     private static final Node OWL_OBJECT_PROPERTY = NodeFactory.createURI(OWL2.ObjectProperty.getURI());
@@ -66,6 +67,9 @@ class OntologyStoreLoader {
     OntologyStoreLoader(SPARQLService sparql, List<String> languages) {
         this.sparql = sparql;
 
+        if (CollectionUtils.isEmpty(languages)) {
+            throw new IllegalArgumentException("Languages must not be null or empty");
+        }
         this.languages = languages;
         commentVars = languages.stream()
                 .map(lang -> getLangVar(TranslatedModel.COMMENT_FIELD, lang))
@@ -233,12 +237,10 @@ class OntologyStoreLoader {
                 null,
                 OwlRestrictionModel.class,
                 null,
-                select -> {
-                    select.addFilter(exprFactory.and(
-                            exprFactory.isIRI(ON_PROPERTY_VAR),
-                            exprFactory.isIRI(DOMAIN_VAR)
-                    ));
-                },
+                select -> select.addFilter(exprFactory.and(
+                        exprFactory.isIRI(ON_PROPERTY_VAR),
+                        exprFactory.isIRI(RESTRICTION_DOMAIN_VAR)
+                )),
                 Collections.emptyMap(),
                 result -> {
                     OwlRestrictionModel model = new OwlRestrictionModel();
@@ -317,8 +319,8 @@ class OntologyStoreLoader {
                 .addVar(URI_VAR)
                 .addVar(ROOT_PROPERTY_TYPE_VAR)
                 .addVar(PARENT_VAR)
-                .addVar(RANGE_VAR)
-                .addVar(DOMAIN_VAR)
+                .addVar(PROPERTY_RANGE_VAR)
+                .addVar(PROPERTY_DOMAIN_VAR)
                 .addWhere(URI_VAR, RDF.type, ROOT_PROPERTY_TYPE_VAR)
                 .addFilter(exprFactory.isIRI(URI_VAR))
                 .addOptional(new WhereBuilder()
@@ -327,12 +329,12 @@ class OntologyStoreLoader {
                         .addFilter(exprFactory.isIRI(PARENT_VAR))
                 )
                 .addOptional(new WhereBuilder()
-                        .addWhere(URI_VAR, RDFS.domain, DOMAIN_VAR)
-                        .addFilter(exprFactory.isIRI(DOMAIN_VAR))
+                        .addWhere(URI_VAR, RDFS.domain, PROPERTY_DOMAIN_VAR)
+                        .addFilter(exprFactory.isIRI(PROPERTY_DOMAIN_VAR))
                 )
                 .addOptional(new WhereBuilder().
-                        addWhere(URI_VAR, RDFS.range, RANGE_VAR)
-                        .addFilter(exprFactory.isIRI(RANGE_VAR))
+                        addWhere(URI_VAR, RDFS.range, PROPERTY_RANGE_VAR)
+                        .addFilter(exprFactory.isIRI(PROPERTY_RANGE_VAR))
                 )
                 .addOrderBy(URI_VAR);
 

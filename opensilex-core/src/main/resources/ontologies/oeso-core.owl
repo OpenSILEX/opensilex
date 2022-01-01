@@ -877,6 +877,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Characteristic -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Characteristic">
+        <rdfs:label xml:lang="fr">Caractéristique</rdfs:label>
+        <rdfs:label xml:lang="en">Characteristic</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
@@ -1004,6 +1006,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Entity">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+        <rdfs:label xml:lang="fr">Entité</rdfs:label>
+        <rdfs:label xml:lang="en">Entity</rdfs:label>
     </owl:Class>
     
 
@@ -1200,6 +1204,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Method -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Method">
+        <rdfs:label xml:lang="fr">Méthode</rdfs:label>
+        <rdfs:label xml:lang="en">Method</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
     </owl:Class>
     
@@ -1474,8 +1480,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Trait -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Trait">
-        <rdfs:isDefinedBy xml:lang="en">Trait</rdfs:isDefinedBy>
-        <rdfs:isDefinedBy xml:lang="fr">Trait</rdfs:isDefinedBy>
+        <rdfs:label xml:lang="en">Trait</rdfs:label>
+        <rdfs:label xml:lang="fr">Trait</rdfs:label>
         <rdfs:isDefinedBy xml:lang="en">http://purl.org/ppeo/PPEO.owl#PPEO_000009</rdfs:isDefinedBy>
     </owl:Class>
     
@@ -1495,6 +1501,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Unit -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Unit">
+        <rdfs:label xml:lang="fr">Unité</rdfs:label>
+        <rdfs:label xml:lang="en">Unit</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
         <rdfs:subClassOf>
             <owl:Restriction>
@@ -1517,6 +1525,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Variable -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Variable">
+        <rdfs:label xml:lang="fr">Variable</rdfs:label>
+        <rdfs:label xml:lang="en">Variable</rdfs:label>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
         <rdfs:subClassOf>
             <owl:Restriction>

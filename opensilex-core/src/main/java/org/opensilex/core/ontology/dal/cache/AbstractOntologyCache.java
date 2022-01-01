@@ -545,22 +545,12 @@ public abstract class AbstractOntologyCache implements OntologyCache {
     @Override
     public void deleteDataProperty(URI propertyURI, URI domain) throws OntologyCacheException {
 
-        Consumer<ClassEntry> deletePropertyConsumer = entry -> {
-            entry.classModel.getDatatypeProperties().remove(propertyURI);
-            entry.dataPropertiesWithDomain.remove(propertyURI);
-        };
-        deleteProperty(domain,deletePropertyConsumer);
+
     }
 
     @Override
     public void deleteObjectProperty(URI propertyURI, URI domain) throws OntologyCacheException {
 
-        Consumer<ClassEntry> deletePropertyConsumer = entry -> {
-            entry.classModel.getObjectProperties().remove(propertyURI);
-            entry.objectPropertiesWithDomain.remove(propertyURI);
-        };
-
-        deleteProperty(domain,deletePropertyConsumer);
     }
 
     @Override

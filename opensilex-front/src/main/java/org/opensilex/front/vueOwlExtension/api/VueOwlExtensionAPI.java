@@ -22,8 +22,7 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -175,10 +174,21 @@ public class VueOwlExtensionAPI {
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         VueOwlExtensionDAO daoExt = new VueOwlExtensionDAO(sparql);
 
-        ClassModel model = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
-        VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, model.getUri(), currentUser.getLanguage());
+        ClassModel classModel = ontologyStore.getClassModel(rdfType, parentType, currentUser.getLanguage());
+        VueClassExtensionModel modelExt = sparql.getByURI(VueClassExtensionModel.class, classModel.getUri(), currentUser.getLanguage());
+        VueRDFTypeDTO vueRDFTypeDTO = new VueRDFTypeDTO(classModel, modelExt);
 
-        VueRDFTypeDTO vueRDFTypeDTO = new VueRDFTypeDTO(model, modelExt);
+        for (OwlRestrictionModel restriction : classModel.getRestrictionsByProperties().values()) {
+            // #TODO avoid casting
+
+            AbstractPropertyModel<?> propertyModel = ontologyStore.getProperty(restriction.getOnProperty(), null, null, currentUser.getLanguage());
+            if (propertyModel instanceof DatatypePropertyModel) {
+                vueRDFTypeDTO.getDataProperties().add(new VueRDFTypePropertyDTO(classModel, (DatatypePropertyModel) propertyModel));
+            } else if (propertyModel instanceof ObjectPropertyModel) {
+                vueRDFTypeDTO.getObjectProperties().add(new VueRDFTypePropertyDTO(classModel, (ObjectPropertyModel) propertyModel));
+            }
+        }
+
         vueRDFTypeDTO.setPropertiesOrder(daoExt.getPropertiesOrder(rdfType, currentUser.getLanguage()));
 
         return new SingleObjectResponse<>(vueRDFTypeDTO).getResponse();

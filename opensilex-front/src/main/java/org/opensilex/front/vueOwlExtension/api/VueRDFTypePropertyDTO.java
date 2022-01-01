@@ -55,7 +55,7 @@ public class VueRDFTypePropertyDTO {
 
         setIsCustom(false);
         setProperty(propertyModel.getUri());
-        setName(propertyModel.getName());
+        setName(propertyModel.getLabel().getDefaultValue());
         if (propertyModel.getComment() != null) {
             setComment(propertyModel.getComment().getDefaultValue());
         }

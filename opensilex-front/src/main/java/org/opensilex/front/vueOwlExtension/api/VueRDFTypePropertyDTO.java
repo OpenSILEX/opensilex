@@ -66,31 +66,28 @@ public class VueRDFTypePropertyDTO {
         setInherited(classModel.isInherited(restriction));
     }
 
-    public VueRDFTypePropertyDTO(ClassModel classModel, DatatypePropertyModel propertyModel) {
+    public VueRDFTypePropertyDTO(ClassModel classModel, DatatypePropertyModel propertyModel,OwlRestrictionModel restriction) {
         fromModel(classModel, propertyModel);
 
-        if(propertyModel.getRange() == null){
-            return;
-        }
-        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(propertyModel.getRange());
+        URI range = propertyModel.getRange() == null ? restriction.getOnDataRange() : propertyModel.getRange();
+
+        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(range);
         if (vueType != null) {
-            setTargetProperty(propertyModel.getRange());
+            setTargetProperty(range);
             setInputComponent(vueType.getInputComponent());
             setViewComponent(vueType.getViewComponent());
             setIsCustom(true);
         }
     }
 
-    public VueRDFTypePropertyDTO(ClassModel classModel, ObjectPropertyModel propertyModel) {
+    public VueRDFTypePropertyDTO(ClassModel classModel, ObjectPropertyModel propertyModel, OwlRestrictionModel restriction) {
         fromModel(classModel, propertyModel);
 
-        if(propertyModel.getRange() == null){
-            return;
-        }
+        URI range = propertyModel.getRange() == null ? restriction.getOnClass().getUri() : propertyModel.getRange().getUri();
 
-        VueOntologyObjectType vueType = (VueOntologyObjectType) VueOwlExtensionDAO.getVueType(propertyModel.getRange().getUri());
+        VueOntologyObjectType vueType = (VueOntologyObjectType) VueOwlExtensionDAO.getVueType(range);
         if (vueType != null) {
-            setTargetProperty(propertyModel.getRange().getUri());
+            setTargetProperty(range);
             setInputComponent(vueType.getInputComponent());
             setInputComponentsByProperty(vueType.getInputComponentsMap());
             setViewComponent(vueType.getViewComponent());

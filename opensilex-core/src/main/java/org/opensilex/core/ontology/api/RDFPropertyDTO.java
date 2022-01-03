@@ -170,8 +170,10 @@ public class RDFPropertyDTO {
         if(model instanceof DatatypePropertyModel){
             setRange(((DatatypePropertyModel) model).getRange());
         }else if(model instanceof ObjectPropertyModel){
-            setRange(((ObjectPropertyModel) model).getRange().getUri());
-            setRangeLabel(((ObjectPropertyModel) model).getRange().getName());
+            if(((ObjectPropertyModel) model).getRange() != null){
+                setRange(((ObjectPropertyModel) model).getRange().getUri());
+                setRangeLabel(((ObjectPropertyModel) model).getRange().getName());
+            }
         }
     }
 

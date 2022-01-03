@@ -311,7 +311,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/properties/{domain}")
+    @Path("/properties")
     @ApiOperation("Search properties tree")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -320,7 +320,7 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getProperties(
-            @ApiParam(value = "Domain URI") @PathParam("domain") @NotNull @ValidURI URI domainURI
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();

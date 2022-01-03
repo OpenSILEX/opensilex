@@ -183,9 +183,9 @@ public class VueOwlExtensionAPI {
 
             AbstractPropertyModel<?> propertyModel = ontologyStore.getProperty(restriction.getOnProperty(), null, null, currentUser.getLanguage());
             if (propertyModel instanceof DatatypePropertyModel) {
-                vueRDFTypeDTO.getDataProperties().add(new VueRDFTypePropertyDTO(classModel, (DatatypePropertyModel) propertyModel));
+                vueRDFTypeDTO.getDataProperties().add(new VueRDFTypePropertyDTO(classModel, (DatatypePropertyModel) propertyModel, restriction));
             } else if (propertyModel instanceof ObjectPropertyModel) {
-                vueRDFTypeDTO.getObjectProperties().add(new VueRDFTypePropertyDTO(classModel, (ObjectPropertyModel) propertyModel));
+                vueRDFTypeDTO.getObjectProperties().add(new VueRDFTypePropertyDTO(classModel, (ObjectPropertyModel) propertyModel, restriction));
             }
         }
 

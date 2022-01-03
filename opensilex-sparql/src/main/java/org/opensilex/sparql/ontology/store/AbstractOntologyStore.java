@@ -334,16 +334,19 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             return;
         }
 
-        String formattedAncestorURI = URIDeserializer.formatURI(ancestorURI).toString();
+        String classURI = classModel.getUri().toString();
+        if(classURI.equals(ancestorURI.toString())){
+            return;
+        }
 
-        if (!modelsByUris.containsKey(formattedAncestorURI)) {
-            throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classModel.getUri(), ancestorURI);
+        if (!modelsByUris.containsKey(ancestorURI.toString())) {
+            throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classURI, ancestorURI);
         }
 
         // check if ancestor exist and if it's an ancestor of the given class
-        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, formattedAncestorURI, classModel.getUri().toString(), MAX_GRAPH_PATH_LENGTH);
+        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, ancestorURI.toString(), classURI, MAX_GRAPH_PATH_LENGTH);
         if (ancestors.isEmpty()) {
-            throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classModel.getUri() + " parent or ancestor . ", ancestorURI);
+            throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classURI + " parent or ancestor . ", ancestorURI);
         }
 
         // append inherited OWL restrictions
@@ -453,7 +456,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     }
 
     @Override
-    public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException {
+    public ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException{
 
         Objects.requireNonNull(classURI);
         ClassModel model = getClassModel(classURI);

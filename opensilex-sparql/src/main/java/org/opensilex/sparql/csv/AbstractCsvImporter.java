@@ -86,8 +86,10 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
                     rowIdx++;
                 }
 
+                // check object existence in case of object-properties
+                // #TODO check URI uniqueness
                 if(restrictionValidator.validateValuesByType()){
-                    // end of batch : check URI uniqueness and object existence in case of object-properties
+
                     sparql.create(graphNode, modelChunk, batchSize, false);
                 }else{
                     sparql.rollbackTransaction();
@@ -151,7 +153,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             return new CsvCellValidationContext(cell);
         });
 
-        // all required restricion oK ?
     }
 
 

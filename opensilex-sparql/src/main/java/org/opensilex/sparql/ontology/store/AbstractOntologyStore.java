@@ -334,19 +334,16 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             return;
         }
 
-        String classURI = classModel.getUri().toString();
-        if (classURI.equals(ancestorURI.toString())) {
-            return;
-        }
+        String formattedAncestorURI = URIDeserializer.formatURI(ancestorURI).toString();
 
-        if (!modelsByUris.containsKey(ancestorURI.toString())) {
-            throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classURI, ancestorURI);
+        if (!modelsByUris.containsKey(formattedAncestorURI)) {
+            throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classModel.getUri(), ancestorURI);
         }
 
         // check if ancestor exist and if it's an ancestor of the given class
-        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, ancestorURI.toString(), classURI, MAX_GRAPH_PATH_LENGTH);
+        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, formattedAncestorURI, classModel.getUri().toString(), MAX_GRAPH_PATH_LENGTH);
         if (ancestors.isEmpty()) {
-            throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classURI + " parent or ancestor . ", ancestorURI);
+            throw new SPARQLInvalidURIException(ancestorURI + " is not a " + classModel.getUri() + " parent or ancestor . ", ancestorURI);
         }
 
         // append inherited OWL restrictions
@@ -527,24 +524,20 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     @Override
     public boolean classExist(URI rdfClass, URI ancestorClass) {
         String classURI = formatURI(rdfClass);
-
-        if (!modelsByUris.containsKey(classURI)) {
+        if(! modelsByUris.containsKey(classURI)){
             return false;
         }
-        if (ancestorClass == null) {
+
+        if(ancestorClass == null){
             return true;
         }
 
         String ancestorURI = formatURI(ancestorClass);
-
-        if (ancestorURI.equals(classURI)) {
-            return true;
-        }
-        if (!modelsByUris.containsKey(ancestorURI)) {
+        if(! modelsByUris.containsKey(ancestorURI)){
             return false;
         }
 
         Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, ancestorURI, classURI, MAX_GRAPH_PATH_LENGTH);
-        return !ancestors.isEmpty();
+        return ! ancestors.isEmpty();
     }
 }

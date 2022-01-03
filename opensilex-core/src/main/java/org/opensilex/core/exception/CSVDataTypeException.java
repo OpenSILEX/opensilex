@@ -7,7 +7,7 @@
 package org.opensilex.core.exception;
 
 import java.net.URI;
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.csv.CSVCell;
 
 /**
  *

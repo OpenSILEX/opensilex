@@ -8,7 +8,8 @@
 
 package org.opensilex.core.csv.dal;
 
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.error.CSVValidationModel;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 

@@ -12,8 +12,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.error.CSVValidationModel;
 import org.opensilex.core.device.dal.DeviceModel;
 
 /**

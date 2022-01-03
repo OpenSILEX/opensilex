@@ -22,7 +22,7 @@ public interface OntologyStore {
 
     AbstractPropertyModel<?> getProperty(URI property, URI type, URI domain, String lang) throws SPARQLException;
 
-    boolean classExist(URI rdfClass, URI parentClass) throws SPARQLException;
+    boolean classExist(URI rdfClass, URI parentClass);
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 
@@ -31,5 +31,6 @@ public interface OntologyStore {
     SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException;
 
     SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException;
+
 
 }

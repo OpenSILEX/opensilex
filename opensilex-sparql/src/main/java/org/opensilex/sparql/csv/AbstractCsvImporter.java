@@ -62,7 +62,25 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
 
 
     private URI[] readHeader(Iterator<String[]> rowIterator) {
-        URI[] columns = null;
+
+        String[] header = rowIterator.next();
+
+        if(header == null || header.length < PROPERTIES_BEGIN_INDEX){
+            throw new IllegalArgumentException("RTFM header");
+        }
+        if(header.length == PROPERTIES_BEGIN_INDEX){
+            return new URI[0];
+        }
+
+        URI[] columns = new URI[header.length-PROPERTIES_BEGIN_INDEX];
+
+        for(int i=0;i<header.length-PROPERTIES_BEGIN_INDEX;i++){
+            columns[i] = URIDeserializer.formatURI(header[i+PROPERTIES_BEGIN_INDEX]);
+        }
+
+        // skip help line
+        rowIterator.next();
+
         return columns;
     }
 
@@ -126,6 +144,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
                 if (!ontologyStore.classExist(type, classURI)) {
                     csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_TYPE_INDEX, "Unknown type :" + typeStr, CSV_TYPE_KEY));
                 }
+                model.setType(type);
             } catch (URISyntaxException e) {
                 csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
             }
@@ -140,7 +159,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         ClassModel classModel = ontologyStore.getClassModel(model.getType(), classURI, null);
 
         for (int colIdx = PROPERTIES_BEGIN_INDEX; colIdx < row.length; colIdx++) {
-            URI property = columns[colIdx];
+            URI property = columns[colIdx-PROPERTIES_BEGIN_INDEX];
             String value = row[colIdx];
             OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(property);
             restrictionValidator.validateCsvValue(rowIdx, colIdx, classModel, model, value, property, restriction);
@@ -174,12 +193,17 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             // read header and  compute columns/properties index
             URI[] columns = readHeader(rowIterator);
 
-            CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, csvValidationModel, graph);
-            readBody(rowIterator, columns, restrictionValidator);
+            if(columns.length > 0){
+                CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, csvValidationModel, graph);
+                readBody(rowIterator, columns, restrictionValidator);
+            }
 
         } catch (IOException e) {
             throw e;
         }
     }
 
+    public CSVValidationModel getCsvValidationModel() {
+        return csvValidationModel;
+    }
 }

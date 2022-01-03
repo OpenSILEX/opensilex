@@ -527,15 +527,20 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     @Override
     public boolean classExist(URI rdfClass, URI ancestorClass) {
         String classURI = formatURI(rdfClass);
+
         if(! modelsByUris.containsKey(classURI)){
             return false;
         }
-
         if(ancestorClass == null){
             return true;
         }
 
         String ancestorURI = formatURI(ancestorClass);
+
+        if(ancestorURI.equals(classURI)){
+            return true;
+        }
+
         if(! modelsByUris.containsKey(ancestorURI)){
             return false;
         }

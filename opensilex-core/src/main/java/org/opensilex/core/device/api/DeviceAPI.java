@@ -13,6 +13,8 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetDTO;
@@ -25,7 +27,10 @@ import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
+import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -57,6 +62,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
@@ -376,6 +382,37 @@ public class DeviceAPI {
                 }
             }
         }
+
+        return null;
+    }
+
+    @POST
+    @Path("import")
+    @ApiOperation(value = "Import a CSV file .")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Devices imported with success", response = CSVValidationDTO.class)
+    })
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response importCSV(
+            @ApiParam(value = "Data file", required = true, type = "file")
+            @NotNull
+            @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
+                sparql,
+                DeviceModel.class,
+                sparql.getDefaultGraphURI(DeviceModel.class),
+                DeviceModel::new);
+
+        csvImporter.read(file);
 
         return null;
     }

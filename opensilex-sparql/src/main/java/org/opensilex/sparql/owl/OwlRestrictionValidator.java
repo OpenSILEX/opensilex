@@ -113,8 +113,9 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     protected void validateModelRelation(URI graph, ClassModel classModel, SPARQLResourceModel model, URI property, String value, OwlRestrictionModel restriction, Supplier<T> contextSupplier) {
 
-        boolean hasValue = StringUtils.isEmpty(value);
+        boolean hasValue = ! StringUtils.isEmpty(value);
 
+        // value for an unknown restriction
         if (restriction == null && hasValue) {
             isValid = false;
             T validationContext = contextSupplier.get();

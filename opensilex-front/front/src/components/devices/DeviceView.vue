@@ -10,10 +10,22 @@
       v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
     >
       <template v-slot>
-        <opensilex-CreateButton 
+        <opensilex-CreateButton
           @click="goToDeviceCreate"
           label="Device.add"
         ></opensilex-CreateButton>
+
+        <opensilex-CreateButton
+            label="OntologyCsvImporter.import"
+            @click="showCsvForm"
+        ></opensilex-CreateButton>
+
+        <opensilex-DeviceCsvForm
+            v-if="renderCsvForm"
+            ref="csvForm"
+            @csvImported="onImport"
+        ></opensilex-DeviceCsvForm>
+
       </template>
     </opensilex-PageActions>
 
@@ -36,13 +48,20 @@ import HttpResponse, {
 // @ts-ignore
 import { DevicesService, DeviceCreationDTO } from "opensilex-core/index";
 import VueRouter from "vue-router";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import DeviceCsvForm from "./csv/DeviceCsvForm.vue";
+import DeviceList from "./DeviceList.vue";
+import DeviceForm from "./DeviceForm.vue";
 
 @Component
 export default class Device extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $router: VueRouter;
   service: DevicesService;
+
+  renderCsvForm = false;
+  @Ref("csvForm") readonly csvForm!: DeviceCsvForm;
 
   get user() {
     return this.$store.state.user;
@@ -52,10 +71,10 @@ export default class Device extends Vue {
     return this.$store.state.credentials;
   }
 
-  @Ref("deviceList") readonly deviceList!: any;
-  @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceDetails") readonly deviceDetails!: any;
-  @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
+  @Ref("deviceList") readonly deviceList!: DeviceList;
+  @Ref("deviceForm") readonly deviceForm!: DeviceForm;
+  // @Ref("deviceDetails") readonly deviceDetails!: any;
+  // @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
@@ -75,6 +94,17 @@ export default class Device extends Vue {
           this.deviceList.refresh();
         })
     );
+  }
+
+  showCsvForm() {
+      this.renderCsvForm = true;
+      this.$nextTick(() => {
+          this.csvForm.show();
+      });
+  }
+
+  onImport(response) {
+    this.deviceList.refresh();
   }
 }
 </script>

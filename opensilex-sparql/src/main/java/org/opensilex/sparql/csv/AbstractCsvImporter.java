@@ -16,6 +16,7 @@ import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.DefaultURIGenerator;
+import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 
 import java.io.*;
@@ -35,6 +36,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
 
     private final SPARQLService sparql;
     private final OntologyStore ontologyStore;
+    private final URIGenerator<T> uriGenerator;
 
     protected final URI classURI;
     protected final Class<T> objectClass;
@@ -49,6 +51,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
+        this.uriGenerator = new DefaultURIGenerator<>();
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
 
@@ -61,7 +64,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             throw new RuntimeException(e);
         }
 
-        this.rootClassModel = ontologyStore.getClassModel(classURI,null,null);
+        this.rootClassModel = ontologyStore.getClassModel(classURI, null, null);
     }
 
 
@@ -83,14 +86,14 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
 
         for (int i = 0; i < headers.length - PROPERTIES_BEGIN_INDEX; i++) {
             String header = headers[i + PROPERTIES_BEGIN_INDEX];
-            try{
-                if(StringUtils.isEmpty(header)){
+            try {
+                if (StringUtils.isEmpty(header)) {
                     csvValidationModel.addEmptyHeader(i);
-                }else{
+                } else {
                     columns[i] = new URI(URIDeserializer.formatURIAsStr(header));
                 }
-            }catch (URISyntaxException e){
-                csvValidationModel.addInvalidHeaderURI(i,header);
+            } catch (URISyntaxException e) {
+                csvValidationModel.addInvalidHeaderURI(i, header);
             }
         }
 
@@ -151,8 +154,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             if (!StringUtils.isEmpty(uriStr)) {
                 model.setUri(new URI(uriStr));
             } else {
-                model.setUri(new DefaultURIGenerator<>().generateURI(generationPrefix,model,0));
-//                model.setUri(model.generateURI(generationPrefix, model, 0));
+                model.setUri(uriGenerator.generateURI(generationPrefix, model, 0));
             }
         } catch (URISyntaxException e) {
             csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));

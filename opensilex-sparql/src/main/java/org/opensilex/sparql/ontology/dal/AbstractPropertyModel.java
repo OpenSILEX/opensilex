@@ -14,7 +14,7 @@ import org.opensilex.sparql.model.VocabularyModel;
 
 import java.net.URI;
 
-public abstract class AbstractPropertyModel<T extends VocabularyModel<T>> extends VocabularyModel<T> implements PropertyModel {
+public abstract class AbstractPropertyModel<T extends AbstractPropertyModel<T>> extends VocabularyModel<T> implements PropertyModel {
 
     protected URI typeRestriction;
 
@@ -46,4 +46,22 @@ public abstract class AbstractPropertyModel<T extends VocabularyModel<T>> extend
     public void setDomain(ClassModel domain) {
         this.domain = domain;
     }
+
+    public AbstractPropertyModel(){
+
+    }
+
+    protected AbstractPropertyModel(T model){
+
+        setUri(model.getUri());
+        setType(model.getType());
+        setTypeLabel(model.getTypeLabel());
+        setName(model.getName());
+
+        setLabel(model.getLabel());
+        setComment(model.getComment());
+        setDomain(model.getDomain());
+        setTypeRestriction(model.getTypeRestriction());
+    }
+
 }

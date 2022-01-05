@@ -18,4 +18,8 @@ public interface ValidationContext {
 
     void setProperty(String property);
 
+    String getMessage();
+
+    void setMessage(String message);
+
 }

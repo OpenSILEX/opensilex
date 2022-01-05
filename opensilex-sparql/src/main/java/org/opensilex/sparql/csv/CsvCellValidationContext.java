@@ -41,4 +41,14 @@ public class CsvCellValidationContext implements ValidationContext {
     public void setValue(String value) {
         csvCell.setValue(value);
     }
+
+    @Override
+    public String getMessage() {
+        return null;
+    }
+
+    @Override
+    public void setMessage(String msg) {
+
+    }
 }

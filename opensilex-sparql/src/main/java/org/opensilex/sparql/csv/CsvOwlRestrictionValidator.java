@@ -22,37 +22,28 @@ public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellV
     }
 
     @Override
-    protected void addUnknownPropertyError(URI classURI, CsvCellValidationContext cellContext) {
-        CSVCell cell = cellContext.getCsvCell();
-        validationModel.addInvalidValueError(cell);
+    protected void addUnknownPropertyError(CsvCellValidationContext cellContext) {
+        validationModel.addInvalidValueError(cellContext.getCsvCell());
     }
 
     @Override
-    protected void addInvalidValueError(String customError, CsvCellValidationContext cellContext) {
-        CSVCell cell = cellContext.getCsvCell();
-        validationModel.addInvalidValueError(cell);
+    protected void addInvalidValueError(CsvCellValidationContext cellContext) {
+        validationModel.addInvalidValueError(cellContext.getCsvCell());
     }
 
     @Override
-    protected void addMissingRequiredValue(URI classURI, CsvCellValidationContext cellContext) {
-        CSVCell cell = cellContext.getCsvCell();
-        validationModel.addMissingRequiredValue(cell);
+    protected void addMissingRequiredValue(CsvCellValidationContext cellContext) {
+        validationModel.addMissingRequiredValue(cellContext.getCsvCell());
     }
 
     @Override
-    protected void addInvalidDatatypeError(URI datatype, CsvCellValidationContext cellContext, String customError) {
-        CSVCell cell = cellContext.getCsvCell();
-//        cell.setValue(value);
-//        cell.setHeader(customError != null ? customError : property.toString());
-        validationModel.addInvalidDatatypeError(cell, datatype);
+    protected void addInvalidDatatypeError(CsvCellValidationContext cellContext, URI datatype) {
+        validationModel.addInvalidDatatypeError(cellContext.getCsvCell(), datatype);
     }
 
     @Override
-    protected void addInvalidURIError(CsvCellValidationContext cellContext, String customError) {
-        CSVCell cell = cellContext.getCsvCell();
-//        cell.setValue(value);
-//        cell.setHeader(customError != null ? customError : property.toString());
-        validationModel.addInvalidURIError(cell);
+    protected void addInvalidURIError(CsvCellValidationContext cellContext) {
+        validationModel.addInvalidURIError(cellContext.getCsvCell());
     }
 
 

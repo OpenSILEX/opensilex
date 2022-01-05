@@ -43,7 +43,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     protected boolean isValid;
     protected Map<String, List<String>> valuesByTypeToCheck;
-    protected Map<String, Map<String, List<T>>> contextsByValuesAndTypes;
+    protected Map<String, Map<String, List<T>>> validationByTypesAndValues;
 
     protected OwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore) {
         this.sparql = sparql;
@@ -51,21 +51,20 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
         isValid = true;
         valuesByTypeToCheck = new PatriciaTrie<>();
-        contextsByValuesAndTypes = new PatriciaTrie<>();
+        validationByTypesAndValues = new PatriciaTrie<>();
     }
 
-    protected abstract void addUnknownPropertyError(URI classURI, T context);
+    protected abstract void addUnknownPropertyError(T context);
 
-    protected abstract void addInvalidValueError(String customError, T context);
+    protected abstract void addInvalidValueError(T context);
 
-    protected abstract void addMissingRequiredValue(URI classURI, T context);
+    protected abstract void addMissingRequiredValue(T context);
 
-    protected abstract void addInvalidDatatypeError(URI datatype, T context, String customError);
+    protected abstract void addInvalidDatatypeError(T context, URI datatype);
 
-    protected abstract void addInvalidURIError(T context, String customError);
+    protected abstract void addInvalidURIError(T context);
 
-
-    public void validateModel(ClassModel classModel, SPARQLResourceModel model, Supplier<T> contextSupplier) {
+    public void validateModel(ClassModel classModel, SPARQLResourceModel model, Supplier<T> validationSupplier) {
 
         // #TODO update relations model by indexing them by properties ?
 
@@ -83,11 +82,11 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
             // check that all required restriction are filled
             if (restriction.isRequired() && values == null) {
-                T validationContext = contextSupplier.get();
+                T validationContext = validationSupplier.get();
                 validationContext.setValue(null);
                 validationContext.setProperty(propertyStr);
-
-                addMissingRequiredValue(classModel.getUri(), validationContext);
+                validationContext.setMessage(classModel.getUri().toString());
+                addMissingRequiredValue(validationContext);
             }
 
             if (restriction.isList()) {
@@ -100,10 +99,11 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 //                }
             } else {
                 if (values != null && values.size() > 1) {
-                    T validationContext = contextSupplier.get();
-                    validationContext.setValue(values.get(1));
+                    T validationContext = validationSupplier.get();
                     validationContext.setProperty(propertyStr);
-                    addInvalidValueError("Multiple values for mono-valued property", validationContext);
+                    validationContext.setValue(values.subList(0, 1).toString());
+                    validationContext.setMessage("Property is mono-valued : only one value is accepted");
+                    addInvalidValueError(validationContext);
                 }
             }
 
@@ -113,7 +113,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     protected void validateModelRelation(URI graph, ClassModel classModel, SPARQLResourceModel model, URI property, String value, OwlRestrictionModel restriction, Supplier<T> contextSupplier) {
 
-        boolean hasValue = ! StringUtils.isEmpty(value);
+        boolean hasValue = !StringUtils.isEmpty(value);
 
         // value for an unknown restriction
         if (restriction == null && hasValue) {
@@ -121,14 +121,16 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             T validationContext = contextSupplier.get();
             validationContext.setValue(value);
             validationContext.setProperty(property.toString());
-            addUnknownPropertyError(classModel.getUri(), validationContext);
+            validationContext.setValue(classModel.getUri().toString());
+            addUnknownPropertyError(validationContext);
         } else if (!hasValue) {
             if (restriction != null && restriction.isRequired()) {
                 isValid = false;
                 T validationContext = contextSupplier.get();
                 validationContext.setValue(value);
                 validationContext.setProperty(property.toString());
-                addMissingRequiredValue(classModel.getUri(), validationContext);
+                validationContext.setMessage(classModel.getUri().toString());
+                addMissingRequiredValue(validationContext);
             }
             // no restriction and no value
         } else {
@@ -141,15 +143,15 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     }
 
-    protected void validateDataTypePropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> contextSupplier) {
+    protected void validateDataTypePropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> validationSupplier) {
         try {
             SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getOnDataRange());
             if (!deserializer.validate(value)) {
                 isValid = false;
-                T validationContext = contextSupplier.get();
-                validationContext.setValue(value);
-                validationContext.setProperty(property.toString());
-                addInvalidDatatypeError(restriction.getOnDataRange(), contextSupplier.get(), null);
+                T validation = validationSupplier.get();
+                validation.setValue(value);
+                validation.setProperty(property.toString());
+                addInvalidDatatypeError(validation, restriction.getOnDataRange());
             }
             if (isValid) {
                 model.addRelation(graph, property, deserializer.getClassType(), value);
@@ -157,10 +159,11 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
         } catch (SPARQLDeserializerNotFoundException e) {
             isValid = false;
-            T validationContext = contextSupplier.get();
+            T validationContext = validationSupplier.get();
             validationContext.setValue(value);
             validationContext.setProperty(property.toString());
-            addInvalidDatatypeError(restriction.getOnDataRange(), validationContext, e.getMessage());
+            validationContext.setMessage(e.getMessage());
+            addInvalidDatatypeError(validationContext, restriction.getOnDataRange());
         }
     }
 
@@ -169,10 +172,10 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             // check if URI is valid
             new URI(value);
 
-            // get List of each context in which the value is involved
-            Map<String, List<T>> validationContextsByValue = contextsByValuesAndTypes.computeIfAbsent(restriction.getOnClass().toString(), key -> new PatriciaTrie<>());
+            Map<String, List<T>> validationContextsByValue = validationByTypesAndValues.computeIfAbsent(
+                    restriction.getOnClass().toString(), key -> new PatriciaTrie<>()
+            );
             List<T> validationContexts = validationContextsByValue.computeIfAbsent(value, key -> new ArrayList<>());
-
             T validationContext = contextSupplier.get();
             validationContext.setValue(value);
             validationContext.setProperty(property.toString());
@@ -184,7 +187,8 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             T validationContext = contextSupplier.get();
             validationContext.setValue(value);
             validationContext.setProperty(property.toString());
-            addInvalidURIError(validationContext, e.getMessage());
+            validationContext.setMessage(e.getMessage());
+            addInvalidURIError(validationContext);
         }
     }
 
@@ -193,41 +197,37 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         if (valuesByTypeToCheck.isEmpty()) {
             return true;
         }
-
         AtomicBoolean valid = new AtomicBoolean(true);
 
-        for (Map.Entry<String, Map<String, List<T>>> entry : contextsByValuesAndTypes.entrySet()) {
-
+        for (Map.Entry<String, Map<String, List<T>>> entry : validationByTypesAndValues.entrySet()) {
             String type = entry.getKey();
-            Map<String, List<T>> contextsByUris = entry.getValue();
+            Map<String, List<T>> validationByValue = entry.getValue();
 
             // build SPARQL query for validating values according type
-            SelectBuilder checkQuery = getCheckUriListExistQuery(type, contextsByUris.keySet());
+            SelectBuilder checkQuery = getCheckUriListExistQuery(type, validationByValue.keySet());
 
-            // iterate over results (TRUE or FALSE).
-            // IMPORTANT : the iteration assume that each result returned by the SPARQL repository are in the same order than URI in VALUES clause
-            // e.g. if we use VALUES ?uri { :uri_1 :uri_2 :uri_n }, here it's assumed that the results will be [ :uri_1 :uri_2 :uri_n ] in this exact order, regardless or natural/lexicographical order of URI
+            // Use iterator to lookup over SPARQL results by keeping match with map values
+            Iterator<Map.Entry<String, List<T>>> validationsByValue = validationByValue.entrySet().iterator();
 
-            Iterator<Map.Entry<String, List<T>>> it = contextsByUris.entrySet().iterator();
+            /* this iteration assume that each result of the SPARQL query are
+            returned by the repository in the same order as incoming URI from VALUES clause
+            e.g. : VALUES ?uri (:uri_1 :uri_2) -> [ (:uri_1,true/false),(:uri_2,true/false) ]
+            */
             sparql.executeSelectQueryAsStream(checkQuery).forEach(result -> {
 
                 boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
-
                 if (!uriExists) {
                     valid.set(false);
-                    Map.Entry<String, List<T>> contextsByUriEntry = it.next();
-                    List<T> contexts = contextsByUriEntry.getValue();
-
-                    contexts.forEach(context -> addInvalidValueError(null, context));
+                    List<T> validations = validationsByValue.next().getValue();
+                    validations.forEach(this::addInvalidValueError);
                 } else {
                     // just skip this element since we don't need to access contexts
-                    it.next();
+                    validationsByValue.next();
                 }
             });
         }
 
         return valid.get();
-
     }
 
     /**
@@ -261,7 +261,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
                 .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
 
         // append VALUES ?uri  :uri_1 ... :uri_n
-        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris.stream(), true, uris.size());
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris.stream(), false, uris.size());
 
         return select;
     }

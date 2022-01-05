@@ -27,6 +27,8 @@ public class CSVCell {
 
     private String value;
 
+    private String msg;
+
     public CSVCell(){
 
     }
@@ -77,4 +79,11 @@ public class CSVCell {
         this.value = value;
     }
 
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 }

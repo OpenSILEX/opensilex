@@ -15,6 +15,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.uri.generation.DefaultURIGenerator;
 import org.opensilex.utils.ClassUtils;
 
 import java.io.*;
@@ -34,48 +35,63 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
 
     private final SPARQLService sparql;
     private final OntologyStore ontologyStore;
-    private final CSVValidationModel csvValidationModel;
 
     protected final URI classURI;
     protected final Class<T> objectClass;
+    protected final ClassModel rootClassModel;
     protected final URI graph;
+    protected final String generationPrefix;
     protected final Supplier<T> objectConstructor;
 
     private final int batchSize;
 
-    protected AbstractCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) {
+    protected AbstractCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) throws SPARQLException {
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
+        this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
 
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
         this.batchSize = 1024;
-        this.csvValidationModel = new CSVValidationModel();
 
         try {
             this.classURI = URIDeserializer.formatURI(sparql.getMapperIndex().getForClass(objectClass).getRDFType().getURI());
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
             throw new RuntimeException(e);
         }
+
+        this.rootClassModel = ontologyStore.getClassModel(classURI,null,null);
     }
 
 
-    private URI[] readHeader(Iterator<String[]> rowIterator) {
+    private URI[] readHeader(Iterator<String[]> rowIterator, CSVValidationModel csvValidationModel) {
 
-        String[] header = rowIterator.next();
+        String[] headers = rowIterator.next();
 
-        if(header == null || header.length < PROPERTIES_BEGIN_INDEX){
-            throw new IllegalArgumentException("RTFM header");
-        }
-        if(header.length == PROPERTIES_BEGIN_INDEX){
+        if (headers == null || headers.length < PROPERTIES_BEGIN_INDEX) {
+            csvValidationModel.addEmptyHeader(0);
             return new URI[0];
         }
 
-        URI[] columns = new URI[header.length-PROPERTIES_BEGIN_INDEX];
+        // no additional properties
+        if (headers.length == PROPERTIES_BEGIN_INDEX) {
+            return new URI[0];
+        }
 
-        for(int i=0;i<header.length-PROPERTIES_BEGIN_INDEX;i++){
-            columns[i] = URIDeserializer.formatURI(header[i+PROPERTIES_BEGIN_INDEX]);
+        URI[] columns = new URI[headers.length - PROPERTIES_BEGIN_INDEX];
+
+        for (int i = 0; i < headers.length - PROPERTIES_BEGIN_INDEX; i++) {
+            String header = headers[i + PROPERTIES_BEGIN_INDEX];
+            try{
+                if(StringUtils.isEmpty(header)){
+                    csvValidationModel.addEmptyHeader(i);
+                }else{
+                    columns[i] = new URI(URIDeserializer.formatURIAsStr(header));
+                }
+            }catch (URISyntaxException e){
+                csvValidationModel.addInvalidHeaderURI(i,header);
+            }
         }
 
         // skip help line
@@ -84,57 +100,62 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         return columns;
     }
 
-    private void readBody(Iterator<String[]> rowIterator, URI[] columns, CsvOwlRestrictionValidator restrictionValidator) throws Exception {
+    private void readBody(Iterator<String[]> rowIterator, URI[] columns, CsvOwlRestrictionValidator restrictionValidator, boolean validOnly) throws Exception {
 
         try {
-            sparql.startTransaction();
-            int rowIdx = 0;
+            if (!validOnly) {
+                sparql.startTransaction();
+            }
 
+            int totalRowIdx = 0;
             Node graphNode = graph != null ? NodeFactory.createURI(graph.toString()) : null;
 
             while (rowIterator.hasNext()) {
 
                 // read csv file by batch : perform validation and insertion by batch (by using transaction)
                 List<T> modelChunk = new ArrayList<>(batchSize);
-                int i = 0;
+                int chunkRowIdx = 0;
 
-                while (i++ < batchSize && rowIterator.hasNext()) {
+                while (chunkRowIdx++ < batchSize && rowIterator.hasNext()) {
                     String[] row = rowIterator.next();
-                    modelChunk.add(getModel(rowIdx, row, columns, restrictionValidator));
-                    rowIdx++;
+                    modelChunk.add(getModel(totalRowIdx, row, columns, restrictionValidator));
+                    totalRowIdx++;
                 }
 
-                // check object existence in case of object-properties
                 // #TODO check URI uniqueness
-                if(restrictionValidator.validateValuesByType()){
 
+                if (restrictionValidator.validateValuesByType() && !validOnly) {
                     sparql.create(graphNode, modelChunk, batchSize, false);
-                }else{
+                } else if (!validOnly) {
                     sparql.rollbackTransaction();
                 }
-
-                // if error is encountered during checking, then rollback transaction
             }
-            sparql.commitTransaction();
+            if (!validOnly) {
+                sparql.commitTransaction();
+                restrictionValidator.getCsvValidationModel().setNbObjectImported(totalRowIdx);
+            }
 
         } catch (Exception e) {
-            sparql.rollbackTransaction();
+            if (!validOnly) {
+                sparql.rollbackTransaction();
+            }
             throw e;
         }
 
     }
 
-    private void readUriAndType(int rowIdx, String[] row, T model) {
+    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) {
 
         String uriStr = row[CSV_URI_INDEX];
-        if (!StringUtils.isEmpty(uriStr)) {
-            try {
+        try {
+            if (!StringUtils.isEmpty(uriStr)) {
                 model.setUri(new URI(uriStr));
-            } catch (URISyntaxException e) {
-                csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            } else {
+                model.setUri(new DefaultURIGenerator<>().generateURI(generationPrefix,model,0));
+//                model.setUri(model.generateURI(generationPrefix, model, 0));
             }
-        } else {
-            csvValidationModel.addMissingRequiredValue(new CSVCell(rowIdx, CSV_URI_INDEX, uriStr, CSV_URI_KEY));
+        } catch (URISyntaxException e) {
+            csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
         }
 
         String typeStr = row[CSV_TYPE_INDEX];
@@ -159,7 +180,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         ClassModel classModel = ontologyStore.getClassModel(model.getType(), classURI, null);
 
         for (int colIdx = PROPERTIES_BEGIN_INDEX; colIdx < row.length; colIdx++) {
-            URI property = columns[colIdx-PROPERTIES_BEGIN_INDEX];
+            URI property = columns[colIdx - PROPERTIES_BEGIN_INDEX];
             String value = row[colIdx];
             OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(property);
             restrictionValidator.validateCsvValue(rowIdx, colIdx, classModel, model, value, property, restriction);
@@ -171,18 +192,19 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             cell.setRowIndex(rowIdx);
             return new CsvCellValidationContext(cell);
         });
-
     }
-
 
     private T getModel(int rowIdx, String[] row, URI[] columns, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
         T model = objectConstructor.get();
-        readUriAndType(rowIdx, row, model);
+        readUriAndType(rowIdx, row, model, restrictionValidator.getCsvValidationModel());
         readProperties(rowIdx, row, columns, model, restrictionValidator);
         return model;
     }
 
-    public void read(InputStream inputStream) throws Exception {
+    public CSVValidationModel read(InputStream inputStream, boolean validOnly) throws Exception {
+
+        CSVValidationModel csvValidationModel = new CSVValidationModel();
+        CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, csvValidationModel, graph);
 
         // use try with resource in order to auto close resource in case of IOException
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -191,19 +213,17 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             Iterator<String[]> rowIterator = csvParser.iterate(reader).iterator();
 
             // read header and  compute columns/properties index
-            URI[] columns = readHeader(rowIterator);
+            URI[] columns = readHeader(rowIterator, csvValidationModel);
 
-            if(columns.length > 0){
-                CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, csvValidationModel, graph);
-                readBody(rowIterator, columns, restrictionValidator);
+            if (columns.length > 0) {
+                readBody(rowIterator, columns, restrictionValidator, validOnly);
             }
 
         } catch (IOException e) {
             throw e;
         }
-    }
 
-    public CSVValidationModel getCsvValidationModel() {
         return csvValidationModel;
     }
+
 }

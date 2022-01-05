@@ -1547,16 +1547,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String EXISTING_VAR = "existing";
 
-    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
-
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Stream<URI> uris, int streamSize) throws Exception {
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var existing = makeVar(EXISTING_VAR);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), uris,streamSize);
 
-        WhereBuilder where = new WhereBuilder()
-                .addWhere(uriVar, makeVar("p"), makeVar("o"));
+        WhereBuilder where = new WhereBuilder();
 
         if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
@@ -1564,12 +1562,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Resource typeDef = mapper.getRDFType();
             where.addWhere(typeVar, Ontology.subClassAny, typeDef)
                     .addWhere(uriVar, RDF.type, typeVar);
+        }else{
+           where.addWhere(uriVar, makeVar("p"), makeVar("o"));
         }
 
         Expr existExpr = SPARQLQueryHelper.getExprFactory().exists(where);
         select.addVar(existExpr, existing);
 
         return select;
+    }
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+        return getUriListExistQuery(objectClass, uris.stream(), uris.size());
     }
 
     /**

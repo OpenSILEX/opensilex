@@ -8,6 +8,7 @@
 
 package org.opensilex.sparql.csv;
 
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 
 public class DefaultCsvImporter<T  extends SPARQLResourceModel> extends AbstractCsvImporter<T>{
 
-    public DefaultCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) {
+    public DefaultCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) throws SPARQLException {
         super(sparql, objectClass, graph, objectConstructor);
     }
 }

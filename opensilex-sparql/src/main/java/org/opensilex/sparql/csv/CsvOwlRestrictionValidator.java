@@ -12,12 +12,12 @@ import java.net.URI;
 
 public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellValidationContext> {
 
-    private final CSVValidationModel validationModel;
+    private final CSVValidationModel csvValidationModel;
     private final URI graph;
 
     public CsvOwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore, CSVValidationModel validationModel, URI graph) {
         super(sparql, ontologyStore);
-        this.validationModel = validationModel;
+        this.csvValidationModel = validationModel;
         this.graph = graph;
     }
 
@@ -56,4 +56,7 @@ public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellV
         });
     }
 
+    public CSVValidationModel getCsvValidationModel() {
+        return csvValidationModel;
+    }
 }

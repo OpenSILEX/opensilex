@@ -36,6 +36,8 @@ public class CSVValidationModel {
     @JsonIgnore()
     private List<SPARQLNamedResourceModel> objects = new ArrayList<>();
 
+    private int nbObjectImported;
+
     @JsonIgnore()
     private Map<String, Object> objectsMetadata = new HashMap<>();
 
@@ -96,6 +98,11 @@ public class CSVValidationModel {
 
     public Map<Integer, CSVDuplicateURIError> getDuplicateURIErrors() {
         return duplicateURIErrors;
+    }
+
+
+    public CSVValidationModel(){
+        this.nbObjectImported = 0;
     }
 
     public List<SPARQLNamedResourceModel> getObjects() {
@@ -223,4 +230,11 @@ public class CSVValidationModel {
         emptyHeaders.add(emptyHeader);
     }
 
+    public int getNbObjectImported() {
+        return nbObjectImported;
+    }
+
+    public void setNbObjectImported(int nbObjectImported) {
+        this.nbObjectImported = nbObjectImported;
+    }
 }

@@ -31,6 +31,7 @@ import org.opensilex.core.ontology.api.CSVValidationDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
+import org.opensilex.sparql.csv.error.CSVValidationModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -53,6 +54,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.TokenGenerator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -68,6 +70,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -388,9 +391,9 @@ public class DeviceAPI {
 
     @POST
     @Path("import")
-    @ApiOperation(value = "Import a CSV file .")
+    @ApiOperation(value = "Import a CSV file with one device per line")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Devices imported with success", response = CSVValidationDTO.class)
+            @ApiResponse(code = 201, message = "Device(s) imported with success", response = CSVValidationDTO.class)
     })
     @ApiProtected
     @ApiCredential(
@@ -400,9 +403,7 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "Data file", required = true, type = "file")
-            @NotNull
-            @FormDataParam("file") InputStream file,
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -410,11 +411,55 @@ public class DeviceAPI {
                 sparql,
                 DeviceModel.class,
                 sparql.getDefaultGraphURI(DeviceModel.class),
-                DeviceModel::new);
+                DeviceModel::new
+        );
+        CSVValidationModel csvValidationModel = csvImporter.read(file, false);
 
-        csvImporter.read(file);
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(csvValidationModel);
 
-        return null;
+        if (!csvValidationModel.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+            validationDTO.setNbLinesImported(csvValidationModel.getNbObjectImported());
+        }
+        return new SingleObjectResponse<>(validationDTO).getResponse();
+    }
+
+    @POST
+    @Path("import_validation")
+    @ApiOperation(value = "Validate the import of a CSV file with one device per line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Device(s) checked", response = CSVValidationDTO.class)
+    })
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateCSV(
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
+                sparql,
+                DeviceModel.class,
+                sparql.getDefaultGraphURI(DeviceModel.class),
+                DeviceModel::new
+        );
+        CSVValidationModel csvValidationModel = csvImporter.read(file, true);
+
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(csvValidationModel);
+
+        if (!csvValidationModel.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+        }
+        return new SingleObjectResponse<>(validationDTO).getResponse();
     }
         
     @GET

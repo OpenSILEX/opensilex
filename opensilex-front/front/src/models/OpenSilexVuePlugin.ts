@@ -1165,6 +1165,20 @@ export default class OpenSilexVuePlugin {
     public getFactorCategoryName(uri) {
         return this.factorCategories[uri];
     }
+    private deepWalkObject(walkProperty : string,object :any, objectToFill : any, walkValidationFunction : Function,  workFunction : Function) {
+       
+
+        if(walkValidationFunction(object)){
+            console.log("walk");
+            console.log(walkProperty)
+            console.log(object[walkProperty])
+            for (var childObject of object[walkProperty]) {
+                this.deepWalkObject(walkProperty,childObject,objectToFill,walkValidationFunction,workFunction);
+            } 
+        }else{
+            workFunction(object,objectToFill);
+        }
+    }
 
     public loadFactorCategories() {
         return new Promise((resolve, reject) => {
@@ -1174,8 +1188,18 @@ export default class OpenSilexVuePlugin {
                     (http
                     ) => {
                         this.factorCategories = {};
+                        
                         http.response.result.forEach((categoryDto) => {
-                            this.factorCategories[categoryDto.uri] = categoryDto.name;
+                            this.deepWalkObject("children",categoryDto,this.factorCategories, 
+                            function (object) { 
+                                if(object == undefined){
+                                    return false;
+                                }else{
+                                    return (object.children.length > 0 ? true : false) ;
+                                }
+                            },function (object, arrayToFill) {
+                                arrayToFill[object.uri] = object.name;
+                            })
                         });
                         resolve(this.factorCategories)
                     }

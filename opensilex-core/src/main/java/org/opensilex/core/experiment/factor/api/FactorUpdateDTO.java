@@ -101,9 +101,9 @@ public class FactorUpdateDTO extends SKOSReferencesDTO {
         model.setUri(getUri());
         model.setName(getName());
         if(getCategory() != null){
-            FactorCategoryModel factorCategoryModel = new FactorCategoryModel();
-            factorCategoryModel.setUri(getCategory());
-            model.setCategory(factorCategoryModel);
+//            FactorCategoryModel factorCategoryModel = new FactorCategoryModel();
+//            factorCategoryModel.setUri(getCategory());
+            model.setCategory(getCategory());
         }
         model.setDescription(getDescription());
 

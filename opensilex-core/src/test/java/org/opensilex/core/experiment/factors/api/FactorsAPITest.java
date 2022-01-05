@@ -59,7 +59,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         factorCount++;
         FactorCreationDTO dto = new FactorCreationDTO();
         dto.setName("Factor name " + factorCount);
-        dto.setCategory(new URI("http://aims.fao.org/aos/agrovoc/c_331093"));
+        dto.setCategory(new URI("http://purl.obolibrary.org/obo/PECO_0007085"));
         dto.setDescription("Factor Description" + factorCount);
         // skos model
         SkosModelTest.setValidSkosReferences(dto);

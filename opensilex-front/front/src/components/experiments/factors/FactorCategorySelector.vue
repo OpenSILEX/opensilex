@@ -1,32 +1,28 @@
 <template>
-  <opensilex-SelectForm
+  
+  <opensilex-TypeForm
     ref="selectForm"
+    :type.sync="categoryString"
+    :baseType="$opensilex.Oeso.FACTOR_CATEGORY_URI"
+    :multiple="multiple" 
     :label="label"
-    :selected.sync="categoryString"
-    :multiple="multiple"
-    :options="categories"
     placeholder="component.factors.form.placeholder.factors"
-    noResultsText="component.user.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    noResultsText="component.user.filter-search-no-result"
     :helpMessage="helpMessage"
-  ></opensilex-SelectForm>
+  ></opensilex-TypeForm>
 </template>
 
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-// @ts-ignore
-import { FactorsService, FactorCategoryGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FactorCategorySelector extends Vue {
   $opensilex: any;
   $i18n: any;
-  service: FactorsService;
 
   @Ref("selectForm") readonly selectForm!: any;
 
@@ -44,47 +40,6 @@ export default class FactorCategorySelector extends Vue {
   @Prop()
   helpMessage: string;
 
-  categories: any[] = [];
-
-  private langUnwatcher;
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      () => {
-        this.searchCategories();
-      }
-    );
-  }
-
-  beforeDestroy() {
-    this.langUnwatcher();
-  }
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.FactorsService");
-    this.searchCategories();
-  }
-
-  searchCategories() {
-    this.service
-      .searchCategories(undefined, ["name=asc"], undefined, undefined)
-      .then(
-        (
-          http: HttpResponse<OpenSilexResponse<Array<FactorCategoryGetDTO>>>
-        ) => {
-          if (http && http.response) {
-            this.categories = [];
-            http.response.result.forEach((categoryDto) => {
-              this.categories.push({
-                label: categoryDto.name,
-                id: categoryDto.uri,
-              });
-            });
-          }
-        }
-      )
-      .catch(this.$opensilex.errorHandler);
-  }
 
   select(value) {
     this.$emit("select", value);

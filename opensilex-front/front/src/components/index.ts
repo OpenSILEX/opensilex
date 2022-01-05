@@ -134,6 +134,8 @@ import FactorModalList from './experiments/factors/FactorModalList.vue';
 components["opensilex-FactorModalList"] = FactorModalList;
 import FactorLevelSelector from './experiments/factors/FactorLevelSelector.vue';
 components["opensilex-FactorLevelSelector"] = FactorLevelSelector;
+import  FactorCategoryTypes from './experiments/factors/FactorCategoryTypes.vue';
+components["opensilex-FactorCategoryTypes"] = FactorCategoryTypes;
 
 // Geometry
 import GeometrySelector from './geometry/GeometrySelector.vue';

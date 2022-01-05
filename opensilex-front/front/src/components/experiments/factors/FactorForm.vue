@@ -36,19 +36,35 @@
 
       <p class="alert-info">
         {{ $t("component.factor.category-help-more") }} :
+        AGROVOC -
         <a
           target="_blank"
           href="http://agroportal.lirmm.fr/ontologies/AGROVOC/?p=classes&conceptid=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
         >
-          AgroPortal
+         Agroportal
+        </a>
+        ;
+        <a
+          target="_blank"
+          href="http://agroportal.lirmm.fr/ontologies/AGROVOC/?p=classes&conceptid=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
+        >
+         Agrovoc
         </a>
         (
         {{ $t("component.factor.or") }}
+        PECO -
         <a
           target="_blank"
           href="https://agrovoc.uniroma2.it/agrovoc/agrovoc/en/page/?uri=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
         >
-          AGROVOC
+          Agrovoc
+        </a>
+         ;
+        <a
+          target="_blank"
+          href="http://agroportal.lirmm.fr/ontologies/PECO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPECO_0007359"
+        >
+          Ontobee
         </a>
         )
       </p>
@@ -84,10 +100,8 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { FactorsService } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 

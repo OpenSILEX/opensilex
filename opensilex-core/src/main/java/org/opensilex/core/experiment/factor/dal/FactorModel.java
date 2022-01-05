@@ -9,6 +9,7 @@
  */
 package org.opensilex.core.experiment.factor.dal;
 
+import java.net.URI;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
@@ -45,7 +46,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             ontology = Oeso.class,
             property = "hasCategory"
     )
-    FactorCategoryModel category;
+    URI category;
     public static final String CATEGORY_FIELD = "category";
     
     @SPARQLProperty(
@@ -90,11 +91,11 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
         this.name = name;
     }
 
-    public FactorCategoryModel getCategory(){
+    public URI getCategory(){
         return category;
     }
 
-    public void setCategory(FactorCategoryModel category) {
+    public void setCategory(URI category) {
         this.category = category;
     }
 

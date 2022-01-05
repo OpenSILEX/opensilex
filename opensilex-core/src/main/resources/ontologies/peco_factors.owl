@@ -132,7 +132,7 @@
     <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007161">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
         <rdfs:comment xml:lang="en">The treatment involving an exposure to wind with varying degree of temperature, which may depend on the study type or the regional environment.</rdfs:comment>
-        <rdfs:label xml:lang="fr">Air temperature exposure</rdfs:label>
+        <rdfs:label xml:lang="en">Air temperature exposure</rdfs:label>
         <rdfs:label xml:lang="fr">Température de l&apos;air</rdfs:label>
     </owl:Class>
     
@@ -155,7 +155,7 @@
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#FactorCategory"/>
         <rdfs:comment xml:lang="en">An abiotic plant exposure (PECO:0007189) involving the application of chemical(s).</rdfs:comment>
         <rdfs:label xml:lang="en">Chemical exposure</rdfs:label>
-        <rdfs:label xml:lang="fr">Traitement Chimiques</rdfs:label>
+        <rdfs:label xml:lang="fr">Traitement chimique</rdfs:label>
     </owl:Class>
     
 
@@ -209,7 +209,7 @@
     <owl:Class rdf:about="http://purl.obolibrary.org/obo/PECO_0007383">
         <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/PECO_0007198"/>
         <rdfs:label xml:lang="fr">Irrigation</rdfs:label>
-        <rdfs:label xml:lang="en">watering exposure</rdfs:label>
+        <rdfs:label xml:lang="en">Watering exposure</rdfs:label>
     </owl:Class>
     
 

@@ -135,7 +135,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
             }
             if (!validOnly) {
                 sparql.commitTransaction();
-                restrictionValidator.getCsvValidationModel().setNbObjectImported(totalRowIdx);
+                restrictionValidator.getValidationModel().setNbObjectImported(totalRowIdx);
             }
 
         } catch (Exception e) {
@@ -198,7 +198,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
 
     private T getModel(int rowIdx, String[] row, URI[] columns, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
         T model = objectConstructor.get();
-        readUriAndType(rowIdx, row, model, restrictionValidator.getCsvValidationModel());
+        readUriAndType(rowIdx, row, model, restrictionValidator.getValidationModel());
         readProperties(rowIdx, row, columns, model, restrictionValidator);
         return model;
     }

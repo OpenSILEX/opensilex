@@ -11,7 +11,7 @@
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
 
     <div>
-      <!-- <ValidationObserver ref="validatorRefDataTemplate"> -->
+      <ValidationObserver ref="validatorRefDataTemplate">
         <b-row>
           <b-col>
             <b-form-group v-if="experiment==null" :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
@@ -32,23 +32,23 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-              <opensilex-VariableSelector
+              <!-- <opensilex-VariableSelector
                   label="DataTemplateForm.select-variables"
                   placeholder="VariableList.label-filter-placeholder"
                   :multiple="true"
                   :variables.sync="variables"
                   :required="requiredField"
               >
-              </opensilex-VariableSelector>
+              </opensilex-VariableSelector> -->
 
-            <!-- <opensilex-VariableSelectorWithFilter
+            <opensilex-VariableSelectorWithFilter
               label="DataTemplateForm.select-variables"
               placeholder="VariableList.label-filter-placeholder"
               :multiple="true"
               :variables.sync="variables"
               :required="false"
             >
-            </opensilex-VariableSelectorWithFilter> -->
+            </opensilex-VariableSelectorWithFilter>
 
             <opensilex-CheckboxForm
               :value.sync="withRawData"
@@ -77,7 +77,7 @@
           >{{ $t("DataHelp.download-template-example") }}</b-button
         >
         <hr />
-      <!-- </ValidationObserver> -->
+      </ValidationObserver>
     </div>
   </b-modal>
 </template>

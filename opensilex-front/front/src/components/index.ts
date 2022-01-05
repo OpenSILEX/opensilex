@@ -459,6 +459,8 @@ import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
 import VariableListWithoutFilter from './variables/VariableListWithoutFilter.vue';
 components["opensilex-VariableListWithoutFilter"] = VariableListWithoutFilter;
+import VariableListWithoutActionButton from './variables/VariableListWithoutActionButton.vue';
+components["opensilex-VariableListWithoutActionButton"] = VariableListWithoutActionButton;
 // import UsedVariableList from './variables/UsedVariableList.vue';
 // components["opensilex-UsedVariableList"] = UsedVariableList;
 import VariablesView from './variables/VariablesView.vue';

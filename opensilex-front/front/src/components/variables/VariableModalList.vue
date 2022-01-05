@@ -15,13 +15,13 @@
     </template>
 
     <div class="card">
-      <opensilex-VariableList
+      <opensilex-VariableListWithoutActionButton
         ref="variableSelection"
         :isSelectable="true"
         :noActions="true"
         :maximumSelectedRows="maximumSelectedRows"
         iconNumberOfSelectedRow="ik#ik-globe"
-      ></opensilex-VariableList>
+      ></opensilex-VariableListWithoutActionButton>
     </div>
   </b-modal>
 </template>

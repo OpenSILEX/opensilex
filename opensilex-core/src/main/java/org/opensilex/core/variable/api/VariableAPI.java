@@ -206,6 +206,7 @@ public class VariableAPI {
             @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
             @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
             @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
+            @ApiParam(value = "Experiment filter") @QueryParam("experiment") @ValidURI URI experiment,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -218,7 +219,8 @@ public class VariableAPI {
                 characteristic,
                 method,
                 unit,
-                group,                
+                group,
+                experiment,                
                 orderByList,
                 page,
                 pageSize

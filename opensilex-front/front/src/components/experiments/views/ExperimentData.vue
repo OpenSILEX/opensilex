@@ -18,8 +18,8 @@
             @clear="clear()"
           >
             <template v-slot:filters>
-              <!-- Variables -->
-              <opensilex-FilterField halfWidth="true">
+              <!-- Variables  -->
+              <!-- <opensilex-FilterField halfWidth="true">
                 <opensilex-UsedVariableSelector
                 label="DataView.filter.variables"
                 :multiple="true"
@@ -27,8 +27,27 @@
                 :experiment="uri"
                 :key="refreshKey"
                 ></opensilex-UsedVariableSelector>
+              </opensilex-FilterField> -->
+
+              <!-- Variables -->
+              <opensilex-FilterField halfWidth="true">
+                <opensilex-SelectForm
+                  ref="varSelector"
+                  label="DataView.filter.variables"
+                  placeholder="VariableSelector.placeholder-multiple"
+                  :selected.sync="filter.variables"
+                  :conversionMethod="soGetDTOToSelectNode"
+                  modalComponent="opensilex-VariablesModalListByExp"
+                  :itemLoadingMethod="loadVar"
+                  :filter.sync="varFilter"
+                  :isModalSearch="true"
+                  :clearable="true"
+                  :multiple="true"
+                  @clear="refreshVarSelector"
+                  @select="refreshProvComponent"
+                ></opensilex-SelectForm>
               </opensilex-FilterField>
-            
+
               <!-- Scientific objects -->
               <opensilex-FilterField halfWidth="true">
                 <opensilex-SelectForm
@@ -126,7 +145,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import { ProvenanceGetDTO, VariableDetailsDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
@@ -162,12 +181,24 @@ export default class ExperimentData extends Vue {
     creationDate: undefined,
   };
 
+  varFilter = {
+    name: undefined,
+    entity: undefined,
+    entityOfInterest: undefined,
+    characteristic: undefined,
+    method: undefined,
+    unit: undefined,
+    group: undefined,
+    experiment: this.uri
+  }
+
   @Ref("dataList") readonly dataList!: any;
   @Ref("dataForm") readonly dataForm!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
+  @Ref("varSelector") readonly varSelector!: any;
 
   get credentials() {
     return this.$store.state.credentials;
@@ -194,6 +225,17 @@ export default class ExperimentData extends Vue {
       existenceDate: undefined,
       creationDate: undefined,
     };
+
+    this.varFilter = {
+      name: undefined,
+      entity: undefined,
+      entityOfInterest: undefined,
+      characteristic: undefined,
+      method: undefined,
+      unit: undefined,
+      group: undefined,
+      experiment: this.uri
+    };    
   }
 
   resetFilters() {
@@ -221,6 +263,22 @@ export default class ExperimentData extends Vue {
     };
     this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
+  }
+
+  refreshVarSelector() {
+    
+    this.varFilter = {
+      name: undefined,
+      entity: undefined,
+      entityOfInterest: undefined,
+      characteristic: undefined,
+      method: undefined,
+      unit: undefined,
+      group: undefined,
+      experiment: this.uri
+    };
+    this.refreshProvComponent();
+    this.varSelector.refreshModalSearch();
   }
 
   successMessage(form) {
@@ -341,6 +399,16 @@ export default class ExperimentData extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
           return (http && http.response) ? http.response.result : undefined
     }).catch(this.$opensilex.errorHandler);
+  }
+
+  loadVar(variables) {
+
+    return this.$opensilex.getService("opensilex.VariablesService")
+    .getVariablesByURIs(variables)
+    .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
+      return (http && http.response) ? http.response.result : undefined
+    }).catch(this.$opensilex.errorHandler);
+
   }
 
   soGetDTOToSelectNode(dto) {

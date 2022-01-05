@@ -457,6 +457,8 @@ components["opensilex-ScientificObjectView"] = ScientificObjectView;
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
+import VariableListWithoutFilter from './variables/VariableListWithoutFilter.vue';
+components["opensilex-VariableListWithoutFilter"] = VariableListWithoutFilter;
 // import UsedVariableList from './variables/UsedVariableList.vue';
 // components["opensilex-UsedVariableList"] = UsedVariableList;
 import VariablesView from './variables/VariablesView.vue';
@@ -482,6 +484,8 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
+import VariablesModalListByExp from './variables/VariablesModalListByExp.vue';
+components["opensilex-VariablesModalListByExp"] = VariablesModalListByExp;
 // import UsedVariableModalList from './variables/UsedVariableModalList.vue';
 // components["opensilex-UsedVariableModalList"] = UsedVariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';

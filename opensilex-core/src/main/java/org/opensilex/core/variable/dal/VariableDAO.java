@@ -26,6 +26,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.apache.commons.collections4.CollectionUtils;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -93,13 +95,17 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             URI method,
             URI unit,
             URI group,
+            URI experiment,
             List<OrderBy> orderByList,
             int page,
             int pageSize) throws Exception {
-
+                
+        Set<URI> variableUriList = experiment != null ? dataDAO.getUsedVariablesByExperiments(Collections.singletonList(experiment)) : null;
+        
         return sparql.searchWithPagination(
                 VariableModel.class,
                 null,
+            
                 (SelectBuilder select) -> {
                     if (!StringUtils.isEmpty(name)) {
 
@@ -133,6 +139,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                     if (group != null) {
                         select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
                     }
+                    
+                    if (!CollectionUtils.isEmpty(variableUriList)) {
+                        SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
+                    }
+                    
                 },
                 orderByList,
                 page,

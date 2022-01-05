@@ -176,7 +176,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {
@@ -222,6 +222,22 @@ export default class VariableList extends Vue {
     @Prop()
     iconNumberOfSelectedRow;
 
+    @PropSync("searchFilter", {
+        default: () => {
+        return {
+            name: undefined,
+            entity: undefined,
+            entityOfInterest: undefined,
+            characteristic: undefined,
+            method: undefined,
+            unit: undefined,
+            group: undefined,
+            experiment: undefined
+        };
+        },
+    })
+    filter;
+
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
     @Ref("tableRef") readonly tableRef!: any;
 
@@ -249,15 +265,7 @@ export default class VariableList extends Vue {
         this.groupVariablesForm.showCreateForm();
     }
 
-    filter = {
-        name: undefined,
-        entity: undefined,
-        entityOfInterest: undefined,
-        characteristic: undefined,
-        method: undefined,
-        unit: undefined,
-        group: undefined
-    };
+
 
     reset() {
         this.filter = {
@@ -267,7 +275,8 @@ export default class VariableList extends Vue {
             characteristic: undefined,
             method: undefined,
             unit: undefined,
-            group: undefined
+            group: undefined,
+            experiment: undefined
         };
         this.refresh();
     }
@@ -277,6 +286,11 @@ export default class VariableList extends Vue {
         this.tableRef.onSelectAll();
         this.$opensilex.updateURLParameters(this.filter);
 
+        this.tableRef.refresh();
+    }
+
+    refreshWithKeepingSelection() {
+        this.$opensilex.updateURLParameters(this.filter);
         this.tableRef.refresh();
     }
 
@@ -297,6 +311,7 @@ export default class VariableList extends Vue {
             this.filter.method,
             this.filter.unit,
             this.filter.group,
+            this.filter.experiment,
             options.orderBy,
             options.currentPage,
             options.pageSize

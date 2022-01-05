@@ -32,23 +32,23 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-              <!-- <opensilex-VariableSelector
+              <opensilex-VariableSelector
                   label="DataTemplateForm.select-variables"
                   placeholder="VariableList.label-filter-placeholder"
                   :multiple="true"
                   :variables.sync="variables"
                   :required="requiredField"
               >
-              </opensilex-VariableSelector> -->
+              </opensilex-VariableSelector>
 
-            <opensilex-VariableSelectorWithFilter
+            <!-- <opensilex-VariableSelectorWithFilter
               label="DataTemplateForm.select-variables"
               placeholder="VariableList.label-filter-placeholder"
               :multiple="true"
               :variables.sync="variables"
               :required="false"
             >
-            </opensilex-VariableSelectorWithFilter>
+            </opensilex-VariableSelectorWithFilter> -->
 
             <opensilex-CheckboxForm
               :value.sync="withRawData"

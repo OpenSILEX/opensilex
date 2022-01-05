@@ -233,7 +233,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithScientificObject"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -248,7 +248,7 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#associatedWithSensingDevice"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
-                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -365,14 +365,14 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeev#concerns"/>
                 <owl:minQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+                <owl:onDataRange rdf:resource="xsd:anyURI"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>

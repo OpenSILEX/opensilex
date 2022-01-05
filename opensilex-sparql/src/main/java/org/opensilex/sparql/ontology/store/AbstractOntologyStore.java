@@ -372,6 +372,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             label.setDefaultLang(lang);
             label.setDefaultValue(label.getTranslations().get(lang));
         }
+        model.setName(label.getDefaultValue());
 
         SPARQLLabel comment = model.getComment();
         if (comment.getTranslations().containsKey(lang)) {
@@ -400,36 +401,58 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return (ClassModel) genericModel;
     }
 
-    private AbstractPropertyModel<?> getProperty(URI uri, URI type, URI domain) throws SPARQLInvalidURIException {
+    private AbstractPropertyModel<?> getProperty(URI property, URI type, URI domain) throws SPARQLInvalidURIException {
 
-        URI formattedURI = URIDeserializer.formatURI(uri);
+        property = URIDeserializer.formatURI(property);
+        final VocabularyModel<?> genericModel = modelsByUris.get(property.toString());
 
-        VocabularyModel<?> genericModel = modelsByUris.get(formattedURI.toString());
         if (genericModel == null) {
-            throw new SPARQLInvalidURIException("owl:property URI not found : ", formattedURI);
+            throw new SPARQLInvalidURIException("owl:property URI not found : ", property);
         }
-
         if (!(AbstractPropertyModel.class.isAssignableFrom(genericModel.getClass()))) {
-            throw new SPARQLInvalidURIException("URI is not a property URI : ", formattedURI);
+            throw new SPARQLInvalidURIException("URI is not a property URI : ", property);
         }
 
         AbstractPropertyModel<?> propertyModel = (AbstractPropertyModel<?>) genericModel;
         if (type != null && !SPARQLDeserializers.compareURIs(propertyModel.getType(), type)) {
-            throw new SPARQLInvalidURIException(String.format(WRONG_PROPERTY_TYPE_MSG, uri, propertyModel.getType(), type), uri);
-        }
-        if (domain != null) {
-            if (propertyModel.getDomain() == null) {
-//                throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, uri, null, domain), uri);
-            } else {
-                // check if the given domain is a superclass of the property domain
-                String formattedDomain = SPARQLDeserializers.formatURI(domain).toString();
-                if (!isAncestor(formattedDomain, propertyModel.getDomain().getUri().toString())) {
-                    throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, uri, propertyModel.getDomain().getUri(), formattedDomain), uri);
-                }
-            }
+            throw new SPARQLInvalidURIException(String.format(WRONG_PROPERTY_TYPE_MSG, property, propertyModel.getType(), type), property);
         }
 
-        return propertyModel;
+        // if no domain only return property, else return an updated property according domain
+        if (domain == null) {
+            return propertyModel;
+        }
+        domain = URIDeserializer.formatURI(domain);
+
+        // existing domain
+        if (propertyModel.getDomain() != null) {
+            // check if the given domain is a superclass of the property domain
+            if (!isAncestor(domain.toString(), propertyModel.getDomain().getUri().toString())) {
+                throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, property, propertyModel.getDomain().getUri(), domain), property);
+            }
+            return propertyModel;
+        }
+
+        // check that property has a restriction with the domain class
+        final ClassModel domainCLass = getClassModel(domain);
+        final OwlRestrictionModel restriction = domainCLass.getRestrictionsByProperties().get(property);
+        if (restriction == null) {
+            return propertyModel;
+        }
+
+        // update data/object property range according domain restriction
+        AbstractPropertyModel<?> propertyCopy = null;
+        if (propertyModel instanceof DatatypePropertyModel) {
+            DatatypePropertyModel dataProperty = new DatatypePropertyModel((DatatypePropertyModel) propertyModel, true);
+            dataProperty.setRange(restriction.getOnDataRange());
+            propertyCopy = dataProperty;
+        } else {
+            ObjectPropertyModel objectProperty = new ObjectPropertyModel((ObjectPropertyModel) propertyModel, true);
+            objectProperty.setRange(restriction.getOnClass());
+            propertyCopy = objectProperty;
+        }
+
+        return propertyCopy;
     }
 
     @Override

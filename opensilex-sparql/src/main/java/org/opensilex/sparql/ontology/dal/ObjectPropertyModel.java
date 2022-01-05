@@ -15,10 +15,7 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author vmigot
@@ -66,6 +63,15 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
     }
 
     public ObjectPropertyModel(ObjectPropertyModel other, boolean readChildren) {
+        super(other);
+
+        setParent(other.getParent());
+        if(other.getParents() != null){
+            setParents(new HashSet<>(other.getParents()));
+        }
+        if(readChildren && other.getChildren() != null){
+            setChildren(new ArrayList<>(other.getChildren()));
+        }
 
     }
 

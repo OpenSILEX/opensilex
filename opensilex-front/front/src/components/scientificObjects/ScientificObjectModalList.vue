@@ -108,7 +108,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
+import { Component, Ref, PropSync } from "vue-property-decorator";
 
 @Component
 export default class ScientificObjectModalList extends Vue {
@@ -126,7 +126,7 @@ export default class ScientificObjectModalList extends Vue {
       };
     },
   })
-  filter;
+  filter: any;
 
 
   @Ref("soList") readonly soList!: any;

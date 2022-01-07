@@ -85,7 +85,7 @@ export default class InfrastructureForm extends Vue {
     this.uriGenerated = true;
     if (this.parentInfrastructures == null) {
       this.$opensilex
-        .getService("opensilex-core.OrganisationsService")
+        .getService("opensilex-core.OrganizationsService")
         .searchInfrastructures()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
@@ -115,7 +115,7 @@ export default class InfrastructureForm extends Vue {
   init() {
     if (this.parentInfrastructures == null) {
       this.$opensilex
-        .getService("opensilex-core.OrganisationsService")
+        .getService("opensilex-core.OrganizationsService")
         .searchInfrastructures()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
@@ -144,7 +144,7 @@ export default class InfrastructureForm extends Vue {
   create(form) {
     this.cleanFormBeforeSend(form);
     return this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .createInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -169,7 +169,7 @@ export default class InfrastructureForm extends Vue {
     this.cleanFormBeforeSend(form);
     delete form.rdf_type_name;
     return this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .updateInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;

@@ -33,7 +33,7 @@ export default class OrganizationFacilityModalForm extends Vue {
 
   showEditForm(form) {
     this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .getInfrastructureFacility(form.uri)
       .then((http) => {
         this.facilityForm
@@ -75,7 +75,7 @@ export default class OrganizationFacilityModalForm extends Vue {
     form.relations = definedRelations;
 
     return this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .createInfrastructureFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
@@ -116,7 +116,7 @@ export default class OrganizationFacilityModalForm extends Vue {
 
     form.relations = definedRelations;
     return this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .updateInfrastructureFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;

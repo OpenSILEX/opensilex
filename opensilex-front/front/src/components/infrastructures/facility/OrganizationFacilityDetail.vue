@@ -213,7 +213,7 @@ export default class OrganizationFacilityDetail extends Vue {
 
   deleteInfrastructureFacility() {
     this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .deleteInfrastructureFacility(this.selected.uri)
         .then(() => {
           this.$router.push({

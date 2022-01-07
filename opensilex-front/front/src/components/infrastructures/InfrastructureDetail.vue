@@ -133,7 +133,7 @@ export default class InfrastructureDetail extends Vue {
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
   created() {
-    this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
+    this.organizationService = this.$opensilex.getService("opensilex-core.OrganizationsService");
   }
 
   get user() {

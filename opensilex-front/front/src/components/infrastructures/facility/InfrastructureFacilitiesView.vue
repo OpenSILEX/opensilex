@@ -196,7 +196,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   public deleteFacility(uri) {
     this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -210,7 +210,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-        "opensilex-core.OrganisationsService"
+        "opensilex-core.OrganizationsService"
     );
 
     this.refresh();

@@ -146,7 +146,7 @@ public class RDFPropertyDTO {
 
     }
 
-    public RDFPropertyDTO(AbstractPropertyModel<?> model) {
+    public RDFPropertyDTO(AbstractPropertyModel<?> model, String lang) {
 
         setUri(model.getUri());
         setType(model.getType());
@@ -171,8 +171,9 @@ public class RDFPropertyDTO {
             setRange(((DatatypePropertyModel) model).getRange());
         }else if(model instanceof ObjectPropertyModel){
             if(((ObjectPropertyModel) model).getRange() != null){
-                setRange(((ObjectPropertyModel) model).getRange().getUri());
-                setRangeLabel(((ObjectPropertyModel) model).getRange().getName());
+                ObjectPropertyModel objectProperty = (ObjectPropertyModel) model;
+                setRange(objectProperty.getRange().getUri());
+                setRangeLabel(objectProperty.getRange().getLabel().getAllTranslations().get(lang));
             }
         }
     }

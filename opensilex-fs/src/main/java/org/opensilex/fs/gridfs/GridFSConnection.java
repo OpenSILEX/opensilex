@@ -34,6 +34,7 @@ import org.opensilex.service.ServiceDefaultDefinition;
 
 /**
  * Gridfs filesystem class
+ *
  * @author Arnaud Charleroy
  */
 @ServiceDefaultDefinition(config = GridFSConfig.class)
@@ -44,7 +45,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     public GridFSConnection(GridFSConfig config) {
         super(config);
     }
-    
+
     public GridFSConnection() {
         super(null);
     }
@@ -72,7 +73,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
             int fileLength = (int) downloadStream.getGridFSFile().getLength();
             byte[] bytesToWriteTo = new byte[fileLength];
             downloadStream.read(bytesToWriteTo);
-            return bytesToWriteTo; 
+            return bytesToWriteTo;
         }
 
     }
@@ -95,13 +96,13 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     @Override
     public void writeFile(Path filePath, String content, URI fileURI) throws IOException {
         byte[] data = content.getBytes(StandardCharsets.UTF_8);
-         GridFSUploadOptions options = new GridFSUploadOptions()
-                    .chunkSizeBytes(1048576)
-                    .metadata(new Document("path", filePath.toString()));
-        GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(fileURI.toString(), options);
-        uploadStream.write(data);
-        uploadStream.close(); 
-     }
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(1048576)
+                .metadata(new Document("path", filePath.toString()));
+        try ( GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(fileURI.toString(), options)) {
+            uploadStream.write(data);
+        }
+    }
 
     @Override
     public void writeFile(Path filePath, File file, URI fileURI) throws IOException {
@@ -110,10 +111,9 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
                     .chunkSizeBytes(1048576)
                     .metadata(new Document("path", filePath.toString()));
             gridFSBucket.uploadFromStream(fileURI.toString(), streamToUploadFrom, options);
-         }
+        }
     }
 
-    
     @Override
     public void createDirectories(Path directoryPath) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -121,7 +121,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
     @Override
     public boolean exist(Path filePath) throws IOException {
-        Bson query = Filters.eq("metadata.uri", filePath.toUri());
+        Bson query = Filters.eq("metadata.path", filePath.toUri());
         GridFSFindIterable find = gridFSBucket.find(query);
         MongoCursor<GridFSFile> cursor = find.cursor();
         return cursor.hasNext();
@@ -129,7 +129,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
     @Override
     public void delete(Path filePath) throws IOException {
-         Bson query = Filters.eq("metadata.uri", filePath.toUri());
+        Bson query = Filters.eq("metadata.path", filePath.toUri());
         GridFSFindIterable find = gridFSBucket.find(query);
         MongoCursor<GridFSFile> cursor = find.cursor();
         GridFSFile gridFSFile = cursor.next();

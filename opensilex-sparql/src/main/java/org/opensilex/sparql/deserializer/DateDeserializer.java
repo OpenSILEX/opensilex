@@ -23,10 +23,10 @@ public class DateDeserializer implements SPARQLDeserializer<LocalDate> {
         if (value == null) {
             return null;
         }
-        DateTimeFormatter slashFormater = DateTimeFormatter.ofPattern("d/MM/yyyy");
-        DateTimeFormatter slashRevertFormater = DateTimeFormatter.ofPattern("yyyy/MM/d");
-        DateTimeFormatter hyphenFormater = DateTimeFormatter.ofPattern("d-MM-yyyy");
-        DateTimeFormatter hyphenRevertFormater = DateTimeFormatter.ofPattern("yyyy-MM-d");
+        DateTimeFormatter slashFormater = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter slashRevertFormater = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter hyphenFormater = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter hyphenRevertFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         LocalDate localDate = null;
         try {

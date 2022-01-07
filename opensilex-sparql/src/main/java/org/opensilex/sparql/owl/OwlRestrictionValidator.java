@@ -15,11 +15,14 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
@@ -42,7 +45,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
     protected final OntologyStore ontologyStore;
 
     protected boolean isValid;
-    protected Map<String, List<String>> valuesByTypeToCheck;
+//    protected Map<String, List<String>> valuesByTypeToCheck;
     protected Map<String, Map<String, List<T>>> validationByTypesAndValues;
 
     protected OwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore) {
@@ -50,7 +53,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         this.ontologyStore = ontologyStore;
 
         isValid = true;
-        valuesByTypeToCheck = new PatriciaTrie<>();
+//        valuesByTypeToCheck = new PatriciaTrie<>();
         validationByTypesAndValues = new PatriciaTrie<>();
     }
 
@@ -134,9 +137,9 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             }
             // no restriction and no value
         } else {
-            if (classModel.isDatatypePropertyRestriction(property)) {
+            if (restriction.getOnDataRange() != null) {
                 validateDataTypePropertyValue(graph, model, value, property, restriction, contextSupplier);
-            } else if (classModel.isObjectPropertyRestriction(property)) {
+            } else if (restriction.getOnClass() != null) {
                 validateObjectPropertyValue(graph, model, value, property, restriction, contextSupplier);
             }
         }
@@ -155,6 +158,12 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             }
             if (isValid) {
                 model.addRelation(graph, property, deserializer.getClassType(), value);
+
+                if(SPARQLDeserializers.compareURIs(property.toString(), RDFS.label.getURI())){
+                    if(SPARQLNamedResourceModel.class.isAssignableFrom(model.getClass())){
+                        ((SPARQLNamedResourceModel<?>) model).setName(value);
+                    }
+                }
             }
 
         } catch (SPARQLDeserializerNotFoundException e) {
@@ -167,24 +176,26 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         }
     }
 
-    protected void validateObjectPropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> contextSupplier) {
+    protected void validateObjectPropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> validationSupplier) {
         try {
             // check if URI is valid
             new URI(value);
 
-            Map<String, List<T>> validationContextsByValue = validationByTypesAndValues.computeIfAbsent(
-                    restriction.getOnClass().toString(), key -> new PatriciaTrie<>()
-            );
-            List<T> validationContexts = validationContextsByValue.computeIfAbsent(value, key -> new ArrayList<>());
-            T validationContext = contextSupplier.get();
-            validationContext.setValue(value);
-            validationContext.setProperty(property.toString());
-            validationContexts.add(validationContext);
+            T validation = validationSupplier.get();
+            validation.setValue(value);
+            validation.setProperty(property.toString());
+
+            validationByTypesAndValues
+                    // get or create map of <values,validation> by type
+                    .computeIfAbsent(restriction.getOnClass().getUri().toString(), key -> new PatriciaTrie<>())
+                    // get or create list of validation by value
+                    .computeIfAbsent(value, key -> new ArrayList<>())
+                    .add(validation);
 
             model.addRelation(graph, property, URI.class, value);
 
         } catch (URISyntaxException e) {
-            T validationContext = contextSupplier.get();
+            T validationContext = validationSupplier.get();
             validationContext.setValue(value);
             validationContext.setProperty(property.toString());
             validationContext.setMessage(e.getMessage());
@@ -194,7 +205,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     public boolean validateValuesByType() throws SPARQLException {
 
-        if (valuesByTypeToCheck.isEmpty()) {
+        if (validationByTypesAndValues.isEmpty()) {
             return true;
         }
         AtomicBoolean valid = new AtomicBoolean(true);
@@ -253,7 +264,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         Var existing = makeVar(SPARQLService.EXISTING_VAR);
 
         WhereBuilder where = new WhereBuilder()
-                .addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(type))
+                .addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)) )
                 .addWhere(uriVar, RDF.type, typeVar);
 
         // add EXIST {} expression as var of SELECT
@@ -261,7 +272,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
                 .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
 
         // append VALUES ?uri  :uri_1 ... :uri_n
-        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris.stream(), false, uris.size());
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris.stream(), true, uris.size());
 
         return select;
     }

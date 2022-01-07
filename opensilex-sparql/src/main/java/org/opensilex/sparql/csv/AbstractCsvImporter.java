@@ -15,6 +15,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.uri.generation.ClassURIGenerator;
 import org.opensilex.uri.generation.DefaultURIGenerator;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
@@ -25,7 +26,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Supplier;
 
-public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
+public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassURIGenerator> {
 
     public static final String CSV_URI_KEY = "uri";
     public static final int CSV_URI_INDEX = 0;
@@ -153,8 +154,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         try {
             if (!StringUtils.isEmpty(uriStr)) {
                 model.setUri(new URI(uriStr));
-            } else {
-                model.setUri(uriGenerator.generateURI(generationPrefix, model, 0));
             }
         } catch (URISyntaxException e) {
             csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
@@ -176,7 +175,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
         }
     }
 
-    private void readProperties(int rowIdx, String[] row, URI[] columns, T model, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
+    private void readRelations(int rowIdx, String[] row, URI[] columns, T model, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
 
         // #TODO use local map-based Class model intra-cache
         ClassModel classModel = ontologyStore.getClassModel(model.getType(), classURI, null);
@@ -197,9 +196,23 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel> {
     }
 
     private T getModel(int rowIdx, String[] row, URI[] columns, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
+
+        CSVValidationModel validation = restrictionValidator.getValidationModel();
+
         T model = objectConstructor.get();
-        readUriAndType(rowIdx, row, model, restrictionValidator.getValidationModel());
-        readProperties(rowIdx, row, columns, model, restrictionValidator);
+        readUriAndType(rowIdx, row, model, validation);
+        readRelations(rowIdx, row, columns, model, restrictionValidator);
+
+        // generate URI after relations building
+        if(model.getUri() == null){
+            try {
+                URI generated = model.generateURI(generationPrefix,model,0);
+                model.setUri(generated);
+            }catch (URISyntaxException e){
+                validation.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            }
+        }
+
         return model;
     }
 

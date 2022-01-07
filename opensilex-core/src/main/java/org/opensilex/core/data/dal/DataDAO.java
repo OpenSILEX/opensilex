@@ -531,7 +531,7 @@ public class DataDAO {
         nosql.startTransaction();         
         try {   
             createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
+            fs.writeFile(FS_FILE_PREFIX, filePath, file, model.getUri());
             nosql.commitTransaction();
         } catch (Exception e) {
             nosql.rollbackTransaction();

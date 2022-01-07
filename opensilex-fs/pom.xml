@@ -44,6 +44,11 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>    
 </project>
 

@@ -8,6 +8,7 @@ package org.opensilex.fs.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,12 +62,12 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
+    public void writeFile(Path filePath, String content, URI fileURI) throws IOException {
         FileUtils.writeStringToFile(getAbsolutePathFile(filePath), content, StandardCharsets.UTF_8);
     }
 
     @Override
-    public void writeFile(Path filePath, File file) throws IOException {
+    public void writeFile(Path filePath, File file, URI fileURI) throws IOException {
         FileUtils.copyFile(file, getAbsolutePathFile(filePath));
     }
 

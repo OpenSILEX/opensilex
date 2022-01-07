@@ -152,14 +152,14 @@ public class FileStorageService extends BaseService implements Service {
         return getConnection(prefix).readFile(filePath);
     }
 
-    public void writeFile(String prefix, Path filePath, String content) throws IOException {
+    public void writeFile(String prefix, Path filePath, String content, URI fileURI) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
-        getConnection(prefix).writeFile(filePath, content);
+        getConnection(prefix).writeFile(filePath, content, fileURI);
     }
 
-    public void writeFile(String prefix, Path filePath, File file) throws IOException {
+    public void writeFile(String prefix, Path filePath, File file, URI fileURI) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
-        getConnection(prefix).writeFile(filePath, file);
+        getConnection(prefix).writeFile(filePath, file, fileURI);
     }
 
     public void createDirectories(String prefix, Path directoryPath) throws IOException {
@@ -191,7 +191,7 @@ public class FileStorageService extends BaseService implements Service {
     }
 
     public void writeFile(String prefix, URI fileURI, String content) throws IOException {
-        writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content);
+        writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content, fileURI);
     }
 
     public void writeFile(String prefix, URI fileURI, File file) throws IOException {
@@ -201,7 +201,7 @@ public class FileStorageService extends BaseService implements Service {
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
         }
-        getConnection(prefix).writeFile(filePath, file);
+        getConnection(prefix).writeFile(filePath, file, fileURI);
     }
 
     public byte[] readFileAsByteArray(String prefix, URI fileURI) throws IOException {

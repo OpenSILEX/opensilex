@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -134,14 +135,14 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     }
 
     @Override
-    public void writeFile(Path dest, String content) throws IOException {
+    public void writeFile(Path dest, String content, URI fileURI) throws IOException {
         Path filePath = getAbsolutePath(dest);
         
         File tmpFile = null;
         try {
             tmpFile = Files.createTempFile(tmpDirectory, null, null).toFile();
             FileUtils.writeStringToFile(tmpFile, content, StandardCharsets.UTF_8);
-            writeFile(filePath, tmpFile);
+            writeFile(filePath, tmpFile, fileURI);
         } finally {
             if (tmpFile != null && tmpFile.exists()) {
                 tmpFile.delete();
@@ -153,7 +154,7 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     private final static String IRODS_IPUT_CMD = "iput";
 
     @Override
-    public void writeFile(Path dest, File file) throws IOException {
+    public void writeFile(Path dest, File file, URI fileURI) throws IOException {
         Path filePath = getAbsolutePath(dest);
         
         try {

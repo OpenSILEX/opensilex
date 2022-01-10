@@ -1,14 +1,12 @@
 package org.opensilex.core.scientificObject.dal;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.List;
         graph = ScientificObjectModel.GRAPH,
         prefix = ScientificObjectModel.PREFIX
 )
-public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
+public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> implements ClassURIGenerator<SPARQLTreeModel<ScientificObjectModel>> {
 
     public static final String GRAPH = "scientific-object";
     public static final String PREFIX = "so";
@@ -40,9 +38,6 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             useDefaultGraph = false
     )
     protected List<ScientificObjectModel> children;
-
-    @SPARQLIgnore
-    protected ExperimentModel experiment;
     
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -89,27 +84,16 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         this.factorLevels = factorLevels;
     }
 
-    public ExperimentModel getExperiment() {
-        return experiment;
-    }
-
-    public void setExperiment(ExperimentModel experiment) {
-        this.experiment = experiment;
-    }
-
     @Override
-    public String getInstanceUriPath(SPARQLTreeModel<ScientificObjectModel> instance) {
-        StringBuilder sb = new StringBuilder();
-        if(experiment != null && !StringUtils.isEmpty(experiment.getName())){
-            sb.append(normalize(experiment.getName())).append("/");
-        }
+    public String[] getInstancePathSegments(SPARQLTreeModel<ScientificObjectModel> instance) {
 
-        sb.append(GENERATION_PREFIX);
-        if(instance.getName() != null){
-            sb.append(normalize(instance.getName()));
-        }else{
+        StringBuilder sb = new StringBuilder(GENERATION_PREFIX);
+        if (instance.getName() != null) {
+            sb.append(instance.getName());
+        } else {
             sb.append(RandomStringUtils.randomAlphabetic(8));
         }
-        return sb.toString();
+        return new String[]{sb.toString()};
     }
+    
 }

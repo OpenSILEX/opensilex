@@ -348,11 +348,10 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         ScientificObjectModel osInXp = new ScientificObjectModel();
         osInXp.setName("os_name");
-        osInXp.setExperiment(xp);
 
         getSparqlService().create(NodeFactory.createURI(xp.getUri().toString()),osInXp);
 
-        String expectedUriInXp = getOpensilexBaseURI()+"id/scientific-object/xp_name/so-os_name";
+        String expectedUriInXp = getOpensilexBaseURI()+"id/scientific-object/so-os_name";
         Assert.assertEquals(osInXp.getUri().toString(),expectedUriInXp);
 
         ScientificObjectModel osOutOfXp = new ScientificObjectModel();

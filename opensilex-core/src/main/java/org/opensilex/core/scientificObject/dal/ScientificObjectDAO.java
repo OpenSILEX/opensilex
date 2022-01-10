@@ -850,10 +850,6 @@ public class ScientificObjectDAO {
         object.setType(soType);
         object.setName(name);
 
-        if(xp != null){
-            object.setExperiment(xp);
-        }
-
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
                 if (!ontologyDAO.validateObjectValue(contextURI, model, relation.getProperty(), relation.getValue(), object)) {

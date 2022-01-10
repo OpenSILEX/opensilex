@@ -579,7 +579,7 @@
     },
     "credential": {
         "default": {
-            "access": "Access",
+            "access": "Menu access",
             "modification": "Add / update",
             "delete": "Delete"
         },

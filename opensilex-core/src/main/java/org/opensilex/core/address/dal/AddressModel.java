@@ -4,6 +4,9 @@ import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.util.UUID;
 
 /**
  * An address corresponding to the VCARD specification.
@@ -14,7 +17,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
         ontology = VCARD4.class,
         resource = "Address"
 )
-public class AddressModel extends SPARQLResourceModel {
+public class AddressModel extends SPARQLResourceModel implements ClassURIGenerator<AddressModel> {
     @SPARQLProperty(
             ontology = VCARD4.class,
             property = "country_name"
@@ -83,5 +86,13 @@ public class AddressModel extends SPARQLResourceModel {
 
     public void setStreetAddress(String streetAddress) {
         this.streetAddress = streetAddress;
+    }
+
+    @Override
+    public String[] getInstancePathSegments(AddressModel instance) {
+        return new String[] {
+                "address",
+                UUID.randomUUID().toString()
+        };
     }
 }

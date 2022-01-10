@@ -106,13 +106,10 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
-import {
-  NamedResourceDTOInfrastructureFacilityModel
-} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";

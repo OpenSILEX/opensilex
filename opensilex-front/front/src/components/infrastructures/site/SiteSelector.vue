@@ -22,15 +22,15 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class SiteSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
-  $service: OrganisationsService;
+  $service: OrganizationsService;
 
   @PropSync("sites", {default: () => []})
   siteURIs;

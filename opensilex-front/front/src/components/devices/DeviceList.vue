@@ -170,19 +170,13 @@
     ></opensilex-VariableModalList>
 
     <opensilex-EventCsvForm
-      v-if="showEventForm"
-      ref="eventCsvForm"
-      :targets="selectedUris"
-    ></opensilex-EventCsvForm>
-
-    <opensilex-EventCsvForm
-        v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+        v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="eventCsvForm"
         :targets="selectedUris">
     </opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
-        v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+        v-if="showMoveForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
         ref="moveCsvForm"
         :targets="selectedUris"
         :isMove="true"

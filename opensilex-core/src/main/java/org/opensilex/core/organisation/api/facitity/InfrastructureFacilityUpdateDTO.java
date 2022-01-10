@@ -16,7 +16,7 @@ import java.net.URI;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations"})
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "address"})
 public class InfrastructureFacilityUpdateDTO extends InfrastructureFacilityCreationDTO {
     @Override
     @NotNull

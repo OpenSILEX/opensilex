@@ -193,7 +193,7 @@ public class ScientificObjectAPI {
             Node context = SPARQLDeserializers.nodeURI(experimentURI);
             select.addGraph(context, "?uri", RDF.type, "?type");
         } else if (!currentUser.isAdmin()) {
-            ExperimentDAO xpDO = new ExperimentDAO(sparql);
+            ExperimentDAO xpDO = new ExperimentDAO(sparql, nosql);
             Set<URI> graphFilterURIs = xpDO.getUserExperiments(currentUser);
 
             select.addGraph("?g", "?uri", RDF.type, "?type");
@@ -355,7 +355,7 @@ public class ScientificObjectAPI {
 
         if (contextURI != null) {
             if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-                ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+                ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
                 xpDAO.validateExperimentAccess(contextURI, currentUser);
             } else {
                 throw new NotFoundURIException("Experiment URI not found:", contextURI);
@@ -492,7 +492,7 @@ public class ScientificObjectAPI {
             contextURI = globalScientificObjectGraph;
         } else {
             globalCopy = true;
-            experiment = new ExperimentDAO(sparql).get(contextURI,currentUser);
+            experiment = new ExperimentDAO(sparql, nosql).get(contextURI, currentUser);
             if(experiment == null){
                 throw new NotFoundURIException("Unknown experiment",contextURI);
             }
@@ -1038,7 +1038,7 @@ public class ScientificObjectAPI {
 
         if (sparql.uriExists(ExperimentModel.class, contextURI)) {
 
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
             xpDAO.validateExperimentAccess(contextURI, currentUser);
             ExperimentModel xp = sparql.getByURI(ExperimentModel.class, contextURI, currentUser.getLanguage());
 
@@ -1174,7 +1174,7 @@ public class ScientificObjectAPI {
         if (contextURI == null) {
             // INFO :  no need to validate with no context defined
         } else if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
 
             xpDAO.validateExperimentAccess(contextURI, currentUser);
         } else {
@@ -1184,7 +1184,7 @@ public class ScientificObjectAPI {
 
     private ExperimentModel getExperiment(URI experimentURI) throws Exception {
         if (sparql.uriExists(ExperimentModel.class, experimentURI)) {
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
 
             try {
                 ExperimentModel xp = xpDAO.get(experimentURI, currentUser);

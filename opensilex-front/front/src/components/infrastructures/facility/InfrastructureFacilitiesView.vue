@@ -33,7 +33,7 @@
       sort-by="rdf_type_name"
       :selectable="isSelectable"
       selectMode="single"
-      :items="facilities"
+      :items="displayableFacilities"
       :fields="fields"
       @row-selected="onFacilitySelected"
       ref="facilityTable"
@@ -114,6 +114,8 @@ import {BTable} from "bootstrap-vue";
 import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
+import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
+import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
@@ -125,15 +127,22 @@ export default class InfrastructureFacilitiesView extends Vue {
   @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
-  selected: InfrastructureGetDTO;
+  organization: NamedResourceDTOInfrastructureModel;
 
-  get user() {
-    return this.$store.state.user;
-  }
+  @Prop()
+  site: NamedResourceDTOSiteModel;
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+  /**
+   * Facilities as prop. If defined, then these facilities only are displayed in the view. Otherwise, facilities are
+   * fetched from the server.
+   */
+  @Prop()
+  facilities: Array<NamedResourceDTOInfrastructureFacilityModel>;
+  /**
+   * Facilities fetched from the server, only if {@link facilities} is undefined.
+   */
+  fetchedFacilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
+  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
 
   @Prop({
     default: false,
@@ -144,6 +153,21 @@ export default class InfrastructureFacilitiesView extends Vue {
     default: false
   })
   withActions: boolean;
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  get displayableFacilities() {
+    if (Array.isArray(this.facilities)) {
+      return this.facilities;
+    }
+    return this.fetchedFacilities;
+  }
 
   get fields() {
     let fields = [
@@ -168,9 +192,6 @@ export default class InfrastructureFacilitiesView extends Vue {
     return fields;
   }
 
-  facilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
-  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
-
   public deleteFacility(uri) {
     this.$opensilex
       .getService("opensilex.OrganisationsService")
@@ -194,30 +215,25 @@ export default class InfrastructureFacilitiesView extends Vue {
   }
 
   refresh() {
-    let searchPromise = this.selected
-      ? this.service.searchInfrastructureFacilities(undefined, [this.selected.uri])
-      : this.service.searchInfrastructureFacilities();
+    if (Array.isArray(this.facilities)) {
+      return;
+    }
 
-    return searchPromise
+    return this.service.searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
-          this.facilities = http.response.result;
+          this.fetchedFacilities = http.response.result;
         }).then(() => {
 
           // Select the first element
-          if (this.isSelectable && this.facilities.length > 0) {
+          if (this.isSelectable && this.fetchedFacilities.length > 0) {
             this.facilityTable.selectRow(0);
           }
         });
   }
 
-  @Watch("selected")
-  onRefreshSelectedOrganization() {
-    this.facilities = this.selected.facilities;
-  }
-
   initForm(form: InfrastructureFacilityCreationDTO) {
-    if (this.selected) {
-      form.organizations = [this.selected.uri];
+    if (this.organization) {
+      form.organizations = [this.organization.uri];
     }
   }
 

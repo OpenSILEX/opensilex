@@ -120,7 +120,7 @@ public class StudiesSearchAPI implements BrapiCall {
 
         Boolean isEnded = !StringUtils.isEmpty(active) ? !Boolean.parseBoolean(active) : null;
         
-        ExperimentDAO xpDao = new ExperimentDAO(sparql);
+        ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         if (studyDbId != null) {
             ExperimentModel model = xpDao.get(studyDbId, currentUser);  
             if (model != null) {

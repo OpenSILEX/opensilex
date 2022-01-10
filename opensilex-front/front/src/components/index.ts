@@ -95,6 +95,14 @@ import OrganizationFacilityDetail from './infrastructures/facility/OrganizationF
 components["opensilex-OrganizationFacilityDetail"] = OrganizationFacilityDetail;
 import OrganizationFacilityForm from './infrastructures/facility/OrganizationFacilityForm.vue';
 components["opensilex-OrganizationFacilityForm"] = OrganizationFacilityForm;
+import SiteDetail from './infrastructures/site/SiteDetail.vue';
+components["opensilex-SiteDetail"] = SiteDetail;
+import SiteForm from './infrastructures/site/SiteForm.vue';
+components["opensilex-SiteForm"] = SiteForm;
+import SiteView from './infrastructures/site/SiteView.vue';
+components["opensilex-SiteView"] = SiteView;
+import SiteSelector from './infrastructures/site/SiteSelector.vue';
+components["opensilex-SiteSelector"] = SiteSelector;
 
 
 // Factors
@@ -162,6 +170,8 @@ import DateForm from './common/forms/DateForm.vue'
 components["opensilex-DateForm"] = DateForm;
 import GeometryForm from './common/forms/GeometryForm.vue'
 components["opensilex-GeometryForm"] = GeometryForm;
+import AddressForm from './common/forms/AddressForm.vue'
+components["opensilex-AddressForm"] = AddressForm;
 
 import DateRangePickerForm from './common/forms/DateRangePickerForm.vue'
 components["opensilex-DateRangePickerForm"] = DateRangePickerForm;
@@ -186,6 +196,8 @@ import ListView from './common/views/ListView.vue'
 components["opensilex-ListView"] = ListView;
 import UriListView from './common/views/UriListView.vue'
 components["opensilex-UriListView"] = UriListView;
+import AddressView from './common/views/AddressView.vue'
+components["opensilex-AddressView"] = AddressView;
 
 import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;
@@ -251,6 +263,9 @@ import HelpButton from './common/buttons/HelpButton.vue'
 components["opensilex-HelpButton"] = HelpButton;
 import DeprecatedButton from './common/buttons/DeprecatedButton.vue'
 components["opensilex-DeprecatedButton"] = DeprecatedButton;
+
+import Dropdown from './common/dropdown/Dropdown.vue'
+components["opensilex-Dropdown"] = Dropdown;
 
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;

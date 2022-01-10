@@ -6,20 +6,16 @@
 //******************************************************************************
 package org.opensilex.security;
 
-import com.auth0.jwt.JWTCreator;
-import java.net.URI;
-import java.util.*;
-import javax.inject.Singleton;
-import javax.mail.internet.InternetAddress;
 import org.apache.jena.riot.Lang;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.ORG;
+import org.eclipse.rdf4j.model.vocabulary.VCARD4;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.authentication.dal.AuthenticationDAO;
@@ -27,7 +23,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.authentication.injection.CurrentUserFactory;
 import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.group.dal.GroupDAO;
+import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
@@ -37,6 +33,12 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Singleton;
+import javax.mail.internet.InternetAddress;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SecurityModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension {
 
@@ -162,6 +164,20 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
                 "ontologies/foaf.rdf",
                 Lang.RDFXML,
                 "foaf"
+        ));
+
+        list.add(new OntologyFileDefinition(
+                VCARD4.NAMESPACE,
+                "ontologies/vcard.ttl",
+                Lang.TTL,
+                "vcard"
+        ));
+
+        list.add(new OntologyFileDefinition(
+                ORG.NAMESPACE,
+                "ontologies/org.ttl",
+                Lang.TTL,
+                "org"
         ));
 
         return list;

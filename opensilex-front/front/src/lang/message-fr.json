@@ -136,7 +136,11 @@
                 }
             },
             "addDocument": "Ajouter un document",
-            "warningInstruction" : "Fonctionnalité expérimentale"
+            "warningInstruction" : "Fonctionnalité expérimentale",
+            "organization": {
+                "site": "Site",
+                "sites": "Sites"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -549,6 +553,11 @@
         },
         "document": {
             "nopreview": "Pas de prévisualisation possible"
+        },
+        "organization": {
+            "exception": {
+                "siteFacilityInvalidAddress": "Le site '{site}' et l'installation technique '{facility}' doivent avoir la même adresse."
+            }
         }
     },
     "credential-groups": {

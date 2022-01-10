@@ -9,6 +9,8 @@ import { Store } from 'vuex';
 import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration, ThemeConfigDTO } from '../lib';
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
+import Foaf from '../ontologies/Foaf';
+import Org from '../ontologies/Org';
 import Oeev from '../ontologies/Oeev';
 
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
@@ -16,17 +18,19 @@ import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import {NamedResourceDTO} from "opensilex-security/model/namedResourceDTO";
+import {ServiceBinder} from "../services/ServiceBinder";
 
 declare var $cookies: VueCookies;
 
 declare var window: any;
 
-interface TreeOption {
+export interface TreeOption<T extends TreeOption<T>> {
     id: string,
     label: string,
     isDefaultExpanded: boolean,
     isDisabled: boolean,
-    children: Array<TreeOption>,
+    children: Array<T>,
     title?: string,
     data?: ResourceDagDTO,
     isLeaf?: boolean,
@@ -35,6 +39,8 @@ interface TreeOption {
     isDraggable?: boolean,
     isSelectable?: boolean
 }
+
+export type GenericTreeOption = TreeOption<GenericTreeOption>;
 
 export default class OpenSilexVuePlugin {
 
@@ -50,6 +56,8 @@ export default class OpenSilexVuePlugin {
     public $bvToast: any;
 
     public Oeso = Oeso;
+    public Foaf = Foaf;
+    public Org = Org;
     public Oeev = Oeev;
 
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
@@ -64,6 +72,7 @@ export default class OpenSilexVuePlugin {
         this.$i18n = i18n;
         this.$moment = moment;
         ApiServiceBinder.with(this.container);
+        ServiceBinder.with(this.container);
     }
 
     getUser() {
@@ -416,6 +425,10 @@ export default class OpenSilexVuePlugin {
     }
 
     private handleError(error, message?) {
+        if (!message && !!error.response.result && !!error.response.result.translationKey) {
+            message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
+        }
+
         this.enableLoader();
         switch (error.status) {
             case 400:
@@ -552,7 +565,7 @@ export default class OpenSilexVuePlugin {
         return "OPENSILEX-TOAST" + OpenSilexVuePlugin.hashCode(message + "|" + options.title + "|" + options.variant);
     }
 
-    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?): Array<TreeOption> {
+    public buildTreeListOptions(resourceTrees: Array<any>, buildOptions?): Array<GenericTreeOption> {
         let options = [];
 
         buildOptions = buildOptions || {
@@ -576,7 +589,7 @@ export default class OpenSilexVuePlugin {
         return options;
     }
 
-    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean): TreeOption {
+    public buildTreeOptions(resourceTree: any, buildOptions: any, disabled?: boolean): GenericTreeOption {
 
         let option = {
             id: resourceTree.uri,
@@ -611,7 +624,21 @@ export default class OpenSilexVuePlugin {
         return option;
     }
 
-    public buildTreeFromDag(dagList: Array<ResourceDagDTO>, buildOptions?: any): Array<TreeOption> {
+    public mapTree<T extends TreeOption<T>, U extends TreeOption<U>>(tree: Array<T>, mappingFunction: (node: T, mappedChildren?: Array<U>) => U): Array<U> {
+        return tree.map(rootNode => this.browseTreeRecursive(rootNode, mappingFunction));
+    }
+
+    private browseTreeRecursive<T extends TreeOption<T>, U extends TreeOption<U>>(node: T, mappingFunction: (node: T, mappedChildren?: Array<U>) => U): U {
+        let mappedChildren: Array<U> | undefined = undefined;
+
+        if (Array.isArray(node.children)) {
+            mappedChildren = node.children.map(child => this.browseTreeRecursive(child, mappingFunction));
+        }
+
+        return mappingFunction(node, mappedChildren);
+    }
+
+    public buildTreeFromDag(dagList: Array<ResourceDagDTO>, buildOptions?: any): Array<GenericTreeOption> {
         if (!dagList || dagList.length === 0) {
             return [];
         }
@@ -627,7 +654,7 @@ export default class OpenSilexVuePlugin {
            dagNode.children = dagNode.children.filter(childUri => dagMap.has(childUri));
         });
 
-        let rootNodes: Array<TreeOption> = [];
+        let rootNodes: Array<GenericTreeOption> = [];
 
         dagList.forEach(dagNode => {
             if (!dagNode.parents || dagNode.parents.length === 0) {
@@ -638,10 +665,10 @@ export default class OpenSilexVuePlugin {
         return rootNodes;
     }
 
-    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, ResourceDagDTO>, buildOptions: any, disabled: boolean = false): TreeOption {
+    private buildTreeFromDagNode(nodeUri: string, dagMap: Map<string, ResourceDagDTO>, buildOptions: any, disabled: boolean = false): GenericTreeOption {
         let dagNode = dagMap.get(nodeUri);
 
-        let treeNode: TreeOption = {
+        let treeNode: GenericTreeOption = {
             id: dagNode.uri,
             label: dagNode.name,
             isDefaultExpanded: buildOptions.expanded != undefined ? buildOptions.expanded : true,

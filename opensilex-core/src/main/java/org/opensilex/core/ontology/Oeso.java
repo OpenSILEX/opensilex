@@ -106,6 +106,8 @@ public class Oeso {
     public static final Resource Facility = Ontology.resource(NS, "Facility");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
     public static final Property isHosted = Ontology.property(NS, "isHosted");
+    public static final Property containsFacility = Ontology.property(NS, "containsFacility");
+    public static final Property withinSite = Ontology.property(NS, "withinSite");
 
     // ---- SPECIES ----
     // public static final Resource Species = Ontology.resource(NS, "Species");
@@ -164,5 +166,4 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
-
 }

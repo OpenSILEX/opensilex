@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import javax.ws.rs.core.Response.Status;
+import java.util.Map;
 
 /**
  * Error JSON message.
@@ -87,4 +88,18 @@ public class ErrorResponse extends JsonResponse<ErrorDTO> {
         result = new ErrorDTO(title, message);
     }
 
+    /**
+     * Constructs a displayable error response (with a translation key)
+     *
+     * @param status error status code
+     * @param title error title
+     * @param message error message (not for the user)
+     * @param translationKey error translation key (for the user)
+     * @param translationValues error translation values (if needed in the translation key)
+     */
+    public ErrorResponse(Status status, String title, String message, String translationKey, Map<String, String> translationValues) {
+        super(status);
+        metadata = new MetadataDTO(new PaginationDTO());
+        result = new ErrorDTO(title, message, translationKey, translationValues, null);
+    }
 }

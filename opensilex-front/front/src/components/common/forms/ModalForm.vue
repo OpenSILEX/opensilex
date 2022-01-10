@@ -89,6 +89,9 @@ export default class ModalForm extends Vue {
   @Prop({ default: "md" })
   modalSize;
 
+  @Prop({default: false})
+  doNotHideOnError: boolean;
+
   @Prop({
     type: Function,
     default: function(f) {}
@@ -140,7 +143,9 @@ export default class ModalForm extends Vue {
               if (result !== false) {
                 this.$emit(successEvent, result);
               }
-              this.hide();
+              if (result !== false || !this.doNotHideOnError) {
+                this.hide();
+              }
             });
           })
           .catch(console.error);

@@ -12,6 +12,8 @@
         :value="stringValue"
         @update="updateValue($event)"
         @change="change"
+        @input="input"
+        @blur="blur"
         :disabled="disabled"
         :type="type"
         :required="isRequired"
@@ -49,6 +51,14 @@ export default class InputForm extends Vue {
 
   change(value){
     this.$emit("change",value);
+  }
+
+  input(value) {
+    this.$emit("input", value);
+  }
+
+  blur() {
+    this.$emit("blur");
   }
 
   @Prop({

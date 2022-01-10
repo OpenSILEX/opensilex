@@ -10,6 +10,7 @@
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
     :initForm="initForm"
+    :doNotHideOnError="true"
   ></opensilex-ModalForm>
 </template>
 

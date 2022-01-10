@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.dal;
 import java.util.List;
 
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -54,6 +55,14 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
     public static final String FACILITIES_FIELD = "facilities";
 
     @SPARQLProperty(
+            ontology = ORG.class,
+            property = "hasSite",
+            ignoreUpdateIfNull = true
+    )
+    private List<SiteModel> sites;
+    public static final String SITE_FIELD = "site";
+
+    @SPARQLProperty(
             ontology = SecurityOntology.class,
             property = "hasGroup",
             cascadeDelete = true,
@@ -85,6 +94,14 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
 
     public void setFacilities(List<InfrastructureFacilityModel> facilities) {
         this.facilities = facilities;
+    }
+
+    public List<SiteModel> getSites() {
+        return sites;
+    }
+
+    public void setSites(List<SiteModel> sites) {
+        this.sites = sites;
     }
 
     public List<ExperimentModel> getExperiments() {

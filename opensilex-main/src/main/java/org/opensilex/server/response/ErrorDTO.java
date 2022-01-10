@@ -11,12 +11,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Error DTO class.
  * <pre>
  * This class define an error DTO used by {@code org.opensilex.server.response.ErrorResponse}
  * It's defined by a title and a message and eventually a source exception.
+ * A translation key (and values) can also be provided if the error should be displayed to the user.
  *
  * ONLY IN DEBUG MODE:
  * If error result is constructed with an exception result will contains two version of the stack trace arrays
@@ -41,6 +43,18 @@ public class ErrorDTO {
      */
     @ApiModelProperty(value = "Message of the error", example = "Unexpected error")
     public final String message;
+
+    /**
+     * Translation key of the error, used to display a message for the user. Can be null.
+     */
+    @ApiModelProperty(hidden = true)
+    public final String translationKey;
+
+    /**
+     * Translation values of the error, used to fill parameterized values in the translated message for the user. Can be null.
+     */
+    @ApiModelProperty(hidden = true)
+    public final Map<String, String> translationValues;
 
     /**
      * Stack trace of the exception as an array.
@@ -75,9 +89,11 @@ public class ErrorDTO {
      * @param message error message
      * @param t errror cause
      */
-    public ErrorDTO(String title, String message, Throwable t) {
+    public ErrorDTO(String title, String message, String translationKey, Map<String, String> translationValues, Throwable t) {
         this.title = title;
         this.message = message;
+        this.translationKey = translationKey;
+        this.translationValues = translationValues;
 
         if (t != null) {
             StackTraceElement[] trace = t.getStackTrace();
@@ -91,5 +107,9 @@ public class ErrorDTO {
                 fullstack.add(stackMessage);
             }
         }
+    }
+
+    public ErrorDTO(String title, String message, Throwable t) {
+        this(title, message, null, null, t);
     }
 }

@@ -59,11 +59,30 @@
       ></opensilex-TypeView>
       <!-- Organisations -->
       <opensilex-UriListView
+          v-if="hasOrganizations"
           label="OrganizationFacilityDetail.organizations"
           :list="organizationUriList"
           :inline="false"
       >
       </opensilex-UriListView>
+
+      <!-- Site -->
+      <opensilex-UriListView
+          v-if="hasSites"
+          label="OrganizationFacilityDetail.site"
+          :list="siteUriList"
+          :inline="false"
+      >
+      </opensilex-UriListView>
+
+      <!-- Address -->
+      <opensilex-AddressView
+          v-if="selectedFacilityOrDefault.address"
+          :address="selectedFacilityOrDefault.address"
+          :geometry="selectedFacilityOrDefault.geometry"
+          noGeometryLabel="OrganizationFacilityDetail.noGeometryWarning"
+      >
+      </opensilex-AddressView>
 
       <div>
         <div v-for="(v, index) in typeProperties" v-bind:key="index">
@@ -146,6 +165,14 @@ export default class OrganizationFacilityDetail extends Vue {
     return {};
   }
 
+  get hasOrganizations() {
+    return !!this.selected && this.selected.organizations.length > 0;
+  }
+
+  get hasSites() {
+    return !!this.selected && this.selected.sites.length > 0;
+  }
+
   get organizationUriList() {
     if (!this.selected) {
       return [];
@@ -156,6 +183,21 @@ export default class OrganizationFacilityDetail extends Vue {
         value: org.name,
         to: {
           path: "/infrastructure/details/" + encodeURIComponent(org.uri),
+        },
+      };
+    });
+  }
+
+  get siteUriList() {
+    if (!this.selected) {
+      return [];
+    }
+    return this.selected.sites.map(site => {
+      return {
+        uri: site.uri,
+        value: site.name,
+        to: {
+          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri),
         },
       };
     });
@@ -312,7 +354,13 @@ export default class OrganizationFacilityDetail extends Vue {
 en:
   OrganizationFacilityDetail:
     organizations: Organizations
+    site: "Site"
+    address: "Address"
+    noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   OrganizationFacilityDetail:
     organizations: Organisations
+    site: "Site"
+    address: "Adresse"
+    noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.
 </i18n>

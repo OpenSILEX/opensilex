@@ -1153,7 +1153,7 @@ public class DataAPI {
         List<String> notExistingTargets = new ArrayList<>();
         List<String> duplicatedTargets = new ArrayList<>();
         
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();

@@ -375,7 +375,7 @@ public class DataDAO {
         
         //user access
         if (!user.isAdmin()) {
-            ExperimentDAO expDAO = new ExperimentDAO(sparql);
+            ExperimentDAO expDAO = new ExperimentDAO(sparql, nosql);
             Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
 
             if (experiments != null && !experiments.isEmpty()) {

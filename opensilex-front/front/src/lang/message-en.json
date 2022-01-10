@@ -137,7 +137,11 @@
                 }
             },
             "addDocument": "Add document",
-            "warningInstruction" : "Experimental feature"
+            "warningInstruction" : "Experimental feature",
+            "organization": {
+                "site": "Site",
+                "sites": "Sites"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -544,6 +548,11 @@
         },
         "document": {
             "nopreview": "No preview possible"
+        },
+        "organization": {
+            "exception": {
+                "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
+            }
         }
     },
     "credential-groups": {

@@ -36,11 +36,10 @@
                         icon
                         label="DataView.buttons.generate-template"
                     ></opensilex-Button>
-                    <!--          <opensilex-GenerateEventTemplate-->
-                    <!--              ref="templateGenerator"-->
-                    <!--              :targets="targets"-->
-                    <!--              :isMove="isMove"-->
-                    <!--          ></opensilex-GenerateEventTemplate>-->
+
+                    <opensilex-DeviceCsvTemplateGenerator
+                        ref="templateGenerator"
+                    ></opensilex-DeviceCsvTemplateGenerator>
                 </b-col>
             </template>
 
@@ -52,14 +51,16 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import DeviceCsvTemplateGenerator from "./DeviceCsvTemplateGenerator.vue";
 
 @Component
 export default class DeviceCsvForm extends Vue {
 
     $opensilex: OpenSilexVuePlugin;
+    $store: any;
     users: any[] = [];
 
-    @Ref("templateGenerator") readonly templateGenerator!: any;
+    @Ref("templateGenerator") readonly templateGenerator!: DeviceCsvTemplateGenerator;
     @Ref("importForm") readonly importForm!: any;
     nbLinesImported = 0;
 

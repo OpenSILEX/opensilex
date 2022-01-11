@@ -45,6 +45,7 @@
     import { Component, Prop, Ref } from "vue-property-decorator";
     import Vue from "vue";
     import VueRouter from "vue-router";
+    import GenerateEventTemplate from "./GenerateEventTemplate.vue";
 
     @Component
     export default class EventCsvForm extends Vue {
@@ -54,7 +55,7 @@
         $router: VueRouter;
         users: any[] = [];
 
-        @Ref("templateGenerator") readonly templateGenerator!: any;
+        @Ref("templateGenerator") readonly templateGenerator!: GenerateEventTemplate;
         @Ref("importForm") readonly importForm!: any;
         nbLinesImported = 0;
 

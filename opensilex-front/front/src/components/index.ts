@@ -726,6 +726,8 @@ import  DevicePropertySelector from './devices/DevicePropertySelector.vue';
 components["opensilex-DevicePropertySelector"] = DevicePropertySelector;
 import  DeviceCsvForm from './devices/csv/DeviceCsvForm.vue';
 components["opensilex-DeviceCsvForm"] = DeviceCsvForm;
+import DeviceCsvTemplateGenerator from './devices/csv/DeviceCsvTemplateGenerator.vue';
+components["opensilex-DeviceCsvTemplateGenerator"] = DeviceCsvTemplateGenerator;
 
 
 // EVENTS

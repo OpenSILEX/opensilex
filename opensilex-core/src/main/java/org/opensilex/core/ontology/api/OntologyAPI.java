@@ -9,13 +9,13 @@ import io.swagger.annotations.*;
 import org.apache.jena.graph.Node;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.ConflictException;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -31,7 +31,9 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -523,6 +525,38 @@ public class OntologyAPI {
         List<URITypesModel> checkedURIsTypes = dao.checkURIsTypes(dto.getUris(), rdfTypes);
         List<URITypesDTO> dtoList = checkedURIsTypes.stream().map(URITypesDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @PUT
+    @Path("{uri}/rename")
+    @ApiOperation(value = "Rename all occurrences of the given URI", notes = "**This method should not be used unless you " +
+            "are fully understanding what you are doing, as it may have side-effects for external ontologies. Please " +
+            "note that occurrences of the URI will NOT be changed in the NoSQL database (MongoDB).**")
+    @ApiProtected(adminOnly = true)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The URI was successfully renamed")
+    })
+    public Response renameURI(
+            @ApiParam(value = "The URI to rename") @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "The new URI") @QueryParam("newUri") @NotNull URI newUri
+    ) throws Exception {
+        if (!sparql.checkTripleURIExists(uri)) {
+            throw new NotFoundException("URI not found : " + uri);
+        }
+        if (sparql.checkTripleURIExists(newUri)) {
+            throw new ConflictException("Cannot rename the URI, target URI already exists : " + newUri);
+        }
+        try {
+            sparql.startTransaction();
+            sparql.renameTripleURI(uri, newUri);
+            sparql.renameGraph(uri, newUri);
+            sparql.commitTransaction();
+        } catch (Exception e) {
+            sparql.rollbackTransaction(e);
+            throw e;
+        }
+        return new ObjectUriResponse(Response.Status.OK, newUri).getResponse();
     }
 
 

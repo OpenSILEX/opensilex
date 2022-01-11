@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.model;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.jena.rdf.model.Property;
@@ -32,11 +33,20 @@ public class TEST_ONTOLOGY {
     public static final Path SHACL_FAIL_FILE_PATH = Paths.get("ontologies", "test_shacl_fail.ttl");
     public static final Lang SHACL_FAIL_FILE_FORMAT = RDFLanguages.TURTLE;
 
+    public static final Path RENAME_DATA_DEFAULT_FILE_PATH = Paths.get("ontologies", "test_data_rename_default.ttl");
+    public static final Path RENAME_DATA_IN_GRAPH_FILE_PATH = Paths.get("ontologies", "test_data_rename_in_graph.ttl");
+    public static final Lang RENAME_DATA_FILE_FORMAT = RDFLanguages.TURTLE;
+    public static final String NAMESPACE_RENAME = "http://test.opensilex.org/rename/";
+    public static final String RENAME_DATA_GRAPH_URI = NAMESPACE_RENAME + "graph";
+    public static final String uriToRenameString = "uriToRename";
+    public static final String renamedUriString = "renamedUri";
+
     public static final Resource A = Ontology.resource(NAMESPACE, "A");
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
     public static final Resource C = Ontology.resource(NAMESPACE, "C");
     public static final Resource Fail = Ontology.resource(NAMESPACE, "Fail");
 
+    public static final Property hasRelationToA = Ontology.property(NAMESPACE, "hasRelationToA");
     public static final Property hasRelationToB = Ontology.property(NAMESPACE, "hasRelationToB");
 
     public static final Property hasString = Ontology.property(NAMESPACE, "hasString");
@@ -53,4 +63,7 @@ public class TEST_ONTOLOGY {
     public static final Property hasStringList = Ontology.property(NAMESPACE, "hasStringList");
 
     public static final Property hasLabel = Ontology.property(NAMESPACE, "hasLabel");
+
+    public static final Property uriToRename = Ontology.property(NAMESPACE_RENAME, "uriToRename");
+    public static final Property renamedUri = Ontology.property(NAMESPACE_RENAME, "renamedUri");
 }

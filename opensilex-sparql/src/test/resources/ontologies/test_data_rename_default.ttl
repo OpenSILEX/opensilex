@@ -1,0 +1,13 @@
+@prefix testR: <http://test.opensilex.org/rename/> .
+@prefix test: <http://test.opensilex.org/> .
+
+testR:uriToRename a test:A;
+  test:hasString "a1" .
+
+testR:a2 a test:A;
+  test:hasString "a2";
+  testR:uriToRename "object";
+  test:hasRelationToA testR:uriToRename .
+
+testR:a3 a test:A;
+  test:hasString "a3" .

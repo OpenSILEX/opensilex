@@ -7,6 +7,7 @@ package org.opensilex.sparql;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -52,6 +53,8 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     protected static URI ontologyDataUri;
 
     protected static byte[] ontologyDataBytes;
+    protected static byte[] renameDataDefaultBytes;
+    protected static byte[] renameDataInGraphBytes;
 
     public static void initialize() throws Exception {
         sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
@@ -64,19 +67,40 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
         ontologyDataBytes = IOUtils.toByteArray(ontologyData);
         assert (ontologyDataBytes != null && ontologyDataBytes.length > 0);
+
+        // load rename data in default graph
+        InputStream renameDataDefault = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.RENAME_DATA_DEFAULT_FILE_PATH.toString());
+        renameDataDefaultBytes = IOUtils.toByteArray(renameDataDefault);
+        assert (renameDataDefaultBytes != null && renameDataDefaultBytes.length > 0);
+
+        // load rename data in named graph
+        InputStream renameDataInGraph = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.RENAME_DATA_IN_GRAPH_FILE_PATH.toString());
+        renameDataInGraphBytes = IOUtils.toByteArray(renameDataInGraph);
+        assert (renameDataInGraphBytes != null && renameDataInGraphBytes.length > 0);
     }
 
     @Before
-    public void before() throws SPARQLException, IOException {
+    public void before() throws SPARQLException, IOException, URISyntaxException {
         // load ontology data file
         ByteArrayInputStream ontologyDataStream = new ByteArrayInputStream(ontologyDataBytes);
         sparql.loadOntology(ontologyDataUri, ontologyDataStream, TEST_ONTOLOGY.DATA_FILE_FORMAT);
         ontologyDataStream.close();
+
+        // load test data for rename (in default graph)
+        ByteArrayInputStream renameDataDefaultStream = new ByteArrayInputStream(renameDataDefaultBytes);
+        sparql.loadOntology(null, renameDataDefaultStream, TEST_ONTOLOGY.RENAME_DATA_FILE_FORMAT);
+        renameDataDefaultStream.close();
+
+        // load test data for rename (in named graph)
+        ByteArrayInputStream renameDataInGraphStream = new ByteArrayInputStream(renameDataInGraphBytes);
+        sparql.loadOntology(new URI(TEST_ONTOLOGY.RENAME_DATA_GRAPH_URI), renameDataInGraphStream, TEST_ONTOLOGY.RENAME_DATA_FILE_FORMAT);
+        renameDataInGraphStream.close();
     }
 
     @After
     public void after() throws Exception {
-        sparql.clearGraph(ontologyDataUri);
+        sparql.clearGraphs(ontologyDataUri.toString(),
+                TEST_ONTOLOGY.RENAME_DATA_GRAPH_URI);
     }
 
     @Test
@@ -525,4 +549,73 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(loadExpectedEx.getUris().contains(unknownUri));
     }
 
+    @Test
+    public void testCheckUriExists() throws Exception {
+        A a = new A();
+        sparql.create(a);
+
+        boolean exists = sparql.checkTripleURIExists(a.getUri());
+
+        assertTrue(exists);
+    }
+
+    @Test
+    public void testCheckUriDoesNotExist() throws Exception {
+        URI uriToCheck = new URI("http://test.opensilex.org/thisUriShouldNotExist");
+
+        boolean exists = sparql.checkTripleURIExists(uriToCheck);
+
+        assertFalse(exists);
+    }
+
+    @Test
+    public void testRenameUri() throws Exception {
+        URI uriToRename = new URI("http://test.opensilex.org/rename/uriToRename");
+        URI renamedUri = new URI("http://test.opensilex.org/rename/renamedUri");
+        URI a2Uri = new URI("http://test.opensilex.org/rename/a2");
+        URI a3Uri = new URI("http://test.opensilex.org/rename/a3");
+
+        A aToRename = sparql.getByURI(A.class, uriToRename, null);
+        A renamedA = sparql.getByURI(A.class, renamedUri, null);
+        A a2 = sparql.getByURI(A.class, a2Uri, null);
+        A a3 = sparql.getByURI(A.class, a3Uri, null);
+
+        // Verify that nothing has been renamed yet
+        assertNotNull(aToRename); // subject in default graph
+        assertNull(renamedA);
+        assertNotNull(a2);
+        assertNotNull(a3);
+
+        assertTrue(StringUtils.isNotEmpty(a2.getPropertyToRename())); // property in default graph
+        assertNull(a2.getRenamedProperty());
+        assertEquals(a2.getA().getUri(), uriToRename); // object in default graph
+
+        assertEquals(aToRename.getInteger(), Integer.valueOf(4)); // subject in named graph
+        assertTrue(StringUtils.isNotEmpty(a3.getPropertyToRename())); // property in named graph
+        assertNull(a3.getRenamedProperty());
+        assertEquals(a3.getA().getUri(), uriToRename);
+
+        // Execute the rename operation and update the objects
+        sparql.renameTripleURI(uriToRename, renamedUri);
+
+        aToRename = sparql.getByURI(A.class, uriToRename, null);
+        renamedA = sparql.getByURI(A.class, renamedUri, null);
+        a2 = sparql.getByURI(A.class, a2Uri, null);
+        a3 = sparql.getByURI(A.class, a3Uri, null);
+
+        // Assert that everything has been renamed
+        assertNull(aToRename); // subject in default graph
+        assertNotNull(renamedA);
+        assertNotNull(a2);
+        assertNotNull(a3);
+
+        assertNull(a2.getPropertyToRename()); // property in default graph
+        assertTrue(StringUtils.isNotEmpty(a2.getRenamedProperty()));
+        assertEquals(a2.getA().getUri(), renamedUri); // object in default graph
+
+        assertEquals(renamedA.getInteger(), Integer.valueOf(4)); // subject in named graph
+        assertNull(a3.getPropertyToRename()); // property in named graph
+        assertTrue(StringUtils.isNotEmpty(a3.getRenamedProperty()));
+        assertEquals(a3.getA().getUri(), renamedUri);
+    }
 }

@@ -24,6 +24,12 @@ public class A extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
+            property = "hasRelationToA"
+    )
+    private A a;
+
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
             property = "hasRelationToB"
     )
     private B b;
@@ -93,6 +99,26 @@ public class A extends SPARQLResourceModel {
             property = "hasDateTime"
     )
     private OffsetDateTime datetime;
+
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
+            property = TEST_ONTOLOGY.uriToRenameString
+    )
+    private String propertyToRename;
+
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
+            property = TEST_ONTOLOGY.renamedUriString
+    )
+    private String renamedProperty;
+
+    public A getA() {
+        return a;
+    }
+
+    public void setA(A a) {
+        this.a = a;
+    }
 
     public B getB() {
         return b;
@@ -190,4 +216,19 @@ public class A extends SPARQLResourceModel {
         this.datetime = datetime;
     }
 
+    public String getPropertyToRename() {
+        return propertyToRename;
+    }
+
+    public void setPropertyToRename(String propertyToRename) {
+        this.propertyToRename = propertyToRename;
+    }
+
+    public String getRenamedProperty() {
+        return renamedProperty;
+    }
+
+    public void setRenamedProperty(String renamedProperty) {
+        this.renamedProperty = renamedProperty;
+    }
 }

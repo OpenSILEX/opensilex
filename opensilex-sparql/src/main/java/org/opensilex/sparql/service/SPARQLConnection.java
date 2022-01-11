@@ -77,7 +77,9 @@ public interface SPARQLConnection extends Service {
     public boolean isShaclEnabled();
 
     public default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        Node graphNode = NodeFactory.createURI(graph.toString());
+        Node graphNode = graph != null
+                ? NodeFactory.createURI(graph.toString())
+                : null;
         Model model = ModelFactory.createDefaultModel();
         model.read(ontology, null, format.getName());
 
@@ -86,7 +88,11 @@ public interface SPARQLConnection extends Service {
 
         while (iterator.hasNext()) {
             Statement statement = iterator.nextStatement();
-            insertQuery.addInsert(graphNode, statement.asTriple());
+            if (graphNode != null) {
+                insertQuery.addInsert(graphNode, statement.asTriple());
+            } else {
+                insertQuery.addInsert(statement.asTriple());
+            }
         }
         executeUpdateQuery(insertQuery);
     }

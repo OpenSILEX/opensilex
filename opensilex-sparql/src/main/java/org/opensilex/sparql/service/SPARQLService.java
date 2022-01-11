@@ -18,6 +18,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
@@ -337,7 +338,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graph.toString());
+        if (graph != null) {
+            LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO GRAPH: " + graph);
+        } else {
+            LOGGER.debug("SPARQL LOAD " + format.getName() + " FILE INTO DEFAULT GRAPH");
+        }
         connection.loadOntology(graph, ontology, format);
     }
 
@@ -1995,4 +2000,128 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeUpdateQuery(delete);
     }
 
+    /**
+     * Checks if the given URI exists in any of the triple of the triple store.
+     *
+     * @param uri The URI to check
+     * @return whether the given URI matches any triple
+     * @throws Exception
+     */
+    public boolean checkTripleURIExists(URI uri) throws Exception {
+        try {
+            AskBuilder ask = new AskBuilder();
+            ask.addWhere(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.SUBJECT, true));
+            ask.addUnion(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.SUBJECT, false));
+            ask.addUnion(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.PREDICATE, true));
+            ask.addUnion(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.PREDICATE, false));
+            ask.addUnion(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.OBJECT, true));
+            ask.addUnion(SPARQLQueryHelper.buildURIExistsClause(uri, TupleSlot.OBJECT, false));
+            return executeAskQuery(ask);
+        } catch (Exception e) {
+            LOGGER.error("Failed to check URI " + uri, e);
+            throw new SPARQLException(e.getMessage(), e.getCause());
+        }
+    }
+
+    /**
+     * Updates all occurrences of a URI in the triple store.
+     *
+     * @param oldUri The URI to replace
+     * @param newUri The new URI
+     * @throws SPARQLException
+     */
+    public void renameTripleURI(URI oldUri, URI newUri) throws Exception {
+        try {
+            startTransaction();
+            renameTripleURI(oldUri, newUri, TupleSlot.SUBJECT, true);
+            renameTripleURI(oldUri, newUri, TupleSlot.SUBJECT, false);
+            renameTripleURI(oldUri, newUri, TupleSlot.PREDICATE, true);
+            renameTripleURI(oldUri, newUri, TupleSlot.PREDICATE, false);
+            renameTripleURI(oldUri, newUri, TupleSlot.OBJECT, true);
+            renameTripleURI(oldUri, newUri, TupleSlot.OBJECT, false);
+            commitTransaction();
+        } catch (Exception e) {
+            LOGGER.error("Failed to update URI " + oldUri + " to " + newUri, e);
+            rollbackTransaction(e);
+            throw new SPARQLException(e.getMessage(), e.getCause());
+        }
+    }
+
+    /**
+     * Updates an URI based on its position in triples and whether it is located in a named graph.
+     *
+     * @param oldUri The URI to replace
+     * @param newUri The new URI
+     * @param tupleSlot The position in triples
+     * @param inNamedGraph Whether the URI should be replaced in named graphs or in default graphs
+     * @throws Exception
+     */
+    public void renameTripleURI(URI oldUri, URI newUri, TupleSlot tupleSlot, boolean inNamedGraph) throws Exception {
+        UpdateBuilder update = new UpdateBuilder();
+
+        Node oldUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(oldUri));
+        Node newUriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(newUri));
+        Var s = makeVar("s");
+        Var p = makeVar("p");
+        Var o = makeVar("o");
+        Var g = makeVar("g");
+
+        // Depending on the position in the triple, generates the triple to replace and the new triple.
+        // Example : if tupleSlot == SUBJECT, the triple to replace will be `oldUri ?p ?o`, and the
+        // new triple will be `newUri ?p ?o`.
+        Triple oldUriTriple = SPARQLQueryHelper.buildUriTriple(s, p, o, oldUri, tupleSlot);
+        Triple newUriTriple = SPARQLQueryHelper.buildUriTriple(s, p, o, newUri, tupleSlot);
+
+        WhereBuilder delete = new WhereBuilder();
+        WhereBuilder insert = new WhereBuilder();
+        WhereBuilder where = new WhereBuilder();
+
+        // Whether the triple are located in named graphs, the actual query will vary. An example with the SUBJECT position :
+        // In named graphs :
+        // delete {
+        //     graph ?g {
+        //         oldUri ?p ?o.
+        //     }
+        // } insert {
+        //     graph ?g {
+        //         newUri ?p ?o.
+        //     }
+        // } where {
+        //     graph ?g {
+        //  	 	oldUri ?p ?o.
+        //  	 }
+        // }
+        //
+        // In the default graph :
+        // delete {
+        //     oldUri ?p ?o.
+        // } insert {
+        //     newUri ?p ?o.
+        // } where {
+        // 	oldUri ?p ?o.
+        //     filter not exists {
+        //         graph ?g {
+        //             oldUri ?p ?o.
+        //         }
+        //     }
+        // }
+        if (inNamedGraph) {
+            delete.addGraph(g, oldUriTriple);
+            insert.addGraph(g, newUriTriple);
+        } else {
+            delete.addWhere(oldUriTriple);
+            insert.addWhere(newUriTriple);
+        }
+        SPARQLQueryHelper.addTripleWhereClause(where, oldUriTriple, inNamedGraph ? g : null);
+
+        update.addDelete(delete);
+        update.addInsert(insert);
+        update.addWhere(where);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(update.build().toString());
+        }
+
+        executeUpdateQuery(update);
+    }
 }

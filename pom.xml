@@ -67,6 +67,9 @@
         <module>opensilex-mobile</module>
 
         <module>opensilex-migration</module>
+
+        <!-- Process module -->
+        <module>opensilex-process</module>
     </modules>
     
     <dependencies>
@@ -146,6 +149,11 @@
             <version>${revision}</version>
         </dependency>
         
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-process</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <!--Other extension modules must be declared as dependencies-->
 <!--        <dependency>
             <groupId>org.opensilex</groupId>

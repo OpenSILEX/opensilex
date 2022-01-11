@@ -18,8 +18,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.csv.error.CSVValidationModel;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -152,7 +151,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
                             ClassModel model = sparql.getOntologyDao().getClassModel(rdfType, parentClass, lang);
 
                             Map<String, OwlRestrictionModel> restrictionsByID = new HashMap<>();
-                            model.getRestrictionsByProperties().values().forEach(restriction -> {
+                            model.getRestrictions().values().forEach(restriction -> {
                                 String propertyURI = SPARQLDeserializers.getExpandedURI(restriction.getOnProperty());
                                 restrictionsByID.put(propertyURI, restriction);
                             });

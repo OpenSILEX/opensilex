@@ -12,8 +12,8 @@ file-system:
     fs:
         config:
             basePath: ../../opensilex-data
-#            defaultFS:
-#                implementation: org.opensilex.fs.local.LocalFileSystemConnection
+            defaultFS:
+                implementation: org.opensilex.fs.local.LocalFileSystemConnection
 #            connections:
 #                irods:
 #                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
@@ -21,6 +21,18 @@ file-system:
 #                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS
 #            customPath:
 #                datafile/: irods
+#            connections:
+#                gridfs:                    
+#                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+#                    config:
+#                        host: localhost
+#                        port: 8668
+#                        database: opensilex    
+#                        
+#            customPath:
+#                documents/: gridfs    
+    
+
 
 big-data:
     mongodb:

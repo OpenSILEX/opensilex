@@ -6,7 +6,14 @@ import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
-import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration, ThemeConfigDTO } from '../lib';
+import {
+    ApiServiceBinder,
+    FrontConfigDTO,
+    IAPIConfiguration,
+    ThemeConfigDTO,
+    VueDataTypeDTO,
+    VueObjectTypeDTO
+} from '../lib';
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
 import Foaf from '../ontologies/Foaf';
@@ -1123,9 +1130,9 @@ export default class OpenSilexVuePlugin {
     }
 
     public datatypes = [];
-    private datatypesByURI = {};
+    private datatypesByURI : { [uri: string]: VueDataTypeDTO } = {}
 
-    public getDatatype(uri) {
+    public getDatatype(uri): VueDataTypeDTO {
         return this.datatypesByURI[uri];
     }
 
@@ -1185,9 +1192,9 @@ export default class OpenSilexVuePlugin {
     }
 
     public objectTypes = [];
-    private objectTypesByURI = {};
+    private objectTypesByURI:  { [uri: string]: VueObjectTypeDTO } = {};
 
-    public getObjectType(uri) {
+    public getObjectType(uri): VueObjectTypeDTO{
         return this.objectTypesByURI[uri];
     }
 

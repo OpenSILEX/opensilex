@@ -40,10 +40,12 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import {VueDataTypeDTO, VueJsOntologyExtensionService, VueObjectTypeDTO, VueRDFTypePropertyDTO} from "../../../lib";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class DeviceCsvTemplateGenerator extends Vue {
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
     $store: any;
     $t: any;
     $i18n: any;
@@ -73,16 +75,24 @@ export default class DeviceCsvTemplateGenerator extends Vue {
         return this.validatorRefTemplate.validate();
     }
 
-    private getCustomPropertyDescription(property) {
+    private getCustomPropertyDescription(property: VueRDFTypePropertyDTO, isDataProperty: boolean) {
 
         let parts = Array.of(
+            this.$t("component.common.name"),
+            " : ",
             property.name,
 
-            // datatype
+            // data/object type
             "\n",
             this.$t("ScientificObjectCSVTemplateGenerator.data-type"),
             " : ",
-            this.getDataTypeLabel(property.target_property),
+            this.getDataTypeLabel(property.target_property, isDataProperty),
+
+            // description
+            "\n",
+            this.$t("component.common.description"),
+            " : ",
+            property.comment,
 
             // required
             "\n",
@@ -114,27 +124,29 @@ export default class DeviceCsvTemplateGenerator extends Vue {
     }
 
     getTypesPromises() {
-        let ontoService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+        let ontoService: VueJsOntologyExtensionService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
         let promises = [];
 
         for (let type of this.types) {
             let typePromise = ontoService.getRDFTypeProperties(type, this.$opensilex.Oeso.DEVICE_TYPE_URI)
                 .then(http => {
-                    let properties = {};
-                    for (let dataProp of http.response.result.data_properties) {
-                        let propURI = dataProp.property;
-                        properties[propURI] = dataProp;
-                    }
 
-                    for (let objProp of http.response.result.object_properties) {
-                        let propURI = objProp.property;
-                        properties[propURI] = objProp;
-                    }
-
-                    return {
+                    let result = {
                         uri: type,
-                        properties: properties,
-                    };
+                        dataProperties: new Map<string, VueRDFTypePropertyDTO>(),
+                        objectProperties: new Map<string, VueRDFTypePropertyDTO>(),
+                    }
+
+                    for (let property of http.response.result.data_properties) {
+                        let propURI = property.property;
+                        result.dataProperties.set(propURI,property);
+                    }
+                    for (let property of http.response.result.object_properties) {
+                        let propURI = property.property;
+                        result.objectProperties.set(propURI,property);
+                    }
+
+                    return result;
                 });
 
             promises.push(typePromise);
@@ -155,16 +167,23 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
         // for each type, add all non visited property header column and description
         for (let typeResult of typeModels) {
-            for (let propURI : string in typeResult.properties) {
+
+            let propertyFunction = (propURI: string, property: VueRDFTypePropertyDTO, isDataProperty: boolean) => {
                 if (!visitedProperties.has(propURI)) {
                     visitedProperties.add(propURI);
 
                     headers.push(propURI);
-
-                    let property = typeResult.properties[propURI];
-                    headersDescription.push(this.getCustomPropertyDescription(property));
+                    headersDescription.push(this.getCustomPropertyDescription(property, isDataProperty));
                 }
             }
+
+            typeResult.dataProperties.forEach((property, propURI) => {
+                propertyFunction(propURI, property, true);
+            });
+            typeResult.objectProperties.forEach((property, propURI) => {
+                propertyFunction(propURI, property, false);
+            });
+
         }
 
         let data = [headers, headersDescription];
@@ -204,15 +223,28 @@ export default class DeviceCsvTemplateGenerator extends Vue {
         });
     }
 
-    getDataTypeLabel(dataTypeUri: string): string {
+    getDataTypeLabel(dataTypeUri: string, isDataProperty: boolean): string {
         if (!dataTypeUri) {
             return undefined;
         }
-        let type = this.$opensilex.getDatatype(dataTypeUri);
-        let label = "URI";
-        if (type) {
-            label = this.$t(type.label_key);
+
+        let label;
+        if (isDataProperty) {
+            let type: VueDataTypeDTO = this.$opensilex.getDatatype(dataTypeUri);
+            if (type) {
+                label = this.$t(type.label_key);
+            }
+        } else {
+            let type: VueObjectTypeDTO = this.$opensilex.getObjectType(dataTypeUri);
+            if (type) {
+                label = type.name + " (URI)"
+            }
         }
+
+        if (!label || label.length == 0) {
+            return "";
+        }
+
         return label.charAt(0).toUpperCase() + label.slice(1);
     }
 }

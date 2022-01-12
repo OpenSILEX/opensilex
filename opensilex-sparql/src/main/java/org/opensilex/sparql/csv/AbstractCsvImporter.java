@@ -16,8 +16,6 @@ import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.ClassURIGenerator;
-import org.opensilex.uri.generation.DefaultURIGenerator;
-import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
 
 import java.io.*;
@@ -37,7 +35,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
     private final SPARQLService sparql;
     private final OntologyStore ontologyStore;
-    private final URIGenerator<T> uriGenerator;
 
     protected final URI classURI;
     protected final Class<T> objectClass;
@@ -52,7 +49,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
-        this.uriGenerator = new DefaultURIGenerator<>();
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
 
@@ -128,6 +124,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                 // #TODO check URI uniqueness
 
+
                 if (restrictionValidator.validateValuesByType() && !validOnly) {
                     sparql.create(graphNode, modelChunk, batchSize, false);
                 } else if (!validOnly) {
@@ -148,7 +145,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
     }
 
-    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) {
+    private void validateUriUniqueness(List<T> models, Set<URI> locallyGeneratedUri)
+
+    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) throws SPARQLException {
 
         String uriStr = row[CSV_URI_INDEX];
         try {
@@ -164,7 +163,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             try {
                 URI type = new URI(typeStr);
                 if (!ontologyStore.classExist(type, classURI)) {
-                    csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_TYPE_INDEX, "Unknown type :" + typeStr, CSV_TYPE_KEY));
+                    csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_TYPE_INDEX, "Unknown type : " + typeStr, CSV_TYPE_KEY));
                 }
                 model.setType(type);
             } catch (URISyntaxException e) {
@@ -232,6 +231,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             if (columns.length > 0) {
                 readBody(rowIterator, columns, restrictionValidator, validOnly);
+            }else{
+                csvValidationModel.addEmptyHeader(0);
             }
 
         } catch (IOException e) {

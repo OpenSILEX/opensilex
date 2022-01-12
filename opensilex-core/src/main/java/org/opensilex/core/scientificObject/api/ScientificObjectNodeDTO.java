@@ -6,6 +6,7 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,6 +23,8 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author vmigot
  */
+
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "creation_date", "destruction_date", "geometry"})
 public class ScientificObjectNodeDTO extends NamedResourceDTO<ScientificObjectModel> {
 
     private GeoJsonObject geometry;
